@@ -631,7 +631,7 @@ class RacketManager_Shortcodes {
 	 * @param string $template template name.
 	 * @return string the content
 	 */
-	public function show_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
+	private function show_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
 		if ( ! is_user_logged_in() ) {
 			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter cups</p>';
 		}
@@ -704,7 +704,7 @@ class RacketManager_Shortcodes {
 	 * @param string $template template name.
 	 * @return string content
 	 */
-	public function show_league_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
+	private function show_league_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
 		if ( ! is_user_logged_in() ) {
 			return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter leagues</p>';
 		}
@@ -799,7 +799,7 @@ class RacketManager_Shortcodes {
 	 * @param string|null $template template name.
 	 * @return string content
 	 */
-	public function show_tournament_entry( object $tournament, object $player = null, string $template = null ): string {
+	private function show_tournament_entry( object $tournament, object $player = null, string $template = null ): string {
 		global $racketmanager;
 		if ( ! $tournament ) {
 			return $this->return_error( __( 'Tournament not found', 'racketmanager' ) );

@@ -13,15 +13,6 @@ defined( 'ABSPATH' ) || die( 'Access denied !' );
  * Class for tasks to do during plugin activation and deactivation phases
  */
 class Racketmanager_Activator {
-
-	/**
-	 * Constructor
-	 */
-	public function setup(): void {
-		register_activation_hook( RACKETMANAGER_PLUGIN_FILE, array( &$this, 'activate' ) );
-		register_deactivation_hook( RACKETMANAGER_PLUGIN_FILE, array( &$this, 'deactivate' ) );
-	}
-
 	/**
 	 * Activate plugin
 	 */

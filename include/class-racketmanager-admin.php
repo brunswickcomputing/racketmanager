@@ -1065,53 +1065,6 @@ class RacketManager_Admin extends RacketManager {
 	}
 
 	/**
-	 * Add player team to league in admin screen
-	 *
-	 * @param object $league league object.
-	 */
-	protected function add_player_team_to_league( object $league ): void {
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
-			$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-		} elseif ( current_user_can( 'edit_teams' ) ) {
-			$team_player_1    = isset( $_POST['teamPlayer1'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer1'] ) ) : '';
-			$team_player_1_id = isset( $_POST['teamPlayerId1'] ) ? intval( $_POST['teamPlayerId1'] ) : 0;
-			$team_player_2    = isset( $_POST['teamPlayer2'] ) ? sanitize_text_field( wp_unslash( $_POST['teamPlayer2'] ) ) : '';
-			$team_player_2_id = isset( $_POST['teamPlayerId2'] ) ? intval( $_POST['teamPlayerId2'] ) : 0;
-			$club             = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : '';
-			$captain          = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
-			$contactno        = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-			$contactemail     = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
-			if ( isset( $_POST['action'] ) ) {
-				$league = get_league( $league );
-				if ( $league ) {
-					$team             = new stdClass();
-					$team->player1    = $team_player_1;
-					$team->player1_id = $team_player_1_id;
-					$team->player2    = $team_player_2;
-					$team->player2_id = $team_player_2_id;
-					$team->type       = $league->type;
-					$team->team_type  = 'P';
-					$team->club_id    = $club;
-					$team             = new Racketmanager_Team( $team );
-					$season           = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-					$team->set_event( $league->event->id, $captain, $contactno, $contactemail );
-					$league->add_team( $team->id, $season );
-				}
-			} elseif ( isset( $_POST['team_id'] ) ) {
-				$team = get_team( intval( $_POST['team_id'] ) );
-				if ( 'P' === $team->team_type ) {
-					$team->update_player( $team_player_1, $team_player_1_id, $team_player_2, $team_player_2_id, $club );
-					$team->set_event( $league->event->id, $captain, $contactno, $contactemail );
-				} else {
-					$this->set_message( __( 'Team is not a player team', 'racketmanager' ), true );
-				}
-			}
-		} else {
-			$this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-		}
-	}
-
-	/**
 	 * Delete teams from league in admin screen
 	 *
 	 * @param object $league league object.
@@ -1637,25 +1590,6 @@ class RacketManager_Admin extends RacketManager {
 			require_once RACKETMANAGER_PATH . '/admin/includes/teams-list.php';
 		}
 	}
-
-	/**
-	 * Display leagues page
-	 */
-	private function display_leagues_page(): void {
-		if ( ! current_user_can( 'edit_leagues' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
-		} else {
-			$competition_type  = 'league';
-			$type              = '';
-			$season            = '';
-			$standalone        = true;
-			$competition_query = array( 'type' => $competition_type );
-			$page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-			require_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
-		}
-	}
-
 	/**
 	 * Display clubs page
 	 */

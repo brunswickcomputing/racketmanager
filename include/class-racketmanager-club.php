@@ -505,56 +505,6 @@ final class Racketmanager_Club {
 		return $teams;
 	}
 	/**
-	 * Get competitions for club
-	 *
-	 * @param false|string $players player.
-	 * @param false|string $type player type.
-	 * @return object
-	 */
-	public function get_competitions( false|string $players = false, false|string $type = false ): object {
-		global $wpdb;
-
-		$args   = array();
-		$sql    = "SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = '%d'";
-		$args[] = $this->id;
-		if ( ! $players ) {
-			$sql .= " AND (`team_type` is null OR `team_type` != 'P')";
-		} else {
-			$sql .= " AND `team_type` = 'P'";
-		}
-		if ( $type ) {
-			if ( 'OS' === $type ) {
-				$sql   .= " AND `type` like '%%%s%%'";
-				$args[] = 'S';
-			} else {
-				$sql   .= " AND `type` = '%s'";
-				$args[] = $type;
-			}
-		}
-
-		$sql .= ' ORDER BY `title`';
-		$sql  = $wpdb->prepare(
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$sql,
-			$args
-		);
-
-		$competitions = wp_cache_get( md5( $sql ), 'competitions' );
-		if ( ! $competitions ) {
-			$competitions = $wpdb->get_results(
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$sql
-			); // db call ok.
-			wp_cache_set( md5( $sql ), $competitions, 'competitions ' );
-		}
-		foreach ( $competitions as $i => $competition ) {
-			$competition        = get_competition( $competition->id );
-			$competitions[ $i ] = $competition;
-		}
-
-		return $competitions;
-	}
-	/**
 	 * Register player for Club
 	 *
 	 * @param object $new_player player details.

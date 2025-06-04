@@ -14,12 +14,6 @@ namespace Racketmanager;
  */
 final class Racketmanager_Schedule_Round_Robin {
 
-	/**
-	 * Currency
-	 *
-	 * @var string
-	 */
-	public string $currency;
 	private int $num_teams;
 	private array $teams;
 	private int $half;

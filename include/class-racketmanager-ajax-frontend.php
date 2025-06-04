@@ -535,6 +535,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$msg              = __( 'No updates to tournament entry', 'racketmanager' );
 					$message_type     = 'info';
 					break;
+				case 4:
+					$msg              = __( 'Tournament entered and payment outstanding for player', 'racketmanager' );
+					$message_type     = 'success';
+					break;
 				default:
 					$msg              = __( 'Tournament entry complete', 'racketmanager' );
 					$message_type     = 'success';

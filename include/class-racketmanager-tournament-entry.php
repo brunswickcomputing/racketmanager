@@ -40,15 +40,15 @@ final class Racketmanager_Tournament_Entry {
 	/**
 	 * Fee
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $fee;
+	public ?string $fee;
 	/**
 	 * Club id
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $club_id;
+	public ?int $club_id;
 	/**
 	 * Club
 	 *

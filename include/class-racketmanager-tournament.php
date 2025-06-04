@@ -1383,7 +1383,7 @@ final class Racketmanager_Tournament {
 	public function set_player_entry(object $entry ): bool|int {
 		global $racketmanager;
 		$updates = false;
-		$player = get_player( $entry->player_id );
+		$player  = get_player( $entry->player_id );
 		$player->update_btm( $entry->btm );
 		$player->update_contact( $entry->contactno, $entry->contactemail );
 		$club               = get_club( $entry->club_id );
@@ -1501,7 +1501,11 @@ final class Racketmanager_Tournament {
 				$status = 0;
 			} else {
 				if ( $fee_due > 0 ) {
-					$status = 1;
+					if ( $entry->player_id !== get_current_user_id() ) {
+						$status = 4;
+					} else {
+						$status = 1;
+					}
 				} else {
 					$status = 2;
 				}
@@ -1612,6 +1616,9 @@ final class Racketmanager_Tournament {
 		$tournament_entry = get_tournament_entry( $search, 'key' );
 		if ( $tournament_entry ) {
 			if ( $club ) {
+				if ( empty( $tournament_entry->club_id ) ) {
+					$tournament_entry->set_club( $club );
+				}
 				if ( $tournament_entry->status !== $status ) {
 					$tournament_entry->set_status( $status );
 					$tournament_entry->set_fee( $payment_required );

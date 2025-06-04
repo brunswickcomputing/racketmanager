@@ -8,35 +8,6 @@
 namespace Racketmanager;
 
 	/**
-	 * Get league title
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-function get_league_title(): string {
-	global $league;
-	return $league->title;
-}
-
-	/**
-	 * Print league title
-	 *
-	 * @category template-tags
-	 */
-function the_league_title(): void {
-	echo get_league_title();
-}
-	/**
-	 * Get current match day
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_current_match_day(): int {
-	global $league;
-	return $league->match_day;
-}
-	/**
 	 * Get specific template
 	 *
 	 * @param string $template template.
@@ -68,99 +39,6 @@ function show_standings( string $key ): bool {
 	}
 	return false;
 }
-
-	/**
-	 * Get League point rule
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-function get_league_point_rule(): string {
-	global $league;
-	return $league->point_rule;
-}
-
-	/**
-	 * Get total number of teams
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_num_teams_total(): int {
-	global $league;
-	return $league->num_teams_total;
-}
-	/**
-	 * Test whether league has teams or we are in the loop
-	 *
-	 * @return boolean
-	 */
-function have_teams(): bool {
-	global $league;
-
-	if ( $league->current_team + 1 < count( $league->teams ) ) {
-		return true;
-	} elseif ( count( $league->teams ) - 1 === $league->current_team && count( $league->teams ) > 0 ) {
-		// End of Loop.
-		$league->current_team = -1;
-	}
-	return false;
-}
-	/**
-	 * Loop through teams
-	 */
-function the_team(): void {
-	global $league, $team;
-	// Increment team count.
-	++$league->current_team;
-	$team = $league->teams[ $league->current_team ];
-}
-	/**
-	 * Get team name
-	 *
-	 * @return string
-	 * @category template-tags
-	 */
-function get_team_name(): string {
-	global $team;
-	return $team->title;
-}
-	/**
-	 * Print team name
-	 *
-	 * @category template-tags
-	 */
-function the_team_name(): void {
-	echo get_team_name();
-}
-	/**
-	 * Get team rank
-	 *
-	 * @return int
-	 * @category template-tags
-	 */
-function get_team_rank(): int {
-	global $team;
-	return $team->rank;
-}
-
-	/**
-	 * Print team rank
-	 *
-	 * @category template-tags
-	 */
-function the_team_rank(): void {
-	echo get_team_rank();
-}
-	/**
-	 * Print number of sets of team
-	 *
-	 * @category template-tags
-	 */
-function num_sets(): void {
-	global $team;
-	echo esc_html( $team->sets_won . '-' . $team->sets_allowed );
-}
 	/**
 	 * Print Match time
 	 *
@@ -188,19 +66,6 @@ function the_currency_amount( ?string $amount ): void {
 	$currency_code = Racketmanager_Util::get_currency_code();
 	echo esc_html( numfmt_format_currency( $currency_fmt, $amount, $currency_code ) );
 }
-	/**
-	 * Print crosstable field
-	 *
-	 * @param int $i index.
-	 *
-	 * @category template-tags
-	 */
-function the_crosstable_field( int $i ): void {
-	global $league, $team;
-
-	echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id );
-}
-
 	/**
 	 * Wrapper tags
 	 */

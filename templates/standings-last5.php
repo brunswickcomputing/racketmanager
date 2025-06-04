@@ -20,7 +20,7 @@ namespace Racketmanager;
 			if ( ! empty( $teams ) ) {
 				?>
 				<div class="table-responsive">
-					<table class="table table-striped table-borderless align-middle" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ) . ' ' . get_league_title(); ?>">
+					<table class="table table-striped table-borderless align-middle" aria-describedby="<?php esc_html_e( 'Standings table', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
 						<thead class="">
 							<tr>
 								<th class="num" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_attr_e( 'Position', 'racketmanager' ); ?>">

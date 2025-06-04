@@ -12,7 +12,7 @@ namespace Racketmanager;
 if ( count( $league->teams ) ) {
 	?>
 	<div class="table-responsive">
-		<table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . get_league_title(); ?>">
+		<table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
 			<thead class="">
 				<tr>
 					<th class="num">

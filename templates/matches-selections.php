@@ -25,11 +25,11 @@ if ( ( $league->show_match_day_selection ) && ! $league->event->competition->is_
 				?>
                 <div class="form-floating col-auto">
                 <select class="form-select col-auto" size="1" name="match_day" id="match_day">
-                    <option value="-1"<?php selected( get_current_match_day(), -1 ); ?>><?php esc_html_e( 'Show all Matches', 'racketmanager' ); ?></option>
+                    <option value="-1"<?php selected( $league->match_day, -1 ); ?>><?php esc_html_e( 'Show all Matches', 'racketmanager' ); ?></option>
                     <?php
                         for ( $i = 1; $i <= $league->num_match_days; $i++ ) {
                             ?>
-                            <option value='<?php echo esc_attr( $i ); ?>'<?php selected( get_current_match_day(), $i ); ?>>
+                            <option value='<?php echo esc_attr( $i ); ?>'<?php selected( $league->match_day, $i ); ?>>
                                 <?php
                                 /* Translators: %d: Match day */
                                 echo esc_html( sprintf( __( '%d. Match Day', 'racketmanager' ), $i ) );

@@ -12,7 +12,7 @@ namespace Racketmanager;
 ?>
 <div class="container">
 	<div class="table-responsive">
-		<table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php the_league_title(); ?>">
+		<table class="table table-striped table-borderless" aria-describedby="<?php esc_html_e( 'Crosstable', 'racketmanager' ); ?> <?php echo ( $league->title ); ?>">
 			<thead class="">
 				<tr>
 					<th colspan="2" scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>

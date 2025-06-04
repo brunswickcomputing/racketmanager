@@ -30,13 +30,13 @@
         <legend><?php esc_html_e( 'Missing', 'racketmanager' ); ?></legend>
         <div class="col-md-3 mb-3 mb-md-0">
             <div class="form-floating">
-                <input type="text" class="form-control" name='noPlayerFemale' id='noPlayerFemale' value='<?php echo $options['player']['noPlayer']['female'] ?? '' ?>'/>
+                <input type="text" class="form-control" name='noPlayerFemale' id='noPlayerFemale' value='<?php echo $options['player']['noplayer']['female'] ?? '' ?>'/>
                 <label for='noPlayerFemale'><?php _e( 'Missing player female', 'racketmanager' ) ?></label>
             </div>
         </div>
         <div class="col-md-3">
             <div class="form-floating">
-                <input type="text" class="form-control" name='noPlayerMale' id='noPlayerMale' value='<?php echo $options['player']['noPlayer']['male'] ?? '' ?>'/>
+                <input type="text" class="form-control" name='noPlayerMale' id='noPlayerMale' value='<?php echo $options['player']['noplayer']['male'] ?? '' ?>'/>
                 <label for='noPlayerMale'><?php _e( 'Missing player male', 'racketmanager' ) ?></label>
             </div>
         </div>

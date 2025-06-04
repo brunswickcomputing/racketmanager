@@ -2196,7 +2196,7 @@ class Racketmanager_Competition {
 				}
 			}
 			$settings->standings = $config->standings;
-			$rules_options       = $racketmanager->get_options( 'checks' );
+			$rules_options       = $this->get_rules_options();
 			foreach ( $rules_options as $rules_option => $value ) {
 				$config->rules[ $rules_option ] = isset( $config->rules[ $rules_option ] ) ? 1 : 0;
 				if ( ! isset( $this->rules[ $rules_option ] ) || $this->rules[ $rules_option ] !== $config->rules[ $rules_option ] ) {
@@ -2510,5 +2510,22 @@ class Racketmanager_Competition {
 		wp_mail( $email_to, $email_subject, $email_message, $headers );
 		$racketmanager->set_message( __( 'Message sent', 'racketmanager' ) );
 		return true;
+	}
+	/**
+	 * Get rules options
+	 *
+	 * @return array of rules options.
+	 */
+	public function get_rules_options(): array {
+		global $racketmanager;
+		$rules_options    = $racketmanager->get_options( 'checks' );
+		$result_options   = $racketmanager->get_options( $this->type );
+		if ( isset( $result_options['resultTimeout'] ) ) {
+			$rules_options['resultTimeout'] = $result_options['resultTimeout'];
+		}
+		if ( isset( $result_options['confirmationTimeout'] ) ) {
+			$rules_options['confirmationTimeout'] = $result_options['confirmationTimeout'];
+		}
+		return $rules_options;
 	}
 }

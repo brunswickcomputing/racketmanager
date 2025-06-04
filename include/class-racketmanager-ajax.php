@@ -867,22 +867,24 @@ class Racketmanager_Ajax {
 			$status                = Racketmanager_Util::get_match_status_code( $new_match_status );
 			$match->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status );
 			$competition_options = $racketmanager->get_options( $match->league->event->competition->type );
-			$result_timeout      = $competition_options['resultTimeout'] ?? null;
-			if ( $result_timeout ) {
-				if ( ! empty( $match->date_result_entered ) ) {
-					$date_result_entered = date_create( $match->date_result_entered );
-					$match_date          = date_create( $match->date );
-					$diff                = date_diff( $date_result_entered, $match_date );
-					if ( $diff->invert ) {
-						$time_diff  = $diff->days * 24 * 60;
-						$time_diff += $diff->h * 60;
-						$time_diff += $diff->i;
-						$timeout    = $result_timeout * 60;
-						if ( $time_diff > $timeout ) {
-							$time_diff_hours = $time_diff / 60;
-							/* translators: %d: number of hours */
-							$reason = sprintf( __( 'Result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
-							$match->add_match_result_check( $match->home_team, $reason );
+			if ( ! empty( $match->league->event->competition->rules['resultTimeout'] ) ) {
+				$result_timeout      = $competition_options['resultTimeout'] ?? null;
+				if ( $result_timeout ) {
+					if ( ! empty( $match->date_result_entered ) ) {
+						$date_result_entered = date_create( $match->date_result_entered );
+						$match_date          = date_create( $match->date );
+						$diff                = date_diff( $date_result_entered, $match_date );
+						if ( $diff->invert ) {
+							$time_diff  = $diff->days * 24 * 60;
+							$time_diff += $diff->h * 60;
+							$time_diff += $diff->i;
+							$timeout    = $result_timeout * 60;
+							if ( $time_diff > $timeout ) {
+								$time_diff_hours = $time_diff / 60;
+								/* translators: %d: number of hours */
+								$reason = sprintf( __( 'Result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
+								$match->add_match_result_check( $match->home_team, $reason );
+							}
 						}
 					}
 				}

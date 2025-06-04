@@ -122,7 +122,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$forwin_overtime  = 0;
 				$forloss_overtime = 0;
 				$is_invalid       = false;
-				$rules_options    = $racketmanager->get_options( 'checks' );
+				$rules_options    = $competition->get_rules_options();
 				require RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
 			} else {
 				$racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );

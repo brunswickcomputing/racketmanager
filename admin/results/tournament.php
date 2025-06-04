@@ -21,8 +21,7 @@ if ( isset( $racketmanager_options['resultPending'] ) ) {
 	$racketmanager_result_pending              = $racketmanager_options['resultPending'];
 	$racketmanager_match_args['resultPending'] = $racketmanager_result_pending;
 }
-$racketmanager_matches     = $racketmanager->get_matches( $racketmanager_match_args );
-$racketmanager_prev_league = 0;
+$racketmanager_matches = $racketmanager->get_matches( $racketmanager_match_args );
 ?>
 <div class="container">
 	<div class="row table-header">
@@ -43,11 +42,6 @@ $racketmanager_prev_league = 0;
 					$racketmanager_overdue_class = 'bg-warning';
 					$racketmanager_overdue       = true;
 				}
-			}
-			if ( $racketmanager_match->league->is_championship ) {
-				$racketmanager_match_link = 'final=' . $racketmanager_match->final_round . '&amp;league-tab=matches';
-			} else {
-				$racketmanager_match_link = 'match_day=' . $racketmanager_match->match_day;
 			}
 			$racketmanager_class = ( 'alternate' === $racketmanager_class ) ? '' : 'alternate';
 			?>

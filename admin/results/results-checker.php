@@ -66,34 +66,10 @@ foreach ( $competitions as $competition ) {
                 <label>
                     <select name="filterResultsChecker" size="1">
                         <option value="-1" selected="selected"><?php esc_html_e( 'Filter results', 'racketmanager' ); ?></option>
-                        <option value="all"
-                        <?php
-                        if ( 'all' === $results_check_filter ) {
-                            echo esc_html( ' selected' );
-                        }
-                        ?>
-                        ><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
-                        <option value="outstanding"
-                        <?php
-                        if ( 'outstanding' === $results_check_filter ) {
-                            echo esc_html( ' selected' );
-                        }
-                        ?>
-                        ><?php esc_html_e( 'Outstanding', 'racketmanager' ); ?></option>
-                        <option value="1"
-                        <?php
-                        if ( '1' === $results_check_filter ) {
-                            echo esc_html( ' selected' );
-                        }
-                        ?>
-                        ><?php esc_html_e( 'Approved', 'racketmanager' ); ?></option>
-                        <option value="2"
-                        <?php
-                        if ( '2' === $results_check_filter ) {
-                            echo esc_html( ' selected' );
-                        }
-                        ?>
-                        ><?php esc_html_e( 'Handled', 'racketmanager' ); ?></option>
+                        <option value="all" <?php selected( $results_check_filter, 'all' ); ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
+                        <option value="outstanding" <?php selected( $results_check_filter, 'outstanding' ); ?>><?php esc_html_e( 'Outstanding', 'racketmanager' ); ?></option>
+                        <option value="1" <?php selected( $results_check_filter, '1' ); ?>><?php esc_html_e( 'Approved', 'racketmanager' ); ?></option>
+                        <option value="2" <?php selected( $results_check_filter, '2' ); ?>><?php esc_html_e( 'Handled', 'racketmanager' ); ?></option>
                     </select>
                 </label>
                 <button class="btn btn-primary"><?php esc_html_e( 'Filter', 'racketmanager' ); ?></button>
@@ -119,78 +95,76 @@ foreach ( $competitions as $competition ) {
                     <button name="doResultsChecker" id="doResultsChecker" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
                 </div>
             </div>
-			<div class="container">
-				<div class="row table-header">
-					<div class="col-2 col-md-auto check-column">
-                        <label class="visually-hidden" for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" />
-                    </div>
-					<div class="col-5 col-sm-2 col-lg-1"><?php esc_html_e( 'Date', 'racketmanager' ); ?></div>
-					<div class="col-12 col-sm-2 col-lg-3"><?php esc_html_e( 'Match', 'racketmanager' ); ?></div>
-					<div class="col-6 col-md-2"><?php esc_html_e( 'Team', 'racketmanager' ); ?></div>
-					<div class="col-6 col-sm-2"><?php esc_html_e( 'Player', 'racketmanager' ); ?></div>
-					<div class="col-12 col-md-2"><?php esc_html_e( 'Description', 'racketmanager' ); ?></div>
-					<?php
-					if ( 'outstanding' !== $results_check_filter ) {
-						?>
-						<div class="d-none d-md-block col-md-3 col-lg-6"></div>
-						<div class="col-4 col-md-3 col-lg-2"><?php esc_html_e( 'Status', 'racketmanager' ); ?></div>
-						<div class="col-4 col-md-3 col-lg-2"><?php esc_html_e( 'Updated Date', 'racketmanager' ); ?></div>
-						<div class="col-4 col-md-3 col-lg-2"><?php esc_html_e( 'Updated User', 'racketmanager' ); ?></div>
-						<?php
-					}
-					?>
-				</div>
-
-				<?php
-				if ( $results_checkers ) {
-					$class = '';
-					foreach ( $results_checkers as $results_checker ) {
-						$class = ( 'alternate' === $class ) ? '' : 'alternate';
-						?>
-						<div class="row table-row <?php echo esc_html( $class ); ?>">
-							<div class="col-2 col-md-auto check-column">
-                                <label class="visually-hidden" for="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" id="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>" />
-                            </div>
-							<div class="col-5 col-sm-2 col-lg-1"><?php echo esc_html( mysql2date( 'Y-m-d', $results_checker->match->date ) ); ?></div>
-							<div class="col-12 col-md-2 col-lg-3">
-								<a href="<?php echo esc_html( $results_checker->match->link ); ?>result/">
-									<?php echo esc_html( $results_checker->match->match_title ); ?>
-								</a>
-							</div>
-							<div class="col-auto col-md-2"><?php echo esc_html( $results_checker->team->title ); ?></div>
-							<div class="col-auto col-sm-2">
-								<?php
-								if ( isset( $results_checker->player->display_name ) ) {
-									$player_link = '/clubs/' . seo_url( $results_checker->team->club->shortcode ) . '/players/' . seo_url( $results_checker->player->display_name ) . '/';
-									?>
-									<a href="<?php echo esc_attr( $player_link ); ?>">
-										<?php echo esc_html( $results_checker->player->display_name ); ?>
-									</a>
-									<?php
-								}
-								?>
-							</div>
-							<div class="col-12 col-md-3"><?php echo esc_html( $results_checker->description ); ?></div>
-							<?php
-							if ( 'outstanding' !== $results_check_filter ) {
-								?>
-								<div class="d-none d-md-block col-md-3 col-lg-6"></div>
-								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->status_desc ); ?></div>
-								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_date ); ?></div>
-								<div class="col-4 col-md-3 col-lg-2"><?php echo esc_html( $results_checker->updated_user_name ); ?></div>
-								<?php
-							}
-							?>
-						</div>
-						<?php
-					}
-				} else {
-					?>
-					<div class="col-auto my-3"><?php esc_html_e( 'No player checks found', 'racketmanager' ); ?></div>
-					<?php
-				}
-				?>
-			</div>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="check-column">
+                            <label class="visually-hidden" for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" />
+                        </th>
+                        <th class=""><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
+                        <th class=""><?php esc_html_e( 'Match', 'racketmanager' ); ?></th>
+                        <th class=""><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
+                        <th class=""><?php esc_html_e( 'Player', 'racketmanager' ); ?></th>
+                        <th class=""><?php esc_html_e( 'Description', 'racketmanager' ); ?></th>
+	                    <?php
+	                    if ( 'outstanding' !== $results_check_filter ) {
+		                    ?>
+                            <th class=""><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
+		                    <?php
+	                    }
+	                    ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    if ( $results_checkers ) {
+                        $class = '';
+                        foreach ( $results_checkers as $results_checker ) {
+                            $class = ( 'alternate' === $class ) ? '' : 'alternate';
+                            ?>
+                            <tr>
+                                <td class="check-column">
+                                    <label class="visually-hidden" for="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" id="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>" />
+                                </td>
+                                <td class=""><?php echo esc_html( mysql2date( 'Y-m-d', $results_checker->match->date ) ); ?></td>
+                                <td class="">
+                                    <a href="<?php echo esc_html( $results_checker->match->link ); ?>result/">
+                                        <?php echo esc_html( $results_checker->match->match_title ); ?>
+                                    </a>
+                                </td>
+                                <td class=""><?php echo esc_html( $results_checker->team->title ); ?></td>
+                                <td class="">
+                                    <?php
+                                    if ( isset( $results_checker->player->display_name ) ) {
+                                        $player_link = '/clubs/' . seo_url( $results_checker->team->club->shortcode ) . '/players/' . seo_url( $results_checker->player->display_name ) . '/';
+                                        ?>
+                                        <a href="<?php echo esc_attr( $player_link ); ?>">
+                                            <?php echo esc_html( $results_checker->player->display_name ); ?>
+                                        </a>
+                                        <?php
+                                    }
+                                    ?>
+                                </td>
+                                <td class=""><?php echo esc_html( $results_checker->description ); ?></td>
+                                <?php
+                                if ( 'outstanding' !== $results_check_filter ) {
+	                                $tooltip = $results_checker->updated_user_name . ' ' . __( 'on', 'racketmanager' ) . ' ' . $results_checker->updated_date;
+                                    ?>
+                                    <td data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="<?php echo esc_html( $tooltip ); ?>"><?php echo esc_html( $results_checker->status_desc ); ?></td>
+                                    <?php
+                                }
+                                ?>
+                            </tr>
+                            <?php
+                        }
+                    } else {
+                        ?>
+                        <div class="col-auto my-3"><?php esc_html_e( 'No player checks found', 'racketmanager' ); ?></div>
+                        <?php
+                    }
+                    ?>
+                </tbody>
+            </table>
 		</form>
 	</div>
 </div>

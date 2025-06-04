@@ -1,4 +1,5 @@
 jQuery(document).ready(function ($) {
+	$('[data-bs-toggle="tooltip"]').tooltip();
 	$('[data-bs-toggle="popover"]').popover({
 		placement: "left",
 		content: showPlayerClubs,

@@ -1934,8 +1934,8 @@ class RacketManager_Admin extends RacketManager {
 		} else {
 			$locked = sanitize_text_field( wp_unslash( $_POST['locked'] ) );
 		}
-		if ( ! isset( $_POST['year_of_birth'] ) || 0 === intval( $_POST['year_of_birth'] ) ) {
-			$year_of_birth = '';
+		if ( empty( $_POST['year_of_birth'] ) ) {
+			$year_of_birth = null;
 		} else {
 			$year_of_birth = intval( $_POST['year_of_birth'] );
 		}

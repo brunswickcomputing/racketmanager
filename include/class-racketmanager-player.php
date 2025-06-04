@@ -108,7 +108,7 @@ final class Racketmanager_Player {
 	/**
 	 * Year of birth.
 	 *
-	 * @var int
+	 * @var int|null
 	 */
 	public mixed $year_of_birth;
 	/**
@@ -677,11 +677,13 @@ final class Racketmanager_Player {
 	/**
 	 * Update player year of birth
 	 *
-	 * @param int $year_of_birth year of birth.
+	 * @param int|null $year_of_birth year of birth.
 	 * @return boolean
 	 */
-	public function update_year_of_birth( int $year_of_birth ): bool {
-		if ( intval( $this->year_of_birth ) !== $year_of_birth ) {
+	public function update_year_of_birth( ?int $year_of_birth ): bool {
+		if ( empty( $this->year_of_birth ) && empty( $year_of_birth ) ) {
+			return false;
+		} elseif ( intval( $this->year_of_birth ) !== $year_of_birth ) {
 			if ( empty( $this->year_of_birth ) ) {
 				$this->check_results_warning( 'dob' );
 			}

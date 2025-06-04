@@ -186,17 +186,18 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 	 * Display player page
 	 */
 	public function display_player_page(): void {
+		global $racketmanager;
 		if ( ! current_user_can( 'edit_teams' ) ) {
-			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-			$this->printMessage();
+			$racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+			$racketmanager->printMessage();
 		} else {
 			$player_id     = null;
 			$form_valid    = true;
 			$page_referrer = null;
 			if ( ! empty( $_POST ) ) {
 				if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
-					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-					$this->printMessage();
+					$racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+					$racketmanager->printMessage();
 				} else {
 					$page_referrer = $_POST['page_referrer'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					if ( isset( $_POST['updatePlayer'] ) ) {
@@ -211,7 +212,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 							$form_valid     = false;
 							$error_fields   = $player_valid[1];
 							$error_messages = $player_valid[2];
-							$this->set_message( __( 'Error with player details', 'racketmanager' ), true );
+							$racketmanager->set_message( __( 'Error with player details', 'racketmanager' ), true );
 						}
 					} elseif ( isset( $_POST['setWTN'] ) ) {
 						$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
@@ -223,22 +224,22 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 								$wtn         = $this->get_wtn( $player );
 								if ( $wtn ) {
 									$player->set_wtn( $wtn );
-									$this->set_message( __( 'WTN set', 'racketmanager' ) );
+									$racketmanager->set_message( __( 'WTN set', 'racketmanager' ) );
 								} else {
-									$this->set_message( __( 'WTN not found', 'racketmanager' ), true );
+									$racketmanager->set_message( __( 'WTN not found', 'racketmanager' ), true );
 								}
 							} else {
-								$this->set_message( __( 'Player not found', 'racketmanager' ), true );
+								$racketmanager->set_message( __( 'Player not found', 'racketmanager' ), true );
 							}
 						} else {
-							$this->set_message( __( 'No LTA Tennis number set', 'racketmanager' ), true );
+							$racketmanager->set_message( __( 'No LTA Tennis number set', 'racketmanager' ), true );
 						}
 					}
 				}
 			} else {
 				$page_referrer = wp_get_referer();
 			}
-			$this->printMessage();
+			$racketmanager->printMessage();
 			if ( isset( $_GET['club_id'] ) ) {
 				$club_id = intval( $_GET['club_id'] );
 				if ( $club_id ) {

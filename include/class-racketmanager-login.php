@@ -42,7 +42,6 @@ class RacketManager_Login {
 		add_action( 'login_form_resetpass', array( $this, 'redirect_to_custom_password_reset' ) );
 		add_action( 'login_form_rp', array( $this, 'do_password_reset' ) );
 		add_action( 'login_form_resetpass', array( $this, 'do_password_reset' ) );
-		add_action( 'member_account_update', array( $this, 'do_member_account_update' ) );
 		add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
 		add_filter( 'retrieve_password_message', array( $this, 'racketmanager_retrieve_password_email' ), 10, 4 );
 		add_filter( 'password_change_email', array( $this, 'racketmanager_password_change_email' ), 10, 3 );

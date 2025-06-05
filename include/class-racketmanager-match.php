@@ -1157,13 +1157,13 @@ final class Racketmanager_Match {
 	 *
 	 * @param float|null $home_points_input home points.
 	 * @param float|null $away_points_input away points.
-	 * @param array $custom custom.
+	 * @param array|null $custom custom.
 	 * @param string $confirmed match status field.
 	 * @param string|null $match_status match status.
 	 *
 	 * @return boolean
 	 */
-	public function update_result( ?float $home_points_input, ?float $away_points_input, array $custom, string $confirmed = 'Y', ?string $match_status = '' ): bool {
+	public function update_result( ?float $home_points_input, ?float $away_points_input, ?array $custom, string $confirmed = 'Y', ?string $match_status = '' ): bool {
 		$bye            = false;
 		$updated        = false;
 		$winning_points = $this->league->num_sets_to_win;
@@ -1242,62 +1242,68 @@ final class Racketmanager_Match {
 			unset( $this->custom['cancelled'] );
 			if ( 'league' === $this->league->event->competition->type ) {
 				$this->status = 0;
-				if ( 7 === intval( $match_status ) ) {
-					$custom['withdrawn'] = true;
-					$this->status        = 7;
+				if ( 7 === intval( $match_status ) || 8 === intval( $match_status ) ) {
+					if ( 7 === intval( $match_status ) ) {
+						$custom['withdrawn'] = true;
+					} else {
+						$custom['cancelled'] = true;
+					}
+					$this->status        = intval( $match_status );
 					$home_points         = 0;
 					$away_points         = 0;
-				} elseif ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
-					if ( $home_walkover === $this->num_rubbers ) {
-						$custom['walkover'] = 'away';
-					} else {
-						$custom['walkover'] = 'home';
-					}
-					$this->custom = array_merge( (array) $this->custom, $custom );
-					$this->status = 1;
-				} elseif ( $shared === $this->num_rubbers ) {
-					$custom['share'] = 'true';
-					$this->custom    = array_merge( (array) $this->custom, $custom );
-					$this->status    = 3;
-				} elseif ( 6 === intval( $match_status ) ) {
-					$custom['abandoned'] = true;
-					$this->status        = 6;
-					$this->is_abandoned  = true;
-				} elseif ( 8 === intval( $match_status ) ) {
-					$custom['cancelled'] = true;
-					$this->status        = 8;
-				}
-				$point_rule          = $this->league->get_point_rule();
-				$rubber_win          = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
-				$rubber_draw         = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
-				$matches_win         = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
-				$matches_draw        = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
-				$shared_match        = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
-				$forwalkover_rubber  = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
-				$walkover_penalty    = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
-				if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
-					if ( 1 === $this->status ) {
-						$home_points = $home_win * $rubber_win - $forwalkover_rubber * $home_walkover - $walkover_penalty * $home_walkover;
-						$away_points = $away_win * $rubber_win - $forwalkover_rubber * $away_walkover - $walkover_penalty * $away_walkover;
-					} elseif ( 3 === $this->status ) {
-						$home_points = $shared_match * $this->num_rubbers;
-						$away_points = $shared_match * $this->num_rubbers;
-					} else {
-						$home_points = $home_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $home_walkover;
-						$away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
-					}
 				} else {
-					if ( $home_win > $away_win ) {
-						$home_points += $matches_win;
-					} elseif ( $home_win < $away_win ) {
-						$away_points += $matches_win;
-					} else {
-						$home_points += $matches_draw;
-						$away_points += $matches_draw;
+					if ( $home_walkover === $this->num_rubbers || $away_walkover === $this->num_rubbers ) {
+						if ( $home_walkover === $this->num_rubbers ) {
+							$custom['walkover'] = 'away';
+						} else {
+							$custom['walkover'] = 'home';
+						}
+						$this->custom = array_merge( (array) $this->custom, $custom );
+						$this->status = 1;
+					} elseif ( $shared === $this->num_rubbers ) {
+						$custom['share'] = 'true';
+						$this->custom    = array_merge( (array) $this->custom, $custom );
+						$this->status    = 3;
+					} elseif ( 6 === intval( $match_status ) ) {
+						$custom['abandoned'] = true;
+						$this->status        = 6;
+						$this->is_abandoned  = true;
+					} elseif ( 8 === intval( $match_status ) ) {
+						$custom['cancelled'] = true;
+						$this->status        = 8;
 					}
-					if ( 1 === $this->status ) {
-						$home_points -= $walkover_penalty * $home_walkover;
-						$away_points -= $walkover_penalty * $away_walkover;
+					$point_rule          = $this->league->get_point_rule();
+					$rubber_win          = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
+					$rubber_draw         = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
+					$matches_win         = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
+					$matches_draw        = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
+					$shared_match        = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
+					$forwalkover_rubber  = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
+					$walkover_penalty    = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
+					if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
+						if ( 1 === $this->status ) {
+							$home_points = $home_win * $rubber_win - $forwalkover_rubber * $home_walkover - $walkover_penalty * $home_walkover;
+							$away_points = $away_win * $rubber_win - $forwalkover_rubber * $away_walkover - $walkover_penalty * $away_walkover;
+						} elseif ( 3 === $this->status ) {
+							$home_points = $shared_match * $this->num_rubbers;
+							$away_points = $shared_match * $this->num_rubbers;
+						} else {
+							$home_points = $home_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $home_walkover;
+							$away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
+						}
+					} else {
+						if ( $home_win > $away_win ) {
+							$home_points += $matches_win;
+						} elseif ( $home_win < $away_win ) {
+							$away_points += $matches_win;
+						} else {
+							$home_points += $matches_draw;
+							$away_points += $matches_draw;
+						}
+						if ( 1 === $this->status ) {
+							$home_points -= $walkover_penalty * $home_walkover;
+							$away_points -= $walkover_penalty * $away_walkover;
+						}
 					}
 				}
 			} else {

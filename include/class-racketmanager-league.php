@@ -883,7 +883,7 @@ class Racketmanager_League {
 					$match_confirmed = 'Y';
 					$home_team_score = 0;
 					$away_team_score = 0;
-					$status          = Racketmanager_Util::get_match_status_code( 'withdrawn' );
+					$status          = Racketmanager_Util::get_match_status_code( 'cancelled' );
 					$match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
 				}
 			}

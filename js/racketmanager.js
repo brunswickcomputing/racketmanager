@@ -1910,7 +1910,7 @@ Racketmanager.partnerModal = function (event, event_id) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status === '401') {
+				if (response.status === 401) {
 					let output = response.responseJSON.data[1];
 					jQuery(notifyField).html(output);
 				} else {
@@ -2233,7 +2233,7 @@ Racketmanager.confirmTournamentWithdraw = function () {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status === '401') {
+				if (response.status === 401) {
 					let output = response.responseJSON.data[1];
 					jQuery(alertResponseField).html(output);
 				} else {
@@ -2334,7 +2334,7 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam=false ) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status === '401') {
+				if (response.status === 401) {
 					let message = response.responseJSON.data[0];
 					if (response.responseJSON.data[1]) {
 						let errorMsg = response.responseJSON.data[1];

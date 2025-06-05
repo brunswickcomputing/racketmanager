@@ -28,7 +28,7 @@ namespace Racketmanager;
 																		<?php echo esc_html( $competition_name ); ?>
 																	</h1>
 																	<h2 style="font-size: 20px; font-weight: 700; line-height: 1.25; margin: 0;" align="center">
-																		echo esc_html( $match->get_title() ); ?>
+																		<?php echo esc_html( $match->get_title() ); ?>
 																	</h2>
 																</div>
 															</td>

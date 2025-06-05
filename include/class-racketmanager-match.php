@@ -1268,9 +1268,6 @@ final class Racketmanager_Match {
 						$custom['abandoned'] = true;
 						$this->status        = 6;
 						$this->is_abandoned  = true;
-					} elseif ( 8 === intval( $match_status ) ) {
-						$custom['cancelled'] = true;
-						$this->status        = 8;
 					}
 					$point_rule          = $this->league->get_point_rule();
 					$rubber_win          = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;

@@ -213,7 +213,7 @@ $msg        = null;
 	</div>
 	<div class="row mb-3">
 		<?php
-		if ( ! empty( $charges->id ) ) {
+		if ( ! empty( $charges->id ) && $charges->competition->is_team_entry ) {
 			?>
 			<h2><?php esc_html_e( 'Club charges', 'racketmanager' ); ?></h2>
 			<?php

@@ -828,6 +828,12 @@ class RacketManager_Rewrites {
 			'index.php?pagename=tournaments%2Ftournament%2Fmatch&tournament=$matches[1]&league_name=$matches[2]&teamHome=$matches[3]&teamAway=$matches[4]&match_id=$matches[5]',
 			'top'
 		);
+		// tournament - match - gibberish.
+		add_rewrite_rule(
+			'tournament/(.+?)/match/(.+?)/(.+?)/?$',
+			'index.php?pagename=tournaments%2Ftournament%2Fmatch&tournament=$matches[1]&match_id=$matches[2]',
+			'top'
+		);
 		// tournament - match.
 		add_rewrite_rule(
 			'tournament/(.+?)/match/(.+?)/?$',

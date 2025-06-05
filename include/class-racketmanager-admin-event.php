@@ -137,11 +137,19 @@ final class RacketManager_Admin_Event extends RacketManager_Admin {
 							history.pushState('', '', url.toString());
 							</script>
 							<?php
-							$event_season['name']           = $competition->current_season['name'];
-							$event_season['home_away']      = $competition->current_season['home_away'];
-							$event_season['num_match_days'] = $competition->current_season['num_match_days'];
-							$event_season['match_dates']    = $competition->current_season['match_dates'];
-							$event->add_season( $event_season );
+                            $add_season = false;
+                            foreach ( $competition->seasons as $competition_season ) {
+                                if ( $competition_season['name'] === $competition->current_season['name'] ) {
+                                    $add_season = true;
+                                }
+                                if ( $add_season ) {
+	                                $event_season['name']           = $competition_season['name'];
+	                                $event_season['home_away']      = $competition_season['home_away'];
+	                                $event_season['num_match_days'] = $competition_season['num_match_days'];
+	                                $event_season['match_dates']    = $competition_season['match_dates'];
+	                                $event->add_season( $event_season );
+                                }
+                            }
 							$league_id = $event->add_league( $event->name );
 							if ( $league_id ) {
 								if ( $competition->is_championship ) {

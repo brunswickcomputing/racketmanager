@@ -98,6 +98,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_team_edit_modal', array( &$this, 'show_team_edit_modal' ) );
 		add_action( 'wp_ajax_racketmanager_get_event_team_match_dropdown', array( &$this, 'get_event_team_match_dropdown' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_get_event_team_match_dropdown', array( &$this, 'get_event_team_match_dropdown' ) );
+		add_action( 'wp_ajax_racketmanager_update_account', array( &$this, 'update_account' ) );
+		add_action( 'wp_ajax_nopriv_racketmanager_update_account', array( &$this, 'login' ) );
 	}
 	/**
 	 * Add item as favourite
@@ -3245,4 +3247,38 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
 	}
+    public function update_account(): void {
+	    $return    = $this->check_security_token( 'racketmanager_nonce', 'member_account' );
+	    if ( empty( $return->error ) ) {
+		    $current_user               = wp_get_current_user();
+		    $user                       = get_user( $current_user->ID );
+		    $user_update                = clone $user;
+		    $user_update->email         = isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : null;
+		    $user_update->firstname     = isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : null;
+		    $user_update->surname       = isset( $_POST['lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['lastname'] ) ) : null;
+		    $user_update->contactno     = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
+		    $user_update->gender        = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+		    $user_update->btm           = empty( $_POST['btm'] ) ? null : intval( $_POST['btm'] );
+		    $user_update->year_of_birth = empty( $_POST['year_of_birth'] ) ? null : intval( $_POST['year_of_birth'] );
+		    $user_update->password      = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : null;
+		    $user_update->re_password   = isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : null;
+		    $user_update->opt_ins       = isset( $_POST['opt_in'] ) ? wp_unslash( $_POST['opt_in'] ) : array();
+		    $user                       = $user->update( $user_update );
+            if ( empty( $user->err_flds ) ) {
+                $return->msg   = $user->message;
+                $return->class = $user->update_result;
+            } else {
+	            $return->msg      = $user->message;
+	            $return->err_flds = $user->err_flds;
+	            $return->err_msgs = $user->err_msgs;
+                $return->error = true;
+                $return->status = 401;
+            }
+	    }
+	    if ( empty( $return->error ) ) {
+		    wp_send_json_success( $return );
+	    } else {
+		    wp_send_json_error( $return, $return->status );
+	    }
+    }
 }

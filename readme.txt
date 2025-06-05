@@ -47,6 +47,11 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.2.0 =
+* BUGFIX: check status using correct type
+* BUGFIX: handle login errors correctly
+* UPDATE: handle account updates using ajax
+
 = 9.1.1 =
 * BUGFIX: capture match_id as separate item
 * BUGFIX: convert match_id to int

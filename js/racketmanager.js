@@ -2148,7 +2148,7 @@ Racketmanager.login = function (e) {
 	e.preventDefault();
 	let	notifyField = "#login";
 	jQuery(notifyField).css('opacity', 0.25);
-	let alertResponseField = 'loginAlertResponse';
+	let alertResponseField = '#loginAlertResponse';
 	let alertField = '#loginAlert';
 	jQuery(alertField).hide();
 	jQuery(alertResponseField).html();
@@ -2171,11 +2171,13 @@ Racketmanager.login = function (e) {
 		},
 		error: function (response) {
 			if (response.responseJSON) {
-				if (response.status === '401') {
-					let message = response.responseJSON.data[0];
-					if (response.responseJSON.data[1]) {
-						let errorMsg = response.responseJSON.data[1];
-						let errorField = response.responseJSON.data[2];
+				let data = response.responseJSON.data;
+				if (response.status === 401) {
+					let message = data[0];
+					jQuery(alertResponseField).html(message);
+					if (data[1]) {
+						let errorMsg = data[1];
+						let errorField = data[2];
 						for (let $i = 0; $i < errorField.length; $i++) {
 							let formField = "#" + errorField[$i];
 							jQuery(formField).addClass('is-invalid');
@@ -2183,15 +2185,15 @@ Racketmanager.login = function (e) {
 							jQuery(formField).html(errorMsg[$i]);
 						}
 					}
-					jQuery(alertResponseField).html(message);
 				} else {
-					let message = response.responseJSON.data;
+					let message = data;
 					jQuery(alertResponseField).html(message);
 				}
 			} else {
 				jQuery(alertResponseField).text(response.statusText);
 			}
 			jQuery(alertField).addClass('alert--danger');
+			jQuery(alertField).show();
 		},
 		complete: function () {
 			jQuery(notifyField).css('opacity', 1);

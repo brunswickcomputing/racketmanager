@@ -64,7 +64,7 @@ if ( ! empty( $league->player ) ) {
 		<div class="module__content">
 			<div class="module-container">
 				<?php
-				if ( $league->players ) {
+				if ( ! empty( $league->players ) ) {
 					?>
 					<ol class="list list--bordered list--count">
 						<?php

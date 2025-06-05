@@ -33,15 +33,15 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Error messages.
 	 *
-	 * @var array $error_messages
+	 * @var array|null $error_messages
 	 */
-    public array $error_messages;
+    public ?array $error_messages;
 	/**
 	 * Error fields.
 	 *
-	 * @var array $error_messages
+	 * @var array|null $error_messages
 	 */
-    public array $error_fields;
+    public ?array $error_fields;
 	/**
 	 * Constructor
 	 */

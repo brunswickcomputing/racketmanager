@@ -645,7 +645,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$tournament = get_tournament( $tournament, 'name' );
 		// Get Match ID from shortcode or $_GET.
 		if ( ! $match_id ) {
-			$match_id = get_query_var( 'match_id' );
+			$match_id = intval( get_query_var( 'match_id' ) );
 		}
 		if ( $match_id ) {
 			$match = get_match( $match_id );

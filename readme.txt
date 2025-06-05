@@ -47,6 +47,13 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.1.1 =
+* BUGFIX: capture match_id as separate item
+* BUGFIX: convert match_id to int
+* BUGFIX: handle no players
+* BUGFIX: handle player not found
+* BUGFIX: show match title correctly
+
 = 9.1.0 =
 * BUGFIX: use correct data type
 * BUGFIX: tournament entry key can be int or string

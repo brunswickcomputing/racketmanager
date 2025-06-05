@@ -32,9 +32,9 @@ class Racketmanager_Event {
 	/**
 	 * Seasons data
 	 *
-	 * @var array|string
+	 * @var string|array|null
 	 */
-	public string|array $seasons = array();
+	public string|array|null $seasons = array();
 
 	/**
 	 * Number of seasons
@@ -215,9 +215,9 @@ class Racketmanager_Event {
 	/**
 	 * Settings keys
 	 *
-	 * @var string|array
+	 * @var string|array|null
 	 */
-	public string|array $settings_keys = '';
+	public string|array|null $settings_keys = '';
 
 	/**
 	 * Constitutions
@@ -237,7 +237,7 @@ class Racketmanager_Event {
 	 *
 	 * @var string|array
 	 */
-	public string|array $settings;
+	public string|array $settings = array();
 	/**
 	 * Groups
 	 *
@@ -477,6 +477,8 @@ class Racketmanager_Event {
 			$event->settings      = (array) maybe_unserialize( $event->settings );
 			$event->settings_keys = array_keys($event->settings);
 			$event                = (object) array_merge( (array) $event, $event->settings );
+		} else {
+			$event->settings = array();
 		}
 
 		foreach ( get_object_vars( $event ) as $key => $value ) {

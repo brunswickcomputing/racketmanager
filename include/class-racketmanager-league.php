@@ -649,9 +649,11 @@ class Racketmanager_League {
 	 */
 	public function __construct( object $league ) {
 		if ( isset( $league->settings ) ) {
-			$league->settings      = (array) maybe_unserialize( $league->settings );
-			$league                = (object) array_merge( (array) $league, $league->settings );
-		}
+			$league->settings = (array) maybe_unserialize( $league->settings );
+			$league           = (object) array_merge( (array) $league, $league->settings );
+		} else {
+            $league->settings = array();
+        }
 
 		foreach ( get_object_vars( $league ) as $key => $value ) {
 			if ( 'standings' === $key ) {

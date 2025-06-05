@@ -833,7 +833,8 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 				$player->stats   = $player->get_stats();
 				$league->player  = $player;
 			} else {
-				esc_html_e( 'Player not found', 'racketmanager' );
+				$msg = __( 'Player not found', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
 		} else {
 			$league->players = $league->get_players(

@@ -490,7 +490,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		$matches        = array();
 		// Get Match ID from shortcode or $_GET.
 		if ( ! $match_id ) {
-			$match_id = get_query_var( 'match_id' );
+			$match_id = intval( get_query_var( 'match_id' ) );
 		}
 		if ( ! $match_id ) {
 			$league_name = un_seo_url( get_query_var( 'league_name' ) );

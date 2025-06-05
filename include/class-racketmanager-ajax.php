@@ -1319,15 +1319,19 @@ class Racketmanager_Ajax {
 		ob_end_clean();
 		return $output;
 	}
+
 	/**
-     * Check security token
-     *
+	 * Check security token
+	 *
+	 * @param string $nonce nonce name.
+	 * @param string $nonce_action nonce action.
+	 *
 	 * @return stdClass
 	 */
-	protected function check_security_token(): stdClass {
+	protected function check_security_token( string $nonce = 'security', string $nonce_action = 'ajax-nonce' ): stdClass {
 		$return = new stdClass();
-		if ( isset( $_REQUEST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['security'] ) ), 'ajax-nonce' ) ) {
+		if ( isset( $_REQUEST[ $nonce ] ) ) {
+			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ $nonce ] ) ), $nonce_action ) ) {
 				$return->error  = true;
 				$return->msg    = __( 'Security token invalid', 'racketmanager' );
                 $return->status = 403;

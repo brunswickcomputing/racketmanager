@@ -878,7 +878,7 @@ class Racketmanager_League {
 		foreach ( $matches as $match ) {
 			$match = get_match( $match );
 			if ( $match ) {
-				$status = Racketmanager_Util::get_match_status( $match->status );
+				$status = empty( $match->status ) ? null : Racketmanager_Util::get_match_status( $match->status );
 				if ( 'Withdrawn' !== $status ) {
 					$match_confirmed = 'Y';
 					$home_team_score = 0;

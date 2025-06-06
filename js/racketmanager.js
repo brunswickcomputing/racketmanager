@@ -2281,7 +2281,7 @@ Racketmanager.showTeamOrderPlayers = function (e) {
 								 );
 	}
 }
-Racketmanager.validateTeamOrder = function( e, link, setTeam=false ) {
+Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 	e.preventDefault();
 	let loadingField = '#team-order-details';
 	jQuery(loadingField).addClass('is-loading');
@@ -2375,17 +2375,17 @@ Racketmanager.get_event_team_match_dropdown = function (teamId) {
 		let action = 'racketmanager_get_event_team_match_dropdown';
 		jQuery(notifyField).html("");
 		jQuery(notifyField).load(
-								 ajax_var.url,
-								 {
-									 "eventId": eventId,
-									 "teamId": teamId,
-									 "action": action,
-									 "security": ajax_var.ajax_nonce,
-								 },
-								 function () {
-									 jQuery(notifyField).show();
-								 }
-								 );
+			ajax_var.url,
+			{
+				"eventId": eventId,
+				"teamId": teamId,
+				"action": action,
+				"security": ajax_var.ajax_nonce,
+			},
+			function () {
+				jQuery(notifyField).show();
+			}
+		);
 	}
 }
 Racketmanager.teamEditModal = function (event, teamId, eventId) {

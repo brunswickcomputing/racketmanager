@@ -517,12 +517,14 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 			}
 			if ( isset( $_POST['actionSchedule'] ) ) {
 				if ( 'schedule' === $_POST['actionSchedule'] ) {
-					if ( isset( $_POST['event'] ) ) {
-						$this->scheduleLeagueMatches( $_POST['event'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$events = sanitize_text_field( $_POST['event'] ) ?? array();
+					if ( $events ) {
+						$this->schedule_league_matches( $events );
 					}
 				} elseif ( 'delete' === $_POST['actionSchedule'] ) {
-					if ( isset( $_POST['event'] ) ) {
-						foreach ( $_POST['event'] as $event_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					$events = sanitize_text_field( $_POST['event'] ) ?? array();
+					if ( $events ) {
+						foreach ( $events as $event_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$this->delete_event_matches( $event_id );
 						}
 					}

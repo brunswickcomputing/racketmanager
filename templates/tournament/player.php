@@ -122,7 +122,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 										<div class="col-5" name="<?php esc_html_e( 'Partner', 'racketmanager' ); ?>">
 											<?php
 											if ( ! empty( $entry->partner ) ) {
-												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( $entry->partner->display_name ) . '/';
+												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( $entry->partner->display_name ) . '/';
 												?>
 												<a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $entry->partner->id ); ?>" data-link-type="players">
 													<?php echo esc_html( wp_unslash( $entry->partner->display_name ) ); ?>

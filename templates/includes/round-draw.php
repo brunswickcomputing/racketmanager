@@ -122,7 +122,7 @@ foreach ( $final->matches as $match ) {
 											<?php
 											if ( ! empty( $tournament ) ) {
 												?>
-												<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( trim( $player ) ) ); ?>">
+												<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_html( seo_url( trim( $player ) ) ); ?>">
 												<?php
 											}
 											?>

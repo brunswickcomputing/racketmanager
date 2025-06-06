@@ -14,7 +14,7 @@ if ( -1 === $team->id && $match->league->event->competition->is_player_entry ) {
 } elseif ( empty( $team->player ) ) {
 	if ( ! empty( $tournament ) ) {
 		?>
-			<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/players/<?php echo esc_html( seo_url( $team->title ) ); ?>">
+			<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_html( seo_url( $team->title ) ); ?>">
 			<?php
 	}
 	$team_name = match ( substr( $match->league->event->type, 0, 1 ) ) {

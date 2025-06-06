@@ -130,7 +130,7 @@ if ( empty( $event ) ) {
 								<?php
 								if ( ! empty( $entry->players ) ) {
 									foreach ( $entry->players as $player ) {
-										$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( $player->display_name ) . '/';
+										$player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( $player->display_name ) . '/';
 										?>
 										<div class="team-player">
 											<a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">

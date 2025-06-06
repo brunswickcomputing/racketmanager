@@ -866,7 +866,7 @@ class RacketManager_Rewrites {
 		);
 		// tournament - name - player.
 		add_rewrite_rule(
-			'tournament/(.+?)/players/(.+?)/?$',
+			'tournament/(.+?)/player/(.+?)/?$',
 			'index.php?pagename=tournaments%2Ftournament&tournament=$matches[1]&player=$matches[2]&tab=players',
 			'top'
 		);

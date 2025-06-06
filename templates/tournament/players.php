@@ -13,7 +13,7 @@ namespace Racketmanager;
 	if ( empty( $tournament_player ) ) {
 		if ( ! empty( $tournament->players ) ) {
 			$player_list = $tournament->players;
-			$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/';
+			$player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/';
 			require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 		}
 	} else {

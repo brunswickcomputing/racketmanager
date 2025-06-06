@@ -156,7 +156,7 @@ if ( ! empty( $match->winner_id ) ) {
 										<div class="match__row-title-value">
 											<?php
 											if ( ! empty( $tournament ) ) {
-												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/players/' . seo_url( trim( $team_player->display_name ) ) . '/';
+												$player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( trim( $team_player->display_name ) ) . '/';
 												?>
 												<a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $team_player->id ); ?>" data-link-type="players">
 												<?php

@@ -105,16 +105,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Add item as favourite
 	 */
 	public function add_favourite(): void {
-		$return = new stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
+		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$type            = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '';
 			$id              = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : '';

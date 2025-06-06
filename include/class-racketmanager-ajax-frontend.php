@@ -2471,6 +2471,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					if ( $target ) {
 						$tab = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;
 						if ( $tab ) {
+                            $valid_tabs = array( 'clubs', 'draws', 'events', 'matches', 'players', 'teams', 'standings' );
+                            $tab_pos    = array_search( $tab, $valid_tabs, true );
+                            if ( $tab_pos !== false ) {
+                                $tab_name = $valid_tabs[ $tab_pos ];
+                            } else {
+                                $tab_name = null;
+                            }
 							$args    = array();
 							$link_id = isset( $_POST['link_id'] ) ? sanitize_text_field( wp_unslash( $_POST['link_id'] ) ) : null;
 							if ( ! is_null( $link_id ) ) {
@@ -2480,7 +2487,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							if ( $season ) {
 								$args['season'] = $season;
 							}
-							$function_name = 'Racketmanager\racketmanager_' . $target_name . '_' . $tab;
+							$function_name = 'Racketmanager\racketmanager_' . $target_name . '_' . $tab_name;
 							if ( function_exists( $function_name ) ) {
 								ob_start();
 								$function_name( $target->id, $args );

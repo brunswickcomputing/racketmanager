@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 /** @var string $organisation */
 /** @var int    $time_period */
-global $match;
+/** @var object $match */
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
 $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;

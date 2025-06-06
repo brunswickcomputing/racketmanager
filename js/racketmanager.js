@@ -2255,6 +2255,8 @@ Racketmanager.confirmTournamentWithdraw = function () {
 };
 Racketmanager.showTeamOrderPlayers = function (e) {
 	e.preventDefault();
+	let alertField = "#teamOrderAlert";
+	jQuery(alertField).hide();
 	let eventId = jQuery('#event_id').val();
 	let clubId = jQuery('#club_id').val();
 	if (clubId && eventId) {

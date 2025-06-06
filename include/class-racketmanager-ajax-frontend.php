@@ -2797,9 +2797,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				} else {
 					$user   = wp_get_current_user();
 					$userid = $user->ID;
-					if ( $club->matchsecretary === $userid ) {
-						$user_can_update = true;
-					} elseif ( $club->is_player_captain( $userid ) ) {
+					if ( $club->matchsecretary === $userid || $club->is_player_captain( $userid ) ) {
 						$user_can_update = true;
 					}
 				}

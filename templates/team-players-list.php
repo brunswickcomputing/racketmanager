@@ -114,7 +114,7 @@ namespace Racketmanager;
 													}
 													?>
 												</select>
-                                                <label class="visually-hidden" for="<?php echo esc_attr( $player_id_link ); ?>"></label>
+                                                <label class="visually-hidden" for="<?php echo esc_attr( $player_id_link ); ?>"><?php echo esc_html( sprintf( __( 'Player %s for rubber %s', 'racketmanager' ), $player_number, $i ) ); ?></label>
 												<div id="<?php echo esc_attr( $player_id_link ); ?>Feedback" class="invalid-feedback"></div>
 											</span>
 										</span>
@@ -129,7 +129,7 @@ namespace Racketmanager;
 					</div>
 					<div class="match__result">
 						<div class="wtn-rating">
-                            <label for="wtn_<?php echo esc_html( $i ); ?>"></label><input class="form-control" type="text" readonly id="wtn_<?php echo esc_html( $i ); ?>" name="wtn[<?php echo esc_html( $i ); ?>]" value="" />
+                            <label class="visually-hidden" for="wtn_<?php echo esc_html( $i ); ?>"><?php echo esc_html( sprintf( __( 'combined WTN for rubber %s', 'racketmanager' ), $i ) ) ?></label><input class="form-control" type="text" readonly id="wtn_<?php echo esc_html( $i ); ?>" name="wtn[<?php echo esc_html( $i ); ?>]" tabindex=-999 value="" />
 						</div>
 					</div>
 				</div>

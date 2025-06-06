@@ -115,7 +115,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$return->error = true;
 			$return->msg   = __( 'No security token found in request', 'racketmanager' );
 		}
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$type            = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '';
 			$id              = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : '';
 			$userid          = get_current_user_id();
@@ -132,10 +132,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->action = 'del';
 			}
 		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
+		if ( empty( $return->error ) ) {
 			wp_send_json_success( $return );
+		} else {
+			wp_send_json_error( $return->msg, 500 );
 		}
 	}
 	/**
@@ -624,7 +624,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 */
 	public function update_payment(): void {
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$payment_reference = isset( $_POST['paymentReference'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentReference'] ) ) : null;
 			$payment_status    = isset( $_post['paymentStatus'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentStatus'] ) ) : null;
 			$stripe = new Racketmanager_Stripe();
@@ -639,7 +639,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	public function get_team_event_info(): void {
         $team_info = null;
 		$return    = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$team_info = new stdClass();
 			$team_id   = isset( $_POST['team'] ) ? sanitize_text_field( wp_unslash( $_POST['team'] ) ) : '';
 			$event_id  = isset( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : '';
@@ -656,10 +656,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$team_info->message    = __( 'Team information updated', 'racketmanager' );
 			}
 		}
-		if ( ! isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, '500' );
-		} else {
+		if ( empty( $return->error ) ) {
 			wp_send_json_success( $team_info );
+		} else {
+			wp_send_json_error( $return->msg, '500' );
 		}
 	}
 	/**
@@ -1028,7 +1028,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	#[NoReturn] public function match_status(): void {
         $output = null;
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$match    = get_match( $match_id );
@@ -1213,7 +1213,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->status = 404;
 			}
 		}
-		if ( isset( $return->error ) ) {
+		if ( ! empty( $return->error ) ) {
 			$output = $this->modal_error( $return->msg );
 			status_header( $return->status );
 		}
@@ -1307,7 +1307,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	#[NoReturn] public function match_rubber_status(): void {
         $output = null;
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : 0;
 			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$rubber    = get_rubber( $rubber_id );
@@ -1466,7 +1466,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->status = 404;
 			}
 		}
-		if ( ! isset( $return->error ) ) {
+		if ( ! empty( $return->error ) ) {
 			$output = $this->modal_error( $return->msg );
 			status_header( $return->status );
 		}
@@ -1655,7 +1655,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $output      = null;
         $message_dtl = null;
 		$return      = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
 			if ( ! $message_id ) {
 				$return->error = true;
@@ -1715,13 +1715,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 			}
 		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
+		if ( empty( $return->error ) ) {
 			$return           = array();
 			$return['output'] = $output;
 			$return['status'] = $message_dtl->status;
 			wp_send_json_success( $return );
+		} else {
+			wp_send_json_error( $return->msg, 500 );
 		}
 	}
 	/**
@@ -1731,7 +1731,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$output  = null;
 		$success = null;
 		$return  = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
 			if ( ! $message_id ) {
 				$return->error = true;
@@ -1765,13 +1765,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 			}
 		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
+		if ( empty( $return->error ) ) {
 			$return            = array();
 			$return['output']  = $output;
 			$return['success'] = $success;
 			wp_send_json_success( $return );
+		} else {
+			wp_send_json_error( $return->msg, 500 );
 		}
 	}
 	/**
@@ -2245,7 +2245,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	#[NoReturn] public function search_players(): void {
         $search_results = null;
 		$return         = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$search_string = isset( $_GET['search_string'] ) ? sanitize_text_field( wp_unslash( $_GET['search_string'] ) ) : null;
 			if ( $search_string ) {
 				$search_results = racketmanager_player_search( $search_string );
@@ -2254,7 +2254,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Search string not supplied', 'racketmanager' );
 			}
 		}
-		if ( ! isset( $return->error ) ) {
+		if (empty( $return->error ) ) {
 			echo $search_results; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		} else {
 			ob_start();
@@ -2280,7 +2280,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $output         = null;
         $partner_gender = null;
 		$return         = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$event_id  = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
 			$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
 			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
@@ -2370,10 +2370,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Event not found', 'racketmanager' );
 			}
 		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
+		if ( empty( $return->error ) ) {
 			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $return->msg, 500 );
 		}
 	}
 	/**
@@ -2447,7 +2447,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $target = null;
         $output = null;
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$target_ref = isset( $_POST['target'] ) ? sanitize_text_field( wp_unslash( $_POST['target'] ) ) : null;
 			if ( $target_ref ) {
 				$target_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -2468,7 +2468,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$return->error = true;
 						$return->msg   = __( 'Invalid target', 'racketmanager' );
 				}
-				if ( ! isset( $return->error ) ) {
+				if ( empty( $return->error ) ) {
 					if ( $target ) {
 						$tab = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;
 						if ( $tab ) {
@@ -2505,10 +2505,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Target ref not found', 'racketmanager' );
 			}
 		}
-		if ( isset( $return->error ) ) {
-			echo esc_html( $return->msg );
-		} else {
+		if ( empty( $return->error ) ) {
 			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		} else {
+			echo esc_html( $return->msg );
 		}
 		wp_die();
 	}
@@ -2568,7 +2568,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	#[NoReturn] public function tournament_withdrawal(): void {
         $output = null;
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			if ( $tournament_id ) {
@@ -2652,7 +2652,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Tournament id not found', 'racketmanager' );
 			}
 		}
-		if ( isset( $return->error ) ) {
+		if ( ! empty( $return->error ) ) {
 			$output = $return->msg;
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -2666,7 +2666,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	public function confirm_tournament_withdrawal(): void {
         $output = null;
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
 			if ( $tournament_id ) {
 				$tournament = get_tournament( $tournament_id );
@@ -2692,10 +2692,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Tournament id not found', 'racketmanager' );
 			}
 		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
+		if ( empty( $return->error ) ) {
 			wp_send_json_success( $output );
+		} else {
+			wp_send_json_error( $return->msg, 500 );
 		}
 	}
 	/**
@@ -2754,7 +2754,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $event  = null;
         $teams  = null;
 		$return = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$club_id  = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : null;
 			$event_id = isset( $_POST['eventId'] ) ? sanitize_text_field( wp_unslash( $_POST['eventId'] ) ) : null;
 			if ( $club_id ) {
@@ -2783,7 +2783,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Event id not supplied', 'racketmanager' );
 			}
 		}
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$user_can_update = false;
 			if ( is_user_logged_in() ) {
 				if ( current_user_can( 'manage_racketmanager' ) ) {
@@ -3046,7 +3046,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $team       = null;
         $modal      = null;
 		$return  = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
@@ -3083,7 +3083,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->status = 404;
 			}
 		}
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$matchdays = Racketmanager_Util::get_weekdays();
 			ob_start();
 			?>
@@ -3194,7 +3194,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $team    = null;
         $event   = null;
 		$return  = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
 			if ( $team_id ) {
@@ -3218,7 +3218,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Event id not supplied', 'racketmanager' );
 			}
 		}
-		if ( ! isset( $return->error ) ) {
+		if ( empty( $return->error ) ) {
 			$match_args = array();
 			$match_args['season']  = $event->current_season['name'];
 			$match_args['team_id'] = $team->id;
@@ -3264,12 +3264,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		    $user_update->re_password   = isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : null;
 		    $user_update->opt_ins       = isset( $_POST['opt_in'] ) ? wp_unslash( $_POST['opt_in'] ) : array();
 		    $user                       = $user->update( $user_update );
-            if ( empty( $user->err_flds ) ) {
-                $return->msg   = $user->message;
-                $return->class = $user->update_result;
+		    $return->msg                = $user->message;
+		    if ( empty( $user->err_flds ) ) {
+			    $return->class = $user->update_result;
             } else {
-	            $return->msg      = $user->message;
-	            $return->err_flds = $user->err_flds;
+			    $return->err_flds = $user->err_flds;
 	            $return->err_msgs = $user->err_msgs;
                 $return->error = true;
                 $return->status = 401;

@@ -324,7 +324,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 * @see templates/email/match-notification.php
 	 */
 	public function notify_teams_fixture(): void {
-		global $match;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$message_sent = false;

@@ -2878,7 +2878,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$return   = array();
         $team_id  = null;
         $match_id = null;
-        $set_team = null;
+        $set_team = false;
         $rubber   = null;
         $event    = null;
 		if ( isset( $_POST['security'] ) ) {
@@ -2898,7 +2898,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
 			$match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
-			$set_team = isset( $_POST['setTeam'] ) ? sanitize_text_field( wp_unslash( $_POST['setTeam'] ) ) : null;
+			$set_team = empty( $_POST['setTeam'] ) ? false : sanitize_text_field( wp_unslash( $_POST['setTeam'] ) );
 			if ( $club_id ) {
 				$club = get_club( $club_id );
 				if ( ! $club ) {

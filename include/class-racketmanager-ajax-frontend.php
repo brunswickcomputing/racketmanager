@@ -2447,18 +2447,23 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$target_id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				switch ( $target_ref ) {
 					case 'competition':
-						$target = get_competition( $target_id );
+						$target      = get_competition( $target_id );
+                        $target_name = 'competition';
 						break;
 					case 'event':
-						$target = get_event( $target_id );
+						$target      = get_event( $target_id );
+						$target_name = 'event';
 						break;
 					case 'league':
-						$target = get_league( $target_id );
+						$target      = get_league( $target_id );
+						$target_name = 'league';
 						break;
 					case 'tournament':
-						$target = get_tournament( $target_id );
+						$target      = get_tournament( $target_id );
+						$target_name = 'tournament';
 						break;
 					default:
+						$target_name   = 'null';
 						$return->error = true;
 						$return->msg   = __( 'Invalid target', 'racketmanager' );
 				}
@@ -2475,7 +2480,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							if ( $season ) {
 								$args['season'] = $season;
 							}
-							$function_name = 'Racketmanager\racketmanager_' . $target_ref . '_' . $tab;
+							$function_name = 'Racketmanager\racketmanager_' . $target_name . '_' . $tab;
 							if ( function_exists( $function_name ) ) {
 								ob_start();
 								$function_name( $target->id, $args );

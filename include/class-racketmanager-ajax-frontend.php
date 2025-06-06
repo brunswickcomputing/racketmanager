@@ -987,39 +987,42 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Build screen to allow printing of match cards
 	 */
 	public function print_match_card(): void {
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
+        $output = null;
+        $return = $this->check_security_token();
+        if ( empty( $return->error ) ) {
+			$match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
+            if ( $match_id ) {
+	            $match    = get_match( $match_id );
+                if ( $match ) {
+	                if ( isset( $match->league->num_rubbers ) && $match->league->num_rubbers > 0 ) {
+		                $match->rubbers = $match->get_rubbers();
+		                $template       = 'match-card-rubbers';
+	                } else {
+		                $template = 'match-card';
+	                }
+	                $sponsor_html                  = '';
+	                $template_args['match']        = $match;
+	                $template_args['sponsor_html'] = $sponsor_html;
+	                $shortcode                     = new RacketManager_Shortcodes();
+	                $output                        = $shortcode->load_template(
+		                $template,
+		                $template_args,
+	                );
+                } else {
+	                $return->error  = true;
+	                $return->msg    = __( 'Match not found', 'racketmanager' );
+	                $return->status = 404;
+                }
+            } else {
+	            $return->error  = true;
+                $return->msg    = __( 'Match id not found', 'racketmanager' );
+                $return->status = 404;
+            }
 		}
-		if ( $valid ) {
-			$match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$match    = get_match( $match_id );
-			if ( isset( $match->league->num_rubbers ) && $match->league->num_rubbers > 0 ) {
-				$match->rubbers = $match->get_rubbers();
-				$template       = 'match-card-rubbers';
-			} else {
-				$template = 'match-card';
-			}
-			$sponsor_html                  = '';
-			$template_args['match']        = $match;
-			$template_args['sponsor_html'] = $sponsor_html;
-			$shortcode                     = new RacketManager_Shortcodes();
-			$output                        = $shortcode->load_template(
-				$template,
-				$template_args,
-			);
-		}
-		if ( $valid ) {
+		if ( empty( $return->error ) ) {
 			wp_send_json_success( $output );
 		} else {
-			wp_send_json_error( $message, '500' );
+			wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**

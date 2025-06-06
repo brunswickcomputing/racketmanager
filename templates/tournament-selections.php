@@ -37,7 +37,7 @@ if ( empty( $selection_id ) ) {
                     }
                     ?>
 				</select>
-				<label for="tournament_id"><?php esc_html_e( 'Tournament', 'racketmanager' ); ?></label>
+				<label for="tournament_id"><?php echo esc_html( ucfirst( $tournament->competition->age_group ) ) . ' ' . esc_html__( 'Tournaments', 'racketmanager' ); ?></label>
 			</div>
 		</div>
 	</form>

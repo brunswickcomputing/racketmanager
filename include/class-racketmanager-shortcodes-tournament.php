@@ -51,14 +51,6 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$tournament  = $args['tournament'];
 		$tab         = $args['tab'];
 		$template    = $args['template'];
-		$tournaments = $racketmanager->get_tournaments(
-			array(
-				'orderby' => array(
-					'season'         => 'DESC',
-					'competition_id' => 'DESC',
-				),
-			)
-		);
 		if ( ! $tournament ) {
 			if ( ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tournament = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['tournament'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -84,6 +76,15 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			$msg = __( 'Tournament not found', 'racketmanager' );
 			return $this->return_error( $msg );
 		}
+		$tournaments = $racketmanager->get_tournaments(
+			array(
+				'age_group' => $tournament->competition->age_group,
+				'orderby'   => array(
+					'season'         => 'DESC',
+					'competition_id' => 'DESC',
+				),
+			)
+		);
 		if ( ! $tab ) {
 			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended

@@ -545,7 +545,7 @@ final class RacketManager_Admin_League extends RacketManager_Admin {
 			);
 			$club_id        = 0;
 			if ( ! isset( $season ) ) {
-				$event_season = $event->current_season['name'] ?? '';
+				$event_season = $competition->current_season['name'] ?? '';
 				$season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			}
 			include_once RACKETMANAGER_PATH . 'admin/league/show-schedule.php';

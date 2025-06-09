@@ -1339,6 +1339,8 @@ class Racketmanager_Ajax {
 	 */
 	protected function check_security_token( string $nonce = 'security', string $nonce_action = 'ajax-nonce' ): stdClass {
 		$return = new stdClass();
+        $return->err_msgs = array();
+        $return->err_flds = array();
 		if ( isset( $_REQUEST[ $nonce ] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ $nonce ] ) ), $nonce_action ) ) {
 				$return->error  = true;

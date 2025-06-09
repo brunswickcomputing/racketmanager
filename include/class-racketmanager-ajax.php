@@ -157,36 +157,28 @@ class Racketmanager_Ajax {
 	 */
 	public function update_match_header(): void {
 		global $racketmanager;
-		$valid   = true;
-		$message = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+		$return = $this->check_security_token();
+		if ( empty( $return->error ) ) {
 			$match_id     = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
 			if ( ! empty( $match_id ) ) {
 				$match = get_match( $match_id );
 				if ( $match ) {
-					$edit_mode    = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
-					$match_header = $racketmanager->show_match_header( $match, $edit_mode );
-					wp_send_json_success( $match_header );
+					$edit_mode = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
+					$output    = $racketmanager->show_match_header( $match, $edit_mode );
+					wp_send_json_success( $output );
 				} else {
-					$valid   = false;
-					$message = __( 'Match not found', 'racketmanager' );
+					$return->error  = true;
+					$return->msg    = __( 'Match not found', 'racketmanager' );
+					$return->status = 404;
 				}
 			} else {
-				$valid   = false;
-				$message = __( 'Match id not found', 'racketmanager' );
+				$return->error  = true;
+				$return->msg    = __( 'Match id not found', 'racketmanager' );
+				$return->status = 404;
 			}
 		}
-		if ( ! $valid ) {
-			wp_send_json_error( $message, 500 );
+		if ( ! empty( $return->error ) ) {
+            wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 

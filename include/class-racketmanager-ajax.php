@@ -1229,6 +1229,8 @@ class Racketmanager_Ajax {
 	 * @return object
 	 */
 	private function validate_set_score( array $set, string $set_prefix, string $team_1, string $team_2, object $return_data, object $set_info, string $match_status = null ): object {
+        $game_difference_incorrect = __( 'Games difference incorrect', 'racketmanager' );
+        $tie_break_score_required  = __( 'Tie break score required', 'racketmanager' );
 		$tiebreak_allowed  = $set_info->tiebreak_allowed;
 		$tiebreak_required = $set_info->tiebreak_required;
 		$max_win           = $set_info->max_win;
@@ -1255,28 +1257,28 @@ class Racketmanager_Ajax {
 			$err_field[] = $set_prefix . $team_2;
 		} elseif ( intval( $set[ $team_1 ] ) === $max_win ) {
 			if ( $set[ $team_2 ] < $max_loss && $max_win !== $min_win ) {
-				$err_msg[]   = __( 'Games difference incorrect', 'racketmanager' );
+				$err_msg[]   = $game_difference_incorrect;
 				$err_field[] = $set_prefix . $team_1;
 				$err_field[] = $set_prefix . $team_2;
 			} elseif ( $tiebreak_allowed && $set[ $team_2 ] > $max_loss ) {
 				if ( ! strlen( $set['tiebreak'] ) > 0 ) {
-					$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
+					$err_msg[]   = $tie_break_score_required;
 					$err_field[] = $set_prefix . 'tiebreak';
 				} elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
 					$err_msg[]   = __( 'Tie break score must be whole number', 'racketmanager' );
 					$err_field[] = $set_prefix . 'tiebreak';
 				}
 			} elseif ( $tiebreak_required && '' === $set['tiebreak'] ) {
-				$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
+				$err_msg[]   = $tie_break_score_required;
 				$err_field[] = $set_prefix . 'tiebreak';
 			}
 		} elseif ( $set[ $team_1 ] > $min_win && $set[ $team_2 ] < $min_loss ) {
-			$err_msg[]   = __( 'Games difference incorrect', 'racketmanager' );
+			$err_msg[]   = $game_difference_incorrect;
 			$err_field[] = $set_prefix . $team_1;
 			$err_field[] = $set_prefix . $team_2;
 		} elseif ( $set[ $team_1 ] > $min_win && $set[ $team_2 ] > $min_loss && ( $set[ $team_1 ] - 2 ) !== intval( $set[ $team_2 ] ) ) {
             if ( ! str_starts_with( $match_status, 'retired_player' ) ) {
-	            $err_msg[]   = __( 'Games difference incorrect', 'racketmanager' );
+	            $err_msg[]   = $game_difference_incorrect;
 	            $err_field[] = $set_prefix . $team_2;
             }
 		} elseif ( $set['tiebreak'] > '' ) {
@@ -1286,7 +1288,7 @@ class Racketmanager_Ajax {
 			}
 		} elseif ( $tiebreak_required ) {
 			if ( '' === $set['tiebreak'] ) {
-				$err_msg[]   = __( 'Tie break score required', 'racketmanager' );
+				$err_msg[]   = $tie_break_score_required;
 				$err_field[] = $set_prefix . 'tiebreak';
 			} elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
 				$err_msg[]   = __( 'Tie break score must be whole number', 'racketmanager' );

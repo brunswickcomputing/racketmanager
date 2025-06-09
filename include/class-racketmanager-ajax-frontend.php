@@ -214,83 +214,88 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @see templates/team.php
 	 */
 	public function update_team(): void {
-		$return      = array();
-		$error       = false;
-		$error_field = array();
-		$error_msg   = array();
-        $captain_id = null;
-        $contactno  = null;
-        $contactemail = null;
-        $match_day = null;
-        $matchtime = null;
-        $msg = null;
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'team-update' ) ) {
-			$error         = true;
-			$error_field[] = 'team';
-			$error_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-		} else {
+        $captain_id    = null;
+        $contactno     = null;
+        $contactemail  = null;
+        $match_day_num = null;
+        $matchtime     = null;
+		$return = $this->check_security_token( 'racketmanager_nonce', 'team-update' );
+		if ( empty( $return->error ) ) {
 			$event_id = empty( $_POST['event_id'] ) ? null : intval( $_POST['event_id'] );
 			$team_id  = empty( $_POST['team_id'] ) ? null : intval( $_POST['team_id'] );
 			if ( $event_id ) {
 				$event_id = intval( $_POST['event_id'] );
 			} else {
-				$error         = true;
-				$error_field[] = 'team';
-				$error_msg[]   = __( 'Event not selected', 'racketmanager' );
+				$return->error      = true;
+                $return->status     = 404;
+				$return->err_flds[] = 'team';
+				$return->err_msgs[] = __( 'Event not selected', 'racketmanager' );
 			}
 			if ( $team_id ) {
 				$team_id = intval( $_POST['team_id'] );
+				$team = get_team( $team_id );
+                if ( ! $team ) {
+	                $return->error      = true;
+	                $return->status     = 404;
+	                $return->err_flds[] = 'team-' . $event_id;
+	                $return->err_msgs[] = __( 'Team not found', 'racketmanager' );
+                }
 			} else {
-				$error         = true;
-				$error_field[] = 'team-' . $event_id;
-				$error_msg[]   = __( 'Team not selected', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'team-' . $event_id;
+				$return->err_msgs[] = __( 'Team not selected', 'racketmanager' );
 			}
 			if ( ! empty( $_POST[ 'captainId-' . $event_id . '-' . $team_id ] ) ) {
 				$captain_id = sanitize_text_field( wp_unslash( $_POST[ 'captainId-' . $event_id . '-' . $team_id ] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'captain-' . $event_id . '-' . $team_id;
-				$error_msg[]   = __( 'Captain is required', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'captain-' . $event_id . '-' . $team_id;
+				$return->err_msgs[] = __( 'Captain is required', 'racketmanager' );
 			}
 			if ( ! empty( $_POST[ 'contactno-' . $event_id . '-' . $team_id ] ) ) {
 				$contactno = sanitize_text_field( wp_unslash( $_POST[ 'contactno-' . $event_id . '-' . $team_id ] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'contactno-' . $event_id . '-' . $team_id;
-				$error_msg[]   = __( 'Contact number is required', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'contactno-' . $event_id . '-' . $team_id;
+				$return->err_msgs[] = __( 'Contact number is required', 'racketmanager' );
 			}
 			if ( ! empty( $_POST[ 'contactemail-' . $event_id . '-' . $team_id ] ) ) {
 				$contactemail = sanitize_text_field( wp_unslash( $_POST[ 'contactemail-' . $event_id . '-' . $team_id ] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'contactemail-' . $event_id . '-' . $team_id;
-				$error_msg[]   = __( 'Email address is required', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'contactemail-' . $event_id . '-' . $team_id;
+				$return->err_msgs[] = __( 'Email address is required', 'racketmanager' );
 			}
 			if ( ! empty( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) ) {
-				$match_day = sanitize_text_field( wp_unslash( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) );
+				$match_day     = sanitize_text_field( wp_unslash( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) );
+				$match_day_num = Racketmanager_Util::get_match_day_number( $match_day );
 			} else {
-				$error         = true;
-				$error_field[] = 'matchday-' . $event_id . '-' . $team_id;
-				$error_msg[]   = __( 'Match day is required', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'matchday-' . $event_id . '-' . $team_id;
+				$return->err_msgs[] = __( 'Match day is required', 'racketmanager' );
 			}
 			if ( ! empty( $_POST[ 'matchtime-' . $event_id . '-' . $team_id ] ) ) {
 				$matchtime = sanitize_text_field( wp_unslash( $_POST[ 'matchtime-' . $event_id . '-' . $team_id ] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'matchtime-' . $event_id . '-' . $team_id;
-				$error_msg[]   = __( 'Match day is required', 'racketmanager' );
-			}
-			if ( $team_id ) {
-				$team = get_team( $team_id );
-				$msg  = $team->update_event( $event_id, $captain_id, $contactno, $contactemail, $match_day, $matchtime );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'matchtime-' . $event_id . '-' . $team_id;
+				$return->err_msgs[] = __( 'Match day is required', 'racketmanager' );
 			}
 		}
-		if ( $error ) {
-			$msg = __( 'Unable to update team', 'racketmanager' );
-			array_push( $return, $msg, $error_msg, $error_field );
-			wp_send_json_error( $return, '500' );
-		} else {
+		if ( empty( $return->error ) ) {
+			$msg = $team->update_event( $event_id, $captain_id, $contactno, $contactemail, $match_day_num, $matchtime );
 			wp_send_json_success( $msg );
+		} else {
+            if ( empty( $return->msg ) ) {
+	            $return->msg = __( 'Unable to update team', 'racketmanager' );
+            }
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**

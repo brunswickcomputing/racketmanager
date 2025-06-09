@@ -916,23 +916,34 @@ Racketmanager.updateTeam = function (link) {
 			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let $message = response.responseJSON.data[0];
-				if (response.responseJSON.data[1]) {
-					let $errorMsg = response.responseJSON.data[1];
-					let $errorField = response.responseJSON.data[2];
+			let message;
+			let data;
+			if (response.status === 500) {
+				if ( response.responseJSON) {
+					data = response.responseJSON.data;
+					message = data.message;
+					if (data.file) {
+						message = message.concat(' ' + data.file + ' ' + data.line);
+					}
+				} else {
+					message = response.statusText;
+				}
+			} else if ( response.responseJSON) {
+				data = response.responseJSON.data;
+				message = data.msg;
+				if (data.err_msgs) {
 					jQuery(notifyField).addClass('message-error');
-					for (let $i = 0; $i < $errorField.length; $i++) {
-						let formField = "#" + $errorField[$i];
+					for (let i = 0; i < data.err_flds.length; i++) {
+						let formField = "#" + data.err_flds[i];
 						jQuery(formField).addClass('is-invalid');
 						formField = formField + '-feedback';
-						jQuery(formField).html($errorMsg[$i]);
+						jQuery(formField).html(data.err_msgs[i]);
 					}
 				}
-				jQuery(alertTextField).html($message);
 			} else {
-				jQuery(alertTextField).text(response.statusText);
+				message = response.statusText;
 			}
+			jQuery(alertTextField).html(message);
 			jQuery(notifyField).addClass('alert--danger');
 		},
 		complete: function () {

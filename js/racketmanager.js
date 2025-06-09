@@ -1300,7 +1300,7 @@ Racketmanager.setMatchStatus = function (link) {
 					let formField = "#" + errorField[i];
 					jQuery(formField).addClass('is-invalid');
 					formField = formField + 'Feedback';
-					jQuery($ = formField).html(errorMsg[i]);
+					jQuery(formField).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html($message);
 			} else {
@@ -1392,7 +1392,7 @@ Racketmanager.setMatchRubberStatus = function (link) {
 					let formField = "#" + errorField[i];
 					jQuery(formField).addClass('is-invalid');
 					formField = formField + 'Feedback';
-					jQuery($=formField).html(errorMsg[i]);
+					jQuery(formField).html(errorMsg[i]);
 				}
 				jQuery(alertTextField).html($message);
 			} else {
@@ -2186,8 +2186,7 @@ Racketmanager.login = function (e) {
 						}
 					}
 				} else {
-					let message = data;
-					jQuery(alertResponseField).html(message);
+					jQuery(alertResponseField).html(data);
 				}
 			} else {
 				jQuery(alertResponseField).text(response.statusText);

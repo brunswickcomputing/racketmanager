@@ -145,29 +145,7 @@ namespace Racketmanager;
 		<a class="me-auto" href="" id="resetMatchScore">
 			<?php esc_html_e( 'Reset', 'racketmanager' ); ?>
 		</a>
-		<button class="btn btn-secondary me-3 validateTeamOrder" data-set-team="true" style="display:none;" id="setTeamButton"><?php esc_html_e( 'Set players', 'racketmanager' ); ?></button>
-		<button class="btn btn-primary validateTeamOrder"><?php esc_html_e( 'Validate players', 'racketmanager' ); ?></button>
+		<button class="btn btn-secondary me-3" data-set-team="true" style="display:none;" id="setTeamButton"><?php esc_html_e( 'Set players', 'racketmanager' ); ?></button>
+		<button class="btn btn-primary" id="validateTeamButton"><?php esc_html_e( 'Validate players', 'racketmanager' ); ?></button>
 	</div>
 </form>
-<script type="text/javascript">
-    document.getElementById('resetMatchScore').addEventListener('click', function (e) {
-        Racketmanager.resetMatchScores(e, 'match');
-    });
-    jQuery(document).ready(function () {
-        validateTeamOrder();
-    });
-    jQuery(document).ajaxComplete(function () {
-        validateTeamOrder();
-    });
-    function validateTeamOrder () {
-        const validateTeamOrder = document.querySelectorAll('.validateTeamOrder');
-        validateTeamOrder.forEach(el => el.addEventListener('click', function (e) {
-            let setTeam = this.dataset.setTeam;
-            if ('true' !== setTeam) {
-                setTeam = false;
-            }
-            Racketmanager.validateTeamOrder(e, this, setTeam)
-        }));
-    }
-</script>
-

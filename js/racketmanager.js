@@ -2266,18 +2266,28 @@ Racketmanager.showTeamOrderPlayers = function (e) {
 		let action = 'racketmanager_show_team_order_players';
 		jQuery(notifyField).val("");
 		jQuery(notifyField).load(
-								 ajax_var.url,
-								 {
-									 "eventId": eventId,
-									 "clubId": clubId,
-									 "action": action,
-									 "security": ajax_var.ajax_nonce,
-								 },
-								 function () {
-									 jQuery(notifyField).show();
-									 jQuery(loadingField).removeClass('is-loading');
-								 }
-								 );
+			ajax_var.url,
+			{
+				"eventId": eventId,
+				"clubId": clubId,
+				"action": action,
+				"security": ajax_var.ajax_nonce,
+			},
+			function () {
+				jQuery(notifyField).show();
+				jQuery(loadingField).removeClass('is-loading');
+				jQuery('#resetMatchScore').on('click', function (e) {
+					Racketmanager.resetMatchScores(e, 'match');
+				});
+				jQuery('#setTeamButton').on('click', function (e) {
+					let setTeam = this.dataset.setTeam;
+					Racketmanager.validateTeamOrder(e, this, setTeam);
+				});
+				jQuery('#validateTeamButton').on('click', function (e) {
+					Racketmanager.validateTeamOrder(e, this);
+				});
+			}
+			);
 	}
 }
 Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {

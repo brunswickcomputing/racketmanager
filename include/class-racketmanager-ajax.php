@@ -1342,12 +1342,12 @@ class Racketmanager_Ajax {
 		if ( isset( $_REQUEST[ $nonce ] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ $nonce ] ) ), $nonce_action ) ) {
 				$return->error  = true;
-				$return->msg    = __( 'Security token invalid', 'racketmanager' );
+				$return->msg    = __( 'Sorry, the action could not be completed. The link or form you are using has expired or is invalid. Please try again, or go back to the previous page and try again', 'racketmanager' );
                 $return->status = 403;
 			}
 		} else {
 			$return->error  = true;
-			$return->msg    = __( 'No security token found in request', 'racketmanager' );
+			$return->msg    = __( 'There was a problem with your request. Please try again or refresh the page', 'racketmanager' );
 			$return->status = 403;
 		}
 

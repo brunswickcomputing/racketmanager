@@ -15,7 +15,7 @@
 namespace Racketmanager;
 
 /** @var object $league */
-global $racketmanager_shortcodes;
+global $racketmanager;
 if ( ! empty( $league->player ) ) {
 	$player = $league->player;
 	require RACKETMANAGER_PATH . 'templates/includes/player-header.php';

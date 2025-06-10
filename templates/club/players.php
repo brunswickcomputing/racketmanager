@@ -33,7 +33,7 @@ if ( empty( $club->player ) ) {
 			<div class="module__content collapse" id="addPlayer">
 				<div class="module-container">
 					<form id="playerRequestFrm" action="" method="post">
-						<?php wp_nonce_field( 'club-player-request' ); ?>
+						<?php wp_nonce_field( 'club-player-request', 'racketmanager_nonce' ); ?>
 						<input type="hidden" name="club" id="club" value="<?php echo esc_html( $club->id ); ?>" />
 						<div class="form-floating mb-3">
 							<input required="required" type="text" class="form-control" id="firstname" name="firstname" size="30" placeholder="First name" aria-describedby="firstnameFeedback" />

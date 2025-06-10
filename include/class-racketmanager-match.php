@@ -1391,7 +1391,7 @@ final class Racketmanager_Match {
 	 * Notify favourites
 	 */
 	private function notify_favourites(): void {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
 		$favourited_users = array();
 		$users            = Racketmanager_Util::get_users_for_favourite( 'league', $this->league->id );
 		foreach ( $users  as $user ) {
@@ -1428,7 +1428,7 @@ final class Racketmanager_Match {
 			foreach ( $favourited_users as $user ) {
 				$user_details  = get_userdata( $user );
 				$email_to      = $user_details->display_name . ' <' . $user_details->user_email . '>';
-				$email_message = $racketmanager_shortcodes->load_template(
+				$email_message = $racketmanager->shortcodes->load_template(
 					'favourite-notification',
 					array(
 						'email_subject' => $email_subject,

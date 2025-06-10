@@ -2244,7 +2244,7 @@ class Racketmanager_Competition {
 	 * @return object
 	 */
 	public function notify_team_entry_open( int $season ): object {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
 		$msg             = null;
 		$return          = new stdClass();
 		$is_championship = null;
@@ -2303,7 +2303,7 @@ class Racketmanager_Competition {
 						$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
 						$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 						$action_url    = $url . seo_url( $club->shortcode ) . '/';
-						$email_message = $racketmanager_shortcodes->load_template(
+						$email_message = $racketmanager->shortcodes->load_template(
 							'competition-entry-open',
 							array(
 								'email_subject'   => $email_subject,
@@ -2352,7 +2352,7 @@ class Racketmanager_Competition {
 	 * @return object
 	 */
 	public function notify_team_entry_reminder( int $season ): object {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
 		$msg           = null;
 		$return        = new stdClass();
 		$messages_sent = 0;
@@ -2405,7 +2405,7 @@ class Racketmanager_Competition {
 						$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
 						$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 						$action_url    = $url . seo_url( $club->shortcode ) . '/';
-						$email_message = $racketmanager_shortcodes->load_template(
+						$email_message = $racketmanager->shortcodes->load_template(
 							'competition-entry-open',
 							array(
 								'email_subject'   => $email_subject,

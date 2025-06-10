@@ -96,7 +96,7 @@ class RacketManager_Login {
 	 * @return array
 	 */
 	public function my_wp_new_user_notification_email( array $wp_new_user_notification_email, WP_User $user, string $blogname ): array {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		$key                                       = get_password_reset_key( $user );
 		$vars['site_name']                         = $racketmanager->site_name;
@@ -105,7 +105,7 @@ class RacketManager_Login {
 		$vars['display_name']                      = $user->display_name;
 		$vars['action_url']                        = $racketmanager->site_url . '/member-password-reset/?key=' . $key . '&login=' . rawurlencode( $user->user_login );
 		$vars['email_link']                        = $racketmanager->admin_email;
-		$wp_new_user_notification_email['message'] = $racketmanager_shortcodes->load_template( 'email-welcome', $vars, 'email' );
+		$wp_new_user_notification_email['message'] = $racketmanager->shortcodes->load_template( 'email-welcome', $vars, 'email' );
 		$wp_new_user_notification_email['headers'] = 'Content-Type: text/html; charset=UTF-8';
 
 		return $wp_new_user_notification_email;
@@ -131,7 +131,7 @@ class RacketManager_Login {
 	 * @return string email details.
 	 */
 	public function racketmanager_retrieve_password_email( string $message, string $key, string $user_login, object $user_data ): string {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
 		$vars['site_name']    = $racketmanager->site_name;
@@ -139,7 +139,7 @@ class RacketManager_Login {
 		$vars['user_login']   = $user_login;
 		$vars['display_name'] = $user_data->display_name;
 		$vars['action_url']   = $racketmanager->site_url . '/member-password-reset/?key=' . $key . '&login=' . rawurlencode( $user_login );
-		return $racketmanager_shortcodes->load_template( 'email-password-reset', $vars, 'email' );
+		return $racketmanager->shortcodes->load_template( 'email-password-reset', $vars, 'email' );
 	}
 	/**
 	 * Function to set password change email
@@ -151,7 +151,7 @@ class RacketManager_Login {
 	 * @return array
 	 */
 	public function racketmanager_password_change_email( array $password_change_message, array $user_data, array $user_data_new ): array {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
 		$vars['site_name']                  = $racketmanager->site_name;
@@ -159,7 +159,7 @@ class RacketManager_Login {
 		$vars['user_login']                 = $user_data['user_login'];
 		$vars['display_name']               = $user_data['display_name'];
 		$vars['email_link']                 = $racketmanager->admin_email;
-		$password_change_message['message'] = $racketmanager_shortcodes->load_template( 'email-password-change', $vars, 'email' );
+		$password_change_message['message'] = $racketmanager->shortcodes->load_template( 'email-password-change', $vars, 'email' );
 
 		return $password_change_message;
 	}
@@ -173,12 +173,12 @@ class RacketManager_Login {
 	 * @return string email message.
 	 */
 	public function racketmanager_privacy_personal_data_email( string $message, string $request, string $email_data ): string {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
 		$vars['site_name'] = $racketmanager->site_name;
 		$vars['site_url']  = $racketmanager->site_url;
-		return $racketmanager_shortcodes->load_template( 'email-privacy-personal-data', $vars, 'email' );
+		return $racketmanager->shortcodes->load_template( 'email-privacy-personal-data', $vars, 'email' );
 	}
 	/**
 	 * Function to set email message for user action
@@ -189,12 +189,12 @@ class RacketManager_Login {
 	 * @return string email message.
 	 */
 	public function racketmanager_user_request_action_email( string $message, array $email_data ): string {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
 		$vars['site_name'] = $racketmanager->site_name;
 		$vars['site_url']  = $racketmanager->site_url;
-		return $racketmanager_shortcodes->load_template( 'email-user-request-action', $vars, 'email' );
+		return $racketmanager->shortcodes->load_template( 'email-user-request-action', $vars, 'email' );
 	}
 	/**
 	 * Function to disable dashboard

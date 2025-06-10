@@ -324,7 +324,7 @@ final class Racketmanager_Invoice {
 	 * Generate invoice
 	 */
 	public function generate() {
-		global $racketmanager_shortcodes;
+		global $racketmanager;
 		if ( empty( $this->club ) ) {
 			$target        = get_player( $this->player );
 			$target->name  = $this->player->display_name;
@@ -332,7 +332,7 @@ final class Racketmanager_Invoice {
 			$target = get_club( $this->club );
 		}
 		$billing = $this->racketmanager->get_options( 'billing' );
-		return $racketmanager_shortcodes->load_template(
+		return $racketmanager->shortcodes->load_template(
 			'invoice',
 			array(
 				'organisation_name' => $this->racketmanager->site_name,
@@ -351,7 +351,7 @@ final class Racketmanager_Invoice {
 	 * return boolean
 	 */
 	public function send(bool $resend = false ): bool {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 
 		$billing    = $racketmanager->get_options( 'billing' );
 		$headers    = array();
@@ -364,7 +364,7 @@ final class Racketmanager_Invoice {
 			$action_url        = $racketmanager->site_url . '/invoice/' . $this->id . '/';
 			$email_to          = $this->club->match_secretary_name . ' <' . $this->club->match_secretary_email . '>';
 			$email_subject     = $racketmanager->site_name . ' - ' . ucfirst( $this->charge->competition->name ) . ' ' . $this->charge->season . ' Entry Fees Invoice - ' . $this->club->name;
-			$email_message     = $racketmanager_shortcodes->load_template(
+			$email_message     = $racketmanager->shortcodes->load_template(
 				'send-invoice',
 				array(
 					'email_subject' => $email_subject,

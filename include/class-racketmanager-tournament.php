@@ -1130,7 +1130,7 @@ final class Racketmanager_Tournament {
 	 * @return object notification status
 	 */
 	public function notify_entry_open(): object {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 		$return           = new stdClass();
 		$msg              = array();
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
@@ -1158,7 +1158,7 @@ final class Racketmanager_Tournament {
 					$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' );
 					$email_to      = $player->display_name . ' <' . $player->email . '>';
 					$action_url    = $url;
-					$email_message = $racketmanager_shortcodes->load_template(
+					$email_message = $racketmanager->shortcodes->load_template(
 						'tournament-entry-open',
 						array(
 							'email_subject' => $email_subject,
@@ -1180,7 +1180,7 @@ final class Racketmanager_Tournament {
 					$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
 					$email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 					$action_url    = $url . seo_url( $club->shortcode ) . '/';
-					$email_message = $racketmanager_shortcodes->load_template(
+					$email_message = $racketmanager->shortcodes->load_template(
 						'tournament-entry-open',
 						array(
 							'email_subject' => $email_subject,
@@ -1221,7 +1221,7 @@ final class Racketmanager_Tournament {
 	 * @return object notification status
 	 */
 	public function notify_entry_reminder(): object {
-		global $racketmanager_shortcodes, $racketmanager;
+		global $racketmanager;
 		$return           = new stdClass();
 		$msg              = array();
 		$url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
@@ -1247,7 +1247,7 @@ final class Racketmanager_Tournament {
 					$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . __( 'Reminder', 'racketmanager' );
 					$email_to      = $player->display_name . ' <' . $player->email . '>';
 					$action_url    = $url;
-					$email_message = $racketmanager_shortcodes->load_template(
+					$email_message = $racketmanager->shortcodes->load_template(
 						'tournament-entry-open',
 						array(
 							'email_subject'  => $email_subject,
@@ -1644,7 +1644,7 @@ final class Racketmanager_Tournament {
 	 * @return int|string refund amount.
 	 */
 	public function withdraw_player_entry( $player_id ): int|string {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
 		$amount_refund = 0;
 		$updates       = false;
 		$player        = get_player( $player_id );
@@ -1698,7 +1698,7 @@ final class Racketmanager_Tournament {
 			$template_args['organisation']    = $racketmanager->site_name;
 			$template_args['player']          = $player;
 			$template_args['contact_email']   = $email_from;
-			$email_message                    = $racketmanager_shortcodes->load_template(
+			$email_message                    = $racketmanager->shortcodes->load_template(
 				$template,
 				$template_args,
 				'email'

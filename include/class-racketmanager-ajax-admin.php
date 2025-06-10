@@ -350,7 +350,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 * @see templates/email/send_fixtures.php
 	 */
 	public function send_fixtures(): void {
-		global $racketmanager, $racketmanager_shortcodes, $event;
+		global $racketmanager, $event;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
 			$event_id          = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
@@ -382,7 +382,7 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 							$headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
 						}
 						$action_url    = $racketmanager->site_url . '/' . $event->competition->type . '/' . seo_url( $league->title ) . '/' . $team->season . '/' . __( 'team', 'racketmanager' ) . '/' . seo_url( $team->title );
-						$email_message = $racketmanager_shortcodes->load_template(
+						$email_message = $racketmanager->shortcodes->load_template(
 							'send-fixtures',
 							array(
 								'competition'   => $event->name,

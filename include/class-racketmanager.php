@@ -88,6 +88,15 @@ class RacketManager {
 	 * @var NumberFormatter|null
 	 */
 	public ?NumberFormatter $currency_fmt;
+    public object $ajax_frontend ;
+    public object $shortcodes_club;
+    public object $shortcodes_competition;
+    public object $shortcodes_event;
+    public object $shortcodes_league;
+    public object $shortcodes_login;
+    public object $shortcodes_tournament;
+    public object $shortcodes_email;
+    public object $shortcodes;
 	/**
 	 * Constructor
 	 *
@@ -103,6 +112,7 @@ class RacketManager {
 			add_action( 'widgets_init', array( &$this, 'register_widget' ) );
 			add_action( 'init', array( &$this, 'racketmanager_rewrites' ) );
 			add_action( 'init', array( &$this, 'racketmanager_locale' ) );
+            add_action( 'init', array( &$this, 'init_components' ) );
 			add_action( 'wp_enqueue_scripts', array( &$this, 'load_styles' ), 5 );
 			add_action( 'wp_enqueue_scripts', array( &$this, 'load_scripts' ) );
 			add_action( 'rm_resultPending', array( &$this, 'chase_pending_results' ), 1 );
@@ -811,8 +821,6 @@ class RacketManager {
 	 * Load libraries
 	 */
 	private function load_libraries(): void {
-		global $racketmanager_shortcodes, $racketmanager_login;
-
 		// Objects.
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-charges.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-invoice.php';
@@ -873,20 +881,22 @@ class RacketManager {
 		// template tags & functions.
 		require_once RACKETMANAGER_PATH . '/template-tags.php';
 		require_once RACKETMANAGER_PATH . '/functions.php';
-
-		new RacketManager_Ajax_Frontend();
-
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
-		new Racketmanager_Shortcodes_Club();
-		new Racketmanager_Shortcodes_Competition();
-		new Racketmanager_Shortcodes_Event();
-		new Racketmanager_Shortcodes_League();
-		new Racketmanager_Shortcodes_Login();
-		new Racketmanager_Shortcodes_Email();
-		new Racketmanager_Shortcodes_Tournament();
-		$racketmanager_shortcodes = new Racketmanager_Shortcodes();
-		$racketmanager_login      = new RacketManager_Login();
 	}
+	/**
+	 * Initialise components
+	 */
+    public function init_components(): void {
+        $this->ajax_frontend          = new RacketManager_Ajax_Frontend();
+        $this->shortcodes_club        = new Racketmanager_Shortcodes_Club();
+        $this->shortcodes_competition = new Racketmanager_Shortcodes_Competition();
+        $this->shortcodes_event       = new Racketmanager_Shortcodes_Event();
+        $this->shortcodes_league      = new Racketmanager_Shortcodes_League();
+        $this->shortcodes_login       = new Racketmanager_Shortcodes_Login();
+        $this->shortcodes_tournament  = new Racketmanager_Shortcodes_Tournament();
+        $this->shortcodes_email       = new Racketmanager_Shortcodes_Email();
+        $this->shortcodes             = new RacketManager_Shortcodes();
+    }
 	/**
 	 * Read files in directory
 	 *
@@ -1137,14 +1147,12 @@ class RacketManager {
 	 * @return array
 	 */
 	public function racketmanager_change_email_address( array $email_change, array $user, array $user_data ): array {
-		global $racketmanager_shortcodes, $racketmanager;
-
-		$vars['site_name']       = $racketmanager->site_name;
-		$vars['site_url']        = $racketmanager->site_url;
+		$vars['site_name']       = $this->site_name;
+		$vars['site_url']        = $this->site_url;
 		$vars['user_login']      = $user_data['user_login'];
 		$vars['display_name']    = $user['display_name'];
-		$vars['email_link']      = $racketmanager->admin_email;
-		$email_change['message'] = $racketmanager_shortcodes->load_template( 'email-email-change', $vars, 'email' );
+		$vars['email_link']      = $this->admin_email;
+		$email_change['message'] = $this->shortcodes->load_template( 'email-email-change', $vars, 'email' );
 		return $email_change;
 	}
 	/**
@@ -2360,11 +2368,10 @@ class RacketManager {
 	 * @return string
 	 */
 	public function show_match_header( object $match, bool $edit = false ): string {
-		global $racketmanager_shortcodes;
 		$match_args['match']     = $match;
 		$match_args['edit_mode'] = $edit;
 		$template                = 'match-header';
-		return $racketmanager_shortcodes->load_template(
+		return $this->shortcodes->load_template(
 			$template,
 			$match_args,
 			'includes'
@@ -2380,7 +2387,6 @@ class RacketManager {
 	 * @return string
 	 */
 	public function show_match_screen( object $match, false|object $player = false ): string {
-		global $racketmanager_shortcodes;
 		if ( '' === $match->final_round ) {
 			$match->round = '';
 			$match->type  = 'league';
@@ -2399,7 +2405,7 @@ class RacketManager {
 		} else {
 			$template = 'match-input';
 		}
-        return $racketmanager_shortcodes->load_template(
+        return $this->shortcodes->load_template(
             $template,
             $match_args,
         );
@@ -2415,8 +2421,7 @@ class RacketManager {
 	 * @param array $headers email headers.
 	 */
 	public function email_entry_form( string $template, array $template_args, string $email_to, string $email_subject, array $headers ): void {
-		global $racketmanager_shortcodes;
-		$email_message = $racketmanager_shortcodes->load_template(
+		$email_message = $this->shortcodes->load_template(
 			$template,
 			$template_args,
 			'email'
@@ -2765,7 +2770,6 @@ class RacketManager {
 	 * @return void
 	 */
 	public function wtn_update( array $players, ?int $club_id ): void {
-		global $racketmanager_shortcodes, $racketmanager;
 		$messages = array();
 		$messages = $this->set_wtns( $players, $messages );
 		if ( $messages ) {
@@ -2777,14 +2781,14 @@ class RacketManager {
 			$club = null;
 		}
 		$headers          = array();
-		$headers[]         = 'From: ' . $racketmanager->admin_email;
+		$headers[]         = 'From: ' . $this->admin_email;
 		$organisation_name = $this->site_name;
 		$email_subject     = $this->site_name . ' - ' . __( 'WTN Update', 'racketmanager' );
 		if ( $club ) {
 			$email_subject .= ' - ' . $club->shortcode;
 		}
-		$email_to          = $racketmanager->admin_email;
-		$email_message     = $racketmanager_shortcodes->load_template(
+		$email_to          = $this->admin_email;
+		$email_message     = $this->shortcodes->load_template(
                 'wtn-report',
                 array(
                         'messages'      => $messages,

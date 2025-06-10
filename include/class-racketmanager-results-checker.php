@@ -280,7 +280,7 @@ final class Racketmanager_Results_Checker {
 	 * Handle match error entry
 	 */
 	public function handle_match_error(): void {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
 		$match      = $this->match;
 		$point_rule = $this->match->league->get_point_rule();
 		$penalty    = empty( $point_rule['result_late'] ) ? 0 : $point_rule['result_late'];
@@ -316,7 +316,7 @@ final class Racketmanager_Results_Checker {
 		}
 		$headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary_name . ' <' . $match->teams['home']->club->match_secretary_email . '>';
 		$headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary_name . ' <' . $match->teams['away']->club->match_secretary_email . '>';
-		$email_message = $racketmanager_shortcodes->load_template(
+		$email_message = $racketmanager->shortcodes->load_template(
 			'result-check-match',
 			array(
 				'email_subject' => $email_subject,
@@ -334,7 +334,7 @@ final class Racketmanager_Results_Checker {
 	 * Handle player error entry
 	 */
 	public function handle_player_error(): void {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
 		$match   = $this->match;
 		$penalty = false;
 		if ( 'league' === $this->match->league->event->competition->type ) {
@@ -432,7 +432,7 @@ final class Racketmanager_Results_Checker {
 		}
 		$headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary_name . ' <' . $match->teams['home']->club->match_secretary_email . '>';
 		$headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary_name . ' <' . $match->teams['away']->club->match_secretary_email . '>';
-		$email_message = $racketmanager_shortcodes->load_template(
+		$email_message = $racketmanager->shortcodes->load_template(
 			'result-check-player',
 			array(
 				'email_subject' => $email_subject,

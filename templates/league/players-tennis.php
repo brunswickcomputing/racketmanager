@@ -34,7 +34,7 @@ if ( ! empty( $league->player ) ) {
 								$match_args['match']        = $match;
 								$match_args['match_player'] = $league->player;
 								$template                   = 'match-teams-scores';
-								echo $racketmanager_shortcodes->load_template( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo $racketmanager->shortcodes->load_template( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 									$template,
 									$match_args, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								);

@@ -2394,7 +2394,7 @@ class RacketManager_Admin extends RacketManager {
 	 * Display contact page
 	 */
 	private function display_contact_page(): void {
-		global $racketmanager, $racketmanager_shortcodes;
+		global $racketmanager;
         $title = null;
         $season = null;
         $object_type = null;
@@ -2440,7 +2440,7 @@ class RacketManager_Admin extends RacketManager {
 				$email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
 				$email_subject = $racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
 
-				$email_message = $racketmanager_shortcodes->load_template(
+				$email_message = $racketmanager->shortcodes->load_template(
 					'contact-teams',
 					array(
 						$object_type    => $object,

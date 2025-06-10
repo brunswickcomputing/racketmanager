@@ -553,9 +553,9 @@ final class Racketmanager_Player {
 	 *
 	 * @param object $player player object with updated data.
 	 */
-	public function update( object $player ): void {
+	public function update( object $player ): object {
 		global $racketmanager;
-
+		$return = new stdClass();
 		$update               = false;
 		$user_data            = array();
 		$player->display_name = $player->firstname . ' ' . $player->surname;
@@ -619,16 +619,21 @@ final class Racketmanager_Player {
 				$user_data['ID'] = $this->ID;
 				$user_id         = wp_update_user( $user_data );
 				if ( is_wp_error( $user_id ) ) {
-					$racketmanager->set_message( $user_id->get_error_message(), true );
+					$return->msg   = $user_id->get_error_message();
+					$return->state = 'danger';
 				} else {
-					$racketmanager->set_message( __( 'Player details updated', 'racketmanager' ) );
+					$return->msg   = __( 'Player details updated', 'racketmanager' );
+					$return->state = 'success';
 				}
 			} else {
-				$racketmanager->set_message( __( 'Player details updated', 'racketmanager' ) );
+				$return->msg   = __( 'Player details updated', 'racketmanager' );
+				$return->state = 'success';
 			}
 		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+			$return->msg = __( 'No updates', 'racketmanager' );
+			$return->state = 'warning';
 		}
+		return $return;
 	}
 	/**
 	 * Update player contact details

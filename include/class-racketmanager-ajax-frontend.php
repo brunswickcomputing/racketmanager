@@ -397,43 +397,35 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 */
 	public function update_player(): void {
 		global $racketmanager;
-
-		$error_field = array();
-		$error_msg   = array();
-		$return      = array();
-		$msg         = '';
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'player-update' ) ) {
-			$error         = true;
-			$error_field[] = '';
-			$error_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-		} else {
+		$return = $this->check_security_token( 'racketmanager_nonce', 'player-update' );
+		if ( empty( $return->error ) ) {
 			$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
 			if ( $player_id ) {
 				$player_valid = $racketmanager->validatePlayer();
 				if ( $player_valid[0] ) {
 					$player     = get_player( $player_id );
 					$new_player = $player_valid[1];
-					$player->update( $new_player );
-					$error = $racketmanager->error;
-					$msg   = $racketmanager->message;
+					$return     = $player->update( $new_player );
 				} else {
-					$error         = true;
-					$error_field[] = $player_valid[1];
-					$error_msg[]   = $player_valid[2];
-					$msg           = __( 'Error with player details', 'racketmanager' );
+					$return->error      = true;
+					$return->status     = 401;
+					$return->err_flds = $player_valid[1];
+					$return->err_msgs = $player_valid[2];
 				}
 			} else {
-				$error         = true;
-				$error_field[] = 'surname';
-				$error_msg[]   = __( 'Player id not supplied', 'racketmanager' );
-				$msg           = __( 'Error with player details', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'surname';
+				$return->err_msgs[] = __( 'Player id not supplied', 'racketmanager' );
 			}
 		}
-		if ( $error ) {
-			array_push( $return, $msg, $error_msg, $error_field );
-			wp_send_json_error( $return, '500' );
+		if ( empty( $return->error ) ) {
+			wp_send_json_success( $return );
 		} else {
-			wp_send_json_success( $msg );
+            if ( empty( $return->msg ) ) {
+                $return->msg = __( 'Unable to update player', 'racketmanager' );
+            }
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**

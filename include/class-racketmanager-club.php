@@ -508,25 +508,29 @@ final class Racketmanager_Club {
 	 * Register player for Club
 	 *
 	 * @param object $new_player player details.
+	 * @return object
 	 */
-	public function register_player( object $new_player ): void {
+	public function register_player( object $new_player ): object {
 		global $racketmanager;
-		$valid          = true;
+		$return         = new stdClass();
 		$old_player     = false;
 		$updated_player = null;
+		$player_change  = false;
 		$player         = get_player( $new_player->user_login, 'login' ); // get player by login.
 		if ( ! $player ) {
 			$player = get_player( $new_player->email, 'email' );
 			if ( $player ) {
 				$old_player = true;
-				$valid      = false;
-				$racketmanager->set_message( __( 'Email address already used', 'racketmanager' ), true );
+				$return->error      = true;
+				$return->msg        = __( 'Email address already used', 'racketmanager' );
+				$return->status     = 401;
 			} else {
 				$player = get_player( $new_player->btm, 'btm' );
 				if ( $player ) {
 					$old_player = true;
-					$valid      = false;
-					$racketmanager->set_message( __( 'LTA Tennis Number already used', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->msg        = __( 'LTA Tennis Number already used', 'racketmanager' );
+					$return->status     = 401;
 				} else {
 					$player = new Racketmanager_Player( $new_player );
 				}
@@ -534,8 +538,7 @@ final class Racketmanager_Club {
 		} else {
 			$old_player = true;
 		}
-		if ( $valid ) {
-			$player_change = false;
+		if ( empty( $return->error ) ) {
 			if ( $old_player ) {
 				$updated_player = clone $player;
 				if ( empty( $player->email ) ) {
@@ -544,8 +547,9 @@ final class Racketmanager_Club {
 						$updated_player->email = $new_player->email;
 					}
 				} elseif ( ! empty( $new_player->email ) && $player->email !== $new_player->email ) {
-					$valid = false;
-					$racketmanager->set_message( __( 'Email address is different from existing', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->msg        = __( 'Email address is does not match current email', 'racketmanager' );
+					$return->status     = 401;
 				}
 				if ( empty( $player->btm ) ) {
 					if ( ! empty( $new_player->btm ) ) {
@@ -553,8 +557,9 @@ final class Racketmanager_Club {
 						$updated_player->btm = $new_player->btm;
 					}
 				} elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== $new_player->btm ) {
-					$valid = false;
-					$racketmanager->set_message( __( 'LTA Tennis Number is different from existing', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->msg        = __( 'LTA Tennis Number does not match current number', 'racketmanager' );
+					$return->status     = 401;
 				}
 				if ( empty( $player->gender ) ) {
 					if ( ! empty( $new_player->gender ) ) {
@@ -562,8 +567,9 @@ final class Racketmanager_Club {
 						$updated_player->gender = $new_player->gender;
 					}
 				} elseif ( ! empty( $new_player->gender ) && $player->gender !== $new_player->gender ) {
-					$valid = false;
-					$racketmanager->set_message( __( 'Gender is different from existing', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->msg        = __( 'Gender does not match current gender', 'racketmanager' );
+					$return->status     = 401;
 				}
 				if ( empty( $player->year_of_birth ) ) {
 					if ( ! empty( $new_player->year_of_birth ) ) {
@@ -571,20 +577,23 @@ final class Racketmanager_Club {
 						$updated_player->year_of_birth = $new_player->year_of_birth;
 					}
 				} elseif ( ! empty( $new_player->year_of_birth ) && intval( $player->year_of_birth ) !== $new_player->year_of_birth ) {
-					$valid = false;
-					$racketmanager->set_message( __( 'Year of birth is different from existing', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->msg        = __( 'Year of birth does not match current', 'racketmanager' );
+					$return->status     = 401;
 				}
 			}
 		}
-		if ( $valid ) {
+		if ( empty( $return->error ) ) {
 			if ( $player_change ) {
-				$player->update( $updated_player );
+				$return = $player->update( $updated_player );
 			}
 			$player_active = $this->player_active( $player->id );
 			if ( ! $player_active ) {
 				$player_pending = $this->is_player_pending( $player->id );
 				if ( $player_pending ) {
-					$racketmanager->set_message( __( 'Player registration already pending', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->status     = 401;
+					$return->msg        = __( 'Player registration already pending', 'racketmanager' );
 				} else {
 					$club_player            = new stdClass();
 					$club_player->club_id   = $this->id;
@@ -618,12 +627,15 @@ final class Racketmanager_Club {
 						$message                   = racketmanager_club_players_notification( $message_args );
 						wp_mail( $email_to, $subject, $message, $headers );
 					}
-					$racketmanager->set_message( $msg );
+					$return->msg = $msg;
 				}
 			} else {
-				$racketmanager->set_message( __( 'Player already registered', 'racketmanager' ), true );
+				$return->error      = true;
+				$return->status     = 401;
+				$return->msg        = __( 'Player already registered', 'racketmanager' );
 			}
 		}
+		return $return;
 	}
 	/**
 	 * Check for player registered active

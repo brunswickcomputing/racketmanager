@@ -201,18 +201,21 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 				} else {
 					$page_referrer = $_POST['page_referrer'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					if ( isset( $_POST['updatePlayer'] ) ) {
-						$player_valid  = $this->validatePlayer();
-						if ( $player_valid[0] ) {
-							if ( isset( $_POST['playerId'] ) ) {
+						if ( isset( $_POST['playerId'] ) ) {
+							$player_valid = $this->validatePlayer();
+							if ( $player_valid[0] ) {
 								$player     = get_player( intval( $_POST['playerId'] ) );
 								$new_player = $player_valid[1];
-								$player->update( $new_player );
+								$return     = $player->update( $new_player );
+								$racketmanager->set_message( $return->msg, $return->state );
+							} else {
+								$form_valid     = false;
+								$error_fields   = $player_valid[1];
+								$error_messages = $player_valid[2];
+								$racketmanager->set_message( __( 'Error with player details', 'racketmanager' ), true );
 							}
 						} else {
-							$form_valid     = false;
-							$error_fields   = $player_valid[1];
-							$error_messages = $player_valid[2];
-							$racketmanager->set_message( __( 'Error with player details', 'racketmanager' ), true );
+							$racketmanager->set_message( __( 'Player id not found', 'racketmanager' ), true );
 						}
 					} elseif ( isset( $_POST['setWTN'] ) ) {
 						$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;

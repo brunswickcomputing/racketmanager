@@ -47,7 +47,7 @@ if ( ! empty( $player->entry ) ) {
 }
 ?>
 <div class="container">
-	<?php require RACKETMANAGER_PATH . 'templates/includes/tournament-header.php'; ?>
+	<?php require_once RACKETMANAGER_PATH . 'templates/includes/tournament-header.php'; ?>
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'tournament-entry' ); ?>
 		<input type="hidden" name="tournamentId" id="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />
@@ -70,7 +70,7 @@ if ( ! empty( $player->entry ) ) {
 							</span>
 						</div>
 						<div class="entry-subhead__aside">
-							<a role="button" href="/rules/tournament-rules/" target="_blank" class="btn btn-primary">
+							<a href="/rules/tournament-rules/" target="_blank" class="btn btn-primary">
 								<?php esc_html_e( 'Tournament Rules', 'racketmanager' ); ?>
 							</a>
 						</div>
@@ -191,14 +191,14 @@ if ( ! empty( $player->entry ) ) {
 												<h5 class="subheading"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></h5>
 												<dl class="list list--flex">
 													<div class="list__item">
-                                                        <dt class="list__label"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></dt>
+                                                        <dt class="list__label"><label for="contactno"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></label></dt>
 														<dd class="list__value">
                                                             <input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
                                                             <div id="contactnoFeedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 													<div class="list__item">
-														<dt class="list__label"><?php esc_html_e( 'Email', 'racketmanager' ); ?></dt>
+														<dt class="list__label"><label for="contactemail"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label></dt>
 														<dd class="list__value">
                                                             <input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
 															<div id="contactemailFeedback" class="invalid-feedback"></div>
@@ -218,7 +218,7 @@ if ( ! empty( $player->entry ) ) {
 															switch ( count( $club_memberships ) ) {
 																case 1:
 																	?>
-                                                                    <label for="clubName"></label><input type="text" class="form-control" id="clubName" name="clubName" value="<?php echo esc_html( get_club( $club_memberships[0]->club_id )->name ); ?>" disabled />
+                                                                    <span class="form-control"><?php echo esc_html( get_club( $club_memberships[0]->club_id )->name ); ?></span>
 																	<input type="hidden" id="clubId" name="clubId" value="<?php echo esc_html( $club_memberships[0]->club_id ); ?>" />
 																	<?php
 																	break;
@@ -251,7 +251,7 @@ if ( ! empty( $player->entry ) ) {
 														</dd>
 													</div>
 													<div class="list__item">
-														<dt class="list__label"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></dt>
+														<dt class="list__label"><label for="btm"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></label></dt>
 														<dd class="list__value">
                                                             <input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
 															<div id="btmFeedback" class="invalid-feedback"></div>
@@ -291,7 +291,7 @@ if ( ! empty( $player->entry ) ) {
 									</div>
 									<div id="eventFeedback" class="invalid-feedback"></div>
 								</div>
-								<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+								<?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 								<div class="container form-checkboxes">
 									<?php
 									$fee_total          = 0;
@@ -404,7 +404,7 @@ if ( ! empty( $player->entry ) ) {
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'readonly'; ?>></textarea>
+											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'readonly'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
 											<div id="commentDetailsFeedback" class="invalid-feedback"></div>
 										</div>
@@ -464,11 +464,11 @@ if ( ! empty( $player->entry ) ) {
 								<?php
 							}
 							?>
-							<a role="button" href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
+							<a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
 							<?php
 							if ( $withdrawal_allowed ) {
 								?>
-								<a role="button" class="btn btn--withdraw" id="tournamentWithdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></a>
+								<a class="btn btn--withdraw" id="tournamentWithdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></a>
 								<?php
 							}
 							?>
@@ -485,7 +485,7 @@ if ( ! empty( $player->entry ) ) {
         let eventId = this.dataset.eventId;
         Racketmanager.partnerModal(e, eventId);
     }));
-    <?php require RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
+    <?php require_once RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
     document.getElementById('tournamentWithdraw').addEventListener('click', function (e) {
         Racketmanager.withdrawTournament(e);
     });

@@ -382,6 +382,12 @@ final class Racketmanager_Player {
 	 */
 	public array $entry;
 	/**
+	 * Tournament Entry
+	 *
+	 * @var object|null
+	 */
+	public ?object $tournament_entry;
+	/**
 	 * Retrieve player instance
 	 *
 	 * @param int|string $player_id player id.

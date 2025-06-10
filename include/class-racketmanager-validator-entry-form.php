@@ -263,11 +263,12 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @throws DateMalformedStringException
 	 */
 	public function match_overlap( string $match_time, string $schedule_time, string $field_ref ): object {
-		$start_time = DateTime::createFromFormat( '!H:i:s', $match_time );
+		$date_format = '!H:i:s';
+		$start_time = DateTime::createFromFormat( $date_format, $match_time );
 		$start_time->modify( '-2 hours' );
-		$end_time = DateTime::createFromFormat( '!H:i:s', $match_time );
+		$end_time = DateTime::createFromFormat( $date_format, $match_time );
 		$end_time->modify( '+2 hours' );
-		$current_match_time = DateTime::createFromFormat( '!H:i:s', $schedule_time );
+		$current_match_time = DateTime::createFromFormat( $date_format, $schedule_time );
 		if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
 			$this->error = true;
 			$this->err_flds[$this->error_id] = 'matchtime-' . $field_ref;

@@ -810,8 +810,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
 				if ( ! $competition ) {
+				if ( $competition ) {
+					$validator = $validator->competition_open( $competition );
+				} else {
 					$validator = $validator->competition( $competition );
-				}
+                }
 				if ( empty( $competition->match_day_restriction ) ) {
 					$match_day_restriction  = false;
 				} else {

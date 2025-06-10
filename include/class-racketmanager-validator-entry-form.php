@@ -374,7 +374,21 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 		}
 		return $this;
 	}
-
+	/**
+	 * Validate competition open
+	 *
+	 * @param object $competition competition object.
+	 * @return object $validation updated validation object.
+	 */
+	public function competition_open( object $competition ): object {
+		if ( ! $competition->is_open ) {
+			$this->error = true;
+			$this->err_flds[$this->error_id] = 'acceptance';
+			$this->err_msgs[$this->error_id] = __( 'Competition not open for entries', 'racketmanager' );
+			++$this->error_id;
+		}
+		return $this;
+	}
 	/**
 	 * Validate weekend match
 	 *

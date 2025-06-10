@@ -888,6 +888,11 @@ class RacketManager_Shortcodes {
 				'active' => true,
 			)
 		);
+		$search           = $tournament->id . '_' . $player->id;
+		$tournament_entry = get_tournament_entry( $search, 'key' );
+        if ( $tournament_entry ) {
+            $player->tournament_entry = $tournament_entry;
+        }
 
 		$filename = ( ! empty( $template ) ) ? 'entry-tournament-' . $template : 'entry-tournament';
 

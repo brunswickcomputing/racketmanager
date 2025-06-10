@@ -38,7 +38,7 @@ $event = $club->event;
 									<input type="text" class="teamcaptain form-control" id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $team->captain ); ?>" <?php disabled( $user_can_update, false ); ?> />
 									<input type="hidden" id="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $team->captain_id ); ?>" />
 									<label for="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
-									<div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+									<div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
 								</div>
 							</div>
 							<?php
@@ -53,7 +53,7 @@ $event = $club->event;
 										<div class="form-floating">
 											<input type="tel" class="form-control" id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $team->contactno ); ?>" <?php disabled( $user_can_update, false ); ?> />
 											<label for="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Contact Number', 'racketmanager' ); ?></label>
-											<div id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+											<div id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
 										</div>
 									</div>
 									<?php
@@ -66,7 +66,7 @@ $event = $club->event;
 										<div class="form-floating">
 											<input type="email" class="form-control" id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $team->contactemail ); ?>" size="30" <?php disabled( $user_can_update, false ); ?> />
 											<label for="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Contact Email', 'racketmanager' ); ?></label>
-											<div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+											<div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
 										</div>
 									</div>
 									<?php
@@ -94,7 +94,7 @@ $event = $club->event;
 													<option value="<?php echo esc_html( $key ); ?>" <?php selected( $matchday, $team->match_day ); ?> <?php disabled( $user_can_update, false ); ?>><?php echo esc_html( $matchday ); ?></option>
 												<?php } ?>
 											</select>
-											<div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+											<div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
 											<?php
 										} else {
 											?>
@@ -115,7 +115,7 @@ $event = $club->event;
 									<div class="form-floating">
 										<input type="time" class="form-control" id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $team->match_time ); ?>" size="30" <?php disabled( $user_can_update, false ); ?> />
 										<label for="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
-										<div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+										<div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
 									</div>
 									<?php
 								}

@@ -809,7 +809,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$club_entry->comments = $comments;
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
-				if ( ! $competition ) {
 				if ( $competition ) {
 					$validator = $validator->competition_open( $competition );
 				} else {

@@ -193,15 +193,15 @@ if ( ! empty( $player->entry ) ) {
 													<div class="list__item">
                                                         <dt class="list__label"><?php esc_html_e( 'Phone', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-                                                            <label for="contactno"></label><input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
-                                                            <div id="contactno-feedback" class="invalid-feedback"></div>
+                                                            <input type="tel" class="form-control" id="contactno" name="contactno" value="<?php echo esc_html( $player->contactno ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+                                                            <div id="contactnoFeedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'Email', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-                                                            <label for="contactemail"></label><input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
-															<div id="contactemail-feedback" class="invalid-feedback"></div>
+                                                            <input type="email" class="form-control" id="contactemail" name="contactemail" value="<?php echo esc_html( $player->user_email ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+															<div id="contactemailFeedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 												</dl>
@@ -230,18 +230,20 @@ if ( ! empty( $player->entry ) ) {
 																	break;
 																default:
 																	?>
-                                                                    <label for="clubId"></label><select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'readonly'; ?>>
-																		<option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
-																		<?php
-																		foreach ( $club_memberships as $club_player ) {
-																			$club = get_club( $club_player->club_id );
-																			?>
-																			<option value="<?php echo esc_html( $club->id ); ?>"><?php echo esc_html( $club->name ); ?></option>
-																			<?php
-																		}
-																		?>
-																	</select>
-																	<div id="clubId-feedback" class="invalid-feedback"></div>
+                                                                    <label for="clubId" class="visually-hidden"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
+                                                                        <select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'readonly'; ?>>
+                                                                            <option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
+                                                                            <?php
+                                                                            foreach ( $club_memberships as $club_player ) {
+                                                                                $club = get_club( $club_player->club_id );
+                                                                                ?>
+                                                                                <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $player->tournament_entry->club_id ) ? null : $player->tournament_entry->club_id );  ?>><?php echo esc_html( $club->name ); ?></option>
+                                                                                <?php
+                                                                            }
+                                                                            ?>
+                                                                        </select>
+
+																	<div id="clubIdFeedback" class="invalid-feedback"></div>
 																	<?php
 																	break;
 															}
@@ -251,8 +253,8 @@ if ( ! empty( $player->entry ) ) {
 													<div class="list__item">
 														<dt class="list__label"><?php esc_html_e( 'LTA Number', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-                                                            <label for="btm"></label><input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
-															<div id="btm-feedback" class="invalid-feedback"></div>
+                                                            <input type="number" class="form-control" id="btm" name="btm" value="<?php echo esc_html( $player->btm ); ?>" <?php echo $changes_allowed ? null : 'readonly'; ?> />
+															<div id="btmFeedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
 												</dl>
@@ -287,7 +289,7 @@ if ( ! empty( $player->entry ) ) {
 											?>
 										</p>
 									</div>
-									<div id="event-feedback" class="invalid-feedback"></div>
+									<div id="eventFeedback" class="invalid-feedback"></div>
 								</div>
 								<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 								<div class="container form-checkboxes">
@@ -336,7 +338,7 @@ if ( ! empty( $player->entry ) ) {
 														<input type="hidden" name="eventFee[<?php echo esc_attr( $event->id ); ?>]" id="eventFee-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $tournament->fees->event ); ?>" />
 														<input class="form-check-input form-check--event hasModal" id="event-<?php echo esc_html( $event->id ); ?>" name="event[<?php echo esc_html( $event->id ); ?>]" type="checkbox" value=<?php echo esc_html( $event->id ); ?> aria-controls="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $entered ? 'checked' : ''; ?> <?php echo $disabled ? 'disabled' : null; ?> >
 														<label class="form-check-label" for="event-<?php echo esc_html( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></label>
-														<div id="event-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+														<div id="event-<?php echo esc_html( $event->id ); ?>Feedback" class="invalid-feedback"></div>
 													</div>
 													<?php
 													$is_doubles = false;
@@ -369,7 +371,7 @@ if ( ! empty( $player->entry ) ) {
 																		<?php
 																	}
 																	?>
-																	<div id="partner-<?php echo esc_html( $event->id ); ?>-feedback" class="invalid-feedback"></div>
+																	<div id="partner-<?php echo esc_html( $event->id ); ?>Feedback" class="invalid-feedback"></div>
 																	<?php
 																}
 																?>
@@ -404,7 +406,7 @@ if ( ! empty( $player->entry ) ) {
 										<div class="form-floating">
 											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'readonly'; ?>></textarea>
 											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
-											<div id="commentDetails-feedback" class="invalid-feedback"></div>
+											<div id="commentDetailsFeedback" class="invalid-feedback"></div>
 										</div>
 									</div>
 								</div>
@@ -420,7 +422,7 @@ if ( ! empty( $player->entry ) ) {
 									?>
 								</label>
 								<input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed || $withdrawal_allowed ? null : 'disabled'; ?>>
-								<div id="acceptance-feedback" class="invalid-feedback"></div>
+								<div id="acceptanceFeedback" class="invalid-feedback"></div>
 							</div>
 						</div>
 					</div>

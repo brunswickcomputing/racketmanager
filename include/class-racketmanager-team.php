@@ -530,14 +530,14 @@ final class Racketmanager_Team {
 	 * Update event details
 	 *
 	 * @param int $event_id event id.
-	 * @param string $captain captain id.
+	 * @param int $captain captain id.
 	 * @param string $contactno optional contact number.
 	 * @param string $contactemail optional contact email.
 	 * @param int|null $matchday optional match day.
 	 * @param string|null $matchtime optional match time.
 	 * @return false|string|null $team_event_id
 	 */
-	public function update_event( int $event_id, string $captain, string $contactno, string $contactemail, ?int $matchday, ?string $matchtime ): false|string|null {
+	public function update_event( int $event_id, int $captain, string $contactno, string $contactemail, ?int $matchday, ?string $matchtime ): false|string|null {
 		global $wpdb;
 		$updates = false;
 		$msg     = false;

@@ -89,12 +89,12 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	/**
 	 * Validate teams
 	 *
-	 * @param array $teams array of teams.
+	 * @param array|string|null $teams array of teams.
 	 * @param string $field_ref field reference.
 	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
 	 */
-	public function teams( array $teams, string $field_ref, string $field_name ): object {
+	public function teams( array|string|null $teams, string $field_ref, string $field_name ): object {
 		if ( empty( $teams ) ) {
 			$this->error = true;
 			$this->err_flds[$this->error_id] = 'event-' . $field_ref;

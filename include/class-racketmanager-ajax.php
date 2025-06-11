@@ -47,8 +47,8 @@ class Racketmanager_Ajax {
 		$players     = null;
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {
-	        $type    = isset( $_POST['type'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['type'] ) ) ) : '';
-	        $name    = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : '';
+	        $type    = isset( $_POST['type'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['type'] ) ) ) :null;
+	        $name    = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : null;
 	        $gender  = empty( $_POST['partnerGender'] ) ? null : sanitize_text_field( wp_unslash( $_POST['partnerGender'] ) );
 	        $club_id = empty( $_POST['club'] ) ? null : intval( $_POST['club'] );
             $players = $this->get_players_lookup( $type, $name, $gender, $club_id );
@@ -71,7 +71,7 @@ class Racketmanager_Ajax {
      * @return array of players.
 	 */
     private function get_players_lookup( string $type, string $name, ?string $gender, ?int $club_id ): array {
-        global $wpdb;
+        global $racketmanager;
 	    $results = array();
 	    if ( 'btm' === $type ) {
 		    $player  = get_player( $name, 'btm' );
@@ -86,70 +86,71 @@ class Racketmanager_Ajax {
 			    $results[]          = $result;
 		    }
 	    } elseif ( 'name' === $type ) {
-            $search_term = null;
-		    $name        = $wpdb->esc_like( $name ) . '%';
-		    if ( $club_id ) {
-			    $search_term = $wpdb->prepare(
-				    ' AND C.`id` = %s',
-				    $club_id
-			    );
-		    }
-		    $results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-			    $wpdb->prepare(
-			    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				    "SELECT  P.`display_name` AS `fullname`, C.`name` as club, R.`id` as roster_id, C.`id` as club_id, P.`id` as player_id, P.`user_email` FROM $wpdb->racketmanager_club_players R, $wpdb->users P, $wpdb->racketmanager_clubs C WHERE R.`player_id` = P.`ID` AND R.`removed_date` IS NULL AND C.`id` = R.`club_id` $search_term AND `display_name` like %s ORDER BY 1,2,3",
-				    $name
-			    )
-		    );
+            $player_args = array();
+            $player_args['name'] = $name;
+            $players = $racketmanager->get_all_players( $player_args );
+            foreach ( $players as $player ) {
+                $player_clubs = $player->get_clubs();
+                foreach ( $player_clubs as $player_club ) {
+                    if ( empty( $club_id ) || $club_id === $player_club->id ) {
+	                    $result = new stdClass();
+	                    $result->fullname   = $player->display_name;
+	                    $result->user_email = $player->user_email;
+	                    $result->club_id    = $player_club->id;
+	                    $result->roster_id  = $player_club->club_player_id;
+	                    $result->club       = $player_club->shortcode;
+	                    $result->player_id  = $player->ID;
+	                    $results[]          =  $result;
+                    }
+                }
+            }
 	    }
-	    $players = array();
-	    if ( $results ) {
-            $players = $this->set_player_results( $results, $type, $gender );
-	    } else {
-		    $players[] = array(
-			    'label' => __( 'No results found', 'racketmanager' ),
-			    'value' => 'null',
-		    );
-	    }
-        return $players;
+
+	    return $this->set_player_results( $results, $type, $gender );
     }
 	/**
 	 * Return formatted results
 	 *
-	 * @param array $results result details.
+	 * @param array|null $results result details.
 	 * @param string $type lookup type.
 	 * @param string|null $gender gender.
 	 *
 	 * @return array of players.
 	 */
-    private function set_player_results( array $results, string $type, ?string $gender ): array {
+    private function set_player_results( ?array $results, string $type, ?string $gender ): array {
 	    $players = array();
-	    foreach ( $results as $r ) {
-		    $player['label'] = $r->fullname;
-		    if ( $r->club ) {
-			    $player['label'] .= ' - ' . $r->club;
-		    }
-		    $player['name']       = $r->fullname;
-		    $player['id']         = $r->roster_id;
-		    $player['club_id']    = $r->club_id;
-		    $player['club']       = $r->club;
-		    $player['playerId']   = $r->player_id;
-		    $player['user_email'] = $r->user_email;
-		    $player['contactno']  = get_user_meta( $r->player_id, 'contactno', true );
-		    $player['btm']        = get_user_meta( $r->player_id, 'btm', true );
-		    if ( 'btm' === $type ) {
-			    $player['value'] = $player['btm'];
-		    } else {
-			    $player['value'] = $player['name'];
-		    }
-		    if ( $gender ) {
-			    $player['gender'] = get_user_meta( $r->player_id, 'gender', true );
-			    if ( $gender !== $player['gender'] ) {
-				    continue;
-			    }
-		    }
-		    $players[] = $player;
-	    }
+        if ( empty( $results ) ) {
+	        return array(
+		        'label' => __( 'No results found', 'racketmanager' ),
+		        'value' => 'null',
+	        );
+        }
+        foreach ( $results as $r ) {
+            $player['label'] = $r->fullname;
+            if ( $r->club ) {
+                $player['label'] .= ' - ' . $r->club;
+            }
+            $player['name']       = $r->fullname;
+            $player['id']         = $r->roster_id;
+            $player['club_id']    = $r->club_id;
+            $player['club']       = $r->club;
+            $player['playerId']   = $r->player_id;
+            $player['user_email'] = $r->user_email;
+            $player['contactno']  = get_user_meta( $r->player_id, 'contactno', true );
+            $player['btm']        = get_user_meta( $r->player_id, 'btm', true );
+            if ( 'btm' === $type ) {
+                $player['value'] = $player['btm'];
+            } else {
+                $player['value'] = $player['name'];
+            }
+            if ( $gender ) {
+                $player['gender'] = get_user_meta( $r->player_id, 'gender', true );
+                if ( $gender !== $player['gender'] ) {
+                    continue;
+                }
+            }
+            $players[] = $player;
+        }
         return $players;
     }
 	/**

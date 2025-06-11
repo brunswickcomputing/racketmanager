@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Validator object
  */
@@ -215,5 +217,12 @@ class Racketmanager_Validator {
 			++$this->error_id;
 		}
 		return $this;
+	}
+	public function get_details(): object {
+		$return = new stdClass();
+		$return->error = $this->error;
+		$return->err_flds = $this->err_flds;
+		$return->err_msgs = $this->err_msgs;
+		return $return;
 	}
 }

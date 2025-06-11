@@ -64,7 +64,7 @@ if ( ! empty( $club->entry ) ) {
 							?>
 						</div>
 						<div class="entry-subhead__aside">
-							<a role="button" href="/rules/cup-rules/" target="_blank" class="btn btn-primary">
+							<a href="/rules/cup-rules/" target="_blank" class="btn btn-primary">
 								<?php esc_html_e( 'Cup Rules', 'racketmanager' ); ?>
 							</a>
 						</div>
@@ -279,7 +279,7 @@ if ( ! empty( $club->entry ) ) {
 							<div class="club-entry__submit">
 								<button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="cup"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
 							</div>
-							<a role="button" href="/clubs/<?php echo esc_html( seo_url( $club->shortcode ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
+							<a href="/clubs/<?php echo esc_html( seo_url( $club->shortcode ) ); ?>/" class="btn btn--cancel"><?php esc_html_e( 'Back', 'racketmanager' ); ?></a>
 						</div>
 					</div>
 				</div>

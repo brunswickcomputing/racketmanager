@@ -37,7 +37,7 @@ if ( ! empty( $club->entry ) ) {
 ?>
 <div class="container">
 	<?php
-	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
+	require_once RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'cup-entry' ); ?>
@@ -288,5 +288,5 @@ if ( ! empty( $club->entry ) ) {
 	</form>
 </div>
 <script type="text/javascript">
-	<?php require RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
+	<?php require_once RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
 </script>

@@ -163,7 +163,7 @@ final class Racketmanager_Results_Checker {
 					$this->team = $this->match->teams['away'];
 				}
 			}
-			if ( ! empty( $player_id ) ) {
+			if ( ! empty( $this->player_id ) ) {
 				$player = get_player( $this->player_id );
 				if ( $player ) {
 					$this->player = $player;

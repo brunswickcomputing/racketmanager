@@ -58,7 +58,7 @@ foreach ( $club->competitions as $competition ) {
 							foreach ( $event->teams as $team ) {
 								?>
 								<li class="list__item">
-											<?php require RACKETMANAGER_PATH . 'templates/includes/team.php'; ?>
+                                    <?php require RACKETMANAGER_PATH . 'templates/includes/team.php'; ?>
 								</li>
 								<?php
 							}

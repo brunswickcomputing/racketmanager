@@ -82,7 +82,7 @@ if ( isset( $team->info ) ) {
 				<?php
 				$favourite_type = 'team';
 				$favourite_id   = $team->id;
-				require RACKETMANAGER_PATH . 'templates/includes/favourite-button.php';
+				require_once RACKETMANAGER_PATH . 'templates/includes/favourite-button.php';
 				?>
 			</div>
 		</div>

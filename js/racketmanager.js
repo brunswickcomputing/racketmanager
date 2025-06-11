@@ -153,14 +153,14 @@ jQuery(document).ready(function () {
 		let team = this.value;
 		let event = this.name;
 		event = event.substring(5, event.length - 1);
-		let notifyField = "#notify-" + event;
+		let notifyField = "#team-" + event;
+		jQuery(notifyField).removeClass('is-invalid');
 		let responseField = "#team-dtls-" + event;
 		let splash = '#splash-' + event;
 		jQuery(splash).removeClass("d-none");
 		jQuery(splash).css('opacity', 1);
 		jQuery(splash).show();
 		jQuery(responseField).hide();
-		jQuery(notifyField).hide();
 
 		jQuery.ajax({
 			type: 'POST',
@@ -190,11 +190,13 @@ jQuery(document).ready(function () {
 				jQuery(matchtime).val(team_info.match_time);
 			},
 			error: function (response) {
+				let feedback = notifyField + 'Feedback';
 				if (response.responseJSON) {
-					jQuery(notifyField).text(response.responseJSON.data);
+					jQuery(feedback).text(response.responseJSON.data);
 				} else {
-					jQuery(notifyField).text(response.statusText);
+					jQuery(feedback).text(response.statusText);
 				}
+				jQuery(notifyField).addClass('is-invalid');
 				jQuery(notifyField).show();
 			},
 			complete: function () {
@@ -218,7 +220,7 @@ function CaptainLookup() {
 	jQuery('.teamcaptain').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
-			let club = jQuery("#club").val();
+			let club = jQuery("#clubId").val();
 			let fieldRef = this.element[0].id;
 			let ref = fieldRef.substr(7);
 			let notifyField = '#updateTeamResponse'.concat(ref);
@@ -468,7 +470,7 @@ let Racketmanager = {};
 
 Racketmanager.printScoreCard = function (e, matchId) {
 	e.preventDefault();
-	let $matchCardWindow;
+	let matchCardWindow;
 	let notifyField = '#feedback-' + matchId;
 	jQuery(notifyField).hide();
 	jQuery(notifyField).removeClass('message-success message-error');
@@ -489,19 +491,14 @@ Racketmanager.printScoreCard = function (e, matchId) {
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
-			if (!$matchCardWindow || $matchCardWindow.closed) {
-				let $matchCardWindow = window.open("about:blank", "_blank", "width=800,height=775");
-				if (!$matchCardWindow) {
-					jQuery(notifyField).text("Match Card not available - turn off pop blocker and retry");
-					jQuery(notifyField).show();
-					jQuery(notifyField).addClass('message-error');
-				} else {
-					$matchCardWindow.document.write(head + response.data + foot);
-				}
+			matchCardWindow = window.open("about:blank", "match_card", "popup, width=800,height=775");
+			if (!matchCardWindow) {
+				jQuery(notifyField).text("Match Card not available - turn off pop blocker and retry");
+				jQuery(notifyField).show();
+				jQuery(notifyField).addClass('message-error');
 			} else {
-				// window still exists from last time and has not been closed.
-				$matchCardWindow.document.body.innerHTML = response.data;
-				$matchCardWindow.focus()
+			matchCardWindow.document.head.innerHTML = head;
+			matchCardWindow.document.body.innerHTML = response.data + foot;
 			}
 		},
 		error: function (response) {
@@ -781,9 +778,9 @@ Racketmanager.club_player_request = function () {
 	let clubPlayerUpdateSubmit = jQuery("#clubPlayerUpdateSubmit");
 	clubPlayerUpdateSubmit.hide();
 	clubPlayerUpdateSubmit.addClass("disabled");
-	let notifyField = '#playerAddResponse';
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(notifyField).hide();
+	let alertField = '#playerAddResponse';
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertField).hide();
 	let alertTextField = '#playerAddResponseText';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -802,41 +799,26 @@ Racketmanager.club_player_request = function () {
 			jQuery("#btm").val("");
 			jQuery("#year_of_birth").val("");
 			jQuery("#email").val("");
-			jQuery(notifyField).addClass('alert--success');
-			jQuery(alertTextField).html(response.data);
+			jQuery(alertField).addClass('alert--success');
+			jQuery(alertTextField).html(response.data.msg);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let $message = data[0];
-				let $errorField = data[2];
-				let $errorMsg = data[3];
-				for (let $i = 0; $i < $errorField.length; $i++) {
-					let $id = '#'.concat($errorField[$i]);
-					jQuery($id).addClass("is-invalid");
-					let $id2 = '#'.concat($errorField[$i], 'Feedback');
-					jQuery($id2).html($errorMsg[$i]);
-				}
-				jQuery(alertTextField).html($message);
-			} else {
-				jQuery(alertTextField).text(response.statusText);
-			}
-			jQuery(notifyField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 		},
 		complete: function () {
 			let clubPlayerUpdateSubmit = jQuery("#clubPlayerUpdateSubmit");
 			clubPlayerUpdateSubmit.removeClass("disabled");
 			clubPlayerUpdateSubmit.show();
-			jQuery(notifyField).show();
+			jQuery(alertField).show();
 		}
 	});
 };
 Racketmanager.clubPlayerRemove = function (link, gender) {
 	let $form = jQuery(link).serialize();
 	$form += "&action=racketmanager_club_players_remove";
-	let notifyField = '#playerDel' + gender + 'Response';
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(notifyField).hide();
+	let alertField = '#playerDel' + gender + 'Response';
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertField).hide();
 	let alertTextField = '#playerDel' + gender + 'ResponseText';
 	jQuery(alertTextField).html("");
 
@@ -852,23 +834,14 @@ Racketmanager.clubPlayerRemove = function (link, gender) {
 					jQuery(rowId).remove();
 				}
 			});
-			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertField).addClass('alert--success');
 			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let $message = response.responseJSON.data[0];
-				for (let errorMsg of response.responseJSON.data[1]) {
-					$message += '<br />' + errorMsg;
-				}
-				jQuery(alertTextField).html($message);
-			} else {
-				jQuery(alertTextField).text(response.statusText);
-			}
-			jQuery(notifyField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 		},
 		complete: function () {
-			jQuery(notifyField).show();
+			jQuery(alertField).show();
 		}
 	});
 };
@@ -881,9 +854,9 @@ Racketmanager.updateTeam = function (link) {
 	let submitButton = "#teamUpdateSubmit-".concat(event, "-", team);
 	$form += "&action=racketmanager_update_team";
 	jQuery(submitButton).hide();
-	let notifyField = "#teamUpdateResponse-".concat(event, "-", team);
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(notifyField).hide();
+	let alertField = "#teamUpdateResponse-".concat(event, "-", team);
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertField).hide();
 	let alertTextField = '#teamUpdateResponseText-'.concat(event, "-", team);
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -912,46 +885,49 @@ Racketmanager.updateTeam = function (link) {
 				let teamContactEmailField = '#captain-contact-email';
 				jQuery(teamContactEmailField).html(captainContactEmail);
 			}
-			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertField).addClass('alert--success');
 			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
-			let message;
-			let data;
-			if (response.status === 500) {
-				if ( response.responseJSON) {
-					data = response.responseJSON.data;
-					message = data.message;
-					if (data.file) {
-						message = message.concat(' ' + data.file + ' ' + data.line);
-					}
-				} else {
-					message = response.statusText;
-				}
-			} else if ( response.responseJSON) {
-				data = response.responseJSON.data;
-				message = data.msg;
-				if (data.err_msgs) {
-					jQuery(notifyField).addClass('message-error');
-					for (let i = 0; i < data.err_flds.length; i++) {
-						let formField = "#" + data.err_flds[i];
-						jQuery(formField).addClass('is-invalid');
-						formField = formField + '-feedback';
-						jQuery(formField).html(data.err_msgs[i]);
-					}
-				}
-			} else {
-				message = response.statusText;
-			}
-			jQuery(alertTextField).html(message);
-			jQuery(notifyField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 		},
 		complete: function () {
-			jQuery(notifyField).show();
+			jQuery(alertField).show();
 		}
 	});
 	jQuery(submitButton).show();
 };
+Racketmanager.handleAjaxError = function(response, alertTextField, alertField) {
+	let message;
+	let data;
+	if (response.status === 500) {
+		if ( response.responseJSON) {
+			data = response.responseJSON.data;
+			message = data.message;
+			if (data.file) {
+				message = message.concat(' ' + data.file + ' ' + data.line);
+			}
+		} else {
+			message = response.statusText;
+		}
+	} else if ( response.responseJSON) {
+		data = response.responseJSON.data;
+		message = data.msg;
+		if (data.err_msgs) {
+			for (let i = 0; i < data.err_flds.length; i++) {
+				let formField = "#" + data.err_flds[i];
+				jQuery(formField).addClass('is-invalid');
+				formField = formField + 'Feedback';
+				jQuery(formField).html(data.err_msgs[i]);
+			}
+		}
+	} else {
+		message = response.statusText;
+	}
+	jQuery(alertTextField).html(message);
+	jQuery(alertField).addClass('alert--danger');
+
+}
 Racketmanager.updateClub = function (link) {
 
 	let formId = '#'.concat(link.form.id);
@@ -959,9 +935,9 @@ Racketmanager.updateClub = function (link) {
 	let submitButton = "#updateClubSubmit";
 	$form += "&action=racketmanager_update_club";
 	jQuery(submitButton).hide();
-	let notifyField = "#clubUpdateResponse";
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(notifyField).hide();
+	let alertField = "#clubUpdateResponse";
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertField).hide();
 	let alertTextField = '#clubUpdateResponseText';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -974,30 +950,14 @@ Racketmanager.updateClub = function (link) {
 		data: $form,
 		async: false,
 		success: function (response) {
-			jQuery(notifyField).addClass('alert--success');
+			jQuery(alertField).addClass('alert--success');
 			jQuery(alertTextField).html(response.data);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let $message = response.responseJSON.data[0];
-				if (response.responseJSON.data[1]) {
-					let $errorMsg = response.responseJSON.data[1];
-					let $errorField = response.responseJSON.data[2];
-					for (let $i = 0; $i < $errorField.length; $i++) {
-						let formField = "#" + $errorField[$i];
-						jQuery(formField).addClass('is-invalid');
-						formField = formField + '-tooltip';
-						jQuery(formField).html($errorMsg[$i]);
-					}
-				}
-				jQuery(alertTextField).html($message);
-			} else {
-				jQuery(alertTextField).text(response.statusText);
-			}
-			jQuery(notifyField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 		},
 		complete: function () {
-			jQuery(notifyField).show();
+			jQuery(alertField).show();
 		}
 	});
 	jQuery(submitButton).show();
@@ -1009,9 +969,9 @@ Racketmanager.updatePlayer = function (link) {
 	$form += "&action=racketmanager_update_player";
 	let submitButton = "#updatePlayerSubmit";
 	jQuery(submitButton).hide();
-	let notifyField = '#playerUpdateResponse';
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(notifyField).hide();
+	let alertField = '#playerUpdateResponse';
+	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(alertField).hide();
 	let alertTextField = '#playerUpdateResponseText';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -1023,30 +983,20 @@ Racketmanager.updatePlayer = function (link) {
 		data: $form,
 		async: false,
 		success: function (response) {
-			jQuery(notifyField).addClass('alert--success');
-			jQuery(alertTextField).html(response.data);
+			let data = response.data;
+			let alertClass;
+			if (data.state) {
+				alertClass = 'alert--' + data.state;
+			} else {
+				alertClass = 'alert--success';}
+			jQuery(alertField).addClass(alertClass);
+			jQuery(alertTextField).html(data.msg);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let $message = response.responseJSON.data[0];
-				if (response.responseJSON.data[1]) {
-					let $errorMsg = response.responseJSON.data[1];
-					let $errorField = response.responseJSON.data[2];
-					for (let $i = 0; $i < $errorField.length; $i++) {
-						let formField = "#" + $errorField[$i];
-						jQuery(formField).addClass('is-invalid');
-						formField = formField + 'Feedback';
-						jQuery(formField).html($errorMsg[$i]);
-					}
-				}
-				jQuery(alertTextField).html($message);
-			} else {
-				jQuery(alertTextField).text(response.statusText);
-			}
-			jQuery(notifyField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 		},
 		complete: function () {
-			jQuery(notifyField).show();
+			jQuery(alertField).show();
 		}
 	});
 	jQuery(submitButton).show();
@@ -1090,33 +1040,14 @@ Racketmanager.entryRequest = function (event, type) {
 				msgType = 'success';
 			}
 			let msgClass = 'alert--' + msgType;
-			jQuery(notifyField).addClass(msgClass);
+			jQuery(alertField).addClass(msgClass);
 			jQuery(alertTextField).html(msg);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let message = data[0];
-				if (message) {
-					let errorMsg = data[1];
-					let errorField = data[2];
-					for (let i = 0; i < errorField.length; i++) {
-						let formField = '#' + errorField[i];
-						jQuery(formField).addClass('is-invalid');
-						formField = formField + '-feedback';
-						jQuery(formField).html(errorMsg[i]);
-					}
-				} else {
-					message = data.message + ' ' + data.file + ' ' + data.line;
-				}
-				jQuery(alertTextField).html(message);
-			} else {
-				jQuery(alertTextField).text(response.statusText);
-			}
-			jQuery(notifyField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 		},
 		complete: function () {
-			jQuery(notifyField).show();
+			jQuery(alertField).show();
 			jQuery("#acceptance").prop("checked", false);
 			entryDetails.removeClass('is-loading');
 		}
@@ -2099,8 +2030,8 @@ Racketmanager.setTotalPrice = function () {
 	let eventPriceFld = '.event-price-amt';
 	let eventPrices = jQuery(eventPriceFld);
 	let totalPrice = +competitionFee;
-	for (let i = 0; i < eventPrices.length; i++) {
-		let eventPrice = eventPrices[i];
+	for (const element of eventPrices) {
+		let eventPrice = element;
 		eventPrice = eventPrice.value;
 		totalPrice = +totalPrice + +eventPrice;
 	}
@@ -2162,10 +2093,10 @@ Racketmanager.login = function (e) {
 	e.preventDefault();
 	let	notifyField = "#login";
 	jQuery(notifyField).css('opacity', 0.25);
-	let alertResponseField = '#loginAlertResponse';
+	let alertTextField = '#loginAlertResponse';
 	let alertField = '#loginAlert';
 	jQuery(alertField).hide();
-	jQuery(alertResponseField).html();
+	jQuery(alertTextField).html();
 	let userLogin = jQuery('#user_login').val();
 	let userPass = jQuery('#user_pass').val();
 	let redirectURL = jQuery('#redirect_to').val();
@@ -2184,28 +2115,7 @@ Racketmanager.login = function (e) {
 			document.location.href = response.data;
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				if (response.status === 401) {
-					let message = data[0];
-					jQuery(alertResponseField).html(message);
-					if (data[1]) {
-						let errorMsg = data[1];
-						let errorField = data[2];
-						for (let $i = 0; $i < errorField.length; $i++) {
-							let formField = "#" + errorField[$i];
-							jQuery(formField).addClass('is-invalid');
-							formField = formField + 'Feedback';
-							jQuery(formField).html(errorMsg[$i]);
-						}
-					}
-				} else {
-					jQuery(alertResponseField).html(data);
-				}
-			} else {
-				jQuery(alertResponseField).text(response.statusText);
-			}
-			jQuery(alertField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertTextField, alertField);
 			jQuery(alertField).show();
 		},
 		complete: function () {

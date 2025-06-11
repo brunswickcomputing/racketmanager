@@ -20,6 +20,17 @@ use Stripe\StripeClient;
  * @author Paul Moffat
  */
 class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
+	public string $team_not_found;
+	public string $entry_form_errors ;
+	public string $no_event_id;
+    public string $no_match_id ;
+    public string $no_modal;
+    public string $not_played;
+    public string $retired_player;
+    public string $not_played_no_opponent;
+    public string $event_not_found;
+    public string $match_not_found;
+    public string $club_not_found;
 	/**
 	 * Register ajax actions.
 	 */
@@ -100,6 +111,17 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_nopriv_racketmanager_get_event_team_match_dropdown', array( &$this, 'get_event_team_match_dropdown' ) );
 		add_action( 'wp_ajax_racketmanager_update_account', array( &$this, 'update_account' ) );
 		add_action( 'wp_ajax_nopriv_racketmanager_update_account', array( &$this, 'login' ) );
+        $this->team_not_found = __( 'Team not found', 'racketmanager' );
+        $this->entry_form_errors = __( 'Errors in entry form', 'racketmanager' );
+		$this->no_event_id = __( 'Event id not supplied', 'racketmanager' );
+        $this->no_match_id = __( 'Match id not supplied', 'racketmanager' );
+        $this->no_modal = __( 'Modal name not supplied', 'racketmanager' );
+        $this->not_played = __( 'Not played', 'racketmanager' );
+        $this->retired_player                = __( 'Retired - %s', 'racketmanager' );
+        $this->not_played_no_opponent = __( 'Match not played - %s did not show', 'racketmanager' );
+        $this->event_not_found = __( 'Event not found', 'racketmanager' );
+		$this->match_not_found = __( 'Match not found', 'racketmanager' );
+        $this->club_not_found = __( 'Club not found', 'racketmanager' );
 	}
 	/**
 	 * Add item as favourite
@@ -136,38 +158,39 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 */
 	public function club_player_request(): void {
 		global $racketmanager;
-		$return      = array();
-		$msg         = '';
-		$error_field = array();
-		$error_msg   = array();
-		if ( check_admin_referer( 'club-player-request' ) ) {
+		$return = $this->check_security_token('racketmanager_nonce','club-player-request' );
+		if ( empty( $return->error ) ) {
 			$player_valid = $racketmanager->validatePlayer();
 			if ( $player_valid[0] ) {
 				$new_player = $player_valid[1];
 				if ( isset( $_POST['club'] ) ) {
 					$club = get_club( intval( $_POST['club'] ) );
-					$club->register_player( $new_player );
+                    if ( $club ) {
+	                    $return = $club->register_player( $new_player );
+                    } else {
+	                    $return->error      = true;
+	                    $return->status     = 404;
+	                    $return->err_flds[] = 'surname';
+	                    $return->err_msgs[] = $this->club_not_found;
+                    }
 				} else {
-					$error_field = 'surname';
-					$error_msg   = __( 'Club not set', 'racketmanager' );
-					$racketmanager->set_message( __( 'Error in player request', 'racketmanager' ), true );
+					$return->error      = true;
+					$return->status     = 404;
+					$return->err_flds[] = 'surname';
+					$return->err_msgs[] = __( 'Club not set', 'racketmanager' );
 				}
 			} else {
-				$error_field = $player_valid[1];
-				$error_msg   = $player_valid[2];
-				$racketmanager->set_message( __( 'Error in player request', 'racketmanager' ), true );
+				$return->error    = true;
+				$return->status   = 401;
+				$return->err_flds = $player_valid[1];
+				$return->err_msgs = $player_valid[2];
+                $return->msg      = __( 'Error in player registration', 'racketmanager' );
 			}
-			$msg   = $racketmanager->message;
-			$error = $racketmanager->error;
-		} else {
-			$error     = true;
-			$error_msg = __( 'Security token invalid', 'racketmanager' );
 		}
-		if ( ! $error ) {
-			wp_send_json_success( $msg );
+		if ( empty( $return->error ) ) {
+			wp_send_json_success( $return );
 		} else {
-			array_push( $return, $msg, $error, $error_field, $error_msg );
-			wp_send_json_error( $return, '500' );
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**
@@ -176,18 +199,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @see admin/settings.php
 	 */
 	public function club_player_remove(): void {
-		$return      = array();
-		$error       = false;
-		$error_field = array();
-		$error_msg   = array();
-		$deleted     = 0;
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'club-player-remove' ) ) {
-			$error         = true;
-			$error_field[] = '';
-			$error_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-		} elseif ( isset( $_POST['clubPlayer'] ) ) {
+		$deleted = 0;
+		$return  = $this->check_security_token('racketmanager_nonce','club-player-remove' );
+		if ( empty( $return->error ) ) {
 			//phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$club_players = $_POST['clubPlayer'];
+			$club_players = empty( $_POST['clubPlayer'] ) ? array() : $_POST['clubPlayer'];
 			foreach ( $club_players as $club_player_id ) {
 				$club_player = get_club_player( $club_player_id );
 				if ( $club_player ) {
@@ -196,17 +212,16 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 			}
 		}
-		if ( $error ) {
-			$msg = __( 'Unable to remove player', 'racketmanager' );
-			array_push( $return, $msg, $error_msg, $error_field );
-			wp_send_json_error( $return, '500' );
-		} elseif ( $deleted ) {
-			$msg = _n( 'Player removed', 'Players removed', $deleted, 'racketmanager' );
+		if ( empty( $return->error ) ) {
+			if ( $deleted ) {
+				$msg = _n( 'Player removed', 'Players removed', $deleted, 'racketmanager' );
+			} else {
+				$msg = __( 'No players selected for removal', 'racketmanager' );
+			}
 			wp_send_json_success( $msg );
 		} else {
-			$msg = __( 'No players selected for removal', 'racketmanager' );
-			wp_send_json_success( $msg );
-        }
+			wp_send_json_error( $return, $return->status );
+		}
 	}
 	/**
 	 * Update Team
@@ -217,8 +232,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $captain_id    = null;
         $contactno     = null;
         $contactemail  = null;
-        $match_day_num = null;
         $matchtime     = null;
+        $team          = null;
+        $event_id      = null;
 		$return = $this->check_security_token( 'racketmanager_nonce', 'team-update' );
 		if ( empty( $return->error ) ) {
 			$event_id = empty( $_POST['event_id'] ) ? null : intval( $_POST['event_id'] );
@@ -238,7 +254,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	                $return->error      = true;
 	                $return->status     = 404;
 	                $return->err_flds[] = 'team-' . $event_id;
-	                $return->err_msgs[] = __( 'Team not found', 'racketmanager' );
+	                $return->err_msgs[] = $this->team_not_found;
                 }
 			} else {
 				$return->error      = true;
@@ -303,90 +319,117 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @see templates/club.php
 	 */
 	public function update_club(): void {
-		$updates     = false;
-		$return      = array();
-		$error       = false;
-		$error_field = array();
-		$error_msg   = array();
-        $club_id = null;
-        $match_secretary_id = null;
+		$updates                    = false;
+        $club_id                    = null;
+        $match_secretary_id         = null;
         $match_secretary_contact_no = null;
-        $match_secretary_email = null;
-        $address = null;
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'club-update' ) ) {
-			$error         = true;
-			$error_field[] = 'club';
-			$error_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-		} else {
+        $match_secretary_email      = null;
+        $address                    = null;
+        $contactno                  = null;
+        $facilities                 = null;
+        $founded                    = null;
+        $website                    = null;
+        $msg                        = null;
+		$return                     = $this->check_security_token( 'racketmanager_nonce', 'club-update' );
+		if ( empty( $return->error ) ) {
 			if ( isset( $_POST['club_id'] ) ) {
 				$club_id = intval( $_POST['club_id'] );
 			} else {
-				$error         = true;
-				$error_field[] = 'club';
-				$error_msg[]   = __( 'Club missing', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 404;
+				$return->err_flds[] = 'club';
+				$return->err_msgs[] = __( 'Club missing', 'racketmanager' );
 			}
 			$contactno  = isset( $_POST['clubContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['clubContactNo'] ) ) : null;
 			$facilities = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
-			$founded    = isset( $_POST['founded'] ) ? sanitize_text_field( wp_unslash( $_POST['founded'] ) ) : null;
+			$founded    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
 			if ( ! empty( $_POST['matchSecretaryId'] ) ) {
 				$match_secretary_id = intval( $_POST['matchSecretaryId'] );
 			} else {
-				$error         = true;
-				$error_field[] = 'matchSecretary';
-				$error_msg[]   = __( 'Match secretary missing', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 401;
+				$return->err_flds[] = 'matchSecretary';
+				$return->err_msgs[] = __( 'Match secretary missing', 'racketmanager' );
 			}
 			if ( ! empty( $_POST['matchSecretaryContactNo'] ) ) {
 				$match_secretary_contact_no = sanitize_text_field( wp_unslash( $_POST['matchSecretaryContactNo'] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'matchSecretaryContactNo';
-				$error_msg[]   = __( 'Contact number is required', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 401;
+				$return->err_flds[] = 'matchSecretaryContactNo';
+				$return->err_msgs[] = __( 'Contact number is required', 'racketmanager' );
 			}
 			if ( ! empty( $_POST['matchSecretaryEmail'] ) ) {
 				$match_secretary_email = sanitize_text_field( wp_unslash( $_POST['matchSecretaryEmail'] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'matchSecretaryEmail';
-				$error_msg[]   = __( 'Email address is required', 'racketmanager' );
+				$return->error      = true;
+				$return->status     = 401;
+				$return->err_flds[] = 'matchSecretaryEmail';
+				$return->err_msgs[] = __( 'Email address is required', 'racketmanager' );
 			}
 			$website = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
 			if ( ! empty( $_POST['address'] ) ) {
 				$address = sanitize_text_field( wp_unslash( $_POST['address'] ) );
 			} else {
-				$error         = true;
-				$error_field[] = 'address';
-				$error_msg[]   = __( 'Address is required', 'racketmanager' );
-			}
-			if ( ! $error ) {
-				$club = get_club( $club_id );
-				if ( $club->contactno !== $contactno || $club->facilities !== $facilities || $club->founded !== $founded || $club->matchsecretary !== $match_secretary_id || $club->website !== $website || $club->match_secretary_contact_no !== $match_secretary_contact_no || $club->match_secretary_email !== $match_secretary_email || $club->address !== $address ) {
-					$club->contactno                  = $contactno;
-					$club->facilities                 = $facilities;
-					$club->founded                    = $founded;
-					$club->matchsecretary             = $match_secretary_id;
-					$club->website                    = $website;
-					$club->match_secretary_contact_no = $match_secretary_contact_no;
-					$club->match_secretary_email      = $match_secretary_email;
-					$club->address                    = $address;
-					$club->update( $club );
-					$updates = true;
-				}
+				$return->error      = true;
+				$return->status     = 401;
+				$return->err_flds[] = 'club';
+				$return->err_msgs[] = $this->club_not_found;
 			}
 		}
-
-		if ( $updates ) {
-			$msg = __( 'Club updated', 'racketmanager' );
-		} elseif ( $error ) {
-			$msg = __( 'Error in club update', 'racketmanager' );
-		} else {
-			$msg = __( 'Nothing to update', 'racketmanager' );
-		}
-
-		if ( $error ) {
-			array_push( $return, $msg, $error_msg, $error_field );
-			wp_send_json_error( $return, '500' );
-		} else {
+		if ( empty( $return->error ) ) {
+            $club = get_club( $club_id );
+            if ( $club ) {
+                if ( $club->contactno !== $contactno ) {
+	                $club->contactno = $contactno;
+	                $updates         = true;
+                }
+                if ( $club->facilities !== $facilities ) {
+	                $club->facilities = $facilities;
+	                $updates          = true;
+                }
+                if ( $club->founded !== $founded ) {
+	                $club->founded = $founded;
+	                $updates       = true;
+                }
+                if ( $club->matchsecretary !== $match_secretary_id ) {
+	                $club->matchsecretary = $match_secretary_id;
+	                $updates              = true;
+                }
+                if ( $club->website !== $website ) {
+	                $club->website = $website;
+	                $updates       = true;
+                }
+                if ( $club->match_secretary_contact_no !== $match_secretary_contact_no ) {
+	                $club->match_secretary_contact_no = $match_secretary_contact_no;
+	                $updates                          = true;
+                }
+                if ( $club->match_secretary_email !== $match_secretary_email ) {
+	                $club->match_secretary_email = $match_secretary_email;
+	                $updates                     = true;
+                }
+                if ( $club->address !== $address ) {
+                    $club->address = $address;
+	                $updates       = true;
+                }
+                if ( $updates ) {
+	                $club->update( $club );
+	                $msg = __( 'Club updated', 'racketmanager' );
+                } else {
+	                $msg = __( 'Nothing to update', 'racketmanager' );
+                }
+            } else {
+                $return->error      = true;
+                $return->status     = 404;
+                $return->err_flds[] = 'address';
+                $return->err_msgs[] = __( 'Address is required', 'racketmanager' );
+            }
+        }
+		if ( empty( $return->error ) ) {
 			wp_send_json_success( $msg );
+		} else {
+			$return->msg = __( 'Error in club update', 'racketmanager' );
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**
@@ -433,23 +476,22 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @see templates/tournamententry.php
 	 */
 	public function tournament_entry_request(): void {
-		$return     = array();
-        $tournament = null;
+		$return            = array();
+        $tournament        = null;
         $tournament_events = array();
-        $events       = array();
-        $partners     = array();
-        $player_id = null;
-        $club_id = null;
-        $btm = null;
-        $contactno = null;
-        $contactemail = null;
-        $comments = null;
-        $paid_fee = null;
-        $entry_fee = null;
-        $message_type = null;
-        $payment_required = false;
-        $return_link = null;
-		$validator  = new Racketmanager_Validator_Entry_Form();
+        $events            = array();
+        $partners          = array();
+        $player_id         = null;
+        $club_id           = null;
+        $btm               = null;
+        $contactno         = null;
+        $contactemail      = null;
+        $comments          = null;
+        $paid_fee          = null;
+        $entry_fee         = null;
+        $payment_required  = false;
+        $return_link       = null;
+		$validator         = new Racketmanager_Validator_Entry_Form();
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'tournament-entry' );
 		if ( ! $validator->error ) {
@@ -495,7 +537,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$validator  = $validator->entry_acceptance( $acceptance );
 			}
 		}
-		if ( ! $validator->error ) {
+		if ( empty( $validator->error ) ) {
 			$tournament_entry               = new stdClass();
 			$tournament_entry->all_events   = $tournament_events;
 			$tournament_entry->events       = $events;
@@ -533,16 +575,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$message_type     = 'success';
 					break;
 			}
-		} else {
-			$msg = __( 'Errors in tournament entry form', 'racketmanager' );
-		}
-		//phpcs:enable WordPress.Security.NonceVerification.Missing
-		if ( $validator->error ) {
-			array_push( $return, $msg, $validator->error_msg, $validator->error_field );
-			wp_send_json_error( $return, '500' );
-		} else {
 			array_push( $return, $msg, $message_type, $payment_required, $return_link );
 			wp_send_json_success( $return );
+		} else {
+            $return = $validator;
+            $return->msg = $this->entry_form_errors;
+            if ( empty( $return->status ) ) {
+                $return->status = 400;
+            }
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**
@@ -628,20 +669,34 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$return    = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$team_info = new stdClass();
-			$team_id   = isset( $_POST['team'] ) ? sanitize_text_field( wp_unslash( $_POST['team'] ) ) : '';
-			$event_id  = isset( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : '';
-
-			$event = get_event( $event_id );
-			$team  = $event->get_team_info( $team_id );
-			if ( $team ) {
-				$team_info->captain    = addslashes( $team->captain );
-				$team_info->captain_id = $team->captain_id;
-				$team_info->user_email = $team->contactemail;
-				$team_info->contactno  = $team->contactno;
-				$team_info->match_day  = $team->match_day;
-				$team_info->match_time = $team->match_time;
-				$team_info->message    = __( 'Team information updated', 'racketmanager' );
-			}
+			$team_id   = isset( $_POST['team'] ) ? sanitize_text_field( wp_unslash( $_POST['team'] ) ) : null;
+			$event_id  = isset( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : null;
+            if ( $event_id ) {
+	            $event = get_event( $event_id );
+                if ( $event ) {
+                    if ( $team_id ) {
+	                    $team  = $event->get_team_info( $team_id );
+	                    if ( $team ) {
+		                    $team_info->captain    = $team->captain;
+		                    $team_info->captain_id = $team->captain_id;
+		                    $team_info->user_email = $team->contactemail;
+		                    $team_info->contactno  = $team->contactno;
+		                    $team_info->match_day  = $team->match_day;
+		                    $team_info->match_time = $team->match_time;
+		                    $team_info->message    = __( 'Team information updated', 'racketmanager' );
+	                    }
+                    } else {
+	                    $return->msg   = __( 'Team id not supplied', 'racketmanager' );
+	                    $return->error = true;
+                    }
+                } else {
+	                $return->msg   = __( 'Event not found', 'racketmanager' );
+                    $return->error = true;
+                }
+            } else {
+                $return->msg   = __( 'Event id not supplied', 'racketmanager' );
+	            $return->error = true;
+            }
 		}
 		if ( empty( $return->error ) ) {
 			wp_send_json_success( $team_info );
@@ -658,7 +713,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $start_times = array();
         $club_id     = null;
         $club_entry  = null;
-		$return      = array();
 		$validator   = new Racketmanager_Validator_Entry_Form();
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'cup-entry' );
@@ -705,7 +759,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$validator = $validator->events_entry( $events );
 				foreach ( $events as $event_id ) {
 					$event      = get_event( $event_id );
-					$team       = $teams[$event->id] ?? 0;
+					$team       = $teams[$event->id] ?? null;
 					$field_ref  = $event->id;
 					$field_name = $event->name;
 					$validator  = $validator->teams( $team, $field_ref, $field_name );
@@ -737,19 +791,18 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$validator  = $validator->entry_acceptance( $acceptance );
 			}
 		}
-		if ( ! $validator->error ) {
+		if ( empty( $validator->error ) ) {
 			$club = get_club( $club_id );
 			$club->cup_entry( $club_entry );
 			$msg = __( 'Cup entry complete', 'racketmanager' );
-		} else {
-			$msg = __( 'Errors in cup entry form', 'racketmanager' );
-		}
-		//phpcs:enable WordPress.Security.NonceVerification.Missing
-		if ( $validator->error ) {
-			array_push( $return, $msg, $validator->error_msg, $validator->error_field );
-			wp_send_json_error( $return, '500' );
-		} else {
 			wp_send_json_success( $msg );
+		} else {
+			$return = $validator;
+			$return->msg = $this->entry_form_errors;
+			if ( empty( $return->status ) ) {
+				$return->status = 400;
+			}
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**
@@ -781,7 +834,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$validator      = $validator->events_entry( $events );
 			// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$team_event           = isset( $_POST['teamEvent'] ) ? wp_unslash( $_POST['teamEvent'] ) : array();
-			$team_event_titles    = isset( $_POST['teamEventTitle'] ) ? wp_unslash( $_POST['teamEventTitle'] ) : array();
 			$team_event_league    = isset( $_POST['teamEventLeague'] ) ? wp_unslash( $_POST['teamEventLeague'] ) : array();
 			$competition_events   = explode( ',', isset( $_POST['competition_events'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_events'] ) ) : '' );
 			$captains             = isset( $_POST['captain'] ) ? wp_unslash( $_POST['captain'] ) : array();
@@ -864,7 +916,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						if ( false !== $pos ) {
 							array_splice( $event_teams, $pos, 1 );
 						}
-						$team_event_title = $team_event_titles[ $event->id ][ $team_id ] ?? '';
 						$captain          = $captains[ $event->id ][ $team_id] ?? '';
 						$captain_id       = $captain_ids[ $event->id ][ $team_id ] ?? 0;
 						$contactno        = $contact_nos[ $event->id ][ $team_id ] ?? '';
@@ -961,20 +1012,21 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$club = get_club( $club_id );
 			$club->league_entry( $club_entry );
 			$msg = __( 'League entry complete', 'racketmanager' );
-		} else {
-			$msg = __( 'Errors in league entry form', 'racketmanager' );
-		}
-		if ( $validator->error ) {
-			array_push( $return, $msg, $validator->error_msg, $validator->error_field );
-			wp_send_json_error( $return, '500' );
-		} else {
 			wp_send_json_success( $msg );
+		} else {
+			$return = $validator->get_details();
+			$return->msg = $this->entry_form_errors;
+			if ( empty( $return->status ) ) {
+				$return->status = 400;
+			}
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**
 	 * Build screen to allow printing of match cards
 	 */
 	public function print_match_card(): void {
+        global $racketmanager;
         $output = null;
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {
@@ -982,7 +1034,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
             if ( $match_id ) {
 	            $match    = get_match( $match_id );
                 if ( $match ) {
-	                if ( isset( $match->league->num_rubbers ) && $match->league->num_rubbers > 0 ) {
+	                if ( ! empty( $match->league->num_rubbers ) ) {
 		                $match->rubbers = $match->get_rubbers();
 		                $template       = 'match-card-rubbers';
 	                } else {
@@ -991,19 +1043,18 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	                $sponsor_html                  = '';
 	                $template_args['match']        = $match;
 	                $template_args['sponsor_html'] = $sponsor_html;
-	                $shortcode                     = new RacketManager_Shortcodes();
-	                $output                        = $shortcode->load_template(
+	                $output                        = $racketmanager->shortcodes->load_template(
 		                $template,
 		                $template_args,
 	                );
                 } else {
 	                $return->error  = true;
-	                $return->msg    = __( 'Match not found', 'racketmanager' );
+	                $return->msg    = $this->match_not_found;
 	                $return->status = 404;
                 }
             } else {
 	            $return->error  = true;
-                $return->msg    = __( 'Match id not found', 'racketmanager' );
+                $return->msg    = $this->no_match_id;
                 $return->status = 404;
             }
 		}
@@ -1051,26 +1102,26 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$option->value  = 'walkover_player2';
 				$option->select = 'walkover_player2';
 				/* translators: %s: Home team name */
-				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name );
+				$option->desc   = sprintf( $this->not_played_no_opponent, $home_name );
 				$select[]       = $option;
 				$option         = new stdClass();
 				$option->value  = 'walkover_player1';
 				$option->select = 'walkover_player1';
 				/* translators: %s: Away team name */
-				$option->desc = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
+				$option->desc = sprintf( $this->not_played_no_opponent, $away_name );
 				$select[]     = $option;
 				if ( $match->league->event->competition->is_player_entry ) {
 					$option         = new stdClass();
 					$option->value  = 'retired_player1';
 					$option->select = 'retired_player1';
 					/* translators: %s: Home team name */
-					$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name );
+					$option->desc   = sprintf( $this->retired_player, $home_name );
 					$select[]       = $option;
 					$option         = new stdClass();
 					$option->value  = 'retired_player2';
 					$option->select = 'retired_player2';
 					/* translators: %s: Away team name */
-					$option->desc = sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name );
+					$option->desc = sprintf( $this->retired_player, $away_name );
 					$select[]     = $option;
 				}
 				$option         = new stdClass();
@@ -1081,7 +1132,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$option         = new stdClass();
 				$option->value  = 'share';
 				$option->select = 'share';
-				$option->desc   = __( 'Not played', 'racketmanager' );
+				$option->desc   = $this->not_played;
 				$select[]       = $option;
 				if ( $match->league->event->competition->is_team_entry ) {
 					$option         = new stdClass();
@@ -1161,7 +1212,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 												</li>
 												<li class="list__item">
 													<dl>
-														<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
+														<dt class=""><?php echo esc_html( $this->not_played ); ?></dt>
 														<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
 													</dl>
 												</li>
@@ -1200,7 +1251,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				ob_end_clean();
 			} else {
 				$return->error  = true;
-				$return->msg    = __( 'Match not found', 'racketmanager' );
+				$return->msg    = $this->match_not_found;
 				$return->status = 404;
 			}
 		}
@@ -1275,12 +1326,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				} else {
 					$valid       = false;
 					$err_field[] = 'match_status';
-					$err_msg[]   = __( 'Match id not supplied', 'racketmanager' );
+					$err_msg[]   = $this->no_match_id;
 				}
 			} else {
 				$valid       = false;
 				$err_field[] = 'match_status';
-				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+				$err_msg[]   = $this->no_modal;
 			}
 		}
 		if ( $valid ) {
@@ -1312,25 +1363,25 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$option->value  = 'walkover_player2';
 				$option->select = 'walkover_player2';
 				/* translators: %s: Home team name */
-				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name );
+				$option->desc   = sprintf( $this->not_played_no_opponent, $home_name );
 				$select[]       = $option;
 				$option         = new stdClass();
 				$option->value  = 'walkover_player1';
 				$option->select = 'walkover_player1';
 				/* translators: %s: Away team name */
-				$option->desc   = sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name );
+				$option->desc   = sprintf( $this->not_played_no_opponent, $away_name );
 				$select[]       = $option;
 				$option         = new stdClass();
 				$option->value  = 'retired_player1';
 				$option->select = 'retired_player1';
 				/* translators: %s: Home team name */
-				$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name );
+				$option->desc   = sprintf( $this->retired_player, $home_name );
 				$select[]       = $option;
 				$option         = new stdClass();
 				$option->value  = 'retired_player2';
 				$option->select = 'retired_player2';
 				/* translators: %s: Away team name */
-				$option->desc   = sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name );
+				$option->desc   = sprintf( $this->retired_player, $away_name );
 				$select[]       = $option;
 				$option         = new stdClass();
 				$option->value  = 'abandoned';
@@ -1340,7 +1391,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$option         = new stdClass();
 				$option->value  = 'share';
 				$option->select = 'share';
-				$option->desc   = __( 'Not played', 'racketmanager' );
+				$option->desc   = $this->not_played;
 				$select[]       = $option;
 				$option         = new stdClass();
 				$option->value  = 'none';
@@ -1427,7 +1478,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 													</li>
 													<li class="list__item">
 														<dl>
-															<dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
+															<dt class=""><?php echo esc_html( $this->not_played ); ?></dt>
 															<dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
 														</dl>
 													</li>
@@ -1448,7 +1499,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					ob_end_clean();
 				} else {
 					$return->error  = true;
-					$return->msg    = __( 'Match not found', 'racketmanager' );
+					$return->msg    = $this->match_not_found;
 					$return->status = 404;
 				}
 			} else {
@@ -1533,7 +1584,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			} else {
 				$valid       = false;
 				$err_field[] = 'score_status';
-				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+				$err_msg[]   = $this->no_modal;
 			}
 		}
 		if ( $valid ) {
@@ -1593,7 +1644,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 				break;
 			case 'share':
-				$score_message = __( 'Not played', 'racketmanager' );
+				$score_message = $this->not_played;
 				break;
 			case 'abandoned':
 				$score_message = __( 'Abandoned', 'racketmanager' );
@@ -1612,7 +1663,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $loser ]  = $score_message;
 			$status_class[ $winner ]   = 'winner';
 			$status_class[ $loser ]    = 'loser';
-		} elseif ( 'share' === $status_value || 'cancelled' === $status_value ) {
+		} elseif ( 'share' === $status_value || 'cancelled' === $status_value || 'invalid' === $status_value ) {
 			$status_message[ $home_team ] = $score_message;
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = 'tie';
@@ -1622,11 +1673,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status_message[ $away_team ] = $score_message;
 			$status_class[ $home_team ]   = '';
 			$status_class[ $away_team ]   = '';
-		} elseif ( 'invalid' === $status_value ) {
-			$status_message[ $home_team ] = $score_message;
-			$status_message[ $away_team ] = $score_message;
-			$status_class[ $home_team ]   = 'tie';
-			$status_class[ $away_team ]   = 'tie';
 		} else {
 			$status_message[ $home_team ] = '';
 			$status_message[ $away_team ] = '';
@@ -1908,8 +1954,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							<div class="modal-body">
 								<div class="container">
 									<?php
-									$show_header = true;
-									require RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
+									require_once RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
 									if ( 'schedule_match' === $option ) {
 										if ( empty( $match->start_time ) ) {
 											$date_input_type = 'date';
@@ -1989,7 +2034,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				ob_end_clean();
 			} else {
 				$valid   = false;
-				$message = __( 'Match not found', 'racketmanager' );
+				$message = $this->match_not_found;
 				$status  = 404;
 			}
 		}
@@ -2055,17 +2100,17 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					} else {
 						$valid       = false;
 						$err_field[] = 'schedule-date';
-						$err_msg[]   = __( 'Match not found', 'racketmanager' );
+						$err_msg[]   = $this->match_not_found;
 					}
 				} else {
 					$valid       = false;
 					$err_field[] = 'schedule-date';
-					$err_msg[]   = __( 'Match id not supplied', 'racketmanager' );
+					$err_msg[]   = $this->no_match_id;
 				}
 			} else {
 				$valid       = false;
 				$err_field[] = 'schedule-date';
-				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+				$err_msg[]   = $this->no_modal;
 			}
 		}
 		if ( $valid ) {
@@ -2117,17 +2162,17 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					} else {
 						$valid       = false;
 						$err_field[] = 'schedule-date';
-						$err_msg[]   = __( 'Match not found', 'racketmanager' );
+						$err_msg[]   = $this->match_not_found;
 					}
 				} else {
 					$valid       = false;
 					$err_field[] = 'schedule-date';
-					$err_msg[]   = __( 'Match id not supplied', 'racketmanager' );
+					$err_msg[]   = $this->no_match_id;
 				}
 			} else {
 				$valid       = false;
 				$err_field[] = 'schedule-date';
-				$err_msg[]   = __( 'Modal name not supplied', 'racketmanager' );
+				$err_msg[]   = $this->no_modal;
 			}
 		}
 		if ( $valid ) {
@@ -2358,7 +2403,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				ob_end_clean();
 			} else {
 				$return->error = true;
-				$return->msg   = __( 'Event not found', 'racketmanager' );
+				$return->msg   = $this->event_not_found;
 			}
 		}
 		if ( empty( $return->error ) ) {
@@ -2377,14 +2422,14 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$validator = new Racketmanager_Validator_Entry_Form();
 		if ( isset( $_POST['racketmanager_nonce'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'team-partner' ) ) {
-				$valid                    = false;
-				$validator->error_field[] = 'partner';
-				$validator->error_msg[]   = __( 'Security token invalid', 'racketmanager' );
+				$valid                 = false;
+				$validator->err_flds[] = 'partner';
+				$validator->err_msgs[] = __( 'Security token invalid', 'racketmanager' );
 			}
 		} else {
-			$valid                    = false;
-			$validator->error_field[] = 'partner';
-			$validator->error_msg[]   = __( 'No security token found in request', 'racketmanager' );
+			$valid                 = false;
+			$validator->err_flds[] = 'partner';
+			$validator->err_msgs[] = __( 'No security token found in request', 'racketmanager' );
 		}
 		if ( $valid ) {
 			$event_id   = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
@@ -2405,19 +2450,19 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							$valid = false;
 						}
 					} else {
-						$valid                    = false;
-						$validator->error_field[] = 'partner';
-						$validator->error_msg[]   = __( 'Partner not found', 'racketmanager' );
+						$valid                 = false;
+						$validator->err_flds[] = 'partner';
+						$validator->err_msgs[] = __( 'Partner not found', 'racketmanager' );
 					}
 				} else {
-					$valid                    = false;
-					$validator->error_field[] = 'partner';
-					$validator->error_msg[]   = __( 'Partner id not found', 'racketmanager' );
+					$valid                 = false;
+					$validator->err_flds[] = 'partner';
+					$validator->err_msgs[] = __( 'Partner id not found', 'racketmanager' );
 				}
 			} else {
-				$valid                    = false;
-				$validator->error_field[] = 'partner';
-				$validator->error_msg[]   = __( 'Event not found', 'racketmanager' );
+				$valid                 = false;
+				$validator->err_flds[] = 'partner';
+				$validator->err_msgs[] = $this->event_not_found;
 			}
 		}
 		if ( $valid ) {
@@ -2425,7 +2470,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			wp_send_json_success( $return );
 		} else {
 			$msg = __( 'Error with partner', 'racketmanager' );
-			array_push( $return, $msg, $validator->error_msg, $validator->error_field );
+			array_push( $return, $msg, $validator->err_msgs, $validator->err_flds );
 			wp_send_json_error( $return, '500' );
 		}
 	}
@@ -2543,15 +2588,15 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$msg   = __( 'Match result reset', 'racketmanager' );
 					} else {
 						$valid     = false;
-						$err_msg[] = __( 'Match not found', 'racketmanager' );
+						$err_msg[] = $this->match_not_found;
 					}
 				} else {
 					$valid     = false;
-					$err_msg[] = __( 'Match id not supplied', 'racketmanager' );
+					$err_msg[] = $this->no_match_id;
 				}
 			} else {
 				$valid     = false;
-				$err_msg[] = __( 'Modal name not supplied', 'racketmanager' );
+				$err_msg[] = $this->no_modal;
 			}
 		}
 		if ( $valid ) {
@@ -2707,44 +2752,31 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	public function login(): void {
-		$return    = array();
-		$err_msg   = array();
-		$err_field = array();
-		$valid     = true;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid     = false;
-				$err_msg[] = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid     = false;
-			$err_msg[] = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+		$return = $this->check_security_token();
+		if ( empty( $return->error ) ) {
 			$info                  = array();
 			$info['user_login']    = isset( $_POST['log'] ) ? sanitize_text_field( wp_unslash( $_POST['log'] ) ) : null;
 			$info['user_password'] = isset( $_POST['pwd'] ) ? sanitize_text_field( wp_unslash( $_POST['pwd'] ) ) : null;
 			$info['remember']      = true;
-			$user           = wp_signon( $info, true );
+			$user                  = wp_signon( $info, true );
 			if ( is_wp_error( $user ) ) {
 				foreach ( $user->errors as $field => $error ) {
-					$err_field[] = Racketmanager_Util::get_error_field( $field );
-					$err_msg[] = Racketmanager_Util::get_error_message( $field );
+					$return->err_flds[] = Racketmanager_Util::get_error_field( $field );
+					$return->err_msgs[] = Racketmanager_Util::get_error_message( $field );
 				}
-				$valid  = false;
-				$status = 401;
+				$return->error  = true;
+				$return->status = 401;
 			}
 		} else {
-			$status = 403;
+			$return->status = 403;
 		}
-		if ( $valid ) {
+		if ( empty( $return->error ) ) {
 			$redirect = isset( $_POST['redirect_to'] ) ? sanitize_url( $_POST['redirect_to'] ) : home_url();
 			$redirect = wp_validate_redirect( $redirect, home_url() );
 			wp_send_json_success( $redirect );
 		} else {
-			$msg = __( 'Login failed', 'racketmanager' );
-			array_push( $return, $msg, $err_msg, $err_field );
-			wp_send_json_error( $return, $status );
+			$return->msg = __( 'Login failed', 'racketmanager' );
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**
@@ -2753,6 +2785,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	#[NoReturn] public function show_team_order_players(): void {
+        global $racketmanager;
         $club   = null;
         $event  = null;
         $teams  = null;
@@ -2764,7 +2797,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$club = get_club( $club_id );
 				if ( ! $club ) {
 					$return->error = true;
-					$return->msg   = __( 'Club not found', 'racketmanager' );
+					$return->msg   = $this->club_not_found;
 				}
 			} else {
 				$return->error = true;
@@ -2779,11 +2812,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$teams               = $event->get_teams( $team_args );
 				} else {
 					$return->error = true;
-					$return->msg   = __( 'Event not found', 'racketmanager' );
+					$return->msg   = $this->event_not_found;
 				}
 			} else {
 				$return->error = true;
-				$return->msg   = __( 'Event id not supplied', 'racketmanager' );
+				$return->msg   = $this->no_event_id;
 			}
 		}
 		if ( empty( $return->error ) ) {
@@ -2850,14 +2883,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$template_args['matches']      = array();
 			$template_args['club_players'] = $club_players;
 			$template_args['can_update']   = $user_can_update;
-			$shortcode                     = new RacketManager_Shortcodes();
-			$output                        = $shortcode->load_template(
+			$output                        = $racketmanager->shortcodes->load_template(
 				$template,
 				$template_args,
 			);
 		} else {
-			$shortcode = new RacketManager_Shortcodes();
-			$output    = $shortcode->return_error( $return->msg );
+			$output    = $racketmanager->shortcodes->return_error( $return->msg );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
@@ -2895,12 +2926,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
 			$match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
-			$set_team = empty( $_POST['setTeam'] ) ? false : sanitize_text_field( wp_unslash( $_POST['setTeam'] ) );
+			$set_team = ! empty( $_POST['setTeam'] ) && sanitize_text_field( wp_unslash( $_POST['setTeam'] ) );
 			if ( $club_id ) {
 				$club = get_club( $club_id );
 				if ( ! $club ) {
 					$valid     = false;
-					$err_msg[] = __( 'Club not found', 'racketmanager' );
+					$err_msg[] = $this->club_not_found;
 					$err_fld[] = 'club_id';
 				}
 			} else {
@@ -2912,12 +2943,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$event = get_event( $event_id );
 				if ( ! $event ) {
 					$valid     = false;
-					$err_msg[] = __( 'Event not found', 'racketmanager' );
+					$err_msg[] = $this->event_not_found;
 					$err_fld[] = 'event_id';
 				}
 			} else {
 				$valid     = false;
-				$err_msg[] = __( 'Event id not supplied', 'racketmanager' );
+				$err_msg[] = $this->no_event_id;
 				$err_fld[] = 'event_id';
 			}
 		}
@@ -2996,27 +3027,25 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$updates = false;
 					if ( $match_id ) {
 						$match = get_match( $match_id );
-						if ( $match ) {
-							if ( $team_id ) {
-								if ( $team_id === intval( $match->home_team ) ) {
-									$opponent = 'home';
-								} elseif ( $team_id === intval( $match->away_team ) ) {
-									$opponent = 'away';
-								} else {
-									$opponent = null;
-								}
-								if ( $opponent ) {
-									$match_rubbers = $match->get_rubbers();
-									foreach ( $match_rubbers as $match_rubber ) {
-										$rubber = $rubbers[$match_rubber->rubber_number] ?? null;
-										if ( $rubber ) {
-											$rubber_players[ $opponent ] = $rubber->players;
-											$match_rubber->set_players( $rubber_players );
-											$updates = true;
-										}
-									}
-								}
-							}
+						if ( $match && $team_id ) {
+                            if ( $team_id === intval( $match->home_team ) ) {
+                                $opponent = 'home';
+                            } elseif ( $team_id === intval( $match->away_team ) ) {
+                                $opponent = 'away';
+                            } else {
+                                $opponent = null;
+                            }
+                            if ( $opponent ) {
+                                $match_rubbers = $match->get_rubbers();
+                                foreach ( $match_rubbers as $match_rubber ) {
+                                    $rubber = $rubbers[$match_rubber->rubber_number] ?? null;
+                                    if ( $rubber ) {
+                                        $rubber_players[ $opponent ] = $rubber->players;
+                                        $match_rubber->set_players( $rubber_players );
+                                        $updates = true;
+                                    }
+                                }
+                            }
 						}
 					}
 					if ( $updates ) {
@@ -3065,17 +3094,17 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							}
 						} else {
 							$return->error  = true;
-							$return->msg    = __( 'Event not found', 'racketmanager' );
+							$return->msg    = $this->event_not_found;
 							$return->status = 404;
 						}
 					} else {
 						$return->error  = true;
-						$return->msg    = __( 'Event id not found', 'racketmanager' );
+						$return->msg    = $this->no_event_id;
 						$return->status = 404;
 					}
 				} else {
 					$return->error  = true;
-					$return->msg    = __( 'Team not found', 'racketmanager' );
+					$return->msg    = $this->team_not_found;
 					$return->status = 404;
 				}
 			} else {
@@ -3192,6 +3221,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	#[NoReturn] public function get_event_team_match_dropdown(): void {
+        global $racketmanager;
         $team    = null;
         $event   = null;
 		$return  = $this->check_security_token();
@@ -3202,7 +3232,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$team = get_team( $team_id );
 				if ( ! $team ) {
 					$return->error = true;
-					$return->msg   = __( 'Team not found', 'racketmanager' );
+					$return->msg   = $this->team_not_found;
 				}
 			} else {
 				$return->error = true;
@@ -3212,11 +3242,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$event = get_event( $event_id );
 				if ( ! $event ) {
 					$return->error = true;
-					$return->msg   = __( 'Event not found', 'racketmanager' );
+					$return->msg   = $this->event_not_found;
 				}
 			} else {
 				$return->error = true;
-				$return->msg   = __( 'Event id not supplied', 'racketmanager' );
+				$return->msg   = $this->no_event_id;
 			}
 		}
 		if ( empty( $return->error ) ) {
@@ -3242,8 +3272,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$output = ob_get_contents();
 			ob_end_clean();
 		} else {
-			$shortcode = new RacketManager_Shortcodes();
-			$output    = $shortcode->return_error( $return->msg );
+			$output    = $racketmanager->shortcodes->return_error( $return->msg );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();

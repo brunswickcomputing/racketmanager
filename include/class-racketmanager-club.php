@@ -232,6 +232,12 @@ final class Racketmanager_Club {
 	 */
 	public array $player_stats;
 	/**
+	 * Player club player id
+	 *
+	 * @var int
+	 */
+	public int $club_player_id;
+	/**
 	 * Retrieve club instance
 	 *
 	 * @param int|string $club_id club id or name.

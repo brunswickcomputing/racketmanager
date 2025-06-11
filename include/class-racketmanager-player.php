@@ -792,7 +792,7 @@ final class Racketmanager_Player {
 		if ( ! empty( $search_terms ) ) {
 			$search = implode( ' AND ', $search_terms );
 		}
-		$sql = "SELECT `club_id`, `created_date`, `removed_date` FROM $wpdb->racketmanager_club_players cp, $wpdb->racketmanager_clubs c WHERE cp.`club_id` = c.`id` AND `player_id` = %d";
+		$sql = "SELECT `club_id`, `created_date`, `removed_date`, cp.`id` as `club_player_id` FROM $wpdb->racketmanager_club_players cp, $wpdb->racketmanager_clubs c WHERE cp.`club_id` = c.`id` AND `player_id` = %d";
 		if ( '' !== $search ) {
 			$sql .= " AND $search";
 		}
@@ -809,9 +809,10 @@ final class Racketmanager_Player {
 		foreach ( $player_clubs as $player_club ) {
 			$club = get_club( $player_club->club_id );
 			if ( $club ) {
-				$club->created_date = $player_club->created_date;
-				$club->removed_date = $player_club->removed_date;
-				$clubs[]            = $club;
+				$club->created_date   = $player_club->created_date;
+				$club->removed_date   = $player_club->removed_date;
+				$club->club_player_id = $player_club->club_player_id;
+				$clubs[]              = $club;
 			}
 		}
 		return $clubs;

@@ -121,7 +121,7 @@ if ( ! empty( $club->entry ) ) {
 								</div>
 							</div>
 						</div>
-						<ol class="list list--naked">
+						<ol class="list list--naked" id="entry-details">
 							<li id="liEventDetails" class="club-entry__panel">
 								<div id="entryDetails">
 									<div class="hgroup" id="event">
@@ -253,7 +253,8 @@ if ( ! empty( $club->entry ) ) {
 									</div>
 								</div>
 							</li>
-						</ol>
+							<?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+                        </ol>
 						<div id="entry-acceptance" class="col-12 col-md-8">
 							<div class="form-check form-switch form-check-reverse mb-3">
 								<label class="form-check-label switch" for="acceptance">

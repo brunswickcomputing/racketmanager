@@ -538,6 +538,8 @@ div.tm-team-content div.team {
 }
 .is-loading .form-checkboxes,
 .is-loading .tab-content,
+.is-loading .club-entry__panel,
+.is-loading .individual-entry__panel,
 .is-loading .btn {
 	opacity: 0.1;
 	display: none;

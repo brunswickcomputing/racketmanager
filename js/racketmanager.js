@@ -1053,9 +1053,11 @@ Racketmanager.updatePlayer = function (link) {
 };
 Racketmanager.entryRequest = function (event, type) {
 	event.preventDefault();
-	let notifyField = '#entryAlert';
-	jQuery(notifyField).removeClass('alert--success alert--warning alert--info alert--danger');
-	jQuery(notifyField).hide();
+	let entryDetails = jQuery('#entry-details');
+	entryDetails.addClass('is-loading');
+	let alertField = '#entryAlert';
+	jQuery(alertField).removeClass('alert--success alert--warning alert--info alert--danger');
+	jQuery(alertField).hide();
 	let alertTextField = '#entryAlertResponse';
 	jQuery(alertTextField).html("");
 	jQuery(".is-invalid").removeClass("is-invalid");
@@ -1116,6 +1118,7 @@ Racketmanager.entryRequest = function (event, type) {
 		complete: function () {
 			jQuery(notifyField).show();
 			jQuery("#acceptance").prop("checked", false);
+			entryDetails.removeClass('is-loading');
 		}
 	});
 };

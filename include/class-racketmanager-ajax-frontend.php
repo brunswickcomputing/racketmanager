@@ -718,7 +718,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$matchtime    = $match_times[$event->id] ?? null;
 						$validator    = $validator->match_day( $match_day, $field_ref );
 						$validator    = $validator->match_time( $matchtime, $field_ref, $match_day, $start_times );
-						$validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
+						$validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
 
 						$event_entry             = new stdClass();
 						$event_entry->id         = $event->id;
@@ -873,10 +873,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$match_time       = $match_times[ $event->id ][ $team_id ] ?? '';
 						$league_id        = $team_event_league[ $event->id ][ $team_id ] ?? null;
 						$field_ref        = $event->id . '-' . $team_id;
-						$field_name       = $team_event_title;
 						$validator        = $validator->match_day( $match_day, $field_ref, $match_day_restriction, $event_days );
 						$validator        = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
-						$validator        = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
+						$validator        = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
 						if ( $match_day_restriction && $weekend_allowed && ( '5' === $match_day || '6' === $match_day ) ) {
 							if ( empty( $weekend_matches[ $event->type ] ) ) {
 								++$weekend_matches[ $event->type ];

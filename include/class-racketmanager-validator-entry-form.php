@@ -168,21 +168,18 @@ final class Racketmanager_Validator_Entry_Form extends Racketmanager_Validator {
 	 * @param string $contactno contact number.
 	 * @param string $contactemail email.
 	 * @param string $field_ref field reference.
-	 * @param string $field_name field name.
 	 * @return object $validation updated validation object.
 	 */
-	public function captain( string $captain, string $contactno, string $contactemail, string $field_ref, string $field_name ): object {
+	public function captain( string $captain, string $contactno, string $contactemail, string $field_ref ): object {
 		if ( empty( $captain ) ) {
 			$this->error = true;
 			$this->err_flds[$this->error_id] = 'captain-' . $field_ref;
-			/* translators: %s: competition name */
-			$this->err_msgs[$this->error_id] = sprintf( __( 'Captain not selected for %s', 'racketmanager' ), $field_name );
+			$this->err_msgs[$this->error_id] = __( 'Captain not selected', 'racketmanager' );
 			++$this->error_id;
 		} elseif ( empty( $contactno ) || empty( $contactemail ) ) {
 			$this->error = true;
 			$this->err_flds[$this->error_id] = 'captain-' . $field_ref;
-			/* translators: %s: competition name */
-			$this->err_msgs[$this->error_id] = sprintf( __( 'Captain contact details missing for %s', 'racketmanager' ), $field_name );
+			$this->err_msgs[$this->error_id] = __( 'Captain contact details missing', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;

@@ -161,11 +161,11 @@ if ( ! empty( $club->entry ) ) {
 											<div class="form-checkboxes__conditional <?php echo $event->status ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $event->status ? 'aria-expanded="true"' : ''; ?>>
 												<div class="form-floating mb-3">
 													<select size="1" class="cupteam form-select" name="team[<?php echo esc_html( $event->id ); ?>]" id="team-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
-														<option value=""><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
+														<option value="" disabled <?php selected( empty( $event->team->team_id ), true ); ?>><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
 														<?php
 														foreach ( $team_list as $team ) {
 															?>
-															<option value="<?php echo esc_html( $team->id ); ?>" <?php ( ! empty( $event->team->team_id ) ? selected( $team->id, $event->team->team_id ) : '' ); ?>><?php echo esc_html( $team->title ); ?></option>
+															<option value="<?php echo esc_html( $team->id ); ?>" <?php selected( $team->id, empty( $event->team->team_id ) ? null : $event->team->team_id ); ?>><?php echo esc_html( $team->title ); ?></option>
 															<?php
 														}
 														?>

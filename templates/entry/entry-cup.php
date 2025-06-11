@@ -176,9 +176,9 @@ if ( ! empty( $club->entry ) ) {
 												<div class="mb-3" id="notify-<?php echo esc_html( $event->id ); ?>"></div>
 												<div id="splash-<?php echo esc_html( $event->id ); ?>" class="d-none">
 													<div class="d-flex justify-content-center">
-														<div class="spinner-border" role="status">
-														<span class="visually-hidden">Loading...</span>
-														</div>
+														<output class="spinner-border">
+    														<span class="visually-hidden">Loading...</span>
+														</output>
 													</div>
 												</div>
 												<div class="mb-3" id="team-dtls-<?php echo esc_html( $event->id ); ?>">

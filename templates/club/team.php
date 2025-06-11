@@ -12,7 +12,7 @@ namespace Racketmanager;
 /** @var bool   $user_can_update */
 $match_days   = Racketmanager_Util::get_match_days();
 $header_level = 1;
-require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
+require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 $team  = $club->team;
 $event = $club->event;
 ?>

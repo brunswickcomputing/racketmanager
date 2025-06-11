@@ -106,24 +106,6 @@ class Racketmanager_Util {
 			return $event_types[ $type ];
 		}
 	}
-
-	/**
-	 * Get weekdays
-	 *
-	 * @return array
-	 */
-	public static function get_weekdays(): array {
-		$weekdays              = array();
-		$weekdays['Monday']    = __( 'Monday', 'racketmanager' );
-		$weekdays['Tuesday']   = __( 'Tuesday', 'racketmanager' );
-		$weekdays['Wednesday'] = __( 'Wednesday', 'racketmanager' );
-		$weekdays['Thursday']  = __( 'Thursday', 'racketmanager' );
-		$weekdays['Friday']    = __( 'Friday', 'racketmanager' );
-		$weekdays['Saturday']  = __( 'Saturday', 'racketmanager' );
-		$weekdays['Sunday']    = __( 'Sunday', 'racketmanager' );
-		return $weekdays;
-	}
-
 	/**
 	 * Get available league standing status
 	 *

@@ -18,7 +18,7 @@ use stdClass;
 /** @var array  $mens_teams */
 /** @var array  $ladies_teams */
 /** @var array  $mixed_teams */
-/** @var array  $weekdays */
+/** @var array  $match_days */
 /** @var string $season */
 global $racketmanager;
 $no_entry_link = true;
@@ -212,9 +212,9 @@ if ( ! empty( $club->entry ) ) {
 																<div class="col-md-6 form-floating mb-3 form-group match-time">
 																	<select class="form-select" name="matchday[<?php echo esc_html( $event->id ); ?>]" id="matchday-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
 																		<?php
-																		foreach ( $weekdays as $key => $weekday ) {
+																		foreach ( $match_days as $key => $match_day ) {
 																			?>
-																			<option value="<?php echo esc_html( $key ); ?>" <?php ( ! empty( $event->team->team_id ) ? selected( $key, $event->team->team_info->match_day ) : '' ); ?>><?php echo esc_html( $weekday ); ?></option>
+																			<option value="<?php echo esc_html( $key ); ?>" <?php ( selected( $match_day, empty( $event->team->team_info->match_day ) ? null : $event->team->team_info->match_day ) ); ?>><?php echo esc_html( $match_day ); ?></option>
 																			<?php
 																		}
 																		?>

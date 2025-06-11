@@ -270,9 +270,8 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->err_flds[] = 'contactemail-' . $event_id . '-' . $team_id;
 				$return->err_msgs[] = __( 'Email address is required', 'racketmanager' );
 			}
-			if ( ! empty( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) ) {
-				$match_day     = sanitize_text_field( wp_unslash( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) );
-				$match_day_num = Racketmanager_Util::get_match_day_number( $match_day );
+			if ( isset( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) ) {
+				$match_day     = intval( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] );
 			} else {
 				$return->error      = true;
 				$return->status     = 404;
@@ -289,7 +288,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( empty( $return->error ) ) {
-			$msg = $team->update_event( $event_id, $captain_id, $contactno, $contactemail, $match_day_num, $matchtime );
+			$msg = $team->update_event( $event_id, $captain_id, $contactno, $contactemail, $match_day, $matchtime );
 			wp_send_json_success( $msg );
 		} else {
             if ( empty( $return->msg ) ) {
@@ -677,7 +676,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$captain_ids    = isset( $_POST['captainId'] ) ? wp_unslash( $_POST['captainId'] ) : array();
 				$contact_nos    = isset( $_POST['contactno'] ) ? wp_unslash( $_POST['contactno'] ) : array();
 				$contact_emails = isset( $_POST['contactemail'] ) ? wp_unslash( $_POST['contactemail'] ) : array();
-				$matchdays      = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
+				$match_days     = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
 				$match_times    = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
 				//phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				$comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
@@ -711,12 +710,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					$field_name = $event->name;
 					$validator  = $validator->teams( $team, $field_ref, $field_name );
 					if ( ! empty( $team ) ) {
-						$captain      = $captains[$event->id] ?? 0;
-						$captain_id   = $captain_ids[$event->id] ?? 0;
-						$contactno    = $contact_nos[$event->id] ?? '';
-						$contactemail = $contact_emails[$event->id] ?? '';
-						$match_day    = $matchdays[$event->id] ?? '';
-						$matchtime    = $match_times[$event->id] ?? '';
+						$captain      = $captains[$event->id] ?? null;
+						$captain_id   = $captain_ids[$event->id] ?? null;
+						$contactno    = $contact_nos[$event->id] ?? null;
+						$contactemail = $contact_emails[$event->id] ?? null;
+						$match_day    = $match_days[$event->id] ?? null;
+						$matchtime    = $match_times[$event->id] ?? null;
 						$validator    = $validator->match_day( $match_day, $field_ref );
 						$validator    = $validator->match_time( $matchtime, $field_ref, $match_day, $start_times );
 						$validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref, $field_name );
@@ -787,10 +786,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$competition_events   = explode( ',', isset( $_POST['competition_events'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_events'] ) ) : '' );
 			$captains             = isset( $_POST['captain'] ) ? wp_unslash( $_POST['captain'] ) : array();
 			$captain_ids          = isset( $_POST['captainId'] ) ? wp_unslash( $_POST['captainId'] ) : array();
-			$contact_nos           = isset( $_POST['contactno'] ) ? wp_unslash( $_POST['contactno'] ) : array();
-			$contact_emails        = isset( $_POST['contactemail'] ) ? wp_unslash( $_POST['contactemail'] ) : array();
-			$matchdays            = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
-			$match_times           = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
+			$contact_nos          = isset( $_POST['contactno'] ) ? wp_unslash( $_POST['contactno'] ) : array();
+			$contact_emails       = isset( $_POST['contactemail'] ) ? wp_unslash( $_POST['contactemail'] ) : array();
+			$match_days           = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
+			$match_times          = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
 			$comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
 			$num_courts_available = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : 0;
 			$validator            = $validator->num_courts_available( $num_courts_available );
@@ -870,7 +869,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$captain_id       = $captain_ids[ $event->id ][ $team_id ] ?? 0;
 						$contactno        = $contact_nos[ $event->id ][ $team_id ] ?? '';
 						$contactemail     = $contact_emails[ $event->id ][ $team_id ] ?? '';
-						$match_day        = $matchdays[ $event->id ] [$team_id ] ?? '';
+						$match_day        = $match_days[ $event->id ] [$team_id ] ?? '';
 						$match_time       = $match_times[ $event->id ][ $team_id ] ?? '';
 						$league_id        = $team_event_league[ $event->id ][ $team_id ] ?? null;
 						$field_ref        = $event->id . '-' . $team_id;
@@ -3087,7 +3086,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( empty( $return->error ) ) {
-			$matchdays = Racketmanager_Util::get_weekdays();
+			$match_days = Racketmanager_Util::get_match_days();
 			ob_start();
 			?>
 			<div class="modal-dialog modal-dialog-centered modal-lg">
@@ -3146,7 +3145,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 											<select class="form-select" size="1" name="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" >
 												<option><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
 												<?php
-												foreach ( $matchdays as $key => $matchday ) {
+												foreach ( $match_days as $key => $matchday ) {
 													?>
 													<option value="<?php echo esc_html( $key ); ?>" <?php selected( $matchday, empty( $event_team->match_day ) ? null : $event_team->match_day ); ?>><?php echo esc_html( $matchday ); ?></option>
 													<?php

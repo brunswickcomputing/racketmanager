@@ -16,7 +16,7 @@ namespace Racketmanager;
 /** @var array  $clubs */
 /** @var string $form_action */
 /** @var string $edit */
-/** @var array  $matchdays */
+/** @var array  $match_days */
 ?>
 <div class="container league-block">
 	<div class="row justify-content-end">
@@ -142,14 +142,8 @@ namespace Racketmanager;
 				<div class="input">
 				<select size="1" name="matchday" id="matchday" >
 					<option value=""><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
-					<?php foreach ( $matchdays as $matchday ) { ?>
-						<option value="<?php echo esc_html( $matchday ); ?>"
-						<?php
-						if ( isset( $team->match_day ) ) {
-							selected( $matchday, $team->match_day );
-						}
-						?>
-						><?php echo esc_html( $matchday ); ?>
+					<?php foreach ( $match_days as $key => $match_day ) { ?>
+						<option value="<?php echo esc_html( $key ); ?>" <?php selected( $match_day, isset( $team->match_day ) ? $team->match_day: null ); ?>><?php echo esc_html( $match_day ); ?>
 						</option>
 					<?php } ?>
 				</select>

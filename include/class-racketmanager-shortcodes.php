@@ -672,7 +672,7 @@ class RacketManager_Shortcodes {
 			$ladies_teams = $club->get_teams( false, 'WD' );
 			$mens_teams   = $club->get_teams( false, 'MD' );
 			$mixed_teams  = $club->get_teams( false, 'XD' );
-			$weekdays     = Racketmanager_Util::get_weekdays();
+			$match_days   = Racketmanager_Util::get_match_days();
 
 			$filename = ( ! empty( $template ) ) ? 'entry-cup-' . $template : 'entry-cup';
 			return $this->load_template(
@@ -686,7 +686,7 @@ class RacketManager_Shortcodes {
 					'season'             => $season,
 					'competition'        => $competition,
 					'competition_season' => $competition_season,
-					'weekdays'           => $weekdays,
+					'match_days'         => $match_days,
 				),
 				'entry'
 			);

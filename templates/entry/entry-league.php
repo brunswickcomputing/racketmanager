@@ -238,13 +238,7 @@ if ( ! empty( $club->entry ) ) {
 																			<?php
 																			foreach ( $match_days as $key => $match_day ) {
 																				?>
-																				<option value="<?php echo esc_html( $key ); ?>"
-																					<?php
-																					if ( isset( $event_team->team_info->match_day ) ) {
-																						selected( $match_day, $event_team->team_info->match_day );
-																					}
-																					?>
-																				><?php echo esc_html( $match_day ); ?></option>
+																				<option value="<?php echo esc_html( $key ); ?>" <?php selected( $match_day, empty( $event_team->team_info->match_day ) ? null : $event_team->team_info->match_day ); ?>><?php echo esc_html( $match_day ); ?></option>
 																				<?php
 																			}
 																			?>

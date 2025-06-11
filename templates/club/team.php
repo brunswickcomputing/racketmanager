@@ -10,7 +10,7 @@ namespace Racketmanager;
 
 /** @var object $club */
 /** @var bool   $user_can_update */
-$matchdays    = Racketmanager_Util::get_weekdays();
+$match_days   = Racketmanager_Util::get_match_days();
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 $team  = $club->team;
@@ -90,9 +90,13 @@ $event = $club->event;
 											?>
 											<select class="form-select" size="1" name="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" >
 												<option><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
-												<?php foreach ( $matchdays as $key => $matchday ) { ?>
+												<?php
+                                                foreach ( $match_days as $key => $matchday ) {
+                                                    ?>
 													<option value="<?php echo esc_html( $key ); ?>" <?php selected( $matchday, $team->match_day ); ?> <?php disabled( $user_can_update, false ); ?>><?php echo esc_html( $matchday ); ?></option>
-												<?php } ?>
+												    <?php
+                                                }
+                                                ?>
 											</select>
 											<div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
 											<?php

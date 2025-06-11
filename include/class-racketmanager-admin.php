@@ -1047,12 +1047,7 @@ class RacketManager_Admin extends RacketManager {
 					$captain      = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
 					$contactno    = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
 					$contactemail = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
-					$matchday     = isset( $_POST['matchday'] ) ? sanitize_text_field( wp_unslash( $_POST['matchday'] ) ) : null;
-                    if ( $matchday ) {
-                        $match_day = Racketmanager_Util::get_match_day_number( $matchday );
-					} else {
-                        $match_day = null;
-					}
+					$match_day    = isset( $_POST['matchday'] ) ? intval( $_POST['matchday'] ) : null;
 					$matchtime    = isset( $_POST['matchtime'] ) ? sanitize_text_field( wp_unslash( $_POST['matchtime'] ) ) : null;
 					$team->set_event( $league->event->id, $captain, $contactno, $contactemail, $match_day, $matchtime );
 				} elseif ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
@@ -1885,10 +1880,10 @@ class RacketManager_Admin extends RacketManager {
 			$league = false;
 			//phpcs:disable WordPress.Security.NonceVerification.Recommended
 			if ( isset( $_GET['league_id'] ) ) {
-				$league_id = intval( $_GET['league_id'] );
-				$league    = get_league( $league_id );
-				$season    = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
-				$matchdays = array( 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' );
+				$league_id  = intval( $_GET['league_id'] );
+				$league     = get_league( $league_id );
+				$season     = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
+				$match_days = Racketmanager_Util::get_match_days();
 				if ( $league->event->competition->is_player_entry ) {
 					$file = 'player-team.php';
 				}

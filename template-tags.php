@@ -817,3 +817,16 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
 		$shortcode .= ']';
 		return do_shortcode( $shortcode );
 	}
+	/**
+	 * Display match option modal
+	 *
+	 * @param array $args array of arguments.
+	 */
+	function racketmanager_match_option_modal( array $args = array() ): string {
+		$shortcode = '[match-option';
+		foreach ( $args as $key => $value ) {
+			$shortcode .= ' ' . $key . "='" . $value . "'";
+		}
+		$shortcode .= ']';
+		return do_shortcode( $shortcode );
+	}

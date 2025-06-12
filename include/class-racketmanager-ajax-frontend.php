@@ -1566,160 +1566,17 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Build screen to show selected match option
 	 */
 	#[NoReturn] public function show_match_option(): void {
-		$valid   = true;
-		$message = null;
-        $status  = null;
         $output  = null;
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-				$status  = 403;
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-			$status  = 403;
-		}
-		if ( $valid ) {
+		$return  = $this->check_security_token();
+		if ( empty( $return->error ) ) {
 			$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-			$match    = get_match( $match_id );
-			if ( $match ) {
-				$option = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
-				switch ( $option ) {
-					case 'schedule_match':
-						$title  = __( '(Re)schedule match', 'racketmanager' );
-						$button = __( 'Save', 'racketmanager' );
-						$action = 'setMatchDate';
-						break;
-					case 'adjust_team_score':
-						$title  = __( 'Adjust team score', 'racketmanager' );
-						$button = __( 'Change Results', 'racketmanager' );
-						$action = 'adjustTeamScore';
-						break;
-					case 'switch_home':
-						$title  = __( 'Switch home and away', 'racketmanager' );
-						$button = __( 'Switch', 'racketmanager' );
-						$action = 'switchHomeAway';
-						break;
-					case 'reset_match_result':
-						$title  = __( 'Reset match result', 'racketmanager' );
-						$button = __( 'Save', 'racketmanager' );
-						$action = 'resetMatchResult';
-						break;
-					default:
-						$valid   = false;
-						$message = __( 'Invalid match option', 'racketmanager' );
-						$title   = __( 'Unknown option', 'racketmanager' );
-                        $action  = null;
-						$status  = 403;
-						break;
-				}
-				ob_start();
-				?>
-				<div class="modal-dialog modal-dialog-centered modal-lg">
-					<div class="modal-content">
-						<form id="match-option" class="" action="#" method="post">
-							<?php wp_nonce_field( 'match-option', 'racketmanager_nonce' ); ?>
-							<input type="hidden" name="match_id" value="<?php echo esc_attr( $match->id ); ?>" />
-							<input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
-							<input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
-							<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
-							<div class="modal-header modal__header">
-								<h4 class="modal-title"><?php echo esc_html( $title ); ?></h4>
-								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-							</div>
-							<div class="modal-body">
-								<div class="container">
-									<?php
-									require_once RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
-									if ( 'schedule_match' === $option ) {
-										if ( empty( $match->start_time ) ) {
-											$date_input_type = 'date';
-											$date_input      = substr( $match->date, 0, 10 );
-										} else {
-											$date_input_type = 'datetime-local';
-											$date_input      = $match->date;
-										}
-										?>
-										<div class="strike mb-3">
-											<span><?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?></span>
-										</div>
-										<div class="mb-3">
-											<label for="schedule-date" class="visually-hidden"><?php esc_html_e( 'New date', 'racketmanager' ); ?></label>
-											<input type="<?php echo esc_attr( $date_input_type ); ?>" class="form-control" id="schedule-date" name="schedule-date" value="<?php echo esc_html( $date_input ); ?>" />
-										</div>
-										<div class="alert_rm" id="matchDateAlert" style="display:none;">
-											<div class="alert__body">
-												<div class="alert__body-inner" id="alertMatchDateResponse">
-												</div>
-											</div>
-										</div>
-										<?php
-									} elseif ( 'switch_home' === $option ) {
-										?>
-										<div class="mb-3">
-											<span><?php esc_html_e( 'Switch home and away?', 'racketmanager' ); ?></span>
-										</div>
-										<?php
-									} elseif ( 'reset_match_result' === $option ) {
-										?>
-										<div class="strike mb-3">
-											<span><?php esc_html_e( 'Reset match result', 'racketmanager' ); ?></span>
-										</div>
-										<div class="mb-3">
-											<p class="text-center"><?php esc_html_e( 'This will remove scores and winner/loser', 'racketmanager' ); ?>.</p>
-										</div>
-										<div class="alert_rm" id="resetMatchAlert" style="display:none;">
-											<div class="alert__body">
-												<div class="alert__body-inner" id="alertResetMatchResponse">
-												</div>
-											</div>
-										</div>
-										<?php
-									}
-									?>
-								</div>
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-								<?php
-								if ( ! empty( $button ) ) {
-									?>
-									<button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $action ); ?>" data-is-tournament="<?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>"><?php echo esc_html( $button ); ?></button>
-									<?php
-								}
-								?>
-							</div>
-						</form>
-					</div>
-				</div>
-                <script type="text/javascript">
-                    document.getElementById('actionButton').addEventListener('click', function (e) {
-                        let action = this.dataset.action;
-                        let isTournament = this.dataset.isTournament;
-                        if (action === 'setMatchDate') {
-                            Racketmanager.setMatchDate(e, this, isTournament);
-                        } else if (action === 'switchHomeAway' ) {
-                            Racketmanager.switchHomeAway(e, this, isTournament);
-                        } else if (action === 'resetMatchResult' ) {
-                            Racketmanager.resetMatchResult(e, this, isTournament);
-                        }
-                    });
-                </script>
-				<?php
-				$output = ob_get_contents();
-				ob_end_clean();
-			} else {
-				$valid   = false;
-				$message = $this->match_not_found;
-				$status  = 404;
-			}
+			$option   = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
+			$output   = racketmanager_match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
 		}
-		if ( ! $valid ) {
-			$output = $this->modal_error( $message );
-			status_header( $status );
+		if ( ! empty( $return->error ) ) {
+			$output = $this->modal_error( $return->msg );
+			status_header( $return->status );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();

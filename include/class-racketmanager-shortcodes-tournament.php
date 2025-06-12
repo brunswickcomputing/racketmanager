@@ -31,6 +31,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		add_shortcode( 'tournament-match', array( &$this, 'show_tournament_match' ) );
 		add_shortcode( 'orderofplay', array( &$this, 'show_order_of_play' ) );
 		add_shortcode( 'latest-tournament', array( &$this, 'show_latest_tournament' ) );
+		add_shortcode( 'tournament-withdrawal', array( &$this, 'show_tournament_withdrawal_modal' ) );
 	}
 	/**
 	 * Show tournament function

@@ -1113,6 +1113,7 @@ class RacketManager_Shortcodes {
 				'tournament'  => 'templates/tournament',
 				'account'     => 'templates/account',
 				'league'      => 'templates/league',
+				'match'       => 'templates/match',
 				'club'        => 'templates/club',
 				default       => 'templates',
 			};

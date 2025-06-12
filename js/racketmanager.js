@@ -1168,10 +1168,11 @@ Racketmanager.setMatchStatus = function (link) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let scoreStatus = response.data[2];
-			let statusMessages = Object.entries(response.data[3]);
-			let statusClasses = Object.entries(response.data[4]);
-			let numRubbers = response.data[6];
+			let data = response.data;
+			let scoreStatus = data.match_status;
+			let statusMessages = Object.entries(data.status_message);
+			let statusClasses = Object.entries(data.status_class);
+			let numRubbers = data.num_rubbers;
 			if (numRubbers) {
 				for (let x = 1; x <= numRubbers; x++) {
 					let rubberNumber = x;
@@ -1232,26 +1233,11 @@ Racketmanager.setMatchStatus = function (link) {
 			}
 			let matchStatusRef = '#match_status';
 			jQuery(matchStatusRef).attr('value', scoreStatus);
-			let modal = '#' + response.data[5];
+			let modal = '#' + data.modal;
 			jQuery(modal).modal('hide')
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let $message = data[0];
-				let errorMsg = data[1];
-				let errorField = data[2];
-				for (let i = 0; i < errorField.length; i++) {
-					let formField = "#" + errorField[i];
-					jQuery(formField).addClass('is-invalid');
-					formField = formField + 'Feedback';
-					jQuery(formField).html(errorMsg[i]);
-				}
-				jQuery(alertTextField).html($message);
-			} else {
-				jQuery(alertTextField).html(response.statusText);
-			}
-			jQuery(notifyField).show();
+			Racketmanager.handleAjaxError(response, alertTextField, notifyField);
 		},
 		complete: function () {
 		}

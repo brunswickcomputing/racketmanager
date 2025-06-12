@@ -1090,39 +1090,32 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Set match status
 	 */
 	public function set_match_status(): void {
-		$return         = array();
-		$err_msg        = array();
-		$err_field      = array();
-		$valid          = true;
 		$msg            = null;
         $match_id       = null;
         $match_status   = null;
         $status_message = null;
         $status_class   = null;
         $match          = null;
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-status' ) ) {
-			$valid       = false;
-			$err_field[] = '';
-			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-		}
-		if ( $valid ) {
+        $modal          = null;
+		$return         = $this->check_security_token( 'racketmanager_nonce', 'match-status' );
+		if ( empty( $return->error ) ) {
 			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			if ( $modal ) {
 				$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
 				if ( $match_id ) {
 					$match        = get_match( $match_id );
-					$match_status = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
+					$match_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
 					if ( $match_status ) {
 						$match_status_values = explode( '_', $match_status );
 						$status_value        = $match_status_values[0];
-						$player_ref = $match_status_values[1] ?? null;
+						$player_ref          = $match_status_values[1] ?? null;
 						switch ( $status_value ) {
 							case 'walkover':
 							case 'retired':
 								if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
-									$valid       = false;
-									$err_field[] = 'score_status';
-									$err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
+									$return->error      = true;
+									$return->err_flds[] = 'score_status';
+									$return->err_msgs[] = __( 'Score status team selection not valid', 'racketmanager' );
 								}
 								break;
 							case 'none':
@@ -1131,40 +1124,48 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							case 'share':
 								break;
 							default:
-								$valid       = false;
-								$err_field[] = 'match_status';
-								$err_msg[]   = __( 'Match status not valid', 'racketmanager' );
+								$return->error      = true;
+								$return->err_flds[] = 'score_status';
+								$return->err_msgs[] = __( 'Match status not valid', 'racketmanager' );
 								break;
 						}
-						if ( $valid ) {
+						if ( empty( $return->error ) ) {
 							$status_dtls    = $this->set_status_details( $match_status, $match->home_team, $match->away_team );
 							$status_message = $status_dtls->message;
 							$status_class   = $status_dtls->class;
 							$match_status   = $status_dtls->status;
 						}
 					} else {
-						$valid       = false;
-						$err_field[] = 'match_status';
-						$err_msg[]   = __( 'No match status selected', 'racketmanager' );
+						$return->error      = true;
+						$return->err_flds[] = 'score_status';
+						$return->err_msgs[] = __( 'No match status selected', 'racketmanager' );
 					}
 				} else {
-					$valid       = false;
-					$err_field[] = 'match_status';
-					$err_msg[]   = $this->no_match_id;
+					$return->error      = true;
+					$return->err_flds[] = 'score_status';
+					$return->err_msgs[] = $this->no_match_id;
 				}
 			} else {
-				$valid       = false;
-				$err_field[] = 'match_status';
-				$err_msg[]   = $this->no_modal;
+				$return->error      = true;
+				$return->err_flds[] = 'score_status';
+				$return->err_msgs[] = $this->no_modal;
 			}
 		}
-		if ( $valid ) {
-			array_push( $return, $msg, $match_id, $match_status, $status_message, $status_class, $modal, $match->num_rubbers );
+		if ( empty( $return->error ) ) {
+            $return->msg = $msg;
+            $return->match_id = $match_id;
+            $return->match_status = $match_status;
+            $return->status_message = $status_message;
+            $return->status_class = $status_class;
+            $return->modal = $modal;
+            $return->num_rubbers = $match->num_rubbers;
 			wp_send_json_success( $return );
 		} else {
-			$msg = __( 'Unable to set match status', 'racketmanager' );
-			array_push( $return, $msg, $err_msg, $err_field );
-			wp_send_json_error( $return, '500' );
+			$return->msg = __( 'Unable to set match status', 'racketmanager' );
+            if ( empty( $return->status ) ) {
+                $return->status = 401;
+            }
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**

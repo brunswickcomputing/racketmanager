@@ -1347,7 +1347,7 @@ final class Racketmanager_Match {
 			if ( $prev_winner !== $this->winner_id || floatval( $home_points ) !== $this->home_points || floatval( $away_points ) !== $this->away_points || $custom !== $this->custom || $confirmed !== $this->confirmed ) {
 				$this->home_points = $home_points;
 				$this->away_points = $away_points;
-				$this->custom      = array_merge( (array) $this->custom, $custom );
+				$this->custom      = $custom;
 				$this->confirmed   = $confirmed;
 				foreach ( $this->custom as $key => $value ) {
 					$this->{$key} = $value;

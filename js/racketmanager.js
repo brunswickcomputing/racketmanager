@@ -1132,27 +1132,6 @@ Racketmanager.viewMatch = function (e) {
 		window.location = link;
 	}
 };
-Racketmanager.matchStatusModal = function (event, match_id) {
-	event.preventDefault();
-	let notifyField = "#scoreStatusModal";
-	let matchStatus = jQuery('#match_status').val();
-	let modal = 'scoreStatusModal';
-	jQuery(notifyField).val("");
-	jQuery(notifyField).load(
-		ajax_var.url,
-		{
-			"match_id": match_id,
-			"modal": modal,
-			"match_status": matchStatus,
-			"action": "racketmanager_match_status",
-			"security": ajax_var.ajax_nonce,
-		},
-		function () {
-			jQuery(notifyField).show();
-			jQuery(notifyField).modal('show');
-		}
-	);
-};
 Racketmanager.setMatchStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();

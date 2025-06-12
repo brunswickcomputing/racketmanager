@@ -661,7 +661,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			} elseif ( $this->check_template( 'match-tournament' . $template . '-' . $match->league->sport ) ) {
 				$filename = 'match-tournament' . $template . '-' . $match->league->sport;
 			} else {
-				$filename = ( ! empty( $template ) ) ? 'match-tournament' . $template : 'match-tournament';
+				$filename = ! empty( $template ) ? 'match-tournament' . $template : 'match-tournament';
 			}
 
 			return $this->load_template(

@@ -458,7 +458,7 @@ final class Racketmanager_Rubber {
 	 * @param array $points array of data used to calculate points.
 	 * @return object points data for home and away.
 	 */
-	public function calculate_result(array $points ): object {
+	public function calculate_result( array $points ): object {
 		$home_team          = $points['home']['team'];
 		$home_sets          = $points['home']['sets'];
 		$home_walkover      = isset( $points['home']['walkover'] ) ? 1 : 0;
@@ -478,6 +478,19 @@ final class Racketmanager_Rubber {
 		$forwin_split       = $point_rule['forwin_split'];
 		$forshare           = $point_rule['forshare'];
 		$forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
+		if ( $home_invalid ) {
+			$invalid_points_home = $forwalkover_rubber;
+			$invalid_points_away = 0;
+		} elseif ( $away_invalid ) {
+			$invalid_points_away = $forwalkover_rubber;
+			$invalid_points_home = 0;
+		} elseif ( $both_invalid ) {
+			$invalid_points_home = $forwalkover_rubber;
+			$invalid_points_away = $forwalkover_rubber;
+		} else {
+			$invalid_points_home = 0;
+			$invalid_points_away = 0;
+		}
 		if ( $shared_sets === $league->num_sets ) {
 			$straight_sets_home = 0;
 			$straight_sets_away = 0;
@@ -507,8 +520,8 @@ final class Racketmanager_Rubber {
 			$split_sets_home    = 1;
 			$split_sets_away    = 0;
 		}
-		$home_points = $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $forwalkover_rubber );
-		$away_points = $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $forwalkover_rubber );
+		$home_points = $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $forwalkover_rubber ) - $invalid_points_home;
+		$away_points = $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $forwalkover_rubber ) - $invalid_points_away;
 		if ( $home_walkover || $away_walkover ) {
 			if ( $home_walkover && $away_walkover ) {
 				$winner = -1;

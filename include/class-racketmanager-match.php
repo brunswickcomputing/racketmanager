@@ -1234,12 +1234,14 @@ final class Racketmanager_Match {
 				$stats['games']['away'] += empty( $rubber->custom['stats']['games']['away'] ) ? 0 : $rubber->custom['stats']['games']['away'];
 			}
 			$custom['stats'] = $stats;
-			unset( $this->custom['walkover'] );
-			unset( $this->custom['share'] );
-			unset( $this->custom['retired'] );
-			unset( $this->custom['abandoned'] );
-			unset( $this->custom['withdrawn'] );
-			unset( $this->custom['cancelled'] );
+			if ( is_array( $this->custom ) ) {
+				unset( $this->custom['walkover'] );
+				unset( $this->custom['share'] );
+				unset( $this->custom['retired'] );
+				unset( $this->custom['abandoned'] );
+				unset( $this->custom['withdrawn'] );
+				unset( $this->custom['cancelled'] );
+			}
 			if ( 'league' === $this->league->event->competition->type ) {
 				$this->status = 0;
 				if ( 7 === intval( $match_status ) || 8 === intval( $match_status ) ) {

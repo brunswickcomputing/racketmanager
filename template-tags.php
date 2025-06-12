@@ -791,3 +791,29 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
 	$shortcode .= ']';
 	return do_shortcode( $shortcode );
 }
+	/**
+	 * Display match status modal
+	 *
+	 * @param array $args array of arguments.
+	 */
+	function racketmanager_match_status_modal( array $args = array() ): string {
+		$shortcode = '[match-status';
+		foreach ( $args as $key => $value ) {
+			$shortcode .= ' ' . $key . "='" . $value . "'";
+		}
+		$shortcode .= ']';
+		return do_shortcode( $shortcode );
+	}
+	/**
+	 * Display rubber status modal
+	 *
+	 * @param array $args array of arguments.
+	 */
+	function racketmanager_rubber_status_modal( array $args = array() ): string {
+		$shortcode = '[rubber-status';
+		foreach ( $args as $key => $value ) {
+			$shortcode .= ' ' . $key . "='" . $value . "'";
+		}
+		$shortcode .= ']';
+		return do_shortcode( $shortcode );
+	}

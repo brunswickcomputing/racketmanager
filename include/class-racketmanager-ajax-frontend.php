@@ -228,6 +228,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $captain_id    = null;
         $contactno     = null;
         $contactemail  = null;
+		$match_day     = null;
         $matchtime     = null;
         $team          = null;
         $event_id      = null;
@@ -808,7 +809,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @see templates/leagueentry.php
 	 */
 	public function league_entry_request(): void {
-		$return                = array();
 		$validator             = new Racketmanager_Validator_Entry_Form();
 		$club_id               = null;
 		$club_entry            = null;

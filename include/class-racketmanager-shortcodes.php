@@ -1224,4 +1224,40 @@ class RacketManager_Shortcodes {
 		ob_end_clean();
 		return $output;
 	}
+	/**
+	 * Return modal error function
+	 *
+	 * @param string $msg message to display.
+	 * @return string output html modal
+	 */
+	public function return_error_modal(string $msg ): string {
+		ob_start();
+		?>
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header modal__header">
+                    <h4 class="modal-title"><?php esc_html_e( 'Error', 'racketmanager' ); ?></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="alert_rm alert--danger">
+                            <div class="alert__body">
+                                <div class="alert__body-inner">
+                                    <span><?php echo esc_html( $msg ); ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
+                </div>
+            </div>
+        </div>
+		<?php
+		$output = ob_get_contents();
+		ob_end_clean();
+		return $output;
+	}
 }

@@ -781,4 +781,75 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
 		exit;
 	}
+	/**
+	 * Function to display Tournament withdrawal modal
+	 *
+	 *    [tournament-withdrawal id=ID player_id=x modal=x template=X]
+	 *
+	 * @param array $atts shortcode attributes.
+	 * @return string the content
+	 */
+	public function show_tournament_withdrawal_modal( array $atts ): string {
+		$args           = shortcode_atts(
+			array(
+				'id'        => '',
+				'modal'     => null,
+				'player_id' => null,
+				'template'  => '',
+			),
+			$atts
+		);
+		$tournament_id  = $args['id'];
+		$modal          = $args['modal'];
+		$player_id      = $args['player_id'];
+		$template       = $args['template'];
+		$tournament     = null;
+		$player         = null;
+		$events_entered = null;
+		$msg            = null;
+		$valid          = true;
+		if ( $tournament_id ) {
+			$tournament = get_tournament( $tournament_id );
+			if ( $tournament ) {
+				if ( $player_id ) {
+					$player         = get_player( $player_id );
+					$events_entered = $tournament->get_players(
+						array(
+							'count' => true,
+							'player' => $player_id,
+						)
+					);
+					if ( ! $events_entered ) {
+						$msg = __( 'You are not currently entered into any event.', 'racketmanager' );
+					}
+				} else {
+					$valid = false;
+					$msg   = __( 'Player id not found', 'racketmanager' );
+				}
+			} else {
+				$valid = false;
+				$msg   = __( 'Tournament not found', 'racketmanager' );
+			}
+		} else {
+			$valid = false;
+			$msg   = __( 'Tournament id not found', 'racketmanager' );
+		}
+		if ( $valid ) {
+			$filename = ( ! empty( $template ) ) ? 'withdrawal-modal-' . $template : 'withdrawal-modal';
+			return $this->load_template(
+				$filename,
+				array(
+					'tournament'     => $tournament,
+					'player'         => $player,
+					'modal'          => $modal,
+					'msg'            => $msg,
+					'events_entered' => $events_entered,
+				)
+				,'tournament'
+			);
+		} else {
+			return $this->return_error_modal( $msg );
+		}
+
+	}
 }

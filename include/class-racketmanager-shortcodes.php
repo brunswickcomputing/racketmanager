@@ -209,7 +209,7 @@ class RacketManager_Shortcodes {
 		$search_string  = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$search_results = null;
 		if ( $search_string ) {
-			$search_results = racketmanager_player_search( $search_string );
+			$search_results = player_search( $search_string );
 		}
 		$favourites = array();
 		if ( is_user_logged_in() ) {

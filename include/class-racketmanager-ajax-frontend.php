@@ -1072,7 +1072,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status   = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
 			$match    = get_match( $match_id );
 			if ( $match ) {
-				$output = racketmanager_match_status_modal( array( 'status' => $status, 'modal' => $modal, 'match_id' => $match_id ) );
+				$output = match_status_modal( array( 'status' => $status, 'modal' => $modal, 'match_id' => $match_id ) );
 			} else {
 				$return->error  = true;
 				$return->msg    = $this->match_not_found;
@@ -1180,7 +1180,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
 			$rubber    = get_rubber( $rubber_id );
 			if ( $rubber ) {
-				$output = racketmanager_rubber_status_modal( array( 'status' => $status, 'modal' => $modal, 'rubber_id' => $rubber_id ) );
+				$output = rubber_status_modal( array( 'status' => $status, 'modal' => $modal, 'rubber_id' => $rubber_id ) );
 			} else {
 				$return->error  = true;
 				$return->msg    = __( 'Rubber not found', 'racketmanager' );
@@ -1512,7 +1512,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$option   = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
-			$output   = racketmanager_match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
+			$output   = match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
 		}
 		if ( ! empty( $return->error ) ) {
 			$output = $this->modal_error( $return->msg );
@@ -1760,7 +1760,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		if ( empty( $return->error ) ) {
 			$search_string = isset( $_GET['search_string'] ) ? sanitize_text_field( wp_unslash( $_GET['search_string'] ) ) : null;
 			if ( $search_string ) {
-                $output = racketmanager_player_search( $search_string );
+                $output = player_search( $search_string );
 			} else {
 				$return->error = true;
 				$return->msg   = __( 'Search string not supplied', 'racketmanager' );
@@ -1902,7 +1902,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 					if ( $target ) {
 						$tab = isset( $_POST['tab'] ) ? sanitize_text_field( wp_unslash( $_POST['tab'] ) ) : null;
 						if ( $tab ) {
-                            $valid_tabs = array( 'clubs', 'draws', 'events', 'matches', 'players', 'teams', 'standings' );
+                            $valid_tabs = array( 'clubs', 'draws', 'events', 'matches', 'players', 'teams', 'standings', 'crosstable', 'winners' );
                             $tab_pos    = array_search( $tab, $valid_tabs, true );
                             if ( $tab_pos !== false ) {
                                 $tab_name = $valid_tabs[ $tab_pos ];
@@ -1918,7 +1918,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							if ( $season ) {
 								$args['season'] = $season;
 							}
-							$function_name = 'Racketmanager\racketmanager_' . $target_name . '_' . $tab_name;
+							$function_name = 'Racketmanager\\' . $target_name . '_' . $tab_name;
 							if ( function_exists( $function_name ) ) {
 								ob_start();
 								$function_name( $target->id, $args );
@@ -2009,7 +2009,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
 			$modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
 			$player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-			$output        = racketmanager_tournament_withdrawal_modal( $tournament_id, array( 'modal' => $modal, 'player_id' => $player_id ) );
+			$output        = tournament_withdrawal_modal( $tournament_id, array( 'modal' => $modal, 'player_id' => $player_id ) );
 		}
 		if ( ! empty( $return->error ) ) {
 			$output = $return->msg;

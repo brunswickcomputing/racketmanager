@@ -196,7 +196,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 </div>
 <?php
 if ( $standalone ) {
-	racketmanager_results( $club->id, array( 'header_level' => 3 ) );
+	latest_results( $club->id, array( 'header_level' => 3 ) );
 }
 ?>
 <?php

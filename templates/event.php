@@ -126,7 +126,7 @@ if ( ! $event->is_box ) {
 					<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
 						<?php
 						if ( $option['selected'] ) {
-							$function_name = 'Racketmanager\racketmanager_event_' . $option['name'];
+							$function_name = 'Racketmanager\event_' . $option['name'];
 							if ( function_exists( $function_name ) ) {
 								$function_name(
 									$event->id,

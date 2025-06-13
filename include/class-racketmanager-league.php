@@ -929,7 +929,7 @@ class Racketmanager_League {
 		$message_args['from']    = $email_from;
 
 		if ( $message_send ) {
-			$email_message = racketmanager_withdrawn_team( $message_args );
+			$email_message = withdrawn_team_email( $message_args );
 			wp_mail( $email_to, $email_subject, $email_message, $headers );
 		}
 		$racketmanager->set_message( __( 'Team withdrawn', 'racketmanager' ) );

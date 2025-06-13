@@ -1971,7 +1971,7 @@ final class Racketmanager_Match {
 		$message_args['round']            = $round_name;
 		$message_args['competition_type'] = $this->league->event->competition->type;
 		$message_args['emailfrom']        = $email_from;
-		$email_message                    = racketmanager_match_notification( $this->id, $message_args );
+		$email_message                    = match_notification( $this->id, $message_args );
 		$subject                          = __( 'Match Details', 'racketmanager' ) . ' - ' . $round_name;
 		if ( ! empty( $this->leg ) ) {
 			$subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $this->leg;
@@ -2299,7 +2299,7 @@ final class Racketmanager_Match {
 		}
 		$subject                      .= ' - ' . $this->league->title;
 		$message_args['email_subject'] = $subject;
-		$email_message                 = racketmanager_match_date_change_notification( $this->id, $message_args );
+		$email_message                 = match_date_change_notification( $this->id, $message_args );
 		wp_mail( $email_to, $subject, $email_message, $headers );
 		return true;
 	}
@@ -2681,7 +2681,7 @@ final class Racketmanager_Match {
 					$subject .= ' - ' . __( 'Confirmation required', 'racketmanager' );
 				}
 				$message_args['confirmation_required'] = $confirmation_required;
-				$message                               = racketmanager_captain_result_notification( $this->id, $message_args );
+				$message                               = captain_result_notification( $this->id, $message_args );
 			} else {
 				$email_to  = $admin_email;
 				$headers[] = $racketmanager->get_from_user_email();
@@ -2694,7 +2694,7 @@ final class Racketmanager_Match {
 						$subject                 .= ' - ' . __( 'Match complete', 'racketmanager' );
 					}
 				}
-				$message = racketmanager_result_notification( $this->id, $message_args );
+				$message = result_notification( $this->id, $message_args );
 			}
 			wp_mail( $email_to, $subject, $message, $headers );
 		}
@@ -2737,7 +2737,7 @@ final class Racketmanager_Match {
 			}
 		}
 		if ( $email_to ) {
-			$email_message = racketmanager_result_outstanding_notification( $this->id, $message_args );
+			$email_message = result_outstanding_notification( $this->id, $message_args );
 			wp_mail( $email_to, $email_subject, $email_message, $headers );
 			$message_sent = true;
 		}
@@ -2762,7 +2762,7 @@ final class Racketmanager_Match {
 		$message_args['override']              = $override;
 		$message_args['from_email']            = $from_email;
 		$message_args['confirmation_required'] = $confirmation_required;
-		$email_message                         = racketmanager_captain_result_notification( $this->id, $message_args );
+		$email_message                         = captain_result_notification( $this->id, $message_args );
 		$msg_end                               = 'approval pending';
 		if ( $override ) {
 			$msg_end = 'complete';

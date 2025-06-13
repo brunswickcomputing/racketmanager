@@ -2003,7 +2003,7 @@ class Racketmanager_Event {
 		$message_args['event']         = $this->name;
 		$message_args['emailfrom']     = $email_address;
 		$message_args['template_type'] = 'email';
-		$email_message                 = racketmanager_constitution_notification( $this->id, $message_args );
+		$email_message                 = constitution_notification( $this->id, $message_args );
 		$headers                       = array();
 		$headers[]                     = 'From: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_address . '>';
 		$headers[]                     = 'cc: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_address . '>';

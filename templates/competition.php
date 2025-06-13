@@ -101,7 +101,7 @@ $menu_options['winners']  = array(
 					<div class="tab-pane <?php echo $option['selected'] ? 'active' : 'fade'; ?>" id="<?php echo esc_attr( $option['name'] ); ?>" role="tabpanel" aria-labelledby="<?php echo esc_attr( $option['name'] ); ?>-tab">
 						<?php
 						if ( $option['selected'] ) {
-							$function_name = 'Racketmanager\racketmanager_competition_' . $option['name'];
+							$function_name = 'Racketmanager\competition_' . $option['name'];
 							if ( function_exists( $function_name ) ) {
 								$function_name( $competition->id, array( 'season' => $competition->current_season['name'] ) );
 							} else {

@@ -78,7 +78,7 @@ function the_currency_amount( ?string $amount ): void {
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_club( int $club_id, array $args = array() ): void {
+function club( int $club_id, array $args = array() ): void {
 	$defaults        = array( 'template' => '' );
 	$args            = array_merge( $defaults, $args );
 	$args['club_id'] = $club_id;
@@ -115,7 +115,7 @@ function racketmanager_club( int $club_id, array $args = array() ): void {
  *
  * @category template-tags
  */
-function racketmanager_league_players( int|string $league_id, array $args = array() ): void {
+function league_players( int|string $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'template' => '',
@@ -139,7 +139,7 @@ function racketmanager_league_players( int|string $league_id, array $args = arra
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_standings( int $league_id, array $args = array() ): void {
+function league_standings( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'template' => 'last5',
@@ -165,7 +165,7 @@ function racketmanager_league_standings( int $league_id, array $args = array() )
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_crosstable( int $league_id, array $args = array() ): void {
+function league_crosstable( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'group'    => '',
@@ -191,7 +191,7 @@ function racketmanager_league_crosstable( int $league_id, array $args = array() 
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_matches( int $league_id, array $args = array() ): void {
+function league_matches( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'                   => '',
 		'template'                 => '',
@@ -218,27 +218,6 @@ function racketmanager_league_matches( int $league_id, array $args = array() ): 
 
 	echo do_shortcode( $shortcode );
 }
-
-	/**
-	 * Display one match
-	 *
-	 * @param int $match_id match.
-	 * @param array $args additional arguments as associative array (optional).
-	 *
-	 * @category template-tags
-	 */
-function racketmanager_match( int $match_id, array $args = array() ): void {
-	$defaults         = array( 'template' => '' );
-	$args             = array_merge( $defaults, $args );
-	$args['match_id'] = $match_id;
-
-	$shortcode = '[match';
-	foreach ( $args as $key => $value ) {
-		$shortcode .= ' ' . $key . "='" . $value . "'";
-	}
-	$shortcode .= ']';
-	echo do_shortcode( $shortcode );
-}
 	/**
 	 * Display tournament match
 	 *
@@ -247,7 +226,7 @@ function racketmanager_match( int $match_id, array $args = array() ): void {
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_tournament_match( int $match_id, array $args = array() ): void {
+function tournament_match( int $match_id, array $args = array() ): void {
 	$defaults         = array( 'template' => '' );
 	$args             = array_merge( $defaults, $args );
 	$args['match_id'] = $match_id;
@@ -268,7 +247,7 @@ function racketmanager_tournament_match( int $match_id, array $args = array() ):
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_league_teams( int $league_id, array $args = array() ): void {
+function league_teams( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'season'   => false,
 		'template' => '',
@@ -292,7 +271,7 @@ function racketmanager_league_teams( int $league_id, array $args = array() ): vo
 	 *
 	 * @return void
 	 */
-function racketmanager_championship( int $league_id, array $args = array() ): void {
+function championship( int $league_id, array $args = array() ): void {
 	$defaults          = array(
 		'template' => '',
 		'season'   => false,
@@ -316,7 +295,7 @@ function racketmanager_championship( int $league_id, array $args = array() ): vo
 	 *
 	 * @return void
 	 */
-function racketmanager_archive( int $league_id, array $args = array() ): void {
+function archive( int $league_id, array $args = array() ): void {
 	$defaults          = array( 'template' => '' );
 	$args              = array_merge( $defaults, $args );
 	$args['league_id'] = $league_id;
@@ -337,7 +316,7 @@ function racketmanager_archive( int $league_id, array $args = array() ): void {
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_results( int $club_id, array $args = array() ): void {
+function latest_results( int $club_id, array $args = array() ): void {
 	$args['club'] = $club_id;
 	$args['days'] = 3;
 
@@ -356,7 +335,7 @@ function racketmanager_results( int $club_id, array $args = array() ): void {
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_match_notification( int $match_id, array $args = array() ): string {
+function match_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[match-notification';
@@ -375,7 +354,7 @@ function racketmanager_match_notification( int $match_id, array $args = array() 
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_result_notification( int $match_id, array $args = array() ): string {
+function result_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[result-notification';
@@ -393,7 +372,7 @@ function racketmanager_result_notification( int $match_id, array $args = array()
  *
  * @return string
  */
-function racketmanager_match_date_change_notification( int $match_id, array $args = array() ): string {
+function match_date_change_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[match_date_change_notification';
@@ -411,7 +390,7 @@ function racketmanager_match_date_change_notification( int $match_id, array $arg
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_captain_result_notification( int $match_id, array $args = array() ): string {
+function captain_result_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[result-notification-captain';
@@ -430,7 +409,7 @@ function racketmanager_captain_result_notification( int $match_id, array $args =
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_result_outstanding_notification( int $match_id, array $args = array() ): string {
+function result_outstanding_notification( int $match_id, array $args = array() ): string {
 	$args['match'] = $match_id;
 
 	$shortcode = '[result-outstanding-notification';
@@ -448,7 +427,7 @@ function racketmanager_result_outstanding_notification( int $match_id, array $ar
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_club_players_notification( array $args = array() ): string {
+function club_players_notification( array $args = array() ): string {
 	$shortcode = '[club-player-notification';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
@@ -465,7 +444,7 @@ function racketmanager_club_players_notification( array $args = array() ): strin
 	 *
 	 * @category template-tags
 	 */
-function racketmanager_constitution_notification( int $event_id, array $args = array() ): string {
+function constitution_notification( int $event_id, array $args = array() ): string {
 	$args['id']        = $event_id;
 	$args['standings'] = 'constitution';
 
@@ -482,7 +461,7 @@ function racketmanager_constitution_notification( int $event_id, array $args = a
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_overview( int $tournament_id, array $args = array() ): void {
+function tournament_overview( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-overview';
 	foreach ( $args as $key => $value ) {
@@ -497,7 +476,7 @@ function racketmanager_tournament_overview( int $tournament_id, array $args = ar
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_events( int $tournament_id, array $args = array() ): void {
+function tournament_events( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-events';
 	foreach ( $args as $key => $value ) {
@@ -512,7 +491,7 @@ function racketmanager_tournament_events( int $tournament_id, array $args = arra
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_draws( int $tournament_id, array $args = array() ): void {
+function tournament_draws( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-draws';
 	foreach ( $args as $key => $value ) {
@@ -527,7 +506,7 @@ function racketmanager_tournament_draws( int $tournament_id, array $args = array
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_players( int $tournament_id, array $args = array() ): void {
+function tournament_players( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-players';
 	foreach ( $args as $key => $value ) {
@@ -542,7 +521,7 @@ function racketmanager_tournament_players( int $tournament_id, array $args = arr
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_matches( int $tournament_id, array $args = array() ): void {
+function tournament_matches( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-matches';
 	foreach ( $args as $key => $value ) {
@@ -560,7 +539,7 @@ function racketmanager_tournament_matches( int $tournament_id, array $args = arr
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_order_of_play( int $tournament_id, array $args = array() ): void {
+function tournament_order_of_play( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[orderofplay';
 	foreach ( $args as $key => $value ) {
@@ -575,7 +554,7 @@ function racketmanager_tournament_order_of_play( int $tournament_id, array $args
  * @param int $tournament_id tournament.
  * @param array $args array of arguments.
  */
-function racketmanager_tournament_winners( int $tournament_id, array $args = array() ): void {
+function tournament_winners( int $tournament_id, array $args = array() ): void {
 	$args['id'] = $tournament_id;
 	$shortcode  = '[tournament-winners';
 	foreach ( $args as $key => $value ) {
@@ -590,7 +569,7 @@ function racketmanager_tournament_winners( int $tournament_id, array $args = arr
 	 * @param int $tournament_id tournament.
 	 * @param array $args array of arguments.
 	 */
-	function racketmanager_tournament_withdrawal_modal( int $tournament_id, array $args = array() ): string {
+	function tournament_withdrawal_modal( int $tournament_id, array $args = array() ): string {
 		$args['id'] = $tournament_id;
 		$shortcode  = '[tournament-withdrawal';
 		foreach ( $args as $key => $value ) {
@@ -621,7 +600,7 @@ function racketmanager_tournament_winners( int $tournament_id, array $args = arr
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_overview( int $competition_id, array $args = array() ): void {
+function competition_overview( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-overview';
 	foreach ( $args as $key => $value ) {
@@ -636,7 +615,7 @@ function racketmanager_competition_overview( int $competition_id, array $args = 
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_events( int $competition_id, array $args = array() ): void {
+function competition_events( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-events';
 	foreach ( $args as $key => $value ) {
@@ -651,7 +630,7 @@ function racketmanager_competition_events( int $competition_id, array $args = ar
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_clubs( int $competition_id, array $args = array() ): void {
+function competition_clubs( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-clubs';
 	foreach ( $args as $key => $value ) {
@@ -666,7 +645,7 @@ function racketmanager_competition_clubs( int $competition_id, array $args = arr
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_teams( int $competition_id, array $args = array() ): void {
+function competition_teams( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-teams';
 	foreach ( $args as $key => $value ) {
@@ -681,7 +660,7 @@ function racketmanager_competition_teams( int $competition_id, array $args = arr
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_players( int $competition_id, array $args = array() ): void {
+function competition_players( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-players';
 	foreach ( $args as $key => $value ) {
@@ -696,7 +675,7 @@ function racketmanager_competition_players( int $competition_id, array $args = a
  * @param int $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_standings( int $event_id, array $args = array() ): void {
+function event_standings( int $event_id, array $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-standings';
 	foreach ( $args as $key => $value ) {
@@ -711,7 +690,7 @@ function racketmanager_event_standings( int $event_id, array $args = array() ): 
  * @param int $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_draw( int $event_id, array $args = array() ): void {
+function event_draw( int $event_id, array $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-draw';
 	foreach ( $args as $key => $value ) {
@@ -726,7 +705,7 @@ function racketmanager_event_draw( int $event_id, array $args = array() ): void 
  * @param int $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_matches( int $event_id, array $args = array() ): void {
+function event_matches( int $event_id, array $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-matches';
 	foreach ( $args as $key => $value ) {
@@ -741,7 +720,7 @@ function racketmanager_event_matches( int $event_id, array $args = array() ): vo
  * @param int $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_clubs( int $event_id, array $args = array() ): void {
+function event_clubs( int $event_id, array $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-clubs';
 	foreach ( $args as $key => $value ) {
@@ -756,7 +735,7 @@ function racketmanager_event_clubs( int $event_id, array $args = array() ): void
  * @param int $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_teams( int $event_id, array $args = array() ): void {
+function event_teams( int $event_id, array $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-teams';
 	foreach ( $args as $key => $value ) {
@@ -771,7 +750,7 @@ function racketmanager_event_teams( int $event_id, array $args = array() ): void
  * @param int $event_id event.
  * @param array $args array of arguments.
  */
-function racketmanager_event_players( int $event_id, array $args = array() ): void {
+function event_players( int $event_id, array $args = array() ): void {
 	$args['id'] = $event_id;
 	$shortcode  = '[event-players';
 	foreach ( $args as $key => $value ) {
@@ -786,7 +765,7 @@ function racketmanager_event_players( int $event_id, array $args = array() ): vo
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_matches( int $competition_id, array $args = array() ): void {
+function competition_matches( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-matches';
 	foreach ( $args as $key => $value ) {
@@ -801,7 +780,7 @@ function racketmanager_competition_matches( int $competition_id, array $args = a
  * @param int $competition_id competition.
  * @param array $args array of arguments.
  */
-function racketmanager_competition_winners( int $competition_id, array $args = array() ): void {
+function competition_winners( int $competition_id, array $args = array() ): void {
 	$args['id'] = $competition_id;
 	$shortcode  = '[competition-winners';
 	foreach ( $args as $key => $value ) {
@@ -816,7 +795,7 @@ function racketmanager_competition_winners( int $competition_id, array $args = a
  * @param string $search_string search string.
  * @param array $args array of arguments.
  */
-function racketmanager_player_search( string $search_string, array $args = array() ): string {
+function player_search( string $search_string, array $args = array() ): string {
 	$args['search'] = $search_string;
 	$shortcode      = '[search-players';
 	foreach ( $args as $key => $value ) {
@@ -830,7 +809,7 @@ function racketmanager_player_search( string $search_string, array $args = array
  *
  * @param array $args array of arguments.
  */
-function racketmanager_withdrawn_team( array $args = array() ): string {
+function withdrawn_team_email( array $args = array() ): string {
 	$shortcode = '[withdrawn-team';
 	foreach ( $args as $key => $value ) {
 		$shortcode .= ' ' . $key . "='" . $value . "'";
@@ -843,7 +822,7 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
 	 *
 	 * @param array $args array of arguments.
 	 */
-	function racketmanager_match_status_modal( array $args = array() ): string {
+	function match_status_modal( array $args = array() ): string {
 		$shortcode = '[match-status';
 		foreach ( $args as $key => $value ) {
 			$shortcode .= ' ' . $key . "='" . $value . "'";
@@ -856,7 +835,7 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
 	 *
 	 * @param array $args array of arguments.
 	 */
-	function racketmanager_rubber_status_modal( array $args = array() ): string {
+	function rubber_status_modal( array $args = array() ): string {
 		$shortcode = '[rubber-status';
 		foreach ( $args as $key => $value ) {
 			$shortcode .= ' ' . $key . "='" . $value . "'";
@@ -869,7 +848,7 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
 	 *
 	 * @param array $args array of arguments.
 	 */
-	function racketmanager_match_option_modal( array $args = array() ): string {
+	function match_option_modal( array $args = array() ): string {
 		$shortcode = '[match-option';
 		foreach ( $args as $key => $value ) {
 			$shortcode .= ' ' . $key . "='" . $value . "'";
@@ -883,7 +862,7 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
      * @param int $message_id id of message.
      * @param array $args array of arguments.
      */
-    function show_message( $message_id, array $args = array() ): string {
+    function show_message( int $message_id, array $args = array() ): string {
         $args['id'] = $message_id;
         $shortcode  = '[show-message';
         foreach ( $args as $key => $value ) {

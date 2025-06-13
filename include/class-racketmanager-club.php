@@ -630,7 +630,7 @@ final class Racketmanager_Club {
 						$headers[]                 = 'From: ' . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
 						$headers[]                 = 'cc: ' . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
 						$subject                   = $racketmanager->site_name . ' - ' . $msg . ' - ' . $this->shortcode;
-						$message                   = racketmanager_club_players_notification( $message_args );
+						$message                   = club_players_notification( $message_args );
 						wp_mail( $email_to, $subject, $message, $headers );
 					}
 					$return->msg = $msg;

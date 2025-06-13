@@ -24,6 +24,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
 		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
+        add_shortcode( 'event-partner', array( &$this, 'show_event_partner' ) );
 	}
 	/**
 	 * Show Event
@@ -472,4 +473,75 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 	}
+    /**
+     * Function to display event partner
+     * [event-partner id=ID player=x gender=x season=X date_end=x modal=x partner_id=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_partner( array $atts ): string {
+        $args       = shortcode_atts(
+            array(
+                'id'         => 0,
+                'season'     => null,
+                'player'     => null,
+                'gender'     => null,
+                'date_end'   => null,
+                'modal'      => null,
+                'partner_id' => null,
+                'template'   => '',
+            ),
+            $atts
+        );
+        $event_id   = $args['id'];
+        $season     = $args['season'];
+        $player_id  = $args['player'];
+        $gender     = $args['gender'];
+        $date_end   = $args['date_end'];
+        $modal      = $args['modal'];
+        $partner_id = $args['partner_id'];
+        $template   = $args['template'];
+        $event      = get_event( $event_id );
+        if ( $event ) {
+            if ( 'M' === $gender ) {
+                if ( str_starts_with( $event->type, 'M' ) || str_starts_with( $event->type, 'B' ) ) {
+                    $partner_gender = 'M';
+                } else {
+                    $partner_gender = 'F';
+                }
+            } elseif ( str_starts_with( $event->type, 'W' ) | str_starts_with( $event->type, 'G' ) ) {
+                $partner_gender = 'F';
+            } else {
+                $partner_gender = 'M';
+            }
+            $partner      = get_player( $partner_id );
+            if ( $partner ) {
+                $partner_name = $partner->display_name;
+                $partner_btm  = $partner->btm;
+            } else {
+                $partner_name = null;
+                $partner_btm  = null;
+            }
+            $filename = ( ! empty( $template ) ) ? 'partner-modal-' . $template : 'partner-modal';
+            return $this->load_template(
+                $filename,
+                array(
+                    'event'        => $event,
+                    'player_id'    => $player_id,
+                    'partner_name' => $partner_name,
+                    'partner_btm'  => $partner_btm,
+                    'partner_id'   => $partner_id,
+                    'partner_gender' => $partner_gender,
+                    'date_end'     => $date_end,
+                    'season'       => $season,
+                    'modal'        => $modal,
+                ),
+                'event'
+            );
+        }
+        $msg = __( 'Event not found', 'racketmanager' );
+        return $this->return_error_modal( $msg );
+    }
 }

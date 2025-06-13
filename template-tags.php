@@ -583,7 +583,23 @@ function racketmanager_tournament_winners( int $tournament_id, array $args = arr
 		$shortcode .= ']';
         return do_shortcode( $shortcode );
 	}
-/**
+    /**
+     * Display event partner modal function
+     *
+     * @param int $event_id event.
+     * @param array $args array of arguments.
+     */
+    function event_partner_modal( int $event_id, array $args = array() ): string {
+        $args['id'] = $event_id;
+        $shortcode  = '[event-partner';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
+
+    /**
  * Display competition overview function
  *
  * @param int $competition_id competition.

@@ -1777,102 +1777,28 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 */
 	public function team_partner(): void {
         $output         = null;
-        $partner_gender = null;
 		$return         = $this->check_security_token();
 		if ( empty( $return->error ) ) {
-			$event_id  = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
-			$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-			$modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-			$gender    = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-			$season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-			$date_end  = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
-			$event     = get_event( $event_id );
-			if ( $event ) {
-				if ( 'M' === $gender ) {
-					if ( str_starts_with($event->type, 'M') || str_starts_with($event->type, 'B')) {
-						$partner_gender = 'M';
-					} else {
-						$partner_gender = 'F';
-					}
-				} elseif ( 'F' === $gender ) {
-					if ( str_starts_with($event->type, 'W') | str_starts_with($event->type, 'G')) {
-						$partner_gender = 'F';
-					} else {
-						$partner_gender = 'M';
-					}
-				}
-				$partner_name = null;
-				$partner_btm  = null;
-				$partner_id   = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
-				if ( $partner_id ) {
-					$partner = get_player( $partner_id );
-					if ( $partner ) {
-						$partner_name = $partner->display_name;
-						$partner_btm  = $partner->btm;
-					}
-				}
-				ob_start();
-				?>
-				<div class="modal-dialog modal-dialog-centered modal-lg">
-					<div class="modal-content">
-						<form id="team-partner" class="" action="#" method="post">
-							<?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
-                            <input type="hidden" name="playerId" value="<?php echo esc_attr( $player_id ); ?>" />
-							<input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
-							<input type="hidden" name="dateEnd" value="<?php echo esc_attr( $date_end ); ?>" />
-							<input type="hidden" name="season" value="<?php echo esc_attr( $season ); ?>" />
-							<input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
-							<div class="modal-header modal__header">
-								<h4 class="modal-title"><?php echo esc_html__( 'Doubles partner', 'racketmanager' ) . ': ' . esc_html( $event->name ); ?></h4>
-								<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-							</div>
-							<div class="modal-body ui-front">
-								<div class="container-fluid">
-									<div id="partnerResponse" class="alert_rm alert--danger" style="display: none;">
-										<div class="alert__body">
-											<div class="alert__body-inner">
-												<span id="partnerResponseText"></span>
-											</div>
-										</div>
-									</div>
-									<div class="row">
-										<div class="">
-											<p><?php esc_html_e( 'Specify your partner.', 'racketmanager' ); ?></p>
-										</div>
-										<div class="form-floating">
-											<input type="text" class="form-control partner-name" id="partner" name="partner" value="<?php echo esc_attr( $partner_name ); ?>" />
-											<label for="partner"><?php esc_html_e( 'Partner name', 'racketmanager' ); ?></label>
-											<div id="partnerFeedback" class="invalid-feedback"></div>
-										</div>
-										<div class="form-floating">
-											<input type="text" class="form-control partner-btm" id="partnerBTM" name="partnerBTM" value="<?php echo esc_attr( $partner_btm ); ?>" />
-											<label for="partnerBTM"><?php esc_html_e( 'Partner LTA Number', 'racketmanager' ); ?></label>
-											<div id="partnerBTM-feedback" class="invalid-feedback"></div>
-										</div>
-										<input type="hidden" name="partnerId" id="partnerId" value="<?php echo esc_html( $partner_id ); ?>" />
-										<input type="hidden" id="partnerGender" value="<?php echo esc_html( $partner_gender ); ?>" />
-									</div>
-								</div>
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-								<button type="button" class="btn btn-primary" onclick="Racketmanager.partnerSave(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
-							</div>
-						</form>
-					</div>
-				</div>
-				<?php
-				$output = ob_get_contents();
-				ob_end_clean();
-			} else {
-				$return->error = true;
-				$return->msg   = $this->event_not_found;
-			}
+			$event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+			$player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+			$modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+			$gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+			$season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+			$date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
+            $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
+            $args               = array();
+            $args['player']     = $player_id;
+            $args['gender']     = $gender;
+            $args['season']     = $season;
+            $args['date_end']   = $date_end;
+            $args['modal']      = $modal;
+            $args['partner_id'] = $partner_id;
+            $output             = event_partner_modal( $event_id, $args );
 		}
 		if ( empty( $return->error ) ) {
 			wp_send_json_success( $output );
 		} else {
-			wp_send_json_error( $return->msg, 500 );
+			wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**

@@ -1755,34 +1755,21 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	#[NoReturn] public function search_players(): void {
-        $search_results = null;
-		$return         = $this->check_security_token();
+        $output = null;
+		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$search_string = isset( $_GET['search_string'] ) ? sanitize_text_field( wp_unslash( $_GET['search_string'] ) ) : null;
 			if ( $search_string ) {
-				$search_results = racketmanager_player_search( $search_string );
+                $output = racketmanager_player_search( $search_string );
 			} else {
 				$return->error = true;
 				$return->msg   = __( 'Search string not supplied', 'racketmanager' );
 			}
 		}
-		if (empty( $return->error ) ) {
-			echo $search_results; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		} else {
-			ob_start();
-			?>
-			<div class="alert_rm alert--danger">
-				<div class="alert__body">
-					<div class="alert__body-inner">
-						<span><?php echo esc_html( $return->msg ); ?></span>
-					</div>
-				</div>
-			</div>
-			<?php
-			$output = ob_get_contents();
-			ob_end_clean();
-			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		if ( ! empty( $return->error ) ) {
+            $output = $this->return_error( $return->msg );
 		}
+        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
 	}
 	/**

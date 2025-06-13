@@ -95,6 +95,7 @@ class RacketManager {
     public object $shortcodes_league;
     public object $shortcodes_login;
 	public object $shortcodes_match;
+	public object $shortcodes_message;
     public object $shortcodes_tournament;
     public object $shortcodes_email;
     public object $shortcodes;
@@ -874,6 +875,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-league.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-match.php';
+		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-message.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-login.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-email.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-tournament.php';
@@ -896,6 +898,7 @@ class RacketManager {
         $this->shortcodes_league      = new Racketmanager_Shortcodes_League();
         $this->shortcodes_login       = new Racketmanager_Shortcodes_Login();
 	    $this->shortcodes_match       = new Racketmanager_Shortcodes_Match();
+	    $this->shortcodes_message     = new Racketmanager_Shortcodes_Message();
         $this->shortcodes_tournament  = new Racketmanager_Shortcodes_Tournament();
         $this->shortcodes_email       = new Racketmanager_Shortcodes_Email();
         $this->shortcodes             = new RacketManager_Shortcodes();

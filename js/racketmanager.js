@@ -1575,7 +1575,7 @@ Racketmanager.getMessage = function (event, message_id) {
 	jQuery(message_ref).addClass('selected read');
 	jQuery(message_ref).removeClass('unread');
 	let notifyField = "#message_detail";
-	jQuery(notifyField).removeClass('message-error');
+	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();
 	let errorField = '#messages-alert';
@@ -1591,9 +1591,10 @@ Racketmanager.getMessage = function (event, message_id) {
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
+			let data = response.data;
 			jQuery(notifyField).empty();
-			jQuery(notifyField).html(response.data.output);
-			if (response.data.status === '1') {
+			jQuery(notifyField).html(data.output);
+			if (data.status === '1') {
 				let readMessagesRef = '#read-messages';
 				let readMessages = jQuery(readMessagesRef).html();
 				readMessages++;
@@ -1606,13 +1607,7 @@ Racketmanager.getMessage = function (event, message_id) {
 			jQuery(notifyField).show();
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(errorField).html(message);
-			} else {
-				jQuery(errorField).text(response.statusText);
-			}
-			jQuery(errorResponse).show();
+			Racketmanager.handleAjaxError(response, errorResponse, errorField);
 		},
 		complete: function () {
 		}

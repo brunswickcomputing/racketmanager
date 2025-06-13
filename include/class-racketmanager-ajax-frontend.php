@@ -1372,72 +1372,18 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $message_dtl = null;
 		$return      = $this->check_security_token();
 		if ( empty( $return->error ) ) {
-			$message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
-			if ( ! $message_id ) {
-				$return->error = true;
-				$return->msg   = __( 'No message id found in request', 'racketmanager' );
-			} else {
-				$message_dtl = get_message( $message_id );
-				if ( $message_dtl ) {
-					if ( '1' === $message_dtl->status ) {
-						$status = '0';
-						$message_dtl->set_status( $status );
-					}
-					ob_start();
-					?>
-					<div class="message_header">
-						<div class="message_header_wrapper">
-							<dl class="list list--flex">
-								<div class="list__item">
-									<dt class="list__label"><?php esc_html_e( 'From', 'racketmanager' ); ?></dt>
-									<dd class="list__value">
-										<?php
-										if ( $message_dtl->from_name ) {
-											echo esc_html( $message_dtl->from_name ) . ' ';
-										}
-										echo '[<a href="mailto:' . esc_attr( $message_dtl->from_email ) . '">' . esc_html( $message_dtl->from_email ) . '</a>]';
-										?>
-									</dd>
-								</div>
-								<div class="list__item">
-									<dt class="list__label"><?php esc_html_e( 'Subject', 'racketmanager' ); ?></dt>
-									<dd class="list__value">
-										<?php echo esc_html( $message_dtl->subject ); ?>
-									</dd>
-								</div>
-							</dl>
-						</div>
-						<div class="suffix_wrapper">
-							<div class="time"><?php echo esc_html( mysql2date( 'd-m-Y G:i:s', $message_dtl->date ) ); ?></div>
-							<div class="message-button"><a id="deleteMessage" data-msg-id="<?php echo esc_attr( $message_dtl->id ); ?>" class="btn btn-primary"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></a></div>
-						</div>
-					</div>
-					<div class="message_body ratio" style="--bs-aspect-ratio: 100%;">
-						<?php $frame_source = $message_dtl->message_object; ?>
-						<iframe title="<?php esc_html_e( 'Message details', 'racketmanager' ); ?>" srcdoc='<?php echo $frame_source; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
-					</div>
-                    <script type="text/javascript">
-                        document.getElementById('deleteMessage').addEventListener('click', function (e) {
-                            let msgId = this.dataset.msgId;
-                            Racketmanager.deleteMessage(e, msgId);
-                        });
-                    </script>
-					<?php
-					$output = ob_get_contents();
-					ob_end_clean();
-				} else {
-					$return->error = true;
-					$return->msg   = __( 'Message not found', 'racketmanager' );
-				}
-			}
-		}
-		if ( empty( $return->error ) ) {
-			$return           = array();
-			$return['output'] = $output;
-			$return['status'] = $message_dtl->status;
-			wp_send_json_success( $return );
-		} else {
-			wp_send_json_error( $return->msg, 500 );
+			$message_id  = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+            $output      = show_message(  $message_id );
+            $message_dtl = get_message( $message_id );
+            if ( $message_dtl ) {
+                $return->status = $message_dtl->status;
+            } else {
+                $return->status = null;
+            }
+            $return->output = $output;
+            wp_send_json_success( $return );
+        } else {
+			wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**

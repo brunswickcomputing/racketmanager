@@ -31,7 +31,6 @@ class RacketManager_Shortcodes {
 
 		add_shortcode( 'favourites', array( &$this, 'show_favourites' ) );
 		add_shortcode( 'invoice', array( &$this, 'show_invoice' ) );
-		add_shortcode( 'messages', array( &$this, 'show_messages' ) );
 		add_shortcode( 'memberships', array( &$this, 'show_memberships' ) );
 		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
 		add_shortcode( 'team-order', array( &$this, 'show_team_order' ) );
@@ -958,42 +957,6 @@ class RacketManager_Shortcodes {
 			}
 		}
 		return $this->return_error( __( 'No invoice found', 'racketmanager' ) );
-	}
-	/**
-	 * Function to show messages
-	 *
-	 *    [messages template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_messages( array $atts ): string {
-		$args = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		if ( ! is_user_logged_in() ) {
-			return $this->return_error( __( 'You must be logged in to view messages', 'racketmanager' ) );
-		}
-		$messages       = array();
-		$template       = $args['template'];
-		$user           = get_user( get_current_user_id() );
-		$messages_total = $user->get_messages( array( 'count' => true ) );
-		if ( $messages_total ) {
-			$messages['total']  = $messages_total;
-			$messages['detail'] = $user->get_messages( array() );
-			$messages['unread'] = $user->get_messages(
-				array(
-					'count'  => true,
-					'status' => 'unread',
-				)
-			);
-		}
-		$filename = ( ! empty( $template ) ) ? 'messages-' . $template : 'messages';
-
-		return $this->load_template( $filename, array( 'messages' => $messages ), 'account' );
 	}
 	/**
 	 * Function to show memberships

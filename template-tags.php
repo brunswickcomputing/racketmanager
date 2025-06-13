@@ -845,3 +845,18 @@ function racketmanager_withdrawn_team( array $args = array() ): string {
 		$shortcode .= ']';
 		return do_shortcode( $shortcode );
 	}
+    /**
+     * Display message
+     *
+     * @param int $message_id id of message.
+     * @param array $args array of arguments.
+     */
+    function show_message( $message_id, array $args = array() ): string {
+        $args['id'] = $message_id;
+        $shortcode  = '[show-message';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }

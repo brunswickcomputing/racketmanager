@@ -989,9 +989,9 @@ class RacketManager_Shortcodes {
 		return $this->load_template( $filename, array( 'player' => $player ), 'account' );
 	}
 	/**
-	 * Function to search players messages
+	 * Function to search players
 	 *
-	 *    [messages template=X]
+	 *    [search-players search=x template=X]
 	 *
 	 * @param array $atts shortcode attributes.
 	 * @return string content

@@ -27,6 +27,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		add_shortcode( 'club-team', array( &$this, 'show_club_team' ) );
 		add_shortcode( 'club-player', array( &$this, 'show_club_player' ) );
 		add_shortcode( 'club-invoices', array( &$this, 'show_club_invoices' ) );
+        add_shortcode( 'team-edit', array( &$this, 'show_team_edit_modal' ) );
 	}
 	/**
 	 * Function to display Clubs Info Page
@@ -543,4 +544,65 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			'club'
 		);
 	}
+    /**
+     * Function to display Club Invoices
+     *
+     *  [team-edit id=team_ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_team_edit_modal( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'modal'    => null,
+                'event_id' => null,
+                'template' => '',
+            ),
+            $atts
+        );
+        $team_id  = $args['id'];
+        $modal    = $args['modal'];
+        $event_id = $args['event_id'];
+        $template = $args['template'];
+        if ( $team_id ) {
+            $team = get_team( $team_id );
+            if ( $team ) {
+                if ( $event_id ) {
+                    $event = get_event( $event_id );
+                    if ( $event ) {
+                        $event_team = $event->get_team_info( $team_id );
+                        if ( $event_team ) {
+                            $match_days = Racketmanager_Util::get_match_days();
+                            $filename = ( ! empty( $template ) ) ? 'team-edit-modal-' . $template : 'team-edit-modal';
+                            return $this->load_template(
+                                $filename,
+                                array(
+                                    'team'       => $team,
+                                    'event'      => $event,
+                                    'modal'      => $modal,
+                                    'match_days' => $match_days,
+                                    'event_team' => $event_team,
+                                ),
+                                'club'
+                            );
+                        } else {
+                            $msg = __( 'Event team not found', 'racketmanager' );
+                        }
+                    } else {
+                        $msg = __( 'Event not found', 'racketmanager' );
+                    }
+                } else {
+                    $msg = __( 'Event id not supplied', 'racketmanager' );
+                }
+            } else {
+                $msg = __( 'Team not found', 'racketmanager' );
+            }
+        } else {
+            $msg = __( 'Team id not found', 'racketmanager' );
+        }
+        return $this->return_error_modal( $msg );
+    }
 }

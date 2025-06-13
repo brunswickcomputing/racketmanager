@@ -90,8 +90,24 @@ function racketmanager_club( int $club_id, array $args = array() ): void {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
-
-/**
+    /**
+     * Display player list
+     *
+     * @param int $team_id team.
+     * @param array $args additional arguments as associative array (optional).
+     *
+     * @category template-tags
+     */
+    function show_team_edit_modal( int $team_id, array $args = array() ): void {
+        $args['id'] = $team_id;
+        $shortcode  = '[team-edit';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        echo do_shortcode( $shortcode );
+    }
+    /**
  * Display player list
  *
  * @param int|string $league_id league.

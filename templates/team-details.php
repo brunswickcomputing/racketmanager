@@ -15,6 +15,8 @@ namespace Racketmanager;
 
 /** @var object $object */
 global $racketmanager;
+$envelope           = RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill';
+$telephone          = RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill';
 $user_can_edit_team = false;
 if ( is_user_logged_in() ) {
 	if ( current_user_can( 'manage_racketmanager' ) ) {
@@ -75,7 +77,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 						<?php
 						$favourite_type = 'team';
 						$favourite_id   = $object->team->id;
-						require 'includes/favourite-button.php';
+						require_once 'includes/favourite-button.php';
 						?>
 					</h3>
 				</div>
@@ -92,11 +94,11 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 					<div class="module__banner">
 						<h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
 						<div class="module__aside">
-							<a href="<?php echo esc_attr( $standings_link ); ?>" role="button" class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
+							<button href="<?php echo esc_attr( $standings_link ); ?>" class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
 								<i class="racketmanager-svg-icon">
 									<?php racketmanager_the_svg( 'icon-table' ); ?>
 								</i>
-							</a>
+							</button>
 						</div>
 					</div>
 					<div class="module__content">
@@ -188,11 +190,11 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 					if ( $user_can_edit_team ) {
 						?>
 						<div class="module__aside">
-							<a role="button" class="btn btn--link" href="" id="teamEditLink" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
+							<button class="btn btn--link" href="" id="teamEditLink" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
 								<svg width="16" height="16" class="icon ">
 									<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
 								</svg>
-							</a>
+							</button>
 						</div>
 						<?php
 					}
@@ -224,7 +226,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 											<li class="list__item">
 												<a href="tel:<?php echo esc_html( $team_player->contactno ); ?>" class="nav--link" rel="nofollow">
 													<svg width="16" height="16" class="">
-														<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
+														<use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
 													</svg>
 													<span class="nav--link">
 														<span class="nav-link__value" id="captain-contact-no">
@@ -240,7 +242,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 											<li class="list__item">
 												<a href="mailto:<?php echo esc_html( $team_player->email ); ?>" class="nav--link">
 													<svg width="16" height="16" class="">
-														<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
+														<use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
 													</svg>
 													<span class="nav--link">
 														<span class="nav-link__value" id="captain-contact-email">
@@ -258,7 +260,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										<li class="list__item">
 											<a href="tel:<?php echo esc_html( $object->team->info->contactno ); ?>" class="nav--link" rel="nofollow">
 												<svg width="16" height="16" class="">
-													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
+													<use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
 												</svg>
 												<span class="nav--link">
 													<span class="nav-link__value" id="captain-contact-no">
@@ -276,7 +278,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										<li class="list__item">
 											<a href="mailto:<?php echo esc_html( $object->team->info->contactemail ); ?>" class="nav--link">
 												<svg width="16" height="16" class="">
-													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
+													<use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
 												</svg>
 												<span class="nav--link">
 													<span class="nav-link__value" id="captain-contact-email">
@@ -364,7 +366,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										<li class="list__item">
 											<a href="tel:<?php echo esc_html( $object->team->club->match_secretary_contact_no ); ?>" class="nav--link" rel="nofollow">
 												<svg width="16" height="16" class="">
-													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
+													<use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
 												</svg>
 												<span class="nav--link">
 													<span class="nav-link__value">
@@ -382,7 +384,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										<li class="list__item">
 											<a href="mailto:<?php echo esc_html( $object->team->club->match_secretary_email ); ?>" class="nav--link">
 												<svg width="16" height="16" class="">
-													<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
+													<use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
 												</svg>
 												<span class="nav--link">
 													<span class="nav-link__value">

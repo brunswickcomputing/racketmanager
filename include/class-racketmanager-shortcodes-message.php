@@ -85,9 +85,9 @@ class Racketmanager_Shortcodes_Message extends RacketManager_Shortcodes {
                     if ( '1' === $message->status ) {
                         $status = '0';
                         $message->set_status( $status );
-                        $filename = ( ! empty( $template ) ) ? 'message-' . $template : 'message';
-                        return $this->load_template( $filename, array( 'message_dtl' => $message ), 'account' );
                     }
+                    $filename = ( ! empty( $template ) ) ? 'message-' . $template : 'message';
+                    return $this->load_template( $filename, array( 'message_dtl' => $message ), 'account' );
                 } else {
                     $msg = __( 'Message not found', 'racketmanager' );
                 }

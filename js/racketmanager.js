@@ -1570,6 +1570,8 @@ Racketmanager.switchTab = function (elem) {
 };
 Racketmanager.getMessage = function (event, message_id) {
 	event.preventDefault();
+	let messageDisplay = '#messageDetailDisplay';
+	jQuery(messageDisplay).addClass('is-loading');
 	jQuery('.selected').removeClass('selected');
 	let message_ref = '#message-summary-' + message_id;
 	jQuery(message_ref).addClass('selected read');
@@ -1578,9 +1580,9 @@ Racketmanager.getMessage = function (event, message_id) {
 	jQuery(notifyField).removeClass('alert--success alert--warning alert--danger');
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();
-	let errorField = '#messages-alert';
-	let errorResponse = '#messages-alert-response';
-	jQuery(errorResponse).hide();
+	let errorField = '#messagesAlert';
+	let errorResponse = '#messagesAlertResponse';
+	jQuery(errorField).hide();
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1608,8 +1610,10 @@ Racketmanager.getMessage = function (event, message_id) {
 		},
 		error: function (response) {
 			Racketmanager.handleAjaxError(response, errorResponse, errorField);
+			jQuery(errorField).show();
 		},
 		complete: function () {
+			jQuery(messageDisplay).removeClass('is-loading');
 		}
 	});
 };
@@ -1625,8 +1629,8 @@ Racketmanager.deleteMessage = function (event, message_id) {
 	jQuery(notifyField).removeClass('message-error');
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();
-	let errorField = '#messages-alert';
-	let errorResponse = '#messages-alert-response';
+	let errorField = '#messagesAlert';
+	let errorResponse = '#messagesAlertResponse';
 	jQuery(errorResponse).hide();
 
 	jQuery.ajax({
@@ -1646,13 +1650,8 @@ Racketmanager.deleteMessage = function (event, message_id) {
 			jQuery(notifyField).show();
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(errorField).html(message);
-			} else {
-				jQuery(errorField).text(response.statusText);
-			}
-			jQuery(errorResponse).show();
+			Racketmanager.handleAjaxError(response, errorResponse, errorField);
+			jQuery(errorField).show();
 		},
 		complete: function () {
 		}
@@ -1668,8 +1667,8 @@ Racketmanager.deleteMessages = function (event, link) {
 	form += "&action=racketmanager_delete_messages";
 	jQuery('.selected').removeClass('selected');
 	let notifyField = "#message_detail";
-	let errorField = '#messages-alert';
-	let errorResponse = '#messages-alert-response';
+	let errorField = '#messagesAlert';
+	let errorResponse = '#messagesAlertResponse';
 	jQuery(errorResponse).hide();
 	jQuery(notifyField).removeClass('message-error');
 	jQuery(notifyField).val("");
@@ -1692,13 +1691,8 @@ Racketmanager.deleteMessages = function (event, link) {
 			jQuery(notifyField).show();
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let message = response.responseJSON.data;
-				jQuery(errorField).html(message);
-			} else {
-				jQuery(errorField).text(response.statusText);
-			}
-			jQuery(errorResponse).show();
+			Racketmanager.handleAjaxError(response, errorResponse, errorField);
+			jQuery(errorField).show();
 		},
 		complete: function () {
 		}

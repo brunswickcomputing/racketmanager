@@ -62,18 +62,21 @@ namespace Racketmanager;
 						?>
 					</div>
 					<div class="col-12 col-md-9">
-						<div style="display: none;" id="messages-alert-response">
+						<div style="display: none;" id="messagesAlert">
 							<div class="alert_rm alert--danger">
 								<div class="alert__body">
 									<div class="alert__body-inner">
-										<span id="messages-alert"></span>
+										<span id="messagesAlertResponse"></span>
 									</div>
 								</div>
 							</div>
 						</div>
-						<div id="message_detail">
-							<p class="text-center"><?php esc_html_e( 'Select message to read', 'racketmanager' ); ?></p>
-						</div>
+                        <div id="messageDetailDisplay">
+                            <?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+                            <div id="message_detail">
+                                <p class="text-center"><?php esc_html_e( 'Select message to read', 'racketmanager' ); ?></p>
+                            </div>
+                        </div>
 					</div>
 				</div>
 				<?php

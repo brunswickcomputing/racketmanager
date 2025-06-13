@@ -1368,18 +1368,12 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Build screen to show message
 	 */
 	public function get_message(): void {
-        $output      = null;
-        $message_dtl = null;
 		$return      = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$message_id  = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
             $output      = show_message(  $message_id );
             $message_dtl = get_message( $message_id );
-            if ( $message_dtl ) {
-                $return->status = $message_dtl->status;
-            } else {
-                $return->status = null;
-            }
+            $return->status = $message_dtl?->status;
             $return->output = $output;
             wp_send_json_success( $return );
         } else {

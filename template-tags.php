@@ -574,14 +574,14 @@ function racketmanager_tournament_winners( int $tournament_id, array $args = arr
 	 * @param int $tournament_id tournament.
 	 * @param array $args array of arguments.
 	 */
-	function racketmanager_tournament_withdrawal_modal( int $tournament_id, array $args = array() ): void {
+	function racketmanager_tournament_withdrawal_modal( int $tournament_id, array $args = array() ): string {
 		$args['id'] = $tournament_id;
 		$shortcode  = '[tournament-withdrawal';
 		foreach ( $args as $key => $value ) {
 			$shortcode .= ' ' . $key . "='" . $value . "'";
 		}
 		$shortcode .= ']';
-		echo do_shortcode( $shortcode );
+        return do_shortcode( $shortcode );
 	}
 /**
  * Display competition overview function

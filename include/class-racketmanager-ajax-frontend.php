@@ -2369,7 +2369,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
             $output = event_team_match_dropdown( $event_id, array( 'team_id' => $team_id ) );
 		} else {
-			$output = $racketmanager->shortcodes->return_error( $return->msg );
+			$output = show_alert( $return->msg, 'danger' );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();

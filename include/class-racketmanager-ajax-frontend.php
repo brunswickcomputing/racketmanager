@@ -1844,10 +1844,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							}
 							$function_name = 'Racketmanager\\' . $target_name . '_' . $tab_name;
 							if ( function_exists( $function_name ) ) {
-								ob_start();
-								$function_name( $target->id, $args );
-								$output = ob_get_contents();
-								ob_end_clean();
+                                $output = $function_name( $target->id, $args );
 							} else {
 								$return->error = true;
 								$return->msg   = __( 'Tab not valid', 'racketmanager' );
@@ -1866,11 +1863,10 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				$return->msg   = __( 'Target ref not found', 'racketmanager' );
 			}
 		}
-		if ( empty( $return->error ) ) {
-			echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		} else {
-			echo esc_html( $return->msg );
+		if ( ! empty( $return->error ) ) {
+            $output = $return->msg;
 		}
+        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
 	}
 	/**

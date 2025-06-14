@@ -102,7 +102,7 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         } else {
             $msg = __( 'Match not found',  'racketmanager' );
         }
-	    return $this->return_error_modal( $msg );
+	    return $this->return_error( $msg, 'modal' );
     }
 	/**
 	 * Function to display match status modal
@@ -213,7 +213,7 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
 			);
 		} else {
 			$msg = __( 'Match not found',  'racketmanager' );
-			return $this->return_error_modal( $msg );
+			return $this->return_error( $msg, 'modal' );
 		}
 	}
     /**
@@ -316,11 +316,11 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
                 );
             } else {
                 $msg = __( 'Match not found',  'racketmanager' );
-                return $this->return_error_modal( $msg );
+                return $this->return_error( $msg, 'modal' );
             }
         } else {
             $msg = __( 'Rubber not found',  'racketmanager' );
-            return $this->return_error_modal( $msg );
+            return $this->return_error( $msg, 'modal' );
         }
     }
 }

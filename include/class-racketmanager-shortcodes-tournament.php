@@ -849,7 +849,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				,'tournament'
 			);
 		} else {
-			return $this->return_error_modal( $msg );
+			return $this->return_error( $msg, 'modal' );
 		}
 
 	}

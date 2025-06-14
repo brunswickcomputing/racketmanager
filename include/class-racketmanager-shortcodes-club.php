@@ -603,6 +603,6 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
         } else {
             $msg = __( 'Team id not found', 'racketmanager' );
         }
-        return $this->return_error_modal( $msg );
+        return $this->return_error( $msg, 'modal' );
     }
 }

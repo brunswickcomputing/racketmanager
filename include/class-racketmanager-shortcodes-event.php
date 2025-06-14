@@ -547,7 +547,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
             );
         }
         $msg = $this->event_not_found;
-        return $this->return_error_modal( $msg );
+        return $this->return_error( $msg, 'modal' );
     }
     /**
      * Function to display event Players

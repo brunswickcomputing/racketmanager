@@ -774,6 +774,21 @@ function event_players( int $event_id, array $args = array() ): void {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Display team order players function
+     *
+     * @param int $event_id event.
+     * @param array $args array of arguments.
+     */
+    function team_order_players( int $event_id, array $args = array() ): string {
+        $args['id'] = $event_id;
+        $shortcode  = '[team-order-players';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
 
 /**
  * Display competition matches function

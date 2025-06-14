@@ -2016,110 +2016,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	#[NoReturn] public function show_team_order_players(): void {
-        global $racketmanager;
-        $club   = null;
-        $event  = null;
-        $teams  = null;
 		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$club_id  = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : null;
 			$event_id = isset( $_POST['eventId'] ) ? sanitize_text_field( wp_unslash( $_POST['eventId'] ) ) : null;
-			if ( $club_id ) {
-				$club = get_club( $club_id );
-				if ( ! $club ) {
-					$return->error = true;
-					$return->msg   = $this->club_not_found;
-				}
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'Club id not supplied', 'racketmanager' );
-			}
-			if ( $event_id ) {
-				$event = get_event( $event_id );
-				if ( $event ) {
-					$team_args = array();
-					$team_args['season'] = $event->current_season['name'];
-					$team_args['club']   = $club->id;
-					$teams               = $event->get_teams( $team_args );
-				} else {
-					$return->error = true;
-					$return->msg   = $this->event_not_found;
-				}
-			} else {
-				$return->error = true;
-				$return->msg   = $this->no_event_id;
-			}
-		}
-		if ( empty( $return->error ) ) {
-			$user_can_update = false;
-			if ( is_user_logged_in() ) {
-				if ( current_user_can( 'manage_racketmanager' ) ) {
-					$user_can_update = true;
-				} else {
-					$user   = wp_get_current_user();
-					$userid = $user->ID;
-					if ( $club->matchsecretary === $userid || $club->is_player_captain( $userid ) ) {
-						$user_can_update = true;
-					}
-				}
-			}
-			$age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
-			$age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
-			switch ( $event->type ) {
-				case 'BD':
-				case 'MD':
-					$club_players['m'] = $club->get_players(
-						array(
-							'gender'     => 'M',
-							'age_limit'  => $age_limit,
-							'age_offset' => $age_offset,
-						)
-					);
-					break;
-				case 'GD':
-				case 'WD':
-					$club_players['f'] = $club->get_players(
-						array(
-							'gender'     => 'F',
-							'age_limit'  => $age_limit,
-							'age_offset' => $age_offset,
-						)
-					);
-					break;
-				case 'XD':
-				case 'LD':
-					$club_players['m'] = $club->get_players(
-						array(
-							'gender'     => 'M',
-							'age_limit'  => $age_limit,
-							'age_offset' => $age_offset,
-						)
-					);
-					$club_players['f'] = $club->get_players(
-						array(
-							'gender'     => 'F',
-							'age_limit'  => $age_limit,
-							'age_offset' => $age_offset,
-						)
-					);
-					break;
-				default:
-					$club_players['m'] = array();
-					$club_players['f'] = array();
-			}
-			$template                      = 'team-players-list';
-			$template_args['event']        = $event;
-			$template_args['club']         = $club;
-			$template_args['teams']        = $teams;
-			$template_args['matches']      = array();
-			$template_args['club_players'] = $club_players;
-			$template_args['can_update']   = $user_can_update;
-			$output                        = $racketmanager->shortcodes->load_template(
-				$template,
-				$template_args,
-			);
+            $output   = team_order_players( $event_id, array( 'club_id' => $club_id ) );
 		} else {
-			$output    = $racketmanager->shortcodes->return_error( $return->msg );
+            $output = show_alert( $return->msg, 'danger' );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
@@ -2251,8 +2154,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 			}
 			$rubbers[ $rubber->num ] = $rubber;
-		}
-		if ( $valid ) {
 			if ( $valid_order ) {
 				if ( $set_team ) {
 					$updates = false;

@@ -28,6 +28,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
         add_shortcode( 'event-partner', array( &$this, 'show_event_partner' ) );
         add_shortcode( 'event-team-matches', array( &$this, 'show_event_team_matches' ) );
+        add_shortcode( 'team-order-players', array( &$this, 'show_team_order_players' ) );
         $this->event_not_found = __( 'Event not found', 'racketmanager' );
         $this->no_event_id = __( 'Event id not supplied', 'racketmanager' );
 	}
@@ -589,6 +590,119 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                     );
                 } else {
                     $msg = __( 'Team id not supplied', 'racketmanager' );
+                }
+            } else {
+                $msg = $this->event_not_found;
+            }
+        } else {
+            $msg = $this->no_event_id;
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display team order players
+     *
+     * [team-order-players id=ID club_id=X template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_team_order_players( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'club_id'  => null,
+                'template' => '',
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $club_id  = $args['club_id'];
+        $template = $args['template'];
+        if ( $event_id ) {
+            $event = get_event( $event_id );
+            if ( $event ) {
+                if ( $club_id ) {
+                    $club = get_club( $club_id );
+                    if ( $club ) {
+                        $team_args           = array();
+                        $team_args['season'] = $event->current_season['name'];
+                        $team_args['club']   = $club->id;
+                        $teams               = $event->get_teams( $team_args );
+                        $user_can_update     = false;
+                        if ( is_user_logged_in() ) {
+                            if ( current_user_can( 'manage_racketmanager' ) ) {
+                                $user_can_update = true;
+                            } else {
+                                $user   = wp_get_current_user();
+                                $userid = $user->ID;
+                                if ( $club->matchsecretary === $userid || $club->is_player_captain( $userid ) ) {
+                                    $user_can_update = true;
+                                }
+                            }
+                        }
+                        $age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
+                        $age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
+                        switch ( $event->type ) {
+                            case 'BD':
+                            case 'MD':
+                                $club_players['m'] = $club->get_players(
+                                    array(
+                                        'gender'     => 'M',
+                                        'age_limit'  => $age_limit,
+                                        'age_offset' => $age_offset,
+                                    )
+                                );
+                                break;
+                            case 'GD':
+                            case 'WD':
+                                $club_players['f'] = $club->get_players(
+                                    array(
+                                        'gender'     => 'F',
+                                        'age_limit'  => $age_limit,
+                                        'age_offset' => $age_offset,
+                                    )
+                                );
+                                break;
+                            case 'XD':
+                            case 'LD':
+                                $club_players['m'] = $club->get_players(
+                                    array(
+                                        'gender'     => 'M',
+                                        'age_limit'  => $age_limit,
+                                        'age_offset' => $age_offset,
+                                    )
+                                );
+                                $club_players['f'] = $club->get_players(
+                                    array(
+                                        'gender'     => 'F',
+                                        'age_limit'  => $age_limit,
+                                        'age_offset' => $age_offset,
+                                    )
+                                );
+                                break;
+                            default:
+                                $club_players['m'] = array();
+                                $club_players['f'] = array();
+                        }
+                        $template_args['event']        = $event;
+                        $template_args['club']         = $club;
+                        $template_args['teams']        = $teams;
+                        $template_args['matches']      = array();
+                        $template_args['club_players'] = $club_players;
+                        $template_args['can_update']   = $user_can_update;
+                        $filename                      = ! empty( $template ) ? 'team-players-list-' . $template : 'team-players-list';
+                        return $this->load_template(
+                            $filename,
+                            $template_args,
+                            'event'
+                        );
+                    } else {
+                        $msg = __( 'Club not found', 'racketmanager' );
+                    }
+                } else {
+                    $msg = __( 'Club id not supplied', 'racketmanager' );
                 }
             } else {
                 $msg = $this->event_not_found;

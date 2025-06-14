@@ -556,12 +556,14 @@ class RacketManager_Shortcodes {
             array(
                 'msg'  => '',
                 'type' => '',
+                'template' => null,
             ),
             $atts
         );
         $msg      = $args['msg'];
         $type     = $args['type'];
-        $filename = 'alert';
+        $template = $args['template'];
+        $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
         return $this->load_template(
                 $filename,
                 array(

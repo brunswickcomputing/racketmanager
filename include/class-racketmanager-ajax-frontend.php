@@ -1080,7 +1080,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! empty( $return->error ) ) {
-			$output = $this->modal_error( $return->msg );
+            $output = show_alert( $return->msg, 'danger', 'modal' );
 			status_header( $return->status );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1188,7 +1188,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! empty( $return->error ) ) {
-			$output = $this->modal_error( $return->msg );
+            $output = show_alert( $return->msg, 'danger', 'modal' );
 			status_header( $return->status );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1474,7 +1474,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$output   = match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
 		}
 		if ( ! empty( $return->error ) ) {
-			$output = $this->modal_error( $return->msg );
+            $output = show_alert( $return->msg, 'danger', 'modal' );
 			status_header( $return->status );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1627,44 +1627,9 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	public function logged_out_modal(): void {
 		$return = array();
 		$msg    = __( 'Must be logged in to access this feature', 'racketmanager' );
-		$output = $this->modal_error( $msg );
+        $output = show_alert( $msg, 'danger', 'modal' );
 		array_push( $return, $msg, $output );
 		wp_send_json_error( $return, '401' );
-	}
-	/**
-	 * Modal error function
-	 *
-	 * @param string $msg message to display.
-	 *
-	 * @return string output html modal
-	 */
-	private function modal_error( string $msg ): string {
-		ob_start();
-		?>
-		<div class="modal-dialog modal-dialog-centered modal-lg">
-			<div class="modal-content">
-				<div class="modal-header modal__header modal-danger">
-					<h4 class="modal-title"><?php esc_html_e( 'Error', 'racketmanager' ); ?></h4>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<div class="alert_rm alert--danger">
-						<div class="alert__body">
-							<div class="alert__body-inner">
-								<span><?php echo esc_html( $msg ); ?></span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-				</div>
-			</div>
-		</div>
-		<?php
-		$output = ob_get_contents();
-		ob_end_clean();
-		return $output;
 	}
 	/**
 	 * Reset password function
@@ -2348,7 +2313,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			$modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $output   = show_team_edit_modal( $team_id, array( 'event_id' => $event_id, 'modal' => $modal ) );
 		} else {
-			$output = $this->modal_error( $return->msg );
+            $output = show_alert( $return->msg, 'danger', 'modal' );
 			if ( ! empty( $return->status ) ) {
 				status_header( $return->status );
 			}
@@ -2362,7 +2327,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @return void
 	 */
 	#[NoReturn] public function get_event_team_match_dropdown(): void {
-        global $racketmanager;
 		$return  = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;

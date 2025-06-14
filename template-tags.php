@@ -892,10 +892,12 @@ function withdrawn_team_email( array $args = array() ): string {
      *
      * @param string $message message.
      * @param string $type alert type.
+     * @param string $template modal or null.
      */
-    function show_alert( string $message, string $type ): string {
-        $args['msg']  = $message;
-        $args['type'] = $type;
+    function show_alert( string $message, string $type, $template = null ): string {
+        $args['msg']      = $message;
+        $args['type']     = $type;
+        $args['template'] = $template;
         $shortcode  = '[show-alert';
         foreach ( $args as $key => $value ) {
             $shortcode .= ' ' . $key . "='" . $value . "'";

@@ -69,19 +69,19 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	public function insert_home_stadium(): void {
 		$stadium = null;
 		$return  = $this->check_security_token();
-		if ( ! isset( $return->error ) ) {
-			if ( isset( $_POST['team_id'] ) ) {
-				$team_id = get_team( intval( $_POST['team_id'] ) );
-				$team    = get_team( $team_id );
+		if ( empty( $return->error ) ) {
+            $team_id = isset( $_POST['team_id'] ) ? intval( $_POST['team_id'] ) : null;
+			if ( $team_id ) {
+				$team = get_team( $team_id );
 				if ( $team ) {
 					$stadium = trim( $team->stadium );
 				}
 			}
 		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, '500' );
+		if ( empty( $return->error ) ) {
+            wp_send_json_success( $stadium );
 		} else {
-			wp_send_json_success( $stadium );
+            wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**

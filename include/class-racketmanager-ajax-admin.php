@@ -90,21 +90,13 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 * @see admin/admin.php
 	 */
 	public function set_season_dropdown(): void {
-		$output = null;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
-			if ( isset( $_POST['league_id'] ) ) {
-				$league = get_league( intval( $_POST['league_id'] ) );
-				$output = $league->get_season_dropdown( true );
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'League not selected', 'racketmanager' );
-			}
-		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, '500' );
+            $league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
+            $output    = season_dropdown( $league_id );
+            wp_send_json_success( $output );
 		} else {
-			wp_send_json_success( $output );
+			wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**
@@ -113,24 +105,14 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 	 * @see admin/admin.php
 	 */
 	public function set_match_dropdown(): void {
-        $output = null;
 		$return = $this->check_security_token();
 		if ( ! isset( $return->error ) ) {
-			if ( isset( $_POST['league_id'] ) ) {
-				$league = get_league( intval( $_POST['league_id'] ) );
-				if ( isset( $_POST['season'] ) ) {
-					$league->set_season( htmlspecialchars( sanitize_text_field( wp_unslash( $_POST['season'] ) ) ) );
-					$output = $league->get_match_dropdown();
-				}
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'Season not selected', 'racketmanager' );
-			}
-		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, '500' );
-		} else {
-			wp_send_json_success( $output );
+            $league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
+            $season    = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+            $output    = match_dropdown( $league_id, array( 'season' => $season ) );
+            wp_send_json_success( $output );
+        } else {
+			wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**

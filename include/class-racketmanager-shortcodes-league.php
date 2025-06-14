@@ -27,6 +27,8 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		add_shortcode( 'match', array( &$this, 'show_match' ) );
 		add_shortcode( 'teams', array( &$this, 'show_teams' ) );
 		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
+        add_shortcode( 'season-dropdown', array( &$this, 'show_season_dropdown' ) );
+        add_shortcode( 'match-dropdown', array( &$this, 'show_match_dropdown' ) );
 	}
 
 	/**
@@ -857,4 +859,98 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 			'league'
 		);
 	}
+    /**
+     * Function to display season dropdown
+     *
+     *  [season-dropdown id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return false|string content
+     */
+    public function show_season_dropdown( array $atts ): false|string {
+        $args      = shortcode_atts(
+            array(
+                'id'       => 0,
+                'season'   => null,
+                'template' => null,
+            ),
+            $atts
+        );
+        $league_id = $args['id'];
+        $season    = $args['season'];
+        $template  = $args['template'];
+        $league    = get_league( $league_id );
+        if ( $league ) {
+            if ( empty( $template ) && $this->check_template( 'season-dropdown-' . $league->sport, 'season-dropdown' ) ) {
+                $filename = 'season-dropdown-' . $league->sport;
+            } else {
+                $filename = ! empty( $template ) ? 'season-dropdown-' . $template : 'season-dropdown';
+            }
+            return $this->load_template(
+                $filename,
+                array(
+                    'league' => $league,
+                    'season' => $season,
+                ),
+                'league'
+            );
+        } else {
+            $msg = __( 'League not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display match dropdown
+     *
+     *  [match-dropdown id=ID season=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return false|string content
+     */
+    public function show_match_dropdown( array $atts ): false|string {
+        $args      = shortcode_atts(
+            array(
+                'id'       => 0,
+                'season'   => null,
+                'match_id' => null,
+                'template' => null,
+            ),
+            $atts
+        );
+        $league_id = $args['id'];
+        $season    = $args['season'];
+        $match_id  = $args['match_id'];
+        $template  = $args['template'];
+        $league    = get_league( $league_id );
+        if ( $league ) {
+            if ( $season ) {
+                $matches = $league->get_matches(
+                    array(
+                        'limit'            => false,
+                        'match_day'        => -1,
+                        'season'           => $season,
+                        'reset_query_args' => true,
+                    )
+                );
+                if ( empty( $template ) && $this->check_template( 'match-dropdown-' . $league->sport, 'match-dropdown' ) ) {
+                    $filename = 'season-dropdown-' . $league->sport;
+                } else {
+                    $filename = ! empty( $template ) ? 'match-dropdown-' . $template : 'match-dropdown';
+                }
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'matches'  => $matches,
+                        'match_id' => $match_id,
+                    ),
+                    'league'
+                );
+            } else {
+                $msg = __( 'Season not found', 'racketmanager' );
+            }
+        } else {
+            $msg = __( 'League not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg );
+    }
 }

@@ -2599,63 +2599,6 @@ class Racketmanager_League {
 			wp_cache_delete( $team->league_id, 'leaguetable' );
 		}
 	}
-
-	/**
-	 * Display Season dropdown
-	 *
-	 * @param string $season selected season.
-	 */
-	public function get_season_dropdown( string $season = '' ): false|string {
-		ob_start();
-		?>
-		<select size='1' name='season' id='season' class="form-select" onChange='Racketmanager.getMatchDropdown(<?php echo esc_html( $this->id ); ?>, this.value)'>
-			<option value="0"><?php esc_html_e( 'Choose Season', 'racketmanager' ); ?></option>
-			<?php
-			foreach ( array_reverse( $this->event->seasons ) as $season_entry ) {
-				?>
-				<option value=<?php echo esc_html( $season_entry['name'] ); ?> <?php selected( $season, $season_entry['name'], false ); ?>><?php echo esc_html( $season_entry['name'] ); ?></option>
-			<?php } ?>
-		</select>
-		<label for="season"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
-		<?php
-		$output = ob_get_contents();
-		ob_end_clean();
-		return $output;
-	}
-
-	/**
-	 * Display match dropdown
-	 *
-	 * @param int $match_id selected match ID.
-	 *
-	 * @return string
-	 */
-	public function get_match_dropdown( int $match_id = 0 ): string {
-		$matches = $this->get_matches(
-			array(
-				'limit'            => false,
-				'match_day'        => -1,
-				'reset_query_args' => true,
-			)
-		);
-		ob_start();
-		?>
-
-		<select class="form-select" size="1" name="match_id" id="match_id" class="alignleft">
-			<option value="0"><?php esc_html_e( 'Choose Match', 'racketmanager' ); ?></option>
-			<?php
-			foreach ( $matches as $match ) {
-				?>
-				<option value="<?php echo esc_html( $match->id ); ?>" <?php echo selected( $match_id, $match->id, false ); ?>><?php echo esc_html( $match->get_title( false ) ); ?></option>
-			<?php } ?>
-		</select>
-		<label for="match_id"><?php esc_html_e( 'Match', 'racketmanager' ); ?></label>
-		<?php
-		$output = ob_get_contents();
-		ob_end_clean();
-		return $output;
-	}
-
 	/**
 	 * =======================
 	 * Administration section

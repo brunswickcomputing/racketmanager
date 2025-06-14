@@ -307,7 +307,40 @@ function archive( int $league_id, array $args = array() ): void {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
-
+    /**
+     * Display season dropdown
+     *
+     * @param int $league_id league.
+     * @param array $args additional arguments as associative array (optional).
+     *
+     * @return string
+     */
+    function season_dropdown( int $league_id, array $args = array() ): string {
+        $args['id'] = $league_id;
+        $shortcode = '[season-dropdown';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
+    /**
+     * Display match dropdown
+     *
+     * @param int $league_id league.
+     * @param array $args additional arguments as associative array (optional).
+     *
+     * @return string
+     */
+    function match_dropdown( int $league_id, array $args = array() ): string {
+        $args['id'] = $league_id;
+        $shortcode = '[match-dropdown';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
 	/**
 	 * Display results table
 	 *

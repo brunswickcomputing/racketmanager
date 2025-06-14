@@ -2997,43 +2997,51 @@ class RacketManager_Admin extends RacketManager {
 					$curr_league = get_league( $league_id );
 				}
 			}
-
-			echo "<input type='hidden' name='curr_match_id' value='" . esc_html( $match_id ) . "' />";
-			echo '<div class="container">';
-			echo '<div class="row">';
-			echo '<div class="col-auto">';
-			echo '<div class="form-floating mb-3">';
-			echo "<select name='league_id' class='alignleft form-select' id='league_id' onChange='Racketmanager.getSeasonDropdown(this.value, " . esc_html( $season ) . ")'>";
-			echo '<option value="0">' . esc_html__( 'Choose League', 'racketmanager' ) . '</option>';
-			foreach ( $leagues as $league ) {
-				echo "<option value='" . esc_html( $league->id ) . "'" . selected( $league_id, $league->id, false ) . '>' . esc_html( $league->title ) . '</option>';
-			}
-			echo '</select>';
-			echo '<label for="league_id">' . esc_html__( 'League', 'racketmanager' );
-			echo '</div>';
-			echo '</div>';
-			echo '</div>';
-			echo '<div class="row">';
-			echo '<div class="col-auto">';
-			echo '<div id="seasons" class="form-floating">';
-			if ( $match ) {
-				echo $curr_league->get_season_dropdown( $curr_league->get_season() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-			echo '</div>';
-			echo '</div>';
-			echo '</div>';
-			echo '<div class="row">';
-			echo '<div class="col-auto">';
-			echo '<div id="matches" class="form-floating">';
-			if ( $match ) {
-				echo $curr_league->get_match_dropdown( $match->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-			echo '</div>';
-			echo '</div>';
-			echo '</div>';
-			echo '</div>';
-
-			echo '<br style="clear: both;" />';
+            ?>
+			<input type='hidden' name='curr_match_id' value="<?php echo esc_html( $match_id ); ?>" />
+            <div class="container">
+                <div class="row mb-3">
+                    <div class="col-auto">
+                        <div class="form-floating">
+                            <select name='league_id' class='form-select' id='league_id' onChange="Racketmanager.getSeasonDropdown(this.value, <?php echo esc_html( $season ); ?>)">
+                                <option value="0"><?php esc_html_e( 'Choose League', 'racketmanager' ); ?></option>
+                                <?php
+                                foreach ( $leagues as $league ) {
+                                    ?>
+                                    <option value="<?php echo esc_html( $league->id ); ?>" <?php selected( $league_id, $league->id, false ); ?>><?php echo esc_html( $league->title ); ?></option>
+                                    <?php
+                                }
+                                ?>
+                            </select>
+                            <label for="league_id"><?php esc_html_e( 'League', 'racketmanager' ); ?></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-auto">
+                        <div class="form-floating" id="seasons">
+                            <?php
+                            if ( $match ) {
+                                echo season_dropdown( $curr_league->id, array( 'season' => $curr_league->get_season() ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-auto">
+                        <div class="form-floating" id="matches">
+                            <?php
+                            if ( $match ) {
+                                echo match_dropdown( $curr_league->id, array( 'season' => $curr_league->get_season(), 'match_id' => $match->id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                            }
+                            ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<br style="clear: both;" />
+			<?php
 		}
 	}
 

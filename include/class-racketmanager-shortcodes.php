@@ -530,24 +530,15 @@ class RacketManager_Shortcodes {
 	 * Return error function
 	 *
 	 * @param string $msg message to display.
-	 * @return string output html modal
+	 * @return string output html
 	 */
 	public function return_error(string $msg ): string {
-		ob_start();
-		?>
-		<div>
-			<div class="alert_rm alert--danger">
-				<div class="alert__body">
-					<div class="alert__body-inner">
-						<span><?php echo esc_html( $msg ); ?></span>
-					</div>
-				</div>
-			</div>
-		</div>
-		<?php
-		$output = ob_get_contents();
-		ob_end_clean();
-		return $output;
+        $filename= 'alert';
+        return $this->load_template( $filename, array(
+                'msg'   => $msg,
+                'class' => 'danger',
+            )
+        );
 	}
 	/**
 	 * Return modal error function

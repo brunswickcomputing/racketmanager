@@ -269,15 +269,13 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 			} elseif ( isset( $_GET['invoice'] ) ) {
 				$invoice_id = intval( $_GET['invoice'] );
 			}
-			$tab          = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
-			$invoice_view = '';
-			$billing      = $racketmanager->get_options( 'billing' );
+			$tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
 			if ( isset( $invoice_id ) && $invoice_id ) {
 				$invoice = get_invoice( $invoice_id );
 			}
 			if ( isset( $invoice ) && $invoice ) {
-				$invoice_view = $invoice->generate();
-				include_once RACKETMANAGER_PATH . '/admin/finances/invoice.php';
+				$invoice_view = show_invoice( $invoice->id );
+				require_once RACKETMANAGER_PATH . '/admin/finances/invoice.php';
 			} else {
 				$racketmanager->set_message( __( 'Invoice not found', 'racketmanager' ), true );
 				$racketmanager->printMessage();

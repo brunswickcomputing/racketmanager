@@ -321,36 +321,12 @@ final class Racketmanager_Invoice {
 		return true;
 	}
 	/**
-	 * Generate invoice
-	 */
-	public function generate() {
-		global $racketmanager;
-		if ( empty( $this->club ) ) {
-			$target        = get_player( $this->player );
-			$target->name  = $this->player->display_name;
-		} else {
-			$target = get_club( $this->club );
-		}
-		$billing = $this->racketmanager->get_options( 'billing' );
-		return $racketmanager->shortcodes->load_template(
-			'invoice',
-			array(
-				'organisation_name' => $this->racketmanager->site_name,
-				'invoice'           => $this,
-				'target'            => $target,
-				'billing'           => $billing,
-				'invoice_number'    => $this->invoice_number,
-			)
-		);
-	}
-
-	/**
 	 * Send invoice
 	 *
 	 * @param boolean $resend resend indicator.
 	 * return boolean
 	 */
-	public function send(bool $resend = false ): bool {
+	public function send( bool $resend = false ): bool {
 		global $racketmanager;
 
 		$billing    = $racketmanager->get_options( 'billing' );
@@ -371,7 +347,6 @@ final class Racketmanager_Invoice {
 					'action_url'    => $action_url,
 					'organisation'  => $organisation_name,
 					'invoice'       => $this,
-					'invoiceView'   => $this->generate(),
 					'resend'        => $resend,
 					'from_email'    => $from_email,
 				),

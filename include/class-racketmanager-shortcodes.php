@@ -301,20 +301,40 @@ class RacketManager_Shortcodes {
 	 * @return string content
 	 */
 	public function show_invoice( array $atts ): string {
+        global $racketmanager;
 		$args = shortcode_atts(
 			array(
-				'id' => '',
+				'id'       => 0,
+                'template' => null,
 			),
 			$atts
 		);
-		$id   = $args['id'];
+		$id       = $args['id'];
+        $template = $args['template'];
 		if ( ! $id ) {
 			$id = get_query_var( 'id' );
 		}
 		if ( $id ) {
 			$invoice = get_invoice( $id );
 			if ( $invoice ) {
-				return $invoice->generate();
+                if ( empty( $invoice->club ) ) {
+                    $target       = get_player( $invoice->player );
+                    $target->name = $invoice->player->display_name;
+                } else {
+                    $target = get_club( $invoice->club );
+                }
+                $billing  = $racketmanager->get_options( 'billing' );
+                $filename = ( ! empty( $template ) ) ? 'invoice-' . $template : 'invoice';
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'organisation_name' => $racketmanager->site_name,
+                        'invoice'           => $invoice,
+                        'target'            => $target,
+                        'billing'           => $billing,
+                        'invoice_number'    => $invoice->invoice_number,
+                    )
+                );
 			}
 		}
 		return $this->return_error( __( 'No invoice found', 'racketmanager' ) );

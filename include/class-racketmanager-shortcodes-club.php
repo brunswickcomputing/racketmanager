@@ -519,7 +519,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			if ( ! $invoice ) {
 				return $this->return_error( __( 'Invoice not found', 'racketmanager' ) );
 			}
-			$invoice->details = $invoice->generate();
+			$invoice->details = show_invoice( $invoice->id );
 			$club->invoice    = $invoice;
 		} else {
 			$club->invoices = $club->get_invoices();

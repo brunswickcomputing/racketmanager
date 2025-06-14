@@ -937,3 +937,18 @@ function withdrawn_team_email( array $args = array() ): string {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Display invoice
+     *
+     * @param int   $invoice_id invoice id.
+     * @param array $args array of arguments.
+     */
+    function show_invoice( int $invoice_id, array $args = array()  ): string {
+        $args['id']      = $invoice_id;
+        $shortcode  = '[invoice';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }

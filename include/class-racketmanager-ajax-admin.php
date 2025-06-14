@@ -25,7 +25,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		add_action( 'wp_ajax_racketmanager_get_match_dropdown', array( &$this, 'set_match_dropdown' ) );
 		add_action( 'wp_ajax_racketmanager_check_team_exists', array( &$this, 'check_team_exists' ) );
 		add_action( 'wp_ajax_racketmanager_get_player_clubs', array( &$this, 'get_player_clubs' ) );
-		add_action( 'wp_ajax_racketmanager_show_match_header', array( &$this, 'show_admin_match_header' ) );
 
 		add_action( 'wp_ajax_racketmanager_email_constitution', array( &$this, 'email_constitution' ) );
 		add_action( 'wp_ajax_racketmanager_notify_competition_entries_open', array( &$this, 'notify_competition_entries_open' ) );
@@ -183,33 +182,6 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 			wp_send_json_error( $return->msg, 500 );
 		} else {
 			wp_send_json_success( $player_clubs );
-		}
-	}
-	/**
-	 * Build screen to show match header
-	 */
-	public function show_admin_match_header(): void {
-		$match_id = isset( $_GET['matchId'] ) ? intval( $_GET['matchId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$match    = get_match( $match_id );
-		if ( $match ) {
-			ob_start();
-			?>
-			<div class="row justify-content-between" id="match-header-1">
-				<div class="col-auto leagueTitle"><?php echo esc_html( $match->league->title ); ?></div>
-				<?php if ( isset( $match->match_day ) && $match->match_day > 0 ) { ?>
-					<div class="col-auto matchday">Week <?php echo esc_html( $match->match_day ); ?></div>
-				<?php } ?>
-				<div class="col-auto matchDate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
-			</div>
-			<div class="row justify-content-center" id="match-header-2">
-				<div class="col-auto matchTitle"><?php echo esc_html( $match->match_title ); ?></div>
-			</div>
-			<?php
-			$output = ob_get_contents();
-			ob_end_clean();
-			wp_send_json_success( $output );
-		} else {
-			wp_send_json_error( __( 'Match not found', 'racketmanager' ), 500 );
 		}
 	}
 	/**

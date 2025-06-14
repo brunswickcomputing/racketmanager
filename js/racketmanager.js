@@ -1631,7 +1631,7 @@ Racketmanager.deleteMessage = function (event, message_id) {
 	jQuery(notifyField).hide();
 	let errorField = '#messagesAlert';
 	let errorResponse = '#messagesAlertResponse';
-	jQuery(errorResponse).hide();
+	jQuery(errorField).hide();
 
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1669,7 +1669,7 @@ Racketmanager.deleteMessages = function (event, link) {
 	let notifyField = "#message_detail";
 	let errorField = '#messagesAlert';
 	let errorResponse = '#messagesAlertResponse';
-	jQuery(errorResponse).hide();
+	jQuery(errorField).hide();
 	jQuery(notifyField).removeClass('message-error');
 	jQuery(notifyField).val("");
 	jQuery(notifyField).hide();

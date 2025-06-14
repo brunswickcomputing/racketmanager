@@ -9,8 +9,6 @@
 
 namespace Racketmanager;
 
-use stdClass;
-
 /**
  * Class to implement shortcode functions
  */
@@ -28,6 +26,7 @@ class RacketManager_Shortcodes {
 		add_shortcode( 'memberships', array( &$this, 'show_memberships' ) );
 		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
 		add_shortcode( 'team-order', array( &$this, 'show_team_order' ) );
+        add_shortcode( 'show-alert', array( &$this, 'show_alert' ) );
 	}
 	/**
 	 * Display Daily Matches
@@ -576,4 +575,32 @@ class RacketManager_Shortcodes {
 		ob_end_clean();
 		return $output;
 	}
+    /**
+     * Show alert function
+     *
+     *    [show-alert msg=x type-x]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string output html
+     */
+    public function show_alert( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'msg'  => '',
+                'type' => '',
+            ),
+            $atts
+        );
+        $msg      = $args['msg'];
+        $type     = $args['type'];
+        $filename = 'alert';
+        return $this->load_template(
+                $filename,
+                array(
+                        'msg'   => $msg,
+                        'class' => $type,
+                    )
+        );
+    }
 }

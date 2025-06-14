@@ -1384,14 +1384,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Delete message
 	 */
 	public function delete_message(): void {
-		$output  = null;
-		$success = null;
-		$return  = $this->check_security_token();
+		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
 			if ( ! $message_id ) {
 				$return->error = true;
-				$return->msg   = __( 'No message id found in request', 'racketmanager' );
+				$return->msg    = __( 'No message id found in request', 'racketmanager' );
+                $return->status = 404;
 			} else {
 				$message_dtl = get_message( $message_id );
 				if ( $message_dtl ) {
@@ -1403,56 +1402,29 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 						$alert_class = 'danger';
 						$alert_text  = __( 'Unable to delete message', 'racketmanager' );
 					}
-					ob_start();
-					?>
-					<div class="alert_rm alert--<?php echo esc_attr( $alert_class ); ?>">
-						<div class="alert__body">
-							<div class="alert__body-inner">
-								<span><?php echo esc_html( $alert_text ); ?></span>
-							</div>
-						</div>
-					</div>
-					<?php
-					$output = ob_get_contents();
-					ob_end_clean();
+                    $return->output  = show_alert( $alert_text, $alert_class );
+                    $return->success = $success;
+                    wp_send_json_success( $return );
 				} else {
-					$return->error = true;
-					$return->msg   = __( 'Message not found', 'racketmanager' );
+					$return->error  = true;
+					$return->msg    = __( 'Message not found', 'racketmanager' );
+                    $return->status = 404;
 				}
 			}
-		}
-		if ( empty( $return->error ) ) {
-			$return            = array();
-			$return['output']  = $output;
-			$return['success'] = $success;
-			wp_send_json_success( $return );
-		} else {
-			wp_send_json_error( $return->msg, 500 );
+		wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**
 	 * Delete messages
 	 */
 	public function delete_messages(): void {
-		$output            = null;
-		$success           = null;
-		$valid             = true;
-		$message           = null;
-		$message_type_name = null;
-		if ( isset( $_POST['racketmanager_nonce'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_delete-messages' ) ) {
-				$valid   = false;
-				$message = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$valid   = false;
-			$message = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( $valid ) {
+        $return = $this->check_security_token( 'racketmanager_nonce', 'racketmanager_delete-messages');
+        if ( empty( $return->error ) ) {
 			$message_type = isset( $_POST['message_type'] ) ? sanitize_text_field( wp_unslash( $_POST['message_type'] ) ) : null;
 			if ( ! isset( $message_type ) ) {
-				$valid   = false;
-				$message = __( 'You must select the type of messages to delete', 'racketmanager' );
+                $return->error  = true;
+                $return->msg    = __( 'You must select the type of messages to delete', 'racketmanager' );
+                $return->status = 401;
 			} else {
 				$message_type_name = Racketmanager_Util::get_message_type( $message_type );
 				$userid            = get_current_user_id();
@@ -1470,37 +1442,24 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 							$alert_class = 'danger';
 							$alert_text  = __( 'Unable to delete messages', 'racketmanager' );
 						}
-						ob_start();
-						?>
-						<div class="alert_rm alert--<?php echo esc_attr( $alert_class ); ?>">
-							<div class="alert__body">
-								<div class="alert__body-inner">
-									<span><?php echo esc_html( $alert_text ); ?></span>
-								</div>
-							</div>
-						</div>
-						<?php
-						$output = ob_get_contents();
-						ob_end_clean();
+						$return->output  = show_alert( $alert_text, $alert_class );
+                        $return->success = $success;
+                        $return->type    = $message_type_name;
+                        wp_send_json_success( $return );
 					} else {
-						$valid   = false;
-						$message = __( 'User not found', 'racketmanager' );
+                        $return->error  = true;
+                        $return->msg    = __( 'User not found', 'racketmanager' );
+                        $return->status = 404;
 					}
 				} else {
-					$valid   = false;
-					$message = __( 'User not found', 'racketmanager' );
+                    $return->error  = true;
+                    $return->msg    = __( 'Userid not found', 'racketmanager' );
+                    $return->status = 404;
 				}
 			}
 		}
-		if ( $valid ) {
-			$return            = array();
-			$return['output']  = $output;
-			$return['success'] = $success;
-			$return['type']    = $message_type_name;
-			wp_send_json_success( $return );
-		} else {
-			wp_send_json_error( $message, '500' );
-		}
+        debug_to_console( 'here');
+		wp_send_json_error( $return->msg, $return->status );
 	}
 	/**
 	 * Build screen to show selected match option

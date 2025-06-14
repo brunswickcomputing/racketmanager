@@ -871,3 +871,19 @@ function withdrawn_team_email( array $args = array() ): string {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Display alert
+     *
+     * @param string $message message.
+     * @param string $type alert type.
+     */
+    function show_alert( string $message, string $type ): string {
+        $args['msg']  = $message;
+        $args['type'] = $type;
+        $shortcode  = '[show-alert';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }

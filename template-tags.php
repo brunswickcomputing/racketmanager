@@ -98,14 +98,14 @@ function club( int $club_id, array $args = array() ): void {
      *
      * @category template-tags
      */
-    function show_team_edit_modal( int $team_id, array $args = array() ): void {
+    function show_team_edit_modal( int $team_id, array $args = array() ): string {
         $args['id'] = $team_id;
         $shortcode  = '[team-edit';
         foreach ( $args as $key => $value ) {
             $shortcode .= ' ' . $key . "='" . $value . "'";
         }
         $shortcode .= ']';
-        echo do_shortcode( $shortcode );
+        return do_shortcode( $shortcode );
     }
     /**
  * Display player list
@@ -765,14 +765,14 @@ function event_players( int $event_id, array $args = array() ): void {
      * @param int $event_id event.
      * @param array $args array of arguments.
      */
-    function event_team_match_dropdown( int $event_id, array $args = array() ): void {
+    function event_team_match_dropdown( int $event_id, array $args = array() ): string {
         $args['id'] = $event_id;
         $shortcode  = '[event-team-matches';
         foreach ( $args as $key => $value ) {
             $shortcode .= ' ' . $key . "='" . $value . "'";
         }
         $shortcode .= ']';
-        echo do_shortcode( $shortcode );
+        return do_shortcode( $shortcode );
     }
 
 /**

@@ -759,6 +759,22 @@ function event_players( int $event_id, array $args = array() ): void {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
+    /**
+     * Display event team matches function
+     *
+     * @param int $event_id event.
+     * @param array $args array of arguments.
+     */
+    function event_team_match_dropdown( int $event_id, array $args = array() ): void {
+        $args['id'] = $event_id;
+        $shortcode  = '[event-team-matches';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        echo do_shortcode( $shortcode );
+    }
+
 /**
  * Display competition matches function
  *

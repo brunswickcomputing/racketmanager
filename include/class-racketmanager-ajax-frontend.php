@@ -2363,57 +2363,13 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 */
 	#[NoReturn] public function get_event_team_match_dropdown(): void {
         global $racketmanager;
-        $team    = null;
-        $event   = null;
 		$return  = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
 			$event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
-			if ( $team_id ) {
-				$team = get_team( $team_id );
-				if ( ! $team ) {
-					$return->error = true;
-					$return->msg   = $this->team_not_found;
-				}
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'Team id not supplied', 'racketmanager' );
-			}
-			if ( $event_id ) {
-				$event = get_event( $event_id );
-				if ( ! $event ) {
-					$return->error = true;
-					$return->msg   = $this->event_not_found;
-				}
-			} else {
-				$return->error = true;
-				$return->msg   = $this->no_event_id;
-			}
-		}
-		if ( empty( $return->error ) ) {
-			$match_args = array();
-			$match_args['season']  = $event->current_season['name'];
-			$match_args['team_id'] = $team->id;
-			$match_args['pending'] = true;
-			$matches               = $event->get_matches( $match_args );
-			ob_start();
-			?>
-			<select class="form-select" size="1" name="matchId" id="matchId" onChange="Racketmanager.show_set_team_button()">
-				<option value="" disabled selected><?php esc_html_e( 'Select match', 'racketmanager' ); ?></option>
-				<?php
-				foreach ( $matches as $match ) {
-					?>
-					<option value="<?php echo esc_attr( $match->id ); ?>"><?php echo esc_html( $match->match_title ); ?></option>
-					<?php
-				}
-				?>
-			</select>
-			<label for="matchId"><?php esc_html_e( 'Match', 'racketmanager' ); ?></label>
-			<?php
-			$output = ob_get_contents();
-			ob_end_clean();
+            $output = event_team_match_dropdown( $event_id, array( 'team_id' => $team_id ) );
 		} else {
-			$output    = $racketmanager->shortcodes->return_error( $return->msg );
+			$output = $racketmanager->shortcodes->return_error( $return->msg );
 		}
 		echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();

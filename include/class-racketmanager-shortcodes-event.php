@@ -13,7 +13,9 @@ namespace Racketmanager;
  * Class to implement the Racketmanager_Shortcodes_Event object
  */
 class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
-	/**
+    private string $event_not_found;
+    private string $no_event_id;
+    /**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
@@ -25,6 +27,9 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
 		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
         add_shortcode( 'event-partner', array( &$this, 'show_event_partner' ) );
+        add_shortcode( 'event-team-matches', array( &$this, 'show_event_team_matches' ) );
+        $this->event_not_found = __( 'Event not found', 'racketmanager' );
+        $this->no_event_id = __( 'Event id not supplied', 'racketmanager' );
 	}
 	/**
 	 * Show Event
@@ -67,7 +72,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 			}
 		}
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 
 		}
@@ -131,7 +136,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 		$event->leagues = $event->get_leagues();
@@ -166,7 +171,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
@@ -205,7 +210,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
@@ -247,7 +252,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		$season   = $args['season'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 		$event_club = null;
@@ -355,7 +360,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		$template = $args['template'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
@@ -469,7 +474,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 				'event'
 			);
 		} else {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 	}
@@ -541,7 +546,56 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                 'event'
             );
         }
-        $msg = __( 'Event not found', 'racketmanager' );
+        $msg = $this->event_not_found;
         return $this->return_error_modal( $msg );
+    }
+    /**
+     * Function to display event Players
+     *
+     * [event-team-matches id=ID team_id=X template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_team_matches( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'team_id'  => null,
+                'template' => '',
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $team_id  = $args['team_id'];
+        $template = $args['template'];
+        if ( $event_id ) {
+            $event = get_event( $event_id );
+            if ( $event ) {
+                if ( $team_id ) {
+                    $match_args = array();
+                    $match_args['season']  = $event->current_season['name'];
+                    $match_args['team_id'] = $team_id;
+                    $match_args['pending'] = true;
+                    $matches               = $event->get_matches( $match_args );
+                    $filename              = ! empty( $template ) ? 'team-matches-' . $template : 'team-matches';
+                    return $this->load_template(
+                        $filename,
+                        array(
+                            'matches' => $matches,
+                        ),
+                        'event'
+                    );
+                } else {
+                    $msg = __( 'Team id not supplied', 'racketmanager' );
+                }
+            } else {
+                $msg = $this->event_not_found;
+            }
+        } else {
+            $msg = $this->no_event_id;
+        }
+        return $this->return_error( $msg );
     }
 }

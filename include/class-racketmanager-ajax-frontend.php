@@ -1022,37 +1022,11 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * Build screen to allow printing of match cards
 	 */
 	public function print_match_card(): void {
-        global $racketmanager;
         $output = null;
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {
 			$match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
-            if ( $match_id ) {
-	            $match    = get_match( $match_id );
-                if ( $match ) {
-	                if ( ! empty( $match->league->num_rubbers ) ) {
-		                $match->rubbers = $match->get_rubbers();
-		                $template       = 'match-card-rubbers';
-	                } else {
-		                $template = 'match-card';
-	                }
-	                $sponsor_html                  = '';
-	                $template_args['match']        = $match;
-	                $template_args['sponsor_html'] = $sponsor_html;
-	                $output                        = $racketmanager->shortcodes->load_template(
-		                $template,
-		                $template_args,
-	                );
-                } else {
-	                $return->error  = true;
-	                $return->msg    = $this->match_not_found;
-	                $return->status = 404;
-                }
-            } else {
-	            $return->error  = true;
-                $return->msg    = $this->no_match_id;
-                $return->status = 404;
-            }
+            $output   = show_match_card( $match_id );
 		}
 		if ( empty( $return->error ) ) {
 			wp_send_json_success( $output );

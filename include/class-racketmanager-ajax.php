@@ -1306,7 +1306,7 @@ class Racketmanager_Ajax {
 		};
 	}
 
-	/**
+    /**
 	 * Check security token
 	 *
 	 * @param string $nonce nonce name.

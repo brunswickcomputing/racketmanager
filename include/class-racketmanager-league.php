@@ -2244,7 +2244,6 @@ class Racketmanager_League {
 			} elseif ( $matches ) {
 				$match = $matches[0];
                 $score = show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) );
-//				$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
 			} else {
 				$matches = $this->get_matches(
 					array(
@@ -2258,7 +2257,6 @@ class Racketmanager_League {
 				if ( $matches ) {
 					$match = $matches[0];
 					$score = show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) );
-//					$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
 				} else {
 					$score = '&nbsp;';
 				}
@@ -2267,64 +2265,6 @@ class Racketmanager_League {
 
 		return $score;
 	}
-
-	/**
-	 * Get score for specific field of crosstable
-	 *
-	 * @param int $team_id team.
-	 * @param int $opponent_id opponent.
-	 * @param object $match match.
-	 * @param string $home_away home & away matches.
-	 *
-	 * @return string
-	 */
-	public function get_score( int $team_id, int $opponent_id, object $match, string $home_away ): string {
-        $out          = '';
-        $score_team_1 = null;
-        $score_team_2 = null;
-		// unplayed match.
-		if ( ! $match || ( null === $match->home_points && null === $match->away_points ) ) {
-			$date      = str_starts_with($match->date, '0000-00-00') ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
-			$match_day = isset( $match->match_day ) ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day : '';
-			if ( $home_away ) {
-				$out = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span><br/>';
-			} else {
-				$out = "<span class='unplayedMatch'>&nbsp;</span>";
-			}
-			// match at home.
-		} elseif ( strval( $team_id ) === $match->home_team ) {
-			$score_team_1 = $match->home_points;
-			$score_team_2 = $match->away_points;
-			// match away.
-		} elseif ( strval( $opponent_id ) === $match->home_team ) {
-			$score_team_1 = $match->away_points;
-			$score_team_2 = $match->home_points;
-        }
-		if ( isset( $score_team_1 ) ) {
-			if ( strval( $team_id ) === $match->winner_id ) {
-				$score_class = 'winner';
-			} elseif ( strval( $team_id ) === $match->loser_id ) {
-				$score_class = 'loser';
-			} elseif ( '-1' === $match->winner_id ) {
-				$score_class = 'tie';
-			} else {
-                $score_class = null;
-            }
-			if ( $home_away ) {
-				$link_title = __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day;
-			} else {
-				$link_title = '';
-			}
-			ob_start();
-			?>
-			<?php
-			$out = ob_get_contents();
-			ob_end_clean();
-		}
-
-		return $out;
-	}
-
 	/**
 	 * Default ranking function. Re-defined in sports-specific class
 	 * 1) Primary points DESC

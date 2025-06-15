@@ -53,7 +53,9 @@ global $racketmanager;
 						<option value="<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></option>
 					<?php } ?>
 				</select>
-			<?php } ?>
+			    <?php
+            }
+            ?>
 			<label for="competition_id"><?php esc_html_e( 'Competition', 'racketmanager' ); ?></label>
 		</div>
 		<div id="events" class="form-floating mb-3" style="display:none">

@@ -77,8 +77,6 @@ class RacketManager_Admin extends RacketManager {
 		add_action( 'publish_post', array( &$this, 'edit_match_report' ) );
 		add_action( 'edit_post', array( &$this, 'edit_match_report' ) );
 		add_action( 'add_meta_boxes', array( &$this, 'metaboxes' ) );
-		add_action( 'wp_ajax_racketmanager_get_event_dropdown', array( &$this, 'get_event_dropdown' ) );
-		add_action( 'wp_ajax_racketmanager_get_league_dropdown', array( &$this, 'get_league_dropdown' ) );
 	}
 
 	/**
@@ -3363,97 +3361,6 @@ class RacketManager_Admin extends RacketManager {
 		}
 		return $rs;
 	}
-
-	/**
-	 * Display event dropdown
-	 *
-	 */
-	public function get_event_dropdown(): void {
-        $output = null;
-		$return = new stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( ! isset( $return->error ) ) {
-			$competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
-			if ( $competition_id ) {
-				$competition = get_competition( $competition_id );
-				$events      = $competition->get_events();
-				ob_start();
-				?>
-				<select size='1' name='event_id' id='event_id' class="form-select" onChange='Racketmanager.getLeagueDropdown(this.value)'>
-					<option value='0'><?php esc_html_e( 'Choose event', 'racketmanager' ); ?></option>
-					<?php foreach ( $events as $event ) { ?>
-						<option value=<?php echo esc_html( $event->id ); ?>><?php echo esc_html( $event->name ); ?></option>
-					<?php } ?>
-				</select>
-				<label for="event_id"><?php esc_html_e( 'Event', 'racketmanager' ); ?></label>
-				<?php
-				$output = ob_get_contents();
-				ob_end_clean();
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'Competition not selected', 'racketmanager' );
-			}
-		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
-			wp_send_json_success( $output );
-		}
-	}
-
-	/**
-	 * Display league dropdown
-	 *
-	 */
-	public function get_league_dropdown(): void {
-        $output = null;
-		$return = new stdClass();
-		if ( isset( $_POST['security'] ) ) {
-			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['security'] ) ), 'ajax-nonce' ) ) {
-				$return->error = true;
-				$return->msg   = __( 'Security token invalid', 'racketmanager' );
-			}
-		} else {
-			$return->error = true;
-			$return->msg   = __( 'No security token found in request', 'racketmanager' );
-		}
-		if ( ! isset( $return->error ) ) {
-			$event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
-			if ( $event_id ) {
-				$event   = get_event( $event_id );
-				$leagues = $event->get_leagues();
-				ob_start();
-				?>
-				<select size='1' name='league_id' id='league_id' class="form-select" onChange='Racketmanager.getSeasonDropdown(this.value)'>
-					<option value='0'><?php esc_html_e( 'Choose league', 'racketmanager' ); ?></option>
-					<?php foreach ( $leagues as $league ) { ?>
-						<option value=<?php echo esc_html( $league->id ); ?>><?php echo esc_html( $league->title ); ?></option>
-					<?php } ?>
-				</select>
-				<label for="league_id"><?php esc_html_e( 'League', 'racketmanager' ); ?></label>
-				<?php
-				$output = ob_get_contents();
-				ob_end_clean();
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'Event not selected', 'racketmanager' );
-			}
-		}
-		if ( isset( $return->error ) ) {
-			wp_send_json_error( $return->msg, 500 );
-		} else {
-			wp_send_json_success( $output );
-		}
-	}
-
 	/**
 	 * Get latest season
 	 *

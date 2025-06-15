@@ -859,6 +859,36 @@ function event_players( int $event_id, array $args = array() ): void {
         return do_shortcode( $shortcode );
     }
     /**
+     * Display event dropdown function
+     *
+     * @param int $competition_id event.
+     * @param array $args array of arguments.
+     */
+    function event_dropdown( int $competition_id, array $args = array() ): string {
+        $args['id'] = $competition_id;
+        $shortcode  = '[event-dropdown';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
+    /**
+     * Display league dropdown function
+     *
+     * @param int   $event_id event.
+     * @param array $args array of arguments.
+     */
+    function league_dropdown( int $event_id, array $args = array() ): string {
+        $args['id'] = $event_id;
+        $shortcode  = '[league-dropdown';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
+    /**
      * Display team order players function
      *
      * @param int $event_id event.

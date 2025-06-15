@@ -21,6 +21,8 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
 		parent::__construct();
 		add_action( 'wp_ajax_racketmanager_save_add_points', array( &$this, 'save_add_points' ) );
 		add_action( 'wp_ajax_racketmanager_insert_home_stadium', array( &$this, 'insert_home_stadium' ) );
+        add_action( 'wp_ajax_racketmanager_get_event_dropdown', array( &$this, 'get_event_dropdown' ) );
+        add_action( 'wp_ajax_racketmanager_get_league_dropdown', array( &$this, 'get_league_dropdown' ) );
 		add_action( 'wp_ajax_racketmanager_get_season_dropdown', array( &$this, 'set_season_dropdown' ) );
 		add_action( 'wp_ajax_racketmanager_get_match_dropdown', array( &$this, 'set_match_dropdown' ) );
 		add_action( 'wp_ajax_racketmanager_check_team_exists', array( &$this, 'check_team_exists' ) );
@@ -84,6 +86,34 @@ class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
             wp_send_json_error( $return->msg, $return->status );
 		}
 	}
+    /**
+     * Display event dropdown
+     *
+     */
+    public function get_event_dropdown(): void {
+        $return  = $this->check_security_token();
+        if ( empty( $return->error ) ) {
+            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+            $output         = event_dropdown( $competition_id );
+            wp_send_json_success( $output );
+        } else {
+            wp_send_json_error( $return->msg, $return->status );
+        }
+    }
+    /**
+     * Display league dropdown
+     *
+     */
+    public function get_league_dropdown(): void {
+        $return  = $this->check_security_token();
+        if ( empty( $return->error ) ) {
+            $event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
+            $output   = league_dropdown( $event_id );
+            wp_send_json_success( $output );
+        } else {
+            wp_send_json_error( $return->msg, $return->status );
+        }
+    }
 	/**
 	 * Set season dropdown for post meta-box for match report
 	 *

@@ -29,6 +29,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
         add_shortcode( 'event-partner', array( &$this, 'show_event_partner' ) );
         add_shortcode( 'event-team-matches', array( &$this, 'show_event_team_matches' ) );
         add_shortcode( 'team-order-players', array( &$this, 'show_team_order_players' ) );
+        add_shortcode( 'league-dropdown', array( &$this, 'show_dropdown' ) );
         $this->event_not_found = __( 'Event not found', 'racketmanager' );
         $this->no_event_id = __( 'Event id not supplied', 'racketmanager' );
 	}
@@ -704,6 +705,45 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                 } else {
                     $msg = __( 'Club id not supplied', 'racketmanager' );
                 }
+            } else {
+                $msg = $this->event_not_found;
+            }
+        } else {
+            $msg = $this->no_event_id;
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display league dropdown
+     *
+     * [dropdown id=ID team_id=X template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_dropdown( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'template' => '',
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $template = $args['template'];
+        if ( $event_id ) {
+            $event = get_event( $event_id );
+            if ( $event ) {
+                $leagues   = $event->get_leagues();
+                $filename  = ! empty( $template ) ? 'dropdown-' . $template : 'dropdown';
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'leagues' => $leagues,
+                    ),
+                    'event'
+                );
             } else {
                 $msg = $this->event_not_found;
             }

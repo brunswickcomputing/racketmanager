@@ -16,6 +16,8 @@ use stdClass;
  * Class to implement the Racketmanager_Shortcodes_Competition object
  */
 class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
+    private string $competition_not_found;
+    private string $no_competition_id;
 	/**
 	 * Initialize shortcodes
 	 */
@@ -31,6 +33,9 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         add_shortcode( 'competition-entry', array( &$this, 'show_competition_entry' ) );
         add_shortcode( 'competition-entry-payment', array( &$this, 'show_competition_entry_payment' ) );
         add_shortcode( 'competition-entry-payment-complete', array( &$this, 'show_competition_entry_payment_complete' ) );
+        add_shortcode( 'event-dropdown', array( &$this, 'show_dropdown' ) );
+        $this->competition_not_found = __( 'Competition not found', 'racketmanager' );
+        $this->no_competition_id     = __( 'Competition id not supplied', 'racketmanager' );
     }
 	/**
 	 * Show competitions function
@@ -139,7 +144,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 			$competition = get_competition( $competition, 'name' );
 		}
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( ! $season ) {
@@ -217,7 +222,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
@@ -267,7 +272,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
@@ -321,7 +326,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
@@ -372,7 +377,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
@@ -485,7 +490,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
@@ -544,7 +549,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$template       = $args['template'];
 		$competition    = get_competition( $competition_id );
 		if ( ! $competition ) {
-			$msg = __( 'Competition not found', 'racketmanager' );
+			$msg = $this->competition_not_found;
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
@@ -600,7 +605,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                 $is_tournament   = true;
             } else {
                 $valid = false;
-                $msg   = __( 'No competition name specified', 'racketmanager' );
+                $msg   = $this->competition_not_found;
             }
         }
         if ( $is_tournament ) {
@@ -683,7 +688,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                 }
             } else {
                 $valid = false;
-                $msg   = __( 'Competition not found', 'racketmanager' );
+                $msg   = $this->competition_not_found;
             }
         }
         if ( $valid ) {
@@ -872,7 +877,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                     if ( $player ) {
                         $search           = $tournament->id . '_' . $player->id;
                         $tournament_entry = get_tournament_entry( $search, 'key' );
-                        $filename         = ! empty( $template ) ? 'tournament-payment-complete-' . $template : 'tournament-payment-complete';
+                        $filename         = 'tournament-payment-complete';
                         return $this->load_template(
                             $filename,
                             array(
@@ -1180,5 +1185,44 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
             ),
             'entry'
         );
+    }
+    /**
+     * Function to display event dropdown
+     *
+     * [dropdown id=ID team_id=X template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_dropdown( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'template' => '',
+            ),
+            $atts
+        );
+        $competition_id = $args['id'];
+        $template       = $args['template'];
+        if ( $competition_id ) {
+            $competition = get_competition( $competition_id );
+            if ( $competition ) {
+                $events   = $competition->get_events();
+                $filename = ! empty( $template ) ? 'dropdown-' . $template : 'dropdown';
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'events' => $events,
+                    ),
+                    'competition'
+                );
+            } else {
+                $msg = $this->competition_not_found;
+            }
+        } else {
+            $msg = $this->no_competition_id;
+        }
+        return $this->return_error( $msg );
     }
 }

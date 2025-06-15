@@ -28,6 +28,7 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         add_shortcode( 'rubber-status', array( &$this, 'show_rubber_status_modal' ) );
         add_shortcode( 'match-card', array( &$this, 'show_match_card' ) );
         add_shortcode( 'score', array( &$this, 'show_score' ) );
+        add_shortcode( 'match-header', array( &$this, 'show_match_header' ) );
         $this->not_played             = __( 'Not played', 'racketmanager' );
         $this->retired_player         = __( 'Retired - %s', 'racketmanager' );
         $this->not_played_no_opponent = __( 'Match not played - %s did not show', 'racketmanager' );
@@ -369,8 +370,7 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         }
         return $this->return_error( $msg );
     }
-    ////show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) );
-    /**
+     /**
      * Function to display match status modal
      *
      *  [show-score match_id=ID team=x opponent=x home_away=x template=X]
@@ -448,6 +448,46 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
                         'match'
                     );
                 }
+            } else {
+                $msg = $this->match_not_found;
+            }
+        } else {
+            $msg = __( 'Match id not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display match status modal
+     *
+     *  [match-header id=ID team=x opponent=x home_away=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_match_header( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'edit'     => false,
+                'template' => '',
+            ),
+            $atts
+        );
+        $match_id = $args['id'];
+        $edit     = $args['edit'];
+        $template = $args['template'];
+        if ( $match_id ) {
+            $match = get_match( $match_id );
+            if ( $match ) {
+                $template_args['match'] = $match;
+                $template_args['edit']  = $edit;
+                $filename               = ! empty( $template ) ? 'match-header-' . $template : 'match-header';
+                return $this->load_template(
+                    $filename,
+                    $template_args,
+                    'match'
+                );
             } else {
                 $msg = $this->match_not_found;
             }

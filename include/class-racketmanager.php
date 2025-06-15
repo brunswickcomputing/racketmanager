@@ -2366,25 +2366,6 @@ class RacketManager {
 		return false;
 	}
 	/**
-	 * Show match header
-	 *
-	 * @param object $match match object.
-	 * @param boolean $edit edit indicator.
-	 *
-	 * @return string
-	 */
-	public function show_match_header( object $match, bool $edit = false ): string {
-		$match_args['match']     = $match;
-		$match_args['edit_mode'] = $edit;
-		$template                = 'match-header';
-		return $this->shortcodes->load_template(
-			$template,
-			$match_args,
-			'includes'
-		);
-	}
-
-	/**
 	 * Show match screen
 	 *
 	 * @param object $match match object.

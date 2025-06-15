@@ -165,7 +165,7 @@ class Racketmanager_Ajax {
 				$match = get_match( $match_id );
 				if ( $match ) {
 					$edit_mode = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
-					$output    = $racketmanager->show_match_header( $match, $edit_mode );
+					$output    = match_header( $match->id, array( 'edit' => $edit_mode ) );
 					wp_send_json_success( $output );
 				} else {
 					$return->error  = true;

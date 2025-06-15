@@ -64,7 +64,7 @@ if ( $match->is_walkover ) {
 }
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card">
-		<?php echo $racketmanager->show_match_header( $match, true ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php echo match_header( $match->id, array( 'edit' => true ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	</div>
 	<div class="page-content row">
 		<div class="page-content__sidebar col-12 col-lg-4">

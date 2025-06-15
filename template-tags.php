@@ -504,6 +504,23 @@ function result_outstanding_notification( int $match_id, array $args = array() )
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Show match header
+     *
+     * @param int $match_id match id match.
+     * @param array $args associative array of parameters, see default values (optional).
+     *
+     * @category template-tags
+     */
+    function match_header( int $match_id, array $args = array() ): string {
+        $args['id'] = $match_id;
+        $shortcode = '[match-header';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
 	/**
 	 * Display club player request email
 	 *

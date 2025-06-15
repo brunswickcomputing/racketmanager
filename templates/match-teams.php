@@ -13,7 +13,7 @@ global $wp, $racketmanager;
 $user_can_update = $is_update_allowed->user_can_update;
 ?>
 	<div id="match-header" class="team-match-header module module--dark module--card">
-		<?php echo $racketmanager->show_match_header( $match ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php echo match_header( $match->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	</div>
 	<div class="page-content row">
 		<div class="page-content__main col-12 col-lg-8">

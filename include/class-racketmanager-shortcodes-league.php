@@ -29,6 +29,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
         add_shortcode( 'season-dropdown', array( &$this, 'show_season_dropdown' ) );
         add_shortcode( 'match-dropdown', array( &$this, 'show_match_dropdown' ) );
+        add_shortcode( 'last-5', array( &$this, 'show_last_5' ) );
 	}
 
 	/**
@@ -947,6 +948,60 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
                 );
             } else {
                 $msg = __( 'Season not found', 'racketmanager' );
+            }
+        } else {
+            $msg = __( 'League not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display last 5 matches
+     *
+     *  [last-5 id=ID season=x team=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return false|string content
+     */
+    public function show_last_5( array $atts ): false|string {
+        $args      = shortcode_atts(
+            array(
+                'id'       => 0,
+                'team_id'  => null,
+                'template' => null,
+            ),
+            $atts
+        );
+        $league_id = $args['id'];
+        $team_id   = $args['team_id'];
+        $template  = $args['template'];
+        $league    = get_league( $league_id );
+        if ( $league ) {
+            $league->set_season();
+            if ( $team_id ) {
+                $matches = $league->get_matches(
+                    array(
+                        'time'             => 'prev',
+                        'team_id'          => $team_id,
+                        'match_day'        => -1,
+                        'limit'            => 5,
+                        'reset_query_args' => true,
+                    )
+                );
+                if ( empty( $template ) && $this->check_template( 'last-5-' . $league->sport, 'last-5' ) ) {
+                    $filename = 'season-dropdown-' . $league->sport;
+                } else {
+                    $filename = ! empty( $template ) ? 'last-5-' . $template : 'last-5';
+                }
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'matches' => $matches,
+                        'team_id' => $team_id,
+                    ),
+                    'league'
+                );
+            } else {
+                $msg = __( 'Team id not found', 'racketmanager' );
             }
         } else {
             $msg = __( 'League not found', 'racketmanager' );

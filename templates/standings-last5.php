@@ -238,7 +238,7 @@ namespace Racketmanager;
 									if ( show_standings( 'last5' ) ) {
 										?>
                                         <td class="standing-form d-none d-md-table-cell">
-											<?php echo $team->last5(); ?>
+											<?php echo last_5_matches( $league->id, array( 'team_id' => $team->id ) ); ?>
                                         </td>
 										<?php
 									}

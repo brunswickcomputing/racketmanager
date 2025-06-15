@@ -560,59 +560,6 @@ final class Racketmanager_League_Team {
 		}
 		return $this->prev_match;
 	}
-
-	/**
-	 * Get last 5 icons for standings table
-	 *
-	 * @return string
-	 */
-	public function last5(): string {
-		$league = get_league( $this->league_id );
-		$league->set_season();
-		ob_start();
-		// get last 5 match results.
-		$matches = $league->get_matches(
-			array(
-				'time'             => 'prev',
-				'team_id'          => $this->id,
-				'match_day'        => -1,
-				'limit'            => 5,
-				'reset_query_args' => true,
-			)
-		);
-		?>
-		<ul class="list--inline list">
-			<?php
-			foreach ( $matches as $match ) {
-				if ( $this->id === intval( $match->winner_id ) ) {
-					$match_status_class = 'winner';
-					$match_status_text  = 'W';
-				} elseif ( $this->id === intval( $match->loser_id ) ) {
-					$match_status_class = 'loser';
-					$match_status_text  = 'L';
-				} elseif ( '-1' === $match->winner_id && '-1' === $match->loser_id ) {
-					$match_status_class = 'tie';
-					$match_status_text  = 'T';
-				} else {
-					$match_status_class = 'unknown';
-					$match_status_text  = '?';
-				}
-				?>
-				<li class="list__item">
-					<span class="match__status <?php echo esc_attr( $match_status_class ); ?>"  data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_attr( $match->tooltip_title ); ?>">
-						<?php echo esc_html( $match_status_text ); ?>
-					</span>
-				</li>
-				<?php
-			}
-			?>
-		</ul>
-		<?php
-		$output = ob_get_contents();
-		ob_end_clean();
-		return $output;
-	}
-
 	/**
 	 * Get number of finished matches for team
 	 *

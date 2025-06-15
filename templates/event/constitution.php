@@ -30,7 +30,7 @@ require RACKETMANAGER_PATH . 'templates/email/div-top.php';
 				</a>
 			</h2>
 			<?php
-			racketmanager_league_standings(
+			league_standings(
 				$league->id,
 				array(
 					'season'   => $event->current_season['name'],

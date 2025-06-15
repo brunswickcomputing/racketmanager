@@ -341,6 +341,23 @@ function archive( int $league_id, array $args = array() ): void {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Display last 5 match details
+     *
+     * @param int $league_id league.
+     * @param array $args additional arguments as associative array (optional).
+     *
+     * @return string
+     */
+    function last_5_matches( int $league_id, array $args = array() ): string {
+        $args['id'] = $league_id;
+        $shortcode = '[last-5';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
 	/**
 	 * Display results table
 	 *

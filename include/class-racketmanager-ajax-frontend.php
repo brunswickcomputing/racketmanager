@@ -1432,7 +1432,6 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 				}
 			}
 		}
-        debug_to_console( 'here');
 		wp_send_json_error( $return->msg, $return->status );
 	}
 	/**

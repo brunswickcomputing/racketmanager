@@ -2236,14 +2236,15 @@ class Racketmanager_League {
 				if ( $matches ) {
 					$score = '';
 					foreach ( $matches as $match ) {
-						$score .= $this->get_score( $team_id, $opponent_id, $match, $home_away ) . '<br>';
+						$score .= show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) ) . '<br>';
 					}
 				} else {
 					$score = '&nbsp;';
 				}
 			} elseif ( $matches ) {
 				$match = $matches[0];
-				$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
+                $score = show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) );
+//				$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
 			} else {
 				$matches = $this->get_matches(
 					array(
@@ -2256,7 +2257,8 @@ class Racketmanager_League {
 				);
 				if ( $matches ) {
 					$match = $matches[0];
-					$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
+					$score = show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) );
+//					$score = $this->get_score( $team_id, $opponent_id, $match, $home_away );
 				} else {
 					$score = '&nbsp;';
 				}
@@ -2282,7 +2284,7 @@ class Racketmanager_League {
         $score_team_2 = null;
 		// unplayed match.
 		if ( ! $match || ( null === $match->home_points && null === $match->away_points ) ) {
-			$date      = (str_starts_with($match->date, '0000-00-00')) ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
+			$date      = str_starts_with($match->date, '0000-00-00') ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
 			$match_day = isset( $match->match_day ) ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day : '';
 			if ( $home_away ) {
 				$out = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span><br/>';
@@ -2315,19 +2317,6 @@ class Racketmanager_League {
 			}
 			ob_start();
 			?>
-			<a href="<?php echo esc_html( $match->link ); ?>">
-				<span class="score <?php echo esc_attr( $score_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $link_title ); ?>">
-					<span class="is-team-1"><?php echo esc_html( sprintf( '%g', $score_team_1 ) ); ?></span>
-					<?php
-					if ( $home_away ) {
-						?>
-						<span class="score-separator">-</span>
-						<span class="is-team-2"><?php echo esc_html( sprintf( '%g', $score_team_2 ) ); ?></span>
-						<?php
-					}
-					?>
-				</span>
-			</a>
 			<?php
 			$out = ob_get_contents();
 			ob_end_clean();

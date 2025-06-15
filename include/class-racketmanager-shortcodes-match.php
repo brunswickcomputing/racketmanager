@@ -27,6 +27,7 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         add_shortcode( 'match-status', array( &$this, 'show_match_status_modal' ) );
         add_shortcode( 'rubber-status', array( &$this, 'show_rubber_status_modal' ) );
         add_shortcode( 'match-card', array( &$this, 'show_match_card' ) );
+        add_shortcode( 'score', array( &$this, 'show_score' ) );
         $this->not_played             = __( 'Not played', 'racketmanager' );
         $this->retired_player         = __( 'Retired - %s', 'racketmanager' );
         $this->not_played_no_opponent = __( 'Match not played - %s did not show', 'racketmanager' );
@@ -360,6 +361,93 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
                     $template_args,
                     'match'
                 );
+            } else {
+                $msg = $this->match_not_found;
+            }
+        } else {
+            $msg = __( 'Match id not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg );
+    }
+    ////show_score( $match->id, array( 'team' => $team_id, 'opponent' => $opponent_id, 'home_away' => $home_away ) );
+    /**
+     * Function to display match status modal
+     *
+     *  [show-score match_id=ID team=x opponent=x home_away=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return false|string content
+     */
+    public function show_score( array $atts ): false|string {
+        $args        = shortcode_atts(
+            array(
+                'id'        => 0,
+                'team'      => null,
+                'opponent'  => null,
+                'home_away' => false,
+                'template'  => '',
+            ),
+            $atts
+        );
+        $match_id    = $args['id'];
+        $team_id     = $args['team'];
+        $opponent_id = $args['opponent'];
+        $home_away   = $args['home_away'];
+        $template    = $args['template'];
+        $msg         = null;
+        if ( $match_id ) {
+            $match = get_match( $match_id );
+            if ( $match ) {
+                $score_team_1 = null;
+                $score_team_2 = null;
+                // unplayed match.
+                if ( null === $match->home_points && null === $match->away_points ) {
+                    $date      = str_starts_with( $match->date, '0000-00-00' ) ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
+                    $match_day = isset( $match->match_day ) ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day : '';
+                    if ( $home_away ) {
+                        $output = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span><br/>';
+                    } else {
+                        $output = "<span class='unplayedMatch'>&nbsp;</span>";
+                    }
+                    return $output;
+                    // match at home.
+                } elseif ( strval( $team_id ) === $match->home_team ) {
+                    $score_team_1 = $match->home_points;
+                    $score_team_2 = $match->away_points;
+                    // match away.
+                } elseif ( strval( $opponent_id ) === $match->home_team ) {
+                    $score_team_1 = $match->away_points;
+                    $score_team_2 = $match->home_points;
+                }
+                if ( empty( $msg ) ) {
+                    if ( strval( $team_id ) === $match->winner_id ) {
+                        $score_class = 'winner';
+                    } elseif ( strval( $team_id ) === $match->loser_id ) {
+                        $score_class = 'loser';
+                    } elseif ( '-1' === $match->winner_id ) {
+                        $score_class = 'tie';
+                    } else {
+                        $score_class = null;
+                    }
+                    if ( $home_away ) {
+                        $link_title = __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day;
+                    } else {
+                        $link_title = '';
+                    }
+                    $template_args['match']        = $match;
+                    $template_args['score_class']  = $score_class;
+                    $template_args['link_title']   = $link_title;
+                    $template_args['score_team_1'] = $score_team_1;
+                    $template_args['score_team_2'] = $score_team_2;
+                    $template_args['home_away']    = $home_away;
+                    $filename                      = ! empty( $template ) ? 'score-' . $template : 'score';
+                    return $this->load_template(
+                        $filename,
+                        $template_args,
+                        'match'
+                    );
+                }
             } else {
                 $msg = $this->match_not_found;
             }

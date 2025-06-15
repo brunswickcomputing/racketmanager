@@ -487,6 +487,23 @@ function result_outstanding_notification( int $match_id, array $args = array() )
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Show score
+     *
+     * @param int $match_id match id match.
+     * @param array $args associative array of parameters, see default values (optional).
+     *
+     * @category template-tags
+     */
+    function show_score( int $match_id, array $args = array() ): string {
+        $args['id'] = $match_id;
+        $shortcode = '[score';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
 	/**
 	 * Display club player request email
 	 *

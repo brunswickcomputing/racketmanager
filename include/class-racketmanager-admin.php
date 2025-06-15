@@ -3385,21 +3385,7 @@ class RacketManager_Admin extends RacketManager {
 				'info'    => 'info',
 				default   => 'success',
 			};
-			ob_start();
-			?>
-			<div class="alert_rm alert--<?php echo esc_attr( $alert_class ); ?>">
-				<div class="alert__body">
-					<div class="alert__body-inner">
-						<?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<span><?php echo $this->message; ?></span>
-					</div>
-				</div>
-			</div>
-			<?php
-			$output = ob_get_contents();
-			ob_end_clean();
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $output;
+            echo show_alert( $this->message, $alert_class ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		$this->message = '';
 	}

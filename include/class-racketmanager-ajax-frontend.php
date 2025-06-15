@@ -1664,7 +1664,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 			}
 		}
 		if ( ! empty( $return->error ) ) {
-            $output = $this->return_error( $return->msg );
+            $output = show_alert( $return->msg, 'danger' );
 		}
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();

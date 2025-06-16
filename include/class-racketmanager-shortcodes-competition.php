@@ -17,6 +17,10 @@ use stdClass;
  */
 class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
     private string $competition_not_found;
+    private string $season_not_found;
+    private string $club_not_found;
+    private string $player_not_found;
+    private string $tournament_not_found;
     private string $no_competition_id;
 	/**
 	 * Initialize shortcodes
@@ -35,6 +39,10 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         add_shortcode( 'competition-entry-payment-complete', array( &$this, 'show_competition_entry_payment_complete' ) );
         add_shortcode( 'event-dropdown', array( &$this, 'show_dropdown' ) );
         $this->competition_not_found = __( 'Competition not found', 'racketmanager' );
+        $this->season_not_found = __( 'Season not found', 'racketmanager' );
+        $this->club_not_found = __( 'Club not found', 'racketmanager' );
+        $this->player_not_found = __( 'Player not found', 'racketmanager' );
+        $this->tournament_not_found = __( 'Tournament not found', 'racketmanager' );
         $this->no_competition_id     = __( 'Competition id not supplied', 'racketmanager' );
     }
 	/**
@@ -164,7 +172,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 					}
 				}
 			} else {
-				$msg = __( 'Season not found', 'racketmanager' );
+				$msg = $this->season_not_found;
 				return $this->return_error( $msg );
 			}
 		} elseif ( empty( $competition->seasons ) ) {
@@ -453,7 +461,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 					)
 				);
 			} else {
-				$msg = __( 'Club not found', 'racketmanager' );
+				$msg = $this->club_not_found;
 				return $this->return_error( $msg );
 			}
 		}
@@ -514,7 +522,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 				$player->stats       = $player->get_stats();
 				$competition->player = $player;
 			} else {
-				esc_html_e( 'Player not found', 'racketmanager' );
+				echo $this->player_not_found;
 			}
 		} else {
 			$players              = $competition->get_players( array( 'season' => $competition->current_season['name'] ) );
@@ -614,7 +622,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                 $is_tournament = true;
             } else {
                 $valid = false;
-                $msg   = __( 'Tournament not found specified', 'racketmanager' );
+                $msg   = $this->tournament_not_found;
             }
         }
         if ( $valid ) {
@@ -642,7 +650,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                         }
                     } else {
                         $valid = false;
-                        $msg   = __( 'Player not found', 'racketmanager' );
+                        $msg   = $this->player_not_found;
                     }
                 } else {
                     $season = get_query_var( 'season' );
@@ -668,7 +676,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                                     }
                                 } else {
                                     $valid = false;
-                                    $msg   = __( 'Club not found', 'racketmanager' );
+                                    $msg   = $this->club_not_found;
                                 }
                             } else {
                                 $club_choice = $this->show_club_selection( $competition, $season, $competition_season );
@@ -679,7 +687,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                             }
                         } else {
                             $valid = false;
-                            $msg   = __( 'Season not found for competition', 'racketmanager' );
+                            $msg   = $this->season_not_found;
                         }
                     } else {
                         $valid = false;
@@ -739,17 +747,18 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         }
         if ( $clubs ) {
             if ( $club_id ) {
-                return $clubs;
+                $result = $clubs;
             } else {
                 if ( 1 === count( $clubs ) ) {
-                    return $clubs[0];
+                    $result = $clubs[0];
                 } else {
-                    return $clubs;
+                    $result = $clubs;
                 }
             }
         } else {
-            return false;
+            $result = false;
         }
+        return $result;
     }
     /**
      * Function to show club selection entry list
@@ -823,7 +832,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                             $tournament_entry = get_tournament_entry( $search, 'key' );
                         } else {
                             $valid = false;
-                            $msg   = __( 'Player not found', 'racketmanager' );
+                            $msg   = $this->player_not_found;
                         }
                     } else {
                         $valid = false;
@@ -831,7 +840,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                     }
                 } else {
                     $valid = false;
-                    $msg   = __( 'Tournament not found', 'racketmanager' );
+                    $msg   = $this->tournament_not_found;
                 }
             } else {
                 $valid = false;
@@ -888,10 +897,10 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
                             'entry'
                         );
                     } else {
-                        $msg   = __( 'Player not found', 'racketmanager' );
+                        $msg   = $this->player_not_found;
                     }
                 } else {
-                    $msg   = __( 'Tournament not found', 'racketmanager' );
+                    $msg   = $this->tournament_not_found;
                 }
             } else {
                 $msg   = __( 'No tournament name specified', 'racketmanager' );
@@ -917,7 +926,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         $msg   = null;
         if ( ! $club ) {
             $valid = false;
-            $msg   = __( 'Club not found', 'racketmanager' );
+            $msg   = $this->club_not_found;
         }
         if ( ! $competition ) {
             $valid = false;
@@ -925,7 +934,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         }
         if ( ! $season ) {
             $valid = false;
-            $msg   = __( 'Season not found', 'racketmanager' );
+            $msg   = $this->season_not_found;
         }
         if ( $valid ) {
             $events = $competition->get_events();
@@ -990,7 +999,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         $msg   = null;
         if ( ! $club ) {
             $valid = false;
-            $msg   = __( 'Club not found', 'racketmanager' );
+            $msg   = $this->club_not_found;
         }
         if ( ! $competition ) {
             $valid = false;
@@ -998,7 +1007,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         }
         if ( ! $season ) {
             $valid = false;
-            $msg   = __( 'Season not found', 'racketmanager' );
+            $msg   = $this->season_not_found;
         }
         if ( $valid ) {
             $events = $competition->get_events();
@@ -1080,7 +1089,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
     private function show_tournament_entry( object $tournament, object $player = null, string $template = null ): string {
         global $racketmanager;
         if ( ! $tournament ) {
-            return $this->return_error( __( 'Tournament not found', 'racketmanager' ) );
+            return $this->return_error( $this->tournament_not_found );
         }
         $player->firstname = get_user_meta( $player->ID, 'first_name', true );
         $player->surname   = get_user_meta( $player->ID, 'last_name', true );

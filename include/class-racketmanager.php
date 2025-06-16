@@ -89,16 +89,17 @@ class RacketManager {
 	 */
 	public ?NumberFormatter $currency_fmt;
     public object $ajax_frontend ;
+    public object $login;
+    public object $shortcodes;
     public object $shortcodes_club;
     public object $shortcodes_competition;
+    public object $shortcodes_email;
     public object $shortcodes_event;
     public object $shortcodes_league;
     public object $shortcodes_login;
 	public object $shortcodes_match;
 	public object $shortcodes_message;
     public object $shortcodes_tournament;
-    public object $shortcodes_email;
-    public object $shortcodes;
 	/**
 	 * Constructor
 	 *
@@ -892,16 +893,17 @@ class RacketManager {
 	 */
     public function init_components(): void {
         $this->ajax_frontend          = new RacketManager_Ajax_Frontend();
+        $this->shortcodes             = new RacketManager_Shortcodes();
         $this->shortcodes_club        = new Racketmanager_Shortcodes_Club();
         $this->shortcodes_competition = new Racketmanager_Shortcodes_Competition();
+        $this->shortcodes_email       = new Racketmanager_Shortcodes_Email();
         $this->shortcodes_event       = new Racketmanager_Shortcodes_Event();
         $this->shortcodes_league      = new Racketmanager_Shortcodes_League();
         $this->shortcodes_login       = new Racketmanager_Shortcodes_Login();
 	    $this->shortcodes_match       = new Racketmanager_Shortcodes_Match();
 	    $this->shortcodes_message     = new Racketmanager_Shortcodes_Message();
         $this->shortcodes_tournament  = new Racketmanager_Shortcodes_Tournament();
-        $this->shortcodes_email       = new Racketmanager_Shortcodes_Email();
-        $this->shortcodes             = new RacketManager_Shortcodes();
+        $this->login                  = new Racketmanager_Login();
     }
 	/**
 	 * Read files in directory

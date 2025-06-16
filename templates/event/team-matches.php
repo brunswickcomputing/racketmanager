@@ -8,15 +8,18 @@
 namespace Racketmanager;
 
 /** @var array $matches */
-?>
-<select class="form-select" size="1" name="matchId" id="matchId" onChange="Racketmanager.show_set_team_button()">
-    <option value="" disabled selected><?php esc_html_e( 'Select match', 'racketmanager' ); ?></option>
-    <?php
-    foreach ( $matches as $match ) {
-        ?>
-        <option value="<?php echo esc_attr( $match->id ); ?>"><?php echo esc_html( $match->match_title ); ?></option>
-        <?php
-    }
+if ( $matches ) {
     ?>
-</select>
-<label for="matchId"><?php esc_html_e( 'Match', 'racketmanager' ); ?></label>
+    <select class="form-select" size="1" name="matchId" id="matchId" onChange="Racketmanager.show_set_team_button()">
+        <option value="" disabled selected><?php esc_html_e( 'Select match', 'racketmanager' ); ?></option>
+        <?php
+        foreach ( $matches as $match ) {
+            ?>
+            <option value="<?php echo esc_attr( $match->id ); ?>"><?php echo esc_html( $match->match_title ); ?></option>
+            <?php
+        }
+        ?>
+    </select>
+    <label for="matchId"><?php esc_html_e( 'Match', 'racketmanager' ); ?></label>
+    <?php
+}

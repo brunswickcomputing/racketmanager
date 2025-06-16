@@ -475,7 +475,8 @@ class RacketManager_Shortcodes {
 			require RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php';
 		} else {
 			/* translators: %1$s: template %2$s: directory */
-			echo esc_html( sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $template, $template_dir ) );
+            $msg = sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $template, $template_dir );
+            echo show_alert( $msg, 'danger');
 		}
 		$output = ob_get_contents();
 		ob_end_clean();

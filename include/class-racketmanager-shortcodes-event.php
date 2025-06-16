@@ -404,8 +404,6 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
             $player->matches = $player->get_matches( $event, $event->current_season['name'], 'event' );
             asort( $player->matches );
             $player->stats = $player->get_stats();
-        } else {
-            debug_to_console( $player );
         }
         return $player;
     }

@@ -577,6 +577,10 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
      * @return string content
      */
     public function show_competition_entry( array $atts ): string {
+        if ( ! is_user_logged_in() ) {
+            $msg = __( 'You need to be logged in to enter', 'racketmanager' );
+            return $this->return_error( $msg );
+        }
         $args             = shortcode_atts(
             array(
                 'template' => '',
@@ -912,9 +916,6 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
      * @return string the content
      */
     private function show_cup_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
-        if ( ! is_user_logged_in() ) {
-            return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter cups</p>';
-        }
         $valid = true;
         $msg   = null;
         if ( ! $club ) {
@@ -985,9 +986,6 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
      * @return string content
      */
     private function show_league_entry( object $competition, string $season, array $competition_season, object $club, string $template ): string {
-        if ( ! is_user_logged_in() ) {
-            return '<p class="contact-login-msg">You need to <a href="' . wp_login_url() . '">log in</a> to enter leagues</p>';
-        }
         $valid = true;
         $msg   = null;
         if ( ! $club ) {

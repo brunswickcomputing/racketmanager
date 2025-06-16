@@ -125,85 +125,85 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		$args        = shortcode_atts(
 			array(
 				'competition' => false,
-				'tab'         => false,
 				'season'      => false,
 				'template'    => '',
 			),
 			$atts
 		);
-		$competition = $args['competition'];
-		$tab         = $args['tab'];
-		$season      = $args['season'];
-		$template    = $args['template'];
-		if ( ! $competition ) {
-			if (! empty( $_GET['competition'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$competition = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['competition'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			} elseif ( isset( $wp->query_vars['competition'] ) ) {
-				$competition = get_query_var( 'competition' );
-			}
-			$competition = un_seo_url( $competition );
-		}
-		if ( $competition ) {
-			$competition = get_competition( $competition, 'name' );
-		}
-		if ( ! $competition ) {
-			$msg = $this->competition_not_found;
-			return $this->return_error( $msg );
-		}
-		if ( ! $season ) {
-			if (! empty( $_GET['season'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$season = wp_strip_all_tags( wp_unslash( $_GET['season'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			} elseif ( isset( $wp->query_vars['season'] ) ) {
-				$season = get_query_var( 'season' );
-			}
-		}
-		if ( $season ) {
-			$competition_season = $competition->seasons[$season] ?? null;
-			if ( $competition_season ) {
-				if ( ! empty( $competition_season['venue'] ) ) {
-					$venue_club = get_club( $competition_season['venue'] );
-					if ( $venue_club ) {
-						$competition_season['venue_name'] = $venue_club->shortcode;
-					}
-				}
-			} else {
-				$msg = $this->season_not_found;
-				return $this->return_error( $msg );
-			}
-		} elseif ( empty( $competition->seasons ) ) {
-			$msg = __( 'No seasons found for competition', 'racketmanager' );
-			return $this->return_error( $msg );
-		} else {
-			$competition_season = $competition->current_season;
-			$season             = $competition_season['name'];
-		}
-		if ( ! $tab ) {
-			if (! empty( $_GET['tab'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			} elseif ( isset( $wp->query_vars['tab'] ) ) {
-				$tab = get_query_var( 'tab' );
-			}
-		}
-		if ( $competition->is_open && is_user_logged_in() ) {
-			$entry_link = '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
-			$clubs      = $this->club_selection_available( $competition );
-			if ( $clubs ) {
-				if ( ! is_array( $clubs ) ) {
-					$entry_link .= seo_url( $clubs->shortcode ) . '/';
-				}
-				$competition->entry_link = $entry_link;
-			}
-		}
-		$filename = ( ! empty( $template ) ) ? 'competition-' . $template : 'competition';
+		$competition_id = $args['competition'];
+		$season         = $args['season'];
+		$template       = $args['template'];
+        $competition    = null;
+        $msg            = null;
 
-		return $this->load_template(
-			$filename,
-			array(
-				'competition'        => $competition,
-				'competition_season' => $competition_season,
-				'tab'                => $tab,
-			)
-		);
+		if ( ! $competition_id ) {
+			if (! empty( $_GET['competition'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$competition_id = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['competition'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} elseif ( isset( $wp->query_vars['competition'] ) ) {
+				$competition_id = get_query_var( 'competition' );
+			}
+			$competition_id = un_seo_url( $competition_id );
+		}
+		if ( $competition_id ) {
+			$competition = get_competition( $competition_id, 'name' );
+            if ( ! $competition ) {
+                $msg = $this->competition_not_found;
+            }
+		} else {
+            $msg = $this->no_competition_id;
+        }
+        if ( empty( $msg ) ) {
+            $competition_season = null;
+            if ( ! $season ) {
+                if (! empty( $_GET['season'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                    $season = wp_strip_all_tags( wp_unslash( $_GET['season'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                } elseif ( isset( $wp->query_vars['season'] ) ) {
+                    $season = get_query_var( 'season' );
+                }
+            }
+            if ( $season ) {
+                $competition_season = $competition->seasons[$season] ?? null;
+                if ( $competition_season ) {
+                    if ( ! empty( $competition_season['venue'] ) ) {
+                        $venue_club = get_club( $competition_season['venue'] );
+                        if ( $venue_club ) {
+                            $competition_season['venue_name'] = $venue_club->shortcode;
+                        }
+                    }
+                } else {
+                    $msg = $this->season_not_found;
+                 }
+            } elseif ( empty( $competition->seasons ) ) {
+                $msg = __( 'No seasons found for competition', 'racketmanager' );
+            } else {
+                $competition_season = $competition->current_season;
+                $season             = $competition_season['name'];
+            }
+            if ( empty( $msg ) ) {
+                $tab = get_tab();
+                if ( $competition->is_open && is_user_logged_in() ) {
+                    $entry_link = '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
+                    $clubs      = $this->club_selection_available( $competition );
+                    if ( $clubs ) {
+                        if ( ! is_array( $clubs ) ) {
+                            $entry_link .= seo_url( $clubs->shortcode ) . '/';
+                        }
+                        $competition->entry_link = $entry_link;
+                    }
+                }
+                $filename = ( ! empty( $template ) ) ? 'competition-' . $template : 'competition';
+
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'competition'        => $competition,
+                        'competition_season' => $competition_season,
+                        'tab'                => $tab,
+                    )
+                );
+            }
+       }
+       return $this->return_error( $msg );
 	}
 	/**
 	 * Show competition overview function

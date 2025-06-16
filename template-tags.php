@@ -1086,3 +1086,17 @@ function withdrawn_team_email( array $args = array() ): string {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Get tab
+     *
+     */
+    function get_tab(): ?string {
+        if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } elseif ( isset( $wp->query_vars['tab'] ) ) {
+            $tab = get_query_var( 'tab' );
+        } else {
+            $tab = null;
+        }
+        return $tab;
+    }

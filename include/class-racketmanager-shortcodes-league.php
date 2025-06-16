@@ -572,85 +572,9 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 				'is_update_allowed' => $is_update_allowed,
 			);
 			if ( 'result' === $action ) {
-				$age_limit  = isset( $match->league->event->age_limit ) ? sanitize_text_field( wp_unslash( $match->league->event->age_limit ) ) : null;
-				$age_offset = isset( $match->league->event->age_offset ) ? intval( $match->league->event->age_offset ) : null;
-				$template  .= '-' . $action;
-				$home_club  = get_club( $match->teams['home']->club_id );
-				$away_club  = get_club( $match->teams['away']->club_id );
-				switch ( $match->league->type ) {
-					case 'BD':
-					case 'MD':
-						$home_club_player['m'] = $home_club->get_players(
-							array(
-								'gender'     => 'M',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						$away_club_player['m'] = $away_club->get_players(
-							array(
-								'gender'     => 'M',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						break;
-					case 'GD':
-					case 'WD':
-						$home_club_player['f'] = $home_club->get_players(
-							array(
-								'gender'     => 'F',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						$away_club_player['f'] = $away_club->get_players(
-							array(
-								'gender'     => 'F',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						break;
-					case 'XD':
-					case 'LD':
-						$home_club_player['m'] = $home_club->get_players(
-							array(
-								'gender'     => 'M',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						$home_club_player['f'] = $home_club->get_players(
-							array(
-								'gender'     => 'F',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						$away_club_player['m'] = $away_club->get_players(
-							array(
-								'gender'     => 'M',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						$away_club_player['f'] = $away_club->get_players(
-							array(
-								'gender'     => 'F',
-								'age_limit'  => $age_limit,
-								'age_offset' => $age_offset,
-							)
-						);
-						break;
-					default:
-						$home_club_player['m'] = array();
-						$home_club_player['f'] = array();
-						$away_club_player['m'] = array();
-						$away_club_player['f'] = array();
-				}
-				$template_array['home_club_player'] = $home_club_player;
-				$template_array['away_club_player'] = $away_club_player;
+                $template                          .= '-' . $action;
+				$template_array['home_club_player'] = $this->get_club_players( $event, $match->teams['home']->club );
+				$template_array['away_club_player'] = $this->get_club_players( $event, $match->teams['away']->club );
 			}
 			if ( empty( $template ) && $this->check_template( 'match-' . $match->league->sport ) ) {
 				$filename = 'match-' . $match->league->sport;

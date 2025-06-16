@@ -1633,15 +1633,16 @@ final class Racketmanager_Match {
 		$this->winner_id = $match['winner'];
 		$this->loser_id  = $match['loser'];
 	}
-	/**
-	 * Gets rubbers from database
-	 *
-	 * @param false|int $player player_id (optional).
-	 * @param boolean $count count number of rubbers.
-	 *
-	 * @return array|int
-	 */
-	public function get_rubbers( false|int $player = false, bool $count = false ): array|int {
+
+    /**
+     * Gets rubbers from database
+     *
+     * @param int|null $player player_id (optional).
+     * @param boolean $count count number of rubbers.
+     *
+     * @return array|int
+     */
+	public function get_rubbers( int $player = null, bool $count = false ): array|int {
 		global $wpdb;
 
 		if ( $count ) {

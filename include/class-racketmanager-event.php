@@ -631,7 +631,7 @@ class Racketmanager_Event {
 				$matches = $racketmanager->get_matches( $match_args );
 				foreach ( $matches as $match ) {
 					$match         = get_match( $match->id );
-					$rubber_count  = $match->get_rubbers( false, true );
+					$rubber_count  = $match->get_rubbers( null, true );
 					$total_rubbers = $rubber_count * 2;
 					if ( intval( $rubber_count ) === intval( $match->league->num_rubbers ) ) {
 						for ( $ix = $rubber_count + 1; $ix <= $total_rubbers; $ix++ ) {

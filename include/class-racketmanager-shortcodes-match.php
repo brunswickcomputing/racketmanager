@@ -458,9 +458,9 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         return $this->return_error( $msg );
     }
     /**
-     * Function to display match status modal
+     * Function to display match header
      *
-     *  [match-header id=ID team=x opponent=x home_away=x template=X]
+     *  [match-header id=ID edit=x template=X]
      *
      * @param array $atts shortcode attributes.
      *

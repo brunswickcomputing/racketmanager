@@ -1009,7 +1009,7 @@ final class Racketmanager_Player {
 		if ( ! $stats ) {
 			$stats = $this->statistics;
 		}
-		krsort( $stats );
+		ksort( $stats );
 		$this->statistics           = array();
 		$this->statistics['detail'] = $stats;
 		$total_stats                = array();

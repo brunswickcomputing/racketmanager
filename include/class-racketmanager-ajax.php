@@ -157,7 +157,6 @@ class Racketmanager_Ajax {
 	 * Update match header
 	 */
 	public function update_match_header(): void {
-		global $racketmanager;
 		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$match_id     = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;

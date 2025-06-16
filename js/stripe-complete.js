@@ -4,7 +4,7 @@ function setPaymentDetails(intent) {
 	jQuery(alertBox).removeClass('alert--success alert--info alert--warning alert--danger');
 	let alertText = '#paymentAlertResponse';
 	let statusText = 'Something went wrong, please try again.';
-	let className = 'alert--danger';
+	let className = '';
 	if (intent) {
 		switch (intent.status) {
 			case "succeeded":

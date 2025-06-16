@@ -147,9 +147,9 @@ class Racketmanager_Competition {
 	/**
 	 * Current season
 	 *
-	 * @var array
+	 * @var array|false
 	 */
-	public array $current_season = array();
+	public array|false $current_season = array();
 
 	/**
 	 * Number of match days
@@ -865,61 +865,61 @@ class Racketmanager_Competition {
 		} elseif ( ! empty( $season ) ) {
 			$data = $this->seasons[ $season ];
 		} else {
-			$data = false;
+			$data = null;
 		}
-		$today = gmdate( 'Y-m-d' );
-		if ( empty( $data ) ) {
-			foreach ( array_reverse( $this->seasons ) as $season ) {
-				$date_active = empty( $season['date_closing'] ) ? null : Racketmanager_Util::amend_date( $season['date_closing'], 7 );
-				if ( ! empty( $date_active ) && $date_active <= $today ) {
-					$data = $season;
-					break;
-				}
-			}
-		}
-		if ( empty( $data ) ) {
-			$data = end( $this->seasons );
-		}
-		$count_match_dates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
-		$this->is_complete = false;
-		if ( empty( $data['date_end'] ) && $count_match_dates >= 2 ) {
-			$data['date_end']               = end( $data['match_dates'] );
-			$this->seasons[ $data['name'] ] = $data;
-		}
-		if ( empty( $data['date_start'] ) && $count_match_dates >= 2 ) {
-			$data['date_start']             = $data['match_dates'][0];
-			$this->seasons[ $data['name'] ] = $data;
-		}
-		if ( ! empty( $data['date_end'] ) && $today > $data['date_end'] ) {
-			$this->current_phase = 'end';
-			$this->is_complete   = true;
-		} elseif ( ! empty( $data['date_start'] ) && $today >= $data['date_start'] ) {
-			$this->current_phase = 'start';
-			$this->is_started    = true;
-		} elseif ( ! empty( $data['date_closing'] ) && $today > $data['date_closing'] ) {
-			$this->current_phase = 'close';
-			$this->is_closed     = true;
-		} elseif ( ! empty( $data['date_open'] ) ) {
-			if ( $today >= $data['date_open'] ) {
-				$this->current_phase = 'open';
-				$this->is_open       = true;
-			} else {
-				$this->current_phase = 'pending';
-				$this->is_pending    = true;
-			}
-		} else {
-			$this->current_phase = 'complete';
-			$this->is_complete   = true;
-		}
-		$data['venue_name'] = null;
-		if ( ! empty( $data['venue'] ) ) {
-			$venue_club = get_club( $data['venue'] );
-			if ( $venue_club ) {
-				$data['venue_name'] = $venue_club->shortcode;
-			}
-		}
+        if ( ! isset( $data ) ) {
+            $today = gmdate( 'Y-m-d' );
+            foreach ( array_reverse( $this->seasons ) as $season ) {
+                $date_active = empty( $season['date_closing'] ) ? null : Racketmanager_Util::amend_date( $season['date_closing'], 7 );
+                if ( ! empty( $date_active ) && $date_active <= $today ) {
+                    $data = $season;
+                    break;
+                }
+            }
+            if ( empty( $data ) ) {
+                $data = end( $this->seasons );
+            }
+            $count_match_dates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
+            $this->is_complete = false;
+            if ( empty( $data['date_end'] ) && $count_match_dates >= 2 ) {
+                $data['date_end']               = end( $data['match_dates'] );
+                $this->seasons[ $data['name'] ] = $data;
+            }
+            if ( empty( $data['date_start'] ) && $count_match_dates >= 2 ) {
+                $data['date_start']             = $data['match_dates'][0];
+                $this->seasons[ $data['name'] ] = $data;
+            }
+            if ( ! empty( $data['date_end'] ) && $today > $data['date_end'] ) {
+                $this->current_phase = 'end';
+                $this->is_complete   = true;
+            } elseif ( ! empty( $data['date_start'] ) && $today >= $data['date_start'] ) {
+                $this->current_phase = 'start';
+                $this->is_started    = true;
+            } elseif ( ! empty( $data['date_closing'] ) && $today > $data['date_closing'] ) {
+                $this->current_phase = 'close';
+                $this->is_closed     = true;
+            } elseif ( ! empty( $data['date_open'] ) ) {
+                if ( $today >= $data['date_open'] ) {
+                    $this->current_phase = 'open';
+                    $this->is_open       = true;
+                } else {
+                    $this->current_phase = 'pending';
+                    $this->is_pending    = true;
+                }
+            } else {
+                $this->current_phase = 'complete';
+                $this->is_complete   = true;
+            }
+            $data['venue_name'] = null;
+            if ( ! empty( $data['venue'] ) ) {
+                $venue_club = get_club( $data['venue'] );
+                if ( $venue_club ) {
+                    $data['venue_name'] = $venue_club->shortcode;
+                }
+            }
+            $this->num_match_days = $data['num_match_days'];
+        }
 		$this->current_season = $data;
-		$this->num_match_days = $data['num_match_days'];
 	}
 
 	/**

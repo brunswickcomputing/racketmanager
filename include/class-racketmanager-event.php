@@ -513,7 +513,7 @@ class Racketmanager_Event {
 		}
 
 		// set seasons.
-		if ( '' === $this->seasons ) {
+		if ( empty( $this->seasons ) ) {
 			$this->seasons = array();
 		} else {
 			$this->seasons = (array) maybe_unserialize( $this->seasons );
@@ -666,10 +666,10 @@ class Racketmanager_Event {
 	 * @param boolean $force_overwrite force overwrite.
 	 */
 	public function set_season( string $season = null, bool $force_overwrite = false ): void {
-		global $wp;
+ 		global $wp;
 		if ( ! empty( $season ) && true === $force_overwrite ) {
 			$data = $this->seasons[ $season ];
-		} elseif (! empty( $_GET['season'] )) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
 			if ( ! isset( $this->seasons[ $key ] ) ) {
@@ -695,14 +695,14 @@ class Racketmanager_Event {
 		} elseif ( ! empty( $this->seasons[ $season ] ) ) {
 			$data = $this->seasons[ $season ];
 		} else {
-			$data = false;
+			$data = null;
 		}
-		if ( empty( $data ) ) {
-			$data = end( $this->seasons );
+        if ( ! isset( $data ) ) {
+			$data                 = end( $this->seasons );
+            $this->num_match_days = $data['num_match_days'] ?? 0;
 		}
 
 		$this->current_season = $data;
-		$this->num_match_days = $data['num_match_days'] ?? 0;
 	}
 
 	/**

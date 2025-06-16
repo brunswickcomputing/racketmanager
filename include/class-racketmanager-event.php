@@ -2411,4 +2411,65 @@ class Racketmanager_Event {
 		);
 		wp_cache_set( $this->id, $this, 'events' );
 	}
+    /*
+     * Get club information for event
+     *
+     * @param object $club club.
+     * @return object
+     */
+    public function get_club( $club ): object {
+        $club->teams   = $this->get_teams(
+            array(
+                'club'   => $club->id,
+                'season' => $this->current_season['name'],
+                'status' => 1,
+            )
+        );
+        $club->matches = array();
+        $matches             = $this->get_matches(
+            array(
+                'season'  => $this->current_season['name'],
+                'club'    => $club->id,
+                'time'    => 'next',
+                'orderby' => array(
+                    'date'      => 'ASC',
+                    'league_id' => 'DESC',
+                ),
+            )
+        );
+        foreach ( $matches as $match ) {
+            $key = substr( $match->date, 0, 10 );
+            if ( false === array_key_exists( $key, $club->matches ) ) {
+                $club->matches[ $key ] = array();
+            }
+            $club->matches[ $key ][] = $match;
+        }
+        $club->results = array();
+        $matches             = $this->get_matches(
+            array(
+                'season'  => $this->current_season['name'],
+                'club'    => $club->id,
+                'time'    => 'latest',
+                'orderby' => array(
+                    'date'      => 'ASC',
+                    'league_id' => 'DESC',
+                ),
+            )
+        );
+        foreach ( $matches as $match ) {
+            $key = substr( $match->date, 0, 10 );
+            if ( false === array_key_exists( $key, $club->results ) ) {
+                $club->results[ $key ] = array();
+            }
+            $club->results[ $key ][] = $match;
+        }
+        $club->players = $this->get_players(
+            array(
+                'club'   => $club->id,
+                'season' => $this->current_season['name'],
+                'stats'  => true,
+            )
+        );
+        return $club;
+    }
 }

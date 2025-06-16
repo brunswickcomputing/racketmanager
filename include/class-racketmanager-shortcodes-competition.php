@@ -390,12 +390,10 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 		}
 		$competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
 		$competition_club   = null;
-		if ( ! $club_id ) {
-			if ( isset( $wp->query_vars['club_name'] ) ) {
-				$club_id = get_query_var( 'club_name' );
-				$club_id = str_replace( '-', ' ', $club_id );
-			}
-		}
+		if ( ! $club_id && isset( $wp->query_vars['club_name'] ) ) {
+            $club_id = get_query_var( 'club_name' );
+            $club_id = str_replace( '-', ' ', $club_id );
+        }
 		if ( $club_id ) {
 			if ( is_numeric( $club_id ) ) {
 				$competition_club = get_club( $club_id );
@@ -500,11 +498,9 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
 			$competition->set_season( $season );
 		}
 		$competition->players = array();
-		if ( ! $player_id ) {
-			if ( isset( $wp->query_vars['player_id'] ) ) {
-				$player_id = un_seo_url( get_query_var( 'player_id' ) );
-			}
-		}
+		if ( ! $player_id && isset( $wp->query_vars['player_id'] ) ) {
+            $player_id = un_seo_url( get_query_var( 'player_id' ) );
+        }
 		if ( $player_id ) {
 			if ( is_numeric( $player_id ) ) {
 				$player = get_player( $player_id ); // get player by id.

@@ -593,4 +593,59 @@ class RacketManager_Shortcodes {
                     )
         );
     }
+    /**
+     * Get players for club by event type and age
+     *
+     * @param object $event event.
+     * @param object $club club.
+     *
+     * @return array
+     */
+    protected function get_club_players( object $event, object $club ): array {
+        $age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
+        $age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
+        switch ( $event->type ) {
+            case 'BD':
+            case 'MD':
+                $club_players['m'] = $club->get_players(
+                    array(
+                        'gender'     => 'M',
+                        'age_limit'  => $age_limit,
+                        'age_offset' => $age_offset,
+                    )
+                );
+                break;
+            case 'GD':
+            case 'WD':
+                $club_players['f'] = $club->get_players(
+                    array(
+                        'gender'     => 'F',
+                        'age_limit'  => $age_limit,
+                        'age_offset' => $age_offset,
+                    )
+                );
+                break;
+            case 'XD':
+            case 'LD':
+                $club_players['m'] = $club->get_players(
+                    array(
+                        'gender'     => 'M',
+                        'age_limit'  => $age_limit,
+                        'age_offset' => $age_offset,
+                    )
+                );
+                $club_players['f'] = $club->get_players(
+                    array(
+                        'gender'     => 'F',
+                        'age_limit'  => $age_limit,
+                        'age_offset' => $age_offset,
+                    )
+                );
+                break;
+            default:
+                $club_players['m'] = array();
+                $club_players['f'] = array();
+        }
+        return $club_players;
+    }
 }

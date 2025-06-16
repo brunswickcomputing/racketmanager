@@ -552,66 +552,10 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                 if ( $club_id ) {
                     $club = get_club( $club_id );
                     if ( $club ) {
-                        $team_args           = array();
-                        $team_args['season'] = $event->current_season['name'];
-                        $team_args['club']   = $club->id;
-                        $teams               = $event->get_teams( $team_args );
-                        $user_can_update     = false;
-                        if ( is_user_logged_in() ) {
-                            if ( current_user_can( 'manage_racketmanager' ) ) {
-                                $user_can_update = true;
-                            } else {
-                                $user   = wp_get_current_user();
-                                $userid = $user->ID;
-                                if ( $club->matchsecretary === $userid || $club->is_player_captain( $userid ) ) {
-                                    $user_can_update = true;
-                                }
-                            }
-                        }
-                        $age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
-                        $age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
-                        switch ( $event->type ) {
-                            case 'BD':
-                            case 'MD':
-                                $club_players['m'] = $club->get_players(
-                                    array(
-                                        'gender'     => 'M',
-                                        'age_limit'  => $age_limit,
-                                        'age_offset' => $age_offset,
-                                    )
-                                );
-                                break;
-                            case 'GD':
-                            case 'WD':
-                                $club_players['f'] = $club->get_players(
-                                    array(
-                                        'gender'     => 'F',
-                                        'age_limit'  => $age_limit,
-                                        'age_offset' => $age_offset,
-                                    )
-                                );
-                                break;
-                            case 'XD':
-                            case 'LD':
-                                $club_players['m'] = $club->get_players(
-                                    array(
-                                        'gender'     => 'M',
-                                        'age_limit'  => $age_limit,
-                                        'age_offset' => $age_offset,
-                                    )
-                                );
-                                $club_players['f'] = $club->get_players(
-                                    array(
-                                        'gender'     => 'F',
-                                        'age_limit'  => $age_limit,
-                                        'age_offset' => $age_offset,
-                                    )
-                                );
-                                break;
-                            default:
-                                $club_players['m'] = array();
-                                $club_players['f'] = array();
-                        }
+                        $team_args                     = array();
+                        $team_args['season']           = $event->current_season['name'];
+                        $team_args['club']             = $club->id;
+                        $club_players                  = $this->get_club_players( $event, $club );
                         $template_args['event']        = $event;
                         $template_args['club']         = $club;
                         $template_args['teams']        = $event->get_teams( $team_args );

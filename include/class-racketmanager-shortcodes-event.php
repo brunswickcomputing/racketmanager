@@ -43,20 +43,17 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 	 * @return string
 	 */
 	public function show_event( array $atts ): string {
-		global $wp;
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
 				'season'   => false,
 				'template' => '',
-				'tab'      => null,
 			),
 			$atts
 		);
 		$id       = $args['id'];
 		$season   = $args['season'];
 		$template = $args['template'];
-		$tab      = $args['tab'];
 		if ( $id ) {
 			$event = get_event( $id );
 		} else {
@@ -66,13 +63,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 				$event = get_event( $event, 'name' );
 			}
 		}
-		if ( ! $tab ) {
-			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			} elseif ( isset( $wp->query_vars['tab'] ) ) {
-				$tab = get_query_var( 'tab' );
-			}
-		}
+        $tab = get_tab();
 		if ( ! $event ) {
 			$msg = $this->event_not_found;
 			return $this->return_error( $msg );

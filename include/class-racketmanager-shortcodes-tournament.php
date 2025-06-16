@@ -44,13 +44,11 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$args        = shortcode_atts(
 			array(
 				'tournament' => false,
-				'tab'        => false,
 				'template'   => '',
 			),
 			$atts
 		);
 		$tournament  = $args['tournament'];
-		$tab         = $args['tab'];
 		$template    = $args['template'];
 		if ( ! $tournament ) {
 			if ( ! empty( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -86,13 +84,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				),
 			)
 		);
-		if ( ! $tab ) {
-			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			} elseif ( isset( $wp->query_vars['tab'] ) ) {
-				$tab = get_query_var( 'tab' );
-			}
-		}
+        $tab      = get_tab();
 		$filename = ( ! empty( $template ) ) ? 'tournament-' . $template : 'tournament';
 
 		return $this->load_template(

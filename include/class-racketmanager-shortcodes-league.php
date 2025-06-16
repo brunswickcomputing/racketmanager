@@ -150,7 +150,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 	 * @return false|string
 	 */
 	public function show_archive( array $atts ): false|string {
-		global $league, $wp;
+		global $league;
 
 		$args                  = shortcode_atts(
 			array(
@@ -160,7 +160,6 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 				'matches'               => '',
 				'teams'                 => 'list',
 				'template'              => '',
-				'tab'                   => null,
 				'matches_template_type' => '',
 			),
 			$atts
@@ -171,16 +170,8 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		$matches               = $args['matches'];
 		$teams                 = $args['teams'];
 		$template              = $args['template'];
-		$tab                   = $args['tab'];
 		$matches_template_type = $args['matches_template_type'];
-		if ( ! $tab ) {
-			if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			} elseif ( isset( $wp->query_vars['tab'] ) ) {
-				$tab = get_query_var( 'tab' );
-			}
-		}
-
+        $tab                   = get_tab();
 		// Get League by Name.
 		if ( ! $league_name ) {
 			$league_name = get_query_var( 'league_name' );

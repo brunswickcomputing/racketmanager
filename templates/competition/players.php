@@ -12,10 +12,10 @@ global $racketmanager;
 if ( empty( $competition->player ) ) {
 	$player_list     = $competition->players;
     $player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/';
-    require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
+    require_once RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 } else {
 	$player = $competition->player;
-	require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
+	require_once RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 	?>
 	<div class="page_content row">
 		<div class="page-content__main col-12 col-lg-6">
@@ -59,7 +59,7 @@ if ( empty( $competition->player ) ) {
 			<?php
 			if ( ! empty( $competition->player->statistics ) ) {
 				$player_statistics = $competition->player->statistics;
-				require RACKETMANAGER_PATH . 'templates/includes/player-statistics.php';
+				require_once RACKETMANAGER_PATH . 'templates/includes/player-statistics.php';
 			}
 			?>
 		</div>

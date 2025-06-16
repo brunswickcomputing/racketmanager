@@ -748,12 +748,10 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         if ( $clubs ) {
             if ( $club_id ) {
                 $result = $clubs;
+            } elseif ( 1 === count( $clubs ) ) {
+                $result = $clubs[0];
             } else {
-                if ( 1 === count( $clubs ) ) {
-                    $result = $clubs[0];
-                } else {
-                    $result = $clubs;
-                }
+                $result = $clubs;
             }
         } else {
             $result = false;

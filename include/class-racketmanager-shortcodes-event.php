@@ -234,63 +234,12 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
         }
 		if ( $club_id ) {
 			if ( is_numeric( $club_id ) ) {
-				$event_club = get_club( $club_id );
+				$club = get_club( $club_id );
 			} else {
-				$event_club = get_club( $club_id, 'shortcode' );
+				$club = get_club( $club_id, 'shortcode' );
 			}
-			if ( $event_club ) {
-				$event_club->teams   = $event->get_teams(
-					array(
-						'club'   => $event_club->id,
-						'season' => $event->current_season['name'],
-						'status' => 1,
-					)
-				);
-				$event_club->matches = array();
-				$matches             = $event->get_matches(
-					array(
-						'season'  => $event->current_season['name'],
-						'club'    => $event_club->id,
-						'time'    => 'next',
-						'orderby' => array(
-							'date'      => 'ASC',
-							'league_id' => 'DESC',
-						),
-					)
-				);
-				foreach ( $matches as $match ) {
-					$key = substr( $match->date, 0, 10 );
-					if ( false === array_key_exists( $key, $event_club->matches ) ) {
-						$event_club->matches[ $key ] = array();
-					}
-					$event_club->matches[ $key ][] = $match;
-				}
-				$event_club->results = array();
-				$matches             = $event->get_matches(
-					array(
-						'season'  => $event->current_season['name'],
-						'club'    => $event_club->id,
-						'time'    => 'latest',
-						'orderby' => array(
-							'date'      => 'ASC',
-							'league_id' => 'DESC',
-						),
-					)
-				);
-				foreach ( $matches as $match ) {
-					$key = substr( $match->date, 0, 10 );
-					if ( false === array_key_exists( $key, $event_club->results ) ) {
-						$event_club->results[ $key ] = array();
-					}
-					$event_club->results[ $key ][] = $match;
-				}
-				$event_club->players = $event->get_players(
-					array(
-						'club'   => $event_club->id,
-						'season' => $event->current_season['name'],
-						'stats'  => true,
-					)
-				);
+			if ( $club ) {
+                $event_club = $event->get_club( $club );
 			} else {
 				$msg = __( 'Club not found', 'racketmanager' );
 				return $this->return_error( $msg );
@@ -396,17 +345,15 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 		global $wp;
 		$args      = shortcode_atts(
 			array(
-				'id'       => 0,
-				'season'   => null,
-				'players'  => null,
-				'template' => '',
+				'id'      => 0,
+				'season'  => null,
+				'players' => null,
 			),
 			$atts
 		);
 		$event_id  = $args['id'];
 		$season    = $args['season'];
 		$player_id = $args['players'];
-		$template  = $args['template'];
 		$event     = get_event( $event_id );
 		if ( $event ) {
 			$event->set_season( $season );
@@ -415,24 +362,18 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                 $player_id = un_seo_url( get_query_var( 'player_id' ) );
             }
 			if ( $player_id ) {
-				if ( is_numeric( $player_id ) ) {
-					$player = get_player( $player_id ); // get player by name.
-				} else {
-					$player = get_player( $player_id, 'name' ); // get player by name.
-				}
-				if ( $player ) {
-					$player->matches = $player->get_matches( $event, $event->current_season['name'], 'event' );
-					asort( $player->matches );
-					$player->stats = $player->get_stats();
-					$event->player = $player;
-				} else {
-					esc_html_e( 'Player not found', 'racketmanager' );
-				}
+                $player = $this->get_player_info( $event, $player_id );
+                if ( is_object( $player ) ) {
+                    $event->player = $player;
+                } else {
+                    $msg = __( 'Player not found', 'racketmanager' );
+                    return $this->return_error( $msg );
+                }
 			} else {
 				$players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
 				$event->players = Racketmanager_Util::get_players_list( $players );
 			}
-			$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
+			$filename = 'players';
 			return $this->load_template(
 				$filename,
 				array(
@@ -445,6 +386,29 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 	}
+    /**
+     * Function to get player information for event
+     *
+     * @param object $event event.
+     * @param string|int $player_id player id.
+     *
+     * @return mixed|object|Racketmanager_Player|null
+     */
+    private function get_player_info( object $event, int|string $player_id ): mixed {
+        if ( is_numeric( $player_id ) ) {
+            $player = get_player( $player_id ); // get player by name.
+        } else {
+            $player = get_player( $player_id, 'name' ); // get player by name.
+        }
+        if ( $player ) {
+            $player->matches = $player->get_matches( $event, $event->current_season['name'], 'event' );
+            asort( $player->matches );
+            $player->stats = $player->get_stats();
+        } else {
+            debug_to_console( $player );
+        }
+        return $player;
+    }
     /**
      * Function to display event partner
      * [event-partner id=ID player=x gender=x season=X date_end=x modal=x partner_id=x template=X]
@@ -577,15 +541,13 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
     public function show_team_order_players( array $atts ): string {
         $args     = shortcode_atts(
             array(
-                'id'       => 0,
-                'club_id'  => null,
-                'template' => '',
+                'id'      => 0,
+                'club_id' => null,
             ),
             $atts
         );
         $event_id = $args['id'];
         $club_id  = $args['club_id'];
-        $template = $args['template'];
         if ( $event_id ) {
             $event = get_event( $event_id );
             if ( $event ) {
@@ -654,11 +616,11 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                         }
                         $template_args['event']        = $event;
                         $template_args['club']         = $club;
-                        $template_args['teams']        = $teams;
+                        $template_args['teams']        = $event->get_teams( $team_args );
                         $template_args['matches']      = array();
                         $template_args['club_players'] = $club_players;
-                        $template_args['can_update']   = $user_can_update;
-                        $filename                      = ! empty( $template ) ? 'team-players-list-' . $template : 'team-players-list';
+                        $template_args['can_update']   = $club->can_user_update_as_captain();
+                        $filename                      = 'team-players-list';
                         return $this->load_template(
                             $filename,
                             $template_args,

@@ -129,7 +129,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					$this->printMessage();
 				} else {
-					$player_valid = $this->validatePlayer();
+					$player_valid = $this->validate_player();
 					if ( $player_valid[0] ) {
 						$new_player = $player_valid[1];
 						$player     = get_player( $new_player->user_login, 'login' );  // get player by login.
@@ -202,7 +202,7 @@ final class RacketManager_Admin_Players extends RacketManager_Admin {
 					$page_referrer = $_POST['page_referrer'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					if ( isset( $_POST['updatePlayer'] ) ) {
 						if ( isset( $_POST['playerId'] ) ) {
-							$player_valid = $this->validatePlayer();
+							$player_valid = $this->validate_player();
 							if ( $player_valid[0] ) {
 								$player     = get_player( intval( $_POST['playerId'] ) );
 								$new_player = $player_valid[1];

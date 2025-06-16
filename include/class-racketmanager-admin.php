@@ -1744,7 +1744,7 @@ class RacketManager_Admin extends RacketManager {
 					$this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
 					$this->printMessage();
 				} else {
-					$player_valid = $this->validatePlayer();
+					$player_valid = $this->validate_player();
 					if ( $player_valid[0] ) {
 						$new_player = $player_valid[1];
 						if ( isset( $_POST['club_Id'] ) ) {
@@ -3269,7 +3269,7 @@ class RacketManager_Admin extends RacketManager {
 				$_POST['email']         = $line[4] ?? '';
 				$_POST['contactno']     = $line[5] ?? '';
 				$_POST['year_of_birth'] = $line[6] ?? '';
-				$player_valid           = $this->validatePlayer();
+				$player_valid           = $this->validate_player();
 				if ( $player_valid[0] ) {
 					$new_player = $player_valid[1];
 					$player     = get_player( $new_player->user_login, 'login' );  // get player by login.
@@ -3320,7 +3320,7 @@ class RacketManager_Admin extends RacketManager {
 				$_POST['email']         = $line[4] ?? '';
 				$_POST['contactno']     = $line[5] ?? '';
 				$_POST['year_of_birth'] = $line[6] ?? '';
-				$player_valid           = $this->validatePlayer();
+				$player_valid           = $this->validate_player();
 				if ( $player_valid[0] ) {
 					$new_player = $player_valid[1];
 					$club->register_player( $new_player );

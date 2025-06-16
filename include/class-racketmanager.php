@@ -2971,7 +2971,7 @@ class RacketManager {
 	 *
 	 * @return array
 	 */
-	public function validatePlayer(): array {
+	public function validate_player(): array {
 		global $racketmanager;
 		$options = $racketmanager->get_options( 'rosters' );
 		if ( isset( $options['btm'] ) && '1' === $options['btm'] ) {

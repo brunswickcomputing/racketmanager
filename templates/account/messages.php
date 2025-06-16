@@ -72,7 +72,7 @@ namespace Racketmanager;
 							</div>
 						</div>
                         <div id="messageDetailDisplay">
-                            <?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+                            <?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
                             <div id="message_detail">
                                 <p class="text-center"><?php esc_html_e( 'Select message to read', 'racketmanager' ); ?></p>
                             </div>

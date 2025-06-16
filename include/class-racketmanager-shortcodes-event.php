@@ -43,70 +43,48 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 	 * @return string
 	 */
 	public function show_event( array $atts ): string {
-		$args     = shortcode_atts(
+		$args   = shortcode_atts(
 			array(
-				'id'       => 0,
-				'season'   => false,
-				'template' => '',
+				'id'     => 0,
+				'season' => false,
 			),
 			$atts
 		);
-		$id       = $args['id'];
-		$season   = $args['season'];
-		$template = $args['template'];
+		$id     = $args['id'];
+		$season = $args['season'];
+        $event  = null;
 		if ( $id ) {
 			$event = get_event( $id );
 		} else {
-			$event = get_query_var( 'event' );
-			if ( $event ) {
-				$event = str_replace( '-', ' ', $event );
-				$event = get_event( $event, 'name' );
+			$event_id = get_query_var( 'event' );
+			if ( $event_id ) {
+				$event_id = str_replace( '-', ' ', $event_id );
+				$event = get_event( $event_id, 'name' );
 			}
 		}
-        $tab = get_tab();
-		if ( ! $event ) {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-
-		}
-		if ( ! $season ) {
-			// phpcs:disable WordPress.Security.NonceVerification.Recommended
-			if ( ! empty( $_GET['season'] ) ) {
-				$season = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-			} elseif ( isset( $_GET['season'] ) ) {
-				$season = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-			} else {
-				$season = null !== get_query_var( 'season' ) ? get_query_var( 'season' ) : false;
-			}
-			// phpcs:enable WordPress.Security.NonceVerification.Recommended
-		}
-
-		$seasons = $event->seasons;
-		if ( ! $season ) {
-			if ( $seasons ) {
-				$season = $event->current_season['name'];
-			} else {
-				$season = '';
-			}
-		}
-		if ( empty( $event->seasons[ $season ] ) ) {
-			$msg = __( 'Season not found for event', 'racketmanager' );
-			return $this->return_error( $msg );
-		}
-		if ( empty( $template ) && $this->check_template( 'event-' . $event->competition->sport ) ) {
-			$filename = 'event-' . $event->competition->sport;
-		} else {
-			$filename = ( ! empty( $template ) ) ? 'event-' . $template : 'event';
-		}
-		return $this->load_template(
-			$filename,
-			array(
-				'event'       => $event,
-				'seasons'     => $seasons,
-				'curr_season' => $season,
-				'tab'         => $tab,
-			)
-		);
+        if ( $event ) {
+            $event->set_season( $season );
+            if ( empty( $event->current_season ) ) {
+                $msg = __( 'Season not found for event', 'racketmanager' );
+            } else {
+                $season  = $event->current_season['name'];
+                $seasons = $event->seasons;
+                $tab = get_tab();
+                $filename = 'event';
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'event'       => $event,
+                        'seasons'     => $seasons,
+                        'curr_season' => $season,
+                        'tab'         => $tab,
+                    )
+                );
+            }
+        } else {
+            $msg = $this->event_not_found;
+        }
+		return $this->return_error( $msg );
 	}
 	/**
 	 * Function to display event standings

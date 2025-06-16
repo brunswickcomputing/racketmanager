@@ -153,54 +153,43 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
             $msg = $this->no_competition_id;
         }
         if ( empty( $msg ) ) {
-            $competition_season = null;
-            if ( ! $season ) {
-                if (! empty( $_GET['season'] )) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                    $season = wp_strip_all_tags( wp_unslash( $_GET['season'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                } elseif ( isset( $wp->query_vars['season'] ) ) {
-                    $season = get_query_var( 'season' );
-                }
-            }
-            if ( $season ) {
-                $competition_season = $competition->seasons[$season] ?? null;
-                if ( $competition_season ) {
+            if ( empty( $competition->seasons ) ) {
+                $msg = __( 'No seasons found for competition', 'racketmanager' );
+            } else {
+                $competition->set_season( $season );
+                if ( empty( $competition->current_season ) ) {
+                    $msg = __( 'Season not found for competition', 'racketmanager' );
+                } else {
+                    $season             = $competition->current_season['name'];
+                    $competition_season = $competition->seasons[ $season ];
                     if ( ! empty( $competition_season['venue'] ) ) {
                         $venue_club = get_club( $competition_season['venue'] );
                         if ( $venue_club ) {
                             $competition_season['venue_name'] = $venue_club->shortcode;
                         }
                     }
-                } else {
-                    $msg = $this->season_not_found;
-                 }
-            } elseif ( empty( $competition->seasons ) ) {
-                $msg = __( 'No seasons found for competition', 'racketmanager' );
-            } else {
-                $competition_season = $competition->current_season;
-                $season             = $competition_season['name'];
-            }
-            if ( empty( $msg ) ) {
-                $tab = get_tab();
-                if ( $competition->is_open && is_user_logged_in() ) {
-                    $entry_link = '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
-                    $clubs      = $this->club_selection_available( $competition );
-                    if ( $clubs ) {
-                        if ( ! is_array( $clubs ) ) {
-                            $entry_link .= seo_url( $clubs->shortcode ) . '/';
+                    $tab = get_tab();
+                    if ( $competition->is_open && is_user_logged_in() ) {
+                        $entry_link = '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
+                        $clubs      = $this->club_selection_available( $competition );
+                        if ( $clubs ) {
+                            if ( ! is_array( $clubs ) ) {
+                                $entry_link .= seo_url( $clubs->shortcode ) . '/';
+                            }
+                            $competition->entry_link = $entry_link;
                         }
-                        $competition->entry_link = $entry_link;
                     }
-                }
-                $filename = ( ! empty( $template ) ) ? 'competition-' . $template : 'competition';
+                    $filename = ( ! empty( $template ) ) ? 'competition-' . $template : 'competition';
 
-                return $this->load_template(
-                    $filename,
-                    array(
-                        'competition'        => $competition,
-                        'competition_season' => $competition_season,
-                        'tab'                => $tab,
-                    )
-                );
+                    return $this->load_template(
+                        $filename,
+                        array(
+                            'competition'        => $competition,
+                            'competition_season' => $competition_season,
+                            'tab'                => $tab,
+                        )
+                    );
+                }
             }
        }
        return $this->return_error( $msg );

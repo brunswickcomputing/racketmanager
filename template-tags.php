@@ -238,6 +238,26 @@ function tournament_match( int $match_id, array $args = array() ): void {
 	$shortcode .= ']';
 	echo do_shortcode( $shortcode );
 }
+    /**
+     * Display match detail
+     *
+     * @param int $match_id match.
+     * @param int|null $player_id player.
+     *
+     * @category template-tags
+     */
+    function match_detail( int $match_id, ?int $player_id ): string {
+        $args['id'] = $match_id;
+        if ( $player_id ) {
+            $args['player'] = $player_id;
+        }
+        $shortcode = '[match-detail';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
 
 	/**
 	 * Display team list

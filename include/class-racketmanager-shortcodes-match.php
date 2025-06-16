@@ -29,6 +29,7 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         add_shortcode( 'match-card', array( &$this, 'show_match_card' ) );
         add_shortcode( 'score', array( &$this, 'show_score' ) );
         add_shortcode( 'match-header', array( &$this, 'show_match_header' ) );
+        add_shortcode( 'match-detail', array( &$this, 'show_match_detail' ) );
         $this->not_played             = __( 'Not played', 'racketmanager' );
         $this->retired_player         = __( 'Retired - %s', 'racketmanager' );
         $this->not_played_no_opponent = __( 'Match not played - %s did not show', 'racketmanager' );
@@ -483,6 +484,66 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
                 $template_args['match'] = $match;
                 $template_args['edit']  = $edit;
                 $filename               = ! empty( $template ) ? 'match-header-' . $template : 'match-header';
+                return $this->load_template(
+                    $filename,
+                    $template_args,
+                    'match'
+                );
+            } else {
+                $msg = $this->match_not_found;
+            }
+        } else {
+            $msg = __( 'Match id not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display match detail
+     *
+     *  [match-detail id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_match_detail( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'player'   => null,
+                'template' => '',
+            ),
+            $atts
+        );
+        $match_id  = $args['id'];
+        $player_id = $args['player'];
+        $template  = $args['template'];
+        if ( $match_id ) {
+            $match = get_match( $match_id );
+            if ( $match ) {
+                if ( '' === $match->final_round ) {
+                    $match->round = '';
+                    $match->type  = 'league';
+                } else {
+                    $match->round = $match->final_round;
+                    $match->type  = 'tournament';
+                }
+                $match_args = null;
+                if ( $player_id ) {
+                    $player = get_player( $player_id );
+                    if ( $player ) {
+                        $template_args['match_player'] = $player;
+                        $match_args                    = $player->id;
+                    }
+                }
+                $match->rubbers = $match->get_rubbers( $match_args );
+                $is_update_allowed                  = $match->is_update_allowed();
+                $template_args['match']             = $match;
+                $template_args['is_update_allowed'] = $is_update_allowed;
+                if ( ! empty( $match->league->num_rubbers ) ) {
+                    $template = 'teams-scores';
+                }
+                $filename = ! empty( $template ) ? 'detail-' . $template : 'detail';
                 return $this->load_template(
                     $filename,
                     $template_args,

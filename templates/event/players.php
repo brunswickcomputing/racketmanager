@@ -12,10 +12,10 @@ global $racketmanager;
 if ( empty( $event->player ) ) {
 	$player_list = $event->players;
 	$player_link = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/player/';
-	require RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
+	require_once RACKETMANAGER_PATH . 'templates/includes/player-list-names.php';
 } else {
 	$player = $event->player;
-	require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
+	require_once RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 	?>
 	<div class="page_content row">
 		<div class="page-content__main col-12 col-lg-6">
@@ -46,7 +46,7 @@ if ( empty( $event->player ) ) {
 								</h4>
 								<?php
 								foreach ( $player_matches['matches'] as $match ) {
-									echo $racketmanager->show_match_screen( $match, $event->player ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                                    echo match_detail( $match->id, $event->player->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
 							}
 							?>
@@ -59,7 +59,7 @@ if ( empty( $event->player ) ) {
 			<?php
 			if ( ! empty( $event->player->statistics ) ) {
 				$player_statistics = $event->player->statistics;
-				require RACKETMANAGER_PATH . 'templates/includes/player-statistics.php';
+				require_once RACKETMANAGER_PATH . 'templates/includes/player-statistics.php';
 			}
 			?>
 		</div>

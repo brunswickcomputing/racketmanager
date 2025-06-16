@@ -13,33 +13,28 @@ global $racketmanager;
 $opponents        = array( 'home', 'away' );
 $opponents_points = array( 'player1', 'player2' );
 if ( ! empty( $match_player ) ) {
-	$match->player = $match_player;
-}
-if ( ! empty( $match->player ) ) {
-	$rubbers = $match->rubbers;
-} else {
-	$rubbers = $match->get_rubbers();
+    $match->player = $match_player;
 }
 $team        = null;
 $team_status = null;
 $winner      = null;
 if ( ! empty( $competition_team ) ) {
-	if ( $competition_team === $match->home_team ) {
+    if ( $competition_team === $match->home_team ) {
 		$team = 'home';
-	} elseif ( $competition_team === $match->away_team ) {
+    } elseif ( $competition_team === $match->away_team ) {
 		$team = 'away';
-	}
+    }
 }
 if ( ! empty( $match->winner_id ) ) {
-	if ( $match->winner_id === $match->home_team ) {
+    if ( $match->winner_id === $match->home_team ) {
 		$winner = 'home';
-	} elseif ( $match->winner_id === $match->away_team ) {
+    } elseif ( $match->winner_id === $match->away_team ) {
 		$winner = 'away';
-	}
-	if ( isset( $team_statistics ) ) {
+    }
+    if ( isset( $team_statistics ) ) {
 		++ $team_statistics['played'][ $team_statistics ][ $match_type ];
 		++ $team_statistics['played'][ $team_statistics ]['t'];
-	}
+    }
 }
 ?>
 <div id="matchRubbers">
@@ -97,7 +92,7 @@ if ( ! empty( $match->winner_id ) ) {
 		}
 		?>
 		<?php
-		foreach ( $rubbers as $rubber ) {
+		foreach ( $match->rubbers as $rubber ) {
 			$player_team        = null;
 			$player_team_status = null;
 			$winner             = null;
@@ -400,8 +395,8 @@ if ( ! empty( $match->winner_id ) ) {
 		}
 		?>
     </ul>
-	<?php
-	if ( empty( $match_player ) && ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) ) {
+    <?php
+    if ( empty( $match_player ) && ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) ) {
 		?>
         <div class="mt-3" id="approvals">
             <div class="match">
@@ -474,6 +469,6 @@ if ( ! empty( $match->winner_id ) ) {
             </div>
         </div>
 		<?php
-	}
-	?>
+    }
+    ?>
 </div>

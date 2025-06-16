@@ -2366,39 +2366,6 @@ class RacketManager {
 		return false;
 	}
 	/**
-	 * Show match screen
-	 *
-	 * @param object $match match object.
-	 * @param false|object $player optional indicator.
-	 *
-	 * @return string
-	 */
-	public function show_match_screen( object $match, false|object $player = false ): string {
-		if ( '' === $match->final_round ) {
-			$match->round = '';
-			$match->type  = 'league';
-		} else {
-			$match->round = $match->final_round;
-			$match->type  = 'tournament';
-		}
-		$is_update_allowed               = $match->is_update_allowed();
-		$match_args['match']             = $match;
-		$match_args['is_update_allowed'] = $is_update_allowed;
-		if ( $player ) {
-			$match_args['match_player'] = $player;
-		}
-		if ( ! empty( $match->league->num_rubbers ) ) {
-			$template = 'match-teams-scores';
-		} else {
-			$template = 'match-input';
-		}
-        return $this->shortcodes->load_template(
-            $template,
-            $match_args,
-        );
-	}
-
-	/**
 	 * Email entry form
 	 *
 	 * @param string $template email template to use.

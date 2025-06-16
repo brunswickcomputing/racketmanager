@@ -31,13 +31,7 @@ if ( ! empty( $league->player ) ) {
 						<div class="module">
 							<?php
 							foreach ( $league->player->matches as $match ) {
-								$match_args['match']        = $match;
-								$match_args['match_player'] = $league->player;
-								$template                   = 'match-teams-scores';
-								echo $racketmanager->shortcodes->load_template( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-									$template,
-									$match_args, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								);
+                                echo match_detail( $match->id, $league->player->id );
 							}
 							?>
 						</div>

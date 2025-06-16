@@ -60,7 +60,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 						<div id="viewMatchRubbers">
 							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
-								<?php echo $racketmanager->show_match_screen( $match ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                <?php echo match_detail( $match->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						</div>
 

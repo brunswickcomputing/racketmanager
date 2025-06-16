@@ -46,7 +46,7 @@ if ( empty( $competition->player ) ) {
 								</h4>
 								<?php
 								foreach ( $player_matches['matches'] as $match ) {
-									echo $racketmanager->show_match_screen( $match, $competition->player ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                                    echo match_detail( $match->id, $competition->player->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								}
 							}
 							?>

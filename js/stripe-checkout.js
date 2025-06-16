@@ -1,5 +1,5 @@
 // This is your test publishable API key.
-api_publishable_key = jQuery('#api_publishable_key').val();
+const api_publishable_key = jQuery('#api_publishable_key').val();
 const stripe = Stripe(api_publishable_key);
 let elements;
 initialize();

@@ -30,7 +30,7 @@ function setPaymentDetails(intent) {
 	jQuery(alertBox).show();
 }
 // Stripe.js instance
-api_publishable_key = jQuery('#api_publishable_key').val();
+const api_publishable_key = jQuery('#api_publishable_key').val();
 const stripe = Stripe(api_publishable_key);
 
 checkStatus();

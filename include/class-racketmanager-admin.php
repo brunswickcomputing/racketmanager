@@ -1749,7 +1749,11 @@ class RacketManager_Admin extends RacketManager {
 						$new_player = $player_valid[1];
 						if ( isset( $_POST['club_Id'] ) ) {
 							$club = get_club( intval( $_POST['club_Id'] ) );
-							$club->register_player( $new_player );
+							$answer = $club->register_player( $new_player );
+                            $this->set_message( $answer->msg, $answer->error );
+                            if ( $answer->error ) {
+                                $player = $new_player;
+                            }
 						}
 					} else {
 						$form_valid     = false;

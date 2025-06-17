@@ -20,12 +20,6 @@ class Shortcodes_Login extends Shortcodes {
 	 */
 	private string $already_signed_in = '';
 	/**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
-        parent::__construct();
-	}
-	/**
 	 * Load translations function
 	 *
 	 * @return void

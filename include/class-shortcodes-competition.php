@@ -17,12 +17,6 @@ use stdClass;
  */
 class Shortcodes_Competition extends Shortcodes {
 	/**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
-        parent::__construct();
-    }
-	/**
 	 * Show competitions function
 	 *
 	 * @param array $atts attributes.

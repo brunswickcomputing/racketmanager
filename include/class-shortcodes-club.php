@@ -16,12 +16,6 @@ use stdClass;
  */
 class Shortcodes_Club extends Shortcodes {
 	/**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
-        parent::__construct();
-	}
-	/**
 	 * Function to display Clubs Info Page
 	 *
 	 *    [clubs template=X]

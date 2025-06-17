@@ -16,12 +16,6 @@ use stdClass;
  */
 class Shortcodes_Email extends Shortcodes {
 	/**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
-        parent::__construct();
-	}
-	/**
 	 * Function to show match notification
 	 *
 	 *    [match-notification id=ID template=X]

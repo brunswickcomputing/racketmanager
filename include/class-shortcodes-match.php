@@ -16,12 +16,6 @@ use stdClass;
  */
 class Shortcodes_Match extends Shortcodes {
     /**
-     * Initialize shortcodes
-     */
-    public function __construct() {
-        parent::__construct();
-    }
-    /**
      * Function to display match option modal
      *
      *  [match-option match_id=ID option=x modal=x template=X]

@@ -14,12 +14,6 @@ namespace Racketmanager;
  */
 class Shortcodes_Message extends Shortcodes {
     /**
-     * Initialize shortcodes
-     */
-    public function __construct() {
-        parent::__construct();
-    }
-    /**
      * Function to show messages
      *
      *    [messages template=X]

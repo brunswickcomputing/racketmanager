@@ -16,13 +16,6 @@ use stdClass;
  */
 class Shortcodes_League extends Shortcodes {
 	/**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
-        parent::__construct();
-	}
-
-	/**
 	 * Display Championship
 	 *
 	 *    [championship league_id="1" template="name"]

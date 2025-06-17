@@ -13,12 +13,6 @@ namespace Racketmanager;
  * Class to implement the Shortcodes_Event object
  */
 class Shortcodes_Event extends Shortcodes {
-    /**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
-        parent::__construct();
-	}
 	/**
 	 * Show Event
 	 *

@@ -1781,20 +1781,6 @@ class RacketManager_Admin extends RacketManager {
 						$schedule_name  = 'rm_calculate_player_ratings';
 						$schedule_args[]  = $club->id;
 						wp_schedule_single_event( time(), $schedule_name, $schedule_args );
-						/*
-						$racketmanager->calculate_player_ratings( $club->id );
-						$players = $club->get_players(
-							array(
-								'active' => true,
-								'type'   => 'player',
-							)
-						);
-						foreach ( $players as $club_player ) {
-							$player = get_player( $club_player->player_id );
-							$player->set_team_rating();
-						}
-						$player = null;
-						 */
 						$this->set_message( __( 'Player ratings set', 'racketmanager' ) );
 					}
 				}

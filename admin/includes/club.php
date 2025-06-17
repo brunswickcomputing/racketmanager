@@ -21,7 +21,7 @@ namespace Racketmanager;
 		</div>
 	</div>
 	<h1><?php echo esc_html( $form_title ); ?></h1>
-	<form action="/wp-admin/admin.php?page=racketmanager-clubs<?php echo( empty( $club_id ) ? null : '&amp;club_id' . esc_html( $club_id ) ); ?>" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
+	<form action="/wp-admin/admin.php?page=racketmanager-clubs<?php echo empty( $club_id ) ? null : '&amp;club_id' . esc_html( $club_id ); ?>" method="post" enctype="multipart/form-data" name="club_edit" class="form-control">
 		<?php
         if ( $edit ) {
            wp_nonce_field( 'racketmanager_manage-club' );

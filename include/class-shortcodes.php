@@ -34,7 +34,6 @@ class Shortcodes {
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-        debug_to_console( 'in create shortcodes');
         $this->competition_not_found            = __( 'Competition not found', 'racketmanager' );
         $this->club_not_found                   = __( 'Club not found', 'racketmanager' );
         $this->club_player_not_found            = __( 'Player not found for club', 'racketmanager' );

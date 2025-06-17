@@ -34,11 +34,11 @@ namespace Racketmanager;
 			<input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-clubs' ); ?>" />
 			<input type="hidden" name="view" value="<?php echo esc_html( 'players' ); ?>" />
 			<input type="hidden" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
-            <label for="active"></label><select class="" name="active" id="active">
+            <label for="activeFilter" class="visually-hidden"><?php esc_html_e( 'Player type', 'racketmanager' ); ?></label><select class="" name="active" id="activeFilter">
 				<option value="" <?php selected ( '', $active ); ?>><?php esc_html_e( 'All players', 'racketmanager' ); ?></option>
 				<option value="true" <?php selected ( 'true', $active ); ?>><?php esc_html_e( 'Active', 'racketmanager' ); ?></option>
 			</select>
-            <label for="gender"></label><select class="" name="gender" id="gender">
+            <label for="genderFilter" class="visually-hidden"><?php esc_html_e( 'Gender', 'racketmanager' ); ?></label><select class="" name="gender" id="genderFilter">
 				<option value="" <?php selected ( '', $gender ); ?>><?php esc_html_e( 'All genders', 'racketmanager' ); ?></option>
 				<option value="F" <?php selected ( 'F', $gender ); ?>><?php esc_html_e( 'Female', 'racketmanager' ); ?></option>
 				<option value="M" <?php selected ( 'M', $gender ); ?>><?php esc_html_e( 'Male', 'racketmanager' ); ?></option>

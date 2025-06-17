@@ -26,6 +26,7 @@ class Shortcodes {
     public string $retired_player;
     public string $not_played_no_opponent;
     public string $match_not_found;
+    public string $no_match_id;
     public string $team_not_found;
     public string $no_team_id;
     public string $club_player_not_found;
@@ -47,6 +48,7 @@ class Shortcodes {
         $this->tournament_not_found             = __( 'Tournament not found', 'racketmanager' );
         $this->no_competition_id                = __( 'Competition id not supplied', 'racketmanager' );
         $this->no_event_id                      = __( 'Event id not supplied', 'racketmanager' );
+        $this->no_match_id                      = __( 'Match id not found', 'racketmanager' );
         $this->no_team_id                       = __( 'Team id not supplied', 'racketmanager' );
         $this->not_played                       = __( 'Not played', 'racketmanager' );
         $this->retired_player                   = __( 'Retired - %s', 'racketmanager' );

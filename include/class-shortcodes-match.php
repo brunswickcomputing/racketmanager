@@ -344,10 +344,10 @@ class Shortcodes_Match extends Shortcodes {
                     'match'
                 );
             } else {
-                $msg = $this->match_not_found;
+                $msg = $this->no_match_id;
             }
         } else {
-            $msg = __( 'Match id not found', 'racketmanager' );
+            $msg =  $this->match_not_found;
         }
         return $this->return_error( $msg );
     }
@@ -433,7 +433,7 @@ class Shortcodes_Match extends Shortcodes {
                 $msg = $this->match_not_found;
             }
         } else {
-            $msg = __( 'Match id not found', 'racketmanager' );
+            $msg = $this->no_match_id;
         }
         return $this->return_error( $msg );
     }
@@ -473,7 +473,7 @@ class Shortcodes_Match extends Shortcodes {
                 $msg = $this->match_not_found;
             }
         } else {
-            $msg = __( 'Match id not found', 'racketmanager' );
+            $msg = $this->no_match_id;
         }
         return $this->return_error( $msg );
     }
@@ -533,7 +533,7 @@ class Shortcodes_Match extends Shortcodes {
                 $msg = $this->match_not_found;
             }
         } else {
-            $msg = __( 'Match id not found', 'racketmanager' );
+            $msg = $this->no_match_id;
         }
         return $this->return_error( $msg );
     }

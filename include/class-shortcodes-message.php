@@ -59,14 +59,11 @@ class Shortcodes_Message extends Shortcodes {
     public function show_message( array $atts ): string {
         $args       = shortcode_atts(
             array(
-                'id'       => null,
-                'template' => '',
+                'id' => null,
             ),
             $atts
         );
         $message_id = $args['id'];
-        $template   = $args['template'];
-        $msg        = null;
         if ( ! is_user_logged_in() ) {
             $msg = __( 'You must be logged in to view a message', 'racketmanager' );
         } else {
@@ -79,7 +76,7 @@ class Shortcodes_Message extends Shortcodes {
                         $status = '0';
                         $message->set_status( $status );
                     }
-                    $filename = ( ! empty( $template ) ) ? 'message-' . $template : 'message';
+                    $filename = 'message';
                     return $this->load_template( $filename, array( 'message_dtl' => $message ), 'account' );
                 } else {
                     $msg = __( 'Message not found', 'racketmanager' );

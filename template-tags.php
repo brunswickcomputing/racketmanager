@@ -1116,3 +1116,18 @@ function withdrawn_team_email( array $args = array() ): string {
         }
         return $player_id;
     }
+
+    /**
+     * Function to determine if LTA tennis number required
+     * @return bool
+     */
+    function is_lta_number_required(): bool {
+        global $racketmanager;
+        $options = $racketmanager->get_options( 'rosters' );
+        if ( isset( $options['btm'] ) && '1' === $options['btm'] ) {
+            $btm_required = true;
+        } else {
+            $btm_required = false;
+        }
+        return $btm_required;
+    }

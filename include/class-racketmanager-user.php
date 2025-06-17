@@ -336,71 +336,14 @@ final class Racketmanager_User {
 	 */
 	private function set_details( object $user ): bool {
 		$updates = false;
-		$updated = array();
-		if ( $this->user_email !== $user->email ) {
-			$updates               = true;
-			$this->user_email      = $user->email;
-			$updated['user_email'] = $user->email;
-		}
-		if ( $this->firstname !== $user->firstname ) {
-			$updates               = true;
-			$this->firstname       = $user->firstname;
-			$updated['first_name'] = $user->firstname;
-		}
-		if ( $this->surname !== $user->surname ) {
-			$updates              = true;
-			$this->surname        = $user->surname;
-			$updated['last_name'] = $user->surname;
-		}
-		if ( $this->contactno !== $user->contactno ) {
-			$updates              = true;
-			$this->contactno      = $user->contactno;
-			$updated['contactno'] = $user->contactno;
-		}
-		if ( $this->gender !== $user->gender ) {
-			$updates           = true;
-			$this->gender      = $user->gender;
-			$updated['gender'] = $user->gender;
-		}
-		if ( empty( $this->btm ) ) {
-			if ( ! empty( $user->btm ) ) {
-				$updates        = true;
-				$this->btm      = $user->btm;
-				$updated['btm'] = $user->btm;
-			}
-		} elseif ( intval( $this->btm ) !== intval( $user->btm ) ) {
-			$updates        = true;
-			$this->btm      = $user->btm;
-			$updated['btm'] = $user->btm;
-		}
-		if ( intval( $this->year_of_birth ) !== intval( $user->year_of_birth ) ) {
-			$updates                  = true;
-			$this->year_of_birth      = $user->year_of_birth;
-			$updated['year_of_birth'] = $user->year_of_birth;
-		}
-		if ( ! empty( $user->password ) ) {
-			$updates             = true;
-			$this->password      = $user->password;
-			$updated['password'] = $user->password;
-		}
-		$opt_in_choices = Racketmanager_Util::get_email_opt_ins();
-		$opt_ins        = array();
-		foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
-			$user_opt_in[ $opt_in_choice ] = !empty($user->opt_ins[$opt_in_choice]);
-			if ( in_array( strval( $opt_in_choice ), $this->opt_ins, true ) ) {
-				if ( empty( $user_opt_in[ $opt_in_choice ] ) ) {
-					$updates = true;
-					delete_user_meta( $this->id, 'racketmanager_opt_in', $opt_in_choice );
-				} else {
-					$opt_ins[] = strval( $opt_in_choice );
-				}
-			} elseif ( ! empty( $user_opt_in[ $opt_in_choice ] ) ) {
-				$updates   = true;
-				$opt_ins[] = strval( $opt_in_choice );
-				add_user_meta( $this->id, 'racketmanager_opt_in', $opt_in_choice );
-			}
-		}
-		$this->opt_ins = $opt_ins;
+        $updated = $this->set_user_fields_for_update( $user );
+        if ( ! empty( $updated ) ) {
+            $updates = true;
+        }
+        $opt_in_updates = $this->update_opt_ins( $user );
+        if ( $opt_in_updates ) {
+            $updates = true;
+        }
 		if ( ! $updates ) {
 			return false;
 		}
@@ -450,25 +393,103 @@ final class Racketmanager_User {
 		}
 		return true;
 	}
+    /**
+     * Function to set user fields that are updated
+     *
+     * @param object $user
+     *
+     * @return array
+     */
+    private function set_user_fields_for_update( object $user ): array {
+        $updated = array();
+        if ( $this->user_email !== $user->email ) {
+            $this->user_email      = $user->email;
+            $updated['user_email'] = $user->email;
+        }
+        if ( $this->firstname !== $user->firstname ) {
+            $this->firstname       = $user->firstname;
+            $updated['first_name'] = $user->firstname;
+        }
+        if ( $this->surname !== $user->surname ) {
+            $this->surname        = $user->surname;
+            $updated['last_name'] = $user->surname;
+        }
+        if ( $this->contactno !== $user->contactno ) {
+            $this->contactno      = $user->contactno;
+            $updated['contactno'] = $user->contactno;
+        }
+        if ( $this->gender !== $user->gender ) {
+            $this->gender      = $user->gender;
+            $updated['gender'] = $user->gender;
+        }
+        if ( empty( $this->btm ) ) {
+            if ( ! empty( $user->btm ) ) {
+                $this->btm      = $user->btm;
+                $updated['btm'] = $user->btm;
+            }
+        } elseif ( intval( $this->btm ) !== intval( $user->btm ) ) {
+            $this->btm      = $user->btm;
+            $updated['btm'] = $user->btm;
+        }
+        if ( intval( $this->year_of_birth ) !== intval( $user->year_of_birth ) ) {
+            $this->year_of_birth      = $user->year_of_birth;
+            $updated['year_of_birth'] = $user->year_of_birth;
+        }
+        if ( ! empty( $user->password ) ) {
+            $this->password      = $user->password;
+            $updated['password'] = $user->password;
+        }
+        return $updated;
+    }
+
+    /**
+     * Function to update opt ins.
+     *
+     * @param object $user user.
+     *
+     * @return bool
+     */
+    private function update_opt_ins( object $user ): bool {
+        $updates        = false;
+        $opt_in_choices = Racketmanager_Util::get_email_opt_ins();
+        $opt_ins        = array();
+        foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
+            $user_opt_in[ $opt_in_choice ] = ! empty( $user->opt_ins[ $opt_in_choice ] );
+            if ( in_array( strval( $opt_in_choice ), $this->opt_ins, true ) ) {
+                if ( empty( $user_opt_in[ $opt_in_choice ] ) ) {
+                    $updates = true;
+                    delete_user_meta( $this->id, 'racketmanager_opt_in', $opt_in_choice );
+                } else {
+                    $opt_ins[] = strval( $opt_in_choice );
+                }
+            } elseif ( ! empty( $user_opt_in[ $opt_in_choice ] ) ) {
+                $updates   = true;
+                $opt_ins[] = strval( $opt_in_choice );
+                add_user_meta( $this->id, 'racketmanager_opt_in', $opt_in_choice );
+            }
+        }
+        $this->opt_ins = $opt_ins;
+        return $updates;
+    }
 	/**
 	 * Get messages function
 	 *
 	 * @param array $args search arguments.
 	 * @return array|int
 	 */
-	public function get_messages( array $args ): array|int {
+	public function get_messages( array $args = array() ): array|int {
 		global $wpdb;
 
-		$defaults = array(
+		$defaults     = array(
 			'count'   => false,
 			'status'  => false,
 			'orderby' => array( 'date' => 'DESC' ),
 		);
-		$args     = array_merge( $defaults, $args );
-		$count    = $args['count'];
-		$status   = $args['status'];
-		$orderby  = $args['orderby'];
-
+		$args         = array_merge( $defaults, $args );
+		$count        = $args['count'];
+		$status       = $args['status'];
+		$orderby      = $args['orderby'];
+        $sql          = " FROM $wpdb->racketmanager_messages WHERE `userid` = $this->ID";
 		$search_terms = array();
 		if ( $status ) {
 			switch ( $status ) {
@@ -483,9 +504,9 @@ final class Racketmanager_User {
 			}
 			$search_terms[] = $wpdb->prepare( '`status` = %s', $status );
 		}
-		$search = '';
 		if ( ! empty( $search_terms ) ) {
 			$search = implode( ' AND ', $search_terms );
+            $sql   .= " AND $search";
 		}
 
 		$orderby_string = '';
@@ -501,22 +522,15 @@ final class Racketmanager_User {
 			++$i;
 		}
 		$order = $orderby_string;
-
 		if ( $count ) {
-			$sql = "SELECT COUNT(ID) FROM $wpdb->racketmanager_messages WHERE `userid` = $this->ID";
-			if ( '' !== $search ) {
-				$sql .= " AND $search";
-			}
+			$sql = 'SELECT COUNT(ID)' . $sql;
 			return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 				$sql
 			);
 		}
 
-		$sql = "SELECT `id` FROM $wpdb->racketmanager_messages WHERE `userid` = $this->ID";
-		if ( '' !== $search ) {
-			$sql .= " AND $search";
-		}
+		$sql = 'SELECT `id` ' . $sql;
 		if ( '' !== $order ) {
 			$sql .= " ORDER BY $order";
 		}

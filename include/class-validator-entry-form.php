@@ -48,12 +48,12 @@ final class Validator_Entry_Form extends Validator {
 	/**
 	 * Validate club
 	 *
-	 * @param string $club club.
+	 * @param string|null $club club.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function club( string $club ): object {
-		if ( !$club ) {
+	public function club( ?string $club ): object {
+		if ( ! $club ) {
 			$this->error = true;
 			$this->err_flds[$this->error_id] = 'clubId';
 			$this->err_msgs[$this->error_id] = __( 'Select the club you are a member of', 'racketmanager' );

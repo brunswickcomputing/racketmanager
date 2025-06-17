@@ -1760,10 +1760,7 @@ class RacketManager_Admin extends RacketManager {
 						$error_fields   = $player_valid[1];
 						$error_messages = $player_valid[2];
 						$message        = __( 'Error with player details', 'racketmanager' );
-						foreach ( $error_messages as $error_message ) {
-							$message .= '<br>' . $error_message;
-							$this->set_message( $message, true );
-						}
+                        $this->set_message( $message, true );
 					}
 				}
 			} elseif ( isset( $_POST['doClubPlayerDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {

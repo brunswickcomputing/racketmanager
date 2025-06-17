@@ -72,22 +72,70 @@ class Validator {
 		}
 		return $this;
 	}
-	/**
-	 * Validate telephone
-	 *
-	 * @param string $telephone telephone number.
-	 *
-	 * @return object $validation updated validation object.
-	 */
-	public function telephone( string $telephone ): object {
-		if ( empty( $telephone ) ) {
-			$this->error                          = true;
-			$this->err_flds[ $this->error_id ] = 'contactno';
-			$this->err_msgs[ $this->error_id ]   = __( 'Telephone number required', 'racketmanager' );
-			++$this->error_id;
-		}
-		return $this;
-	}
+    /**
+     * Validate first name
+     *
+     * @param string|null $first_name first name.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function first_name( ?string $first_name ): object {
+        if ( empty( $first_name ) ) {
+            $this->error                       = true;
+            $this->err_flds[ $this->error_id ] = 'firstname';
+            $this->err_msgs[ $this->error_id ] = __( 'First name is required', 'racketmanager' );
+            ++$this->error_id;
+        }
+        return $this;
+    }
+    /**
+     * Validate surname
+     *
+     * @param string|null $surname surname.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function surname( ?string $surname ): object {
+        if ( empty( $surname ) ) {
+            $this->error                       = true;
+            $this->err_flds[ $this->error_id ] = 'surname';
+            $this->err_msgs[ $this->error_id ] = __( 'Surname is required', 'racketmanager' );
+            ++$this->error_id;
+        }
+        return $this;
+    }
+    /**
+     * Validate gender
+     *
+     * @param string|null $gender gender.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function gender( ?string $gender ): object {
+        if ( empty( $gender ) ) {
+            $this->error                       = true;
+            $this->err_flds[ $this->error_id ] = 'gender';
+            $this->err_msgs[ $this->error_id ] = __( 'Gender is required', 'racketmanager' );
+            ++$this->error_id;
+        }
+        return $this;
+    }
+    /**
+     * Validate telephone
+     *
+     * @param string|null $telephone telephone number.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function telephone( ?string $telephone ): object {
+        if ( empty( $telephone ) ) {
+            $this->error                       = true;
+            $this->err_flds[ $this->error_id ] = 'contactno';
+            $this->err_msgs[ $this->error_id ] = __( 'Telephone number required', 'racketmanager' );
+            ++$this->error_id;
+        }
+        return $this;
+    }
 	/**
 	 * Validate email
 	 *

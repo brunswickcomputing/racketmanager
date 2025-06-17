@@ -1759,6 +1759,7 @@ class RacketManager_Admin extends RacketManager {
 						$form_valid     = false;
 						$error_fields   = $player_valid[1];
 						$error_messages = $player_valid[2];
+                        $player         = $player_valid[3];
 						$message        = __( 'Error with player details', 'racketmanager' );
                         $this->set_message( $message, true );
 					}

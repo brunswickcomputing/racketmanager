@@ -641,32 +641,24 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		}
 		if ( $match_id ) {
 			$match = get_match( $match_id );
-			if ( ! $match ) {
+			if ( $match ) {
+                $filename = ! empty( $template ) ? 'match-tournament' . $template : 'match-tournament';
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'tournament'        => $tournament,
+                        'match'             => $match,
+                        'is_update_allowed' => $match->is_update_allowed(),
+                        'message'           => $message,
+                    )
+                );
+            } else {
 				$msg = $this->match_not_found;
-				return $this->return_error( $msg );
 			}
-			$is_update_allowed = $match->is_update_allowed();
-			if ( empty( $template ) && $this->check_template( 'match-tournament' . $match->league->sport ) ) {
-				$filename = 'match-tournament' . $match->league->sport;
-			} elseif ( $this->check_template( 'match-tournament' . $template . '-' . $match->league->sport ) ) {
-				$filename = 'match-tournament' . $template . '-' . $match->league->sport;
-			} else {
-				$filename = ! empty( $template ) ? 'match-tournament' . $template : 'match-tournament';
-			}
-
-			return $this->load_template(
-				$filename,
-				array(
-					'tournament'        => $tournament,
-					'match'             => $match,
-					'is_update_allowed' => $is_update_allowed,
-					'message'           => $message,
-				)
-			);
 		} else {
 			$msg = $this->match_not_found;
-			return $this->return_error( $msg );
 		}
+        return $this->return_error( $msg );
 	}
 	/**
 	 * Function to display Tournament finals order of play

@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Validator API: player class
+ * Validator API: player class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the Validator object
  */
-class Racketmanager_Validator {
+class Validator {
 	/**
 	 * Error indicator
 	 *
@@ -43,10 +43,10 @@ class Racketmanager_Validator {
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->error       = false;
+		$this->error    = false;
 		$this->err_flds = array();
-		$this->err_msgs   = array();
-		$this->error_id    = 0;
+		$this->err_msgs = array();
+		$this->error_id = 0;
 	}
 	/**
 	 * Validate player

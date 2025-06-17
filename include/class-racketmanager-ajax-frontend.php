@@ -488,7 +488,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $entry_fee         = null;
         $payment_required  = false;
         $return_link       = null;
-		$validator         = new Racketmanager_Validator_Entry_Form();
+		$validator         = new Validator_Entry_Form();
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'tournament-entry' );
 		if ( ! $validator->error ) {
@@ -710,7 +710,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
         $start_times = array();
         $club_id     = null;
         $club_entry  = null;
-		$validator   = new Racketmanager_Validator_Entry_Form();
+		$validator   = new Validator_Entry_Form();
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'cup-entry' );
 		if ( ! $validator->error ) {
@@ -809,7 +809,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 	 * @see templates/leagueentry.php
 	 */
 	public function league_entry_request(): void {
-		$validator             = new Racketmanager_Validator_Entry_Form();
+		$validator             = new Validator_Entry_Form();
 		$club_id               = null;
 		$club_entry            = null;
 		$courts_needed         = array();
@@ -1705,7 +1705,7 @@ class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
 		$valid        = true;
 		$return       = array();
         $partner_name = null;
-		$validator = new Racketmanager_Validator_Entry_Form();
+		$validator    = new Validator_Entry_Form();
 		if ( isset( $_POST['racketmanager_nonce'] ) ) {
 			if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'team-partner' ) ) {
 				$valid                 = false;

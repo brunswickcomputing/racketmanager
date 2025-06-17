@@ -122,7 +122,7 @@ class Racketmanager_Exporter {
 	 */
 	#[NoReturn] public function fixtures(): void {
 		global $racketmanager;
-		$validator   = new Racketmanager_Validator();
+		$validator   = new Validator();
 		$competition = null;
 		$season      = null;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
@@ -182,7 +182,7 @@ class Racketmanager_Exporter {
 	 *  days - defaults to 7
 	 */
 	#[NoReturn] public function standings(): void {
-		$validator = new Racketmanager_Validator();
+		$validator = new Validator();
 		$event     = null;
 		$season    = null;
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended

@@ -72,7 +72,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			$tournament = get_tournament( $tournament, 'name' );
 		}
 		if ( ! $tournament ) {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 		$tournaments = $racketmanager->get_tournaments(
@@ -114,7 +114,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 		$tournament->events      = $tournament->get_events();
@@ -343,7 +343,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				'tournament'
 			);
 		} else {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 	}
@@ -497,7 +497,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 		$winners = $racketmanager->get_winners( $tournament->season, $tournament->competition_id, 'tournament', true );
@@ -534,7 +534,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 		$order_of_play = array();
@@ -633,7 +633,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			$tournament = un_seo_url( $tournament );
 		}
 		if ( ! $tournament ) {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 		$tournament = get_tournament( $tournament, 'name' );
@@ -644,7 +644,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		if ( $match_id ) {
 			$match = get_match( $match_id );
 			if ( ! $match ) {
-				$msg = __( 'Match not found', 'racketmanager' );
+				$msg = $this->match_not_found;
 				return $this->return_error( $msg );
 			}
 			$is_update_allowed = $match->is_update_allowed();
@@ -666,7 +666,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				)
 			);
 		} else {
-			$msg = __( 'Match not found', 'racketmanager' );
+			$msg = $this->match_not_found;
 			return $this->return_error( $msg );
 		}
 	}
@@ -691,7 +691,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$template      = $args['template'];
 		$tournament    = get_tournament( $tournament_id );
 		if ( ! $tournament ) {
-			$msg = __( 'Tournament not found', 'racketmanager' );
+			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
 		$order_of_play           = array();
@@ -821,7 +821,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				}
 			} else {
 				$valid = false;
-				$msg   = __( 'Tournament not found', 'racketmanager' );
+				$msg   = $this->tournament_not_found;
 			}
 		} else {
 			$valid = false;

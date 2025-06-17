@@ -215,7 +215,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 				)
 			);
 		} else {
-			$msg = __( 'League not found', 'racketmanager' );
+			$msg = $this->league_not_found;
 			return $this->return_error( $msg );
 		}
 	}
@@ -385,7 +385,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		$time          = $args['time'];
 		$league        = get_league( $league_id );
 		if ( ! $league ) {
-			$msg = __( 'League not found', 'racketmanager' );
+			$msg = $this->league_not_found;
 			return $this->return_error( $msg );
 		}
 		$league->set_template( 'matches', $template );
@@ -530,7 +530,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 					}
 					$matches = $league->get_matches( $match_args );
 					if ( ! $matches ) {
-						$msg = __( 'Match not found', 'racketmanager' );
+						$msg = $this->match_not_found;
 						return $this->return_error( $msg );
 					}
 					$num_matches = count( $matches );
@@ -546,12 +546,12 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 		if ( $match_id ) {
 			$match = get_match( $match_id );
 			if ( ! $match ) {
-				$msg = __( 'Match not found', 'racketmanager' );
+				$msg = $this->match_not_found;
 				return $this->return_error( $msg );
 			}
 			$event = get_event( $match->league->event_id );
 			if ( ! $event ) {
-				$msg = __( 'Event not found', 'racketmanager' );
+				$msg = $this->event_not_found;
 				return $this->return_error( $msg );
 			}
 			$seasons           = $event->seasons;
@@ -596,7 +596,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 				'action'    => $action,
 			);
 		} else {
-			$msg = __( 'Match not found', 'racketmanager' );
+			$msg = $this->match_not_found;
 			return $this->return_error( $msg );
 		}
 		return $this->load_template( $filename, $template_array );
@@ -751,7 +751,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
 				$player->stats   = $player->get_stats();
 				$league->player  = $player;
 			} else {
-				$msg = __( 'Player not found', 'racketmanager' );
+				$msg = $this->player_not_found;
 				return $this->return_error( $msg );
 			}
 		} else {
@@ -811,7 +811,7 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
                 'league'
             );
         } else {
-            $msg = __( 'League not found', 'racketmanager' );
+            $msg = $this->league_not_found;
         }
         return $this->return_error( $msg );
     }
@@ -862,10 +862,10 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
                     'league'
                 );
             } else {
-                $msg = __( 'Season not found', 'racketmanager' );
+                $msg = $this->season_not_found;
             }
         } else {
-            $msg = __( 'League not found', 'racketmanager' );
+            $msg = $this->league_not_found;
         }
         return $this->return_error( $msg );
     }
@@ -916,10 +916,10 @@ class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
                     'league'
                 );
             } else {
-                $msg = __( 'Team id not found', 'racketmanager' );
+                $msg = $this->no_team_id;
             }
         } else {
-            $msg = __( 'League not found', 'racketmanager' );
+            $msg = $this->league_not_found;
         }
         return $this->return_error( $msg );
     }

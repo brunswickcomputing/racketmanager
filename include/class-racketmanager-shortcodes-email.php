@@ -520,7 +520,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 						}
 					} else {
 						$valid = false;
-						$msg   = __( 'League not found', 'racketmanager' );
+						$msg   = $this->league_not_found;
 					}
 				} else {
 					$valid = false;
@@ -528,7 +528,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 				}
 			} else {
 				$valid = false;
-				$msg   = __( 'Team not found', 'racketmanager' );
+				$msg   = $this->team_not_found;
 			}
 		} else {
 			$valid = false;
@@ -576,7 +576,7 @@ class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
 		$template = $args['template'];
 		$event    = get_event( $event_id );
 		if ( ! $event ) {
-			$msg = __( 'Event not found', 'racketmanager' );
+			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
 		$event->leagues = $event->get_leagues();

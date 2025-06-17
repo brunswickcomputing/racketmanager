@@ -13,8 +13,6 @@ namespace Racketmanager;
  * Class to implement the Racketmanager_Shortcodes_Event object
  */
 class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
-    private string $event_not_found;
-    private string $no_event_id;
     /**
 	 * Initialize shortcodes
 	 */
@@ -30,8 +28,6 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
         add_shortcode( 'event-team-matches', array( &$this, 'show_event_team_matches' ) );
         add_shortcode( 'team-order-players', array( &$this, 'show_team_order_players' ) );
         add_shortcode( 'league-dropdown', array( &$this, 'show_dropdown' ) );
-        $this->event_not_found = __( 'Event not found', 'racketmanager' );
-        $this->no_event_id = __( 'Event id not supplied', 'racketmanager' );
 	}
 	/**
 	 * Show Event
@@ -241,7 +237,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
 			if ( $club ) {
                 $event_club = $event->get_club( $club );
 			} else {
-				$msg = __( 'Club not found', 'racketmanager' );
+				$msg = $this->club_not_found;
 				return $this->return_error( $msg );
 			}
 		}
@@ -366,7 +362,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                 if ( is_object( $player ) ) {
                     $event->player = $player;
                 } else {
-                    $msg = __( 'Player not found', 'racketmanager' );
+                    $msg = $this->player_not_found;
                     return $this->return_error( $msg );
                 }
 			} else {
@@ -517,7 +513,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                         'event'
                     );
                 } else {
-                    $msg = __( 'Team id not supplied', 'racketmanager' );
+                    $msg = $this->no_team_id;
                 }
             } else {
                 $msg = $this->event_not_found;
@@ -569,7 +565,7 @@ class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
                             'event'
                         );
                     } else {
-                        $msg = __( 'Club not found', 'racketmanager' );
+                        $msg = $this->club_not_found;
                     }
                 } else {
                     $msg = __( 'Club id not supplied', 'racketmanager' );

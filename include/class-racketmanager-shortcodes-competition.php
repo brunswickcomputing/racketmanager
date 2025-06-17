@@ -16,12 +16,6 @@ use stdClass;
  * Class to implement the Racketmanager_Shortcodes_Competition object
  */
 class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
-    private string $competition_not_found;
-    private string $season_not_found;
-    private string $club_not_found;
-    private string $player_not_found;
-    private string $tournament_not_found;
-    private string $no_competition_id;
 	/**
 	 * Initialize shortcodes
 	 */
@@ -38,12 +32,6 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         add_shortcode( 'competition-entry-payment', array( &$this, 'show_competition_entry_payment' ) );
         add_shortcode( 'competition-entry-payment-complete', array( &$this, 'show_competition_entry_payment_complete' ) );
         add_shortcode( 'event-dropdown', array( &$this, 'show_dropdown' ) );
-        $this->competition_not_found = __( 'Competition not found', 'racketmanager' );
-        $this->season_not_found = __( 'Season not found', 'racketmanager' );
-        $this->club_not_found = __( 'Club not found', 'racketmanager' );
-        $this->player_not_found = __( 'Player not found', 'racketmanager' );
-        $this->tournament_not_found = __( 'Tournament not found', 'racketmanager' );
-        $this->no_competition_id     = __( 'Competition id not supplied', 'racketmanager' );
     }
 	/**
 	 * Show competitions function
@@ -979,7 +967,7 @@ class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
         }
         if ( ! $competition ) {
             $valid = false;
-            $msg   = __( 'League not found', 'racketmanager' );
+            $msg   = $this->league_not_found;
         }
         if ( ! $season ) {
             $valid = false;

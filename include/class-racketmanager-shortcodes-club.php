@@ -161,7 +161,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return $this->return_error( __( 'Club not found', 'racketmanager' ) );
+			return $this->return_error( $this->club_not_found );
 		}
 		// Get Player by Name.
 		$player_name = get_query_var( 'player_id' );
@@ -169,11 +169,11 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			$player_name = un_seo_url( $player_name );
 			$player      = get_player( $player_name, 'name' ); // get player by name.
 			if ( ! $player ) {
-				return __( 'Player not found', 'racketmanager' );
+				return $this->player_not_found;
 			}
 			$club_player = $club->get_players( array( 'player' => $player->id ) );
 			if ( ! $club_player ) {
-				return __( 'Player not found for club', 'racketmanager' );
+				return $this->club_player_not_found;
 			}
 			$player->club              = $club;
 			$player->created_date      = $club_player[0]->created_date;
@@ -240,7 +240,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return __( 'Club not found', 'racketmanager' );
+			return $this->club_not_found;
 		}
 		$club_competitions = array();
 		// Get competition by Name.
@@ -249,7 +249,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			$competition_name = un_seo_url( $competition_name );
 			$competition      = get_competition( $competition_name, 'name' );
 			if ( ! $competition ) {
-				return __( 'Competition not found', 'racketmanager' );
+				return $this->competition_not_found;
 			}
 			$club->competition = $competition;
 		} else {
@@ -319,7 +319,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return __( 'Club not found', 'racketmanager' );
+			return $this->club_not_found;
 		}
 		// Get team by Name.
 		$team_name = get_query_var( 'team' );
@@ -327,7 +327,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			$team_name = un_seo_url( $team_name );
 			$team      = get_team( $team_name );
 			if ( ! $team ) {
-				return __( 'Team not found', 'racketmanager' );
+				return $this->team_not_found;
 			}
 		} else {
 			return __( 'Team not supplied', 'racketmanager' );
@@ -337,10 +337,10 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 			$event_name = un_seo_url( $event_name );
 			$event      = get_event( $event_name, 'name' );
 			if ( ! $event ) {
-				return __( 'Event not found', 'racketmanager' );
+				return $this->event_not_found;
 			}
 		} else {
-			return __( 'Event not supplied', 'racketmanager' );
+			return $this->no_event_id;
 		}
 		$team_info       = $event->get_team_info( $team->id );
 		$team            = (object) array_merge( (array) $team, (array) $team_info );
@@ -386,17 +386,17 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return __( 'Club not found', 'racketmanager' );
+			return $this->club_not_found;
 		}
 		$event_name = get_query_var( 'event' );
 		if ( $event_name ) {
 			$event_name = un_seo_url( $event_name );
 			$event      = get_event( $event_name, 'name' );
 			if ( ! $event ) {
-				return __( 'Event not found', 'racketmanager' );
+				return $this->event_not_found;
 			}
 		} else {
-			return __( 'Event not supplied', 'racketmanager' );
+			return $this->no_event_id;
 		}
 		$season = get_query_var( 'season' );
 		if ( ! $season ) {
@@ -457,7 +457,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		}
 		$club_player = $club->get_players( array( 'player' => $player->id ) );
 		if ( ! $club_player ) {
-			return __( 'Player not found for club', 'racketmanager' );
+			return $this->club_player_not_found;
 		}
 		$player->club_name = $club->shortcode;
 		$user_can_update   = false;
@@ -510,7 +510,7 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return $this->return_error( __( 'Club not found', 'racketmanager' ) );
+			return $this->return_error( $this->club_not_found );
 		}
 		// Get Invoice.
 		$invoice_ref = get_query_var( 'invoice' );
@@ -592,16 +592,16 @@ class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
                             $msg = __( 'Event team not found', 'racketmanager' );
                         }
                     } else {
-                        $msg = __( 'Event not found', 'racketmanager' );
+                        $msg = $this->event_not_found;
                     }
                 } else {
-                    $msg = __( 'Event id not supplied', 'racketmanager' );
+                    $msg = $this->no_event_id;
                 }
             } else {
-                $msg = __( 'Team not found', 'racketmanager' );
+                $msg = $this->team_not_found;
             }
         } else {
-            $msg = __( 'Team id not found', 'racketmanager' );
+            $msg = $this->no_team_id;
         }
         return $this->return_error( $msg, 'modal' );
     }

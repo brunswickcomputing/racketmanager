@@ -13,6 +13,23 @@ namespace Racketmanager;
  * Class to implement shortcode functions
  */
 class RacketManager_Shortcodes {
+    protected string $event_not_found;
+    protected string $no_event_id;
+    protected string $competition_not_found;
+    protected string $season_not_found;
+    protected string $club_not_found;
+    protected string $player_not_found;
+    protected string $tournament_not_found;
+    protected string $no_competition_id;
+    protected string $league_not_found;
+    protected string $not_played;
+    protected string $retired_player;
+    protected string $not_played_no_opponent;
+    protected string $match_not_found;
+    protected string $team_not_found;
+    protected string $no_team_id;
+    protected string $club_player_not_found;
+    protected string $season_not_found_for_competition;
 	/**
 	 * Initialize shortcodes
 	 */
@@ -27,6 +44,23 @@ class RacketManager_Shortcodes {
 		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
 		add_shortcode( 'team-order', array( &$this, 'show_team_order' ) );
         add_shortcode( 'show-alert', array( &$this, 'show_alert' ) );
+        $this->competition_not_found            = __( 'Competition not found', 'racketmanager' );
+        $this->club_not_found                   = __( 'Club not found', 'racketmanager' );
+        $this->club_player_not_found            = __( 'Player not found for club', 'racketmanager' );
+        $this->event_not_found                  = __( 'Event not found', 'racketmanager' );
+        $this->league_not_found                 = __( 'League not found', 'racketmanager' );
+        $this->match_not_found                  = __( 'Match not found', 'racketmanager' );
+        $this->player_not_found                 = __( 'Player not found', 'racketmanager' );
+        $this->season_not_found                 = __( 'Season not found', 'racketmanager' );
+        $this->season_not_found_for_competition = __( 'Season not found for competition', 'racketmanager' );
+        $this->team_not_found                   = __( 'Team not found', 'racketmanager' );
+        $this->tournament_not_found             = __( 'Tournament not found', 'racketmanager' );
+        $this->no_competition_id                = __( 'Competition id not supplied', 'racketmanager' );
+        $this->no_event_id                      = __( 'Event id not supplied', 'racketmanager' );
+        $this->no_team_id                       = __( 'Team id not supplied', 'racketmanager' );
+        $this->not_played                       = __( 'Not played', 'racketmanager' );
+        $this->retired_player                   = __( 'Retired - %s', 'racketmanager' );
+        $this->not_played_no_opponent           = __( 'Match not played - %s did not show', 'racketmanager' );
 	}
 	/**
 	 * Display Daily Matches
@@ -246,7 +280,7 @@ class RacketManager_Shortcodes {
 			$player = get_player( $player_name, 'name' ); // get player by name.
 		}
 		if ( ! $player ) {
-			return __( 'Player not found', 'racketmanager' );
+			return $this->player_not_found;
 		}
 		$player->clubs        = $player->get_clubs();
 		$player->titles       = $player->get_titles();
@@ -363,7 +397,7 @@ class RacketManager_Shortcodes {
 			$player->clubs         = $player->get_clubs( array( 'type' => 'active' ) );
 			$player->clubs_archive = $player->get_clubs( array( 'type' => 'inactive' ) );
 		} else {
-			return $this->return_error( __( 'Player not found', 'racketmanager' ) );
+			return $this->return_error( $this->player_not_found );
 		}
 		$filename = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
 

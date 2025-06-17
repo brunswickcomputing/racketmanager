@@ -15,10 +15,6 @@ use stdClass;
  * Class to implement the Racketmanager_Shortcodes_Match object
  */
 class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
-    private string $not_played;
-    private string $retired_player;
-    private string $not_played_no_opponent;
-    private string $match_not_found;
     /**
      * Initialize shortcodes
      */
@@ -30,10 +26,6 @@ class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
         add_shortcode( 'score', array( &$this, 'show_score' ) );
         add_shortcode( 'match-header', array( &$this, 'show_match_header' ) );
         add_shortcode( 'match-detail', array( &$this, 'show_match_detail' ) );
-        $this->not_played             = __( 'Not played', 'racketmanager' );
-        $this->retired_player         = __( 'Retired - %s', 'racketmanager' );
-        $this->not_played_no_opponent = __( 'Match not played - %s did not show', 'racketmanager' );
-        $this->match_not_found        = __( 'Match not found', 'racketmanager' );
     }
     /**
      * Function to display match option modal

@@ -61,39 +61,39 @@ if ( !current_user_can( 'racket_manager' ) ) {
         <div class="container tab-content">
             <div class="tab-pane active show fade" id="competitions" role="tabpanel" aria-labelledby="competitions-tab">
                 <h2><?php _e( 'Competitions', 'racketmanager' ) ?></h2>
-				<?php include('documentation/competitions.php'); ?>
+				<?php require_once 'documentation/competitions.php'; ?>
             </div>
             <div class="tab-pane fade" id="leagues" role="tabpanel" aria-labelledby="leagues-tab">
                 <h2><?php _e( 'Leagues', 'racketmanager' ) ?></h2>
-				<?php include('documentation/leagues.php'); ?>
+				<?php require_once 'documentation/leagues.php'; ?>
             </div>
             <div class="tab-pane fade" id="cups" role="tabpanel" aria-labelledby="cups-tab">
                 <h2><?php _e( 'Cups', 'racketmanager' ) ?></h2>
-				<?php include('documentation/cups.php'); ?>
+				<?php require_once 'documentation/cups.php'; ?>
             </div>
             <div class="tab-pane fade" id="tournaments" role="tabpanel" aria-labelledby="tournaments-tab">
                 <h2><?php _e( 'Tournaments', 'racketmanager' ) ?></h2>
-				<?php include('documentation/tournaments.php'); ?>
+				<?php require_once 'documentation/tournaments.php'; ?>
             </div>
             <div class="tab-pane fade" id="clubs" role="tabpanel" aria-labelledby="clubs-tab">
                 <h2><?php _e( 'Clubs', 'racketmanager' ) ?></h2>
-				<?php include('documentation/clubs.php'); ?>
+				<?php require_once 'documentation/clubs.php'; ?>
             </div>
             <div class="tab-pane fade" id="results" role="tabpanel" aria-labelledby="results-tab">
                 <h2><?php _e( 'Results', 'racketmanager' ) ?></h2>
-				<?php include('documentation/results.php'); ?>
+				<?php require_once 'documentation/results.php'; ?>
             </div>
             <div class="tab-pane fade" id="admin" role="tabpanel" aria-labelledby="admin-tab">
                 <h2><?php _e( 'Administration', 'racketmanager' ) ?></h2>
-				<?php include('documentation/admin.php'); ?>
+				<?php require_once 'documentation/admin.php'; ?>
             </div>
             <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
                 <h2><?php _e( 'Settings', 'racketmanager' ) ?></h2>
-				<?php include('documentation/settings.php'); ?>
+				<?php require_once 'documentation/settings.php'; ?>
             </div>
             <div class="tab-pane fade" id="import" role="tabpanel" aria-labelledby="import-tab">
                 <h2><?php _e( 'Import', 'racketmanager' ) ?></h2>
-				<?php include('documentation/import.php'); ?>
+				<?php require_once 'documentation/import.php'; ?>
             </div>
         </div>
     </div>

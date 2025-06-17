@@ -91,23 +91,26 @@ class Validator {
 	/**
 	 * Validate email
 	 *
-	 * @param string $email email address.
-	 * @param int $player_id player id.
+	 * @param string|null $email email address.
+	 * @param int|null    $player_id player id.
+     * @param bool   $email_required is email address required.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function email( string $email, int $player_id ): object {
+	public function email( ?string $email, ?int $player_id, bool $email_required = true ): object {
 		if ( empty( $email ) ) {
-			$this->error                          = true;
-			$this->err_flds[ $this->error_id ] = 'contactemail';
-			$this->err_msgs[ $this->error_id ]   = __( 'Email address is required', 'racketmanager' );
-			++$this->error_id;
+            if ( $email_required ) {
+                $this->error                       = true;
+                $this->err_flds[ $this->error_id ] = 'contactemail';
+                $this->err_msgs[ $this->error_id ] = __( 'Email address is required', 'racketmanager' );
+                ++$this->error_id;
+            }
 		} else {
 			$player = get_player( $email, 'email' );
 			if ( $player && $player_id !== $player->ID ) {
-				$this->error                          = true;
+				$this->error                       = true;
 				$this->err_flds[ $this->error_id ] = 'contactemail';
-				$this->err_msgs[ $this->error_id ]   = __( 'Email address already used', 'racketmanager' );
+				$this->err_msgs[ $this->error_id ] = __( 'Email address already used', 'racketmanager' );
 				++$this->error_id;
 			}
 		}
@@ -116,17 +119,20 @@ class Validator {
 	/**
 	 * Validate btm
 	 *
-	 * @param int $btm lta tennis number.
-	 * @param int $player_id player id.
+	 * @param int|null $btm lta tennis number.
+	 * @param int|null $player_id player id.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function btm( int $btm, int $player_id ): object {
+	public function btm( ?int $btm, ?int $player_id ): object {
+        $btm_required = is_lta_number_required();
 		if ( empty( $btm ) ) {
-			$this->error                          = true;
-			$this->err_flds[ $this->error_id ] = 'btm';
-			$this->err_msgs[ $this->error_id ]   = __( 'LTA Tennis Number is required', 'racketmanager' );
-			++$this->error_id;
+            if ( $btm_required ) {
+                $this->error                          = true;
+                $this->err_flds[ $this->error_id ] = 'btm';
+                $this->err_msgs[ $this->error_id ]   = __( 'LTA Tennis Number is required', 'racketmanager' );
+                ++$this->error_id;
+            }
 		} else {
 			$player = get_player( $btm, 'btm' );
 			if ( $player && $player_id !== $player->ID ) {
@@ -141,15 +147,15 @@ class Validator {
 	/**
 	 * Validate season
 	 *
-	 * @param string $season season.
+	 * @param string|null $season season.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function season( string $season ): object {
+	public function season( ?string $season ): object {
 		if ( empty( $season ) ) {
-			$this->error                          = true;
+			$this->error                       = true;
 			$this->err_flds[ $this->error_id ] = 'season';
-			$this->err_msgs[ $this->error_id ]   = __( 'Season is required', 'racketmanager' );
+			$this->err_msgs[ $this->error_id ] = __( 'Season is required', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
@@ -157,15 +163,15 @@ class Validator {
 	/**
 	 * Validate club
 	 *
-	 * @param string $club club.
+	 * @param string|null $club club.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function club( string $club ): object {
+	public function club( ?string $club ): object {
 		if ( empty( $club ) ) {
-			$this->error                          = true;
+			$this->error                       = true;
 			$this->err_flds[ $this->error_id ] = 'club';
-			$this->err_msgs[ $this->error_id ]   = __( 'Club not found', 'racketmanager' );
+			$this->err_msgs[ $this->error_id ] = __( 'Club not found', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
@@ -173,15 +179,15 @@ class Validator {
 	/**
 	 * Validate competition
 	 *
-	 * @param string $competition competition.
+	 * @param string|null $competition competition.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function competition( string $competition ): object {
+	public function competition( ?string $competition ): object {
 		if ( empty( $competition ) ) {
-			$this->error                          = true;
+			$this->error                       = true;
 			$this->err_flds[ $this->error_id ] = 'competition';
-			$this->err_msgs[ $this->error_id ]   = __( 'Competition not found', 'racketmanager' );
+			$this->err_msgs[ $this->error_id ] = __( 'Competition not found', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
@@ -195,9 +201,9 @@ class Validator {
 	 */
 	public function event( ?object $event ): object {
 		if ( empty( $event ) ) {
-			$this->error                          = true;
+			$this->error                       = true;
 			$this->err_flds[ $this->error_id ] = 'event';
-			$this->err_msgs[ $this->error_id ]   = __( 'Event not found', 'racketmanager' );
+			$this->err_msgs[ $this->error_id ] = __( 'Event not found', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
@@ -205,22 +211,22 @@ class Validator {
 	/**
 	 * Validate tournament
 	 *
-	 * @param string $tournament tournament.
+	 * @param string|null $tournament tournament.
 	 *
 	 * @return object $validation updated validation object.
 	 */
-	public function tournament( string $tournament ): object {
+	public function tournament( ?string $tournament ): object {
 		if ( empty( $tournament ) ) {
-			$this->error                          = true;
+			$this->error                       = true;
 			$this->err_flds[ $this->error_id ] = 'tournament';
-			$this->err_msgs[ $this->error_id ]   = __( 'Tournament not found', 'racketmanager' );
+			$this->err_msgs[ $this->error_id ] = __( 'Tournament not found', 'racketmanager' );
 			++$this->error_id;
 		}
 		return $this;
 	}
 	public function get_details(): object {
-		$return = new stdClass();
-		$return->error = $this->error;
+		$return           = new stdClass();
+		$return->error    = $this->error;
 		$return->err_flds = $this->err_flds;
 		$return->err_msgs = $this->err_msgs;
 		return $return;

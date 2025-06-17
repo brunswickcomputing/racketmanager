@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Shortcodes_Event API: Shortcodes_Event class
+ * Shortcodes_Event API: Shortcodes_Event class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -10,24 +10,14 @@
 namespace Racketmanager;
 
 /**
- * Class to implement the Racketmanager_Shortcodes_Event object
+ * Class to implement the Shortcodes_Event object
  */
-class Racketmanager_Shortcodes_Event extends RacketManager_Shortcodes {
+class Shortcodes_Event extends Shortcodes {
     /**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'event', array( &$this, 'show_event' ) );
-		add_shortcode( 'event-standings', array( &$this, 'show_event_standings' ) );
-		add_shortcode( 'event-draw', array( &$this, 'show_event_draw' ) );
-		add_shortcode( 'event-matches', array( &$this, 'show_event_matches' ) );
-		add_shortcode( 'event-clubs', array( &$this, 'show_event_clubs' ) );
-		add_shortcode( 'event-teams', array( &$this, 'show_event_teams' ) );
-		add_shortcode( 'event-players', array( &$this, 'show_event_players' ) );
-        add_shortcode( 'event-partner', array( &$this, 'show_event_partner' ) );
-        add_shortcode( 'event-team-matches', array( &$this, 'show_event_team_matches' ) );
-        add_shortcode( 'team-order-players', array( &$this, 'show_team_order_players' ) );
-        add_shortcode( 'league-dropdown', array( &$this, 'show_dropdown' ) );
+        parent::__construct();
 	}
 	/**
 	 * Show Event

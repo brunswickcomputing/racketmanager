@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Shortcodes_Match API: Shortcodes_Match class
+ * Shortcodes_Match API: Shortcodes_Match class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,20 +12,14 @@ namespace Racketmanager;
 use stdClass;
 
 /**
- * Class to implement the Racketmanager_Shortcodes_Match object
+ * Class to implement the Shortcodes_Match object
  */
-class Racketmanager_Shortcodes_Match extends RacketManager_Shortcodes {
+class Shortcodes_Match extends Shortcodes {
     /**
      * Initialize shortcodes
      */
     public function __construct() {
-        add_shortcode( 'match-option', array( &$this, 'show_match_option_modal' ) );
-        add_shortcode( 'match-status', array( &$this, 'show_match_status_modal' ) );
-        add_shortcode( 'rubber-status', array( &$this, 'show_rubber_status_modal' ) );
-        add_shortcode( 'match-card', array( &$this, 'show_match_card' ) );
-        add_shortcode( 'score', array( &$this, 'show_score' ) );
-        add_shortcode( 'match-header', array( &$this, 'show_match_header' ) );
-        add_shortcode( 'match-detail', array( &$this, 'show_match_detail' ) );
+        parent::__construct();
     }
     /**
      * Function to display match option modal

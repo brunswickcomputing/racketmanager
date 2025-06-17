@@ -116,6 +116,7 @@ class RacketManager {
 			add_action( 'init', array( &$this, 'racketmanager_rewrites' ) );
 			add_action( 'init', array( &$this, 'racketmanager_locale' ) );
             add_action( 'init', array( &$this, 'init_components' ) );
+            add_action( 'init', array( &$this, 'load_shortcodes' ) );
 			add_action( 'wp_enqueue_scripts', array( &$this, 'load_styles' ), 5 );
 			add_action( 'wp_enqueue_scripts', array( &$this, 'load_scripts' ) );
 			add_action( 'rm_resultPending', array( &$this, 'chase_pending_results' ), 1 );
@@ -870,16 +871,16 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-stripe.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-frontend.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-club.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-competition.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-event.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-league.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-match.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-message.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-login.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-email.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-shortcodes-tournament.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-club.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-competition.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-event.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-league.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-match.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-message.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-login.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-email.php';
+		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-login.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-widget.php';
 
@@ -893,17 +894,119 @@ class RacketManager {
 	 */
     public function init_components(): void {
         $this->ajax_frontend          = new RacketManager_Ajax_Frontend();
-        $this->shortcodes             = new RacketManager_Shortcodes();
-        $this->shortcodes_club        = new Racketmanager_Shortcodes_Club();
-        $this->shortcodes_competition = new Racketmanager_Shortcodes_Competition();
-        $this->shortcodes_email       = new Racketmanager_Shortcodes_Email();
-        $this->shortcodes_event       = new Racketmanager_Shortcodes_Event();
-        $this->shortcodes_league      = new Racketmanager_Shortcodes_League();
-        $this->shortcodes_login       = new Racketmanager_Shortcodes_Login();
-	    $this->shortcodes_match       = new Racketmanager_Shortcodes_Match();
-	    $this->shortcodes_message     = new Racketmanager_Shortcodes_Message();
-        $this->shortcodes_tournament  = new Racketmanager_Shortcodes_Tournament();
+        $this->shortcodes             = new Shortcodes();
+        $this->shortcodes_club        = new Shortcodes_Club();
+        $this->shortcodes_competition = new Shortcodes_Competition();
+        $this->shortcodes_email       = new Shortcodes_Email();
+        $this->shortcodes_event       = new Shortcodes_Event();
+        $this->shortcodes_league      = new Shortcodes_League();
+        $this->shortcodes_login       = new Shortcodes_Login();
+	    $this->shortcodes_match       = new Shortcodes_Match();
+	    $this->shortcodes_message     = new Shortcodes_Message();
+        $this->shortcodes_tournament  = new Shortcodes_Tournament();
         $this->login                  = new Racketmanager_Login();
+    }
+    /**
+     * Load shortcodes
+     */
+    public function load_shortcodes(): void {
+        global $shortcode_tags;
+        add_shortcode( 'dailymatches', array( $this->shortcodes, 'show_daily_matches' ) );
+        add_shortcode( 'latest_results', array( $this->shortcodes, 'show_latest_results' ) );
+        add_shortcode( 'players', array( $this->shortcodes, 'show_players' ) );
+        add_shortcode( 'player', array( $this->shortcodes, 'show_player' ) );
+        add_shortcode( 'favourites', array( $this->shortcodes, 'show_favourites' ) );
+        add_shortcode( 'invoice', array( $this->shortcodes, 'show_invoice' ) );
+        add_shortcode( 'memberships', array( $this->shortcodes, 'show_memberships' ) );
+        add_shortcode( 'search-players', array( $this->shortcodes, 'show_player_search' ) );
+        add_shortcode( 'team-order', array( $this->shortcodes, 'show_team_order' ) );
+        add_shortcode( 'show-alert', array( $this->shortcodes, 'show_alert' ) );
+
+        add_shortcode( 'clubs', array( $this->shortcodes_club, 'show_clubs' ) );
+        add_shortcode( 'club', array( $this->shortcodes_club, 'show_club' ) );
+        add_shortcode( 'club-players', array( $this->shortcodes_club, 'show_club_players' ) );
+        add_shortcode( 'club-competitions', array( $this->shortcodes_club, 'show_club_competitions' ) );
+        add_shortcode( 'club-event', array( $this->shortcodes_club, 'show_club_event' ) );
+        add_shortcode( 'club-team', array( $this->shortcodes_club, 'show_club_team' ) );
+        add_shortcode( 'club-player', array( $this->shortcodes_club, 'show_club_player' ) );
+        add_shortcode( 'club-invoices', array( $this->shortcodes_club, 'show_club_invoices' ) );
+        add_shortcode( 'team-edit', array( $this->shortcodes_club, 'show_team_edit_modal' ) );
+
+        add_shortcode( 'competitions', array( $this->shortcodes_competition, 'show_competitions' ) );
+        add_shortcode( 'competition', array( $this->shortcodes_competition, 'show_competition' ) );
+        add_shortcode( 'competition-overview', array( $this->shortcodes_competition, 'show_competition_overview' ) );
+        add_shortcode( 'competition-events', array( $this->shortcodes_competition, 'show_competition_events' ) );
+        add_shortcode( 'competition-teams', array( $this->shortcodes_competition, 'show_competition_teams' ) );
+        add_shortcode( 'competition-clubs', array( $this->shortcodes_competition, 'show_competition_clubs' ) );
+        add_shortcode( 'competition-players', array( $this->shortcodes_competition, 'show_competition_players' ) );
+        add_shortcode( 'competition-winners', array( $this->shortcodes_competition, 'show_competition_winners' ) );
+        add_shortcode( 'competition-entry', array( $this->shortcodes_competition, 'show_competition_entry' ) );
+        add_shortcode( 'competition-entry-payment', array( $this->shortcodes_competition, 'show_competition_entry_payment' ) );
+        add_shortcode( 'competition-entry-payment-complete', array( $this->shortcodes_competition, 'show_competition_entry_payment_complete' ) );
+        add_shortcode( 'event-dropdown', array( $this->shortcodes_competition, 'show_dropdown' ) );
+
+        add_shortcode( 'match-notification', array( $this->shortcodes_email, 'show_match_notification' ) );
+        add_shortcode( 'result-notification', array( $this->shortcodes_email, 'show_result_notification' ) );
+        add_shortcode( 'result-notification-captain', array( $this->shortcodes_email, 'show_captain_result_notification' ) );
+        add_shortcode( 'result-outstanding-notification', array( $this->shortcodes_email, 'show_result_outstanding_notification' ) );
+        add_shortcode( 'club-player-notification', array( $this->shortcodes_email, 'show_club_player_notification' ) );
+        add_shortcode( 'match_date_change_notification', array( $this->shortcodes_email, 'show_match_date_change_notification' ) );
+        add_shortcode( 'withdrawn-team', array( $this->shortcodes_email, 'show_team_withdrawn' ) );
+        add_shortcode( 'event-constitution', array( $this->shortcodes_email, 'show_event_constitution' ) );
+
+        add_shortcode( 'event', array( $this->shortcodes_event, 'show_event' ) );
+        add_shortcode( 'event-standings', array( $this->shortcodes_event, 'show_event_standings' ) );
+        add_shortcode( 'event-draw', array( $this->shortcodes_event, 'show_event_draw' ) );
+        add_shortcode( 'event-matches', array( $this->shortcodes_event, 'show_event_matches' ) );
+        add_shortcode( 'event-clubs', array( $this->shortcodes_event, 'show_event_clubs' ) );
+        add_shortcode( 'event-teams', array( $this->shortcodes_event, 'show_event_teams' ) );
+        add_shortcode( 'event-players', array( $this->shortcodes_event, 'show_event_players' ) );
+        add_shortcode( 'event-partner', array( $this->shortcodes_event, 'show_event_partner' ) );
+        add_shortcode( 'event-team-matches', array( $this->shortcodes_event, 'show_event_team_matches' ) );
+        add_shortcode( 'team-order-players', array( $this->shortcodes_event, 'show_team_order_players' ) );
+        add_shortcode( 'league-dropdown', array( $this->shortcodes_event, 'show_dropdown' ) );
+
+        add_shortcode( 'championship', array( $this->shortcodes_league, 'show_championship' ) );
+        add_shortcode( 'leaguearchive', array( $this->shortcodes_league, 'show_archive' ) );
+        add_shortcode( 'standings', array( $this->shortcodes_league, 'showStandings' ) );
+        add_shortcode( 'crosstable', array( $this->shortcodes_league, 'showCrosstable' ) );
+        add_shortcode( 'matches', array( $this->shortcodes_league, 'show_matches' ) );
+        add_shortcode( 'match', array( $this->shortcodes_league, 'show_match' ) );
+        add_shortcode( 'teams', array( $this->shortcodes_league, 'show_teams' ) );
+        add_shortcode( 'league-players', array( $this->shortcodes_league, 'show_league_players' ) );
+        add_shortcode( 'season-dropdown', array( $this->shortcodes_league, 'show_season_dropdown' ) );
+        add_shortcode( 'match-dropdown', array( $this->shortcodes_league, 'show_match_dropdown' ) );
+        add_shortcode( 'last-5', array( $this->shortcodes_league, 'show_last_5' ) );
+
+        add_shortcode( 'custom-login-form', array( $this->shortcodes_login, 'render_login_form' ) );
+        add_shortcode( 'login-form', array( $this->shortcodes_login, 'login_form' ) );
+        add_shortcode( 'custom-password-lost-form', array( $this->shortcodes_login, 'render_password_lost_form' ) );
+        add_shortcode( 'custom-password-reset-form', array( $this->shortcodes_login, 'render_password_reset_form' ) );
+        add_shortcode( 'account-info', array( $this->shortcodes_login, 'generate_member_account_form' ) );
+        add_action( 'init', array( $this->shortcodes_login, 'load_translations' ) );
+
+        add_shortcode( 'match-option', array( $this->shortcodes_match, 'show_match_option_modal' ) );
+        add_shortcode( 'match-status', array( $this->shortcodes_match, 'show_match_status_modal' ) );
+        add_shortcode( 'rubber-status', array( $this->shortcodes_match, 'show_rubber_status_modal' ) );
+        add_shortcode( 'match-card', array( $this->shortcodes_match, 'show_match_card' ) );
+        add_shortcode( 'score', array( $this->shortcodes_match, 'show_score' ) );
+        add_shortcode( 'match-header', array( $this->shortcodes_match, 'show_match_header' ) );
+        add_shortcode( 'match-detail', array( $this->shortcodes_match, 'show_match_detail' ) );
+
+        add_shortcode( 'messages', array( $this->shortcodes_message, 'show_messages' ) );
+        add_shortcode( 'show-message', array( $this->shortcodes_message, 'show_message' ) );
+
+        add_shortcode( 'tournament', array( $this->shortcodes_tournament, 'show_tournament' ) );
+        add_shortcode( 'tournament-overview', array( $this->shortcodes_tournament, 'show_tournament_overview' ) );
+        add_shortcode( 'tournament-events', array( $this->shortcodes_tournament, 'show_events' ) );
+        add_shortcode( 'tournament-draws', array( $this->shortcodes_tournament, 'show_draws' ) );
+        add_shortcode( 'tournament-players', array( $this->shortcodes_tournament, 'show_tournament_players' ) );
+        add_shortcode( 'tournament-winners', array( $this->shortcodes_tournament, 'show_tournament_winners' ) );
+        add_shortcode( 'tournament-matches', array( $this->shortcodes_tournament, 'show_tournament_matches' ) );
+        add_shortcode( 'tournament-match', array( $this->shortcodes_tournament, 'show_tournament_match' ) );
+        add_shortcode( 'orderofplay', array( $this->shortcodes_tournament, 'show_order_of_play' ) );
+        add_shortcode( 'latest-tournament', array( $this->shortcodes_tournament, 'show_latest_tournament' ) );
+        add_shortcode( 'tournament-withdrawal', array( $this->shortcodes_tournament, 'show_tournament_withdrawal_modal' ) );
     }
 	/**
 	 * Read files in directory

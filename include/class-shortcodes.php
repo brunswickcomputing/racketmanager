@@ -1,6 +1,6 @@
 <?php
 /**
- * RacketManager_Shortcodes API: RacketManagerShortcodes class
+ * Shortcodes API: RacketManagerShortcodes class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,38 +12,29 @@ namespace Racketmanager;
 /**
  * Class to implement shortcode functions
  */
-class RacketManager_Shortcodes {
-    protected string $event_not_found;
-    protected string $no_event_id;
-    protected string $competition_not_found;
-    protected string $season_not_found;
-    protected string $club_not_found;
-    protected string $player_not_found;
-    protected string $tournament_not_found;
-    protected string $no_competition_id;
-    protected string $league_not_found;
-    protected string $not_played;
-    protected string $retired_player;
-    protected string $not_played_no_opponent;
-    protected string $match_not_found;
-    protected string $team_not_found;
-    protected string $no_team_id;
-    protected string $club_player_not_found;
-    protected string $season_not_found_for_competition;
+class Shortcodes {
+    public string $event_not_found;
+    public string $no_event_id;
+    public string $competition_not_found;
+    public string $season_not_found;
+    public string $club_not_found;
+    public string $player_not_found;
+    public string $tournament_not_found;
+    public string $no_competition_id;
+    public string $league_not_found;
+    public string $not_played;
+    public string $retired_player;
+    public string $not_played_no_opponent;
+    public string $match_not_found;
+    public string $team_not_found;
+    public string $no_team_id;
+    public string $club_player_not_found;
+    public string $season_not_found_for_competition;
 	/**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'dailymatches', array( &$this, 'show_daily_matches' ) );
-		add_shortcode( 'latest_results', array( &$this, 'show_latest_results' ) );
-		add_shortcode( 'players', array( &$this, 'show_players' ) );
-		add_shortcode( 'player', array( &$this, 'show_player' ) );
-		add_shortcode( 'favourites', array( &$this, 'show_favourites' ) );
-		add_shortcode( 'invoice', array( &$this, 'show_invoice' ) );
-		add_shortcode( 'memberships', array( &$this, 'show_memberships' ) );
-		add_shortcode( 'search-players', array( &$this, 'show_player_search' ) );
-		add_shortcode( 'team-order', array( &$this, 'show_team_order' ) );
-        add_shortcode( 'show-alert', array( &$this, 'show_alert' ) );
+        debug_to_console( 'in create shortcodes');
         $this->competition_not_found            = __( 'Competition not found', 'racketmanager' );
         $this->club_not_found                   = __( 'Club not found', 'racketmanager' );
         $this->club_player_not_found            = __( 'Player not found for club', 'racketmanager' );

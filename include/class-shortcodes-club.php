@@ -1,6 +1,6 @@
 <?php
 /**
- * RacketManager_Shortcodes_Club API: Shortcodes_Club class
+ * Shortcodes_Club API: Shortcodes_Club class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -14,20 +14,12 @@ use stdClass;
 /**
  * Class to implement shortcode functions
  */
-class RacketManager_Shortcodes_Club extends RacketManager_Shortcodes {
+class Shortcodes_Club extends Shortcodes {
 	/**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'clubs', array( &$this, 'show_clubs' ) );
-		add_shortcode( 'club', array( &$this, 'show_club' ) );
-		add_shortcode( 'club-players', array( &$this, 'show_club_players' ) );
-		add_shortcode( 'club-competitions', array( &$this, 'show_club_competitions' ) );
-		add_shortcode( 'club-event', array( &$this, 'show_club_event' ) );
-		add_shortcode( 'club-team', array( &$this, 'show_club_team' ) );
-		add_shortcode( 'club-player', array( &$this, 'show_club_player' ) );
-		add_shortcode( 'club-invoices', array( &$this, 'show_club_invoices' ) );
-        add_shortcode( 'team-edit', array( &$this, 'show_team_edit_modal' ) );
+        parent::__construct();
 	}
 	/**
 	 * Function to display Clubs Info Page

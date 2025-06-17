@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Shortcodes_Message API: Shortcodes_Message class
+ * Shortcodes_Message API: Shortcodes_Message class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -10,15 +10,14 @@
 namespace Racketmanager;
 
 /**
- * Class to implement the Racketmanager_Shortcodes_Message object
+ * Class to implement the Shortcodes_Message object
  */
-class Racketmanager_Shortcodes_Message extends RacketManager_Shortcodes {
+class Shortcodes_Message extends Shortcodes {
     /**
      * Initialize shortcodes
      */
     public function __construct() {
-        add_shortcode( 'messages', array( &$this, 'show_messages' ) );
-        add_shortcode( 'show-message', array( &$this, 'show_message' ) );
+        parent::__construct();
     }
     /**
      * Function to show messages

@@ -1,7 +1,7 @@
 <?php /** @noinspection PhpMissingParentConstructorInspection */
 
 /**
- * Racketmanager_Shortcodes_Competition API: Shortcodes_Competition class
+ * Shortcodes_Competition API: Shortcodes_Competition class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -13,25 +13,14 @@ namespace Racketmanager;
 use stdClass;
 
 /**
- * Class to implement the Racketmanager_Shortcodes_Competition object
+ * Class to implement the Shortcodes_Competition object
  */
-class Racketmanager_Shortcodes_Competition extends RacketManager_Shortcodes {
+class Shortcodes_Competition extends Shortcodes {
 	/**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'competitions', array( &$this, 'show_competitions' ) );
-		add_shortcode( 'competition', array( &$this, 'show_competition' ) );
-		add_shortcode( 'competition-overview', array( &$this, 'show_competition_overview' ) );
-		add_shortcode( 'competition-events', array( &$this, 'show_competition_events' ) );
-		add_shortcode( 'competition-teams', array( &$this, 'show_competition_teams' ) );
-		add_shortcode( 'competition-clubs', array( &$this, 'show_competition_clubs' ) );
-		add_shortcode( 'competition-players', array( &$this, 'show_competition_players' ) );
-		add_shortcode( 'competition-winners', array( &$this, 'show_competition_winners' ) );
-        add_shortcode( 'competition-entry', array( &$this, 'show_competition_entry' ) );
-        add_shortcode( 'competition-entry-payment', array( &$this, 'show_competition_entry_payment' ) );
-        add_shortcode( 'competition-entry-payment-complete', array( &$this, 'show_competition_entry_payment_complete' ) );
-        add_shortcode( 'event-dropdown', array( &$this, 'show_dropdown' ) );
+        parent::__construct();
     }
 	/**
 	 * Show competitions function

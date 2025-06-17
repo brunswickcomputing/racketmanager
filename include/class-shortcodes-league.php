@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Shortcodes_League API: Shortcodes_League class
+ * Shortcodes_League API: Shortcodes_League class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,24 +12,14 @@ namespace Racketmanager;
 use stdClass;
 
 /**
- * Class to implement the Racketmanager_Shortcodes_League object
+ * Class to implement the Shortcodes_League object
  */
-class Racketmanager_Shortcodes_League extends RacketManager_Shortcodes {
+class Shortcodes_League extends Shortcodes {
 	/**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'championship', array( &$this, 'show_championship' ) );
-		add_shortcode( 'leaguearchive', array( &$this, 'show_archive' ) );
-		add_shortcode( 'standings', array( &$this, 'showStandings' ) );
-		add_shortcode( 'crosstable', array( &$this, 'showCrosstable' ) );
-		add_shortcode( 'matches', array( &$this, 'show_matches' ) );
-		add_shortcode( 'match', array( &$this, 'show_match' ) );
-		add_shortcode( 'teams', array( &$this, 'show_teams' ) );
-		add_shortcode( 'league-players', array( &$this, 'show_league_players' ) );
-        add_shortcode( 'season-dropdown', array( &$this, 'show_season_dropdown' ) );
-        add_shortcode( 'match-dropdown', array( &$this, 'show_match_dropdown' ) );
-        add_shortcode( 'last-5', array( &$this, 'show_last_5' ) );
+        parent::__construct();
 	}
 
 	/**

@@ -1101,3 +1101,18 @@ function withdrawn_team_email( array $args = array() ): string {
         }
         return $tab;
     }
+    /**
+     * Get player id
+     *
+     */
+    function get_player_id(): ?string {
+        global $wp;
+        if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } elseif ( isset( $wp->query_vars['player'] ) ) {
+            $player_id = un_seo_url( get_query_var( 'player' ) );
+        } else {
+            $player_id = null;
+        }
+        return $player_id;
+    }

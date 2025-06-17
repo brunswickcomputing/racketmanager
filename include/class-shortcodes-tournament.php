@@ -16,22 +16,14 @@ use stdClass;
 /**
  * Class to implement the Racketmanager_Shortcodes_Tournament object
  */
-class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
-	/**
+class Shortcodes_Tournament extends Shortcodes {
+    private string $base_tournaments;
+    /**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'tournament', array( &$this, 'show_tournament' ) );
-		add_shortcode( 'tournament-overview', array( &$this, 'show_tournament_overview' ) );
-		add_shortcode( 'tournament-events', array( &$this, 'show_events' ) );
-		add_shortcode( 'tournament-draws', array( &$this, 'show_draws' ) );
-		add_shortcode( 'tournament-players', array( &$this, 'show_tournament_players' ) );
-		add_shortcode( 'tournament-winners', array( &$this, 'show_tournament_winners' ) );
-		add_shortcode( 'tournament-matches', array( &$this, 'show_tournament_matches' ) );
-		add_shortcode( 'tournament-match', array( &$this, 'show_tournament_match' ) );
-		add_shortcode( 'orderofplay', array( &$this, 'show_order_of_play' ) );
-		add_shortcode( 'latest-tournament', array( &$this, 'show_latest_tournament' ) );
-		add_shortcode( 'tournament-withdrawal', array( &$this, 'show_tournament_withdrawal_modal' ) );
+        parent::__construct();
+        $this->base_tournaments = '/tournaments/';
 	}
 	/**
 	 * Show tournament function
@@ -64,7 +56,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				$tournament = $active_tournaments[0];
 				$new_url    = '/tournament/' . seo_url( $tournament->name ) . '/';
 			} else {
-				$new_url = '/tournaments/';
+				$new_url = $this->base_tournaments;
 			}
 			echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
 			exit;
@@ -297,7 +289,6 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 	 * @return string
 	 */
 	public function show_tournament_players(array $atts ): string {
-		global $wp;
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
@@ -313,22 +304,13 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		$tournament    = get_tournament( $tournament_id );
 		if ( $tournament ) {
 			if ( ! $player_id ) {
-				if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-					$player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				} elseif ( isset( $wp->query_vars['player'] ) ) {
-					$player_id = un_seo_url( get_query_var( 'player' ) );
-				}
+                $player_id = get_player_id();
 			}
 			if ( $player_id ) {
-				if ( is_numeric( $player_id ) ) {
-					$player = get_player( $player_id ); // get player by name.
-
-				} else {
-					$player = get_player( $player_id, 'name' ); // get player by name.
-				}
-				if ( $player ) {
-					$player = $this->get_player_info( $player, $tournament );
-				}
+				$player = $this->get_player_info( $player_id, $tournament );
+                if ( is_string( $player ) ) {
+                    return $this->return_error( $player );
+                }
 			} else {
 				$players             = $tournament->get_entries();
 				$tournament->players = Racketmanager_Util::get_players_list( $players );
@@ -347,15 +329,26 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			return $this->return_error( $msg );
 		}
 	}
-	/**
-	 * Get tournament player information function
-	 *
-	 * @param object $player player object.
-	 * @param object $tournament tournament object.
-	 * @return object
-	 */
-	public function get_player_info(object $player, object $tournament ): object {
+
+    /**
+     * Get tournament player information function
+     *
+     * @param int|string $player_id
+     * @param object $tournament tournament object.
+     *
+     * @return object|string
+     */
+	public function get_player_info( int|string $player_id, object $tournament ): object|string {
 		global $racketmanager;
+        if ( is_numeric( $player_id ) ) {
+            $player = get_player( $player_id ); // get player by name.
+
+        } else {
+            $player = get_player( $player_id, 'name' ); // get player by name.
+        }
+        if ( ! $player ) {
+            return $this->player_not_found;
+        }
 		$key = $tournament->id . '_' . $player->id;
 		$tournament_entry = get_tournament_entry( $key, 'key' );
 		if ( $tournament_entry && $tournament_entry->club ) {
@@ -757,9 +750,9 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			$tournament = $active_tournaments[0];
 			$new_url    = '/tournament/' . seo_url( $tournament->name ) . '/';
 		} elseif ( $age_group ) {
-			$new_url = '/tournaments/' . $age_group . '/';
+			$new_url = $this->base_tournaments . $age_group . '/';
 		} else {
-			$new_url = '/tournaments/';
+			$new_url = $this->base_tournaments;
 		}
 		echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
 		exit;

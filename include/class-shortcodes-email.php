@@ -14,19 +14,12 @@ use stdClass;
 /**
  * Class to implement shortcode functions for emails
  */
-class Racketmanager_Shortcodes_Email extends RacketManager_Shortcodes {
+class Shortcodes_Email extends Shortcodes {
 	/**
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'match-notification', array( &$this, 'show_match_notification' ) );
-		add_shortcode( 'result-notification', array( &$this, 'show_result_notification' ) );
-		add_shortcode( 'result-notification-captain', array( &$this, 'show_captain_result_notification' ) );
-		add_shortcode( 'result-outstanding-notification', array( &$this, 'show_result_outstanding_notification' ) );
-		add_shortcode( 'club-player-notification', array( &$this, 'show_club_player_notification' ) );
-		add_shortcode( 'match_date_change_notification', array( &$this, 'show_match_date_change_notification' ) );
-		add_shortcode( 'withdrawn-team', array( &$this, 'show_team_withdrawn' ) );
-		add_shortcode( 'event-constitution', array( &$this, 'show_event_constitution' ) );
+        parent::__construct();
 	}
 	/**
 	 * Function to show match notification

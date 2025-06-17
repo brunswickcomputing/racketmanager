@@ -1,6 +1,6 @@
 <?php
 /**
- * RacketManager_Shortcodes_Login API: Shortcodes_Login class
+ * Shortcodes_Login API: Shortcodes_Login class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement shortcode functions
  */
-class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
+class Shortcodes_Login extends Shortcodes {
 	/**
 	 * Text to return if already signed in
 	 *
@@ -23,12 +23,7 @@ class RacketManager_Shortcodes_Login extends RacketManager_Shortcodes {
 	 * Initialize shortcodes
 	 */
 	public function __construct() {
-		add_shortcode( 'custom-login-form', array( $this, 'render_login_form' ) );
-		add_shortcode( 'login-form', array( $this, 'login_form' ) );
-		add_shortcode( 'custom-password-lost-form', array( $this, 'render_password_lost_form' ) );
-		add_shortcode( 'custom-password-reset-form', array( $this, 'render_password_reset_form' ) );
-		add_shortcode( 'account-info', array( $this, 'generate_member_account_form' ) );
-		add_action( 'init', array( $this, 'load_translations' ) );
+        parent::__construct();
 	}
 	/**
 	 * Load translations function

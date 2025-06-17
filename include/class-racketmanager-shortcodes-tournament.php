@@ -358,11 +358,9 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 		global $racketmanager;
 		$key = $tournament->id . '_' . $player->id;
 		$tournament_entry = get_tournament_entry( $key, 'key' );
-		if ( $tournament_entry ) {
-			if ( $tournament_entry->club ) {
-				$player->club = $tournament_entry->club;
-			}
-		}
+		if ( $tournament_entry && $tournament_entry->club ) {
+            $player->club = $tournament_entry->club;
+        }
 		$tournament->events = $tournament->get_events();
 		foreach ( $tournament->events as $event ) {
 			$event = get_event( $event );
@@ -788,14 +786,12 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 				'id'        => '',
 				'modal'     => null,
 				'player_id' => null,
-				'template'  => '',
 			),
 			$atts
 		);
 		$tournament_id  = $args['id'];
 		$modal          = $args['modal'];
 		$player_id      = $args['player_id'];
-		$template       = $args['template'];
 		$tournament     = null;
 		$player         = null;
 		$events_entered = null;
@@ -828,7 +824,7 @@ class Racketmanager_Shortcodes_Tournament extends RacketManager_Shortcodes {
 			$msg   = __( 'Tournament id not found', 'racketmanager' );
 		}
 		if ( $valid ) {
-			$filename = ( ! empty( $template ) ) ? 'withdrawal-modal-' . $template : 'withdrawal-modal';
+			$filename = 'withdrawal-modal';
 			return $this->load_template(
 				$filename,
 				array(

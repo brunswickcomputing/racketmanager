@@ -10,6 +10,10 @@ namespace Racketmanager;
 /** @var object $league */
 /** @var object $tournament */
 global $racketmanager;
+$and_edit   = '&amp;edit=';
+$and_season = '&amp;season=';
+$and_league = '&amp;league=';
+$and_final  = '&amp;final=';
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
 $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : null; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : null;
@@ -37,7 +41,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                 ?>
                 <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
 
-                <label for="final"></label><select size="1" name="final" id="final">
+                <label for="final" class="visually-hidden"><?php esc_html_e( 'Round', 'racketmanager'); ?></label><select size="1" name="final" id="final">
                     <?php
                     foreach ( $league->championship->get_finals() as $final ) {
                         ?>
@@ -77,10 +81,13 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                     </select>
                 </label>
 
-                <label for="final1"></label><select size="1" name="final" id="final1">
-                    <?php foreach ( $league->championship->get_finals() as $final ) { ?>
+                <label for="final1" class="visually-hidden"><?php esc_html_e( 'Round', 'racketmanager' ); ?></label><select size="1" name="final" id="final1">
+                    <?php
+                    foreach ( $league->championship->get_finals() as $final ) { ?>
                         <option value="<?php echo esc_html( $final['key'] ); ?>"><?php echo esc_html( $final['name'] ); ?></option>
-                    <?php } ?>
+                        <?php
+                    }
+                    ?>
                 </select>
                 <input type="hidden" name="league-tab" value="matches" />
                 <input type="submit" class="btn btn-secondary" value="<?php esc_html_e( 'Go', 'racketmanager' ); ?>" />
@@ -140,11 +147,11 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                     $m = 1; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
                     foreach ( $matches as $match ) {
                         if ( $match->league->event->competition->is_tournament ) {
-                            $match_link = 'admin.php?page=racketmanager-tournaments&amp;view=match&amp;tournament=' . $tournament->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
+                            $match_link = 'admin.php?page=racketmanager-tournaments&amp;view=match&amp;tournament=' . $tournament->id . $and_league . $league->id . $and_edit . $match->id . $and_season . $match->season . $and_final . $match->final_round;
                         } elseif ( $match->league->event->competition->is_cup ) {
-                            $match_link = 'admin.php?page=racketmanager-cups&amp;view=match&amp;competition_id=' . $match->league->event->competition->id . '&amp;league=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season . '&amp;final=' . $match->final_round;
+                            $match_link = 'admin.php?page=racketmanager-cups&amp;view=match&amp;competition_id=' . $match->league->event->competition->id . $and_league . $league->id . $and_edit . $match->id . $and_season . $match->season . $and_final . $match->final_round;
                         } else {
-                            $match_link = 'admin.php?page=racketmanager&amp;subpage=match&amp;league_id=' . $league->id . '&amp;edit=' . $match->id . '&amp;season=' . $match->season;
+                            $match_link = 'admin.php?page=racketmanager&amp;subpage=match' . $and_league . $league->id . $and_edit . $match->id . $and_season . $match->season;
                         }
                         ?>
                         <tr class="">
@@ -177,12 +184,10 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                                 ?>
                                 <td>
                                     <?php
-                                    if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
-                                        if ( '-1' !== $match->home_team && '-1' !== $match->away_team ) {
-                                            ?>
-                                            <a class="btn btn-secondary" href="<?php echo esc_attr( $match->link ); ?>result/"><?php esc_html_e( 'View match', 'racketmanager' ); ?></a>
-                                            <?php
-                                        }
+                                    if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) && '-1' !== $match->home_team && '-1' !== $match->away_team ) {
+                                        ?>
+                                        <a class="btn btn-secondary" href="<?php echo esc_attr( $match->link ); ?>result/"><?php esc_html_e( 'View match', 'racketmanager' ); ?></a>
+                                        <?php
                                     }
                                     ?>
                                 </td>
@@ -201,19 +206,19 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                                     }
                                     ?>
                                     <td>
-                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1"></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $match->sets[ $i ]['player1'] ); ?>" />
+                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Player 1 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $match->sets[ $i ]['player1'] ); ?>" />
                                         <span>:</span>
-                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2"></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $match->sets[ $i ]['player2'] ); ?>" />
+                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" class="visually-hidden"><?php esc_html_e( 'Player 2 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $match->sets[ $i ]['player2'] ); ?>" />
                                         <br>
-                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak"></label><input class="points tie-break" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $match->sets[ $i ]['tiebreak'] ); ?>" />
+                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" class="visually-hidden"><?php esc_html_e( 'Tiebreak', 'racketmanager' ); ?></label><input class="points tie-break" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $match->sets[ $i ]['tiebreak'] ); ?>" />
                                     </td>
                                     <?php
                                 }
                             }
                             ?>
                             <td class="score">
-                                <label for="home_points-<?php echo esc_html( $match->id ); ?>"></label><input class="points" type="text" size="2" style="text-align: center;" id="home_points-<?php echo esc_html( $match->id ); ?>" name="home_points[<?php echo esc_html( $match->id ); ?>]" value="<?php echo ( isset( $match->home_points ) ) ? esc_html( sprintf( '%g', $match->home_points ) ) : ''; ?>" /> :
-                                <label for="away_points-<?php echo esc_html( $match->id ); ?>"></label><input class="points" type="text" size="2" style="text-align: center;" id="away_points-<?php echo esc_html( $match->id ); ?>" name="away_points[<?php echo esc_html( $match->id ); ?>]" value="<?php echo ( isset( $match->away_points ) ) ? esc_html( sprintf( '%g', $match->away_points ) ) : ''; ?>" />
+                                <label for="home_points-<?php echo esc_html( $match->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Player 1 score', 'racketmanager' ); ?></label><input class="points" type="text" size="2" style="text-align: center;" id="home_points-<?php echo esc_html( $match->id ); ?>" name="home_points[<?php echo esc_html( $match->id ); ?>]" value="<?php echo ( isset( $match->home_points ) ) ? esc_html( sprintf( '%g', $match->home_points ) ) : ''; ?>" /> :
+                                <label for="away_points-<?php echo esc_html( $match->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Player 2 score', 'racketmanager' ); ?></label><input class="points" type="text" size="2" style="text-align: center;" id="away_points-<?php echo esc_html( $match->id ); ?>" name="away_points[<?php echo esc_html( $match->id ); ?>]" value="<?php echo ( isset( $match->away_points ) ) ? esc_html( sprintf( '%g', $match->away_points ) ) : ''; ?>" />
                             </td>
                         </tr>
                         <?php

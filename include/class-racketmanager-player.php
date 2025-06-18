@@ -10,6 +10,7 @@
 namespace Racketmanager;
 
 use stdClass;
+use WP_User;
 
 /**
  * Class to implement the Player object
@@ -219,12 +220,6 @@ final class Racketmanager_Player {
 	 * @var array
 	 */
 	public array $rating;
-	/**
-	 * Rating detail.
-	 *
-	 * @var array
-	 */
-	public array $rating_detail;
 	/**
 	 * Opt in detail.
 	 *
@@ -490,12 +485,7 @@ final class Racketmanager_Player {
 			}
 			$match_types = Racketmanager_Util::get_match_types();
 			foreach ( $match_types as $match_type => $description ) {
-				$rating_type                                  = 'rating_' . $match_type;
-				$this->rating_detail[ $match_type ]['player'] = (int) get_user_meta( $this->ID, $rating_type, true );
-				$rating_type                                  = 'rating_' . $match_type . '_team';
-				$this->rating_detail[ $match_type ]['team']   = (int) get_user_meta( $this->ID, $rating_type, true );
-				$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
-				$wtn_type = 'wtn_' . $match_type;
+				$wtn_type                 = 'wtn_' . $match_type;
 				$this->wtn[ $match_type ] = get_user_meta( $this->ID, $wtn_type, true );
 			}
 			$this->opt_ins = get_user_meta( $this->ID, 'racketmanager_opt_in' );
@@ -1420,168 +1410,6 @@ final class Racketmanager_Player {
 		$wtn_type = 'wtn_' . $match_type;
 		update_user_meta( $this->ID, $wtn_type, $wtn );
 		$this->wtn[ $wtn_type ] = $wtn;
-	}
-	/**
-	 * Set tournament rating function
-	 *
-	 * @return void
-	 */
-	public function set_tournament_rating(): void {
-		$match_types = Racketmanager_Util::get_match_types();
-		foreach ( $match_types as $match_type => $description ) {
-			$rating      = $this->calculate_tournament_rating( $match_type );
-			$rating_type = 'rating_' . $match_type;
-			update_user_meta( $this->ID, $rating_type, $rating );
-			$this->rating_detail[ $match_type ]['player'] = $rating;
-			$this->rating[ $match_type ]                  = array_sum( $this->rating_detail[ $match_type ] );
-		}
-		wp_cache_set( $this->id, $this, 'players' );
-	}
-	/**
-	 * Calculate tournament rating function
-	 *
-	 * @param string $type match type.
-	 * @return int player points.
-	 */
-	public function calculate_tournament_rating( string $type ): int {
-		$player_points = 0;
-		$matches       = $this->get_tournament_matches(
-			array(
-				'type'     => $type,
-				'complete' => true,
-			)
-		);
-		foreach ( $matches as $match_ref ) {
-			$match = get_match( $match_ref->id );
-			if ( $match ) {
-				$player_points += Racketmanager_Util::calculate_championship_rating( $match, $match_ref->team_id );
-			}
-		}
-		return $player_points;
-	}
-	/**
-	 * Get tournament matches for player function
-	 *
-	 * @param array $args array of search arguments.
-	 * @return array of matches
-	 */
-	public function get_tournament_matches( array $args = array() ): array {
-		global $wpdb;
-		$defaults      = array(
-			'type'     => false,
-			'complete' => false,
-			'period'   => 730,
-		);
-		$args          = array_merge( $defaults, $args );
-		$complete      = $args['complete'];
-		$type          = $args['type'];
-		$period        = $args['period'];
-		$search_terms  = array();
-		$search_args   = array();
-		$search_args[] = $this->id;
-		if ( $type ) {
-			$search_terms[] = "t.`type` LIKE '%%%s'";
-			$search_args[]  = $type;
-		}
-		if ( $period ) {
-			$search_terms[] = 'm.`date` > now() - INTERVAL %d DAY';
-			$search_args[]  = $period;
-		}
-		if ( $complete ) {
-			$search_terms[] = 'm.`winner_id` != 0';
-		}
-		$search = '';
-		if ( ! empty( $search_terms ) ) {
-			$search = ' AND ' . implode( ' AND ', $search_terms );
-		}
-		$sql          = "SELECT tp.`team_id`, m.`id` FROM $wpdb->racketmanager_matches m, $wpdb->racketmanager_teams t, $wpdb->racketmanager_team_players tp WHERE t.`id` = tp.`team_id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND tp.`player_id` = %d" . $search . ' ORDER BY m.`league_id`, m.`date`';
-		$sql_prepared = $wpdb->prepare(
-			$sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$search_args,
-		);
-		$matches      = wp_cache_get( md5( $sql_prepared ), 'matches' );
-		if ( ! $matches ) {
-			$matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-				$sql_prepared, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			);
-			wp_cache_set( md5( $sql ), $matches, 'matches' );
-		}
-		return $matches;
-	}
-	/**
-	 * Set team rating function
-	 *
-	 * @return void
-	 */
-	public function set_team_rating(): void {
-		$match_types = array( 'D' );
-		foreach ( $match_types as $match_type ) {
-			$rating      = $this->calculate_team_rating( $match_type );
-			$rating_type = 'rating_' . $match_type . '_team';
-			update_user_meta( $this->ID, $rating_type, $rating );
-			$this->rating_detail[ $match_type ]['team'] = $rating;
-			$this->rating[ $match_type ]                = array_sum( $this->rating_detail[ $match_type ] );
-		}
-		wp_cache_set( $this->id, $this, 'players' );
-	}
-
-	/**
-	 * Calculate tournament rating function
-	 *
-	 * @param string $type match type.
-	 * @return float|int player points.
-	 */
-	public function calculate_team_rating(string $type ): float|int {
-		$new_player_points = 0;
-		$team_points       = array();
-		$matches           = $this->get_matches( null, null, 'all', 365, $type );
-		if ( $matches ) {
-			$base_points = 42;
-			foreach ( $this->statistics as $league_ref => $rubbers ) {
-				$league_details = explode( '-', $league_ref );
-				$league_no      = is_numeric( $league_details[0] ) ? $league_details[0] : 1;
-				$num_rubbers    = $league_details[1];
-				$age_limit      = $league_details[2];
-				$rubber_order   = $league_details[3];
-				if ( 'open' === $age_limit ) {
-					$event_points = 1;
-				} elseif ( $age_limit >= 30 ) {
-					$event_points = 0.26;
-				} elseif ( '16' === $age_limit ) {
-					$event_points = 0.4;
-				} elseif ( '14' === $age_limit ) {
-					$event_points = 0.26;
-				} elseif ( '12' === $age_limit ) {
-					$event_points = 0.17;
-				} else {
-					$event_points = 1;
-				}
-				$points_div = ( $league_no - 1 ) * ( $num_rubbers * 2 );
-				foreach ( $rubbers as $rubber_title => $statistics ) {
-					$won = $statistics['played']['winner'] ?? 0;
-					if ( $won ) {
-						if ( 'false' === $rubber_order ) {
-							$points_rubber = 0;
-						} else {
-							$rubber_no     = substr( $rubber_title, 2, 1 );
-							$points_rubber = ( $rubber_no - 1 ) * 2;
-						}
-						$points        = $base_points - round( $points_div * $event_points ) - $points_rubber;
-						$team_points[] = $points;
-					}
-				}
-			}
-			if ( $team_points ) {
-				rsort( $team_points );
-				for ( $i = 0; $i <= 9; ++$i ) {
-					if ( empty( $team_points[ $i ] ) ) {
-						break;
-					}
-					$new_player_points += $team_points[ $i ];
-				}
-			}
-		}
-		return $new_player_points;
 	}
 	/**
 	 * Set opt in function

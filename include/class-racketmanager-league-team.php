@@ -700,19 +700,12 @@ final class Racketmanager_League_Team {
 	public function set_player_rating( object $team, object $event ): void {
 		global $racketmanager;
 		if ( ! empty( $team->players ) ) {
-			$display_opt = $racketmanager->get_options( 'display' );
 			$type        = substr( $event->type, 1, 1 );
 			$team_rating = 0;
 			foreach ( $team->players as $player ) {
-				if ( empty( $display_opt['wtn'] ) ) {
-					$rating = $player->rating[ $type ];
-				} else {
-					$rating = floatval( $player->wtn[ $type ] );
-				}
-				if ( is_numeric( $rating ) ) {
-					$team_rating += $rating;
-				}
-			}
+				$rating       = floatval( $player->wtn[ $type ] );
+                $team_rating += $rating;
+            }
 			$this->set_rating( $team_rating );
 		}
 	}

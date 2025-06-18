@@ -161,22 +161,6 @@ $is_invalid = false;
             <div class="row gx-3">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <legend class="fs-6"><?php esc_html_e( 'L&W', 'racketmanager' ); ?></legend>
-                        <?php
-                        $rating         = $player->rating ?? null;
-                        $rating_display = '';
-                        foreach ( $match_types as $match_type => $description ) {
-                            if ( ! empty( $rating_display ) ) {
-                                $rating_display .= ' - ';
-                            }
-                            $rating_display .= '[' . $rating[ $match_type ] . ']';
-                        }
-                        echo ' ' . esc_html( $rating_display );
-                        ?>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-floating mb-3">
                         <legend class="fs-6"><?php esc_html_e( 'WTN', 'racketmanager' ); ?></legend>
                         <?php
                         $wtn            = $player->wtn;

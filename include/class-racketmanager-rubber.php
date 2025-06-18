@@ -609,10 +609,9 @@ final class Racketmanager_Rubber {
 	 */
 	public function check_players(): array {
 		global $racketmanager, $wpdb;
-		$return = array();
-		$player_ratings = array();
-		$player_wtns    = array();
-		$match          = get_match( $this->match_id );
+		$return      = array();
+		$player_wtns = array();
+		$match       = get_match( $this->match_id );
 		if ( $match ) {
 			$options          = $racketmanager->get_options( 'checks' );
 			$register_options = $racketmanager->get_options( 'rosters' );
@@ -628,9 +627,8 @@ final class Racketmanager_Rubber {
 					$team_name_array  = explode( ' ', $team_name );
 					$this_team_number = end( $team_name_array );
 				}
-				$player_ratings[ $opponent ] = 0;
-				$player_wtns[ $opponent ]    = 0;
-				$players                     = $this->players[ $opponent ];
+				$player_wtns[ $opponent ] = 0;
+				$players                  = $this->players[ $opponent ];
 				foreach ( $players as $player ) {
 					if ( $player ) {
 						if ( ! empty( $player->system_record ) ) {
@@ -648,9 +646,7 @@ final class Racketmanager_Rubber {
 							break;
 						}
 						$type                         = substr( $match->league->event->type, 1, 1 );
-						$player_rating                = $player->rating[$type] ?? 0;
 						$player_wtn                   = isset( $player->wtn[ $type ] ) ? floatval( $player->wtn[ $type ] ) : 40.9;
-						$player_ratings[ $opponent ] += $player_rating;
 						$player_wtns[ $opponent ]    += $player_wtn;
 						if ( ! empty( $player->locked ) ) {
 							$error = __( 'locked', 'racketmanager' );
@@ -804,8 +800,7 @@ final class Racketmanager_Rubber {
 				}
 			}
 		}
-		$return['ratings'] = $player_ratings;
-		$return['wtns']    = $player_wtns;
+		$return['wtns'] = $player_wtns;
 		return $return;
 	}
 	/**

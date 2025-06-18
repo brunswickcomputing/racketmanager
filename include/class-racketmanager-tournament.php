@@ -1747,14 +1747,7 @@ final class Racketmanager_Tournament {
 	 * Function to set team ratings for tournament
 	 */
 	public function calculate_player_team_ratings(): void {
-		global $racketmanager;
-		$players = $this->get_entries();
-		foreach ( $players as $player ) {
-			$player = get_player( $player );
-			$player?->set_tournament_rating();
-		}
-		$events = $this->get_events();
-		$display_opt = $racketmanager->get_options( 'display' );
+		$events      = $this->get_events();
 		foreach( $events as $event ) {
 			$type  = substr( $event->type, 1, 1 );
 			$teams = $event->get_teams();
@@ -1762,15 +1755,9 @@ final class Racketmanager_Tournament {
 				$team_rating = 0;
 				if ( ! empty( $team->players ) ) {
 					foreach( $team->players as $player ) {
-						if ( empty( $display_opt['wtn'] ) ) {
-							$rating = $player->rating[ $type ];
-						} else {
-							$rating = empty( $player->wtn[ $type ] ) ? 40.9 : floatval( $player->wtn[ $type ] );
-						}
-						if ( is_numeric( $rating ) ) {
-							$team_rating += $rating;
-						}
-					}
+						$rating = empty( $player->wtn[ $type ] ) ? 40.9 : floatval( $player->wtn[ $type ] );
+                        $team_rating += $rating;
+                    }
 					$league_team = get_league_team( $team->table_id );
 					$league_team?->set_rating($team_rating);
 				}

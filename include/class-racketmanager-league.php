@@ -1453,7 +1453,7 @@ class Racketmanager_League {
 					$type        = substr( $this->event->type, 1, 1 );
 					$team_rating = 0;
 					foreach ( $team->players as $player ) {
-						$rating = $player->rating[ $type ];
+						$rating = $player->wtn[ $type ];
 						if ( is_numeric( $rating ) ) {
 							$team_rating += $rating;
 						}

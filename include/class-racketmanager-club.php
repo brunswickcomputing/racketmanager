@@ -818,7 +818,6 @@ final class Racketmanager_Club {
 					}
 					$player                          = get_player( $player->player_id );
 					$players[ $i ]->wtn              = $player->wtn;
-					$players[ $i ]->rating           = $player->rating;
 					$players[ $i ]->fullname         = $player->display_name;
 					$players[ $i ]->type             = $player->type;
 					$players[ $i ]->btm              = $player->btm;

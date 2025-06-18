@@ -101,19 +101,7 @@ namespace Racketmanager;
                                 </div>
                                 <div class="col-4 col-md-2">
                                     <?php
-                                    $rating         = $player->rating;
                                     $match_types    = Racketmanager_Util::get_match_types();
-                                    $rating_display = '';
-                                    foreach ( $match_types as $match_type => $description ) {
-                                        if ( ! empty( $rating_display ) ) {
-                                            $rating_display .= ' - ';
-                                        }
-                                        $rating_display .= '[' . $rating[ $match_type ] . ']';
-                                    }
-                                    echo ' ' . esc_html( $rating_display );
-                                    ?>
-                                    <?php
-                                    echo '<br>';
                                     $wtn            = $player->wtn;
                                     $wtn_display = '';
                                     foreach ( $match_types as $match_type => $description ) {

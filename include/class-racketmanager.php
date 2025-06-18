@@ -418,7 +418,6 @@ class RacketManager {
 				);
 				foreach ( $players as $club_player ) {
 					$player = get_player( $club_player->player_id );
-					$player->set_team_rating();
 					if ( ! empty( $player->btm ) ) {
 						$wtn_list[] = $player;
 					}
@@ -429,7 +428,6 @@ class RacketManager {
 			if ( $players ) {
 				foreach ( $players as $player ) {
 					$player = get_player( $player->ID );
-					$player->set_team_rating();
 					if ( ! empty( $player->btm ) ) {
 						$wtn_list[] = $player;
 					}

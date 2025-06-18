@@ -1589,11 +1589,11 @@ final class Racketmanager_Player {
 	 * @param string $opt_in opt in type.
 	 * @return void.
 	 */
-	public function set_opt_in(string $opt_in ): void {
+	public function set_opt_in( string $opt_in ): void {
 		if ( $opt_in ) {
 			$opt_in_found = in_array( $opt_in, $this->opt_ins, true );
 			if ( ! $opt_in_found ) {
-				add_user_meta( $this->ID, 'racketmanager_opt_in', $opt_in );
+				add_user_meta( $this->ID, 'racketmanager_opt_in', $opt_in, true );
 			}
 		}
 	}

@@ -83,7 +83,7 @@ namespace Racketmanager;
                                     <?php
                                     if ( ! isset( $player->removed_date ) ) {
                                         ?>
-                                        <label for="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" />
+                                        <label for="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" />
                                         <?php
                                     }
                                     ?>

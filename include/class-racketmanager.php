@@ -1537,24 +1537,14 @@ class RacketManager {
 			if ( 'current' === $type ) {
 				$search_terms[] = "`type` != 'past'";
 			} else {
-				$search_terms[] = $wpdb->prepare(
-					'`type` = %s',
-					$type
-				);
+				$search_terms[] = $wpdb->prepare( '`type` = %s', $type );
 			}
 		}
-		if ( $club ) {
-			$search_terms[] = $wpdb->prepare(
-				'`id` = %d',
-				$club
-			);
-		}
+        $search_terms[] = empty( $club ) ? '1 = 1' : $wpdb->prepare('`id` = %d', $club );
 		if ( $player ) {
 			switch ( $player_type ) {
 				case 'secretary':
-					$search_terms[] = $wpdb->prepare('`matchsecretary` = %d',
-													 $player,
-													 );
+					$search_terms[] = $wpdb->prepare('`matchsecretary` = %d', $player );
 					break;
 				case 'captain':
 					$search_terms[] = $wpdb->prepare("(`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_teams_events te, $wpdb->racketmanager_teams t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `matchsecretary` = %d)",
@@ -1563,37 +1553,30 @@ class RacketManager {
 													 );
 					break;
 				case 'player':
-					$search_terms[] = $wpdb->prepare("`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_club_players cp WHERE `player_id` = %d AND `removed_date` IS NULL)",
-													 $player,
-													 );
+					$search_terms[] = $wpdb->prepare("`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_club_players cp WHERE `player_id` = %d AND `removed_date` IS NULL)", $player );
 					break;
 				default:
 					break;
 			}
 		}
-		$search = '';
-		if ( ! empty( $search_terms ) ) {
-			$search  = ' WHERE ';
-			$search .= implode( ' AND ', $search_terms );
-		}
-		$order = '';
-		if ( $orderby ) {
-			if ( 'asc' === $orderby ) {
-				$order = '`name` ASC';
-			} elseif ( 'desc' === $orderby ) {
-				$order = '`name` DESC';
-			} elseif ( 'rand' === $orderby ) {
-				$order = 'RAND()';
-			} elseif ( 'menu_order' === $orderby ) {
-				$order = '`id` ASC';
-			}
-		}
-		if ( ! empty( $order ) ) {
-			$order = 'ORDER BY ' . $order;
-		}
-		if ( -1 === $limit ) {
-			$limit = 99999999;
-		}
+		$search = empty( $search_terms ) ? null : 'WHERE ' . implode( ' AND ', $search_terms );
+        switch ( $orderby ) {
+            case 'asc':
+                $order = '`name` ASC';
+                break;
+            case 'desc':
+                $order = '`name` DESC';
+                break;
+            case 'rand':
+                $order = 'RAND()';
+                break;
+            case 'menu_order':
+                $order = '`id` ASC';
+                break;
+            default:
+                break;
+        }
+        $order = empty( $order ) ? null : 'ORDER BY ' . $order;
 		if ( $count ) {
 			$sql = "SELECT COUNT(ID) FROM $wpdb->racketmanager_clubs $search";
 			return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery

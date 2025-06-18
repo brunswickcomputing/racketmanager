@@ -388,51 +388,20 @@ final class Racketmanager_Player {
 	 * @param int|string $player_id player id.
 	 * @param string $search_type type of id to search for.
 	 */
-	public static function get_instance(int|string $player_id, string $search_type ) {
+	public static function get_instance( int|string $player_id, string $search_type ) {
 		if ( ! $player_id ) {
 			return false;
 		}
 		$player = wp_cache_get( $player_id, 'players' );
 
 		if ( ! $player ) {
-			switch ( $search_type ) {
-				case 'btm':
-					$players = get_users(
-						array(
-							'meta_key'     => 'btm', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-							'meta_value'   => $player_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-							'meta_compare' => '=',
-						)
-					);
-					if ( $players ) {
-						$player = $players[0];
-					}
-					break;
-				case 'email':
-					$player = get_user_by( 'email', $player_id );
-					break;
-				case 'login':
-					// format of login is first.surname( can contain spaces ).
-					if ( ! str_contains( $player_id, '.' ) ) {
-						$pos = strpos( $player_id, ' ' );
-						if ( false !== $pos ) {
-							$player_id = substr_replace( $player_id, '.', $pos, strlen( ' ' ) );
-						}
-					}
-					$player = get_user_by( 'login', strtolower( $player_id ) );
-					break;
-				case 'name':
-					// format of nicename is first-surname( where surname spaces are converted to - ).
-					if ( str_contains( $player_id, ' ' ) ) {
-						$player_id = str_replace( ' ', '-', $player_id );
-					}
-					$player = get_user_by( 'slug', strtolower( $player_id ) );
-					break;
-				case 'id':
-				default:
-					$player = get_userdata( $player_id );
-					break;
-			}
+            $player = match ( $search_type ) {
+                'btm'   => self::get_player_by_btm( $player_id ),
+                'email' => get_user_by( 'email', $player_id ),
+                'login' => self::get_player_by_login( $player_id ),
+                'name'  => self::get_player_by_name( $player_id ),
+                default => get_userdata( $player_id ),
+            };
 			if ( ! $player ) {
 				return false;
 			}
@@ -442,7 +411,58 @@ final class Racketmanager_Player {
 
 		return $player;
 	}
-
+    /**
+     * Get player by LTA tennis number
+     *
+     * @param $player_id
+     *
+     * @return false|mixed
+     */
+    private static function get_player_by_btm( $player_id ): mixed {
+        $players = get_users(
+            array(
+                'meta_key'     => 'btm', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_value'   => $player_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+                'meta_compare' => '=',
+            )
+        );
+        if ( $players ) {
+            return $players[0];
+        } else {
+            return false;
+        }
+    }
+    /**
+     * Get player by login
+     *
+     * @param $player_id
+     *
+     * @return false|WP_User
+     */
+    private static function get_player_by_login( $player_id ): false|WP_User {
+        // format of login is first.surname( can contain spaces ).
+        if ( ! str_contains( $player_id, '.' ) ) {
+            $pos = strpos( $player_id, ' ' );
+            if ( false !== $pos ) {
+                $player_id = substr_replace( $player_id, '.', $pos, strlen( ' ' ) );
+            }
+        }
+        return get_user_by( 'login', strtolower( $player_id ) );
+    }
+    /**
+     * Get player by name
+     *
+     * @param $player_id
+     *
+     * @return false|WP_User
+     */
+    private static function get_player_by_name( $player_id ): false|WP_User {
+        // format of nicename is first-surname( where surname spaces are converted to - ).
+        if ( str_contains( $player_id, ' ' ) ) {
+            $player_id = str_replace( ' ', '-', $player_id );
+        }
+        return get_user_by( 'slug', strtolower( $player_id ) );
+    }
 	/**
 	 * Constructor
 	 *
@@ -544,63 +564,30 @@ final class Racketmanager_Player {
 	 * @param object $player player object with updated data.
 	 */
 	public function update( object $player ): object {
-		global $racketmanager;
-		$return = new stdClass();
-		$update               = false;
-		$user_data            = array();
-		$player->display_name = $player->firstname . ' ' . $player->surname;
-		if ( $this->firstname !== $player->firstname ) {
-			$update                  = true;
-			$user_data['first_name'] = $player->firstname;
-			$this->firstname         = $player->firstname;
-		}
-		if ( $this->surname !== $player->surname ) {
-			$update                 = true;
-			$user_data['last_name'] = $player->surname;
-			$this->surname          = $player->surname;
-		}
-		if ( $this->display_name !== $player->display_name ) {
-			$update                     = true;
-			$user_data['display_name']  = $player->display_name;
-			$user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
-			$this->display_name         = $player->display_name;
-		}
-		if ( $this->gender !== $player->gender ) {
-			$update = true;
-			update_user_meta( $this->ID, 'gender', $player->gender );
-			$this->gender = $player->gender;
-		}
-		$btm_update = $this->update_btm( $player->btm );
-		if ( $btm_update ) {
-			$update = true;
-		}
-		$year_of_birth_update = $this->update_year_of_birth( $player->year_of_birth );
-		if ( $year_of_birth_update ) {
-			$update = true;
-		}
-		if ( $this->user_email !== $player->email ) {
-			$update                  = true;
-			$user_data['user_email'] = $player->email;
-			$this->user_email        = $player->email;
-			$this->email             = $this->user_email;
-		}
-		if ( $this->contactno !== $player->contactno ) {
-			$update = true;
-			update_user_meta( $this->ID, 'contactno', $player->contactno );
-			$this->contactno = $player->contactno;
-		}
+		$return    = new stdClass();
+		$update    = false;
+        $user_data = $this->set_user_data( $player );
+        if ( $this->gender !== $player->gender ) {
+            $update = true;
+            update_user_meta( $this->ID, 'gender', $player->gender );
+            $this->gender = $player->gender;
+        }
+        $btm_update = $this->update_btm( $player->btm );
+        if ( $btm_update ) {
+            $update = true;
+        }
+        $year_of_birth_update = $this->update_year_of_birth( $player->year_of_birth );
+        if ( $year_of_birth_update ) {
+            $update = true;
+        }
+        if ( $this->contactno !== $player->contactno ) {
+            $update = true;
+            update_user_meta( $this->ID, 'contactno', $player->contactno );
+            $this->contactno = $player->contactno;
+        }
 		if ( $this->locked !== $player->locked ) {
+            $this->update_locked( $player->locked );
 			$update = true;
-			if ( $player->locked ) {
-				update_user_meta( $this->ID, 'locked', $player->locked );
-				update_user_meta( $this->ID, 'locked_date', gmdate( 'Y-m-d' ) );
-				update_user_meta( $this->ID, 'locked_user', get_current_user_id() );
-			} else {
-				delete_user_meta( $this->ID, 'locked' );
-				delete_user_meta( $this->ID, 'locked_date' );
-				delete_user_meta( $this->ID, 'locked_user' );
-			}
-			$this->locked = $player->locked;
 		}
 
 		if ( $update ) {
@@ -625,6 +612,57 @@ final class Racketmanager_Player {
 		}
 		return $return;
 	}
+
+    /**
+     * Set user data to be updated
+     *
+     * @param object $player
+     *
+     * @return array
+     */
+    private function set_user_data( object $player ): array {
+        $user_data            = array();
+        $player->display_name = $player->firstname . ' ' . $player->surname;
+        if ( $this->firstname !== $player->firstname ) {
+            $user_data['first_name'] = $player->firstname;
+            $this->firstname         = $player->firstname;
+        }
+        if ( $this->surname !== $player->surname ) {
+            $user_data['last_name'] = $player->surname;
+            $this->surname          = $player->surname;
+        }
+        if ( $this->display_name !== $player->display_name ) {
+            $user_data['display_name']  = $player->display_name;
+            $user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
+            $this->display_name         = $player->display_name;
+        }
+        if ( $this->user_email !== $player->email ) {
+            $user_data['user_email'] = $player->email;
+            $this->user_email        = $player->email;
+            $this->email             = $this->user_email;
+        }
+        return $user_data;
+    }
+
+    /**
+     * Update locked
+     *
+     * @param object $player
+     *
+     * @return void
+     */
+    private function update_locked( object $player ): void {
+        if ( $player->locked ) {
+            update_user_meta( $this->ID, 'locked', $player->locked );
+            update_user_meta( $this->ID, 'locked_date', gmdate( 'Y-m-d' ) );
+            update_user_meta( $this->ID, 'locked_user', get_current_user_id() );
+        } else {
+            delete_user_meta( $this->ID, 'locked' );
+            delete_user_meta( $this->ID, 'locked_date' );
+            delete_user_meta( $this->ID, 'locked_user' );
+        }
+        $this->locked = $player->locked;
+    }
 	/**
 	 * Update player contact details
 	 *

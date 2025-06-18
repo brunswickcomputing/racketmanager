@@ -95,14 +95,8 @@ if ( empty( $is_page_header ) ) {
 					<div class="media__content-subinfo">
 						<ul class="list list--inline">
 							<?php
-							$display_opt = $racketmanager->get_options( 'display' );
-							if ( empty( $display_opt['wtn'] ) ) {
-								$rating    = $player->rating;
-								$help_text = __( 'L&WLTA Tennis Rating for', 'racketmanager');
-							} else {
-								$rating    = $player->wtn;
-								$help_text = __( 'World Tennis Number for', 'racketmanager');
-							}
+                            $rating      = $player->wtn;
+                            $help_text   = __( 'World Tennis Number for', 'racketmanager');
 							$match_types = Racketmanager_Util::get_match_types();
 							foreach ( $match_types as $match_type => $description ) {
 								?>

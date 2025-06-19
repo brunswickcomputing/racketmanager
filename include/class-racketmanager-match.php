@@ -2480,16 +2480,13 @@ final class Racketmanager_Match {
 	 * @return object
 	 */
 	public function update_league_with_result(): object {
-		$return                   = new stdClass();
-		$league                   = get_league( $this->league_id );
-		$matches[ $this->id ]     = $this->id;
-		$home_points[ $this->id ] = $this->home_points;
-		$away_points[ $this->id ] = $this->away_points;
+		$return = new stdClass();
+		$league = get_league( $this->league_id );
 		if ( $league->is_championship ) {
 			if ( ! empty( $this->final_round ) ) {
 				$round_data = $league->championship->get_finals( $this->final_round );
 				$round      = $round_data['round'];
-				$league->championship->update_final_results( $matches, $home_points, $away_points, array(), $round, $this->season );
+				$league->championship->proceed( $round );
 				$return->msg     = __( 'Match saved and draw updated', 'racketmanager' );
 				$return->updated = true;
 			} else {

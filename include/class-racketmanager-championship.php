@@ -413,7 +413,7 @@ final class Racketmanager_Championship {
 		$num_matches = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, $round );
 
 		if ( $round < $this->num_rounds ) {
-			$this->proceed( $this->get_final_keys( $round ), $this->get_final_keys( $round + 1 ), $round );
+			$this->proceed( $round );
 		}
 		/* translators: %d: number of matches */
 		$racketmanager->set_message( sprintf( __( 'Updated Results of %d matches', 'racketmanager' ), $num_matches ) );
@@ -546,13 +546,16 @@ final class Racketmanager_Championship {
 	/**
 	 * Proceed to next final round
 	 *
-	 * @param string $current current round name.
-	 * @param string $next next round name.
 	 * @param int $round round number.
 	 *
 	 * @return void
 	 */
-	private function proceed( string $current, string $next, int $round ): void {
+	public function proceed( int $round ): void {
+        if ( $round >= $this->num_rounds ) {
+            return;
+        }
+        $current    = $this->get_final_keys( $round );
+        $next       = $this->get_final_keys( $round + 1 );
 		$legs       = false;
 		$prev_home  = null;
 		$prev_away  = null;

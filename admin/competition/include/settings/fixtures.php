@@ -16,8 +16,6 @@ $tab_name = 'fixtures';
     <div class="row gx-3 mb-3">
         <div class="col-md-3 mb-3 mb-md-0">
             <?php
-            debug_to_console( $competition->config->fixed_match_dates );
-            debug_to_console( $competition->config->home_away );
             if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'fixed_match_dates', $racketmanager->error_fields, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;

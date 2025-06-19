@@ -36,15 +36,15 @@ jQuery(document).ready(function(){
         <div class="tab-content">
             <div class="tab-pane fade" id="errors" role="tabpanel" aria-labelledby="errors-tab">
                 <h2 class="header"><?php _e( 'Player Errors', 'racketmanager' ) ?></h2>
-                <?php include('players/errors.php'); ?>
+                <?php require_once 'players/errors.php'; ?>
             </div>
             <div class="tab-pane fade" id="request" role="tabpanel" aria-labelledby="request-tab">
                 <h2 class="header"><?php _e( 'Player Requests', 'racketmanager' ) ?></h2>
-                <?php include('players/requests.php'); ?>
+                <?php require_once 'players/requests.php'; ?>
             </div>
             <div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
                 <h2 class="header"><?php _e( 'Players', 'racketmanager' ) ?></h2>
-                <?php include('players/players.php'); ?>
+                <?php require_once 'players/players.php'; ?>
             </div>
         </div>
     </div>

@@ -89,7 +89,7 @@ $msg        = null;
                         $msg        = $racketmanager->error_messages[$msg_id] ?? null;
                     }
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $competition->num_rubbers ) ? esc_html( $competition->num_rubbers ) : null; ?>"  placeholder="<?php esc_html_e( 'Number of sets', 'racketmanager' ); ?>" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $competition->num_rubbers ) ? esc_html( $competition->num_rubbers ) : null; ?>"  placeholder="<?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?>" />
                     <label for="num_rubbers"><?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {

@@ -330,11 +330,11 @@ $msg         = null;
                     ?>
                     <legend class="form-check-label <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixed match dates', 'racketmanager' ); ?></legend>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true" <?php echo empty( $fixed_match_dates ) ? null : ' checked'; ?> />
+                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="fixedMatchDates" id="fixedMatchDatesTrue" value="true" <?php checked( 1, empty( $fixed_match_dates ) ? null : 1 ); ?> />
                         <label class="form-check-label" for="fixedMatchDatesTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"<?php echo empty( $fixed_match_dates ) ? ' checked' : null; ?> />
+                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="fixedMatchDates" id="fixedMatchDatesFalse" value="false"<?php checked( 1, empty( $fixed_match_dates ) ? 1 : null ); ?> />
                         <label class="form-check-label" for="fixedMatchDatesFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
                     </div>
                     <?php
@@ -365,11 +365,11 @@ $msg         = null;
                     ?>
                     <legend class="form-check-label <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></legend>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayTrue" onclick="Racketmanager.setNumMatchDays()" value="true" <?php echo empty( $home_away ) ? null : ' checked'; ?> />
+                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayTrue" onclick="Racketmanager.setNumMatchDays()" value="true" <?php checked( 1, empty( $home_away ) ? null : 1 ); ?> />
                         <label class="form-check-label" for="homeAwayTrue"><?php echo esc_html( $home_away_desc_true ); ?></label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayFalse" onclick="Racketmanager.setNumMatchDays()" value="false"<?php echo empty( $home_away ) ? ' checked' : null; ?> />
+                        <input type="radio" class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="homeAway" id="homeAwayFalse" onclick="Racketmanager.setNumMatchDays()" value="false"<?php checked( 1, empty( $home_away ) ? 1 : null ); ?> />
                         <label class="form-check-label" for="homeAwayFalse"><?php echo esc_html( $home_away_desc_false ); ?></label>
                     </div>
                     <?php

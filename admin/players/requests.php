@@ -12,13 +12,14 @@ namespace Racketmanager;
 /** @var int $club_id */
 /** @var string $status */
 /** @var array $player_requests */
+$hint_title = 'title="';
 ?>
 <!-- Club Player Request Filter -->
 <form id="club-player-request-filter" method="get" action="" class="form-control mb-3">
     <input type="hidden" name="page" value="racketmanager-players" />
     <input type="hidden" name="view" value="requests" />
     <div class="col-auto">
-        <label for="club"></label>
+        <label for="club" class="visually-hidden"><?php esc_html_e( 'Club selection', 'racketmanager' ); ?></label>
         <select class="select" name="club" id="club">
             <option value="all"><?php esc_html_e( 'All clubs', 'racketmanager' ); ?></option>
             <?php
@@ -29,7 +30,8 @@ namespace Racketmanager;
             }
             ?>
         </select>
-        <label for="status"></label><select class="select" name="status" id="status">
+        <label for="status" class="visually-hidden"><?php esc_html_e( 'Status selection', 'racketmanager' ); ?></label>
+        <select class="select" name="status" id="status">
             <option value="all" <?php echo 'all' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'All', 'racketmanager' ); ?></option>
             <option value="outstanding" <?php echo 'outstanding' === $status ? 'selected' : ''; ?>><?php esc_html_e( 'Outstanding', 'racketmanager' ); ?></option>
         </select>
@@ -54,7 +56,7 @@ namespace Racketmanager;
     <table class="table table-striped">
         <thead class="table-dark">
             <tr>
-                <th class="check-column"><label for="checkALL"></label><input type="checkbox" name="checkAll" id="checkALL" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
+                <th class="check-column"><label for="checkALL" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkALL" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
                 <th><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'First Name', 'racketmanager' ); ?></th>
@@ -71,16 +73,16 @@ namespace Racketmanager;
             foreach ( $player_requests as $request ) {
                 ?>
                 <tr>
-                    <td class="check-column"><label for="playerRequest-<?php echo esc_html( $request->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" id="playerRequest-<?php echo esc_html( $request->id ); ?>" /></<td>
+                    <td class="check-column"><label for="playerRequest-<?php echo esc_html( $request->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" id="playerRequest-<?php echo esc_html( $request->id ); ?>" /></<td>
                     <td><?php echo esc_html( $request->id ); ?></<td>
                     <td><?php echo esc_html( $request->club->shortcode ); ?></<td>
                     <td><?php echo esc_html( $request->player->firstname ); ?></<td>
                     <td><?php echo esc_html( $request->player->surname ); ?></<td>
                     <td><?php echo esc_html( $request->player->gender ); ?></<td>
                     <td><?php echo esc_html( $request->player->btm ); ?></<td>
-                    <td <?php echo empty( $request->requested_user ) ? null : 'title="' . esc_html__( 'Requested by', 'racketmanager' ) . ' ' . esc_html( $request->requested_user_name ) . '"'; ?>><?php echo esc_html( $request->requested_date ); ?></<td>
-                    <td <?php echo empty( $request->created_user ) ? null : 'title="' . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->created_user_name ) . '"'; ?>><?php echo esc_html( $request->created_date ); ?></<td>
-                    <td <?php echo empty( $request->removed_user ) ? null : 'title="' . esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $request->removed_user_name ) . '"'; ?>><?php echo esc_html( $request->removed_date ); ?></<td>
+                    <td <?php echo empty( $request->requested_user ) ? null : $hint_title . esc_html__( 'Requested by', 'racketmanager' ) . ' ' . esc_html( $request->requested_user_name ) . '"'; ?>><?php echo esc_html( $request->requested_date ); ?></<td>
+                    <td <?php echo empty( $request->created_user ) ? null : $hint_title . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->created_user_name ) . '"'; ?>><?php echo esc_html( $request->created_date ); ?></<td>
+                    <td <?php echo empty( $request->removed_user ) ? null : $hint_title . esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $request->removed_user_name ) . '"'; ?>><?php echo esc_html( $request->removed_date ); ?></<td>
                 </tr>
                 <?php
             }

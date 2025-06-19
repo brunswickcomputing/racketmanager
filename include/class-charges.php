@@ -1,10 +1,10 @@
 <?php
 /**
- * Racketmanager_Charges API: Racketmanager_Charges class
+ * Charges API: Charges class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Racketmanager_Charges
+ * @subpackage Charges
  */
 
 namespace Racketmanager;
@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the charges object
  */
-final class Racketmanager_Charges {
+final class Charges {
     /**
      * Id
      *
@@ -105,7 +105,7 @@ final class Racketmanager_Charges {
                 return false;
             }
 
-            $charge = new Racketmanager_Charges( $charge );
+            $charge = new Charges( $charge );
 
             wp_cache_set( $charge->id, $charge, 'charges' );
         }

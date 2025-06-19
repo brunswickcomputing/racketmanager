@@ -525,9 +525,9 @@ function get_user( object|int|string $user = null ): ?object {
 }
 
 /**
- * Get Racketmanager_Charges object
+ * Get Charges object
  *
- * @param object|int|string|null $charges Racketmanager_Charges ID or charges object. Defaults to global $charges.
+ * @param object|int|string|null $charges Charges ID or charges object. Defaults to global $charges.
  *
  * @return object|null charges|null
  */
@@ -536,12 +536,12 @@ function get_charge( object|int|string $charges = null ): ?object {
         $charges = $GLOBALS['charges'];
     }
 
-    if ( $charges instanceof Racketmanager_Charges ) {
+    if ( $charges instanceof Charges ) {
         $_charges = $charges;
     } elseif ( is_object( $charges ) ) {
-        $_charges = new Racketmanager_Charges( $charges );
+        $_charges = new Charges( $charges );
     } else {
-        $_charges = Racketmanager_Charges::get_instance( $charges );
+        $_charges = Charges::get_instance( $charges );
     }
 
     if ( ! $_charges ) {

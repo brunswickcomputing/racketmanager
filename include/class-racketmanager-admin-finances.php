@@ -206,7 +206,7 @@ final class RacketManager_Admin_Finances extends RacketManager_Admin {
 					$charge->fee_event       = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
 					$valid                   = $this->validate_charge( $charge );
 					if ( $valid ) {
-						$charge = new Racketmanager_Charges( $charge );
+						$charge = new Charges( $charge );
 						$this->set_message( __( 'Charges added', 'racketmanager' ) );
 					} else {
 						$this->set_message( __( 'Error with charge creation', 'racketmanager' ), 'error' );

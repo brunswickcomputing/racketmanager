@@ -618,7 +618,7 @@ final class Racketmanager_Tournament {
 				$charge->date            = $this->date_start;
 				$charge->fee_competition = $tournament->fees->competition;
 				$charge->fee_event       = $tournament->fees->event;
-				$this->charge            = new Racketmanager_Charges( $charge );
+				$this->charge            = new Charges( $charge );
 			}
 		} else {
 			$return->valid = false;

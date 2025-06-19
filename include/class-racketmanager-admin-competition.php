@@ -536,7 +536,7 @@ final class RacketManager_Admin_Competition extends RacketManager_Admin {
 				$charge->date            = $fee_date;
 				$charge->fee_competition = $current_season->fee_competition;
 				$charge->fee_event       = $current_season->fee_event;
-				$charge                  = new Racketmanager_Charges( $charge );
+				$charge                  = new Charges( $charge );
 				$this->schedule_invoice_send( $charge->id );
 			}
 		} else {

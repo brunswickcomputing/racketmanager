@@ -4,6 +4,7 @@
  */
 namespace Racketmanager;
 
+/** @var array $options */
 ?>
 <div class="form-control">
     <fieldset class="row gx-3 mb-3">
@@ -11,8 +12,8 @@ namespace Racketmanager;
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <select class="form-select" id="billingCurrency" name="billingCurrency">
-                    <option value="GBP" <?php if (isset($options['billing']['billingCurrency']) && $options['billing']['billingCurrency'] == "GBP") echo 'selected="selected"'?>><?php _e('GBP', 'racketmanager') ?></option>
-                    <option value="EUR" <?php if (isset($options['billing']['billingCurrency']) && $options['billing']['billingCurrency'] == "EUR") echo 'selected="selected"'?>><?php _e('EURO', 'racketmanager') ?></option>
+                    <option value="GBP" <?php selected( 'GBP', empty( $options['billing']['billingCurrency'] ) ? null : $options['billing']['billingCurrency'] ); ?>><?php _e('GBP', 'racketmanager') ?></option>
+                    <option value="EUR" <?php selected( 'EUR', empty( $options['billing']['billingCurrency'] ) ? null : $options['billing']['billingCurrency'] ); ?>><?php _e('EURO', 'racketmanager') ?></option>
                 </select>
                 <label for='billingCurrency'><?php _e( 'Billing Currency', 'racketmanager' ) ?></label>
             </div>

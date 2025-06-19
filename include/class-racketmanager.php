@@ -822,7 +822,7 @@ class RacketManager {
 		// Objects.
 		require_once RACKETMANAGER_PATH . 'include/class-charges.php';
 		require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-club.php';
+		require_once RACKETMANAGER_PATH . 'include/class-club.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-club-player.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-championship.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-competition.php';

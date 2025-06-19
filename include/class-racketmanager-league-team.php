@@ -123,9 +123,9 @@ final class Racketmanager_League_Team {
 	/**
 	 * Club object variable
 	 *
-	 * @var Racketmanager_Club|null
+	 * @var Club|null
 	 */
-	public Racketmanager_Club|null $club;
+	public Club|null $club;
 	/**
 	 * Positive points variable
 	 *

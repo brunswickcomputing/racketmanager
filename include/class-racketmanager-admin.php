@@ -1616,7 +1616,7 @@ class RacketManager_Admin extends RacketManager {
 					} elseif ( empty( $club->address ) ) {
 						$this->set_message( __( 'Address required', 'racketmanager' ), 'error' );
 					} else {
-						$club             = new Racketmanager_Club( $club );
+						$club             = new Club( $club );
 						$this->set_message( __( 'Club added', 'racketmanager' ) );
 					}
 				}

@@ -216,18 +216,18 @@ function wp_get_current_url(): ?string {
  * @param object|int|string|null $club Club ID or club object. Defaults to global $club.
  * @param string $search_term type of search.
  *
- * @return Racketmanager_Club|null club|null
+ * @return Club|null club|null
  */
-function get_club( object|int|string $club = null, string $search_term = 'id' ): Racketmanager_Club|null {
+function get_club( object|int|string $club = null, string $search_term = 'id' ): Club|null {
     if ( empty( $club ) && isset( $GLOBALS['club'] ) ) {
         $club = $GLOBALS['club'];
     }
-    if ( $club instanceof Racketmanager_Club ) {
+    if ( $club instanceof Club ) {
         $_club = $club;
     } elseif ( is_object( $club ) ) {
-        $_club = new Racketmanager_Club( $club );
+        $_club = new Club( $club );
     } else {
-        $_club = Racketmanager_Club::get_instance( $club, $search_term );
+        $_club = Club::get_instance( $club, $search_term );
     }
     if ( ! $_club ) {
         return null;

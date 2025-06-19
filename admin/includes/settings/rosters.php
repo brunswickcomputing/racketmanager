@@ -33,22 +33,10 @@ namespace Racketmanager;
     </fieldset>
     <div class="form-floating mb-3">
         <select class="form-select" id="clubPlayerEntry" name="clubPlayerEntry">
-            <option value="secretary"
-            <?php
-            if ( isset( $options['rosters']['rosterEntry'] ) ) {
-                echo ( 'secretary' === $options['rosters']['rosterEntry'] ) ? ' selected' : '';
-            }
-            ?>
-            >
+            <option value="secretary" <?php selected( 'secretary', empty( $options['rosters']['rosterEntry'] ) ? null : $options['rosters']['rosterEntry'] ); ?>>
                 <?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?>
             </option>
-            <option value="captain"
-            <?php
-            if ( isset( $options['rosters']['rosterEntry'] ) ) {
-                echo ( 'captain' === $options['rosters']['rosterEntry'] ) ? ' selected' : '';
-            }
-            ?>
-            >
+            <option value="captain" <?php selected( 'captain', empty( $options['rosters']['rosterEntry'] ) ? null : $options['rosters']['rosterEntry'] ); ?>>
                 <?php esc_html_e( 'Captain', 'racketmanager' ); ?>
             </option>
         </select>

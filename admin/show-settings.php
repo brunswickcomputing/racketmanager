@@ -59,7 +59,6 @@ jQuery(document).ready(function(){
 		</div>
 		<div class="row mb-3">
 			<div class="col-12">
-				<input type='hidden' name='page_options' value='color_headers,color_rows,color_rows_alt,color_rows_ascend,color_rows_descend,color_rows_relegation' />
 				<button type='submit' class='btn btn-primary' name='updateRacketManager'><?php esc_html_e( 'Save Preferences', 'racketmanager' ); ?></button>
 			</div>
 		</div>

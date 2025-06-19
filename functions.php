@@ -557,17 +557,17 @@ function get_charge( object|int|string $charges = null ): ?object {
  *
  * @return object|null invoice|null
  */
-function get_invoice( int $invoice = null ): Racketmanager_Invoice|null {
+function get_invoice( int $invoice = null ): Invoice|null {
     if ( empty( $invoice ) && isset( $GLOBALS['invoice'] ) ) {
         $invoice = $GLOBALS['invoice'];
     }
 
-    if ( $invoice instanceof Racketmanager_Invoice ) {
+    if ( $invoice instanceof Invoice ) {
         $_invoice = $invoice;
     } elseif ( is_object( $invoice ) ) {
-        $_invoice = new Racketmanager_Invoice( $invoice );
+        $_invoice = new Invoice( $invoice );
     } else {
-        $_invoice = Racketmanager_Invoice::get_instance( $invoice );
+        $_invoice = Invoice::get_instance( $invoice );
     }
 
     if ( ! $_invoice ) {

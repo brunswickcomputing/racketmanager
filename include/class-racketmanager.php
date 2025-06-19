@@ -821,7 +821,7 @@ class RacketManager {
 	private function load_libraries(): void {
 		// Objects.
 		require_once RACKETMANAGER_PATH . 'include/class-charges.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-invoice.php';
+		require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-club.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-club-player.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-championship.php';

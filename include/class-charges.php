@@ -394,7 +394,7 @@ final class Charges {
             $invoice->charge_id      = $this->id;
             $invoice->club_id        = $entry->id;
             $invoice->date           = $this->date;
-            $invoice                 = new Racketmanager_Invoice( $invoice );
+            $invoice                 = new Invoice( $invoice );
             $invoice->set_amount( $entry->fee );
             $invoice->set_details( $entry );
             $sent = $invoice->send();

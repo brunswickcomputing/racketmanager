@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Invoice API: invoice class
+ * Invoice API: invoice class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -17,7 +17,7 @@ use DateTime;
 /**
  * Class to implement the invoice object
  */
-final class Racketmanager_Invoice {
+final class Invoice {
 	/**
 	 * Id
 	 *
@@ -132,7 +132,7 @@ final class Racketmanager_Invoice {
 				return false;
 			}
 
-			$invoice = new Racketmanager_Invoice( $invoice );
+			$invoice = new Invoice( $invoice );
 
 			wp_cache_set( $invoice->id, $invoice, 'invoice' );
 		}

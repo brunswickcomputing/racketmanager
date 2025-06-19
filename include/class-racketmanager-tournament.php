@@ -1560,7 +1560,7 @@ final class Racketmanager_Tournament {
 			$invoice->charge_id = $this->charge->id;
 			$invoice->player_id = $player_id;
 			$invoice->date      = gmdate( 'Y-m-d' );
-			$invoice            = new Racketmanager_Invoice( $invoice );
+			$invoice            = new Invoice( $invoice );
 			$invoice->set_amount( $fee );
 			$player         = get_player( $player_id );
 			$charge         = get_charge( $this->charge );

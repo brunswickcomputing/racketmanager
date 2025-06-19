@@ -544,49 +544,47 @@ final class Club {
         } else {
             $old_player = true;
         }
-        if ( empty( $return->error ) ) {
-            if ( $old_player ) {
-                $updated_player = clone $player;
-                if ( empty( $player->email ) ) {
-                    if ( ! empty( $new_player->email ) ) {
-                        $player_change         = true;
-                        $updated_player->email = $new_player->email;
-                    }
-                } elseif ( ! empty( $new_player->email ) && $player->email !== $new_player->email ) {
-                    $return->error      = true;
-                    $return->msg        = __( 'Email address is does not match current email', 'racketmanager' );
-                    $return->status     = 401;
+        if ( empty( $return->error ) && $old_player ) {
+            $updated_player = clone $player;
+            if ( empty( $player->email ) ) {
+                if ( ! empty( $new_player->email ) ) {
+                    $player_change         = true;
+                    $updated_player->email = $new_player->email;
                 }
-                if ( empty( $player->btm ) ) {
-                    if ( ! empty( $new_player->btm ) ) {
-                        $player_change       = true;
-                        $updated_player->btm = $new_player->btm;
-                    }
-                } elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== $new_player->btm ) {
-                    $return->error      = true;
-                    $return->msg        = __( 'LTA Tennis Number does not match current number', 'racketmanager' );
-                    $return->status     = 401;
+            } elseif ( ! empty( $new_player->email ) && $player->email !== $new_player->email ) {
+                $return->error      = true;
+                $return->msg        = __( 'Email address is does not match current email', 'racketmanager' );
+                $return->status     = 401;
+            }
+            if ( empty( $player->btm ) ) {
+                if ( ! empty( $new_player->btm ) ) {
+                    $player_change       = true;
+                    $updated_player->btm = $new_player->btm;
                 }
-                if ( empty( $player->gender ) ) {
-                    if ( ! empty( $new_player->gender ) ) {
-                        $player_change          = true;
-                        $updated_player->gender = $new_player->gender;
-                    }
-                } elseif ( ! empty( $new_player->gender ) && $player->gender !== $new_player->gender ) {
-                    $return->error      = true;
-                    $return->msg        = __( 'Gender does not match current gender', 'racketmanager' );
-                    $return->status     = 401;
+            } elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== $new_player->btm ) {
+                $return->error      = true;
+                $return->msg        = __( 'LTA Tennis Number does not match current number', 'racketmanager' );
+                $return->status     = 401;
+            }
+            if ( empty( $player->gender ) ) {
+                if ( ! empty( $new_player->gender ) ) {
+                    $player_change          = true;
+                    $updated_player->gender = $new_player->gender;
                 }
-                if ( empty( $player->year_of_birth ) ) {
-                    if ( ! empty( $new_player->year_of_birth ) ) {
-                        $player_change                 = true;
-                        $updated_player->year_of_birth = $new_player->year_of_birth;
-                    }
-                } elseif ( ! empty( $new_player->year_of_birth ) && intval( $player->year_of_birth ) !== $new_player->year_of_birth ) {
-                    $return->error      = true;
-                    $return->msg        = __( 'Year of birth does not match current', 'racketmanager' );
-                    $return->status     = 401;
+            } elseif ( ! empty( $new_player->gender ) && $player->gender !== $new_player->gender ) {
+                $return->error      = true;
+                $return->msg        = __( 'Gender does not match current gender', 'racketmanager' );
+                $return->status     = 401;
+            }
+            if ( empty( $player->year_of_birth ) ) {
+                if ( ! empty( $new_player->year_of_birth ) ) {
+                    $player_change                 = true;
+                    $updated_player->year_of_birth = $new_player->year_of_birth;
                 }
+            } elseif ( ! empty( $new_player->year_of_birth ) && intval( $player->year_of_birth ) !== $new_player->year_of_birth ) {
+                $return->error      = true;
+                $return->msg        = __( 'Year of birth does not match current', 'racketmanager' );
+                $return->status     = 401;
             }
         }
         if ( empty( $return->error ) ) {

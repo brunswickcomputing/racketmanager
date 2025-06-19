@@ -1185,7 +1185,25 @@ final class Racketmanager_Match {
 		$away_points      = 0;
 		$home_walkover    = 0;
 		$away_walkover    = 0;
-		if ( ! empty( $this->num_rubbers ) ) {
+		if ( empty( $this->num_rubbers ) ) {
+            if ( empty( $home_points_input ) && empty( $away_points_input ) ) {
+                if ( isset( $custom['sets'] ) ) {
+                    $this->sets = $custom['sets'];
+                    foreach ( $this->sets as $set ) {
+                        if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
+                            if ( $set['player1'] > $set['player2'] ) {
+                                ++ $home_points;
+                            } elseif ( $set['player1'] < $set['player2'] ) {
+                                ++ $away_points;
+                            }
+                        }
+                    }
+                }
+            } else {
+                $home_points = $home_points_input;
+                $away_points = $away_points_input;
+            }
+        } else {
 			$stats                    = array();
 			$stats['rubbers']['home'] = 0;
 			$stats['rubbers']['away'] = 0;
@@ -1308,24 +1326,8 @@ final class Racketmanager_Match {
 			} else {
 				$this->status = 0;
 			}
-		} elseif ( empty( $home_points_input ) && empty( $away_points_input ) ) {
-			if ( isset( $custom['sets'] ) ) {
-				$this->sets = $custom['sets'];
-				foreach ( $this->sets as $set ) {
-					if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
-						if ( $set['player1'] > $set['player2'] ) {
-							++$home_points;
-						} elseif ( $set['player1'] < $set['player2'] ) {
-							++$away_points;
-						}
-					}
-				}
-			}
-		} else {
-			$home_points = $home_points_input;
-			$away_points = $away_points_input;
 		}
-		if ( empty( $home_points ) && empty( $away_points ) ) {
+        if ( empty( $home_points ) && empty( $away_points ) ) {
 			if ( ! empty( $home_points_input ) ) {
 				$home_points = $home_points_input;
 				if ( ! $bye ) {

@@ -12,46 +12,22 @@ namespace Racketmanager;
     <fieldset class="form-control mb-3">
         <legend class="form-check-label"><?php esc_html_e( 'Age Limit Check', 'racketmanager' ); ?></legend>
         <div class="form-check form-check-inline">
-            <input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckTrue" value="true"
-            <?php
-            if ( isset( $options['rosters']['ageLimitCheck'] ) ) {
-                echo ( 'true' === $options['rosters']['ageLimitCheck'] ) ? ' checked' : '';
-            }
-            ?>
-            />
+            <input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckTrue" value="true" <?php checked( 1, empty( $options['rosters']['ageLimitCheck'] ) ? null : 1 ); ?> />
             <label class="form-check-label" for="clubPlayerAgeLimitCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
         </div>
         <div class="form-check form-check-inline">
-            <input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckFalse" value="false"
-            <?php
-            if ( isset( $options['rosters']['ageLimitCheck'] ) ) {
-                echo ( 'false' === $options['rosters']['ageLimitCheck'] ) ? ' checked' : '';
-            }
-            ?>
-            />
+            <input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckFalse" value="false" <?php checked( 1, empty( $options['rosters']['ageLimitCheck'] ) ? 1 : null ); ?> />
             <label class="form-check-label" for="clubPlayerAgeLimitCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
         </div>
     </fieldset>
     <fieldset class="form-control mb-3">
         <legend class="form-check-label"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></legend>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="btmRequired" name="btmRequired" value="1"
-            <?php
-            if ( isset( $options['rosters']['btm'] ) ) {
-                echo ( '1' === $options['rosters']['btm'] ) ? ' checked' : '';
-            }
-            ?>
-            />
+            <input class="form-check-input" type="radio" id="btmRequired" name="btmRequired" value="1" <?php checked( 1, empty( $options['rosters']['btm'] ) ? null : 1 ); ?> />
             <label for='btmRequired'><?php esc_html_e( 'Required', 'racketmanager' ); ?></label>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="btmOptional" name="btmRequired" value="0"
-            <?php
-            if ( isset( $options['rosters']['btm'] ) ) {
-                echo ( '0' === $options['rosters']['btm'] ) ? ' checked' : '';
-            }
-            ?>
-            />
+            <input class="form-check-input" type="radio" id="btmOptional" name="btmRequired" value="0" <?php checked( 1, empty( $options['rosters']['btm'] ) ? 1 : null ); ?> />
             <label for='btmOptional'><?php esc_html_e( 'Optional', 'racketmanager' ); ?></label>
         </div>
     </fieldset>

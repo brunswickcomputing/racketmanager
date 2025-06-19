@@ -13,7 +13,7 @@ namespace Racketmanager;
  *
  * @author Paul Moffat
  */
-class Racketmanager_Ajax_Admin extends Racketmanager_Ajax {
+class Ajax_Admin extends Ajax {
 	/**
 	 * Register ajax actions.
 	 */

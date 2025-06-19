@@ -19,7 +19,7 @@ use Stripe\StripeClient;
  *
  * @author Paul Moffat
  */
-class Racketmanager_Ajax_Frontend extends Racketmanager_Ajax {
+class Ajax_Frontend extends Ajax {
 	public string $team_not_found;
 	public string $entry_form_errors ;
 	public string $no_event_id;

@@ -863,8 +863,8 @@ class RacketManager {
 
 		// Global libraries.
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-stripe.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-ajax-frontend.php';
+		require_once RACKETMANAGER_PATH . 'include/class-ajax.php';
+		require_once RACKETMANAGER_PATH . 'include/class-ajax-frontend.php';
 		require_once RACKETMANAGER_PATH . 'include/class-shortcodes.php';
 		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-club.php';
 		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-competition.php';
@@ -887,7 +887,7 @@ class RacketManager {
 	 * Initialise components
 	 */
     public function init_components(): void {
-        $this->ajax_frontend          = new RacketManager_Ajax_Frontend();
+        $this->ajax_frontend          = new Ajax_Frontend();
         $this->shortcodes             = new Shortcodes();
         $this->shortcodes_club        = new Shortcodes_Club();
         $this->shortcodes_competition = new Shortcodes_Competition();

@@ -24,11 +24,10 @@ final class Validator_Entry_Form extends Validator {
      */
     public function nonce( string $nonce_key ): object {
         if ( !isset( $_POST['_wpnonce'] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), $nonce_key ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = '';
-            $this->err_msgs[$this->error_id] = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-            ++$this->error_id;
-        }
+            $this->error      = true;
+            $this->err_flds[] = '';
+            $this->err_msgs[] = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+         }
         return $this;
     }
 
@@ -38,10 +37,9 @@ final class Validator_Entry_Form extends Validator {
      * @return object updated validation object.
      */
     public function logged_in_entry(): object {
-        $this->error = true;
-        $this->err_flds[$this->error_id] = 'clubId';
-        $this->err_msgs[$this->error_id] = __( 'You must be logged in to submit an entry', 'racketmanager' );
-        ++$this->error_id;
+        $this->error      = true;
+        $this->err_flds[] = 'clubId';
+        $this->err_msgs[] = __( 'You must be logged in to submit an entry', 'racketmanager' );
         return $this;
     }
 
@@ -54,10 +52,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function club( ?string $club ): object {
         if ( ! $club ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'clubId';
-            $this->err_msgs[$this->error_id] = __( 'Select the club you are a member of', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'clubId';
+            $this->err_msgs[] = __( 'Select the club you are a member of', 'racketmanager' );
         }
         return $this;
     }
@@ -71,16 +68,14 @@ final class Validator_Entry_Form extends Validator {
      */
     public function events_entry( array $events, int $max_entries = null ): object {
         if ( empty( $events ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'event';
-            $this->err_msgs[$this->error_id] = __( 'You must select a event to enter', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'event';
+            $this->err_msgs[] = __( 'You must select a event to enter', 'racketmanager' );
         } elseif ( ! empty( $max_entries ) ) {
             if ( count( $events ) > $max_entries ) {
-                $this->error = true;
-                $this->err_flds[$this->error_id] = 'event';
-                $this->err_msgs[$this->error_id] = __( 'You have entered too many events', 'racketmanager' );
-                ++$this->error_id;
+                $this->error      = true;
+                $this->err_flds[] = 'event';
+                $this->err_msgs[] = __( 'You have entered too many events', 'racketmanager' );
             }
         }
         return $this;
@@ -96,11 +91,10 @@ final class Validator_Entry_Form extends Validator {
      */
     public function teams( array|string|null $teams, string $field_ref, string $field_name ): object {
         if ( empty( $teams ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'event-' . $field_ref;
+            $this->error      = true;
+            $this->err_flds[] = 'event-' . $field_ref;
             /* translators: %s: competition name */
-            $this->err_msgs[$this->error_id] = sprintf( __( 'No teams selected for %s', 'racketmanager' ), $field_name );
-            ++$this->error_id;
+            $this->err_msgs[] = sprintf( __( 'No teams selected for %s', 'racketmanager' ), $field_name );
         }
         return $this;
     }
@@ -113,12 +107,11 @@ final class Validator_Entry_Form extends Validator {
      */
     public function num_courts_available( int $num_courts_available ): object {
         if ( empty( $num_courts_available ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'numCourtsAvailable';
+            $this->error      = true;
+            $this->err_flds[] = 'numCourtsAvailable';
             /* translators: %s: competition name */
-            $this->err_msgs[$this->error_id] = __( 'You must specify the number of courts available', 'racketmanager' );
-            ++$this->error_id;
-        }
+            $this->err_msgs[] = __( 'You must specify the number of courts available', 'racketmanager' );
+         }
         return $this;
     }
 
@@ -136,11 +129,10 @@ final class Validator_Entry_Form extends Validator {
         $court_needs_by_day = $court_needs * ceil( $court_data['teams'] / 2 );
         $match_day_name = Racketmanager_Util::get_match_day( $match_day );
         if ( $court_needs_by_day > $num_courts_available ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'numCourtsAvailable';
+            $this->error      = true;
+            $this->err_flds[] = 'numCourtsAvailable';
             /* translators: %1$s: match day,  %2$s: match time, %3$s: courts needed */
-            $this->err_msgs[$this->error_id] = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
-            ++$this->error_id;
+            $this->err_msgs[] = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
         }
         return $this;
     }
@@ -153,10 +145,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function entry_acceptance( string $acceptance ): object {
         if ( empty( $acceptance ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'acceptance';
-            $this->err_msgs[$this->error_id] = __( 'You must agree to the rules', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'acceptance';
+            $this->err_msgs[] = __( 'You must agree to the rules', 'racketmanager' );
         }
         return $this;
     }
@@ -267,10 +258,9 @@ final class Validator_Entry_Form extends Validator {
         $end_time->modify( '+2 hours' );
         $current_match_time = DateTime::createFromFormat( $date_format, $schedule_time );
         if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'matchtime-' . $field_ref;
-            $this->err_msgs[$this->error_id] = __( 'Match overlap', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'matchtime-' . $field_ref;
+            $this->err_msgs[] = __( 'Match overlap', 'racketmanager' );
         }
         return $this;
     }
@@ -294,10 +284,9 @@ final class Validator_Entry_Form extends Validator {
             $err_flds = 'partner-' . $field_ref;
         }
         if ( empty( $partner ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = $err_flds;
-            $this->err_msgs[$this->error_id] = __( 'Partner not selected', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = $err_flds;
+            $this->err_msgs[] = __( 'Partner not selected', 'racketmanager' );
         } else {
             $partner_found = false;
             $partner_teams = $event->get_teams(
@@ -312,10 +301,9 @@ final class Validator_Entry_Form extends Validator {
                 }
             }
             if ( $partner_found ) {
-                $this->error = true;
-                $this->err_flds[$this->error_id] = $err_flds;
-                $this->err_msgs[$this->error_id] = __( 'Partner is in another team in this event', 'racketmanager' );
-                ++$this->error_id;
+                $this->error      = true;
+                $this->err_flds[] = $err_flds;
+                $this->err_msgs[] = __( 'Partner is in another team in this event', 'racketmanager' );
             } else {
                 $this->validate_partner_age( $partner, $event, $err_flds, $date_end );
             }
@@ -328,34 +316,30 @@ final class Validator_Entry_Form extends Validator {
         }
         $partner = get_player( $partner_id );
         if ( ! $partner ) {
-            $this->error                       = true;
-            $this->err_flds[ $this->error_id ] = $err_flds;
-            $this->err_msgs[ $this->error_id ] = __( 'Partner not found', 'racketmanager' );
-            ++ $this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = $err_flds;
+            $this->err_msgs[] = __( 'Partner not found', 'racketmanager' );
         }
         $partner_age = substr( $date_end, 0, 4 ) - intval( $partner->year_of_birth );
         if ( empty( $partner->age ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = $err_flds;
-            $this->err_msgs[$this->error_id] = __( 'Partner has no age specified', 'racketmanager' );
-            ++$this->error_id;
-        } elseif ( $event->age_limit >= 30 ) {
+            $this->error      = true;
+            $this->err_flds[] = $err_flds;
+            $this->err_msgs[] = __( 'Partner has no age specified', 'racketmanager' );
+         } elseif ( $event->age_limit >= 30 ) {
             if ( 'F' === $partner->gender && ! empty( $event->age_offset ) ) {
                 $age_limit = $event->age_limit - $event->age_offset;
             } else {
                 $age_limit = $event->age_limit;
             }
             if ( $partner_age < $age_limit ) {
-                $this->error = true;
-                $this->err_flds[$this->error_id] = $err_flds;
-                $this->err_msgs[$this->error_id] = __( 'Partner is too young', 'racketmanager' );
-                ++$this->error_id;
+                $this->error      = true;
+                $this->err_flds[] = $err_flds;
+                $this->err_msgs[] = __( 'Partner is too young', 'racketmanager' );
             }
         } elseif ( $partner_age > $event->age_limit ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = $err_flds;
-            $this->err_msgs[$this->error_id] = __( 'Partner is too old', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = $err_flds;
+            $this->err_msgs[] = __( 'Partner is too old', 'racketmanager' );
         }
     }
     /**
@@ -366,16 +350,14 @@ final class Validator_Entry_Form extends Validator {
      */
     public function tournament_open( object $tournament ): object {
         if ( empty( $tournament->date_closing ) ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'event';
-            $this->err_msgs[$this->error_id] = __( 'Tournament close date not set', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'event';
+            $this->err_msgs[] = __( 'Tournament close date not set', 'racketmanager' );
         } else {
             if ( !$tournament->is_open && !$tournament->is_closed ) {
-                $this->error = true;
-                $this->err_flds[$this->error_id] = 'event';
-                $this->err_msgs[$this->error_id] = __( 'Tournament not open for entries', 'racketmanager' );
-                ++$this->error_id;
+                $this->error      = true;
+                $this->err_flds[] = 'event';
+                $this->err_msgs[] = __( 'Tournament not open for entries', 'racketmanager' );
             }
         }
         return $this;
@@ -388,10 +370,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function competition_open( object $competition ): object {
         if ( ! $competition->is_open ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'acceptance';
-            $this->err_msgs[$this->error_id] = __( 'Competition not open for entries', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'acceptance';
+            $this->err_msgs[] = __( 'Competition not open for entries', 'racketmanager' );
         }
         return $this;
     }
@@ -402,10 +383,9 @@ final class Validator_Entry_Form extends Validator {
      * @return object $validation updated validation object.
      */
     public function weekend_match( string $field_ref ): object {
-        $this->error = true;
-        $this->err_flds[$this->error_id] = 'matchday-' . $field_ref;
-        $this->err_msgs[$this->error_id] = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
-        ++$this->error_id;
+        $this->error      = true;
+        $this->err_flds[] = 'matchday-' . $field_ref;
+        $this->err_msgs[] = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
         return $this;
     }
 
@@ -417,10 +397,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function free_slots( string $slots ): object {
         if ( $slots < 1 ) {
-            $this->error = true;
-            $this->err_flds[$this->error_id] = 'event';
-            $this->err_msgs[$this->error_id] = __( 'Weekend games not allowed when free weekday slots', 'racketmanager' );
-            ++$this->error_id;
+            $this->error      = true;
+            $this->err_flds[] = 'event';
+            $this->err_msgs[] = __( 'Weekend games not allowed when free weekday slots', 'racketmanager' );
         }
         return $this;
     }

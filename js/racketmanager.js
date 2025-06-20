@@ -1461,23 +1461,8 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 			jQuery(modal).modal('hide')
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let message = '';
-				for (let errorMsg of data[1]) {
-					message += errorMsg + '<br />';
-				}
-				let errorFields = data[2];
-				for (let errorField of errorFields) {
-					let id = '#'.concat(errorField);
-					jQuery(id).addClass("is-invalid");
-				}
-				jQuery(alert_response_2).html(message);
-			} else {
-				jQuery(alert_response_2).text(response.statusText);
-			}
+			Racketmanager.handleAjaxError(response, alert_response_2, alert_id_2);
 			jQuery(alert_id_2).show();
-			jQuery(alert_id_2).addClass('alert--danger');
 		},
 		complete: function () {
 		}

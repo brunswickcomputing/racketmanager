@@ -1848,46 +1848,42 @@ class Ajax_Frontend extends Ajax {
 	 * @return void
 	 */
 	public function reset_match_result(): void {
-		$return    = array();
-		$err_msg   = array();
-		$err_field = array();
-		$valid     = true;
 		$msg       = null;
         $match_id  = null;
-		if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-option' ) ) {
-			$valid       = false;
-			$err_field[] = '';
-			$err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-		}
-		if ( $valid ) {
-			$modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-			if ( $modal ) {
-				$match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-				if ( $match_id ) {
-					$match = get_match( $match_id );
-					if ( $match ) {
-						$match->reset_result();
-						$msg   = __( 'Match result reset', 'racketmanager' );
-					} else {
-						$valid     = false;
-						$err_msg[] = $this->match_not_found;
-					}
-				} else {
-					$valid     = false;
-					$err_msg[] = $this->no_match_id;
-				}
-			} else {
-				$valid     = false;
-				$err_msg[] = $this->no_modal;
-			}
-		}
-		if ( $valid ) {
-			array_push( $return, $msg, $modal, $match_id );
+        $modal     = null;
+        $return    = $this->check_security_token( 'racketmanager_nonce', 'match-option');
+        if ( empty( $return->error ) ) {
+            $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            if ( ! $modal ) {
+                $return->error  = true;
+                $return->msg    = $this->no_modal;
+                $return->status = 404;
+            }
+            if ( ! $match_id ) {
+                $return->error  = true;
+                $return->msg    = $this->no_match_id;
+                $return->status = 404;
+            }
+        }
+        if ( empty( $return->error ) ) {
+            $match = get_match( $match_id );
+            if ( $match ) {
+                $match->reset_result();
+                $msg   = __( 'Match result reset', 'racketmanager' );
+            } else {
+                $return->error  = true;
+                $return->msg    = $this->match_not_found;
+                $return->status = 404;
+            }
+        }
+		if ( empty( $return->error ) ) {
+            $return->msg      = $msg;
+            $return->modal    = $modal;
+            $return->match_id = $match_id;
 			wp_send_json_success( $return );
 		} else {
-			$msg = __( 'Unable to reset match', 'racketmanager' );
-			array_push( $return, $msg, $err_msg, $err_field );
-			wp_send_json_error( $return, '500' );
+			wp_send_json_error( $return, $return->status );
 		}
 	}
 	/**

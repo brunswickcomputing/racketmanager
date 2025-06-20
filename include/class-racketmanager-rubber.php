@@ -699,20 +699,11 @@ final class Racketmanager_Rubber {
 										$player_age = substr( $date_end, 0, 4 ) - intval( $player->year_of_birth );
 									}
 									$age_limit = $match->league->event->age_limit;
-									if ( $age_limit >= 30 ) {
-										if ( ! empty( $match->league->event->age_offset ) && 'F' === $player->gender ) {
-											$age_limit -= $match->league->event->age_offset;
-										}
-										if ( $player_age < $age_limit ) {
-											/* translators: %1$d: player age, %2$d: event age limit */
-											$error = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player_age, $age_limit );
-											$match->add_player_result_check( $team->id, $player->id, $error, $this->id );
-										}
-									} elseif ( $player_age > $age_limit ) {
-										/* translators: %1$d: player age, %2$d: event age limit */
-										$error = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player_age, $age_limit );
-										$match->add_player_result_check( $team->id, $player->id, $error, $this->id );
-									}
+                                    $age_check = Racketmanager_Util::check_age_within_limit( $player->age, $age_limit, $player->gender, $match->league->event->age_offset );
+                                    if ( ! $age_check->valid ) {
+                                        $error = $age_check->msg;
+                                        $match->add_player_result_check( $team->id, $player->id, $error, $this->id );
+                                    }
 								}
 							}
 						}

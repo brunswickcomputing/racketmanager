@@ -246,7 +246,7 @@ function tournament_match( int $match_id, array $args = array() ): void {
      *
      * @category template-tags
      */
-    function match_detail( int $match_id, ?int $player_id ): string {
+    function match_detail( int $match_id, ?int $player_id = null ): string {
         $args['id'] = $match_id;
         if ( $player_id ) {
             $args['player'] = $player_id;

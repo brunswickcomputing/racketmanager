@@ -939,4 +939,35 @@ class Racketmanager_Util {
 		$email_opt_ins = self::get_email_opt_ins();
 		return empty( $email_opt_ins[ $opt_in ] ) ? __( 'Unknown', 'racketmanager' ) : $email_opt_ins[ $opt_in ];
 	}
+
+    /**
+     * Check age within limit
+     *
+     * @param int|null $player_age
+     * @param int $age_limit
+     * @param string $gender
+     * @param int|null $age_offset
+     *
+     * @return stdClass
+     */
+    public static function check_age_within_limit( ?int $player_age, int $age_limit, string $gender, ?int $age_offset ): object {
+        $age_check        = new stdClass();
+        $age_check->valid = true;
+        $age_check->msg   = null;
+        if ( empty( $player_age ) ) {
+            $age_check->valid = false;
+        } elseif ( $age_limit >= 30 ) {
+            if ( ! empty( $age_offset ) && 'F' === $gender ) {
+                $age_limit -= $age_offset;
+            }
+            if ( $player_age < $age_limit ) {
+                $age_check->valid = false;
+                $age_check->msg   = sprintf( __( 'player age (%1$d) less than event age limit (%2$d)', 'racketmanager' ), $player_age, $age_limit );
+            }
+        } elseif ( $player_age > $age_limit ) {
+            $age_check->valid = false;
+            $age_check->msg   = sprintf( __( 'player age (%1$d) greater than event age limit (%2$d)', 'racketmanager' ), $player_age, $age_limit );
+        }
+        return $age_check;
+    }
 }

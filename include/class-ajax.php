@@ -252,8 +252,9 @@ class Ajax {
                     $result_confirmation = $rm_options[ $match->league->event->competition->type ]['resultConfirmation'];
                     if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
                         $match->confirmed = 'Y';
-                        $update           = $match->update_league_with_result();
-                        $msg              = $update->msg;
+                        $match->set_confirmed();
+                        $update = $match->update_league_with_result();
+                        $msg    = $update->msg;
                         if ( ! current_user_can( 'manage_racketmanager' ) ) {
                             $match_confirmed = 'Y';
                             $match->result_notification( $match_confirmed, $match_message );

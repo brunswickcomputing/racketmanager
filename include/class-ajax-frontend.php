@@ -225,91 +225,55 @@ class Ajax_Frontend extends Ajax {
 	 * @see templates/team.php
 	 */
 	public function update_team(): void {
-        $captain_id    = null;
-        $contactno     = null;
-        $contactemail  = null;
-		$match_day     = null;
-        $matchtime     = null;
-        $team          = null;
-        $event_id      = null;
-		$return = $this->check_security_token( 'racketmanager_nonce', 'team-update' );
-		if ( empty( $return->error ) ) {
-			$event_id = empty( $_POST['event_id'] ) ? null : intval( $_POST['event_id'] );
-			$team_id  = empty( $_POST['team_id'] ) ? null : intval( $_POST['team_id'] );
-			if ( $event_id ) {
-				$event_id = intval( $_POST['event_id'] );
-			} else {
-				$return->error      = true;
-                $return->status     = 404;
-				$return->err_flds[] = 'team';
-				$return->err_msgs[] = __( 'Event not selected', 'racketmanager' );
-			}
-			if ( $team_id ) {
-				$team_id = intval( $_POST['team_id'] );
-				$team = get_team( $team_id );
-                if ( ! $team ) {
-	                $return->error      = true;
-	                $return->status     = 404;
-	                $return->err_flds[] = 'team-' . $event_id;
-	                $return->err_msgs[] = $this->team_not_found;
-                }
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'team-' . $event_id;
-				$return->err_msgs[] = __( 'Team not selected', 'racketmanager' );
-			}
-			if ( ! empty( $_POST[ 'captainId-' . $event_id . '-' . $team_id ] ) ) {
-				$captain_id = sanitize_text_field( wp_unslash( $_POST[ 'captainId-' . $event_id . '-' . $team_id ] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'captain-' . $event_id . '-' . $team_id;
-				$return->err_msgs[] = __( 'Captain is required', 'racketmanager' );
-			}
-			if ( ! empty( $_POST[ 'contactno-' . $event_id . '-' . $team_id ] ) ) {
-				$contactno = sanitize_text_field( wp_unslash( $_POST[ 'contactno-' . $event_id . '-' . $team_id ] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'contactno-' . $event_id . '-' . $team_id;
-				$return->err_msgs[] = __( 'Contact number is required', 'racketmanager' );
-			}
-			if ( ! empty( $_POST[ 'contactemail-' . $event_id . '-' . $team_id ] ) ) {
-				$contactemail = sanitize_text_field( wp_unslash( $_POST[ 'contactemail-' . $event_id . '-' . $team_id ] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'contactemail-' . $event_id . '-' . $team_id;
-				$return->err_msgs[] = __( 'Email address is required', 'racketmanager' );
-			}
-			if ( isset( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] ) ) {
-				$match_day     = intval( $_POST[ 'matchday-' . $event_id . '-' . $team_id ] );
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'matchday-' . $event_id . '-' . $team_id;
-				$return->err_msgs[] = __( 'Match day is required', 'racketmanager' );
-			}
-			if ( ! empty( $_POST[ 'matchtime-' . $event_id . '-' . $team_id ] ) ) {
-				$matchtime = sanitize_text_field( wp_unslash( $_POST[ 'matchtime-' . $event_id . '-' . $team_id ] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'matchtime-' . $event_id . '-' . $team_id;
-				$return->err_msgs[] = __( 'Match day is required', 'racketmanager' );
-			}
-		}
-		if ( empty( $return->error ) ) {
-			$msg = $team->update_event( $event_id, $captain_id, $contactno, $contactemail, $match_day, $matchtime );
-			wp_send_json_success( $msg );
-		} else {
-            if ( empty( $return->msg ) ) {
-	            $return->msg = __( 'Unable to update team', 'racketmanager' );
-            }
-			wp_send_json_error( $return, $return->status );
-		}
+        $team_details = null;
+        $team_id      = null;
+        $event_id     = null;
+        $validator    = new Validator();
+        $validator    = $validator->check_security_token( 'racketmanager_nonce', 'team-update' );
+		if ( empty( $validator->error ) ) {
+            $event_id = empty( $_POST['event_id'] ) ? null : intval( $_POST['event_id'] );
+            $team_id  = empty( $_POST['team_id'] ) ? null : intval( $_POST['team_id'] );
+            $validator = $validator->event( $event_id );
+            $validator = $validator->team( $team_id );
+        }
+        if ( empty( $validator->error ) ) {
+            $field_ref    = $event_id . '-' . $team_id;
+            $team_details = $this->get_team_input( $field_ref );
+            $validator    = $validator->captain( $team_details->captain_id, $team_details->contactno, $team_details->contactemail, $field_ref );
+            $validator    = $validator->telephone( $team_details->contactno, $field_ref );
+            $validator    = $validator->email( $team_details->contactemail, $team_details->captain_id, true, $field_ref );
+            $validator    = $validator->match_day( $team_details->match_day, $field_ref );
+            $validator    = $validator->match_time( $team_details->match_time, $field_ref );
+        }
+        if ( empty( $validator->error ) ) {
+            $team = get_team( $team_id );
+            $msg = $team->update_event( $event_id, $team_details->captain_id, $team_details->contactno, $team_details->contactemail, $team_details->match_day, $team_details->match_time );
+            wp_send_json_success( $msg );
+        }
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to update team', 'racketmanager' );
+        }
+        wp_send_json_error( $return, $return->status );
 	}
+
+    /**
+     * Get team details from input
+     *
+     * @param string $field_ref
+     *
+     * @return stdClass
+     */
+    private function get_team_input( string $field_ref ): object {
+        $team_details               = new stdClass();
+        $field_ref                  = '-' . $field_ref;
+        $team_details->captain_id   = empty( $_POST['captainId' . $field_ref ] ) ? null : sanitize_text_field( wp_unslash( $_POST['captainId' . $field_ref ] ) );
+        $team_details->contactno    = empty( $_POST['contactno' . $field_ref ] ) ? null : sanitize_text_field( wp_unslash( $_POST['contactno' . $field_ref ] ) );
+        $team_details->contactemail = empty( $_POST['contactemail' . $field_ref] ) ? null : sanitize_text_field( wp_unslash( $_POST['contactemail' . $field_ref] ) );
+        $team_details->match_day    = isset( $_POST['matchday' . $field_ref ] ) ? intval( $_POST[ 'matchday' . $field_ref ] ) : null;
+        $team_details->match_time   = empty( $_POST['matchtime' . $field_ref ] ) ? null : sanitize_text_field( wp_unslash( $_POST['matchtime' . $field_ref ] ) );
+        return $team_details;
+    }
 	/**
 	 * Update Club
 	 *
@@ -370,8 +334,8 @@ class Ajax_Frontend extends Ajax {
 			} else {
 				$return->error      = true;
 				$return->status     = 401;
-				$return->err_flds[] = 'club';
-				$return->err_msgs[] = $this->club_not_found;
+				$return->err_flds[] = 'address';
+				$return->err_msgs[] = __( 'Address is required', 'racketmanager' );
 			}
 		}
 		if ( empty( $return->error ) ) {

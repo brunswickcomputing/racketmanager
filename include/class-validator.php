@@ -428,6 +428,10 @@ class Validator {
         $return->error    = $this->error;
         $return->err_flds = $this->err_flds;
         $return->err_msgs = $this->err_msgs;
+        if ( $this->error && empty( $this->status ) ) {
+            $this->status = 400;
+        }
+        $return->status   = $this->status;
         return $return;
     }
 }

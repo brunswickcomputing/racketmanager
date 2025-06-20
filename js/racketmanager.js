@@ -245,7 +245,7 @@ function CaptainLookup() {
 			let captainInput = this.id;
 			let ref = captainInput.substr(7);
 			let player = "#".concat(captainInput);
-			let playerId = "#captainid".concat(ref);
+			let playerId = "#captainId".concat(ref);
 			let contactno = "#contactno".concat(ref);
 			let contactemail = "#contactemail".concat(ref);
 			if (ui.item === null) {

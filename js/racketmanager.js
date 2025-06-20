@@ -2213,7 +2213,6 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 			}
 			let msg = data.msg;
 			jQuery(alertResponseField).html(msg);
-			jQuery(alertField).show();
 			let valid = data.valid;
 			let alertClass;
 			if (valid) {
@@ -2224,9 +2223,10 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 			jQuery(alertField).addClass(alertClass);
 		},
 		error: function (response) {
-			Racketmanager.handleAjaxError(response, alertFieldResponse, alertField);
+			Racketmanager.handleAjaxError(response, alertResponseField, alertField);
 		},
 		complete: function () {
+			jQuery(alertField).show();
 			jQuery(notifyField).show();
 			jQuery(loadingField).removeClass('is-loading');
 		}

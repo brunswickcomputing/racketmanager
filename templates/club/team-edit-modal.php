@@ -41,7 +41,7 @@ namespace Racketmanager;
                                 <input type="text" class="teamcaptain form-control" id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->captain ); ?>" />
                                 <input type="hidden" id="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="captainId-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->captain_id ); ?>" />
                                 <label for="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
-                                <div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+                                <div id="captain-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
                             </div>
                         </div>
                         <div class="row g-3">
@@ -49,14 +49,14 @@ namespace Racketmanager;
                                 <div class="form-floating">
                                     <input type="tel" class="form-control" id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->contactno ); ?>" />
                                     <label for="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Contact Number', 'racketmanager' ); ?></label>
-                                    <div id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+                                    <div id="contactno-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
                                 <div class="form-floating">
                                     <input type="email" class="form-control" id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->contactemail ); ?>" size="30" />
                                     <label for="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Contact Email', 'racketmanager' ); ?></label>
-                                    <div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+                                    <div id="contactemail-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
                                 </div>
                             </div>
                         </div>
@@ -67,7 +67,7 @@ namespace Racketmanager;
                             <div class="col-sm-6 mb-3">
                                 <div class="form-floating">
                                     <select class="form-select" size="1" name="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" >
-                                        <option><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
+                                        <option disabled <?php selected( null, empty( $event_team->match_day ) ? null : 1 ); ?>><?php esc_html_e( 'Select match day', 'racketmanager' ); ?></option>
                                         <?php
                                         foreach ( $match_days as $key => $matchday ) {
                                             ?>
@@ -76,7 +76,7 @@ namespace Racketmanager;
                                         }
                                         ?>
                                     </select>
-                                    <div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+                                    <div id="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
                                     <label for="matchday-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Match Day', 'racketmanager' ); ?></label>
                                 </div>
                             </div>
@@ -84,7 +84,7 @@ namespace Racketmanager;
                                 <div class="form-floating">
                                     <input type="time" class="form-control" id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" name="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>" value="<?php echo esc_html( $event_team->match_time ); ?>" size="30" />
                                     <label for="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>"><?php esc_html_e( 'Match Time', 'racketmanager' ); ?></label>
-                                    <div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>-feedback" class="invalid-feedback"></div>
+                                    <div id="matchtime-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $team->id ); ?>Feedback" class="invalid-feedback"></div>
                                 </div>
                             </div>
                         </div>

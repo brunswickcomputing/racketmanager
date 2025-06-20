@@ -681,8 +681,7 @@ final class Club {
      * @return array|int
      */
     public function get_players( array $args ): array|int {
-        global $racketmanager, $wpdb;
-        $options    = $racketmanager->get_options( 'rosters' );
+        global $wpdb;
         $defaults   = array(
             'count'      => false,
             'team'       => false,
@@ -692,7 +691,6 @@ final class Club {
             'type'       => false,
             'age_offset' => false,
             'age_limit'  => false,
-            'orderby'    => array( 'display_name' => 'ASC' ),
         );
         $args       = array_merge( $defaults, $args );
         $count      = $args['count'];
@@ -701,34 +699,17 @@ final class Club {
         $gender     = $args['gender'];
         $active     = $args['active'];
         $type       = $args['type'];
-        $orderby    = (array) $args['orderby'];
         $age_limit  = $args['age_limit'];
         $age_offset = $args['age_offset'];
 
         $search_terms = array();
         if ( $team ) {
-            $search_terms[] = $wpdb->prepare(
-                "`club_id` in (select `club_id` from $wpdb->racketmanager_teams where `id` = %d)",
-                intval( $team )
-            );
+            $search_terms[] = $wpdb->prepare( "`club_id` in (select `club_id` from $wpdb->racketmanager_teams where `id` = %d)", intval( $team ) );
         }
 
         if ( $player ) {
-            $search_terms[] = $wpdb->prepare(
-                '`player_id` = %d',
-                intval( $player )
-            );
+            $search_terms[] = $wpdb->prepare( '`player_id` = %d', intval( $player ) );
         }
-
-        if ( $gender ) {
-            $gender         = htmlspecialchars( wp_strip_all_tags( $gender ) );
-            $search_terms[] = $wpdb->prepare(
-                '%s = %s',
-                $gender,
-                $gender
-            );
-        }
-
         if ( $type ) {
             $search_terms[] = '`system_record` IS NULL';
         }
@@ -736,31 +717,16 @@ final class Club {
         if ( $active ) {
             $search_terms[] = '`removed_date` IS NULL';
         }
-
         $search = '';
         if ( ! empty( $search_terms ) ) {
             $search = implode( ' AND ', $search_terms );
         }
-
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
+        $sql   = $wpdb->prepare(" FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` > 0", $this->id );
+        if ( ! empty( $search ) ) {
+            $sql .= ' AND ' . $search;
         }
-        $order = $orderby_string;
-
         if ( $count ) {
-            $sql = "SELECT COUNT(ID) FROM $wpdb->racketmanager_club_players WHERE `club_id` = " . $this->id;
-            if ( '' !== $search ) {
-                $sql .= " AND $search";
-            }
+            $sql = 'SELECT COUNT(ID)' . $sql;
             $cache_key = md5( $sql );
             $this->num_players = wp_cache_get( $cache_key, 'club-players' );
             if ( ! $this->num_players ) {
@@ -771,93 +737,92 @@ final class Club {
                 return $this->num_players;
             }
         }
-
-        $sql = $wpdb->prepare(
-            "SELECT A.`id` as `roster_id`, A.`player_id`, `display_name` as fullname, `club_id`, A.`removed_date`, A.`removed_user`, A.`created_date`, A.`created_user` FROM $wpdb->racketmanager_club_players A INNER JOIN $wpdb->users B ON A.`player_id` = B.`ID` WHERE `club_id` = %d",
-            $this->id
-        );
-        if ( '' !== $search ) {
-            $sql .= " AND $search";
-        }
-        if ( '' !== $order ) {
-            $sql .= " ORDER BY $order";
-        }
-
-        $players = wp_cache_get( md5( $sql ), 'club-players' );
+        $sql         = 'SELECT `id` as `roster_id`, `player_id`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`' . $sql;
+        $players_out = array();
+        $players     = wp_cache_get( md5( $sql ), 'club-players' );
         if ( ! $players ) {
             $players = $wpdb->get_results(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $sql
             ); // db call ok.
-            $i     = 0;
-            $class = '';
             foreach ( $players as $player ) {
-                $class                    = ( 'alternate' === $class ) ? '' : 'alternate';
-                $players[ $i ]->class     = $class;
-                $players[ $i ]->roster_id = $player->roster_id;
-                $players[ $i ]->player_id = $player->player_id;
-                $players[ $i ]->gender    = get_user_meta( $player->player_id, 'gender', true );
-                if ( $gender && $gender !== $players[ $i ]->gender ) {
-                    unset( $players[ $i ] );
-                } else {
-                    $players[ $i ]->removed_date = $player->removed_date;
-                    $players[ $i ]->removed_user = $player->removed_user;
-                    if ( $player->removed_user ) {
-                        $players[ $i ]->removed_user_name = get_userdata( $player->removed_user )->display_name;
-                    } else {
-                        $players[ $i ]->removed_user_name = '';
-                    }
-                    $players[ $i ]->created_date = $player->created_date;
-                    $players[ $i ]->created_user = $player->created_user;
-                    if ( $player->created_user ) {
-                        $players[ $i ]->created_user_name = get_userdata( $player->created_user )->display_name;
-                    } else {
-                        $players[ $i ]->created_user_name = '';
-                    }
-                    $player                          = get_player( $player->player_id );
-                    $players[ $i ]->wtn              = $player->wtn;
-                    $players[ $i ]->fullname         = $player->display_name;
-                    $players[ $i ]->type             = $player->type;
-                    $players[ $i ]->btm              = $player->btm;
-                    $players[ $i ]->email            = $player->user_email;
-                    $players[ $i ]->locked           = $player->locked;
-                    $players[ $i ]->locked_date      = $player->locked_date;
-                    $players[ $i ]->locked_user      = $player->locked_user;
-                    $players[ $i ]->locked_user_name = $player->locked_user_name;
-                    $players[ $i ]->year_of_birth    = $player->year_of_birth;
-                    if ( $player->year_of_birth ) {
-                        $player->age = gmdate( 'Y' ) - intval( $player->year_of_birth );
-                    } else {
-                        $player->age = null;
-                    }
-                    $players[ $i ]->age = $player->age;
-                    if ( isset( $options['ageLimitCheck'] ) && 'true' === $options['ageLimitCheck'] && $age_limit && 'open' !== $age_limit ) {
-                        if ( ! empty( $player->age ) ) {
-                            if ( $age_limit >= 30 ) {
-                                $age_limit_check = $age_limit;
-                                if ( ! empty( $age_offset ) && 'F' === $player->gender ) {
-                                    $age_limit_check -= $age_offset;
-                                }
-                                if ( $player->age < $age_limit_check ) {
-                                    unset( $players[ $i ] );
-                                }
-                            } elseif ( $player->age > $age_limit ) {
-                                unset( $players[ $i ] );
-                            }
-                        } else {
-                            unset( $players[ $i ] );
-                        }
-                    }
+                $player_dtl = $this->build_player_detail( $player, $gender, $age_limit, $age_offset );
+                if ( $player_dtl ) {
+                    $players_out[] =  $player_dtl;
                 }
-
-                ++$i;
             }
-            wp_cache_set( md5( $sql ), $players, 'club-players' );
+            wp_cache_set( md5( $sql ), $players_out, 'club-players' );
         }
-
-        return $players;
+        $display_name = array_column( $players_out, 'display_name' );
+        array_multisort( $display_name, SORT_ASC, $players_out );
+        return $players_out;
     }
 
+    /**
+     * Function to format player detail
+     *
+     * @param object $club_player
+     * @param string|null $gender
+     * @param string|null $age_limit
+     * @param string|null $age_offset
+     *
+     * @return false|stdClass
+     */
+    private function build_player_detail( object $club_player, ?string $gender, ?string $age_limit, ?string $age_offset ): false|stdClass {
+        global $racketmanager;
+        $options            = $racketmanager->get_options( 'rosters' );
+        $player_invalid     = false;
+        $player_dtl         = new stdClass();
+        $player_dtl->gender = get_user_meta( $club_player->player_id, 'gender', true );
+        if ( $gender && $gender !== $player_dtl->gender ) {
+            return false;
+        }
+        $player_dtl->roster_id         = $club_player->roster_id;
+        $player_dtl->player_id         = $club_player->player_id;
+        $player_dtl->removed_date      = $club_player->removed_date;
+        $player_dtl->removed_user      = $club_player->removed_user;
+        $player_dtl->removed_user_name = '';
+        if ( $club_player->removed_user ) {
+            $club_player->removed_user_name = get_userdata( $club_player->removed_user )->display_name;
+        }
+        $player_dtl->created_date      = $club_player->created_date;
+        $player_dtl->created_user      = $club_player->created_user;
+        $player_dtl->created_user_name = '';
+        if ( $club_player->created_user ) {
+            $player_dtl->created_user_name = get_userdata( $club_player->created_user )->display_name;
+        }
+        $player = get_player( $club_player->player_id );
+        if ( $player ) {
+            $player_dtl->wtn              = $player->wtn;
+            $player_dtl->display_name     = $player->display_name;
+            $player_dtl->fullname         = $player->display_name;
+            $player_dtl->type             = $player->type;
+            $player_dtl->btm              = $player->btm;
+            $player_dtl->email            = $player->user_email;
+            $player_dtl->locked           = $player->locked;
+            $player_dtl->locked_date      = $player->locked_date;
+            $player_dtl->locked_user      = $player->locked_user;
+            $player_dtl->locked_user_name = $player->locked_user_name;
+            $player_dtl->year_of_birth    = $player->year_of_birth;
+            $player->age                  = null;
+            if ( $player->year_of_birth ) {
+                $player->age = gmdate( 'Y' ) - intval( $player->year_of_birth );
+            }
+            $player_dtl->age = $player->age;
+            if ( ! empty( $options['ageLimitCheck'] ) && $age_limit && 'open' !== $age_limit ) {
+                $age_check = Racketmanager_Util::check_age_within_limit( $player->age, $age_limit, $gender, $age_offset );
+                if ( ! $age_check->valid ) {
+                    $player_invalid = true;
+                }
+            }
+        } else {
+            $player_invalid = true;
+        }
+        if ( $player_invalid ) {
+            return false;
+        }
+        return $player_dtl;
+    }
     /**
      * Gets player for club from database
      *

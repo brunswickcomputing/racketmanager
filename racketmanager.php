@@ -40,6 +40,8 @@ define( 'RACKETMANAGER_PLUGIN_FILE', __FILE__ );
 define( 'RACKETMANAGER_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'RACKETMANAGER_CHECKED', 'checked' );
 define( 'RACKETMANAGER_IS_INVALID', 'is-invalid' );
+define( 'RACKETMANAGER_FROM_EMAIL', 'From: ' );
+define( 'RACKETMANAGER_CC_EMAIL', 'cc: ' );
 
 class RacketmanagerMain {
     public function __construct() {

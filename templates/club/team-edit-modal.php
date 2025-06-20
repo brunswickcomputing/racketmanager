@@ -20,7 +20,7 @@ namespace Racketmanager;
             <input type="hidden" name="team_id" value="<?php echo esc_attr( $team->id ); ?>" />
             <input type="hidden" name="event_id" value="<?php echo esc_attr( $event->id ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
-            <input type="hidden" name="club" id="club" value="<?php echo esc_attr( $team->club_id ); ?>" />
+            <input type="hidden" name="clubId" id="clubId" value="<?php echo esc_attr( $team->club_id ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php esc_html_e( 'Edit team', 'racketmanager' ) ; ?></h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

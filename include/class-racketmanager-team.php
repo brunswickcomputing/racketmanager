@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use stdClass;
+
 /**
  * Class to implement the Team object
  */
@@ -581,25 +583,45 @@ final class Racketmanager_Team {
 			}
 		}
 		if ( $current->contactno !== $contactno || $current->contactemail !== $contactemail ) {
-			$player = get_player( $captain );
-			if ( $player ) {
-				$updates = $player->update_contact( $contactno, $contactemail );
-				if ( ! $updates ) {
-					$msg = $this->msg_team_contact_error;
-				}
-			} else {
-				$msg = $this->player_not_found_error;
-			}
+            $response = $this->update_captain_details( $captain, $contactno, $contactemail );
+            if ( $response->updates ) {
+                $updates = true;
+            }
 		}
 		if ( $updates ) {
 			$msg = $this->msg_team_updated;
 		} elseif ( empty( $msg ) ) {
 			$msg = $this->msg_no_update;
 		}
-
 		return $msg;
 	}
-
+    /**
+     * Update captain details
+     *
+     * @param $captain
+     * @param $telephone
+     * @param $email
+     *
+     * @return object
+     */
+    private function update_captain_details( $captain, $telephone, $email ): object {
+        $player = get_player( $captain );
+        if ( $player ) {
+            $updates = $player->update_contact( $telephone, $email );
+            if ( ! $updates ) {
+                $msg = $this->msg_team_contact_error;
+            } else {
+                $msg = null;
+            }
+        } else {
+            $updates = false;
+            $msg     = $this->player_not_found_error;
+        }
+        $response          = new stdClass();
+        $response->updates = $updates;
+        $response->msg     = $msg;
+        return $response;
+    }
 	/**
 	 * Delete team
 	 */

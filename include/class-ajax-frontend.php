@@ -1912,39 +1912,42 @@ class Ajax_Frontend extends Ajax {
 	 * @return void
 	 */
 	public function confirm_tournament_withdrawal(): void {
-        $output = null;
+        $player_id     = null;
+        $tournament_id = null;
+        $tournament    = null;
 		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
-			$tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
-			if ( $tournament_id ) {
-				$tournament = get_tournament( $tournament_id );
-				if ( $tournament ) {
-					$player_id      = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-                    if ( $player_id ) {
-						$refund_amount  = $tournament->withdraw_player_entry( $player_id );
-						if ( $refund_amount ) {
-							$output = __( 'Tournament withdrawal successful and refund will be issued when tournament starts', 'racketmanager' );
-						} else {
-							$output = __( 'Tournament withdrawal successful', 'racketmanager' );
-						}
-					} else {
-						$return->error = true;
-						$return->msg   = __( 'Player id not found', 'racketmanager' );
-					}
-				} else {
-					$return->error = true;
-					$return->msg   = __( 'Tournament not found', 'racketmanager' );
-				}
-			} else {
-				$return->error = true;
-				$return->msg   = __( 'Tournament id not found', 'racketmanager' );
-			}
-		}
-		if ( empty( $return->error ) ) {
-			wp_send_json_success( $output );
-		} else {
-			wp_send_json_error( $return->msg, 500 );
-		}
+            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
+            $player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+            if ( ! $tournament_id ) {
+                $return->error  = true;
+                $return->msg    = __( 'Tournament id not found', 'racketmanager' );
+                $return->status = 404;
+            }
+            if ( ! $player_id ) {
+                $return->error  = true;
+                $return->msg    = __( 'Player id not found', 'racketmanager' );
+                $return->status = 404;
+            }
+        }
+        if ( empty( $return->error ) ) {
+            $tournament = get_tournament( $tournament_id );
+            if ( ! $tournament ) {
+                $return->error  = true;
+                $return->msg    = __( 'Tournament not found', 'racketmanager' );
+                $return->status = 404;
+            }
+        }
+        if ( ! empty( $return->error ) ) {
+            wp_send_json_error( $return, $return->status );
+        }
+        $refund_amount = $tournament->withdraw_player_entry( $player_id );
+        if ( $refund_amount ) {
+            $output = __( 'Tournament withdrawal successful and refund will be issued when tournament starts', 'racketmanager' );
+        } else {
+            $output = __( 'Tournament withdrawal successful', 'racketmanager' );
+        }
+        wp_send_json_success( $output );
 	}
 	/**
 	 * Login function

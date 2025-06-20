@@ -2070,11 +2070,16 @@ Racketmanager.confirmTournamentWithdraw = function () {
 	let playerId = jQuery(playerRef).val();
 	let eventsEnteredRef = 'input:checked.form-check--event';
 	let eventsEntered = jQuery(eventsEnteredRef);
-	let alertField = "#entryAlert";
-	let alertResponseField = "#entryAlertResponse";
+	let successField = "#entryAlert";
+	let successFieldResponse = "#entryAlertResponse";
+	let alertField = '#withdrawResponse';
+	let alertResponseField = "#withdrawResponseText";
 	jQuery(alertField).hide();
 	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
 	jQuery(alertResponseField).val("");
+	jQuery(successField).hide();
+	jQuery(successField).removeClass('alert--success alert--warning alert--danger');
+	jQuery(successFieldResponse).val("");
 	let action = 'racketmanager_confirm_tournament_withdrawal';
 
 	jQuery.ajax({
@@ -2091,27 +2096,17 @@ Racketmanager.confirmTournamentWithdraw = function () {
 				event.checked = false;
 				checkToggle(event, null);
 			}
-			jQuery(alertField).addClass('alert--success');
-			jQuery(alertResponseField).html(response.data);
+			jQuery(successField).addClass('alert--success');
+			jQuery(successFieldResponse).html(response.data);
 			Racketmanager.setTotalPrice();
+			jQuery(modal).modal('hide');
+			jQuery(successField).show();
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				if (response.status === 401) {
-					let output = response.responseJSON.data[1];
-					jQuery(alertResponseField).html(output);
-				} else {
-					let message = response.responseJSON.data;
-					jQuery(alertResponseField).html(message);
-				}
-			} else {
-				jQuery(alertResponseField).text(response.statusText);
-			}
-			jQuery(alertField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertResponseField, alertField);
+			jQuery(alertField).show();
 		},
 		complete: function () {
-			jQuery(modal).modal('hide');
-			jQuery(alertField).show();
 		}
 	});
 };

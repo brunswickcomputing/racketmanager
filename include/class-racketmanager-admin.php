@@ -42,6 +42,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @var array|null $error_messages
 	 */
     public ?array $error_fields;
+    public object $ajax_admin;
 	/**
 	 * Constructor
 	 */
@@ -53,7 +54,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once ABSPATH . 'wp-admin/includes/template.php';
 
 		require_once RACKETMANAGER_PATH . 'include/class-ajax-admin.php';
-		new Ajax_Admin();
+		$this->ajax_admin = new Ajax_Admin();
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-finances.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-event.php';
@@ -602,7 +603,7 @@ class RacketManager_Admin extends RacketManager {
 				$this->display_options_page();
 				break;
 			case 'racketmanager-import':
-				$this->displayImportPage();
+				$this->display_import_page();
 				break;
 			case 'racketmanager':
 			default:
@@ -884,7 +885,7 @@ class RacketManager_Admin extends RacketManager {
 							$league->add_team( $team, $latest_season, $rank, $status, $profile );
 						}
 					} elseif ( isset( $_POST['constitutionAction'] ) && 'update' === $_POST['constitutionAction'] ) {
-						$this->updateTable( $table_id, $league_id, $rank, $status, $profile );
+						$this->update_table( $table_id, $league_id, $rank, $status, $profile );
 					}
 				}
 				// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
@@ -2209,7 +2210,7 @@ class RacketManager_Admin extends RacketManager {
 	/**
 	 * Display import Page
 	 */
-	private function displayImportPage(): void {
+	private function display_import_page(): void {
 		if ( ! current_user_can( 'import_leagues' ) ) {
 			$this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
 			$this->printMessage();
@@ -2325,7 +2326,7 @@ class RacketManager_Admin extends RacketManager {
 				$tab           = 'compose';
 			}
 
-			include_once RACKETMANAGER_PATH . '/admin/includes/contact.php';
+			require_once RACKETMANAGER_PATH . '/admin/includes/contact.php';
 		}
 	}
 	/**
@@ -2478,7 +2479,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $status status.
 	 * @param string $profile profile.
 	 */
-	private function updateTable( int $table_id, int $league_id, int $rank, string $status, string $profile ): void {
+	private function update_table( int $table_id, int $league_id, int $rank, string $status, string $profile ): void {
 		global $wpdb;
 
 		$wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -2890,7 +2891,7 @@ class RacketManager_Admin extends RacketManager {
 					$options[ $competition_type ]['confirmationPenalty']     = isset( $_POST[ $competition_type ]['confirmationPenalty'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationPenalty'] ) ) : null;
 					$options[ $competition_type ]['confirmationRequired']    = isset( $_POST[ $competition_type ]['confirmationRequired'] );
 					$options[ $competition_type ]['entry_level']             = isset( $_POST[ $competition_type ]['entryLevel'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['entryLevel'] ) ) : null;
-					$this->scheduleResultChase( $competition_type, $options[ $competition_type ] );
+					$this->schedule_result_chase( $competition_type, $options[ $competition_type ] );
 				}
 				$options['championship']['numRounds']           = isset( $_POST['numRounds'] ) ? intval( $_POST['numRounds'] ) : null;
 				$options['championship']['open_lead_time']      = isset( $_POST['openLeadtime'] ) ? intval( $_POST['openLeadtime'] ) : null;
@@ -2934,13 +2935,11 @@ class RacketManager_Admin extends RacketManager {
 					$valid = false;
 					$tab   = 'players';
 				}
-				if ( $options['billing']['stripe_is_live'] ) {
-					if ( empty( $options['billing']['api_publishable_key_live'] ) || empty( $options['billing']['api_secret_key_live'] ) ) {
-						$this->set_message( __( 'Live mode requires live keys to be set', 'racketmanager' ), true );
-						$valid = false;
-						$tab   = 'billing';
-					}
-				}
+				if ( $options['billing']['stripe_is_live'] && ( empty( $options['billing']['api_publishable_key_live'] ) || empty( $options['billing']['api_secret_key_live'] ) ) ) {
+                    $this->set_message( __( 'Live mode requires live keys to be set', 'racketmanager' ), true );
+                    $valid = false;
+                    $tab   = 'billing';
+                }
 				if ( $valid ) {
 					update_option( 'racketmanager', $options );
 					$this->set_message( __( 'Settings saved', 'racketmanager' ) );
@@ -3102,13 +3101,13 @@ class RacketManager_Admin extends RacketManager {
 								$delimiter = "\t"; // correct tabular delimiter.
 							}
 							if ( 'table' === $mode ) {
-								$this->importTable( $contents, $delimiter, $league_id, $season );
+								$this->import_table( $contents, $delimiter, $league_id, $season );
 							} elseif ( 'fixtures' === $mode ) {
-								$this->importFixtures( $contents, $delimiter, $league_id, $season );
+								$this->import_fixtures( $contents, $delimiter, $league_id, $season );
 							} elseif ( 'clubplayers' === $mode ) {
-								$this->importClubPlayers( $contents, $delimiter, $club );
+								$this->import_club_players( $contents, $delimiter, $club );
 							} elseif ( 'players' === $mode ) {
-								$this->importPlayers( $contents, $delimiter );
+								$this->import_players( $contents, $delimiter );
 							} else {
 								$this->set_message( __( 'Type of data to upload not selected', 'racketmanager' ), true );
 							}
@@ -3137,7 +3136,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int $league_id league.
 	 * @param string $season season.
 	 */
-	private function importTable( array $contents, string $delimiter, int $league_id, string $season ): void {
+	private function import_table( array $contents, string $delimiter, int $league_id, string $season ): void {
 		$league       = get_league( $league_id );
 		$i            = 0;
 		$x            = 0;
@@ -3207,7 +3206,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param int $league_id league.
 	 * @param string $season season.
 	 */
-	private function importFixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
+	private function import_fixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
 		$league = get_league( $league_id );
 		$i      = 0;
 		$x      = 0;
@@ -3226,9 +3225,11 @@ class RacketManager_Admin extends RacketManager {
 				if ( ! empty( $match->home_team )  && ! empty( $match->away_team ) ) {
 					$match->location = $line[4] ?? '';
 					$match->group    = $line[5] ?? '';
-					new Racketmanager_Match( $match );
+					$match = new Racketmanager_Match( $match );
+                    if ( ! empty( $match->id ) ) {
+                        ++$x;
+                    }
 				}
-				++$x;
 			}
 			++$i;
 		}
@@ -3242,7 +3243,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param array $contents array of file contents.
 	 * @param string $delimiter delimiter.
 	 */
-	private function importPlayers( array $contents, string $delimiter ): void {
+	private function import_players( array $contents, string $delimiter ): void {
 		$error_messages = array();
 		$i              = 0;
 		$x              = 0;
@@ -3262,8 +3263,10 @@ class RacketManager_Admin extends RacketManager {
 					$new_player = $player_valid[1];
 					$player     = get_player( $new_player->user_login, 'login' );  // get player by login.
 					if ( ! $player ) {
-						new Racketmanager_Player( $new_player );
-						++$x;
+						$player = new Racketmanager_Player( $new_player );
+                        if ( ! empty( $player->id ) ) {
+                            ++$x;
+                        }
 					}
 				} else {
 					$error_messages = $player_valid[2];
@@ -3292,7 +3295,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $delimiter delimiter.
 	 * @param int $club club.
 	 */
-	private function importClubPlayers( array $contents, string $delimiter, int $club ): void {
+	private function import_club_players( array $contents, string $delimiter, int $club ): void {
 		$club           = get_club( $club );
 		$i              = 0;
 		$x              = 0;
@@ -3384,7 +3387,7 @@ class RacketManager_Admin extends RacketManager {
 	 * @param string $competition_type type of competition.
 	 * @param array $options array of options to use for chasing result.
 	 */
-	private function scheduleResultChase( string $competition_type, array $options ): void {
+	private function schedule_result_chase( string $competition_type, array $options ): void {
 		$day            = intval( gmdate( 'd' ) );
 		$month          = intval( gmdate( 'm' ) );
 		$year           = intval( gmdate( 'Y' ) );

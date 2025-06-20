@@ -255,36 +255,37 @@ final class Racketmanager_Team {
 		$this->msg_team_contact_error = __( 'Error updating team contact', 'racketmanager' );
 		$this->player_not_found_error = __( 'Player not found', 'racketmanager' );
 
-		if ( ! is_null( $team ) ) {
-			foreach ( get_object_vars( $team ) as $key => $value ) {
-				$this->$key = $value;
-			}
-			if ( empty( $this->id ) ) {
-				$this->add();
-			}
-			$this->title   = htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
-			$this->stadium = stripslashes( $this->stadium );
-			$this->roster  = maybe_unserialize( $this->roster );
-			$this->profile = intval( $this->profile );
-			if ( $this->club_id ) {
-				$this->club = get_club( $this->club_id );
-			}
-			if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
-				$players = $this->get_players();
-				$i       = 1;
-				foreach ( $players as $player ) {
-					$this->player_ids[ $i ] = $player->id;
-					++$i;
-				}
-			}
-			if ( str_contains( $this->title, '_' ) ) {
-                $team_name = Racketmanager_Util::generate_team_name( $this->title );
-                if ( ! empty( $team_name ) ) {
-                    $this->team_ref = $this->title;
-                    $this->title    = $team_name;
-                }
-			}
-		}
+		if ( is_null( $team ) ) {
+            return;
+        }
+        foreach ( get_object_vars( $team ) as $key => $value ) {
+            $this->$key = $value;
+        }
+        if ( empty( $this->id ) ) {
+            $this->add();
+        }
+        $this->title   = htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
+        $this->stadium = stripslashes( $this->stadium );
+        $this->roster  = maybe_unserialize( $this->roster );
+        $this->profile = intval( $this->profile );
+        if ( $this->club_id ) {
+            $this->club = get_club( $this->club_id );
+        }
+        if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
+            $players = $this->get_players();
+            $i       = 1;
+            foreach ( $players as $player ) {
+                $this->player_ids[ $i ] = $player->id;
+                ++$i;
+            }
+        }
+        if ( str_contains( $this->title, '_' ) ) {
+            $team_name = Racketmanager_Util::generate_team_name( $this->title );
+            if ( ! empty( $team_name ) ) {
+                $this->team_ref = $this->title;
+                $this->title    = $team_name;
+            }
+        }
 	}
 	/**
 	 * Add new Team

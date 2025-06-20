@@ -2092,31 +2092,7 @@ class Ajax_Frontend extends Ajax {
 			$rubbers[ $rubber->num ] = $rubber;
 		}
         if ( empty( $return->error ) ) {
-			$valid_order = true;
-			foreach( $rubbers as $rubber_num => $rubber ) {
-				if ( isset( $rubbers[ $rubber_num + 1 ] ) ) {
-					if ( $rubber->wtn <= $rubbers[ $rubber_num + 1 ]->wtn ) {
-						$rubber->status       = 'W';
-						$rubber->status_class = 'winner';
-					} else {
-						$valid_order          = false;
-						$rubber->status       = 'L';
-						$rubber->status_class = 'loser';
-					}
-				}
-				if ( isset( $rubbers[ $rubber_num - 1 ] ) ) {
-					if ( $rubber->wtn >= $rubbers[ $rubber_num - 1 ]->wtn ) {
-						if ( 'L' !== $rubber->status ) {
-							$rubber->status       = 'W';
-							$rubber->status_class = 'winner';
-						}
-					} else {
-						$valid_order          = false;
-						$rubber->status       = 'L';
-						$rubber->status_class = 'loser';
-					}
-				}
-			}
+            $valid_order = $this->check_player_order( $rubbers );
 			$rubbers[ $rubber->num ] = $rubber;
 			if ( $valid_order ) {
 				if ( $set_team ) {
@@ -2166,6 +2142,35 @@ class Ajax_Frontend extends Ajax {
 			wp_send_json_error( $return );
 		}
 	}
+    private function check_player_order( $rubbers ): bool {
+        $valid_order = true;
+        foreach( $rubbers as $rubber_num => $rubber ) {
+            if ( isset( $rubbers[ $rubber_num + 1 ] ) ) {
+                if ( $rubber->wtn <= $rubbers[ $rubber_num + 1 ]->wtn ) {
+                    $rubber->status       = 'W';
+                    $rubber->status_class = 'winner';
+                } else {
+                    $valid_order          = false;
+                    $rubber->status       = 'L';
+                    $rubber->status_class = 'loser';
+                }
+            }
+            if ( empty( $rubbers[ $rubber_num - 1 ] ) ) {
+                continue;
+            }
+            if ( $rubber->wtn >= $rubbers[ $rubber_num - 1 ]->wtn ) {
+                if ( 'L' !== $rubber->status ) {
+                    $rubber->status       = 'W';
+                    $rubber->status_class = 'winner';
+                }
+            } else {
+                $valid_order          = false;
+                $rubber->status       = 'L';
+                $rubber->status_class = 'loser';
+            }
+        }
+        return $valid_order;
+    }
 	/**
 	 * Build screen to show team edit
 	 */

@@ -1396,47 +1396,53 @@ class Ajax_Frontend extends Ajax {
 	 * Delete messages
 	 */
 	public function delete_messages(): void {
+        $user         = null;
+        $userid       = null;
+        $message_type = null;
         $return = $this->check_security_token( 'racketmanager_nonce', 'racketmanager_delete-messages');
         if ( empty( $return->error ) ) {
-			$message_type = isset( $_POST['message_type'] ) ? sanitize_text_field( wp_unslash( $_POST['message_type'] ) ) : null;
-			if ( ! isset( $message_type ) ) {
+            $message_type = isset( $_POST['message_type'] ) ? sanitize_text_field( wp_unslash( $_POST['message_type'] ) ) : null;
+            if ( ! isset( $message_type ) ) {
                 $return->error  = true;
                 $return->msg    = __( 'You must select the type of messages to delete', 'racketmanager' );
                 $return->status = 401;
-			} else {
-				$message_type_name = Racketmanager_Util::get_message_type( $message_type );
-				$userid            = get_current_user_id();
-				if ( $userid ) {
-					$user = get_user( $userid );
-					if ( $user ) {
-						$success = $user->delete_messages( $message_type );
-						if ( $success ) {
-							$alert_class = 'success';
-							$alert_text  = __( 'Messages deleted', 'racketmanager' );
-						} elseif ( 0 === $success ) {
-							$alert_class = 'warning';
-							$alert_text  = __( 'No messages to delete', 'racketmanager' );
-						} else {
-							$alert_class = 'danger';
-							$alert_text  = __( 'Unable to delete messages', 'racketmanager' );
-						}
-						$return->output  = show_alert( $alert_text, $alert_class );
-                        $return->success = $success;
-                        $return->type    = $message_type_name;
-                        wp_send_json_success( $return );
-					} else {
-                        $return->error  = true;
-                        $return->msg    = __( 'User not found', 'racketmanager' );
-                        $return->status = 404;
-					}
-				} else {
-                    $return->error  = true;
-                    $return->msg    = __( 'Userid not found', 'racketmanager' );
-                    $return->status = 404;
-				}
-			}
-		}
-		wp_send_json_error( $return->msg, $return->status );
+            }
+        }
+        if ( empty( $return->error ) ) {
+            $userid = get_current_user_id();
+            if ( ! $userid ) {
+                $return->error  = true;
+                $return->msg    = __( 'Userid not found', 'racketmanager' );
+                $return->status = 404;
+            }
+        }
+        if ( empty( $return->error ) ) {
+            $user = get_user( $userid );
+            if ( ! $user ) {
+                $return->error  = true;
+                $return->msg    = __( 'User not found', 'racketmanager' );
+                $return->status = 404;
+            }
+        }
+        if ( ! empty( $return->error ) ) {
+            wp_send_json_error( $return, $return->status );
+        }
+        $message_type_name = Racketmanager_Util::get_message_type( $message_type );
+        $success           = $user->delete_messages( $message_type );
+        if ( $success ) {
+            $alert_class = 'success';
+            $alert_text  = __( 'Messages deleted', 'racketmanager' );
+        } elseif ( 0 === $success ) {
+            $alert_class = 'warning';
+            $alert_text  = __( 'No messages to delete', 'racketmanager' );
+        } else {
+            $alert_class = 'danger';
+            $alert_text  = __( 'Unable to delete messages', 'racketmanager' );
+        }
+        $return->output  = show_alert( $alert_text, $alert_class );
+        $return->success = $success;
+        $return->type    = $message_type_name;
+        wp_send_json_success( $return );
 	}
 	/**
 	 * Build screen to show selected match option

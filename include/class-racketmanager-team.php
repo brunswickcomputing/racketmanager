@@ -278,23 +278,11 @@ final class Racketmanager_Team {
 				}
 			}
 			if ( str_contains( $this->title, '_' ) ) {
-				$team_name  = null;
-				$name_array = explode( '_', $this->title );
-				if ( '1' === $name_array[0] ) {
-					$team_name = __( 'Winner of', 'racketmanager' );
-				} elseif ( '2' === $name_array[0] ) {
-					$team_name = __( 'Loser of', 'racketmanager' );
-				}
-				if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
-					$match = get_match( $name_array[2] );
-					if ( $match ) {
-						$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
-					}
-				}
-				if ( ! empty( $team_name ) ) {
-					$this->team_ref = $this->title;
-					$this->title    = $team_name;
-				}
+                $team_name = Racketmanager_Util::generate_team_name( $this->title );
+                if ( ! empty( $team_name ) ) {
+                    $this->team_ref = $this->title;
+                    $this->title    = $team_name;
+                }
 			}
 		}
 	}

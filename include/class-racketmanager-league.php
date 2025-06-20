@@ -1644,22 +1644,10 @@ class Racketmanager_League {
 			return false;
 		}
 		if ( str_contains( $team->title, '_' ) ) {
-			$team_name  = null;
-			$name_array = explode( '_', $team->title );
-			if ( '1' === $name_array[0] ) {
-				$team_name = __( 'Winner of', 'racketmanager' );
-			} elseif ( '2' === $name_array[0] ) {
-				$team_name = __( 'Loser of', 'racketmanager' );
-			}
-			if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
-				$match = get_match( $name_array[2] );
-				if ( $match ) {
-					$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
-				}
-			}
-			if ( ! empty( $team_name ) ) {
-				$team->title = $team_name;
-			}
+            $team_name = Racketmanager_Util::generate_team_name( $team->title );
+            if ( ! empty( $team_name ) ) {
+                $team->title = $team_name;
+            }
 		} else {
 			$team->title = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
 		}

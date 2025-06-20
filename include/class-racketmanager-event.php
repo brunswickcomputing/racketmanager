@@ -1521,22 +1521,10 @@ class Racketmanager_Event {
 			$event_team->roster = maybe_unserialize( $event_team->roster );
 			$event_team->club   = get_club( $event_team->club_id );
 			if ( str_contains( $event_team->name, '_' ) ) {
-				$team_name  = null;
-				$name_array = explode( '_', $event_team->name );
-				if ( '1' === $name_array[0] ) {
-					$team_name = __( 'Winner of', 'racketmanager' );
-				} elseif ( '2' === $name_array[0] ) {
-					$team_name = __( 'Loser of', 'racketmanager' );
-				}
-				if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
-					$match = get_match( $name_array[2] );
-					if ( $match ) {
-						$team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
-					}
-				}
-				if ( ! empty( $team_name ) ) {
-					$event_team->title = $team_name;
-				}
+                $team_name = Racketmanager_Util::generate_team_name( $event_team->name );
+                if ( ! empty( $team_name ) ) {
+                    $event_team->title = $team_name;
+                }
 			} else {
 				$event_team->title = $event_team->name;
 			}

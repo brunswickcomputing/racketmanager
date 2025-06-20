@@ -461,8 +461,8 @@ class Shortcodes_Match extends Shortcodes {
         if ( $match_id ) {
             $match = get_match( $match_id );
             if ( $match ) {
-                $template_args['match'] = $match;
-                $template_args['edit']  = $edit;
+                $template_args['match']     = $match;
+                $template_args['edit_mode'] = $edit;
                 $filename               = ! empty( $template ) ? 'match-header-' . $template : 'match-header';
                 return $this->load_template(
                     $filename,

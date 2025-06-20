@@ -14,7 +14,7 @@ if ( $match->is_pending ) {
 } else {
     $score_class = '';
 }
-if ( empty( $edit_mode ) || 'false' === $edit_mode ) {
+if ( empty( $edit_mode ) ) {
     $edit_mode = false;
 } else {
     $edit_mode = true;

@@ -670,7 +670,7 @@ final class Racketmanager_Player {
 	 * @param string $contact_email email address.
 	 * @return boolean
 	 */
-	public function update_contact(string $contact_no, string $contact_email ): bool {
+	public function update_contact( string $contact_no, string $contact_email ): bool {
 		$current_contact_no    = get_user_meta( $this->ID, 'contactno', true );
 		$current_contact_email = $this->user_email;
 		if ( $current_contact_no !== $contact_no ) {

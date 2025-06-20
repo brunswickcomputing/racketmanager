@@ -699,7 +699,7 @@ final class Racketmanager_Rubber {
 										$player_age = substr( $date_end, 0, 4 ) - intval( $player->year_of_birth );
 									}
 									$age_limit = $match->league->event->age_limit;
-                                    $age_check = Racketmanager_Util::check_age_within_limit( $player->age, $age_limit, $player->gender, $match->league->event->age_offset );
+                                    $age_check = Racketmanager_Util::check_age_within_limit( $player_age, $age_limit, $player->gender, $match->league->event->age_offset );
                                     if ( ! $age_check->valid ) {
                                         $error = $age_check->msg;
                                         $match->add_player_result_check( $team->id, $player->id, $error, $this->id );

@@ -970,4 +970,30 @@ class Racketmanager_Util {
         }
         return $age_check;
     }
+
+    /**
+     * Generate team name for winner/loser of previous match
+     *
+     * @param string $title
+     *
+     * @return string|null
+     */
+    public static function generate_team_name( string $title ): ?string {
+        $name_array = explode( '_', $title );
+        if ( '1' === $name_array[0] ) {
+            $team_name = __( 'Winner of', 'racketmanager' );
+        } elseif ( '2' === $name_array[0] ) {
+            $team_name = __( 'Loser of', 'racketmanager' );
+        } else {
+            $team_name = null;
+        }
+        if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
+            $match = get_match( $name_array[2] );
+            if ( $match ) {
+                $team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+            }
+        }
+        return $team_name;
+    }
+
 }

@@ -34,11 +34,17 @@ class Validator {
      */
     public array $err_msgs;
     /**
-     * Error id
+     * Status
      *
-     * @var int
+     * @var int|null
      */
-    public int $error_id;
+    public ?int $status;
+    /**
+     * Message
+     *
+     * @var string|null
+     */
+    public ?string $msg;
     /**
      * Constructor
      */
@@ -46,7 +52,53 @@ class Validator {
         $this->error    = false;
         $this->err_flds = array();
         $this->err_msgs = array();
-        $this->error_id = 0;
+        $this->status   = null;
+    }
+    /**
+     * Validate security token
+     *
+     * @param string $nonce nonce name.
+     * @param string $nonce_action nonce action.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function check_security_token( string $nonce = 'security', string $nonce_action = 'ajax-nonce' ): object {
+        if ( isset( $_REQUEST[ $nonce ] ) ) {
+            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ $nonce ] ) ), $nonce_action ) ) {
+                $this->error  = true;
+                $this->msg    = __( 'Sorry, the action could not be completed. The link or form you are using has expired or is invalid. Please try again, or go back to the previous page and try again', 'racketmanager' );
+                $this->status = 403;
+            }
+        } else {
+            $this->error  = true;
+            $this->msg    = __( 'There was a problem with your request. Please try again or refresh the page', 'racketmanager' );
+            $this->status = 403;
+        }
+        return $this;
+    }
+    /**
+     * Validate team
+     *
+     * @param int|null $team_id team id.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function team( ?int $team_id ): object {
+        if ( empty( $team_id ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'contactno';
+            $this->err_msgs[] = __( 'Team id required', 'racketmanager' );
+            $this->status     = 400;
+        } else {
+            $team = get_team( $team_id );
+            if ( ! $team ) {
+                $this->error      = true;
+                $this->err_flds[] = 'contactno';
+                $this->err_msgs[] = __( 'Team not found', 'racketmanager' );
+                $this->status     = 404;
+            }
+        }
+        return $this;
     }
     /**
      * Validate player
@@ -119,10 +171,15 @@ class Validator {
      * Validate telephone
      *
      * @param string|null $telephone telephone number.
+     * @param string|null $field_ref field.
      *
      * @return object $validation updated validation object.
      */
-    public function telephone( ?string $telephone ): object {
+    public function telephone( ?string $telephone, ?string $field_ref = null ): object {
+        $err_field = 'contactno';
+        if ( $field_ref ) {
+            $err_field .= '-' . $field_ref;
+        }
         if ( empty( $telephone ) ) {
             $this->error      = true;
             $this->err_flds[] = $err_field;
@@ -136,6 +193,7 @@ class Validator {
      * @param string|null $email email address.
      * @param int|null    $player_id player id.
      * @param bool   $email_required is email address required.
+     * @param string|null $field_ref field.
      *
      * @return object $validation updated validation object.
      */
@@ -272,6 +330,99 @@ class Validator {
         }
         return $this;
     }
+    /**
+     * Validate captain details
+     *
+     * @param string|null $captain captain id.
+     * @param string|null $contactno contact number.
+     * @param string|null $contactemail email.
+     * @param string $field_ref field reference.
+     * @return object $validation updated validation object.
+     */
+    public function captain( ?string $captain, ?string $contactno, ?string $contactemail, string $field_ref ): object {
+        if ( empty( $captain ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'captain-' . $field_ref;
+            $this->err_msgs[] = __( 'Captain not selected', 'racketmanager' );
+        } else {
+            if ( empty( $contactno ) ) {
+                $this->error      = true;
+                $this->err_flds[] = 'contactno-' . $field_ref;
+                $this->err_msgs[] = __( 'Telephone number required', 'racketmanager' );
+            }
+            if ( empty( $contactemail ) ) {
+                $this->error      = true;
+                $this->err_flds[] = 'contactemail-' . $field_ref;
+                $this->err_msgs[] = __( 'Email required missing', 'racketmanager' );
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Validate match day details
+     *
+     * @param int|null $match_day match day.
+     * @param string   $field_ref field reference.
+     * @param boolean  $match_day_restriction match day restriction indicator.
+     * @param array    $match_days_allowed array of match days allowed.
+     * @return object $validation updated validation object.
+     */
+    public function match_day( ?int $match_day, string $field_ref, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
+        if ( empty( $match_day ) && 0 !== $match_day ) {
+            $this->error      = true;
+            $this->err_flds[] = 'matchday-' . $field_ref;
+            $this->err_msgs[] = __( 'Match day not selected', 'racketmanager' );
+        } elseif ( $match_day_restriction ) {
+            if ( !empty( $match_days_allowed ) && empty( $match_days_allowed[$match_day] ) ) {
+                $this->error      = true;
+                $this->err_flds[] = 'matchday-' . $field_ref;
+                $this->err_msgs[] = __( 'Match day not valid for event', 'racketmanager' );
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Validate match time details
+     *
+     * @param string|null $match_time match time.
+     * @param string $field_ref field reference.
+     * @param string|null $match_day match day.
+     * @param array|null $start_times min/max start times.
+     * @return object $validation updated validation object.
+     */
+    public function match_time( ?string $match_time, string $field_ref, ?string $match_day = null, array $start_times = array() ): object {
+        if ( empty( $match_time ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'matchtime-' . $field_ref;
+            $this->err_msgs[] = __( 'Match time not selected', 'racketmanager' );
+        } elseif ( $match_day >= 0 ) {
+            $match_time = substr( $match_time, 0, 5 );
+            if ( $match_day <= 5 ) {
+                $index = 'weekday';
+            } else {
+                $index = 'weekend';
+            }
+            if ( isset( $start_times[ $index ] ) ) {
+                if ( $match_time < $start_times[ $index ]['min'] ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'matchtime-' . $field_ref;
+                    $this->err_msgs[] = __( 'Match time less than earliest start', 'racketmanager' );
+                } elseif ( $match_time > $start_times[ $index ]['max'] ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'matchtime-' . $field_ref;
+                    $this->err_msgs[] = __( 'Match time greater than latest start', 'racketmanager' );
+                }
+            }
+        }
+        return $this;
+    }
+    /**
+     * Get validation details
+     *
+     * @return stdClass
+     */
     public function get_details(): object {
         $return           = new stdClass();
         $return->error    = $this->error;

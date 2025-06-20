@@ -663,43 +663,47 @@ class Ajax_Frontend extends Ajax {
 	 */
 	public function get_team_event_info(): void {
         $team_info = null;
+        $event_id  = null;
+        $team_id   = null;
+        $event     = null;
 		$return    = $this->check_security_token();
 		if ( empty( $return->error ) ) {
-			$team_info = new stdClass();
-			$team_id   = isset( $_POST['team'] ) ? sanitize_text_field( wp_unslash( $_POST['team'] ) ) : null;
-			$event_id  = isset( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : null;
-            if ( $event_id ) {
-	            $event = get_event( $event_id );
-                if ( $event ) {
-                    if ( $team_id ) {
-	                    $team  = $event->get_team_info( $team_id );
-	                    if ( $team ) {
-		                    $team_info->captain    = $team->captain;
-		                    $team_info->captain_id = $team->captain_id;
-		                    $team_info->user_email = $team->contactemail;
-		                    $team_info->contactno  = $team->contactno;
-		                    $team_info->match_day  = $team->match_day;
-		                    $team_info->match_time = $team->match_time;
-		                    $team_info->message    = __( 'Team information updated', 'racketmanager' );
-	                    }
-                    } else {
-	                    $return->msg   = __( 'Team id not supplied', 'racketmanager' );
-	                    $return->error = true;
-                    }
-                } else {
-	                $return->msg   = __( 'Event not found', 'racketmanager' );
-                    $return->error = true;
-                }
-            } else {
-                $return->msg   = __( 'Event id not supplied', 'racketmanager' );
-	            $return->error = true;
+            $team_info = new stdClass();
+            $team_id   = isset( $_POST['team'] ) ? sanitize_text_field( wp_unslash( $_POST['team'] ) ) : null;
+            $event_id  = isset( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : null;
+            if ( ! $event_id ) {
+                $return->msg    = __( 'Event id not supplied', 'racketmanager' );
+                $return->error  = true;
+                $return->status = 404;
             }
-		}
-		if ( empty( $return->error ) ) {
-			wp_send_json_success( $team_info );
-		} else {
-			wp_send_json_error( $return->msg, '500' );
-		}
+            if ( ! $team_id ) {
+                $return->msg    = __( 'Team id not supplied', 'racketmanager' );
+                $return->error  = true;
+                $return->status = 404;
+            }
+        }
+        if ( empty( $return->error ) ) {
+            $event = get_event( $event_id );
+            if ( ! $event ) {
+                $return->msg    = __( 'Event not found', 'racketmanager' );
+                $return->error  = true;
+                $return->status = 404;
+            }
+        }
+        if ( empty( $return->error ) ) {
+            $team  = $event->get_team_info( $team_id );
+            if ( $team ) {
+                $team_info->captain    = $team->captain;
+                $team_info->captain_id = $team->captain_id;
+                $team_info->user_email = $team->contactemail;
+                $team_info->contactno  = $team->contactno;
+                $team_info->match_day  = $team->match_day;
+                $team_info->match_time = $team->match_time;
+                $team_info->message    = __( 'Team information updated', 'racketmanager' );
+            }
+            wp_send_json_success( $team_info );
+        }
+		wp_send_json_error( $return->msg, $return->status );
 	}
 	/**
 	 * Cup entry request
@@ -1673,30 +1677,26 @@ class Ajax_Frontend extends Ajax {
 	 * Build screen to show team partner
 	 */
 	public function team_partner(): void {
-        $output         = null;
-		$return         = $this->check_security_token();
-		if ( empty( $return->error ) ) {
-			$event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
-			$player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-			$modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-			$gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-			$season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-			$date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
-            $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
-            $args               = array();
-            $args['player']     = $player_id;
-            $args['gender']     = $gender;
-            $args['season']     = $season;
-            $args['date_end']   = $date_end;
-            $args['modal']      = $modal;
-            $args['partner_id'] = $partner_id;
-            $output             = event_partner_modal( $event_id, $args );
-		}
-		if ( empty( $return->error ) ) {
-			wp_send_json_success( $output );
-		} else {
-			wp_send_json_error( $return->msg, $return->status );
-		}
+		$return = $this->check_security_token();
+		if ( ! empty( $return->error ) ) {
+            wp_send_json_error( $return->msg, $return->status );
+        }
+        $event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+        $player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+        $modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+        $gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+        $season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+        $date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
+        $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
+        $args               = array();
+        $args['player']     = $player_id;
+        $args['gender']     = $gender;
+        $args['season']     = $season;
+        $args['date_end']   = $date_end;
+        $args['modal']      = $modal;
+        $args['partner_id'] = $partner_id;
+        $output             = event_partner_modal( $event_id, $args );
+        wp_send_json_success( $output );
 	}
 	/**
 	 * Validate tournament partner function

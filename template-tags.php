@@ -1124,10 +1124,10 @@ function withdrawn_team_email( array $args = array() ): string {
     function is_lta_number_required(): bool {
         global $racketmanager;
         $options = $racketmanager->get_options( 'rosters' );
-        if ( isset( $options['btm'] ) && '1' === $options['btm'] ) {
-            $btm_required = true;
-        } else {
+        if ( empty( $options['btm'] ) ) {
             $btm_required = false;
+        } else {
+            $btm_required = true;
         }
         return $btm_required;
     }

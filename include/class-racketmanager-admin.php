@@ -2862,11 +2862,11 @@ class RacketManager_Admin extends RacketManager {
 				// Set active tab.
 				$tab                                           = isset( $_POST['active-tab'] ) ? sanitize_text_field( wp_unslash( $_POST['active-tab'] ) ) : null;
 				$valid                                         = true;
-				$options['rosters']['btm']                     = isset( $_POST['btmRequired'] ) ? sanitize_text_field( wp_unslash( $_POST['btmRequired'] ) ) : null;
+				$options['rosters']['btm']                     = isset( $_POST['btmRequired'] );
 				$options['rosters']['rosterEntry']             = isset( $_POST['clubPlayerEntry'] ) ? sanitize_text_field( wp_unslash( $_POST['clubPlayerEntry'] ) ) : null;
 				$options['rosters']['rosterConfirmation']      = isset( $_POST['confirmation'] ) ? sanitize_text_field( wp_unslash( $_POST['confirmation'] ) ) : null;
 				$options['rosters']['rosterConfirmationEmail'] = isset( $_POST['confirmationEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['confirmationEmail'] ) ) : null;
-				$options['rosters']['ageLimitCheck']           = isset( $_POST['clubPlayerAgeLimitCheck'] ) ? sanitize_text_field( wp_unslash( $_POST['clubPlayerAgeLimitCheck'] ) ) : null;
+				$options['rosters']['ageLimitCheck']           = isset( $_POST['clubPlayerAgeLimitCheck'] );
 				$options['display']['wtn']                     = isset( $_POST['wtnDisplay'] );
 				$options['checks']['ageLimitCheck']            = isset( $_POST['ageLimitCheck'] );
 				$options['checks']['leadTimeCheck']            = isset( $_POST['leadTimeCheck'] );

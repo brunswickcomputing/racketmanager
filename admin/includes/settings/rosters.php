@@ -9,28 +9,16 @@ namespace Racketmanager;
 
 ?>
 <div class="form-control">
-    <fieldset class="form-control mb-3">
-        <legend class="form-check-label"><?php esc_html_e( 'Age Limit Check', 'racketmanager' ); ?></legend>
-        <div class="form-check form-check-inline">
-            <input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckTrue" value="true" <?php checked( 1, empty( $options['rosters']['ageLimitCheck'] ) ? null : 1 ); ?> />
-            <label class="form-check-label" for="clubPlayerAgeLimitCheckTrue"><?php esc_html_e( 'True', 'racketmanager' ); ?></label>
+    <div class="form-control mb-3">
+        <div class="form-check form-check">
+            <input type="checkbox" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheck" value="true" <?php checked( 1, empty( $options['rosters']['ageLimitCheck'] ) ? null : 1 ); ?> />
+            <label class="form-check-label" for="clubPlayerAgeLimitCheck"><?php esc_html_e( 'Age Limit Check', 'racketmanager' ); ?></label>
         </div>
-        <div class="form-check form-check-inline">
-            <input type="radio" class="form-check-input" name="clubPlayerAgeLimitCheck" id="clubPlayerAgeLimitCheckFalse" value="false" <?php checked( 1, empty( $options['rosters']['ageLimitCheck'] ) ? 1 : null ); ?> />
-            <label class="form-check-label" for="clubPlayerAgeLimitCheckFalse"><?php esc_html_e( 'False', 'racketmanager' ); ?></label>
+        <div class="form-check form-check">
+            <input class="form-check-input" type="checkbox" id="btmRequired" name="btmRequired" value="1" <?php checked( 1, empty( $options['rosters']['btm'] ) ? null : 1 ); ?> />
+            <label for='btmRequired'><?php esc_html_e( 'LTA Tennis Number required', 'racketmanager' ); ?></label>
         </div>
-    </fieldset>
-    <fieldset class="form-control mb-3">
-        <legend class="form-check-label"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></legend>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="btmRequired" name="btmRequired" value="1" <?php checked( 1, empty( $options['rosters']['btm'] ) ? null : 1 ); ?> />
-            <label for='btmRequired'><?php esc_html_e( 'Required', 'racketmanager' ); ?></label>
-        </div>
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="btmOptional" name="btmRequired" value="0" <?php checked( 1, empty( $options['rosters']['btm'] ) ? 1 : null ); ?> />
-            <label for='btmOptional'><?php esc_html_e( 'Optional', 'racketmanager' ); ?></label>
-        </div>
-    </fieldset>
+    </div>
     <div class="form-floating mb-3">
         <select class="form-select" id="clubPlayerEntry" name="clubPlayerEntry">
             <option value="secretary" <?php selected( 'secretary', empty( $options['rosters']['rosterEntry'] ) ? null : $options['rosters']['rosterEntry'] ); ?>>

@@ -616,7 +616,7 @@ final class Club {
                         $headers = array();
                         $user    = wp_get_current_user();
                         if ( $this->matchsecretary !== $user->ID ) {
-                            $headers[] = 'cc: ' . $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
+                            $headers[] = RACKETMANAGER_CC_EMAIL . $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
                         }
                         $email_to                  = $user->display_name . ' <' . $user->user_email . '>';
                         $message_args              = array();
@@ -625,8 +625,8 @@ final class Club {
                         $message_args['club']      = $this->shortcode;
                         $message_args['player']    = $player->fullname;
                         $message_args['btm']       = empty( $player->btm ) ? null : $player->btm;
-                        $headers[]                 = 'From: ' . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
-                        $headers[]                 = 'cc: ' . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
+                        $headers[]                 = RACKETMANAGER_FROM_EMAIL . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
+                        $headers[]                 = RACKETMANAGER_CC_EMAIL . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
                         $subject                   = $racketmanager->site_name . ' - ' . $msg . ' - ' . $this->shortcode;
                         $message                   = club_players_notification( $message_args );
                         wp_mail( $email_to, $subject, $message, $headers );
@@ -985,8 +985,8 @@ final class Club {
         $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __('Entry', 'racketmanager' ) . ' - ' . $this->shortcode;
         $headers         = array();
         $secretary_email = __( 'Cup Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-        $headers[]       = 'From: ' . $secretary_email;
-        $headers[]       = 'Cc: ' . $secretary_email;
+        $headers[]       = RACKETMANAGER_FROM_EMAIL . $secretary_email;
+        $headers[]       = RACKETMANAGER_CC_EMAIL . $secretary_email;
 
         $template                     = 'cup-entry';
         $template_args['cup_entries'] = $cup_entries;
@@ -1058,8 +1058,8 @@ final class Club {
         $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $this->shortcode;
         $headers         = array();
         $secretary_email = __( 'League Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-        $headers[]       = 'From: ' . $secretary_email;
-        $headers[]       = 'Cc: ' . $secretary_email;
+        $headers[]       = RACKETMANAGER_FROM_EMAIL . $secretary_email;
+        $headers[]       = RACKETMANAGER_CC_EMAIL . $secretary_email;
 
         $template                       = 'league-entry';
         $template_args['event_entries'] = $event_entries;

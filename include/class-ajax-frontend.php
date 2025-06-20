@@ -2205,21 +2205,11 @@ class Ajax_Frontend extends Ajax {
     public function update_account(): void {
 	    $return    = $this->check_security_token( 'racketmanager_nonce', 'member_account' );
 	    if ( empty( $return->error ) ) {
-		    $current_user               = wp_get_current_user();
-		    $user                       = get_user( $current_user->ID );
-		    $user_update                = clone $user;
-		    $user_update->email         = isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : null;
-		    $user_update->firstname     = isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : null;
-		    $user_update->surname       = isset( $_POST['lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['lastname'] ) ) : null;
-		    $user_update->contactno     = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-		    $user_update->gender        = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-		    $user_update->btm           = empty( $_POST['btm'] ) ? null : intval( $_POST['btm'] );
-		    $user_update->year_of_birth = empty( $_POST['year_of_birth'] ) ? null : intval( $_POST['year_of_birth'] );
-		    $user_update->password      = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : null;
-		    $user_update->re_password   = isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : null;
-		    $user_update->opt_ins       = isset( $_POST['opt_in'] ) ? wp_unslash( $_POST['opt_in'] ) : array();
-		    $user                       = $user->update( $user_update );
-		    $return->msg                = $user->message;
+		    $current_user = wp_get_current_user();
+		    $user         = get_user( $current_user->ID );
+            $user_update  = $this->get_updated_user_details( $user );
+		    $user         = $user->update( $user_update );
+		    $return->msg  = $user->message;
 		    if ( empty( $user->err_flds ) ) {
 			    $return->class = $user->update_result;
             } else {
@@ -2234,5 +2224,27 @@ class Ajax_Frontend extends Ajax {
 	    } else {
 		    wp_send_json_error( $return, $return->status );
 	    }
+    }
+
+    /**
+     * Get updated user details from request
+     *
+     * @param object $original_user
+     *
+     * @return object
+     */
+    private function get_updated_user_details( object $original_user ): object {
+        $user                = clone $original_user;
+        $user->email         = isset( $_POST['username'] ) ? sanitize_email( wp_unslash( $_POST['username'] ) ) : null;
+        $user->firstname     = isset( $_POST['firstname'] ) ? sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) : null;
+        $user->surname       = isset( $_POST['lastname'] ) ? sanitize_text_field( wp_unslash( $_POST['lastname'] ) ) : null;
+        $user->contactno     = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
+        $user->gender        = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+        $user->btm           = empty( $_POST['btm'] ) ? null : intval( $_POST['btm'] );
+        $user->year_of_birth = empty( $_POST['year_of_birth'] ) ? null : intval( $_POST['year_of_birth'] );
+        $user->password      = isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : null;
+        $user->re_password   = isset( $_POST['rePassword'] ) ? sanitize_text_field( wp_unslash( $_POST['rePassword'] ) ) : null;
+        $user->opt_ins       = isset( $_POST['opt_in'] ) ? wp_unslash( $_POST['opt_in'] ) : array();
+        return $user;
     }
 }

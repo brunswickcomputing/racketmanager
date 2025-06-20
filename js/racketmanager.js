@@ -2197,7 +2197,7 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 		data: form,
 		success: function (response) {
 			let data = response.data;
-			let updatedRubbers = data[0];
+			let updatedRubbers = data.rubbers;
 			let rubberNo = 1;
 			for (let r in updatedRubbers) {
 				let rubber = updatedRubbers[r];
@@ -2211,10 +2211,10 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 				jQuery(formField).val(rubber['wtn']);
 				rubberNo++;
 			}
-			let msg = data[1];
+			let msg = data.msg;
 			jQuery(alertResponseField).html(msg);
 			jQuery(alertField).show();
-			let valid = data[2];
+			let valid = data.valid;
 			let alertClass;
 			if (valid) {
 				alertClass = 'alert--success';
@@ -2224,28 +2224,7 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 			jQuery(alertField).addClass(alertClass);
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				if (response.status === 401) {
-					let message = response.responseJSON.data[0];
-					if (response.responseJSON.data[1]) {
-						let errorMsg = response.responseJSON.data[1];
-						let errorField = response.responseJSON.data[2];
-						for (let $i = 0; $i < errorField.length; $i++) {
-							let formField = "#" + errorField[$i];
-							jQuery(formField).addClass('is-invalid');
-							formField = formField + 'Feedback';
-							jQuery(formField).html(errorMsg[$i]);
-						}
-					}
-					jQuery(alertResponseField).html(message);
-				} else {
-					let message = response.responseJSON.data;
-					jQuery(alertResponseField).html(message);
-				}
-			} else {
-				jQuery(alertResponseField).text(response.statusText);
-			}
-			jQuery(alertField).addClass('alert--danger');
+			Racketmanager.handleAjaxError(response, alertFieldResponse, alertField);
 		},
 		complete: function () {
 			jQuery(notifyField).show();

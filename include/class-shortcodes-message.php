@@ -33,6 +33,7 @@ class Shortcodes_Message extends Shortcodes {
         }
         $template       = $args['template'];
         $user           = get_user( get_current_user_id() );
+        $messages       = array();
         $messages_total = $user->get_messages( array( 'count' => true ) );
         if ( $messages_total ) {
             $messages['total']  = $messages_total;

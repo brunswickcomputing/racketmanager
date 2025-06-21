@@ -870,19 +870,19 @@ Racketmanager.updateTeam = function (link) {
 			let captainNameField = '#captain-'.concat(event, "-", team);
 			let captainName = jQuery(captainNameField).val();
 			if (captainName) {
-				let teamCaptainNameField = '#captain-name';
+				let teamCaptainNameField = '#captain-name-'.concat(event, "-", team);
 				jQuery(teamCaptainNameField).html(captainName);
 			}
 			let captainContactNoField = '#contactno-'.concat(event, "-", team);
 			let captainContactNo = jQuery(captainContactNoField).val();
 			if (captainContactNo) {
-				let teamContactNoField = '#captain-contact-no';
+				let teamContactNoField = '#captain-contact-no-'.concat(event, "-", team);
 				jQuery(teamContactNoField).html(captainContactNo);
 			}
 			let captainContactEmailField = '#contactemail-'.concat(event, "-", team);
 			let captainContactEmail = jQuery(captainContactEmailField).val();
 			if (captainContactEmail) {
-				let teamContactEmailField = '#captain-contact-email';
+				let teamContactEmailField = '#captain-contact-email-'.concat(event, "-", team);
 				jQuery(teamContactEmailField).html(captainContactEmail);
 			}
 			jQuery(alertField).addClass('alert--success');

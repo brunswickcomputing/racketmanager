@@ -205,7 +205,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 						<?php
 						if ( $object_competition->is_team_entry ) {
 							?>
-							<h4 class="subheading" id="captain-name">
+							<h4 class="subheading" id="captain-name-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
 								<?php echo esc_html( $object->team->info->captain ); ?>
 							</h4>
 							<?php
@@ -263,7 +263,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 													<use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
 												</svg>
 												<span class="nav--link">
-													<span class="nav-link__value" id="captain-contact-no">
+													<span class="nav-link__value" id="captain-contact-no-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>"">
 														<?php echo esc_html( $object->team->info->contactno ); ?>
 													</span>
 												</span>
@@ -281,7 +281,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 													<use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
 												</svg>
 												<span class="nav--link">
-													<span class="nav-link__value" id="captain-contact-email">
+													<span class="nav-link__value" id="captain-contact-email-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>"">
 														<?php echo esc_html( $object->team->info->contactemail ); ?>
 													</span>
 												</span>
@@ -300,7 +300,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										<svg width="16" height="16" class="icon-team">
 											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-day-fill' ); ?>"></use>
 										</svg>
-										<span class="nav-link__value" id="team-match-day">
+										<span class="nav-link__value" id="team-match-day-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>"">
 											<?php echo esc_html( $object->team->info->match_day ); ?>
 										</span>
 									</span>
@@ -310,7 +310,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
 										<svg width="16" height="16" class="icon-team">
 											<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#clock-fill' ); ?>"></use>
 										</svg>
-										<span class="nav-link__value" id="team-match-time">
+										<span class="nav-link__value" id="team-match-time-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>"">
 											<?php echo esc_html( mysql2date( $racketmanager->time_format, $object->team->info->match_time ) ); ?>
 										</span>
 									</span>

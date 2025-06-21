@@ -892,6 +892,31 @@ final class Club {
         );
     }
     /**
+     * Can user update players.
+     * @return bool
+     */
+    public function can_user_update_players(): bool {
+        global $racketmanager;
+        $user_can_update = false;
+        if ( is_user_logged_in() ) {
+            if ( current_user_can( 'manage_racketmanager' ) ) {
+                $user_can_update = true;
+            } else {
+                $user   = wp_get_current_user();
+                $userid = $user->ID;
+                if ( $this->matchsecretary === $userid ) {
+                    $user_can_update = true;
+                } elseif ( $this->is_player_captain( $userid ) ) {
+                    $options = $racketmanager->get_options( 'rosters' );
+                    if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] ) {
+                        $user_can_update = true;
+                    }
+                }
+            }
+        }
+        return $user_can_update;
+    }
+    /**
      * Can user update as a team captain in addition to as match secretary or admin user.
      * @return bool
      */

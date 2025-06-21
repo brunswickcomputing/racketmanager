@@ -38,7 +38,7 @@ namespace Racketmanager;
             </div>
             <div class="container">
                 <div class="row table-header">
-                    <div class="col-1 check-column"><label for="selectAll"></label><input type="checkbox" name="selectAll" id="selectAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
+                    <div class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
                     <div class="col-1 column-num">ID</div>
                     <div class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></div>
                     <div class="col-3"><?php esc_html_e( 'Stadium', 'racketmanager' ); ?></div>
@@ -52,7 +52,7 @@ namespace Racketmanager;
                     ?>
                     <div class="row table-row <?php echo esc_html( $class ); ?>">
                         <div class="col-1 check-column">
-                            <label for="team-<?php echo esc_html( $team->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
+                            <label for="team-<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
                         </div>
                         <div class="col-1 column-num"><?php echo esc_html( $team->id ); ?></div>
                         <div class="col-3 team-name">

@@ -142,67 +142,72 @@ class Shortcodes_Club extends Shortcodes {
 			$atts
 		);
 		$template = $args['template'];
+        $filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
 		// Get Club by Name.
 		$club_name = get_query_var( 'club_name' );
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
-		if ( ! $club ) {
-			return $this->return_error( $this->club_not_found );
+		if ( $club ) {
+            // Get Player by Name.
+            $player_name = get_query_var( 'player_id' );
+            if ( $player_name ) {
+                $player = $this->get_player_details( $player_name, $club );
+                if ( ! is_object( $player ) ) {
+                    $msg = $player;
+                } else {
+                    $club->player = $player;
+                }
+             } else {
+                $club->players = $club->get_players(
+                    array(
+                        'active' => true,
+                        'type'   => 'real',
+                        'cache'  => false,
+                    )
+                );
+            }
+            if ( empty( $msg ) ) {
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'club'            => $club,
+                        'user_can_update' => $club->can_user_update_players(),
+                    ),
+                    'club'
+                );
+            }
+        } else {
+            $msg = $this->club_not_found;
 		}
-		// Get Player by Name.
-		$player_name = get_query_var( 'player_id' );
-		if ( $player_name ) {
-			$player_name = un_seo_url( $player_name );
-			$player      = get_player( $player_name, 'name' ); // get player by name.
-			if ( ! $player ) {
-				return $this->player_not_found;
-			}
-			$club_player = $club->get_players( array( 'player' => $player->id ) );
-			if ( ! $club_player ) {
-				return $this->club_player_not_found;
-			}
-			$player->club              = $club;
-			$player->created_date      = $club_player[0]->created_date;
-			$player->created_user      = $club_player[0]->created_user;
-			$player->created_user_name = $club_player[0]->created_user_name;
-			$club->player              = $player;
-		} else {
-			$club->players = $club->get_players(
-				array(
-					'active' => true,
-					'type'   => 'real',
-					'cache'  => false,
-				)
-			);
-		}
-		$user_can_update         = new stdClass();
-		$user_can_update->club   = false;
-		$user_can_update->player = false;
-		if ( is_user_logged_in() ) {
-			$user   = wp_get_current_user();
-			$userid = $user->ID;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
-				$user_can_update->club   = true;
-				$user_can_update->player = true;
-			} elseif ( isset( $club->player ) && intval( $club->player->ID ) === $userid ) {
-				$user_can_update->player = true;
-			} else {
-				$options = $racketmanager->get_options( 'rosters' );
-				if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
-					$user_can_update->player = true;
-				}
-			}
-		}
-		$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
-		return $this->load_template(
-			$filename,
-			array(
-				'club'            => $club,
-				'user_can_manage' => $user_can_update,
-			),
-			'club'
-		);
+        return $this->return_error( $msg );
 	}
+
+    /**
+     * Get player details
+     *
+     * @param string $player_name
+     * @param object $club
+     *
+     * @return object|string|null
+     */
+    private function get_player_details( string $player_name, object $club ): object|string|null {
+        $player_name = un_seo_url( $player_name );
+        $player      = get_player( $player_name, 'name' ); // get player by name.
+        if ( $player ) {
+            $club_player = $club->get_players( array( 'player' => $player->id ) );
+            if ( $club_player ) {
+                $player->club              = $club;
+                $player->created_date      = $club_player[0]->created_date;
+                $player->created_user      = $club_player[0]->created_user;
+                $player->created_user_name = $club_player[0]->created_user_name;
+                return $player;
+            } else {
+                return $this->club_player_not_found;
+            }
+        } else {
+            return $this->player_not_found;
+        }
+    }
 	/**
 	 * Function to display Club competitions
 	 *

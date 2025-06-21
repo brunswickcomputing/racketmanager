@@ -14,20 +14,20 @@ $sub_page_param = isset( $_GET['subpage'] ) ? sanitize_text_field( wp_unslash( $
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
-	activaTab('<?php echo esc_html( $tab ); ?>');
+    activaTab('<?php echo esc_html( $tab ); ?>');
 });
 </script>
 
 <div class="container">
-	<?php
-	if ( ! empty( $league->groups ) ) {
-		?>
-		<div class="alignright" style="margin-right: 1em;">
-			<form action="/wp-admin/admin.php" method="get" style="display: inline;">
-				<input type="hidden" name="page" value="<?php echo esc_html( $page_param ); ?>" />
-				<input type="hidden" name="subpage" value="<?php echo esc_html( $sub_page_param ); ?>" />
-				<input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
-				<label>
+    <?php
+    if ( ! empty( $league->groups ) ) {
+        ?>
+        <div class="alignright" style="margin-right: 1em;">
+            <form action="/wp-admin/admin.php" method="get" style="display: inline;">
+                <input type="hidden" name="page" value="<?php echo esc_html( $page_param ); ?>" />
+                <input type="hidden" name="subpage" value="<?php echo esc_html( $sub_page_param ); ?>" />
+                <input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
+                <label>
                     <select name="group" size="1">
                         <?php
                         foreach ( $league->championship->get_groups() as $key => $g ) {
@@ -43,12 +43,12 @@ jQuery(document).ready(function(){
                         ?>
                     </select>
                 </label>
-				<input type="hidden" name="league-tab" value="<?php echo esc_html( $tab ); ?>" />
-				<input type="submit" class="button-secondary" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" />
-			</form>
-		</div>
-		<?php
-	}
-	?>
-	<?php require RACKETMANAGER_PATH . 'admin/includes/championship-tabs.php'; ?>
+                <input type="hidden" name="league-tab" value="<?php echo esc_html( $tab ); ?>" />
+                <input type="submit" class="button-secondary" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" />
+            </form>
+        </div>
+        <?php
+    }
+    ?>
+    <?php require RACKETMANAGER_PATH . 'admin/includes/championship-tabs.php'; ?>
 </div>

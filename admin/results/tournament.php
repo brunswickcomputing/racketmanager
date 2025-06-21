@@ -35,18 +35,13 @@ $racketmanager_prev_league = 0;
     <tbody>
     <?php
     if ( $racketmanager_matches ) {
-        $racketmanager_class = '';
         foreach ( $racketmanager_matches as $racketmanager_match ) {
             $tooltip                     = '';
             $racketmanager_match         = get_match( $racketmanager_match );
-            $racketmanager_overdue_class = '';
-            $racketmanager_overdue       = false;
             if ( $racketmanager_result_pending ) {
                 $racketmanager_now          = date_create();
                 $racketmanager_date_overdue = date_create( $racketmanager_match->result_overdue_date );
                 if ( $racketmanager_date_overdue < $racketmanager_now ) {
-                    $racketmanager_overdue_class = 'bg-warning';
-                    $racketmanager_overdue       = true;
                     /* translators: %d: days overdue  */
                     $tooltip = sprintf( __( 'Result overdue by %d days', 'racketmanager' ), intval( ceil( $racketmanager_match->overdue_time ) ) );
                 }

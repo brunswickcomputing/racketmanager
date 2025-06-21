@@ -30,7 +30,7 @@ jQuery(document).ready(function(){
         <div class="tab-content">
             <div class="tab-pane show fade" id="seasons" role="tabpanel" aria-labelledby="seasons-tab">
                 <h2 class="header"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></h2>
-                <?php require 'admin/seasons.php'; ?>
+                <?php require_once 'admin/seasons.php'; ?>
             </div>
         </div>
     </div>

@@ -334,50 +334,45 @@ class Shortcodes_Club extends Shortcodes {
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return $this->club_not_found;
+			$msg = $this->club_not_found;
 		}
-		// Get team by Name.
-		$team_name = get_query_var( 'team' );
-		if ( $team_name ) {
-			$team_name = un_seo_url( $team_name );
-			$team      = get_team( $team_name );
-			if ( ! $team ) {
-				return $this->team_not_found;
-			}
-		} else {
-			return __( 'Team not supplied', 'racketmanager' );
-		}
-		$event_name = get_query_var( 'event' );
+        // Get team by Name.
+        $team_name = get_query_var( 'team' );
+        if ( $team_name ) {
+            $team_name = un_seo_url( $team_name );
+            $team      = get_team( $team_name );
+            if ( ! $team ) {
+                $msg = $this->team_not_found;
+            }
+        } else {
+            $msg = __( 'Team not supplied', 'racketmanager' );
+        }
+        $event_name = get_query_var( 'event' );
 		if ( $event_name ) {
 			$event_name = un_seo_url( $event_name );
 			$event      = get_event( $event_name, 'name' );
 			if ( ! $event ) {
-				return $this->event_not_found;
+				$msg = $this->event_not_found;
 			}
 		} else {
-			return $this->no_event_id;
+			$msg = $this->no_event_id;
 		}
-		$team_info       = $event->get_team_info( $team->id );
-		$team            = (object) array_merge( (array) $team, (array) $team_info );
-		$club->event     = $event;
-		$club->team      = $team;
-		$user_can_update = false;
-		if ( is_user_logged_in() ) {
-			$user   = wp_get_current_user();
-			$userid = $user->ID;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
-				$user_can_update = true;
-			}
-		}
-		$filename = ( ! empty( $template ) ) ? 'team-' . $template : 'team';
-		return $this->load_template(
-			$filename,
-			array(
-				'club'            => $club,
-				'user_can_update' => $user_can_update,
-			),
-			'club'
-		);
+        if ( empty( $msg ) ) {
+            $team_info       = $event->get_team_info( $team->id );
+            $team            = (object) array_merge( (array) $team, (array) $team_info );
+            $club->event     = $event;
+            $club->team      = $team;
+            $filename = ( ! empty( $template ) ) ? 'team-' . $template : 'team';
+            return $this->load_template(
+                $filename,
+                array(
+                    'club'            => $club,
+                    'user_can_update' => $club->can_user_update(),
+                ),
+                'club'
+            );
+        }
+        return $this->return_error( $msg );
 	}
 	/**
 	 * Function to display Club event
@@ -527,6 +522,7 @@ class Shortcodes_Club extends Shortcodes {
         } else {
             $msg = $this->no_event_id;
         }
+        $event_team = null;
         if ( $team && $event ) {
             $event_team = $event->get_team_info( $team_id );
         } elseif ( ! $team ) {

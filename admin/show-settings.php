@@ -66,31 +66,31 @@ jQuery(document).ready(function(){
             <!-- Tab panes -->
             <div class="tab-content">
                 <div class="tab-pane active show fade" id="club-players" role="tabpanel" aria-labelledby="club-players-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/rosters.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/rosters.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="display" role="tabpanel" aria-labelledby="display-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/display.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/display.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/players.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/players.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="match-results" role="tabpanel" aria-labelledby="match-results-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/results.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/results.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="entries" role="tabpanel" aria-labelledby="entries-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/entries.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/entries.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/championship.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/championship.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="billing" role="tabpanel" aria-labelledby="billing-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/billing.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/billing.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="keys" role="tabpanel" aria-labelledby="keys-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/keys.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/keys.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="walkover" role="tabpanel" aria-labelledby="walkover-tab">
-                    <?php require RACKETMANAGER_PATH . 'admin/includes/settings/walkover.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'admin/includes/settings/walkover.php'; ?>
                 </div>
             </div>
         </div>

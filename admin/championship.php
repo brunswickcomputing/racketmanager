@@ -50,5 +50,5 @@ jQuery(document).ready(function(){
         <?php
     }
     ?>
-    <?php require RACKETMANAGER_PATH . 'admin/includes/championship-tabs.php'; ?>
+    <?php require_once RACKETMANAGER_PATH . 'admin/includes/championship-tabs.php'; ?>
 </div>

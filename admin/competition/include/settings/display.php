@@ -62,7 +62,7 @@ $tab_name = 'display';
                                 $msg        = $racketmanager->error_messages[$msg_id] ?? null;
                             }
                             ?>
-                            <label for="point_format2"></label><select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format2" id="point_format2" >
+                            <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format2" id="point_format2" >
                                 <option disabled <?php selected( null, empty( $competition->config->point_format2 ) ? null : $competition->config->point_format2 ); ?>><?php esc_html_e( 'Select point format 2', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $point_formats as $point_format => $desc ) {
@@ -72,7 +72,7 @@ $tab_name = 'display';
                                 }
                                 ?>
                             </select>
-                            <label for="point_format" class="form-label"><?php esc_html_e( 'Point format 2', 'racketmanager' ); ?></label>
+                            <label for="point_format2" class="form-label"><?php esc_html_e( 'Point format 2', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
                                 ?>

@@ -14,19 +14,19 @@ namespace Racketmanager;
             <table class="table table-borderless">
                 <tbody>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></th>
                         <td class="col-6"><?php echo esc_html( $tournament->venue_name ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Events', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Events', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( count( $tournament->events ) ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $tournament->num_entries ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Code', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Code', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $tournament->competition_code ); ?></td>
                     </tr>
                 </tbody>
@@ -36,19 +36,19 @@ namespace Racketmanager;
             <table class="table table-borderless">
                 <tbody>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Entry open', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Entry open', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $tournament->date_open ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Entry closed', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Entry closed', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $tournament->date_closing ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Tournament start', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Tournament start', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $tournament->date_start ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Tournament end', 'racketmanager' ); ?></td>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Tournament end', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $tournament->date ); ?></td>
                     </tr>
                 </tbody>

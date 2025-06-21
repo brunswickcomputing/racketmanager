@@ -61,7 +61,7 @@ namespace Racketmanager;
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th class="check-column"><label for="check-all-seasons"></label><input type="checkbox" id="check-all-seasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
+                    <th class="check-column"><label for="checkAllSeasons" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllSeasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
                     <th><?php esc_html_e( 'Season', 'racketmanager' ); ?></th>
                     <th><?php esc_html_e( 'Start', 'racketmanager' ); ?></th>
                     <th><?php esc_html_e( 'End', 'racketmanager' ); ?></th>
@@ -74,7 +74,7 @@ namespace Racketmanager;
                     $key   = $season['name'];
                     ?>
                     <tr>
-                        <td class="check-column"><label for="del_season-<?php echo esc_html( $key ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $key ); ?>" name="del_season[<?php echo esc_html( $key ); ?>]" id="del_season-<?php echo esc_html( $key ); ?>" /></td>
+                        <td class="check-column"><label for="del_season-<?php echo esc_html( $key ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $key ); ?>" name="del_season[<?php echo esc_html( $key ); ?>]" id="del_season-<?php echo esc_html( $key ); ?>" /></td>
                         <td><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></td>
                         <td><?php echo empty( $season['date_start'] ) ? null : esc_html( $season['date_start'] ); ?></td>
                         <td><?php echo empty( $season['date_end'] ) ? null : esc_html( $season['date_end'] ); ?></td>

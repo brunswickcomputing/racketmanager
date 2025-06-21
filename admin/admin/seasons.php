@@ -11,7 +11,7 @@ namespace Racketmanager;
 <!-- View Seasons -->
 <div class="mb-3">
 <form id="seasons-filter" method="post" action="" class="form-control">
-	<?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
+    <?php wp_nonce_field( 'seasons-bulk', 'racketmanager_nonce' ); ?>
     <div class="row g-3 mb-3 align-items-center">
         <!-- Bulk Actions -->
         <div class="col-auto">
@@ -29,7 +29,7 @@ namespace Racketmanager;
     <table class="table table-striped">
         <thead class="table-dark">
             <tr>
-                <th class="check-column"><label for="check-all-seasons"></label><input type="checkbox" id="check-all-seasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
+                <th class="check-column"><label for="checkAllSeasons" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAllSeasons" onclick="Racketmanager.checkAll(document.getElementById('seasons-filter'));" /></th>
                 <th class="column-num">ID</th>
                 <th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
             </tr>
@@ -42,7 +42,7 @@ namespace Racketmanager;
                     ?>
                     <tr>
                         <td class="check-column">
-                            <label for="season-<?php echo esc_html( $season->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $season->id ); ?>" name="season[<?php echo esc_html( $season->id ); ?>]" id="season-<?php echo esc_html( $season->id ); ?>" />
+                            <label for="season-<?php echo esc_html( $season->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $season->id ); ?>" name="season[<?php echo esc_html( $season->id ); ?>]" id="season-<?php echo esc_html( $season->id ); ?>" />
                         </td>
                         <td class="column-num"><?php echo esc_html( $season->id ); ?></td>
                         <td class=""><?php echo esc_html( $season->name ); ?></td>

@@ -213,7 +213,6 @@ jQuery(document).ready(function(){
 										for ( $c = 0; $c < $tournament->num_courts; $c++ ) {
 											if ( isset( $order_of_play[ $c ]['matches'][ $i ] ) ) {
 												$match_players = array();
-												$match_id      = ( $order_of_play[ $c ]['matches'][ $i ] );
 												$match         = get_match( $match_id );
 												if ( $match ) {
 													$match_players = match_add_players( $match_players, $match );
@@ -287,6 +286,7 @@ jQuery(document).ready(function(){
 			}
 			?>
 		</div>
+                                                $match_players = array();
 </div>
 <?php
 wp_register_script( 'racketmanager-draggable', plugins_url( '/js/draggable.js', __DIR__ ), array(), RACKETMANAGER_VERSION, true );

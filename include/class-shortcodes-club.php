@@ -134,7 +134,6 @@ class Shortcodes_Club extends Shortcodes {
 	 * @return string - the content
 	 */
 	public function show_club_players( array $atts ): string {
-		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -218,7 +217,6 @@ class Shortcodes_Club extends Shortcodes {
 	 * @return string - the content
 	 */
 	public function show_club_competitions( array $atts ): string {
-		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -226,68 +224,94 @@ class Shortcodes_Club extends Shortcodes {
 			$atts
 		);
 		$template = $args['template'];
+        $filename = ( ! empty( $template ) ) ? 'competitions-' . $template : 'competitions';
 		// Get Club by Name.
 		$club_name = get_query_var( 'club_name' );
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
-		if ( ! $club ) {
-			return $this->club_not_found;
+		if ( $club ) {
+            $club_competitions = array();
+            // Get competition by Name.
+            $competition_name = get_query_var( 'competition_name' );
+            if ( $competition_name ) {
+                $competition_name = un_seo_url( $competition_name );
+                $competition      = get_competition( $competition_name, 'name' );
+                if ( $competition ) {
+                    $club->competition = $competition;
+                } else {
+                    $msg = $this->competition_not_found;
+                }
+            } else {
+                $competitions_types = array( 'cup', 'league' );
+                foreach ( $competitions_types as $competition_type ) {
+                    $club_competitions = $this->get_competitions( $club, $club_competitions, $competition_type );
+                }
+                $club->competitions = $club_competitions;
+            }
+            if ( empty( $msg ) ) {
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'club'            => $club,
+                        'user_can_update' => $club->can_user_update(),
+                    ),
+                    'club'
+                );
+            }
+        } else {
+			$msg = $this->club_not_found;
 		}
-		$club_competitions = array();
-		// Get competition by Name.
-		$competition_name = get_query_var( 'competition_name' );
-		if ( $competition_name ) {
-			$competition_name = un_seo_url( $competition_name );
-			$competition      = get_competition( $competition_name, 'name' );
-			if ( ! $competition ) {
-				return $this->competition_not_found;
-			}
-			$club->competition = $competition;
-		} else {
-			$competitions_types = array( 'cup', 'league' );
-			foreach ( $competitions_types as $competition_type ) {
-				$c            = 0;
-				$competitions = $racketmanager->get_competitions( array( 'type' => $competition_type ) );
-				foreach ( $competitions as $competition ) {
-					$events = $competition->get_events();
-					$e      = 0;
-					foreach ( $events as $event ) {
-						$teams        = $event->get_teams_info(
-							array(
-								'club'    => $club->id,
-								'orderby' => array( 'title' => 'ASC' ),
-							)
-						);
-						$event->teams = $teams;
-						$events[ $e ] = $event;
-						++$e;
-					}
-					$competition->events = $events;
-					$competitions[ $c ]  = $competition;
-					++$c;
-				}
-				$club_competitions = array_merge( $club_competitions, $competitions );
-			}
-		}
-		$club->competitions = $club_competitions;
-		$user_can_update    = false;
-		if ( is_user_logged_in() ) {
-			$user   = wp_get_current_user();
-			$userid = $user->ID;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
-				$user_can_update = true;
-			}
-		}
-		$filename = ( ! empty( $template ) ) ? 'competitions-' . $template : 'competitions';
-		return $this->load_template(
-			$filename,
-			array(
-				'club'            => $club,
-				'user_can_update' => $user_can_update,
-			),
-			'club'
-		);
+        return $this->return_error( $msg );
 	}
+
+    /**
+     * Get competitions for club
+     *
+     * @param object $club
+     * @param array $club_competitions
+     * @param string $type
+     *
+     * @return array
+     */
+    private function get_competitions( object $club, array $club_competitions, string $type ): array {
+        global $racketmanager;
+        $competition_found = false;
+        $c                 = 0;
+        $competitions      = $racketmanager->get_competitions( array( 'type' => $type ) );
+        foreach ( $competitions as $competition ) {
+            $event_found = false;
+            $events      = $competition->get_events();
+            $e           = 0;
+            foreach ( $events as $event ) {
+                $teams        = $event->get_teams_info(
+                    array(
+                        'club'    => $club->id,
+                        'orderby' => array( 'title' => 'ASC' ),
+                    )
+                );
+                if ( $teams ) {
+                    $event->teams = $teams;
+                    $events[ $e ] = $event;
+                    $event_found  = true;
+                } else {
+                    unset( $events[ $e ] );
+                }
+                ++$e;
+            }
+            if ( $event_found ) {
+                $competition_found   = true;
+                $competition->events = $events;
+                $competitions[ $c ]  = $competition;
+            } else {
+                unset( $competitions[ $c ] );
+            }
+            ++$c;
+        }
+        if ( $competition_found ) {
+            $club_competitions = array_merge( $club_competitions, $competitions );
+        }
+        return $club_competitions;
+    }
 	/**
 	 * Function to display Club team
 	 *

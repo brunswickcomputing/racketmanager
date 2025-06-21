@@ -45,7 +45,7 @@ namespace Racketmanager;
         <table class="table table-striped">
             <thead class="table-dark">
             <tr>
-                <th><label for="checkAll"></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-error-filter'));" /></th>
+                <th><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-error-filter'));" /></th>
                 <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'LTA Tennis number', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Message', 'racketmanager' ); ?></th>
@@ -56,7 +56,7 @@ namespace Racketmanager;
                 foreach ( $player_errors as $player_error ) {
                     ?>
                     <tr>
-                        <td><label for="playerRequest-<?php echo esc_html( $player_error->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $player_error->id ); ?>" name="playerRequest[<?php echo esc_html( $player_error->id ); ?>]" id="playerRequest-<?php echo esc_html( $player_error->id ); ?>" /></td>
+                        <td><label for="playerRequest-<?php echo esc_html( $player_error->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player_error->id ); ?>" name="playerRequest[<?php echo esc_html( $player_error->id ); ?>]" id="playerRequest-<?php echo esc_html( $player_error->id ); ?>" /></td>
                         <td>
                         <a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_attr( $player_error->player_id ); ?>">
                             <?php echo esc_html( $player_error->player->display_name ); ?>

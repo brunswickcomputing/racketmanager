@@ -14,19 +14,17 @@ namespace Racketmanager;
 
 global $racketmanager;
 /** @var object $club */
-/** @var object $user_can_manage */
+/** @var bool   $user_can_update */
 $display_opt = $racketmanager->get_options( 'display' );
 if ( empty( $club->player ) ) {
 	$header_level = 1;
-	require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
-	$club_players           = $club->players;
-	$user_can_update_club   = $user_can_manage->club;
-	$user_can_update_player = $user_can_manage->player;
-	if ( $user_can_update_player ) {
+	require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
+	$club_players = $club->players;
+	if ( $user_can_update ) {
 		?>
 		<div class="module module--card">
 			<div class="module__banner">
-				<a data-bs-toggle="collapse" href="#addPlayer" role="button" aria-expanded="false" aria-controls="addPlayer">
+				<a data-bs-toggle="collapse" href="#addPlayer" aria-expanded="false" aria-controls="addPlayer">
 					<h3 class="module__title"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></h3>
 				</a>
 			</div>
@@ -127,7 +125,7 @@ if ( empty( $club->player ) ) {
 									<tr>
 										<th scope="col" class="check-column">
 											<?php
-											if ( $user_can_update_club ) {
+											if ( $user_can_update ) {
 												?>
 												<button class="btn" type="button" id="clubPlayerRemoveSubmit" onclick="Racketmanager.clubPlayerRemove('#club-player-<?php echo esc_html( $gender ); ?>-remove','<?php echo esc_html( $gender ); ?>')">
 													<?php esc_html_e( 'Remove', 'racketmanager' ); ?>
@@ -159,11 +157,10 @@ if ( empty( $club->player ) ) {
 											<tr class="<?php echo esc_html( $class ); ?>" id="club_player-<?php echo esc_html( $club_player->roster_id ); ?>">
 												<th scope="row" class="check-column">
 													<?php
-													if ( $user_can_update_club ) {
+													if ( $user_can_update ) {
 														?>
-                                                        <label>
-                                                            <input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->roster_id ); ?>]" />
-                                                        </label>
+                                                        <label for="clubPlayer-<?php echo esc_html( $club_player->roster_id ); ?>" class="visually-hidden"><?php ?><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
+                                                        <input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $club_player->roster_id ); ?>" />
 														<?php
                                                     }
                                                     ?>
@@ -205,7 +202,6 @@ if ( empty( $club->player ) ) {
 		<?php
 	}
 } else {
-	$user_can_update = $user_can_manage->player;
-	$player          = $club->player;
-	require RACKETMANAGER_PATH . 'templates/club/player.php';
+	$player = $club->player;
+	require_once RACKETMANAGER_PATH . 'templates/club/player.php';
 }

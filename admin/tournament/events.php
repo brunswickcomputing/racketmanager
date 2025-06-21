@@ -9,54 +9,54 @@ namespace Racketmanager;
 
 /** @var object $tournament */
 ?>
-	<div class="row">
-		<div class="col-12 col-md-6">
-			<table class="table table-striped">
-				<thead class="table-dark">
-					<tr>
-						<th><?php esc_html_e( 'Draw', 'racketmanager' ); ?></th>
-						<th>
-							<?php
-								esc_html_e( 'Entries', 'racketmanager' );
-							?>
-						</th>
-						<th>
-							<?php
-								esc_html_e( 'Draw Size', 'racketmanager' );
-							?>
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php
-					foreach ( $tournament->events as $event ) {
-						?>
-						<tr>
-							<td colspan=3><?php echo esc_html( $event->name ); ?></td>
-						</tr>
-						<?php
-						foreach ( $event->leagues as $league ) {
-							$league = get_league( $league );
-							?>
-							<tr>
-								<td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&view=draw&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $league->title ); ?></a></td>
-								<td><?php echo esc_html( $league->num_teams_total ); ?></td>
-								<td>
-									<?php
-									if ( $league->is_championship ) {
-										echo esc_html( $league->championship->num_teams_first_round );
-									} else {
-										$league->set_num_matches( true );
-										echo esc_html( $league->num_matches_total );
-									}
-									?>
-								</td>
-							</tr>
-							<?php
-						}
-					}
-					?>
-				</tbody>
-			</table>
-		</div>
-	</div>
+    <div class="row">
+        <div class="col-12 col-md-6">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th><?php esc_html_e( 'Draw', 'racketmanager' ); ?></th>
+                        <th>
+                            <?php
+                                esc_html_e( 'Entries', 'racketmanager' );
+                            ?>
+                        </th>
+                        <th>
+                            <?php
+                                esc_html_e( 'Draw Size', 'racketmanager' );
+                            ?>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    foreach ( $tournament->events as $event ) {
+                        ?>
+                        <tr>
+                            <td colspan=3><?php echo esc_html( $event->name ); ?></td>
+                        </tr>
+                        <?php
+                        foreach ( $event->leagues as $league ) {
+                            $league = get_league( $league );
+                            ?>
+                            <tr>
+                                <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&view=draw&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $league->title ); ?></a></td>
+                                <td><?php echo esc_html( $league->num_teams_total ); ?></td>
+                                <td>
+                                    <?php
+                                    if ( $league->is_championship ) {
+                                        echo esc_html( $league->championship->num_teams_first_round );
+                                    } else {
+                                        $league->set_num_matches( true );
+                                        echo esc_html( $league->num_matches_total );
+                                    }
+                                    ?>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                    }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>

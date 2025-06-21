@@ -106,7 +106,7 @@ $tab_name = 'display';
                     $msg        = null;
                 }
                 ?>
-            </div>    
+            </div>
         </div>
         <div class="col-md-6">
             <?php

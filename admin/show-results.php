@@ -55,31 +55,31 @@ jQuery(document).ready(function(){
         <div class="tab-content">
             <div class="tab-pane fade" id="resultschecker" role="tabpanel" aria-labelledby="resultschecker-tab">
                 <h2 class="header"><?php esc_html_e( 'Results Checker', 'racketmanager' ); ?></h2>
-                <?php require 'results/results-checker.php'; ?>
+                <?php require_once 'results/results-checker.php'; ?>
             </div>
             <div class="tab-pane fade" id="pending-results" role="tabpanel" aria-labelledby="pending-results-tab">
                 <h2 class="header"><?php esc_html_e( 'Results not yet in', 'racketmanager' ); ?></h2>
-                <?php require 'results/pending-results.php'; ?>
+                <?php require_once 'results/pending-results.php'; ?>
             </div>
             <div class="tab-pane fade" id="awaiting-confirmation" role="tabpanel" aria-labelledby="awaiting-confirmation-tab">
                 <h2 class="header"><?php esc_html_e( 'Results awaiting confirmation', 'racketmanager' ); ?></h2>
-                <?php require 'results/awaiting-confirmation.php'; ?>
+                <?php require_once 'results/awaiting-confirmation.php'; ?>
             </div>
             <div class="tab-pane fade" id="challenge-results" role="tabpanel" aria-labelledby="challenge-results-tab">
                 <h2 class="header"><?php esc_html_e( 'Challenged results', 'racketmanager' ); ?></h2>
-                <?php require 'results/challenged-results.php'; ?>
+                <?php require_once 'results/challenged-results.php'; ?>
             </div>
             <div class="tab-pane fade" id="results" role="tabpanel" aria-labelledby="results-tab">
                 <h2 class="header"><?php esc_html_e( 'Results requiring action', 'racketmanager' ); ?></h2>
-                <?php require 'results/results.php'; ?>
+                <?php require_once 'results/results.php'; ?>
             </div>
             <div class="tab-pane fade" id="postponed" role="tabpanel" aria-labelledby="postponed-tab">
                 <h2 class="header"><?php esc_html_e( 'Postponed matches', 'racketmanager' ); ?></h2>
-                <?php require 'results/postponed.php'; ?>
+                <?php require_once 'results/postponed.php'; ?>
             </div>
             <div class="tab-pane fade" id="tournament" role="tabpanel" aria-labelledby="tournament-tab">
                 <h2 class="header"><?php esc_html_e( 'Tournament matches not yet in', 'racketmanager' ); ?></h2>
-                <?php require 'results/tournament.php'; ?>
+                <?php require_once 'results/tournament.php'; ?>
             </div>
         </div>
     </div>

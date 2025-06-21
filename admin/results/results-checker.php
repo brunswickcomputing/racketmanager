@@ -33,7 +33,7 @@ foreach ( $competitions as $competition ) {
 			<input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-results' ); ?>" />
 			<input type="hidden" name="tab" value="<?php echo esc_html( 'resultschecker' ); ?>" />
 			<div class="col-auto">
-                <label for="season"></label><select class="form-select-1" size="1" name="season" id="season">
+                <label for="season" class="visually-hidden"><?php esc_html_e( 'Select season', 'racketmanager' ); ?></label><select class="form-select-1" size="1" name="season" id="season">
 					<option value="all"><?php esc_html_e( 'All seasons', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $seasons as $season ) {
@@ -43,7 +43,7 @@ foreach ( $competitions as $competition ) {
 					}
 					?>
 				</select>
-                <label for="competition"></label><select class="form-select-1" size="1" name="competition" id="competition">
+                <label for="competition" class="visually-hidden"><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></label><select class="form-select-1" size="1" name="competition" id="competition">
 					<option value="all"><?php esc_html_e( 'All competitions', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $competitions as $competition ) {
@@ -53,7 +53,7 @@ foreach ( $competitions as $competition ) {
 					}
 					?>
 				</select>
-                <label for="event"></label><select class="form-select-1" size="1" name="event" id="event">
+                <label for="event" class="visually-hidden"><?php esc_html_e( 'Select event', 'racketmanager' ); ?></label><select class="form-select-1" size="1" name="event" id="event">
 					<option value="all"><?php esc_html_e( 'All events', 'racketmanager' ); ?></option>
 					<?php
 					foreach ( $events as $event ) {
@@ -99,7 +99,7 @@ foreach ( $competitions as $competition ) {
                 <thead class="table-dark">
                     <tr>
                         <th class="check-column">
-                            <label class="visually-hidden" for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" />
+                            <label class="visually-hidden" for="checkAll"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('results-checker-action'));" />
                         </th>
                         <th class=""><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
                         <th class=""><?php esc_html_e( 'Match', 'racketmanager' ); ?></th>
@@ -124,7 +124,7 @@ foreach ( $competitions as $competition ) {
                             ?>
                             <tr>
                                 <td class="check-column">
-                                    <label class="visually-hidden" for="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" id="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>" />
+                                    <label class="visually-hidden" for="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $results_checker->id ); ?>" name="resultsChecker[<?php echo esc_html( $results_checker->id ); ?>]" id="resultsChecker-<?php echo esc_html( $results_checker->id ); ?>" />
                                 </td>
                                 <td class=""><?php echo esc_html( mysql2date( 'Y-m-d', $results_checker->match->date ) ); ?></td>
                                 <td class="">

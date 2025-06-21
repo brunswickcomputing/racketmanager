@@ -47,8 +47,6 @@ $racketmanager_prev_league = 0;
                     <td class=""><?php echo esc_html( $racketmanager_match->score ); ?></td>
                     <td class=""><a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=results" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a></td>
                 </tr>
-                <div class="row table-row <?php echo esc_html( $racketmanager_overdue_class ); ?> align-items-center">
-                </div>
                 <?php
             }
         } else {

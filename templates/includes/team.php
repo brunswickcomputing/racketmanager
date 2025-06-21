@@ -14,20 +14,23 @@ if ( isset( $league ) ) {
 	$is_player_entry = $league->event->competition->is_player_entry;
 	$object          = $league;
 	$object_type     = 'league';
+    $event_id        = $league->event->id;
 } elseif ( isset( $event ) ) {
 	$is_team_entry   = $event->competition->is_team_entry;
 	$is_player_entry = $event->competition->is_player_entry;
 	$object          = $event;
 	$object_type     = 'event';
+    $event_id        = $event->id;
 } else {
     $object          = null;
     $object_type     = null;
     $is_team_entry   = null;
     $is_player_entry = null;
+    $event_id        = null;
 }
 if ( empty( $item_link ) ) {
-	$team_link = '/clubs/' . seo_url( $club->shortcode ) . '/team/' . seo_url( $team->title ) . '/' . seo_url( $object->name ) . '/';
-	$onclick   = null;
+    $team_link = null;
+	$onclick   = 'onclick=Racketmanager.teamEditModal(event,' . $team->id . ',' . $event_id . ')';
 } else {
 	$team_link = $item_link . '/team/' . esc_attr( seo_url( $team->title ) ) . '/';
 	$onclick   = 'onclick=Racketmanager.' . $object_type . 'TabDataLink(event,' . $object->id . ',' . $object->current_season['name'] . ",'" . $team_link . "'," . $team->id . ",'teams')";
@@ -38,6 +41,11 @@ if ( isset( $team->info ) ) {
 	$team->match_time   = $team->info->match_time ?? null;
 	$team->match_day    = $team->info->match_day ?? null;
 	$team->captain      = $team->info->captain ?? null;
+}
+if ( empty( $event_id ) ) {
+    $suffix = null;
+} else {
+    $suffix = '-' . $event_id . '-' . $team->id;
 }
 ?>
 <div class="">
@@ -59,10 +67,10 @@ if ( isset( $team->info ) ) {
 			</div>
 			<div class="media__content">
 				<h4 class="media__title">
-					<a class="nav--link" href=<?php echo esc_attr( $team_link ); ?> <?php echo esc_attr( $onclick ); ?>>
+					<a class="nav--link" href="<?php echo esc_attr( $team_link ); ?>" <?php echo esc_attr( $onclick ); ?>>
 						<span><?php echo esc_html( $team->title ); ?></span>
 					</a>
-				</h4>
+                </h4>
 			</div>
 			<div class="media__aside">
 				<?php
@@ -97,7 +105,7 @@ if ( isset( $team->info ) ) {
 					<svg width="16" height="16" class="icon-team">
 						<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons-extra.svg#icon-team' ); ?>"></use>
 					</svg>
-					<span class="nav-link__value">
+					<span class="nav-link__value" id="captain-name<?php echo esc_attr( $suffix ); ?>">
 						<?php echo esc_html( $team->captain ); ?>
 					</span>
 				</span>
@@ -156,7 +164,7 @@ if ( isset( $team->info ) ) {
 								<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
 							</svg>
 							<span class="nav--link">
-								<span class="nav-link__value">
+								<span class="nav-link__value" id="captain-contact-no<?php echo esc_attr( $suffix ); ?>">
 									<?php echo esc_html( $team->contactno ); ?>
 								</span>
 							</span>
@@ -172,7 +180,7 @@ if ( isset( $team->info ) ) {
 								<use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
 							</svg>
 							<span class="nav--link">
-								<span class="nav-link__value">
+								<span class="nav-link__value" id="captain-contact-email<?php echo esc_attr( $suffix ); ?>">
 									<?php echo esc_html( $team->contactemail ); ?>
 								</span>
 							</span>

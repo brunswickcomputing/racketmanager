@@ -22,7 +22,7 @@ $age_groups   = Racketmanager_Util::get_age_groups();
             <form id="tournaments-list-filter" method="get" action="" class="form-control">
                 <input type="hidden" name="page" value="<?php echo esc_html( 'racketmanager-tournaments' ); ?>" />
                 <div class="col-auto">
-                    <label for="season"></label><select class="form-select-1" size="1" name="season" id="season">
+                    <label for="season" class="visually-hidden"><?php esc_html_e( 'Select season', 'racketmanager' ); ?></label><select class="form-select-1" size="1" name="season" id="season">
                         <option value=""><?php esc_html_e( 'All seasons', 'racketmanager' ); ?></option>
                         <?php
                         foreach ( $seasons as $season ) {
@@ -32,7 +32,7 @@ $age_groups   = Racketmanager_Util::get_age_groups();
                         }
                         ?>
                     </select>
-                    <label for="competition"></label><select class="form-select-1" name="competition" id="competition">
+                    <label for="competition" class="visually-hidden"><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></label><select class="form-select-1" name="competition" id="competition">
                         <option value=""><?php esc_html_e( 'All competitions', 'racketmanager' ); ?></option>
                         <?php
                         foreach ( $competitions as $competition ) {
@@ -42,7 +42,7 @@ $age_groups   = Racketmanager_Util::get_age_groups();
                         }
                         ?>
                     </select>
-                    <label for="age_group"></label><select class="form-select-1" name="age_group" id="age_group">
+                    <label for="age_group" class="visually-hidden"><?php esc_html_e( 'Select age group', 'racketmanager' ); ?></label><select class="form-select-1" name="age_group" id="age_group">
                         <option value=""><?php esc_html_e( 'All age groups', 'racketmanager' ); ?></option>
                         <?php
                         foreach ( $age_groups as $age_group => $age_group_desc ) {
@@ -79,7 +79,7 @@ $age_groups   = Racketmanager_Util::get_age_groups();
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></th>
+                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('tournaments-filter'));" /></th>
                         <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                         <th class="d-none d-md-table-cell"><?php esc_html_e( 'Season', 'racketmanager' ); ?></th>
                         <th><?php esc_html_e( 'Venue', 'racketmanager' ); ?></th>
@@ -91,7 +91,7 @@ $age_groups   = Racketmanager_Util::get_age_groups();
                     foreach ( $tournaments as $tournament ) {
                         ?>
                         <tr>
-                            <td class="check-column"><label for="tournament-<?php echo esc_html( $tournament->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" id="tournament-<?php echo esc_html( $tournament->id ); ?>" /></td>
+                            <td class="check-column"><label for="tournament-<?php echo esc_html( $tournament->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" id="tournament-<?php echo esc_html( $tournament->id ); ?>" /></td>
                             <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?> "><?php echo esc_html( $tournament->name ); ?></a></td>
                             <td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->season ); ?></td>
                             <td><?php echo esc_html( $tournament->venue_name ); ?></td>

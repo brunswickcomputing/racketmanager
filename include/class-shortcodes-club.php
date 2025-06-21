@@ -385,11 +385,9 @@ class Shortcodes_Club extends Shortcodes {
 			return $this->no_event_id;
 		}
 		$season = get_query_var( 'season' );
-		if ( ! $season ) {
-			if ( ! isset( $event->current_season['name'] ) ) {
-				return __( 'No seasons for event', 'racketmanager' );
-			}
-		}
+		if ( ! $season && ! isset( $event->current_season['name'] ) ) {
+            return __( 'No seasons for event', 'racketmanager' );
+        }
 		$season_dtls        = $event->current_season;
 		$player_stats       = $event->get_player_stats(
 			array(

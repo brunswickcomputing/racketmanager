@@ -32,12 +32,12 @@ namespace Racketmanager;
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <td class="check-column"><label for="checkAll"></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('clubs-filter'));" /></td>
-                        <td class="d-none d-md-table-cell column-num">ID</td>
-                        <td class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></td>
-                        <td class="d-none d-md-table-cell"><?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?></td>
-                        <td class="col-auto"></td>
-                        <td class="col-auto"></td>
+                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('clubs-filter'));" /></th>
+                        <th class="d-none d-md-table-cell column-num">ID</th>
+                        <th class=""><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
+                        <th class="d-none d-md-table-cell"><?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?></th>
+                        <th class="col-auto"></th>
+                        <th class="col-auto"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,7 +50,7 @@ namespace Racketmanager;
                         ?>
                         <tr class="">
                             <td class="check-column">
-                                <label for="club-<?php echo esc_html( $club->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" id="club-<?php echo esc_html( $club->id ); ?>" />
+                                <label for="club-<?php echo esc_html( $club->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" id="club-<?php echo esc_html( $club->id ); ?>" />
                             </td>
                             <td class="d-none d-md-table-cell column-num"><?php echo esc_html( $club->id ); ?></td>
                             <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></td>

@@ -46,7 +46,7 @@ foreach ( $club->competitions as $competition ) {
 						<?php
 						if ( $event_link ) {
 							?>
-						</a>
+						    </a>
 							<?php
 						}
 						?>
@@ -79,3 +79,6 @@ foreach ( $club->competitions as $competition ) {
 	</div>
 	<?php
 }
+?>
+<div class="modal" id="teamModal"></div>
+

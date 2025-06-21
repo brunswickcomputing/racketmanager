@@ -57,7 +57,7 @@ namespace Racketmanager;
     </div>
     <div class="row mb-3">
         <div class="col-auto">
-            <a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
+            <a class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=modify&amp;tournament=<?php echo esc_html( $tournament->id ); ?> "><?php esc_html_e( 'Edit tournament', 'racketmanager' ); ?></a>
             <?php
             if ( $tournament->is_open ) {
                 ?>

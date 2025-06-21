@@ -63,14 +63,14 @@ jQuery(document).ready(function(){
     <div class="tab-content">
         <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="overview-tab">
             <h2><?php esc_html_e( 'Overview', 'racketmanager' ); ?></h2>
-            <?php require 'tournament/overview.php'; ?>
+            <?php require_once 'tournament/overview.php'; ?>
         </div>
         <div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
             <h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
-            <?php require 'tournament/events.php'; ?>
+            <?php require_once 'tournament/events.php'; ?>
         </div>
         <div class="tab-pane" id="entries" role="tabpanel" aria-labelledby="entries-tab">
             <h2><?php esc_html_e( 'Entries', 'racketmanager' ); ?></h2>
-            <?php require 'tournament/entries.php'; ?>
+            <?php require_once 'tournament/entries.php'; ?>
         </div>
     </div>

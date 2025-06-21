@@ -329,6 +329,9 @@ class Shortcodes_Club extends Shortcodes {
 			$atts
 		);
 		$template = $args['template'];
+        $filename = ( ! empty( $template ) ) ? 'team-' . $template : 'team';
+        $event    = null;
+        $team     = null;
 		// Get Club by Name.
 		$club_name = get_query_var( 'club_name' );
 		$club_name = un_seo_url( $club_name );
@@ -358,11 +361,10 @@ class Shortcodes_Club extends Shortcodes {
 			$msg = $this->no_event_id;
 		}
         if ( empty( $msg ) ) {
-            $team_info       = $event->get_team_info( $team->id );
-            $team            = (object) array_merge( (array) $team, (array) $team_info );
-            $club->event     = $event;
-            $club->team      = $team;
-            $filename = ( ! empty( $template ) ) ? 'team-' . $template : 'team';
+            $team_info   = $event->get_team_info( $team->id );
+            $team        = (object) array_merge( (array) $team, (array) $team_info );
+            $club->event = $event;
+            $club->team  = $team;
             return $this->load_template(
                 $filename,
                 array(
@@ -391,44 +393,48 @@ class Shortcodes_Club extends Shortcodes {
 			$atts
 		);
 		$template = $args['template'];
-		// Get Club by Name.
+        $filename = ( ! empty( $template ) ) ? 'event-' . $template : 'event';
+        $event    = null;
+        // Get Club by Name.
 		$club_name = get_query_var( 'club_name' );
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return $this->club_not_found;
+			$msg = $this->club_not_found;
 		}
 		$event_name = get_query_var( 'event' );
 		if ( $event_name ) {
 			$event_name = un_seo_url( $event_name );
 			$event      = get_event( $event_name, 'name' );
 			if ( ! $event ) {
-				return $this->event_not_found;
+				$msg = $this->event_not_found;
 			}
 		} else {
-			return $this->no_event_id;
+			$msg = $this->no_event_id;
 		}
 		$season = get_query_var( 'season' );
 		if ( ! $season && ! isset( $event->current_season['name'] ) ) {
-            return __( 'No seasons for event', 'racketmanager' );
+            $msg = __( 'No seasons for event', 'racketmanager' );
         }
-		$season_dtls        = $event->current_season;
-		$player_stats       = $event->get_player_stats(
-			array(
-				'season' => $season_dtls['name'],
-				'club'   => $club->id,
-			)
-		);
-		$club->event        = $event;
-		$club->player_stats = $player_stats;
-		$filename           = ( ! empty( $template ) ) ? 'event-' . $template : 'event';
-		return $this->load_template(
-			$filename,
-			array(
-				'club' => $club,
-			),
-			'club'
-		);
+        if ( empty( $msg ) ) {
+            $season_dtls        = $event->current_season;
+            $player_stats       = $event->get_player_stats(
+                array(
+                    'season' => $season_dtls['name'],
+                    'club'   => $club->id,
+                )
+            );
+            $club->event        = $event;
+            $club->player_stats = $player_stats;
+            return $this->load_template(
+                $filename,
+                array(
+                    'club' => $club,
+                ),
+                'club'
+            );
+        }
+        return $this->return_error( $msg );
 	}
 	/**
 	 * Function to display Club Invoices

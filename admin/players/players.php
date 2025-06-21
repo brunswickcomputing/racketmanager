@@ -50,7 +50,7 @@ namespace Racketmanager;
         <div class="container">
             <div id="notifyMessage"></div>
             <div class="row table-header">
-                <div class="col-2 col-md-1 check-column"><label for="checkAll"></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-action'));" /></div>
+                <div class="col-2 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('player-action'));" /></div>
                 <div class="col-2 col-md-1 column-num">ID</div>
                 <div class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
                 <div class="col-2 col-md-1"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></div>
@@ -68,7 +68,7 @@ namespace Racketmanager;
                     <div class="row table-row <?php echo esc_html( $class ); ?>">
                         <div class="col-2 col-md-1 check-column">
                             <?php if ( empty( $player->removed_date ) ) { ?>
-                                <label for="player-<?php echo esc_html( $player->id ); ?>"></label><input type="checkbox" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" id="player-<?php echo esc_html( $player->id ); ?>" />
+                                <label for="player-<?php echo esc_html( $player->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" id="player-<?php echo esc_html( $player->id ); ?>" />
                             <?php } ?>
                         </div>
                         <div class="col-2 col-md-1 column-num"><?php echo esc_html( $player->id ); ?></div>

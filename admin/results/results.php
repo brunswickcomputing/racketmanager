@@ -11,8 +11,8 @@ global $racketmanager;
 $racketmanager_match_args            = array();
 $racketmanager_match_args['status']  = 'A';
 $racketmanager_match_args['orderby'] = array(
-	'updated' => 'ASC',
-	'id'      => 'ASC',
+    'updated' => 'ASC',
+    'id'      => 'ASC',
 );
 $racketmanager_matches     = $racketmanager->get_matches( $racketmanager_match_args );
 $racketmanager_prev_league = 0;

@@ -39,7 +39,7 @@ $msg        = null;
                         $msg        = null;
                     }
                     ?>
-                </div>    
+                </div>
             </div>
             <div class="col-md-6">
                 <div class="form-floating">
@@ -123,7 +123,7 @@ $msg        = null;
                         $msg        = null;
                     }
                     ?>
-                </div>    
+                </div>
             </div>
             <div class="col-md-6">
                 <div class="form-floating">
@@ -221,7 +221,7 @@ $msg        = null;
                     $msg        = null;
                 }
                 ?>
-            </div>    
+            </div>
         </div>
     </fieldset>
 </div>

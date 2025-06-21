@@ -30,11 +30,8 @@ function dragEnter(ev) {
   ev.target.classList.add('drag-over');
 }
 function dragOver(ev) {
-  ev.preventDefault();
-  if (jQuery(this).children('.finals-match').length) {
-    return;
-  }
-  ev.target.classList.add('drag-over');
+    ev.preventDefault();
+    dragEnter(ev);
 }
 function dragLeave(ev) {
   ev.target.classList.remove('drag-over');
@@ -61,12 +58,12 @@ function drop(ev) {
 }
 const inputs = document.querySelectorAll('.matchId');
 inputs.forEach(input => {
-	if (input.value !== '') {
-		let match='match-' + input.value;
-		let matchSchedule=document.getElementById(input.parentElement.id);
-		let draggable = document.getElementById(match);
-	}
+    if (input.value !== '') {
+        let match='match-' + input.value;
+        let matchSchedule=document.getElementById(input.parentElement.id);
+        let draggable = document.getElementById(match);
         if (draggable) {
             matchSchedule.appendChild(draggable);
         }
+    }
 });

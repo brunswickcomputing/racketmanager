@@ -65,6 +65,8 @@ inputs.forEach(input => {
 		let match='match-' + input.value;
 		let matchSchedule=document.getElementById(input.parentElement.id);
 		let draggable = document.getElementById(match);
-		matchSchedule.appendChild(draggable);
 	}
+        if (draggable) {
+            matchSchedule.appendChild(draggable);
+        }
 });

@@ -936,6 +936,25 @@ final class Club {
         return $user_can_update;
     }
     /**
+     * Can user update as match secretary or admin user.
+     * @return bool
+     */
+    public function can_user_update(): bool {
+        $user_can_update     = false;
+        if ( is_user_logged_in() ) {
+            if ( current_user_can( 'manage_racketmanager' ) ) {
+                $user_can_update = true;
+            } else {
+                $user   = wp_get_current_user();
+                $userid = $user->ID;
+                if ( $this->matchsecretary === $userid ) {
+                    $user_can_update = true;
+                }
+            }
+        }
+        return $user_can_update;
+    }
+    /**
      * Cup entry function
      *
      * @param object $club_entry club cup entry object.

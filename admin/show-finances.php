@@ -35,11 +35,11 @@ jQuery(document).ready(function(){
         <div class="tab-content">
             <div class="tab-pane fade" id="racketmanager-charges" role="tabpanel" aria-labelledby="charges-tab">
                 <h2 class="header"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></h2>
-                <?php require 'finances/charges.php'; ?>
+                <?php require_once 'finances/charges.php'; ?>
             </div>
             <div class="tab-pane fade" id="racketmanager-invoices" role="tabpanel" aria-labelledby="invoices-tab">
                 <h2 class="header"><?php esc_html_e( 'Invoices', 'racketmanager' ); ?></h2>
-                <?php require 'finances/invoices.php'; ?>
+                <?php require_once 'finances/invoices.php'; ?>
             </div>
         </div>
     </div>

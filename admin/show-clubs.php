@@ -9,11 +9,11 @@ namespace Racketmanager;
 
 ?>
 <div class="container">
-	<h1><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h1>
+    <h1><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h1>
 
-	<div class="form-control mb-3">
-		<form id="teams-filter" method="post" action="">
-			<?php wp_nonce_field( 'clubs-bulk' ); ?>
+    <div class="form-control mb-3">
+        <form id="teams-filter" method="post" action="">
+            <?php wp_nonce_field( 'clubs-bulk' ); ?>
             <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
                 <div class="col-auto">
@@ -62,11 +62,11 @@ namespace Racketmanager;
                     }
                     ?>
                 </tbody>
-    		</table>
+            </table>
         </form>
-	</div>
-	<div class="mb-3">
-		<!-- Add New Club -->
-		<a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
-	</div>
+    </div>
+    <div class="mb-3">
+        <!-- Add New Club -->
+        <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
+    </div>
 </div>

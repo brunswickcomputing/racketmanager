@@ -269,7 +269,11 @@ $msg        = null;
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
-                        $num_entries = empty( $tournament->num_entries ) ? empty( $tournament->competition->num_entries ) ? null : $tournament->competition->num_entries : $tournament->num_entries;
+                        if ( empty( $tournament->competition->num_entries ) ) {
+                            $num_entries = empty( $tournament->num_entries ) ? null : $tournament->num_entries;
+                        } else {
+                            $num_entries = empty( $tournament->num_entries ) ? $tournament->competition->num_entries : $tournament->num_entries;
+                        }
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_entries', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'num_entries', $racketmanager->error_fields, true );

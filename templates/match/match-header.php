@@ -353,15 +353,23 @@ if ( $match->is_pending ) {
     });
     function matchHeaderListener () {
         const optionLinks = document.querySelectorAll('.matchOptionLink');
-        optionLinks.forEach(el => el.addEventListener('click', function (e) {
+        optionLinks.forEach(function(el) {
+            el.removeEventListener('click', matchOptionClick);
+            el.addEventListener('click', matchOptionClick);
+        });
+        function matchOptionClick (e) {
             let matchId = this.dataset.matchId;
             let matchOption = this.dataset.matchOption;
             Racketmanager.matchOptions(e, matchId, matchOption);
-        }));
+        }
         const statusLinks = document.querySelectorAll('.statusLink');
-        statusLinks.forEach(el => el.addEventListener('click', function (e) {
+        statusLinks.forEach(function(el) {
+            el.removeEventListener('click', statusModalClick);
+            el.addEventListener('click', statusModalClick);
+        });
+        function statusModalClick (e) {
             let matchId = this.dataset.matchId;
             Racketmanager.statusModal(e, matchId);
-        }));
+        }
     }
 </script>

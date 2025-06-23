@@ -627,17 +627,25 @@ if ( $match->is_walkover ) {
 	<script>
 		<?php require RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
         const scoreStatusLinks = document.querySelectorAll('.scoreStatusLink');
-        scoreStatusLinks.forEach(el => el.addEventListener('click', function (e) {
+        scoreStatusLinks.forEach(function(el) {
+            el.removeEventListener('click', scoreStatusClick);
+            el.addEventListener('click', scoreStatusClick);
+        });
+        function scoreStatusClick (e) {
             let rubberId = this.dataset.rubberId;
             let rubberNumber = this.dataset.rubberNumber;
             Racketmanager.scoreStatusModal(e, rubberId, rubberNumber);
-        }));
+        }
         const scoreResetLinks = document.querySelectorAll('.scoreResetLink');
-        scoreResetLinks.forEach(el => el.addEventListener('click', function (e) {
+        scoreResetLinks.forEach(function(el) {
+            el.removeEventListener('click', resetMatchClick);
+            el.addEventListener('click', resetMatchClick);
+        });
+        function resetMatchClick (e) {
             let rubberId = this.dataset.rubberId;
             let matchRef = 'rubber-' + rubberId;
             Racketmanager.resetMatchScores(e, matchRef);
-        }));
+        }
 	</script>
-	<?php require RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
-	<?php require 'includes/match-modal.php'; ?>
+	<?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
+	<?php require_once 'includes/match-modal.php'; ?>

@@ -297,6 +297,7 @@ class Shortcodes_Match extends Shortcodes {
                         'status' => $status,
                         'modal'  => $modal,
                         'select' => $select,
+                        'rubber' => $rubber,
                     ),
                     'match'
                 );

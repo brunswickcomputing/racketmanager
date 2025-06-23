@@ -88,7 +88,11 @@ class RacketManager {
 	 * @var NumberFormatter|null
 	 */
 	public ?NumberFormatter $currency_fmt;
-    public object $ajax_frontend ;
+    public object $ajax;
+    public object $ajax_account;
+    public object $ajax_frontend;
+    public object $ajax_match;
+    public object $ajax_tournament ;
     public object $login;
     public object $shortcodes;
     public object $shortcodes_club;
@@ -838,6 +842,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-tournament-entry.php';
 		require_once RACKETMANAGER_PATH . 'include/class-validator.php';
 		require_once RACKETMANAGER_PATH . 'include/class-validator-entry-form.php';
+        require_once RACKETMANAGER_PATH . 'include/class-validator-match.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-exporter.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-report.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-checker.php';
@@ -864,7 +869,10 @@ class RacketManager {
 		// Global libraries.
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-stripe.php';
 		require_once RACKETMANAGER_PATH . 'include/class-ajax.php';
-		require_once RACKETMANAGER_PATH . 'include/class-ajax-frontend.php';
+        require_once RACKETMANAGER_PATH . 'include/class-ajax-account.php';
+        require_once RACKETMANAGER_PATH . 'include/class-ajax-frontend.php';
+		require_once RACKETMANAGER_PATH . 'include/class-ajax-match.php';
+        require_once RACKETMANAGER_PATH . 'include/class-ajax-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-shortcodes.php';
 		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-club.php';
 		require_once RACKETMANAGER_PATH . 'include/class-shortcodes-competition.php';
@@ -887,19 +895,22 @@ class RacketManager {
 	 * Initialise components
 	 */
     public function init_components(): void {
-        $this->ajax_frontend          = new Ajax_Frontend();
-        $this->shortcodes             = new Shortcodes();
-        $this->shortcodes_club        = new Shortcodes_Club();
-        $this->shortcodes_competition = new Shortcodes_Competition();
-        $this->shortcodes_email       = new Shortcodes_Email();
-        $this->shortcodes_event       = new Shortcodes_Event();
-        $this->shortcodes_league      = new Shortcodes_League();
-        $this->shortcodes_login       = new Shortcodes_Login();
-	    $this->shortcodes_match       = new Shortcodes_Match();
-	    $this->shortcodes_message     = new Shortcodes_Message();
-        $this->shortcodes_tournament  = new Shortcodes_Tournament();
-        $this->rewrites               = new RacketManager_Rewrites();
-        $this->login                  = new Racketmanager_Login();
+        $this->ajax_account             = new Ajax_Account();
+        $this->ajax_frontend            = new Ajax_Frontend();
+        $this->ajax_match               = new Ajax_Match();
+        $this->ajax_tournament          = new Ajax_Tournament();
+        $this->shortcodes               = new Shortcodes();
+        $this->shortcodes_club          = new Shortcodes_Club();
+        $this->shortcodes_competition   = new Shortcodes_Competition();
+        $this->shortcodes_email         = new Shortcodes_Email();
+        $this->shortcodes_event         = new Shortcodes_Event();
+        $this->shortcodes_league        = new Shortcodes_League();
+        $this->shortcodes_login         = new Shortcodes_Login();
+	    $this->shortcodes_match         = new Shortcodes_Match();
+	    $this->shortcodes_message       = new Shortcodes_Message();
+        $this->shortcodes_tournament    = new Shortcodes_Tournament();
+        $this->rewrites                 = new RacketManager_Rewrites();
+        $this->login                    = new Racketmanager_Login();
     }
     /**
      * Load shortcodes

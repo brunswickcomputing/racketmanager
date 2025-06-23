@@ -1363,15 +1363,15 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 	let alert_id_1;
 	let alert_response_1 = '';
 	if (is_tournament) {
-		alert_id_1 = jQuery('#matchAlert');
+		alert_id_1 = '#matchAlert';
 		alert_response_1 = '#alertResponse';
 	} else {
-		alert_id_1 = jQuery('#matchOptionsAlert');
+		alert_id_1 = '#matchOptionsAlert';
 		alert_response_1 = '#alertMatchOptionsResponse';
 	}
 	jQuery(alert_id_1).hide();
 	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
-	let alert_id_2 = jQuery('#matchDateAlert');
+	let alert_id_2 = '#matchDateAlert';
 	jQuery(alert_id_2).hide();
 	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
 	let alert_response_2 = '#alertMatchDateResponse';
@@ -1384,10 +1384,11 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let message = response.data[0];
-			let modal = '#' + response.data[1];
-			let match_id = response.data[2];
-			let matchDate = response.data[4];
+			let data = response.data;
+			let message = data.msg;
+			let modal = '#' + data.modal;
+			let match_id = data.match_id;
+			let matchDate = data.match_date;
 			jQuery(alert_id_1).show();
 			jQuery(alert_id_1).addClass('alert--success');
 			jQuery(alert_response_1).html(message);
@@ -1401,23 +1402,8 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 			}
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let message = '';
-				for (let errorMsg of data[1]) {
-					message += errorMsg + '<br />';
-				}
-				let errorFields = data[2];
-				for (let errorField of errorFields) {
-					let id = '#'.concat(errorField);
-					jQuery(id).addClass("is-invalid");
-				}
-				jQuery(alert_response_2).html(message);
-			} else {
-				jQuery(alert_response_2).text(response.statusText);
-			}
+			Racketmanager.handleAjaxError(response, alert_response_2, alert_id_2);
 			jQuery(alert_id_2).show();
-			jQuery(alert_id_2).addClass('alert--danger');
 		},
 		complete: function () {
 		}

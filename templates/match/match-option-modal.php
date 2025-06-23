@@ -45,6 +45,7 @@ namespace Racketmanager;
                         <div class="mb-3">
                             <label for="schedule-date" class="visually-hidden"><?php esc_html_e( 'New date', 'racketmanager' ); ?></label>
                             <input type="<?php echo esc_attr( $date_input_type ); ?>" class="form-control" id="schedule-date" name="schedule-date" value="<?php echo esc_html( $date_input ); ?>" />
+                            <div class="invalid-feedback" id="schedule-dateFeedback"></div>
                         </div>
                         <div class="alert_rm" id="matchDateAlert" style="display:none;">
                             <div class="alert__body">

@@ -1015,10 +1015,12 @@ function withdrawn_team_email( array $args = array() ): string {
     /**
      * Display rubber status modal
      *
+     * @param int $rubber_id rubber id.
      * @param array $args array of arguments.
      */
-    function rubber_status_modal( array $args = array() ): string {
-        $shortcode = '[rubber-status';
+    function rubber_status_modal( int $rubber_id, array $args = array() ): string {
+        $args['id'] = $rubber_id;
+        $shortcode  = '[rubber-status';
         foreach ( $args as $key => $value ) {
             $shortcode .= ' ' . $key . "='" . $value . "'";
         }

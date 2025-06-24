@@ -53,6 +53,7 @@ class Validator {
         $this->err_flds = array();
         $this->err_msgs = array();
         $this->status   = null;
+        $this->msg      = null;
     }
     /**
      * Validate security token
@@ -428,6 +429,7 @@ class Validator {
         $return->error    = $this->error;
         $return->err_flds = $this->err_flds;
         $return->err_msgs = $this->err_msgs;
+        $return->msg      = $this->msg;
         if ( $this->error && empty( $this->status ) ) {
             $this->status = 400;
         }

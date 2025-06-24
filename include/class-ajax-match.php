@@ -136,16 +136,17 @@ class Ajax_Match extends Ajax {
             $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : null;
             $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $rubber    = get_rubber( $rubber_id );
-            if ( $rubber ) {
-                $output = rubber_status_modal( array( 'status' => $status, 'modal' => $modal, 'rubber_id' => $rubber_id ) );
-            } else {
-                $return->error  = true;
-                $return->msg    = __( 'Rubber not found', 'racketmanager' );
-                $return->status = 404;
+            $validator = $validator->modal( $modal, $error_field );
+            $validator = $validator->rubber( $rubber_id, $error_field );
+            if ( empty( $validator->error ) ) {
+                $output = rubber_status_modal( $rubber_id, array( 'status' => $status, 'modal' => $modal ) );
             }
         }
-        if ( ! empty( $return->error ) ) {
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            if ( empty( $return->msg ) ) {
+                $return->msg = implode( '<br> ', $return->err_msgs );
+            }
             $output = show_alert( $return->msg, 'danger', 'modal' );
             status_header( $return->status );
         }
@@ -156,82 +157,34 @@ class Ajax_Match extends Ajax {
      * Set match rubber status
      */
     public function set_match_rubber_status(): void {
-        $return         = array();
-        $err_msg        = array();
-        $err_field      = array();
-        $valid          = true;
-        $msg            = null;
-        $score_status   = null;
-        $status_message = null;
-        $status_class   = null;
-        $rubber_number  = null;
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-rubber-status' ) ) {
-            $valid       = false;
-            $err_field[] = '';
-            $err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-        }
-        if ( $valid ) {
-            $modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            if ( $modal ) {
-                $rubber_number = isset( $_POST['rubber_number'] ) ? intval( $_POST['rubber_number'] ) : null;
-                if ( $rubber_number ) {
-                    $score_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-                    $home_team    = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
-                    $away_team    = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
-                    if ( $score_status ) {
-                        $score_status_values = explode( '_', $score_status );
-                        $status_value        = $score_status_values[0];
-                        $player_ref = $score_status_values[1] ?? null;
-                        switch ( $status_value ) {
-                            case 'walkover':
-                            case 'retired':
-                                if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
-                                    $valid       = false;
-                                    $err_field[] = 'score_status';
-                                    $err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
-                                }
-                                break;
-                            case 'share':
-                            case 'none':
-                            case 'invalid':
-                            case 'abandoned':
-                                break;
-                            default:
-                                $valid       = false;
-                                $err_field[] = 'score_status';
-                                $err_msg[]   = __( 'Score status not valid', 'racketmanager' );
-                                break;
-                        }
-                        if ( $valid ) {
-                            $status_dtls    = $this->set_status_details( $score_status, $home_team, $away_team );
-                            $status_message = $status_dtls->message;
-                            $status_class   = $status_dtls->class;
-                            $score_status   = $status_dtls->status;
-                        }
-                    } else {
-                        $valid       = false;
-                        $err_field[] = 'score_status';
-                        $err_msg[]   = __( 'No score status selected', 'racketmanager' );
-                    }
-                } else {
-                    $valid       = false;
-                    $err_field[] = 'score_status';
-                    $err_msg[]   = __( 'Rubber number not supplied', 'racketmanager' );
-                }
-            } else {
-                $valid       = false;
-                $err_field[] = 'score_status';
-                $err_msg[]   = $this->no_modal;
+        $return      = new stdClass();
+        $error_field = 'score_status';
+        $validator   = new Validator_Match();
+        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-rubber-status' );
+        if ( empty( $validator->error ) ) {
+            $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $rubber_number = isset( $_POST['rubber_number'] ) ? intval( $_POST['rubber_number'] ) : null;
+            $score_status  = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+            $home_team     = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
+            $away_team     = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
+            $validator     = $validator->modal( $modal, $error_field );
+            $validator     = $validator->rubber_number( $rubber_number, $error_field );
+            $validator     = $validator->score_status( $score_status, $error_field );
+            if ( empty( $validator->error ) ) {
+                $status_dtls            = $this->set_status_details( $score_status, $home_team, $away_team );
+                $return->score_status   = $status_dtls->status;
+                $return->status_message = $status_dtls->message;
+                $return->status_class   = $status_dtls->class;
+                $return->modal          = $modal;
+                $return->rubber_number  = $rubber_number;
+                wp_send_json_success( $return );
             }
         }
-        if ( $valid ) {
-            array_push( $return, $msg, $rubber_number, $score_status, $status_message, $status_class, $modal );
-            wp_send_json_success( $return );
-        } else {
-            $msg = __( 'Unable to set score status', 'racketmanager' );
-            array_push( $return, $msg, $err_msg, $err_field );
-            wp_send_json_error( $return, '500' );
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to set score status', 'racketmanager' );
         }
+        wp_send_json_error( $return, $return->status );
     }
     /**
      * Function to set match or rubber status details

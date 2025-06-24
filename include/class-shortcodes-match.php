@@ -214,18 +214,18 @@ class Shortcodes_Match extends Shortcodes {
     public function show_rubber_status_modal( array $atts ): false|string {
         $args      = shortcode_atts(
             array(
-                'rubber_id' => 0,
+                'id'       => 0,
                 'status'   => null,
                 'modal'    => null,
                 'template' => '',
             ),
             $atts
         );
-        $rubber_id      = $args['rubber_id'];
-        $status         = $args['status'];
-        $template       = $args['template'];
-        $modal          = $args['modal'];
-        $rubber         = get_rubber( $rubber_id );
+        $rubber_id = $args['id'];
+        $status    = $args['status'];
+        $template  = $args['template'];
+        $modal     = $args['modal'];
+        $rubber    = get_rubber( $rubber_id );
         if ( $rubber ) {
             $match          = get_match( $rubber->match_id );
             if ( $match ) {

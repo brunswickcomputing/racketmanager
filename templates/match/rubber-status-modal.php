@@ -35,7 +35,8 @@ namespace Racketmanager;
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div id="splashBlockRubber">
+                        <div class="row" id="splashHide">
                         <div class="col-sm-6">
                             <label>
                                 <select class="form-select" name="score_status" id="score_status">
@@ -79,6 +80,8 @@ namespace Racketmanager;
                                 </li>
                             </ul>
                         </div>
+                    </div>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
                     </div>
                 </div>
             </div>

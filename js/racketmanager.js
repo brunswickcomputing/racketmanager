@@ -1250,6 +1250,8 @@ Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
 Racketmanager.setMatchRubberStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
+	let splashBock = '#splashBlockRubber';
+	jQuery(splashBock).addClass('is-loading');
 	$form += "&action=racketmanager_set_match_rubber_status";
 	let notifyField = '#scoreStatusResponse';
 	jQuery(notifyField).hide();
@@ -1262,9 +1264,10 @@ Racketmanager.setMatchRubberStatus = function (link) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let rubberNumber = response.data[1];
-			let scoreStatus = response.data[2];
-			let statusMessages = Object.entries(response.data[3]);
+			let data = response.data;
+			let rubberNumber = data.rubber_number;
+			let scoreStatus = data.score_status;
+			let statusMessages = Object.entries(data.status_message);
 			for (let i in statusMessages) {
 				let statusMessage = statusMessages[i];
 				let teamRef = statusMessage[0];
@@ -1280,7 +1283,7 @@ Racketmanager.setMatchRubberStatus = function (link) {
 					jQuery(messageRef).html('');
 				}
 			}
-			let statusClasses = Object.entries(response.data[4]);
+			let statusClasses = Object.entries(data.status_class);
 			for (let i in statusClasses) {
 				let statusClass = statusClasses[i];
 				let teamRef = statusClass[0];
@@ -1291,30 +1294,17 @@ Racketmanager.setMatchRubberStatus = function (link) {
 					jQuery(statusRef).addClass(teamClass);
 				}
 			}
-			let modal = '#' + response.data[5];
+			let modal = '#' + data.modal;
 			let matchStatusRef = '#' + 'match_status_' + rubberNumber;
 			jQuery(matchStatusRef).val(scoreStatus);
 			jQuery(modal).modal('hide')
 		},
 		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let $message = data[0];
-				let errorMsg = data[1];
-				let errorField = data[2];
-				for (let i = 0; i < errorField.length; i++) {
-					let formField = "#" + errorField[i];
-					jQuery(formField).addClass('is-invalid');
-					formField = formField + 'Feedback';
-					jQuery(formField).html(errorMsg[i]);
-				}
-				jQuery(alertTextField).html($message);
-			} else {
-				jQuery(alertTextField).html(response.statusText);
-			}
+			Racketmanager.handleAjaxError(response, scoreStatusResponseField, scoreStatusResponse);
 			jQuery(notifyField).show();
 		},
 		complete: function () {
+			jQuery(splashBock).removeClass('is-loading');
 		}
 	});
 }

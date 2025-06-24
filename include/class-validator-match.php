@@ -39,7 +39,7 @@ final class Validator_Match extends Validator {
         if ( empty( $match_id ) ) {
             $this->error      = true;
             $this->err_flds[] = $error_field;
-            $this->err_msgs[] = __( 'Modal id not supplied', 'racketmanager' );
+            $this->err_msgs[] = __( 'Match id not supplied', 'racketmanager' );
         } else {
             $match = get_match( $match_id );
             if ( ! $match ) {

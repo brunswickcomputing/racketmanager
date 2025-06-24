@@ -300,13 +300,13 @@ class Ajax_Match extends Ajax {
      * @return void
      */
     public function set_match_date(): void {
-        $match_id               = null;
-        $modal                  = null;
-        $schedule_date          = null;
-        $schedule_date_formated = null;
-        $error_field            = 'schedule-date';
-        $validator              = new Validator_Match();
-        $validator              = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
+        $match_id      = null;
+        $modal         = null;
+        $schedule_date = null;
+        $match         = null;
+        $error_field   = 'schedule-date';
+        $validator     = new Validator_Match();
+        $validator     = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
         if ( empty( $validator->error ) ) {
             $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $match_id      = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
@@ -315,37 +315,30 @@ class Ajax_Match extends Ajax {
             $validator     = $validator->match( $match_id, $error_field );
         }
         if ( empty( $validator->error ) ) {
-            $match = get_match( $match_id );
-            if ( $schedule_date ) {
-                if ( strlen( $schedule_date ) === 10 ) {
-                    $schedule_date          = substr( $schedule_date, 0, 10 );
-                    $match_date             = substr( $match->date, 0, 10 );
-                    $schedule_date_formated = mysql2date( 'D j M', $schedule_date );
-                } else {
-                    $schedule_date          = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
-                    $match_date             = $match->date;
-                    $schedule_date_formated = mysql2date( 'j F Y H:i', $schedule_date );
-                }
+            $match     = get_match( $match_id );
+            $validator = $validator->scheduled_date( $schedule_date, $match->date );
+        }
+        if ( empty( $validator->error ) ) {
+            if ( strlen( $schedule_date ) === 10 ) {
+                $schedule_date_fmt = mysql2date( 'D j M', $schedule_date );
             } else {
-                $match_date = null;
+                $schedule_date_fmt = mysql2date( 'j F Y H:i', $schedule_date );
             }
-            $validator = $validator->scheduled_date( $schedule_date, $match_date );
-            if ( empty( $validator->error ) ) {
-                $match         = $match->update_match_date( $schedule_date, $match->date );
-                $match->status = 5;
-                $match->set_status( $match->status );
-                $msg = __( 'Match schedule updated', 'racketmanager' );
-                $return = new stdClass();
-                $return->msg = $msg;
-                $return->modal = $modal;
-                $return->match_id = $match_id;
-                $return->schedule_date = $schedule_date;
-                $return->schedule_date_formated = $schedule_date_formated;
-                wp_send_json_success( $return );
-            }
+            $match         = $match->update_match_date( $schedule_date, $match->date );
+            $match->status = 5;
+            $match->set_status( $match->status );
+            $return                         = new stdClass();
+            $return->msg                    = __( 'Match schedule updated', 'racketmanager' );
+            $return->modal                  = $modal;
+            $return->match_id               = $match_id;
+            $return->schedule_date          = $schedule_date;
+            $return->schedule_date_formated = $schedule_date_fmt;
+            wp_send_json_success( $return );
         }
         $return      = $validator->get_details();
-        $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
+        }
         wp_send_json_error( $return, $return->status );
     }
     /**

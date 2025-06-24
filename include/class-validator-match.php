@@ -62,10 +62,19 @@ final class Validator_Match extends Validator {
             $this->error      = true;
             $this->err_flds[] = 'schedule-date';
             $this->err_msgs[] = __( 'New date not set', 'racketmanager' );
-        } elseif ( $schedule_date === $match_date ) {
-            $this->error      = true;
-            $this->err_flds[] = 'schedule-date';
-            $this->err_msgs[] = __( 'Date not changed', 'racketmanager' );
+        } else {
+            if ( strlen( $schedule_date ) === 10 ) {
+                $schedule_date = substr( $schedule_date, 0, 10 );
+                $match_date    = substr( $match_date, 0, 10 );
+            } else {
+                $schedule_date = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
+                $match_date    = $match_date;
+            }
+            if ( $schedule_date === $match_date ) {
+                $this->error      = true;
+                $this->err_flds[] = 'schedule-date';
+                $this->err_msgs[] = __( 'Date not changed', 'racketmanager' );
+            }
         }
         return $this;
     }

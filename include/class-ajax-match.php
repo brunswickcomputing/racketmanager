@@ -347,61 +347,42 @@ class Ajax_Match extends Ajax {
      * @return void
      */
     public function switch_home_away(): void {
-        $return    = array();
-        $err_msg   = array();
-        $err_field = array();
-        $valid     = true;
-        $msg       = null;
+        $modal     = null;
         $match_id  = null;
-        $match     = null;
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'match-option' ) ) {
-            $valid       = false;
-            $err_field[] = '';
-            $err_msg[]   = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
+        $error_field   = 'schedule-date';
+        $validator     = new Validator_Match();
+        $validator     = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
+        if ( empty( $validator->error ) ) {
+            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            $validator = $validator->modal( $modal, $error_field );
+            $validator = $validator->match( $match_id, $error_field );
         }
-        if ( $valid ) {
-            $modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            if ( $modal ) {
-                $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-                if ( $match_id ) {
-                    $match = get_match( $match_id );
-                    if ( $match ) {
-                        $old_home   = $match->home_team;
-                        $old_away   = $match->away_team;
-                        $match_date = $match->league->event->seasons[ $match->season ]['match_dates'][ $match->match_day - 1 ];
-                        if ( $match_date ) {
-                            $match->update_match_date( $match_date );
-                            $match->set_teams( $old_away, $old_home );
-                            $msg = __( 'Home and away teams switched', 'racketmanager' );
-                        } else {
-                            $valid       = false;
-                            $err_field[] = 'schedule-date';
-                            $err_msg[]   = __( 'Match day not found', 'racketmanager' );
-                        }
-                    } else {
-                        $valid       = false;
-                        $err_field[] = 'schedule-date';
-                        $err_msg[]   = $this->match_not_found;
-                    }
-                } else {
-                    $valid       = false;
-                    $err_field[] = 'schedule-date';
-                    $err_msg[]   = $this->no_match_id;
-                }
+        if ( empty( $validator->error ) ) {
+            $match = get_match( $match_id );
+            $old_home   = $match->home_team;
+            $old_away   = $match->away_team;
+            $match_date = $match->league->event->seasons[ $match->season ]['match_dates'][ $match->match_day - 1 ];
+            if ( $match_date ) {
+                $match->update_match_date( $match_date );
+                $match->set_teams( $old_away, $old_home );
+                $return           = new stdClass();
+                $return->msg      = __( 'Home and away teams switched', 'racketmanager' );
+                $return->modal    = $modal;
+                $return->match_id = $match_id;
+                $return->link     = $match->link;
+                wp_send_json_success( $return );
             } else {
-                $valid       = false;
-                $err_field[] = 'schedule-date';
-                $err_msg[]   = $this->no_modal;
+                $validator->error      = true;
+                $validator->err_flds[] = 'schedule-date';
+                $validator->err_msgs[] = __( 'Match day not found', 'racketmanager' );
             }
         }
-        if ( $valid ) {
-            array_push( $return, $msg, $modal, $match_id, $match->link );
-            wp_send_json_success( $return );
-        } else {
-            $msg = __( 'Unable to update match schedule', 'racketmanager' );
-            array_push( $return, $msg, $err_msg, $err_field );
-            wp_send_json_error( $return, '500' );
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
         }
+        wp_send_json_error( $return, $return->status );
     }
     /**
      * Reset match function

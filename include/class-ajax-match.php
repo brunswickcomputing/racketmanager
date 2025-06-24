@@ -28,7 +28,7 @@ class Ajax_Match extends Ajax {
         parent::__construct();
         add_action( 'wp_ajax_racketmanager_match_card', array( &$this, 'print_match_card' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_match_card', array( &$this, 'print_match_card' ) );
-        add_action( 'wp_ajax_racketmanager_match_rubber_status', array( &$this, 'match_rubber_status' ) );
+        add_action( 'wp_ajax_racketmanager_match_rubber_status', array( &$this, 'match_rubber_status_options' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_match_rubber_status', array( &$this, 'logged_out_modal' ) );
         add_action( 'wp_ajax_racketmanager_set_match_rubber_status', array( &$this, 'set_match_rubber_status' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_set_match_rubber_status', array( &$this, 'logged_out' ) );
@@ -72,7 +72,6 @@ class Ajax_Match extends Ajax {
      * Build screen to allow match status to be captured
      */
     #[NoReturn] public function match_status_options(): void {
-        debug_to_console( 'in match_status_options');
         $output = null;
         $validator = new Validator_Match();
         $validator = $validator->check_security_token();
@@ -179,11 +178,13 @@ class Ajax_Match extends Ajax {
     /**
      * Build screen to match rubber status to be captured
      */
-    #[NoReturn] public function match_rubber_status(): void {
-        $output = null;
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
-            $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : 0;
+    #[NoReturn] public function match_rubber_status_options(): void {
+        $output      = null;
+        $error_field = 'score_status';
+        $validator   = new Validator_Match();
+        $validator   = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : null;
             $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
             $rubber    = get_rubber( $rubber_id );

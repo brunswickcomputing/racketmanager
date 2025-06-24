@@ -1135,6 +1135,8 @@ Racketmanager.viewMatch = function (e) {
 Racketmanager.setMatchStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
+	let splashBock = '#splashBlockMatch';
+	jQuery(splashBock).addClass('is-loading');
 	$form += "&action=racketmanager_set_match_status";
 	let notifyField = '#matchStatusResponse';
 	jQuery(notifyField).hide();
@@ -1220,6 +1222,7 @@ Racketmanager.setMatchStatus = function (link) {
 			jQuery(notifyField).show();
 		},
 		complete: function () {
+			jQuery(splashBock).removeClass('is-loading');
 		}
 	});
 }

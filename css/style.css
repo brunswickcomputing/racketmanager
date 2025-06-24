@@ -540,7 +540,8 @@ div.tm-team-content div.team {
 .is-loading .tab-content,
 .is-loading .club-entry__panel,
 .is-loading .individual-entry__panel,
-.is-loading .btn {
+.is-loading .btn,
+.is-loading div#splashHide {
 	opacity: 0.1;
 	display: none;
 }

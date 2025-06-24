@@ -175,7 +175,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
                                 <input type="hidden" name="old_rank[<?php echo esc_html( $team->table_id ); ?>]" id="old_rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->old_rank ); ?> />
                             </td>
                             <td class="column-num">
-                                <label for="rank[<?php echo esc_html( $team->table_id ); ?>]"></label><?php esc_html_e( 'Check', 'racketmanager' ); ?><input type="text" size="2" class="rank-input" name="rank[<?php echo esc_html( $team->table_id ); ?>]" id="rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->rank ); ?> />
+                                <label for="rank[<?php echo esc_html( $team->table_id ); ?>]" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><?php esc_html_e( 'Check', 'racketmanager' ); ?><input type="text" size="2" class="rank-input" name="rank[<?php echo esc_html( $team->table_id ); ?>]" id="rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->rank ); ?> />
                             </td>
                             <td class="column-num" name="points[<?php echo esc_html( $team->table_id ); ?>]">
                                 <?php echo esc_html( $team->points_plus + $team->add_points ); ?>

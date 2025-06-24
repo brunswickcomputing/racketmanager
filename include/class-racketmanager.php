@@ -833,7 +833,7 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-league.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-league-team.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-match.php';
+		require_once RACKETMANAGER_PATH . 'include/class-match.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-rubber.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-svg-icons.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-team.php';

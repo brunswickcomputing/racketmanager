@@ -68,7 +68,6 @@ final class Validator_Match extends Validator {
                 $match_date    = substr( $match_date, 0, 10 );
             } else {
                 $schedule_date = substr( $schedule_date, 0, 10 ) . ' ' . substr( $schedule_date, 11, 5 );
-                $match_date    = $match_date;
             }
             if ( $schedule_date === $match_date ) {
                 $this->error      = true;
@@ -174,9 +173,9 @@ final class Validator_Match extends Validator {
                 case 'walkover':
                 case 'retired':
                     if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
-                        $valid       = false;
-                        $err_field[] = 'score_status';
-                        $err_msg[]   = __( 'Score status team selection not valid', 'racketmanager' );
+                        $this->error      = true;
+                        $this->err_flds[] = 'score_status';
+                        $this->err_msgs[] = __( 'Score status team selection not valid', 'racketmanager' );
                     }
                     break;
                 case 'share':
@@ -185,9 +184,9 @@ final class Validator_Match extends Validator {
                 case 'abandoned':
                     break;
                 default:
-                    $valid       = false;
-                    $err_field[] = 'score_status';
-                    $err_msg[]   = __( 'Score status not valid', 'racketmanager' );
+                    $this->error      = true;
+                    $this->err_flds[] = 'score_status';
+                    $this->err_msgs[] = __( 'Score status not valid', 'racketmanager' );
                     break;
             }
         }

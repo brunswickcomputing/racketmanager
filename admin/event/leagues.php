@@ -36,7 +36,7 @@ $leagues = $event->get_leagues();
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th class="check-column"><label for="checkAll"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
+                        <th class="check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('leagues-filter'));" /></th>
                         <th class="">
                             <?php
                             if ( $event->is_championship ) {
@@ -76,7 +76,7 @@ $leagues = $event->get_leagues();
                             ?>
                             <tr>
                                 <td class="check-column">
-                                    <label for="league-<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" id="league-<?php echo esc_html( $league->id ); ?>" />
+                                    <label for="league-<?php echo esc_html( $league->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" id="league-<?php echo esc_html( $league->id ); ?>" />
                                 </td>
                                 <td class="">
                                     <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>

@@ -99,7 +99,7 @@ if ( empty( $league ) ) {
                 <input type="hidden" name="rounds[<?php echo esc_attr( $round ); ?>][round]" value="<?php echo esc_attr( $final['round'] ); ?>" />
                 <div class="col-4"><?php echo esc_html( $final['name'] ); ?></div>
                 <div class="col-4">
-                    <label class="visually-hidden" for="rounds-<?php echo esc_attr( $round ); ?>-match_date"></label><input type="date" class="form-control" value="<?php echo esc_html( $round_date ); ?>" name="rounds[<?php echo esc_attr( $round ); ?>][match_date]" id="rounds-<?php echo esc_attr( $round ); ?>-match_date" />
+                    <label class="visually-hidden" for="rounds-<?php echo esc_attr( $round ); ?>-match_date" class="visually-hidden"><?php esc_html_e( 'Round date', 'racketmanager' ); ?></label><input type="date" class="form-control" value="<?php echo esc_html( $round_date ); ?>" name="rounds[<?php echo esc_attr( $round ); ?>][match_date]" id="rounds-<?php echo esc_attr( $round ); ?>-match_date" />
                 </div>
             </div>
             <?php

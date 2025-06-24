@@ -13,20 +13,20 @@ namespace Racketmanager;
 $primary_league = null;
 $season = $event->get_season_event();
 if ( $event->is_championship ) {
-	if ( isset( $event->primary_league ) ) {
-		$primary_league = get_league( $event->primary_league );
-	} else {
-		$primary_league = get_league( array_key_first( $event->league_index ) );
-	}
-	$num_cols = $primary_league->championship->num_rounds;
-	$rounds   = array();
-	$i        = 1;
-	foreach ( array_reverse( $primary_league->championship->get_finals() ) as $final ) {
-		$rounds[ $i ] = $final;
-		++ $i;
-	}
+    if ( isset( $event->primary_league ) ) {
+        $primary_league = get_league( $event->primary_league );
+    } else {
+        $primary_league = get_league( array_key_first( $event->league_index ) );
+    }
+    $num_cols = $primary_league->championship->num_rounds;
+    $rounds   = array();
+    $i        = 1;
+    foreach ( array_reverse( $primary_league->championship->get_finals() ) as $final ) {
+        $rounds[ $i ] = $final;
+        ++ $i;
+    }
 } else {
-	$num_cols = $season['num_match_days'] ?? 0;
+    $num_cols = $season['num_match_days'] ?? 0;
 }
 $clubs = $this->get_clubs();
 if ( ! empty( $event->seasons ) ) { ?>
@@ -41,27 +41,27 @@ if ( ! empty( $event->seasons ) ) { ?>
                     <label for="club_id"><?php esc_html_e( 'Affiliated Club', 'racketmanager' ); ?></label>
                     <select size="1" name="club_id" id="club_id">
                         <option><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
-						<?php
-						foreach ( $clubs as $club ) {
-							?>
-							<option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>>
-								<?php echo esc_html( $club->name ); ?>
+                        <?php
+                        foreach ( $clubs as $club ) {
+                            ?>
+                            <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $club_id ); ?>>
+                                <?php echo esc_html( $club->name ); ?>
                             </option>
-							<?php
-						}
-						?>
+                            <?php
+                        }
+                        ?>
                     </select>
                     <label for="season" style="vertical-align: middle;"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
                     <select size="1" name="season" id="season">
-						<?php
-						foreach ( $event->seasons as $event_season ) {
-							?>
+                        <?php
+                        foreach ( $event->seasons as $event_season ) {
+                            ?>
                             <option value="<?php echo esc_html( $event_season['name'] ); ?>" <?php selected( $event_season['name'], $season['name'] ); ?>>
-								<?php echo esc_html( $event_season['name'] ); ?>
+                                <?php echo esc_html( $event_season['name'] ); ?>
                             </option>
-							<?php
-						}
-						?>
+                            <?php
+                        }
+                        ?>
                     </select>
                     <input type="submit" name="statsSeason" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" class="btn btn-secondary"/>
                 </form>
@@ -78,145 +78,145 @@ if ( ! empty( $event->seasons ) ) { ?>
             <tr>
                 <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                 <th></th>
-				<?php
-				$match_day_stats_dummy = array();
-				for ( $day = 1; $day <= $num_cols; $day ++ ) {
-					$match_day_stats_dummy[ $day ] = array();
-					?>
+                <?php
+                $match_day_stats_dummy = array();
+                for ( $day = 1; $day <= $num_cols; $day ++ ) {
+                    $match_day_stats_dummy[ $day ] = array();
+                    ?>
                     <th class="matchday">
-						<?php
-						if ( $event->is_championship ) {
-							echo esc_html( $rounds[ $day ]['name'] );
-						} else {
-							echo esc_html( $day );
-						}
-						?>
+                        <?php
+                        if ( $event->is_championship ) {
+                            echo esc_html( $rounds[ $day ]['name'] );
+                        } else {
+                            echo esc_html( $day );
+                        }
+                        ?>
                     </th>
-				<?php } ?>
+                <?php } ?>
             </tr>
             </thead>
             <tbody>
-			<?php
-			$playerstats = $event->get_player_stats(
-				array(
-					'season' => $season['name'] ?? false,
-					'club'   => $club_id,
-				)
-			);
-			if ( $playerstats ) {
-				$class = '';
-				$teamplay = array();
-				foreach ( $playerstats as $playerstat ) {
-					$class           = ( 'alternate' === $class ) ? '' : 'alternate';
-					$match_day_stats = $match_day_stats_dummy;
-					$prev_team_num   = 0;
-					$play_down_count = 0;
-					$prev_match_day  = 0;
-					$i               = 0;
-					$prev_round      = '';
+            <?php
+            $playerstats = $event->get_player_stats(
+                array(
+                    'season' => $season['name'] ?? false,
+                    'club'   => $club_id,
+                )
+            );
+            if ( $playerstats ) {
+                $class = '';
+                $teamplay = array();
+                foreach ( $playerstats as $playerstat ) {
+                    $class           = ( 'alternate' === $class ) ? '' : 'alternate';
+                    $match_day_stats = $match_day_stats_dummy;
+                    $prev_team_num   = 0;
+                    $play_down_count = 0;
+                    $prev_match_day  = 0;
+                    $i               = 0;
+                    $prev_round      = '';
 
-					for ( $t = 1; $t < $num_cols; $t ++ ) {
-						$teamplay[ $t ] = 0;
-					}
-					$match_result  = null;
-					$rubber_result = null;
-					foreach ( $playerstat->matchdays as $match ) {
-						if ( ( $event->is_championship && ! $prev_round === $match->final_round ) || ( ! $event->is_championship && ! $prev_match_day === $match->match_day ) ) {
-							$i = 0;
-						}
-						$team_num = substr( $match->team_title, - 1 );
-						++ $teamplay[ $team_num ];
+                    for ( $t = 1; $t < $num_cols; $t ++ ) {
+                        $teamplay[ $t ] = 0;
+                    }
+                    $match_result  = null;
+                    $rubber_result = null;
+                    foreach ( $playerstat->matchdays as $match ) {
+                        if ( ( $event->is_championship && ! $prev_round === $match->final_round ) || ( ! $event->is_championship && ! $prev_match_day === $match->match_day ) ) {
+                            $i = 0;
+                        }
+                        $team_num = substr( $match->team_title, - 1 );
+                        ++ $teamplay[ $team_num ];
 
-						if ( 0 === $prev_team_num ) {
-							$play_dir = '';
-						} elseif ( $team_num > $prev_team_num ) {
-							if ( $teamplay[ $prev_team_num ] > 2 ) {
-								$play_dir = 'playdown-err';
-							} else {
-								$play_dir = 'playdown';
-							}
-							++ $play_down_count;
-						} else {
-							$play_dir = '';
-						}
-						$prev_team_num = $team_num;
- 						if ( $match->match_winner === $match->team_id ) {
-							$match_result = __( 'Won', 'racketmanager' );
-						} elseif ( $match->match_loser === $match->team_id ) {
-							$match_result = __( 'Lost', 'racketmanager' );
-						} else {
-							$match_result = __( 'Drew', 'racketmanager' );
-						}
-						if ( $match->rubber_winner === $match->team_id ) {
-							$rubber_result = __( 'Won', 'racketmanager' );
-						} elseif ( $match->rubber_loser === $match->team_id ) {
-							$rubber_result = __( 'Lost', 'racketmanager' );
-						} else {
-							$rubber_result = __( 'Drew', 'racketmanager' );
-						}
-						$player_line = array(
-							'team'         => $match->team_title,
-							'pair'         => $match->rubber_number,
-							'match_result'  => $match_result,
-							'rubber_result' => $rubber_result,
-							'play_dir'     => $play_dir,
-						);
-						if ( $event->is_championship ) {
-							$d                           = $primary_league->championship->get_finals( $match->final_round )['round'];
-							$match_day_stats[ $d ][ $i ] = $player_line;
-						} else {
-							$match_day_stats[ $match->match_day ][ $i ] = $player_line;
-						}
-						$prev_match_day = $match->match_day;
-						$prev_round     = $match->final_round;
-						++ $i;
-					}
-					?>
+                        if ( 0 === $prev_team_num ) {
+                            $play_dir = '';
+                        } elseif ( $team_num > $prev_team_num ) {
+                            if ( $teamplay[ $prev_team_num ] > 2 ) {
+                                $play_dir = 'playdown-err';
+                            } else {
+                                $play_dir = 'playdown';
+                            }
+                            ++ $play_down_count;
+                        } else {
+                            $play_dir = '';
+                        }
+                        $prev_team_num = $team_num;
+                         if ( $match->match_winner === $match->team_id ) {
+                            $match_result = __( 'Won', 'racketmanager' );
+                        } elseif ( $match->match_loser === $match->team_id ) {
+                            $match_result = __( 'Lost', 'racketmanager' );
+                        } else {
+                            $match_result = __( 'Drew', 'racketmanager' );
+                        }
+                        if ( $match->rubber_winner === $match->team_id ) {
+                            $rubber_result = __( 'Won', 'racketmanager' );
+                        } elseif ( $match->rubber_loser === $match->team_id ) {
+                            $rubber_result = __( 'Lost', 'racketmanager' );
+                        } else {
+                            $rubber_result = __( 'Drew', 'racketmanager' );
+                        }
+                        $player_line = array(
+                            'team'         => $match->team_title,
+                            'pair'         => $match->rubber_number,
+                            'match_result'  => $match_result,
+                            'rubber_result' => $rubber_result,
+                            'play_dir'     => $play_dir,
+                        );
+                        if ( $event->is_championship ) {
+                            $d                           = $primary_league->championship->get_finals( $match->final_round )['round'];
+                            $match_day_stats[ $d ][ $i ] = $player_line;
+                        } else {
+                            $match_day_stats[ $match->match_day ][ $i ] = $player_line;
+                        }
+                        $prev_match_day = $match->match_day;
+                        $prev_round     = $match->final_round;
+                        ++ $i;
+                    }
+                    ?>
 
                     <tr>
                         <td><?php echo esc_html( $playerstat->fullname ); ?></td>
                         <td title="Played Down">
-							<?php
+                            <?php
                             if ( 0 !== $play_down_count ) {
                                 echo esc_html( $play_down_count );
                             }
                             ?>
                         </td>
-						<?php
-						foreach ( $match_day_stats as $day_stat ) {
-							$day_show    = '';
-							$match_title = '';
-							$play_dir    = '';
-							foreach ( $day_stat as $stat ) {
-								if ( isset( $stat['team'] ) ) {
-									$match_title = $match_result . ' match & ' . $rubber_result . ' rubber ';
-									$play_dir    = $stat['play_dir'];
-									$team        = $stat['team'];
-									$pair        = $stat['pair'];
-									$day_show    .= $team . '<br />Pair' . $pair . '<br />';
-								}
-							}
-							if ( count( $day_stat ) > 1 ) {
-								$play_dir = 'play-multi';
-							}
-							?>
+                        <?php
+                        foreach ( $match_day_stats as $day_stat ) {
+                            $day_show    = '';
+                            $match_title = '';
+                            $play_dir    = '';
+                            foreach ( $day_stat as $stat ) {
+                                if ( isset( $stat['team'] ) ) {
+                                    $match_title = $match_result . ' match & ' . $rubber_result . ' rubber ';
+                                    $play_dir    = $stat['play_dir'];
+                                    $team        = $stat['team'];
+                                    $pair        = $stat['pair'];
+                                    $day_show    .= $team . '<br />Pair' . $pair . '<br />';
+                                }
+                            }
+                            if ( count( $day_stat ) > 1 ) {
+                                $play_dir = 'play-multi';
+                            }
+                            ?>
                             <td class="matchday <?php echo esc_html( $play_dir ); ?>" title="<?php echo esc_html( $match_title ); ?>">
-								<?php
+                                <?php
                                 if ( $day_show ) {
                                     ?>
-									<?php echo $day_show; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-								    <?php
+                                    <?php echo $day_show; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                    <?php
                                 }
                                 ?>
                             </td>
-							<?php
-						}
-						?>
+                            <?php
+                        }
+                        ?>
                     </tr>
-				    <?php
+                    <?php
                 }
                 ?>
-			    <?php
+                <?php
             }
             ?>
             </tbody>

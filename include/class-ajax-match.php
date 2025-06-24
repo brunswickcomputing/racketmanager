@@ -461,7 +461,7 @@ class Ajax_Match extends Ajax {
      * Update match scores
      */
     public function update_match(): void {
-        global $league, $match, $racketmanager;
+        global $racketmanager;
 
         $return    = array();
         $err_msg   = array();
@@ -473,7 +473,6 @@ class Ajax_Match extends Ajax {
         } else {
             $match_id            = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
             $match               = get_match( $match_id );
-            $league              = get_league( $match->league_id );
             $match_confirmed     = 'P';
             $custom['sets']      = $_POST['sets'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             $match_status        = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;

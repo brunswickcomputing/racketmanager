@@ -1217,6 +1217,7 @@ Racketmanager.setMatchStatus = function (link) {
 		},
 		error: function (response) {
 			Racketmanager.handleAjaxError(response, alertTextField, notifyField);
+			jQuery(notifyField).show();
 		},
 		complete: function () {
 		}

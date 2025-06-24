@@ -97,83 +97,32 @@ class Ajax_Match extends Ajax {
      * Set match status
      */
     public function set_match_status(): void {
-        $msg            = null;
-        $match_id       = null;
-        $match_status   = null;
-        $status_message = null;
-        $status_class   = null;
-        $match          = null;
-        $modal          = null;
-        $return         = $this->check_security_token( 'racketmanager_nonce', 'match-status' );
-        if ( empty( $return->error ) ) {
-            $modal = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            if ( $modal ) {
-                $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-                if ( $match_id ) {
-                    $match        = get_match( $match_id );
-                    $match_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-                    if ( $match_status ) {
-                        $match_status_values = explode( '_', $match_status );
-                        $status_value        = $match_status_values[0];
-                        $player_ref          = $match_status_values[1] ?? null;
-                        switch ( $status_value ) {
-                            case 'walkover':
-                            case 'retired':
-                                if ( 'player1' !== $player_ref && 'player2' !== $player_ref ) {
-                                    $return->error      = true;
-                                    $return->err_flds[] = 'score_status';
-                                    $return->err_msgs[] = __( 'Score status team selection not valid', 'racketmanager' );
-                                }
-                                break;
-                            case 'none':
-                            case 'abandoned':
-                            case 'cancelled':
-                            case 'share':
-                                break;
-                            default:
-                                $return->error      = true;
-                                $return->err_flds[] = 'score_status';
-                                $return->err_msgs[] = __( 'Match status not valid', 'racketmanager' );
-                                break;
-                        }
-                        if ( empty( $return->error ) ) {
-                            $status_dtls    = $this->set_status_details( $match_status, $match->home_team, $match->away_team );
-                            $status_message = $status_dtls->message;
-                            $status_class   = $status_dtls->class;
-                            $match_status   = $status_dtls->status;
-                        }
-                    } else {
-                        $return->error      = true;
-                        $return->err_flds[] = 'score_status';
-                        $return->err_msgs[] = __( 'No match status selected', 'racketmanager' );
-                    }
-                } else {
-                    $return->error      = true;
-                    $return->err_flds[] = 'score_status';
-                    $return->err_msgs[] = $this->no_match_id;
-                }
-            } else {
-                $return->error      = true;
-                $return->err_flds[] = 'score_status';
-                $return->err_msgs[] = $this->no_modal;
+        $return         = new stdClass();
+        $error_field    = 'score_status';
+        $validator      = new Validator_Match();
+        $validator      = $validator->check_security_token( 'racketmanager_nonce', 'match-status' );
+        if ( empty( $validator->error ) ) {
+            $modal        = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $match_id     = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            $match_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+            $validator    = $validator->modal( $modal, $error_field );
+            $validator    = $validator->match( $match_id, $error_field );
+            $validator    = $validator->match_status( $match_status, $error_field );
+            if ( empty( $validator->error ) ) {
+                $match                  = get_match( $match_id );
+                $status_dtls            = $this->set_status_details( $match_status, $match->home_team, $match->away_team );
+                $return->match_id       = $match_id;
+                $return->match_status   = $status_dtls->status;
+                $return->status_message = $status_dtls->message;
+                $return->status_class   = $status_dtls->class;
+                $return->modal          = $modal;
+                $return->num_rubbers    = $match->num_rubbers;
+                wp_send_json_success( $return );
             }
         }
-        if ( empty( $return->error ) ) {
-            $return->msg = $msg;
-            $return->match_id = $match_id;
-            $return->match_status = $match_status;
-            $return->status_message = $status_message;
-            $return->status_class = $status_class;
-            $return->modal = $modal;
-            $return->num_rubbers = $match->num_rubbers;
-            wp_send_json_success( $return );
-        } else {
-            $return->msg = __( 'Unable to set match status', 'racketmanager' );
-            if ( empty( $return->status ) ) {
-                $return->status = 401;
-            }
-            wp_send_json_error( $return, $return->status );
-        }
+        $return      = $validator->get_details();
+        $return->msg = __( 'Unable to set match status', 'racketmanager' );
+        wp_send_json_error( $return, $return->status );
     }
     /**
      * Build screen to match rubber status to be captured

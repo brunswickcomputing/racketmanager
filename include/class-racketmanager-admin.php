@@ -1478,7 +1478,7 @@ class RacketManager_Admin extends RacketManager {
 				if ( $clubs ) {
 					foreach ( $clubs as $club ) {
 						$club       = get_club( $club );
-						$club_teams = $club->get_teams( $entry_type, $league_type );
+						$club_teams = $club->get_teams( array( 'players' => $entry_type, 'type' => $league_type ) );
 						if ( $club_teams ) {
 							foreach ( $club_teams as $team ) {
 								$teams[] = $team;
@@ -1660,7 +1660,7 @@ class RacketManager_Admin extends RacketManager {
 					} else {
 						foreach ( $_POST['club'] as $club_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 							$club = get_club( $club_id );
-							if ( $club->has_teams() ) {
+							if ( $club->get_teams( array( 'count' => true ) ) ) {
 								$messages[]    = $club->name . ' ' . __( 'not deleted - still has teams attached', 'racketmanager' );
 								$message_error = true;
 							} else {

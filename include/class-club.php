@@ -422,7 +422,7 @@ final class Club {
             $racketmanager->set_message( __( 'Type not selected', 'racketmanager' ), true );
             return false;
         }
-        $team_count = $this->has_teams( $type );
+        $team_count = $this->get_teams( array( 'count' => true, 'type' => $type ) );
         ++$team_count;
         $team          = new stdClass();
         $team->title   = $this->shortcode . ' ' . $type_name . ' ' . $team_count;
@@ -431,45 +431,29 @@ final class Club {
         $team->type    = $type;
         return new Racketmanager_Team( $team );
     }
-
-    /**
-     * Does the club have teams?
-     *
-     * @param false|string $type the type of team to count. If this is specified, only non-player teams will be counted.
-     * @return int count number of teams
-     */
-    public function has_teams( false|string $type = false ): int {
-        global $wpdb;
-
-        $args   = array();
-        $args[] = $this->id;
-        $sql    = "SELECT count(*) FROM $wpdb->racketmanager_teams WHERE `club_id` = '%d'";
-        if ( $type ) {
-            $sql   .= " AND `type` = '%s' AND (`team_type` IS NULL OR `team_type` != 'P')";
-            $args[] = $type;
-        }
-        return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-                $args
-            )
-        );
-    }
-
     /**
      * Get teams for club
      *
-     * @param false|string $players player.
-     * @param false|string $type player type.
-     * @return array
+     * @param array $args query arguments.
+     *
+     * @return array|int
      */
-    public function get_teams( false|string $players = false, false|string $type = false ): array {
+    public function get_teams( array $args = array() ): array|int {
         global $wpdb;
 
-        $args   = array();
-        $sql    = "SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = '%d'";
-        $args[] = $this->id;
+        $defaults = array(
+            'count'   => false,
+            'players' => false,
+            'type'    => false,
+        );
+        $args     = array_merge( $defaults, $args );
+        $count    = $args['count'];
+        $players  = $args['players'];
+        $type     = $args['type'];
+
+        $search_terms = array();
+        $sql    = " FROM $wpdb->racketmanager_teams WHERE `club_id` = '%d'";
+        $search_terms[] = $this->id;
         if ( ! $players ) {
             $sql .= " AND (`team_type` is null OR `team_type` != 'P')";
         } else {
@@ -478,18 +462,27 @@ final class Club {
         if ( $type ) {
             if ( 'OS' === $type ) {
                 $sql   .= " AND `type` like '%%%s%%'";
-                $args[] = 'S';
+                $search_terms[] = 'S';
             } else {
                 $sql   .= " AND `type` = '%s'";
-                $args[] = $type;
+                $search_terms[] = $type;
             }
         }
-
-        $sql .= ' ORDER BY `title`';
+        if ( $count ) {
+            $sql = 'SELECT COUNT(*) ' . $sql;
+            return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    $sql,
+                    $search_terms
+                )
+            );
+        }
+        $sql  = 'SELECT `id` ' . $sql . ' ORDER BY `title`';
         $sql  = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,
-            $args
+            $search_terms
         );
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
@@ -591,9 +584,9 @@ final class Club {
             if ( $player_change ) {
                 $return = $player->update( $updated_player );
             }
-            $player_active = $this->player_active( $player->id );
+            $player_active = $this->player_status( $player->id, 'active' );
             if ( ! $player_active ) {
-                $player_pending = $this->is_player_pending( $player->id );
+                $player_pending = $this->player_status( $player->id, 'pending' );
                 if ( $player_pending ) {
                     $return->error      = true;
                     $return->status     = 401;
@@ -642,33 +635,21 @@ final class Club {
         return $return;
     }
     /**
-     * Check for player registered active
+     * Check for player status
      *
      * @param int $player player id.
-     * @return boolean is player registered active for club
+     * @return string count of players with status
      */
-    public function player_active( int $player ): bool {
+    private function player_status( int $player, string $status ): string {
         global $wpdb;
+        $search = match ( $status ) {
+            'active'  => ' AND `removed_date` IS NULL',
+            'pending' => ' AND `created_date` IS NULL',
+            default   => null,
+        };
         return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "SELECT count(*) FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` = %d AND `removed_date` IS NULL",
-                $this->id,
-                $player
-            )
-        );
-    }
-
-    /**
-     * Check for player pending registration
-     *
-     * @param int $player player id.
-     * @return string count of player pending registration for club
-     */
-    private function is_player_pending( int $player ): string {
-        global $wpdb;
-        return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT count(*) FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` = %d AND `created_date` IS NULL",
+                "SELECT count(*) FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` = %d $search",
                 $this->id,
                 $player
             )

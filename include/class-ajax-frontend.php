@@ -852,39 +852,6 @@ class Ajax_Frontend extends Ajax {
 		wp_die();
 	}
 	/**
-	 * Login function
-	 *
-	 * @return void
-	 */
-	public function login(): void {
-		$return = $this->check_security_token();
-		if ( empty( $return->error ) ) {
-			$info                  = array();
-			$info['user_login']    = isset( $_POST['log'] ) ? sanitize_text_field( wp_unslash( $_POST['log'] ) ) : null;
-			$info['user_password'] = isset( $_POST['pwd'] ) ? sanitize_text_field( wp_unslash( $_POST['pwd'] ) ) : null;
-			$info['remember']      = true;
-			$user                  = wp_signon( $info, true );
-			if ( is_wp_error( $user ) ) {
-				foreach ( $user->errors as $field => $error ) {
-					$return->err_flds[] = Racketmanager_Util::get_error_field( $field );
-					$return->err_msgs[] = Racketmanager_Util::get_error_message( $field );
-				}
-				$return->error  = true;
-				$return->status = 401;
-			}
-		} else {
-			$return->status = 403;
-		}
-		if ( empty( $return->error ) ) {
-			$redirect = isset( $_POST['redirect_to'] ) ? sanitize_url( $_POST['redirect_to'] ) : home_url();
-			$redirect = wp_validate_redirect( $redirect, home_url() );
-			wp_send_json_success( $redirect );
-		} else {
-			$return->msg = __( 'Login failed', 'racketmanager' );
-			wp_send_json_error( $return, $return->status );
-		}
-	}
-	/**
 	 * Show team order players function
 	 *
 	 * @return void

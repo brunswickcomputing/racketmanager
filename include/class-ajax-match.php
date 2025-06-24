@@ -199,9 +199,9 @@ class Ajax_Match extends Ajax {
         $status_values  = explode( '_', $status );
         $status_value   = $status_values[0];
         $player_ref     = $status_values[1] ?? null;
-        $winner        = null;
-        $loser         = null;
-        $score_message = null;
+        $winner         = null;
+        $loser          = null;
+        $score_message  = null;
         switch ( $status_value ) {
             case 'walkover':
                 $score_message = __( 'Walkover', 'racketmanager' );

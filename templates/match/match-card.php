@@ -52,9 +52,9 @@ namespace Racketmanager;
 
 					<?php for ( $i = 1; $i <= $match->league->num_sets; $i++ ) { ?>
 						<td class="rtd">
-                            <label for="set_<?php echo esc_html( $i ); ?>_player1"></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" />
+                            <label for="set_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Player 1 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" />
 							:
-                            <label for="set_<?php echo esc_html( $i ); ?>_player2"></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" />
+                            <label for="set_<?php echo esc_html( $i ); ?>_player2" class="visually-hidden"><?php esc_html_e( 'Player 2 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" />
 						</td>
 					<?php } ?>
 
@@ -64,15 +64,15 @@ namespace Racketmanager;
 				</tr>
 				<tr>
 					<td class="rtd">
-                        <label for="home_sig"></label><input class="player" name="home_sig" id="home_sig" placeholder="Home Captain Signature" />
+                        <label for="home_sig" class="visually-hidden"><?php esc_html_e( 'Home signature', 'racketmanager' ); ?></label><input class="player" name="home_sig" id="home_sig" placeholder="Home Captain Signature" />
 					</td>
 					<td colspan="<?php echo intval( $match->league->num_sets ); ?>" class="rtd" style="text-align: center;">
-                        <label for="home_points"></label><input class="points" type="text" size="2" id="home_points" name="home_points" />
+                        <label for="home_points" class="visually-hidden"><?php esc_html_e( 'Home points', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="home_points" name="home_points" />
 						:
-                        <label for="away_points"></label><input class="points" type="text" size="2" id="away_points" name="away_points" />
+                        <label for="away_points" class="visually-hidden"><?php esc_html_e( 'Away points', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="away_points" name="away_points" />
 					</td>
 					<td class="rtd">
-                        <label for="away_sig"></label><input class="player" name="away_sig" id="away_sig" placeholder="Away Captain Signature" />
+                        <label for="away_sig" class="visually-hidden"><?php esc_html_e( 'Home signature', 'racketmanager' ); ?></label><input class="player" name="away_sig" id="away_sig" placeholder="Away Captain Signature" />
 					</td>
 				</tr>
 			</tbody>

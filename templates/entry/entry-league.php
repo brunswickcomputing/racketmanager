@@ -34,10 +34,11 @@ if ( ! empty( $club->entry ) ) {
 	$entered    = false;
 	$form_title = __( 'Enter online', 'racketmanager' );
 }
+$additional_information = __( 'Additional information', 'racketmanager' );
 ?>
 <div class="container">
 	<?php
-	require RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
+	require_once RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
 	?>
 	<form id="form-entry" action="" method="post">
 		<?php wp_nonce_field( 'league-entry' ); ?>
@@ -134,9 +135,9 @@ if ( ! empty( $club->entry ) ) {
 												<h5 class="subheading"><?php esc_html_e( 'Courts', 'racketmanager' ); ?></h5>
 												<dl class="list list--flex">
 													<div class="list__item">
-														<dt class="list__label"><?php esc_html_e( 'Number available', 'racketmanager' ); ?></dt>
+														<dt class="list__label"><?php esc_html_e( 'Available', 'racketmanager' ); ?></dt>
 														<dd class="list__value">
-                                                            <label for="numCourtsAvailable"></label><input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+                                                            <label for="numCourtsAvailable" class="visually-hidden"><?php esc_html_e( 'Court to use', 'racketmanager' ); ?></label><input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
 															<div id="numCourtsAvailableFeedback" class="invalid-feedback"></div>
 														</dd>
 													</div>
@@ -269,15 +270,15 @@ if ( ! empty( $club->entry ) ) {
 							<li id="liCommentDetails" class="club-entry__panel">
 								<div id="comment_Details">
 									<div class="hgroup">
-										<h4 class="hgroup__heading"><?php esc_html_e( 'Additional information', 'racketmanager' ); ?></h4>
+										<h4 class="hgroup__heading"><?php esc_html( $additional_information ); ?></h4>
 										<p class="hgroup__subheading">
 											<?php esc_html_e( 'Please leave any additional information for the League Organiser here', 'racketmanager' ); ?>
 										</p>
 									</div>
 									<div class="col-12 col-md-8">
 										<div class="form-floating">
-											<textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
-											<label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
+											<textarea class="form-control" placeholder="<?php esc_attr( $additional_information ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
+											<label for="commentDetails"><?php esc_attr( $additional_information ); ?></label>
 											<div id="commentDetailsFeedback" class="invalid-feedback"></div>
 										</div>
 									</div>
@@ -319,5 +320,5 @@ if ( ! empty( $club->entry ) ) {
 	</form>
 </div>
 <script type="text/javascript">
-	<?php require RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
+	<?php require_once RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
 </script>

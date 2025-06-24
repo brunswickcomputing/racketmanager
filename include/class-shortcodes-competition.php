@@ -979,9 +979,9 @@ class Shortcodes_Competition extends Shortcodes {
                 }
                 $event->event_teams = $event_teams;
                 if ( 'LD' === $event->type ) {
-                    $event->teams = $club->get_teams( false, 'XD' );
+                    $event->teams = $club->get_teams( array( 'type' => 'XD' ) );
                 } else {
-                    $event->teams = $club->get_teams( false, $event->type );
+                    $event->teams = $club->get_teams( array( 'type' => $event->type ) );
                 }
                 $key = 0;
                 foreach ( $event->teams as $team ) {

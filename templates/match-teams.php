@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-global $wp, $racketmanager;
+global $wp;
 /** @var object $is_update_allowed */
 /** @var object $match */
 $user_can_update = $is_update_allowed->user_can_update;
@@ -58,7 +58,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 				<div class="module__content">
 					<div class="module-container">
 						<div id="viewMatchRubbers">
-							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+							<?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
                                 <?php echo match_detail( $match->id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
@@ -233,7 +233,7 @@ $user_can_update = $is_update_allowed->user_can_update;
 			</div>
 		</div>
 	</div>
-	<?php require 'includes/match-modal.php'; ?>
+	<?php require_once 'includes/match-modal.php'; ?>
 <script type="text/javascript">
     document.getElementById('printMatchCard').addEventListener('click', function (e) {
         let matchId = this.dataset.matchId;

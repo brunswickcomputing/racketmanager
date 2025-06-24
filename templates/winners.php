@@ -22,25 +22,25 @@ global $wp_query;
 $post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 ?>
 <div id="winners">
-	<h1><?php echo esc_html( sprintf( '%s %s', $curr_entry, __( 'Winners', 'racketmanager' ) ) ); ?></h1>
-	<div id="racketmanager_archive_selections" class="mt-3">
-		<form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_winners">
-			<input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
-			<input type="hidden" name="competitionSeason" id="competitionSeason" value="<?php echo esc_html( $season ); ?>" />
-			<input type="hidden" name="competitionType" id="competitionType" value="<?php echo esc_html( $competitiontype ); ?>" />
-            <label for="selection"></label><select size="1" name="selection" id="selection">
-				<option value=""><?php esc_html_e( 'Season', 'racketmanager' ); ?></option>
-				<?php foreach ( $selections as $selection ) { ?>
-					<option value="<?php echo esc_html( $selection->name ); ?>"
-						<?php
-						if ( $selection->name === $curr_entry ) {
-							echo ' selected="selected"';
-						}
-						?>
-					><?php echo esc_html( $selection->name ); ?></option>
-				<?php } ?>
-			</select>
-		</form>
-	</div>
-	<?php require RACKETMANAGER_PATH . 'templates/includes/winners-body.php'; ?>
+    <h1><?php echo esc_html( sprintf( '%s %s', $curr_entry, __( 'Winners', 'racketmanager' ) ) ); ?></h1>
+    <div id="racketmanager_archive_selections" class="mt-3">
+        <form method="get" action="<?php echo esc_html( get_permalink( $post_id ) ); ?>" id="racketmanager_winners">
+            <input type="hidden" name="page_id" value="<?php echo esc_html( $post_id ); ?>" />
+            <input type="hidden" name="competitionSeason" id="competitionSeason" value="<?php echo esc_html( $season ); ?>" />
+            <input type="hidden" name="competitionType" id="competitionType" value="<?php echo esc_html( $competitiontype ); ?>" />
+            <label for="selection" class="visually-hidden"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label><select size="1" name="selection" id="selection">
+                <option value=""><?php esc_html_e( 'Season', 'racketmanager' ); ?></option>
+                <?php foreach ( $selections as $selection ) { ?>
+                    <option value="<?php echo esc_html( $selection->name ); ?>"
+                        <?php
+                        if ( $selection->name === $curr_entry ) {
+                            echo ' selected="selected"';
+                        }
+                        ?>
+                    ><?php echo esc_html( $selection->name ); ?></option>
+                <?php } ?>
+            </select>
+        </form>
+    </div>
+    <?php require_once RACKETMANAGER_PATH . 'templates/includes/winners-body.php'; ?>
 </div>

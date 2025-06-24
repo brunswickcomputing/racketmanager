@@ -53,15 +53,15 @@ jQuery(document).ready(function(){
             <table class="table table-borderless">
                 <tbody>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></td>
+                        <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Venue', 'racketmanager' ); ?></th>
                         <td class="col-6"><?php echo esc_html( $cup_season->venue_name ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Date', 'racketmanager' ); ?></td>
+                        <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Date', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( $cup_season->date_end ); ?></td>
                     </tr>
                     <tr>
-                        <td class="col-6 col-md-3"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></td>
+                        <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( count( $final_matches ) ); ?></td>
                     </tr>
                 </tbody>
@@ -190,7 +190,7 @@ jQuery(document).ready(function(){
                                             <label for="court-<?php echo esc_html( $i ); ?>"></label><input type="text" class="form-control" name="court[<?php echo esc_html( $i ); ?>]" id="court-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['court'] ); ?>" />
                                         </div>
                                         <div class="form-group">
-                                            <label for="startTime-<?php echo esc_html( $i ); ?>"></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['start_time'] ); ?>" />
+                                            <label for="startTime-<?php echo esc_html( $i ); ?>" class="visually-hidden"><?php esc_html_e( 'Start time', 'racketmanager' ); ?></label><input type="time" class="form-control" name="startTime[<?php echo esc_html( $i ); ?>]" id="startTime-<?php echo esc_html( $i ); ?>" value="<?php echo esc_html( $order_of_play[ $i ]['start_time'] ); ?>" />
                                         </div>
                                     </div>
                                     <?php

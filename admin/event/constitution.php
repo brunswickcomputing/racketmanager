@@ -115,7 +115,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
         <table class="table table-striped" title="RacketManager" aria-label="constitution table">
             <thead class="table-dark">
                 <tr>
-                    <th scope="col" class="check-column"><label for="check-all-teams"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
+                    <th scope="col" class="check-column"><label for="check-all-teams" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="check-all-teams" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
                     <th scope="col"><?php esc_html_e( 'Previous League', 'racketmanager' ); ?></th>
                     <th scope="col"><?php esc_html_e( 'New League', 'racketmanager' ); ?></th>
                     <th scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
@@ -136,7 +136,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
                         ?>
                         <tr class="<?php echo esc_html( $class ); ?>">
                             <th scope="row" class="check-column">
-                                <label for="table-<?php echo esc_html( $team->table_id ); ?>"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->table_id ); ?>" name="table[<?php echo esc_html( $team->table_id ); ?>]" id="table-<?php echo esc_html( $team->table_id ); ?>" />
+                                <label for="table-<?php echo esc_html( $team->table_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->table_id ); ?>" name="table[<?php echo esc_html( $team->table_id ); ?>]" id="table-<?php echo esc_html( $team->table_id ); ?>" />
                                 <input type="hidden" name="table_id[<?php echo esc_html( $team->table_id ); ?>]" value="<?php echo esc_html( $team->table_id ); ?>" />
                             </th>
                             <td>
@@ -175,7 +175,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
                                 <input type="hidden" name="old_rank[<?php echo esc_html( $team->table_id ); ?>]" id="old_rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->old_rank ); ?> />
                             </td>
                             <td class="column-num">
-                                <label for="rank[<?php echo esc_html( $team->table_id ); ?>]" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><?php esc_html_e( 'Check', 'racketmanager' ); ?><input type="text" size="2" class="rank-input" name="rank[<?php echo esc_html( $team->table_id ); ?>]" id="rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->rank ); ?> />
+                                <label for="rank[<?php echo esc_html( $team->table_id ); ?>]" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="text" size="2" class="rank-input" name="rank[<?php echo esc_html( $team->table_id ); ?>]" id="rank[<?php echo esc_html( $team->table_id ); ?>]" value=<?php echo esc_html( $team->rank ); ?> />
                             </td>
                             <td class="column-num" name="points[<?php echo esc_html( $team->table_id ); ?>]">
                                 <?php echo esc_html( $team->points_plus + $team->add_points ); ?>

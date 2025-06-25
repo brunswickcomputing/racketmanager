@@ -1826,15 +1826,26 @@ class Racketmanager_Competition {
 	/**
 	 * Add season
 	 *
-	 * @param array $season season data.
+	 * @param object $season season data.
 	 */
-	public function add_season( array $season ): void {
+	public function add_season( object $season ): void {
 		global $racketmanager;
-		$seasons                 = $this->seasons;
-		$season_name             = $season['name'];
-		$seasons[ $season_name ] = $season;
+		$seasons                  = $this->seasons;
+		$seasons[ $season->name ] = (array) $season;
 		$this->update_seasons( $seasons );
 		$racketmanager->set_message( __( 'Season added', 'racketmanager' ) );
+        $events = $this->get_events();
+        if ( $events ) {
+            $event_season                 = new stdClass();
+            $event_season->name           = $season->name;
+            $event_season->home_away      = $season->home_away;
+            $event_season->num_match_days = $season->num_match_days;
+            $event_season->match_dates    = $season->match_dates;
+            $season_event                 = (array) $event_season;
+            foreach ( $events as $event ) {
+                $event->add_season( $season_event );
+            }
+        }
 	}
 	/**
 	 * Update season

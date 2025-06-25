@@ -56,7 +56,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-ajax-admin.php';
 		$this->ajax_admin = new Ajax_Admin();
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-finances.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-competition.php';
+		require_once RACKETMANAGER_PATH . 'include/class-admin-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-cup.php';
@@ -448,7 +448,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'setup-event' === $view ) {
 					$racketmanager_admin_league->display_setup_event_page();
 				} elseif ( 'modify' === $view ) {
-					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_season_modify_page();
 				} elseif ( 'event' === $view ) {
 					$racketmanager_admin_league->display_event_page();
@@ -470,7 +470,7 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_event = new RacketManager_Admin_Event();
 					$racketmanager_admin_event->display_config_page();
 				} elseif ( 'config' === $view ) {
-					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
 				} else {
 					$racketmanager_admin_league->display_leagues_page();
@@ -481,7 +481,7 @@ class RacketManager_Admin extends RacketManager {
 				if ( 'seasons' === $view ) {
 					$racketmanager_admin_cup->display_cup_seasons_page();
 				} elseif ( 'modify' === $view ) {
-					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_season_modify_page();
 				} elseif ( 'overview' === $view ) {
 					$racketmanager_admin_cup->display_cup_overview_page();
@@ -502,7 +502,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'team' === $view ) {
 					$racketmanager_admin_cup->display_team_page();
 				} elseif ( 'config' === $view ) {
-					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
 				} elseif ( 'event' === $view || 'event-config' === $view ) {
 					$racketmanager_admin_event = new RacketManager_Admin_Event();
@@ -532,7 +532,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'teams' === $view ) {
 					$racketmanager_admin_tournament->display_tournament_teams_page();
 				} elseif ( 'config' === $view ) {
-					$racketmanager_admin_competition = new RacketManager_Admin_Competition();
+					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
 				} elseif ( 'event' === $view ) {
 					$racketmanager_admin_event = new RacketManager_Admin_Event();

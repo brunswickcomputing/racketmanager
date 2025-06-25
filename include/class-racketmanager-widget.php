@@ -64,7 +64,7 @@ class RacketManager_Widget extends WP_Widget {
 		$title     = apply_filters( 'widget_title', $instance['title'] );
 		$club_name = isset( $instance['club_name'] ) ? esc_html( $instance['club_name'] ) : '';
 		$club_link = isset( $instance['club_link'] ) ? esc_html( $instance['club_link'] ) : '';
-		$num_items = ( ! empty( $instance['num_items'] ) ) ? intval( $instance['num_items'] ) : -1;
+		$num_items = empty( $instance['num_items'] ) ? 999999 : intval( $instance['num_items'] );
 		$club_type = $instance['club_type'];
 		$orderby   = $instance['orderby'];
 

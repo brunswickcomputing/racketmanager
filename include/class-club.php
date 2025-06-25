@@ -715,8 +715,8 @@ final class Club {
                     $sql,
                 );
                 wp_cache_set( md5( $sql ), $this->num_players, 'club-players' );
-                return $this->num_players;
             }
+            return $this->num_players;
         }
         $sql         = 'SELECT `id` as `roster_id`, `player_id`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`' . $sql;
         $players_out = array();

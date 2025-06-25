@@ -55,7 +55,7 @@ class RacketManager_Admin extends RacketManager {
 
 		require_once RACKETMANAGER_PATH . 'include/class-ajax-admin.php';
 		$this->ajax_admin = new Ajax_Admin();
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-finances.php';
+		require_once RACKETMANAGER_PATH . 'include/class-admin-finances.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
@@ -584,7 +584,7 @@ class RacketManager_Admin extends RacketManager {
 				}
 				break;
 			case 'racketmanager-finances':
-				$racketmanager_admin_finances = new RacketManager_Admin_Finances();
+				$racketmanager_admin_finances = new Admin_Finances();
 				if ( 'charges' === $view ) {
 					$racketmanager_admin_finances->display_charges_page();
 				} elseif ( 'club-invoices' === $view ) {

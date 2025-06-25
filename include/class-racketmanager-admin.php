@@ -57,7 +57,7 @@ class RacketManager_Admin extends RacketManager {
 		$this->ajax_admin = new Ajax_Admin();
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-finances.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-competition.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-event.php';
+		require_once RACKETMANAGER_PATH . 'include/class-admin-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-cup.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-league.php';
@@ -467,7 +467,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'contact' === $view ) {
 					$racketmanager_admin_league->display_contact_page();
 				} elseif ( 'event-config' === $view ) {
-					$racketmanager_admin_event = new RacketManager_Admin_Event();
+					$racketmanager_admin_event = new Admin_Event();
 					$racketmanager_admin_event->display_config_page();
 				} elseif ( 'config' === $view ) {
 					$racketmanager_admin_competition = new Admin_Competition();
@@ -505,7 +505,7 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
 				} elseif ( 'event' === $view || 'event-config' === $view ) {
-					$racketmanager_admin_event = new RacketManager_Admin_Event();
+					$racketmanager_admin_event = new Admin_Event();
 					$racketmanager_admin_event->display_config_page();
 				} else {
 					$racketmanager_admin_cup->display_cups_page();
@@ -535,7 +535,7 @@ class RacketManager_Admin extends RacketManager {
 					$racketmanager_admin_competition = new Admin_Competition();
 					$racketmanager_admin_competition->display_config_page();
 				} elseif ( 'event' === $view ) {
-					$racketmanager_admin_event = new RacketManager_Admin_Event();
+					$racketmanager_admin_event = new Admin_Event();
 					$racketmanager_admin_event->display_config_page();
 				} elseif ( 'team' === $view ) {
 					$racketmanager_admin_tournament->display_team_page();

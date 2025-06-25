@@ -328,7 +328,13 @@ final class Invoice {
      */
     public function send( bool $resend = false ): bool {
         global $racketmanager;
-
+        if ( empty( $this->club_id ) ) {
+            $email_to = $this->player->display_name . ' <' . $this->player->email . '>';
+            $target   = $this->player->display_name;
+        } else {
+            $email_to = $this->club->match_secretary_name . ' <' . $this->club->match_secretary_email . '>';
+            $target   = $this->club->name;
+        }
         $billing    = $racketmanager->get_options( 'billing' );
         $headers    = array();
         $from_email = $racketmanager->get_confirmation_email( $this->charge->competition->type );
@@ -338,8 +344,7 @@ final class Invoice {
             $organisation_name = $racketmanager->site_name;
             $headers[]         = 'cc: Treasurer <' . $billing['billingEmail'] . '>';
             $action_url        = $racketmanager->site_url . '/invoice/' . $this->id . '/';
-            $email_to          = $this->club->match_secretary_name . ' <' . $this->club->match_secretary_email . '>';
-            $email_subject     = $racketmanager->site_name . ' - ' . ucfirst( $this->charge->competition->name ) . ' ' . $this->charge->season . ' Entry Fees Invoice - ' . $this->club->name;
+            $email_subject     = $racketmanager->site_name . ' - ' . ucfirst( $this->charge->competition->name ) . ' ' . $this->charge->season . ' Entry Fees Invoice - ' . $target;
             $email_message     = $racketmanager->shortcodes->load_template(
                 'send-invoice',
                 array(

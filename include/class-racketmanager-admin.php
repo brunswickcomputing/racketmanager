@@ -58,7 +58,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-admin-finances.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-event.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
+		require_once RACKETMANAGER_PATH . 'include/class-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-cup.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-league.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-players.php';
@@ -512,7 +512,7 @@ class RacketManager_Admin extends RacketManager {
 				}
 				break;
 			case 'racketmanager-tournaments':
-				$racketmanager_admin_tournament = new RacketManager_Admin_Tournament();
+				$racketmanager_admin_tournament = new Admin_Tournament();
 				if ( 'modify' === $view ) {
 					$racketmanager_admin_tournament->displayTournamentPage();
 				} elseif ( 'plan' === $view ) {

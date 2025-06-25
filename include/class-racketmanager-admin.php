@@ -59,7 +59,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-admin-competition.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-event.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-cup.php';
+		require_once RACKETMANAGER_PATH . 'include/class-admin-cup.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-league.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-players.php';
 
@@ -477,7 +477,7 @@ class RacketManager_Admin extends RacketManager {
 				}
 				break;
 			case 'racketmanager-cups':
-				$racketmanager_admin_cup = new RacketManager_Admin_Cup();
+				$racketmanager_admin_cup = new Admin_Cup();
 				if ( 'seasons' === $view ) {
 					$racketmanager_admin_cup->display_cup_seasons_page();
 				} elseif ( 'modify' === $view ) {

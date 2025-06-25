@@ -17,7 +17,7 @@ namespace Racketmanager;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class RacketManager_Admin_Cup extends RacketManager_Admin {
+final class Admin_Cup extends RacketManager_Admin {
 
     /**
      * Constructor

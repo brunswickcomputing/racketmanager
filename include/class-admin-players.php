@@ -19,7 +19,7 @@ use stdClass;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class RacketManager_Admin_Players extends RacketManager_Admin {
+final class Admin_Players extends RacketManager_Admin {
     private ?string $invalid_permissions;
     private ?string $invalid_security_token;
     private ?string $no_permission;

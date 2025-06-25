@@ -61,7 +61,7 @@ class RacketManager_Admin extends RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-cup.php';
 		require_once RACKETMANAGER_PATH . 'include/class-admin-league.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-admin-players.php';
+		require_once RACKETMANAGER_PATH . 'include/class-admin-players.php';
 
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadScripts' ) );
 		add_action( 'admin_enqueue_scripts', array( &$this, 'loadStyles' ) );
@@ -551,7 +551,7 @@ class RacketManager_Admin extends RacketManager {
 				} elseif ( 'players' === $view ) {
 					$this->display_club_players_page();
 				} elseif ( 'player' === $view ) {
-					$racketmanager_admin_players = new RacketManager_Admin_Players();
+					$racketmanager_admin_players = new Admin_Players();
 					$racketmanager_admin_players->display_player_page();
 				} else {
 					$this->display_clubs_page();
@@ -564,7 +564,7 @@ class RacketManager_Admin extends RacketManager {
 				$this->display_admin_page();
 				break;
 			case 'racketmanager-players':
-				$racketmanager_admin_players = new RacketManager_Admin_Players();
+				$racketmanager_admin_players = new Admin_Players();
 				switch ( $view ) {
 					case 'player':
 						$racketmanager_admin_players->display_player_page();

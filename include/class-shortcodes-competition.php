@@ -906,9 +906,9 @@ class Shortcodes_Competition extends Shortcodes {
                     $club->entry[ $event->id ] = $event;
                 }
             }
-            $ladies_teams = $club->get_teams( false, 'WD' );
-            $mens_teams   = $club->get_teams( false, 'MD' );
-            $mixed_teams  = $club->get_teams( false, 'XD' );
+            $ladies_teams = $club->get_teams( array( 'type' => 'WD' ) );
+            $mens_teams   = $club->get_teams( array( 'type' => 'MD' ) );
+            $mixed_teams  = $club->get_teams( array( 'type' => 'XD' ) );
             $match_days   = Racketmanager_Util::get_match_days();
 
             $filename = ( ! empty( $template ) ) ? 'entry-cup-' . $template : 'entry-cup';

@@ -1056,15 +1056,6 @@ final class Club {
         $this->entry_form_send( $template_args, $club_entry, $email_from, $template, $email_to, $email_subject, $headers );
     }
     /**
-     * Get invoices for club
-     *
-     * @return array
-     */
-    public function get_invoices(): array {
-        global $racketmanager;
-        return $racketmanager->get_invoices( array( 'club' => $this->id ) );
-    }
-    /**
      * Send entry form
      * *
      * @param array  $template_args

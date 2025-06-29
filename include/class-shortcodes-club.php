@@ -446,6 +446,7 @@ class Shortcodes_Club extends Shortcodes {
 	 * @return string - the content
 	 */
 	public function show_club_invoices( array $atts ): string {
+        global $racketmanager;
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -470,7 +471,7 @@ class Shortcodes_Club extends Shortcodes {
 			$invoice->details = show_invoice( $invoice->id );
 			$club->invoice    = $invoice;
 		} else {
-			$club->invoices = $club->get_invoices();
+			$club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
 		}
 		$user_can_update         = new stdClass();
 		$user_can_update->club   = false;

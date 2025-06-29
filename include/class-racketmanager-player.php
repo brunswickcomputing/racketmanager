@@ -1435,7 +1435,7 @@ final class Racketmanager_Player {
 		foreach( $wtn as $match_type => $value ) {
 			$this->set_wtn_type( $match_type, $value );
 		}
-		wp_cache_set( $this->id, $this, 'players' );
+		wp_cache_delete( $this->id, 'players' );
 	}
 	/**
 	 * Set player wtn function

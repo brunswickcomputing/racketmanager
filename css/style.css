@@ -3467,6 +3467,9 @@ ul.list.list--naked {
 	.page-content__main {
 		margin-bottom: 2rem;
 	}
+	.page-content__sidebar {
+		margin-bottom: 2rem;
+	}
 }
 
 @media (min-width: 666px) and (max-width:991px) {

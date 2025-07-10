@@ -37,7 +37,7 @@ global $racketmanager;
 		</div>
 		<div id="competitions" class="form-floating mb-3" style="display:none">
 			<?php
-			$competitions = $racketmanager::get_competitions(
+			$competitions = $racketmanager->get_competitions(
 				array(
 					'orderby' => array(
 						'type' => 'ASC',
@@ -66,7 +66,7 @@ global $racketmanager;
 		</div>
 		<div id="clubs" class="form-floating mb-3" style="display:none">
 			<?php
-			$clubs = $racketmanager::get_clubs(
+			$clubs = $racketmanager->get_clubs(
 				array(
 					'type' => 'affiliated',
 				)

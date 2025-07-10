@@ -2607,8 +2607,8 @@ class Racketmanager_League {
 			foreach ( $matches as $match_id ) {
 				$match         = get_match( $match_id );
 				$c             = $custom[$match_id] ?? array();
-				$points_home   = $home_points[$match_id] ?? null;
-				$points_away   = $away_points[$match_id] ?? null;
+				$points_home   = isset( $home_points[$match_id] ) ? floatval( $home_points[$match_id] ) : null;
+				$points_away   = isset( $away_points[$match_id] ) ? floatval( $away_points[$match_id] ) : null;
                 $match_updated = $match->update_result( $points_home, $points_away, $c, $confirmed, $match->status );
                 if ( $match_updated ) {
                     ++$num_matches;

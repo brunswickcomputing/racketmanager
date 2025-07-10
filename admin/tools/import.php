@@ -49,9 +49,13 @@ global $racketmanager;
 				?>
 				<select class="form-select" size="1" name="competition_id" id="competition_id" onChange='Racketmanager.getEventDropdown(this.value)'>
 					<option><?php esc_html_e( 'Select Competition', 'racketmanager' ); ?></option>
-					<?php foreach ( $competitions as $competition ) { ?>
+					<?php
+                    foreach ( $competitions as $competition ) {
+                        ?>
 						<option value="<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></option>
-					<?php } ?>
+					    <?php
+                    }
+                    ?>
 				</select>
 			    <?php
             }
@@ -75,11 +79,17 @@ global $racketmanager;
 				?>
 				<select class="form-select" size="1" name="club" id="club">
 					<option><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
-					<?php foreach ( $clubs as $club ) { ?>
+					<?php
+                    foreach ( $clubs as $club ) {
+                        ?>
 						<option value="<?php echo esc_html( $club->id ); ?>"><?php echo esc_html( $club->name ); ?></option>
-					<?php } ?>
+					    <?php
+                    }
+                    ?>
 				</select>
-			<?php } ?>
+			    <?php
+            }
+            ?>
 			<label for="club"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
 		</div>
 		<div class="mb-3">

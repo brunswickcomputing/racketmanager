@@ -209,11 +209,11 @@ if ( $match->is_walkover ) {
 																					<div class="approval-check">
 																						<div class="form-check">
 																							<input type="hidden" name="result_<?php echo esc_attr( $opponent ); ?>" />
-                                                                                            <label for="resultConfirm"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="confirm" required />
+                                                                                            <label for="resultConfirm"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultConfirm" value="A" required />
 																							<label class="form-check-label"><?php esc_html_e( 'Confirm', 'racketmanager' ); ?></label>
 																						</div>
 																						<div class="form-check">
-                                                                                            <label for="resultChallenge"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="challenge" required />
+                                                                                            <label for="resultChallenge"></label><input class="form-check-input" type="radio" name="resultConfirm" id="resultChallenge" value="C" required />
 																							<label class="form-check-label"><?php esc_html_e( 'Challenge', 'racketmanager' ); ?></label>
 																						</div>
 																					</div>

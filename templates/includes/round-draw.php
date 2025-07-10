@@ -188,7 +188,7 @@ foreach ( $final->matches as $match ) {
                                 </div>
                                 <div class="d-none d-lg-flex player-row__score-game-wrapper">
                                     <?php
-                                    if ( empty( $match->leg ) && empty( $match->sets ) ) {
+                                    if ( empty( $match->leg ) && $match->league->event->competition->is_team_entry ) {
                                         if ( 'home' === $team_ref ) {
                                             $points = $match->home_points;
                                         } else {

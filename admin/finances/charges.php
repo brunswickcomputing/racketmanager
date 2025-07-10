@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 /** @var array  $finance_charges */
 /** @var int    $competition_id */
 /** @var string $season */
@@ -15,8 +16,8 @@ $args['orderby'] = array(
     'type' => 'ASC',
     'name' => 'ASC',
 );
-$competitions    = $this->get_competitions( $args );
-$seasons         = $this->get_seasons( 'DESC' );
+$competitions    = $racketmanager->get_competitions( $args );
+$seasons         = $racketmanager->get_seasons( 'DESC' );
 $charges         = $finance_charges;
 ?>
 <div class="container">

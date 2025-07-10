@@ -555,7 +555,7 @@ final class Club {
                     $player_change       = true;
                     $updated_player->btm = $new_player->btm;
                 }
-            } elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== $new_player->btm ) {
+            } elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== intval( $new_player->btm ) ) {
                 $return->error      = true;
                 $return->msg        = __( 'LTA Tennis Number does not match current number', 'racketmanager' );
                 $return->status     = 401;

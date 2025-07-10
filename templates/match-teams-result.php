@@ -69,7 +69,7 @@ if ( $match->is_walkover ) {
 	<div class="page-content row">
 		<div class="page-content__sidebar col-12 col-lg-4">
 			<div class="row">
-				<div class="col-12 col-sm-6 col-lg-12">
+				<div class="col-12">
 					<div class="module module--card">
 						<div class="module__banner">
 							<h3 class="module__title">

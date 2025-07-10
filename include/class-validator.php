@@ -393,7 +393,7 @@ class Validator {
      * @param array|null $start_times min/max start times.
      * @return object $validation updated validation object.
      */
-    public function match_time( ?string $match_time, string $field_ref, ?string $match_day = null, array $start_times = array() ): object {
+    public function match_time( ?string $match_time, string $field_ref, string $match_day = null, ?array $start_times = array() ): object {
         if ( empty( $match_time ) ) {
             $this->error      = true;
             $this->err_flds[] = 'matchtime-' . $field_ref;

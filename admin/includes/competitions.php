@@ -7,13 +7,14 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 $age_group_select               = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
 $competition_query['age_group'] = $age_group_select ?? null;
 $orderby['age_group']           = 'ASC';
 $orderby['type']                = 'ASC';
 $orderby['name']                = 'ASC';
 $competition_query['orderby']   = $orderby;
-$competitions                   = $this->get_competitions( $competition_query );
+$competitions                   = $racketmanager->get_competitions( $competition_query );
 $age_groups                     = Racketmanager_Util::get_age_groups();
 $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
 ?>

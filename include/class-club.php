@@ -512,6 +512,7 @@ final class Club {
     public function register_player( object $new_player ): object {
         global $racketmanager;
         $return         = new stdClass();
+        $return->error  = false;
         $old_player     = false;
         $updated_player = null;
         $player_change  = false;

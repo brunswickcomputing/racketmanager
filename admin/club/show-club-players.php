@@ -63,68 +63,69 @@ namespace Racketmanager;
                     <button name="doPlayerRatings" id="doPlayerRatings" class="btn btn-secondary"><?php esc_html_e( 'Player Ratings', 'racketmanager' ); ?></button>
                 </div>
             </div>
-            <div class="container">
-                <div class="row table-header">
-                    <div class="col-1 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></div>
-                    <div class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></div>
-                    <div class="col-4 col-md-2"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></div>
-                    <div class="col-2 col-md-1"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></div>
-                </div>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="col-1 col-md-1 check-column"><label for="checkAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" id="checkAll" onclick="Racketmanager.checkAll(document.getElementById('players-action'));" /></th>
+                        <th class="col-4 col-md-2"><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
+                        <th class="col-4 col-md-2"><?php esc_html_e( 'Rating', 'racketmanager' ); ?></th>
+                        <th class="col-2 col-md-1"><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
+                    </tr>
+                </thead>
                 <?php
-                if ( $club_id ) {
-                    $club = get_club( $club_id );
-                    if ( $players ) {
-                        $class = '';
-                        foreach ( $players as $player ) {
-                            $class = ( 'alternate' === $class ) ? '' : 'alternate';
-                            ?>
-                            <div class="row table-row <?php echo esc_html( $class ); ?>">
-                                <div class="col-1 col-md-1 check-column">
-                                    <?php
-                                    if ( ! isset( $player->removed_date ) ) {
-                                        ?>
-                                        <label for="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" />
-                                        <?php
-                                    }
+                if ( $players ) {
+                    ?>
+                    <tbody>
+                    <?php
+                    foreach ( $players as $player ) {
+                        ?>
+                        <tr class="">
+                            <td class="col-1 col-md-1 check-column">
+                                <?php
+                                if ( ! isset( $player->removed_date ) ) {
                                     ?>
-                                </div>
-                                <div class="col-4 col-md-2">
+                                    <label for="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $player->roster_id ); ?>" />
                                     <?php
-                                    if ( ! isset( $player->removed_date ) ) {
-                                        echo '<a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=' . esc_html( $club->id ) . '&amp;player_id=' . esc_html( $player->player_id ) . '">';
+                                }
+                                ?>
+                            </td>
+                            <td class="col-4 col-md-2">
+                                <?php
+                                if ( ! isset( $player->removed_date ) ) {
+                                    echo '<a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=player&amp;club_id=' . esc_html( $club->id ) . '&amp;player_id=' . esc_html( $player->player_id ) . '">';
+                                }
+                                echo esc_html( $player->fullname );
+                                if ( ! isset( $player->removed_date ) ) {
+                                    echo '</a>';
+                                }
+                                ?>
+                            </td>
+                            <td class="col-4 col-md-2">
+                                <?php
+                                $match_types    = Racketmanager_Util::get_match_types();
+                                $wtn            = $player->wtn;
+                                $wtn_display = '';
+                                foreach ( $match_types as $match_type => $description ) {
+                                    if ( ! empty( $wtn_display ) ) {
+                                        $wtn_display .= ' - ';
                                     }
-                                    echo esc_html( $player->fullname );
-                                    if ( ! isset( $player->removed_date ) ) {
-                                        echo '</a>';
-                                    }
-                                    ?>
-                                </div>
-                                <div class="col-4 col-md-2">
-                                    <?php
-                                    $match_types    = Racketmanager_Util::get_match_types();
-                                    $wtn            = $player->wtn;
-                                    $wtn_display = '';
-                                    foreach ( $match_types as $match_type => $description ) {
-                                        if ( ! empty( $wtn_display ) ) {
-                                            $wtn_display .= ' - ';
-                                        }
+                                    if ( ! empty( $wtn[ $match_type ] ) ) {
                                         $wtn_display .= '[' . $wtn[ $match_type ] . ']';
                                     }
-                                    echo ' ' . esc_html( $wtn_display );
-                                    ?>
-                                </div>
-                                <div class="col-2 col-md-1"><?php echo esc_html( $player->btm ); ?></div>
-                            </div>
-                            <?php
-                        }
-                        ?>
+                                }
+                                echo esc_html( $wtn_display );
+                                ?>
+                            </td>
+                            <td class="col-2 col-md-1"><?php echo esc_html( $player->btm ); ?></td>
+                        </tr>
                         <?php
                     }
                     ?>
+                    </tbody>
                     <?php
                 }
                 ?>
-            </div>
+            </table>
         </form>
     </div>
 </div>

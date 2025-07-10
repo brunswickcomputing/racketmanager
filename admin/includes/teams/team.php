@@ -47,7 +47,7 @@ namespace Racketmanager;
     } else {
         $action_form = 'admin.php?page=racketmanager-clubs&amp;view=teams';
         if ( $club_id ) {
-            $action_form .= 'club_id=' . $club_id;
+            $action_form .= '&amp;club_id=' . $club_id;
         }
     }
     ?>

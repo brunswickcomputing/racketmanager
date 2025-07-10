@@ -1786,7 +1786,9 @@ class Racketmanager_League {
                 $match_day = -1;
                 $limit     = 0;
 			}
-		} else {
+		} elseif ( $this->is_championship ) {
+            $sql .= " AND m.`final` IS NOT NULL";
+        } else {
 			$sql .= " AND ( m.`final` = '' OR m.`final` IS NULL )";
 		}
 

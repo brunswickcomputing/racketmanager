@@ -2831,4 +2831,37 @@ final class Racketmanager_Match {
         );
         wp_cache_set( $this->id, $this, 'matches' );
     }
+    /**
+     * Function to send message to opponents when a team is withdrawn
+     *
+     * @param int $team_id
+     *
+     * @return bool
+     */
+    public function notify_team_withdrawal( int $team_id ): bool {
+        global $racketmanager;
+        if ( intval( $this->home_team ) === $team_id ) {
+            $email_to = $this->get_email_to( 'away' );
+        } else {
+            $email_to = $this->get_email_to( 'home' );
+        }
+        if ( empty( $email_to ) ) {
+            return false;
+        }
+        $email_from                    = $racketmanager->get_confirmation_email( $this->league->event->competition->type );
+        $round_name                    = $this->league->championship->finals[ $this->final_round ]['name'];
+        $subject                       = __( 'Team withdrawn', 'racketmanager' ) . ' - ' . $round_name . ' - ' . $this->league->event->name;
+        $message_args                  = array();
+        $message_args['round']         = $round_name;
+        $message_args['event']         = $this->league->event->name;
+        $message_args['emailfrom']     = $email_from;
+        $message_args['is_tournament'] = $this->league->event->competition->is_tournament;
+        $message_args['subject']       = $subject;
+        $email_message                 = match_team_withdrawn_notification( $this->id, $message_args );
+        $headers                       = array();
+        $headers[]                     = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
+        $headers[]                     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
+        wp_mail( $email_to, $subject, $email_message, $headers );
+        return true;
+    }
 }

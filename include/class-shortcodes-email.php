@@ -542,6 +542,52 @@ class Shortcodes_Email extends Shortcodes {
 			return $this->return_error( $msg );
 		}
 	}
+    /**
+     * Function to show match notification
+     *
+     *    [withdrawn-team-match id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_withdrawn_team_match( array $atts ): string {
+        global $racketmanager;
+        $args            = shortcode_atts(
+            array(
+                'id'            => '',
+                'template'      => '',
+                'is_tournament' => false,
+                'event'         => '',
+                'emailfrom'     => '',
+                'round'         => '',
+                'subject'       => null,
+            ),
+            $atts
+        );
+        $template         = $args['template'];
+        $is_tournament    = $args['is_tournament'];
+        $event            = $args['event'];
+        $email_from       = $args['emailfrom'];
+        $round            = $args['round'];
+        $subject          = $args['subject'];
+        $organisation     = $racketmanager->site_name;
+
+        $filename = ( ! empty( $template ) ) ? 'match-team-withdrawn-' . $template : 'match-team-withdrawn';
+
+        return $this->load_template(
+            $filename,
+            array(
+                'is_tournament' => $is_tournament,
+                'event'         => $event,
+                'round'         => $round,
+                'organisation'  => $organisation,
+                'email_from'    => $email_from,
+                'email_subject' => $subject,
+            ),
+            'email'
+        );
+    }
 	/**
 	 * Function to show event constitution email
 	 *

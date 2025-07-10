@@ -868,25 +868,39 @@ class Racketmanager_League {
 	 * @param string $season season.
 	 */
 	public function withdraw_team( int $team_id, string $season ): void {
-		global $wpdb, $racketmanager;
-
+		global $wpdb;
+        $match_args                     = array();
+        $match_args['team_id']          = $team_id;
+        $match_args['season']           = $season;
+        $match_args['reset_query_args'] = true;
+        if ( $this->is_championship ) {
+            $match_args['pending'] = true;
+        }
 		// update matches.
-		$matches = $this->get_matches(
-			array(
-				'team_id' => $team_id,
-				'season'  => $season,
-			)
-		);
+		$matches = $this->get_matches( $match_args );
 		foreach ( $matches as $match ) {
 			$match = get_match( $match );
 			if ( $match ) {
 				$status = empty( $match->status ) ? null : Racketmanager_Util::get_match_status( $match->status );
 				if ( 'Withdrawn' !== $status ) {
-					$match_confirmed = 'Y';
-					$home_team_score = 0;
-					$away_team_score = 0;
-					$status          = Racketmanager_Util::get_match_status_code( 'cancelled' );
-					$match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
+                    if ( $this->is_championship ) {
+                        if ( intval( $match->home_team ) === $team_id ) {
+                            $match_status = 'walkover_player2';
+                        } else {
+                            $match_status = 'walkover_player1';
+                        }
+                        if ( empty( $match->leg ) || 2 === $match->leg ) {
+                            $match->notify_team_withdrawal( $team_id );
+                        }
+                        $match->handle_result_update( array(), $match_status );
+                    } else {
+                        $match_confirmed = 'Y';
+                        $home_team_score = 0;
+                        $away_team_score = 0;
+                        $status          = Racketmanager_Util::get_match_status_code( 'cancelled' );
+                        $match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
+                        $match->update_league_with_result();
+                    }
 				}
 			}
 		}
@@ -899,41 +913,55 @@ class Racketmanager_League {
 				$season
 			)
 		);
-		$this->update_standings( $season );
-		// send email confirmation.
-		$team          = get_team( $team_id );
-		$message_send  = false;
-		$teams         = $this->get_league_teams( array( 'season' => $season ) );
-		$headers       = array();
-		$email_from    = $racketmanager->get_confirmation_email( $this->event->competition->type );
-		$headers[]     = 'From: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
-		$headers[]     = 'cc: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
-		$email_subject = $this->title . ' ' . $season . ' - ' . __( 'Withdrawn team', 'racketmanager' ) . ' - ' . $team->title;
-		$email_to      = array();
-		foreach ( $teams as $team ) {
-			$team_dtls = $this->get_team_dtls( $team->id );
-			if ( ! empty( $team_dtls->contactemail ) ) {
-				$email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
-				$message_send = true;
-			}
-			if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-				$headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
-				$message_send = true;
-			}
-		}
-		$message_args            = array();
-		$message_args['team']    = $team_id;
-		$message_args['season']  = $season;
-		$message_args['league']  = $this->id;
-		$message_args['subject'] = $email_subject;
-		$message_args['from']    = $email_from;
-
-		if ( $message_send ) {
-			$email_message = withdrawn_team_email( $message_args );
-			wp_mail( $email_to, $email_subject, $email_message, $headers );
-		}
-		$racketmanager->set_message( __( 'Team withdrawn', 'racketmanager' ) );
+        if ( ! $this->is_championship ) {
+            $this->update_standings( $season );
+        }
+        if ( ! $this->is_championship ) {
+            $this->notify_league_team_withdrawn( $team_id );
+        }
 	}
+
+    /**
+     * Function to notify all teams in league of withdrawal
+     * @param int $team_id
+     * @param string $season
+     *
+     * @return void
+     */
+    private function notify_league_team_withdrawn( int $team_id, string $season ): void {
+        global $racketmanager;
+        $team          = get_team( $team_id );
+        $message_send  = false;
+        $teams         = $this->get_league_teams( array( 'season' => $season ) );
+        $headers       = array();
+        $email_from    = $racketmanager->get_confirmation_email( $this->event->competition->type );
+        $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
+        $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
+        $email_subject = $this->title . ' ' . $season . ' - ' . __( 'Withdrawn team', 'racketmanager' ) . ' - ' . $team->title;
+        $email_to      = array();
+        foreach ( $teams as $team ) {
+            $team_dtls = $this->get_team_dtls( $team->id );
+            if ( ! empty( $team_dtls->contactemail ) ) {
+                $email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+                $message_send = true;
+            }
+            if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
+                $headers[]    = RACKETMANAGER_CC_EMAIL . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+                $message_send = true;
+            }
+        }
+        $message_args            = array();
+        $message_args['team']    = $team_id;
+        $message_args['season']  = $season;
+        $message_args['league']  = $this->id;
+        $message_args['subject'] = $email_subject;
+        $message_args['from']    = $email_from;
+
+        if ( $message_send ) {
+            $email_message = withdrawn_team_email( $message_args );
+            wp_mail( $email_to, $email_subject, $email_message, $headers );
+        }
+    }
 	/**
 	 * Set default dataset query arguments
 	 */

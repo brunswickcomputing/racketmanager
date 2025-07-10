@@ -1000,6 +1000,20 @@ function withdrawn_team_email( array $args = array() ): string {
     return do_shortcode( $shortcode );
 }
     /**
+     * Display match with withdrawn team email
+     *
+     * @param array $args array of arguments.
+     */
+    function match_team_withdrawn_notification( int $match_id, array $args = array() ): string {
+        $shortcode  = '[withdrawn-team-match';
+        $args['id'] = $match_id;
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }
+    /**
      * Display match status modal
      *
      * @param array $args array of arguments.

@@ -172,6 +172,7 @@ class Shortcodes_Email extends Shortcodes {
 				'errors'           => false,
 				'match_day'        => '',
 				'from_email'       => false,
+                'challenge'        => false,
 			),
 			$atts
 		);
@@ -183,6 +184,7 @@ class Shortcodes_Email extends Shortcodes {
 		$errors     = $args['errors'];
 		$match_day  = $args['match_day'];
 		$from_email = $args['from_email'];
+        $challenge  = $args['challenge'];
 		$match      = get_match( $match );
 
 		$action_url = admin_url() . '?page=racketmanager&view=results';
@@ -206,6 +208,7 @@ class Shortcodes_Email extends Shortcodes {
 				'action_url'   => $action_url,
 				'complete'     => $complete,
 				'errors'       => $errors,
+                'challenge'    => $challenge,
 				'from_email'   => $from_email,
 			),
 			'email'

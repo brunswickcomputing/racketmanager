@@ -82,13 +82,16 @@ final class Validator_Match extends Validator {
      *
      * @param ?string $match_status match status.
      * @param string $error_field error field.
+     * @param bool   $required is null value invalid.
      * @return object $validation updated validation object.
      */
-    public function match_status( ?string $match_status, string $error_field = 'match' ): object {
+    public function match_status( ?string $match_status, string $error_field = 'match', bool $required = false ): object {
         if ( empty( $match_status ) ) {
-            $this->error      = true;
-            $this->err_flds[] = $error_field;
-            $this->err_msgs[] = __( 'No match status selected', 'racketmanager' );
+            if ( $required ) {
+                $this->error      = true;
+                $this->err_flds[] = $error_field;
+                $this->err_msgs[] = __( 'No match status selected', 'racketmanager' );
+            }
         } else {
             $match_status_values = explode( '_', $match_status );
             $status_value        = $match_status_values[0];
@@ -157,14 +160,17 @@ final class Validator_Match extends Validator {
      * Validate score status
      *
      * @param ?string $score_status score status.
-     * @param string $error_field error field.
+     * @param string  $error_field error field.
+     * @param bool    $required is value required.
      * @return object $validation updated validation object.
      */
-    public function score_status( ?string $score_status, string $error_field = 'match' ): object {
+    public function score_status( ?string $score_status, string $error_field = 'match', bool $required = false ): object {
         if ( empty( $score_status ) ) {
-            $this->error      = true;
-            $this->err_flds[] = $error_field;
-            $this->err_msgs[] = __( 'No match status selected', 'racketmanager' );
+            if ( $required ) {
+                $this->error      = true;
+                $this->err_flds[] = $error_field;
+                $this->err_msgs[] = __( 'No match status selected', 'racketmanager' );
+            }
         } else {
             $score_status_values = explode( '_', $score_status );
             $status_value        = $score_status_values[0];

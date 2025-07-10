@@ -107,7 +107,7 @@ class Ajax_Match extends Ajax {
             $match_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
             $validator    = $validator->modal( $modal, $error_field );
             $validator    = $validator->match( $match_id, $error_field );
-            $validator    = $validator->match_status( $match_status, $error_field );
+            $validator    = $validator->match_status( $match_status, $error_field, true );
             if ( empty( $validator->error ) ) {
                 $match                  = get_match( $match_id );
                 $status_dtls            = $this->set_status_details( $match_status, $match->home_team, $match->away_team );
@@ -169,7 +169,7 @@ class Ajax_Match extends Ajax {
             $away_team     = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
             $validator     = $validator->modal( $modal, $error_field );
             $validator     = $validator->rubber_number( $rubber_number, $error_field );
-            $validator     = $validator->score_status( $score_status, $error_field );
+            $validator     = $validator->score_status( $score_status );
             if ( empty( $validator->error ) ) {
                 $status_dtls            = $this->set_status_details( $score_status, $home_team, $away_team );
                 $return->score_status   = $status_dtls->status;

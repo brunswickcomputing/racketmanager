@@ -8,6 +8,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 /** @var string $racketmanager_tab */
 /** @var array  $finance_invoices */
 /** @var int    $club_id */
@@ -15,7 +16,7 @@ namespace Racketmanager;
 /** @var string $status */
 $args = array();
 if ( 'club-invoices' === $racketmanager_tab ) {
-    $clubs         = $this->get_clubs();
+    $clubs         = $racketmanager->get_clubs();
     $args['entry'] = 'team';
 } else {
     $args['entry'] = 'player';
@@ -25,7 +26,7 @@ $args['orderby'] = array(
     'season'         => 'DESC',
     'competition_id' => 'ASC',
 );
-$charges         = $this->get_charges( $args );
+$charges         = $racketmanager->get_charges( $args );
 $invoices = $finance_invoices;
 ?>
 <div class="container">

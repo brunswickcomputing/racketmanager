@@ -7,13 +7,14 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 /** @var string $season_select */
 /** @var string $competition_select */
 /** @var string $event_select */
 /** @var string $results_check_filter */
 /** @var array  $results_checkers */
-$seasons      = $this->get_seasons( 'DESC' );
-$competitions = $this->get_competitions( array( 'type' => 'league' ) );
+$seasons      = $racketmanager->get_seasons( 'DESC' );
+$competitions = $racketmanager->get_competitions( array( 'type' => 'league' ) );
 $events       = array();
 foreach ( $competitions as $competition ) {
 	$competition = get_competition( $competition );

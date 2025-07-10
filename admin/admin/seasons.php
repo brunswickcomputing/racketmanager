@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+global $racketmanager;
 ?>
 <!-- View Seasons -->
 <div class="mb-3">
@@ -36,7 +37,7 @@ namespace Racketmanager;
         </thead>
         <tbody>
             <?php
-            $seasons = $this->get_seasons();
+            $seasons = $racketmanager->get_seasons();
             if ( $seasons ) {
                 foreach ( $seasons as $season ) {
                     ?>

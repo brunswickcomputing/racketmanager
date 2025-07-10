@@ -110,7 +110,7 @@ if ( $match->is_walkover ) {
 				<div class="module__content">
 					<div class="module-container">
 						<div id="viewMatchRubbers">
-							<?php require RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
+							<?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 							<div id="showMatchRubbers">
 								<div id="matchRubbers">
 									<form id="form-match-<?php echo esc_attr( $match->id ); ?>" class="team-match-result" method="post">
@@ -625,7 +625,7 @@ if ( $match->is_walkover ) {
 		</div>
 	</div>
 	<script>
-		<?php require RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
+		<?php require_once RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
         const scoreStatusLinks = document.querySelectorAll('.scoreStatusLink');
         scoreStatusLinks.forEach(function(el) {
             el.removeEventListener('click', scoreStatusClick);

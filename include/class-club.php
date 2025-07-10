@@ -1077,4 +1077,21 @@ final class Club {
         $template_args['comments']         = $club_entry->comments;
         $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
     }
+
+    /**
+     * Get dummy player details
+     *
+     * @return array
+     */
+    public function get_dummy_players(): array {
+        global $racketmanager;
+        $player_options                = $racketmanager->get_options( 'player' );
+        $players['walkover']['male']   = $this->get_player( $player_options['walkover']['male'] );
+        $players['walkover']['female'] = $this->get_player( $player_options['walkover']['female'] );
+        $players['noplayer']['male']   = $this->get_player( $player_options['noplayer']['male'] );
+        $players['noplayer']['female'] = $this->get_player( $player_options['noplayer']['female'] );
+        $players['share']['male']      = $this->get_player( $player_options['share']['male'] );
+        $players['share']['female']    = $this->get_player( $player_options['share']['female'] );
+        return $players;
+    }
 }

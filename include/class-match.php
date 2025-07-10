@@ -2832,6 +2832,630 @@ final class Racketmanager_Match {
         wp_cache_set( $this->id, $this, 'matches' );
     }
     /**
+     * Function to handle match result update
+     *
+     * @param array|null  $sets
+     * @param string|null $match_status
+     *
+     * @return stdClass
+     */
+    public function handle_result_update( ?array $sets, ?string $match_status ): stdClass {
+        global $racketmanager;
+        $validator = new Validator_Match();
+        $validator = $validator->match_status( $match_status );
+        if ( ! empty( $validator->error ) ) {
+            return $validator->get_details();
+        }
+        $match_confirmed = $this->confirmed;
+        $set_prefix      = 'set_';
+        $validator       = $validator->match_score( $this, $sets, $match_status, $set_prefix );
+        if ( ! empty( $validator->error ) ) {
+            return $validator->get_details();
+        }
+        $home_points = $validator->home_points;
+        $away_points = $validator->away_points;
+        $sets        = $validator->sets;
+        $this->update_sets( $sets );
+        switch ( $match_status ) {
+            case 'walkover_player1':
+                $custom['walkover'] = 'home';
+                $status             = 1;
+                break;
+            case 'walkover_player2':
+                $custom['walkover'] = 'away';
+                $status             = 1;
+                break;
+            case 'retired_player1':
+                $custom['retired'] = 'home';
+                $status            = 2;
+                break;
+            case 'retired_player2':
+                $custom['retired'] = 'away';
+                $status            = 2;
+                break;
+            case 'share':
+                $custom['share'] = 'true';
+                $status          = 3;
+                break;
+            case 'abandoned':
+                $custom['abandoned'] = 'true';
+                $status              = 6;
+                break;
+            case 'cancelled':
+                $custom['cancelled'] = 'true';
+                $status              = 8;
+                break;
+            default:
+                $status = 0;
+                break;
+        }
+        $custom['sets'] = $sets;
+        $match_updated  = $this->update_result( $home_points, $away_points, $custom, $match_confirmed, $status );
+        if ( $match_updated ) {
+            $match_message       = __( 'Result saved', 'racketmanager' );
+            $msg                 = $match_message;
+            $rm_options          = $racketmanager->get_options();
+            $result_confirmation = $rm_options[ $this->league->event->competition->type ]['resultConfirmation'];
+            if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
+                $this->confirmed = 'Y';
+                $this->set_confirmed();
+                $update = $this->update_league_with_result();
+                $msg    = $update->msg;
+                if ( ! current_user_can( 'manage_racketmanager' ) ) {
+                    $match_confirmed = 'Y';
+                    $this->result_notification( $match_confirmed, $match_message );
+                }
+            } else {
+                $this->result_notification( $match_confirmed, $match_message );
+            }
+        } else {
+            $msg = __( 'No result to save', 'racketmanager' );
+        }
+        $data = new stdClass();
+        $data->msg = $msg;
+        return $data;
+    }
+    public function handle_team_result_update( $match_status, $rubber_statuses, $match_comments, $rubber_ids, $rubber_types, $match_players, $match_sets ): object {
+        $validator         = new Validator_Match();
+        $validator         = $validator->match_status( $match_status );
+        $is_update_allowed = $this->is_update_allowed();
+        $validator         = $validator->can_player_enter_result( $is_update_allowed, $match_players );
+        if ( ! empty( $validator->error ) ) {
+            return $validator->get_details();
+        }
+        $this->home_points   = 0;
+        $this->away_points   = 0;
+        $match_stats         = Racketmanager_Util::initialise_match_stats();
+        $match_confirmed     = $this->confirmed;
+        $home_team_score     = 0;
+        $away_team_score     = 0;
+        $home_team_score_tie = 0;
+        $away_team_score_tie = 0;
+        $updated_rubbers     = array();
+        if ( ! empty( $this->leg ) && 2 === $this->leg && ! empty( $this->linked_match ) ) {
+            $linked_match = get_match( $this->linked_match );
+            if ( ! empty( $linked_match->winner_id ) ) {
+                $home_team_score_tie = $linked_match->home_points;
+                $away_team_score_tie = $linked_match->away_points;
+            }
+        }
+        $dummy_players    = array();
+        $opponents        = array( 'home', 'away' );
+        foreach ( $opponents as $opponent ) {
+            $club_id = $this->teams[ $opponent ]->club_id;
+            $club    = get_club( $club_id );
+            if ( $club ) {
+                $dummy_players[ $opponent ] = $club->get_dummy_players();
+            }
+        }
+        if ( empty( $this->date_result_entered ) ) {
+            $this->set_result_entered();
+        }
+        $is_cancelled = false;
+        if ( 'cancelled' === $match_status ) {
+            $is_cancelled = true;
+        }
+        $is_withdrawn = false;
+        if ( $this->teams['home']->is_withdrawn || $this->teams['away']->is_withdrawn ) {
+            $is_withdrawn = true;
+            $match_status = 'withdrawn';
+        }
+        $this->delete_result_check();
+        for ( $ix = 1; $ix <= $this->num_rubbers; $ix++ ) {
+            $rubber_id     = isset( $rubber_ids[ $ix ] ) ? intval( $rubber_ids[ $ix ] ) : null;
+            $rubber_type   = isset( $rubber_types[ $ix ] ) ? sanitize_text_field( wp_unslash( $rubber_types[ $ix ] ) ) : null;
+            $players       = isset( $match_players[ $ix ] ) ? wp_unslash( $match_players[ $ix ] ) : array();
+            $sets          = isset( $match_sets[ $ix ] ) ? wp_unslash( $match_sets[ $ix ] ) : array();
+            $rubber_status = isset( $rubber_statuses[ $ix ] ) ? sanitize_text_field( wp_unslash( $rubber_statuses[ $ix ] ) ) : null;
+            $validator     = $validator->rubber( $rubber_id );
+            if ( ! empty( $validator->error ) ) {
+                continue;
+            }
+            $rubber           = get_rubber( $rubber_id );
+            $player_numbers   = array();
+            $player_numbers[] = 1;
+            if ( 'D' === substr( $rubber_type, 1, 1 ) ) {
+                $player_numbers[] = 2;
+            }
+            $set_prefix      = 'set_' . $ix . '_';
+            $players         = $this->set_dummy_players( $this->league->type, $rubber_status, $players, $dummy_players );
+            $validate_rubber = true;
+            $playoff         = false;
+            $share           = null;
+            $walkover        = null;
+            $retired         = null;
+            $invalid         = null;
+            $abandoned       = null;
+            $is_cancelled    = null;
+            switch ( $rubber_status ) {
+                case 'share':
+                    $share = true;
+                    break;
+                case 'walkover_player1':
+                    $walkover = 'home';
+                    break;
+                case 'walkover_player2':
+                    $walkover = 'away';
+                    break;
+                case 'retired_player1':
+                    $retired = 'home';
+                    break;
+                case 'retired_player2':
+                    $retired = 'away';
+                    break;
+                case 'invalid_player1':
+                    $invalid = 'home';
+                    break;
+                case 'invalid_player2':
+                    $invalid = 'away';
+                    break;
+                case 'invalid_players':
+                    $invalid = 'both';
+                    break;
+                case 'abandoned':
+                    $abandoned = true;
+                    break;
+                case 'cancelled':
+                    $is_cancelled = true;
+                    break;
+                default:
+                    break;
+            }
+            if ( isset( $this->league->scoring ) && ( 'TP' === $this->league->scoring || 'MP' === $this->league->scoring || 'MPL' === $this->league->scoring ) && intval( $this->num_rubbers ) === $ix && intval( $this->num_rubbers ) > $this->league->num_rubbers ) {
+                if ( empty( $this->leg ) || 2 !== $this->leg ) {
+                    if ( $home_team_score !== $away_team_score ) {
+                        $validate_rubber = false;
+                    } else {
+                        $playoff = true;
+                    }
+                } elseif ( $home_team_score_tie !== $away_team_score_tie ) {
+                    $validate_rubber = false;
+                } else {
+                    $playoff = true;
+                }
+            }
+            if ( $validate_rubber ) {
+                if ( empty( $share ) && empty( $is_withdrawn ) && empty( $is_cancelled ) ) {
+                    $validator = $validator->players_involved( $players, $player_numbers, $ix, $playoff, $rubber->reverse_rubber );
+                }
+                $validator = $validator->match_score( $this, $sets, $match_status, $set_prefix, $ix ); //$match, $sets, $set_prefix, $errors, $rubber_number, $match_status
+                if ( empty( $validator->error ) ) {
+                    $sets        = $validator->sets;
+                    $stats       = $validator->stats;
+                    $points      = $validator->points;
+                    $custom         = array();
+                    $custom['sets'] = $sets;
+                    if ( $walkover ) {
+                        $status             = 1;
+                        $custom['walkover'] = $walkover;
+                    } elseif ( $share ) {
+                        $status          = 3;
+                        $custom['share'] = true;
+                    } elseif ( $retired ) {
+                        $status            = 2;
+                        $custom['retired'] = $retired;
+                    } elseif ( $abandoned ) {
+                        $status              = 6;
+                        $custom['abandoned'] = true;
+                    } elseif ( $is_cancelled ) {
+                        $status              = 8;
+                        $custom['cancelled'] = true;
+                    } elseif ( $invalid ) {
+                        $status            = 9;
+                        $custom['invalid'] = $invalid;
+                    } elseif ( empty( $status ) ) {
+                        $status = 0;
+                    }
+                    $points['home']['team']  = $this->home_team;
+                    $points['away']['team']  = $this->away_team;
+                    $result                  = $rubber->calculate_result( $points );
+                    $home_score              = $result->home;
+                    $away_score              = $result->away;
+                    $winner                  = $result->winner;
+                    $loser                   = $result->loser;
+                    if ( is_numeric( $home_score ) ) {
+                        $home_team_score     += $home_score;
+                        $home_team_score_tie += $home_score;
+                    }
+                    if ( is_numeric( $away_score ) ) {
+                        $away_team_score     += $away_score;
+                        $away_team_score_tie += $away_score;
+                    }
+                    $custom['stats']               = $stats;
+                    $match_stats['sets']['home']  += $stats['sets']['home'];
+                    $match_stats['sets']['away']  += $stats['sets']['away'];
+                    $match_stats['games']['home'] += $stats['games']['home'];
+                    $match_stats['games']['away'] += $stats['games']['away'];
+                    if ( $winner === $this->home_team ) {
+                        ++$match_stats['rubbers']['home'];
+                    } elseif ( $winner === $this->away_team ) {
+                        ++$match_stats['rubbers']['away'];
+                    } else {
+                        $match_stats['rubbers']['home'] += 0.5;
+                        $match_stats['rubbers']['away'] += 0.5;
+                    }
+                    if ( ! empty( $home_score ) || ! empty( $away_score ) || $is_withdrawn || $is_cancelled || $invalid ) {
+                        $home_score          = empty( $home_score ) ? 0 : $home_score;
+                        $away_score          = empty( $away_score ) ? 0 : $away_score;
+                        $this->home_points  += $home_score;
+                        $this->away_points  += $away_score;
+                        $rubber->home_points = $home_score;
+                        $rubber->away_points = $away_score;
+                        $rubber->winner_id   = $winner;
+                        $rubber->loser_id    = $loser;
+                        $rubber->custom      = $custom;
+                        $rubber->status      = $status;
+                        $rubber->update_result();
+                        $rubber->set_players( $players );
+                        foreach ( $opponents as $opponent ) {
+                            foreach ( $player_numbers as $player_number ) {
+                                $updated_rubbers[ $rubber_id ]['players'][ $opponent ][] = $players[ $opponent ][ $player_number ] ?? null;
+                            }
+                        }
+                        $updated_rubbers[ $rubber_id ]['homepoints'] = $home_score;
+                        $updated_rubbers[ $rubber_id ]['awaypoints'] = $away_score;
+                        $updated_rubbers[ $rubber_id ]['sets']       = $sets;
+                        $updated_rubbers[ $rubber_id ]['winner']     = $winner;
+                    }
+                }
+            }
+        }
+        if ( ! empty( $validator->error ) ) {
+            $data           = $validator->get_details();
+            $data->rubbers  = $updated_rubbers;
+            return $data;
+        }
+        if ( $is_withdrawn || $is_cancelled ) {
+            $home_team_score = 0;
+            $away_team_score = 0;
+        } else {
+            $this->check_players();
+        }
+        $send_notification = false;
+        $user_team         = $is_update_allowed->user_team;
+        if ( empty( $match_confirmed ) ) {
+            $msg               = __( 'Result saved', 'racketmanager' );
+            if ( 'admin' !== $user_team ) {
+                $match_confirmed   = 'P';
+                $send_notification = true;
+            } else {
+                $match_confirmed = 'Y';
+            }
+        } else {
+            $msg = __( 'Result updated', 'racketmanager' );
+            if ( 'admin' === $user_team ) {
+                $match_confirmed = 'Y';
+            }
+        }
+        $this->check_result_timeout();
+        $match_custom['stats'] = $match_stats;
+        $status                = Racketmanager_Util::get_match_status_code( $match_status );
+        $updated               = $this->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status, $user_team );
+        if ( $updated && $send_notification ) {
+            $this->result_notification( $match_confirmed, $msg, $user_team );
+        }
+        if ( $match_comments ) {
+            if ( 'home' === $user_team || 'away' === $user_team ) {
+                $this->comments[ $user_team ] = $match_comments['result'];
+            } else {
+                $this->comments['result'] = $match_comments['result'];
+            }
+            $this->set_comments( $this->comments );
+        }
+        if ( $updated && 'Y' === $this->confirmed ) {
+            $update = $this->update_league_with_result();
+            $msg    = $update->msg;
+        }
+        $result_status = 'success';
+        $warnings      = $this->handle_player_warnings();
+        if ( ! empty( $warnings->msg ) ) {
+            $msg          .= $warnings->msg;
+            $result_status = $warnings->status;
+        }
+        $data           = new stdClass();
+        $data->msg      = $msg;
+        $data->rubbers  = $updated_rubbers;
+        $data->status   = $result_status;
+        $data->warnings = $warnings->warnings;
+        return $data;
+    }
+
+    /**
+     * Function to check and return any player warnings for match
+     *
+     * @return object
+     */
+    private function handle_player_warnings(): object {
+        global $racketmanager;
+        $msg             = null;
+        $player_warnings = null;
+        $result_status   = null;
+        if ( $this->has_result_check() ) {
+            $warning_player  = false;
+            $warning_match   = array();
+            $result_status   = 'warning';
+            $result_warnings = $racketmanager->get_result_warnings( array( 'match' => $this->id ) );
+            foreach ( $result_warnings as $player_warning ) {
+                if ( $player_warning->rubber_id ) {
+                    $warning_player = true;
+                    $rubber = get_rubber( $player_warning->rubber_id );
+                    if ( $rubber ) {
+                        if ( $player_warning->team_id === intval( $this->home_team ) ) {
+                            $team = 'home';
+                        } else {
+                            $team = 'away';
+                        }
+                        if ( intval( $player_warning->player_id ) === intval( $rubber->players[ $team ]['1']->id ) ) {
+                            $player_number = 1;
+                        } else {
+                            $player_number = 2;
+                        }
+                        $player_ref                     = 'players_' . $rubber->rubber_number . '_' . $team . '_' . $player_number;
+                        $player_warnings[ $player_ref ] = $player_warning->description;
+                    }
+                } else {
+                    $warning_match[] = $player_warning->description;
+                }
+            }
+            if ( $warning_player ) {
+                $msg .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
+            }
+            foreach ( $warning_match as $warning ) {
+                $msg .= '<br>' . $warning;
+            }
+        }
+        $return           = new stdClass();
+        $return->msg      = $msg;
+        $return->status   = $result_status;
+        $return->warnings = $player_warnings;
+        return $return;
+    }
+    /**
+     * Function to check players
+     *
+     * @return void
+     */
+    private function check_players(): void {
+        global $racketmanager;
+        $check_options = $racketmanager->get_options( 'checks' );
+        $this->delete_result_check();
+        $rubbers   = $this->get_rubbers();
+        $prev_wtns = array();
+        foreach ( $rubbers as $rubber ) {
+            if ( empty( $rubber->players ) ) {
+                continue;
+            }
+            $check_results = $rubber->check_players();
+            if ( empty( $this->league->event->competition->rules['wtn_check'] ) || empty( $check_options['wtn_check'] ) ) {
+                continue;
+            }
+            $wtns = $check_results['wtns'];
+            if ( empty( $prev_wtns ) ) {
+                $prev_wtns = $wtns;
+                continue;
+            }
+            foreach ( $wtns as $opponent => $wtn ) {
+                if ( $wtn >= $prev_wtns[ $opponent ] ) {
+                    continue;
+                }
+                $team_err = $opponent . '_team';
+                $team     = $this->$team_err;
+                /* translators: %1$d: rubber number, %2$d: rubber team rating, %3$d: previous rubber rating*/
+                $message = sprintf( __( 'Players out of order. Rubber %1$d has wtn %2$.1f - previous rubber has wtn %3$.1f', 'racketmanager' ), $rubber->rubber_number, $wtn, $prev_wtns[ $opponent ] );
+                $players = $rubber->players[ $opponent ];
+                foreach ( $players as $player ) {
+                    $this->add_player_result_check( $team, $player->id, $message, $rubber->id );
+                }
+            }
+            $prev_wtns = $wtns;
+        }
+    }
+
+    /**
+     * Function to check if result is timed out
+     *
+     * @return void
+     */
+    private function check_result_timeout(): void {
+        global $racketmanager;
+        $competition_options = $racketmanager->get_options( $this->league->event->competition->type );
+        if ( ! empty( $this->league->event->competition->rules['resultTimeout'] ) ) {
+            $result_timeout      = $competition_options['resultTimeout'] ?? null;
+            if ( $result_timeout && ! empty( $this->date_result_entered ) ) {
+                $date_result_entered = date_create( $this->date_result_entered );
+                $match_date          = date_create( $this->date );
+                $diff                = date_diff( $date_result_entered, $match_date );
+                if ( $diff->invert ) {
+                    $time_diff  = $diff->days * 24 * 60;
+                    $time_diff += $diff->h * 60;
+                    $time_diff += $diff->i;
+                    $timeout    = $result_timeout * 60;
+                    if ( $time_diff > $timeout ) {
+                        $time_diff_hours = $time_diff / 60;
+                        /* translators: %d: number of hours */
+                        $reason = sprintf( __( 'Result entered %d hours after match', 'racketmanager' ), $time_diff_hours );
+                        $this->add_match_result_check( $this->home_team, $reason );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Function to set dummy players for a club
+     *
+     * @param string $match_type
+     * @param string $status
+     * @param array $players
+     * @param array $dummy_players
+     *
+     * @return array
+     */
+    private function set_dummy_players( string $match_type, string $status, array $players, array $dummy_players ): array {
+        switch ( $status ) {
+            case 'share':
+                if ( 'MD' === $match_type || 'BD' === $match_type ) {
+                    $players['home']['1'] = $dummy_players['home']['share']['male']->roster_id;
+                    $players['home']['2'] = $players['home']['1'];
+                    $players['away']['1'] = $dummy_players['away']['share']['male']->roster_id;
+                    $players['away']['2'] = $players['away']['1'];
+                } elseif ( 'WD' === $match_type || 'GD' === $match_type ) {
+                    $players['home']['1'] = $dummy_players['home']['share']['female']->roster_id;
+                    $players['home']['2'] = $players['home']['1'];
+                    $players['away']['1'] = $dummy_players['away']['share']['female']->roster_id;
+                    $players['away']['2'] = $players['away']['1'];
+                } elseif ( 'XD' === $match_type ) {
+                    $players['home']['1'] = $dummy_players['home']['share']['male']->roster_id;
+                    $players['home']['2'] = $dummy_players['home']['share']['female']->roster_id;
+                    $players['away']['1'] = $dummy_players['away']['share']['male']->roster_id;
+                    $players['away']['2'] = $dummy_players['away']['share']['female']->roster_id;
+                }
+                break;
+            case 'walkover_player1':
+                if ( 'MD' === $match_type || 'BD' === $match_type ) {
+                    if ( empty( $players['home']['1'] ) ) {
+                        $players['home']['1'] = $dummy_players['home']['walkover']['male']->roster_id;
+                    }
+                    if ( empty( $players['home']['2'] ) ) {
+                        $players['home']['2'] = $dummy_players['home']['walkover']['male']->roster_id;
+                    }
+                    $players['away']['1'] = $dummy_players['away']['noplayer']['male']->roster_id;
+                    $players['away']['2'] = $players['away']['1'];
+                } elseif ( 'WD' === $match_type || 'GD' === $match_type ) {
+                    if ( empty( $players['home']['1'] ) ) {
+                        $players['home']['1'] = $dummy_players['home']['walkover']['female']->roster_id;
+                    }
+                    if ( empty( $players['home']['2'] ) ) {
+                        $players['home']['2'] = $dummy_players['home']['walkover']['female']->roster_id;
+                    }
+                    $players['away']['1'] = $dummy_players['away']['noplayer']['female']->roster_id;
+                    $players['away']['2'] = $players['away']['1'];
+                } elseif ( 'XD' === $match_type ) {
+                    if ( empty( $players['home']['1'] ) ) {
+                        $players['home']['1'] = $dummy_players['home']['walkover']['male']->roster_id;
+                    }
+                    if ( empty( $players['home']['2'] ) ) {
+                        $players['home']['2'] = $dummy_players['home']['walkover']['female']->roster_id;
+                    }
+                    $players['away']['1'] = $dummy_players['away']['noplayer']['male']->roster_id;
+                    $players['away']['2'] = $dummy_players['away']['noplayer']['female']->roster_id;
+                }
+                break;
+            case 'walkover_player2':
+                if ( 'MD' === $match_type || 'BD' === $match_type ) {
+                    $players['home']['1'] = $dummy_players['home']['noplayer']['male']->roster_id;
+                    $players['home']['2'] = $dummy_players['home']['home']['1'];
+                    if ( empty( $players['away']['1'] ) ) {
+                        $players['away']['1'] = $dummy_players['away']['walkover']['male']->roster_id;
+                    }
+                    if ( empty( $players['away']['2'] ) ) {
+                        $players['away']['2'] = $dummy_players['away']['walkover']['male']->roster_id;
+                    }
+                } elseif ( 'WD' === $match_type || 'GD' === $match_type ) {
+                    $players['home']['1'] = $dummy_players['home']['noplayer']['female']->roster_id;
+                    $players['home']['2'] = $players['home']['1'];
+                    if ( empty( $players['away']['1'] ) ) {
+                        $players['away']['1'] = $dummy_players['away']['walkover']['female']->roster_id;
+                    }
+                    if ( empty( $players['away']['2'] ) ) {
+                        $players['away']['2'] = $dummy_players['away']['walkover']['female']->roster_id;
+                    }
+                } elseif ( 'XD' === $match_type ) {
+                    $players['home']['1'] = $dummy_players['home']['noplayer']['male']->roster_id;
+                    $players['home']['2'] = $dummy_players['home']['noplayer']['female']->roster_id;
+                    if ( empty( $players['away']['1'] ) ) {
+                        $players['away']['1'] = $dummy_players['away']['walkover']['male']->roster_id;
+                    }
+                    if ( empty( $players['away']['2'] ) ) {
+                        $players['away']['2'] = $dummy_players['away']['walkover']['female']->roster_id;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return $players;
+    }
+
+    /**
+     * Handle team result confirmation
+     *
+     * @param $result_confirm
+     * @param $confirm_comments
+     * @param $result_home
+     * @param $result_away
+     *
+     * @return object
+     */
+    public function handle_team_result_confirmation( $result_confirm, $confirm_comments, $result_home, $result_away ): object {
+        global $racketmanager;
+        $match_msg     = null;
+        $update_league = false;
+        $validator     = new Validator_Match();
+        $validator     = $validator->result_confirm( $result_confirm, $confirm_comments );
+        if ( ! empty( $validator->error ) ) {
+            return $validator;
+        }
+        if ( ! empty( $result_home ) ) {
+            $actioned_by = 'home';
+        } elseif ( ! empty( $result_away ) ) {
+            $actioned_by = 'away';
+        } else {
+            $actioned_by = '';
+        }
+        $rm_options          = $racketmanager->get_options();
+        $result_confirmation = $rm_options[ $this->league->event->competition->type ]['resultConfirmation'];
+        if ( 'A' === $result_confirm ) {
+            $match_msg = __( 'Result Approved', 'racketmanager' );
+            if ( 'auto' === $result_confirmation ) {
+                $update_league  = true;
+                $result_confirm = 'Y';
+            }
+        } elseif ( 'C' === $result_confirm ) {
+            $match_msg = __( 'Result Challenged', 'racketmanager' );
+        }
+        $match_updated_by = $this->update_match_result_status( $result_confirm, $confirm_comments, $actioned_by );
+        if ( $update_league ) {
+            $update = $this->update_league_with_result();
+            $msg    = $update->msg;
+        } else {
+            $msg = $match_msg;
+        }
+        $this->result_notification( $result_confirm, $match_msg, $match_updated_by );
+        $result_status = 'success';
+        $warnings      = $this->handle_player_warnings();
+        if ( ! empty( $warnings->msg ) ) {
+            $msg          .= $warnings->msg;
+            $result_status = $warnings->status;
+        }
+        $data           = new stdClass();
+        $data->msg      = $msg;
+        $data->rubbers  = array();
+        $data->status   = $result_status;
+        $data->warnings = $warnings->warnings;
+        return $data;
+    }
+    /**
      * Function to send message to opponents when a team is withdrawn
      *
      * @param int $team_id

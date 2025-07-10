@@ -863,13 +863,6 @@ summary>* {
 	display: list-item;
 }
 
-.racketmanager-svg-icon {
-	width: 1.2em;
-	display: inline-block;
-	height: 1.2em;
-	vertical-align: text-bottom;
-	line-height: 1;
-}
 
 /*noinspection CssUnresolvedCustomProperty*/
 .btn--link svg,
@@ -1907,6 +1900,11 @@ ul.list-winners {
 }
 .racketmanager-svg-icon {
 	fill: #FFF;
+	width: 1.2em;
+	display: inline-block;
+	height: 1.2em;
+	vertical-align: text-bottom;
+	line-height: 1;
 }
 
 /*noinspection CssUnresolvedCustomProperty*/
@@ -2986,7 +2984,9 @@ span.header {
 }
 
 .match-group__item {
-	position: relative
+	position: relative;
+	display: inline;
+	vertical-align: middle;
 }
 
 .match-group__item:not(:last-child) {
@@ -5627,10 +5627,6 @@ svg.media__img-element--icon.winner, svg.media__img-element--icon.runner-up {
 }
 .team-separator {
 	font-size: 0.7rem;
-}
-.match-group__item {
-	display: inline;
-	vertical-align: middle;
 }
 .is_pending {
 	font-style: italic;

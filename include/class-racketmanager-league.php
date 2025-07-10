@@ -603,41 +603,32 @@ class Racketmanager_League {
 		if ( ! $league_id ) {
 			return false;
 		}
-
 		$league = wp_cache_get( $league_id, 'leagues' );
-
 		if ( ! $league ) {
-			$league = $wpdb->get_row(
-				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				"SELECT `title`, `id`, `settings`, `event_id`, `seasons`, `sequence` FROM $wpdb->racketmanager WHERE " . $search . ' LIMIT 1'
-			);  // db call ok.
-			if ( $league ) {
-				$event = get_event( $league->event_id );
-				if ( ! $event ) {
-					return false;
-				}
-			} else {
-				return false;
-			}
-			$league->settings = (array) maybe_unserialize( $league->settings );
-			$league           = (object) array_merge( (array) $league, $league->settings );
+            $league = $wpdb->get_row(
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT `title`, `id`, `settings`, `event_id`, `seasons`, `sequence` FROM $wpdb->racketmanager WHERE " . $search . ' LIMIT 1'
+            );
+            if ( $league ) {
+                $event = get_event( $league->event_id );
+            }
+            if ( empty( $league ) || empty( $event ) ) {
+                return false;
+            }
+            $league->settings = (array) maybe_unserialize( $league->settings );
+            $league           = (object) array_merge( (array) $league, $league->settings );
+            // check if specific sports class exists.
+            if ( ! isset( $event->competition->sport ) ) {
+                $league->sport = '';
+            }
+            $instance = 'Racketmanager\Racketmanager_League_' . ucfirst( $event->competition->sport );
 
-			if ( ! $league ) {
-				return false;
-			}
-
-			// check if specific sports class exists.
-			if ( ! isset( $event->competition->sport ) ) {
-				$league->sport = '';
-			}
-			$instance = 'Racketmanager\Racketmanager_League_' . ucfirst( $event->competition->sport );
-
-			if ( class_exists( $instance ) ) {
-				$league = new $instance( $league );
-			} else {
-				$league = new Racketmanager_League( $league );
-			}
-			wp_cache_set( $league->id, $league, 'leagues' );
+            if ( class_exists( $instance ) ) {
+                $league = new $instance( $league );
+            } else {
+                $league = new Racketmanager_League( $league );
+            }
+            wp_cache_set( $league->id, $league, 'leagues' );
 		}
 		return $league;
 	}

@@ -1897,14 +1897,22 @@ final class Racketmanager_Match {
         $this->location = $location;
         wp_cache_set( $this->id, $this, 'matches' );
     }
+
     /**
      * Get to email addresses function
      *
+     * @param string $target
+     *
      * @return array
      */
-    public function get_email_to(): array {
+    public function get_email_to( string $target = 'both' ): array {
+        $opponents = match ( $target ) {
+            'both'  => array( 'home', 'away' ),
+            'home'  => array( 'home' ),
+            'away'  => array( 'away' ),
+            default => array(),
+        };
         $to        = array();
-        $opponents = array( 'home', 'away' );
         foreach ( $opponents as $opponent ) {
             $team = $this->teams[ $opponent ];
             if ( 'P' === $team->team_type ) {

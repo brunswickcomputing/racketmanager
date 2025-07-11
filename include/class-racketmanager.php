@@ -956,6 +956,7 @@ class RacketManager {
         add_shortcode( 'club-player-notification', array( $this->shortcodes_email, 'show_club_player_notification' ) );
         add_shortcode( 'match_date_change_notification', array( $this->shortcodes_email, 'show_match_date_change_notification' ) );
         add_shortcode( 'withdrawn-team', array( $this->shortcodes_email, 'show_team_withdrawn' ) );
+        add_shortcode( 'withdrawn-team-match', array( $this->shortcodes_email, 'show_withdrawn_team_match' ) );
         add_shortcode( 'event-constitution', array( $this->shortcodes_email, 'show_event_constitution' ) );
 
         add_shortcode( 'event', array( $this->shortcodes_event, 'show_event' ) );

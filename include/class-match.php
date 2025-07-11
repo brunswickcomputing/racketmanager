@@ -1526,79 +1526,37 @@ final class Racketmanager_Match {
      * Update match result status
      *
      * @param string $match_confirmed match confirmed status.
-     * @param array|null $comments match comments.
-     * @param string $confirm_comments result confirm comments.
-     * @param string $user_team team of user.
+     * @param string|null $confirm_comments result confirm comments.
      * @param string $actioned_by actioned by team.
      */
-    public function update_match_result_status( string $match_confirmed, ?array $comments, string $confirm_comments, string $user_team, string $actioned_by ): string {
+    public function update_match_result_status( string $match_confirmed, ?string $confirm_comments, string $actioned_by ): string {
         global $wpdb;
         $userid = get_current_user_id();
+        $sql_params = array();
+        $sql_params[] = $wpdb->prepare( "`updated_user` = %d", $userid );
+        $sql_params[] = "`updated` = now()";
+        $sql_params[] = $wpdb->prepare( "`confirmed` = %s", $match_confirmed );
         if ( ! empty( $actioned_by ) && 'home' === $actioned_by ) {
             $captain = 'home';
+            $sql_params[] = $wpdb->prepare( "`home_captain` = %d", $userid );
         } elseif ( ! empty( $actioned_by ) && 'away' === $actioned_by ) {
             $captain = 'away';
-        } elseif ( 'home' === $user_team || 'both' === $user_team ) {
-            $captain     = 'home';
-            $actioned_by = 'home';
-        } elseif ( 'away' === $user_team ) {
-            $captain     = 'away';
-            $actioned_by = 'away';
+            $sql_params[] = $wpdb->prepare( "`away_captain` = %d", $userid );
         } else {
             $captain = 'admin';
         }
-        if ( 'P' === $match_confirmed ) {
-            if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
-                $this->comments[ $actioned_by ] = $comments[$actioned_by] ?? null;
-            } else {
-                $this->comments['result'] = $comments['result'] ?? null;
-            }
-        } elseif ( 'A' === $match_confirmed || 'C' === $match_confirmed ) {
-            if ( 'home' === $actioned_by || 'away' === $actioned_by ) {
-                $this->comments[ $actioned_by ] = $confirm_comments;
-            } else {
-                $this->comments['result'] = $comments['result'] ?? null;
-            }
+        if ( $confirm_comments ) {
+            $this->comments[ $actioned_by ] = $confirm_comments;
+            $sql_params[] = $wpdb->prepare( "`comments` = %s", maybe_serialize( $this->comments ) );
         }
-        if ( 'home' === $captain ) { // Home captain.
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_matches SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `home_captain` = %d, `comments` = %s WHERE `id` = %d",
-                    $userid,
-                    $match_confirmed,
-                    $userid,
-                    maybe_serialize( $this->comments ),
-                    $this->id
-                )
-            );
-            return 'home';
-        } elseif ( 'away' === $captain ) { // Away captain.
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_matches SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `away_captain` = %d, `comments` = %s WHERE `id` = %d",
-                    $userid,
-                    $match_confirmed,
-                    $userid,
-                    maybe_serialize( $this->comments ),
-                    $this->id
-                )
-            );
-            return 'away';
-        } else {
-            if ( 'D' !== $match_confirmed ) {
-                $match_confirmed = 'Y'; // Admin user.
-            }
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_matches SET `updated_user` = %d, `updated` = now(), `confirmed` = %s, `comments` =%s WHERE `id` = %d",
-                    get_current_user_id(),
-                    $match_confirmed,
-                    maybe_serialize( $this->comments ),
-                    $this->id
-                )
-            );
-            return 'admin';
-        }
+        $sql_updates = implode( ',', $sql_params );
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_matches SET " . $sql_updates . " WHERE  `id` = %d",
+                $this->id
+            )
+        );
+        return $captain;
     }
 
     /**

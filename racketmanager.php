@@ -42,6 +42,7 @@ define( 'RACKETMANAGER_CHECKED', 'checked' );
 define( 'RACKETMANAGER_IS_INVALID', 'is-invalid' );
 define( 'RACKETMANAGER_FROM_EMAIL', 'From: ' );
 define( 'RACKETMANAGER_CC_EMAIL', 'cc: ' );
+define( 'RACKETMANAGER_BCC_EMAIL', 'bcc: ' );
 
 class RacketmanagerMain {
     public function __construct() {

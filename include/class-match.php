@@ -1998,7 +1998,7 @@ final class Racketmanager_Match {
             $result->grade            = $this->league->event->seasons[$this->season]['grade'] ?? $this->league->event->competition->grade;
             $result->event_end_date   = $this->league->event->competition->date_end;
             $result->event_start_date = $this->league->event->competition->date_start;
-            $age_group = match ($this->league->event->age_limit) {
+            $age_group                = match ($this->league->event->age_limit) {
                 8, 9, 10, 11, 12, 14, 16, 18, 21               => $this->league->event->age_limit . ' & Under',
                 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85 => $this->league->event->age_limit . ' & Over',
                 default                                        => 'Open',
@@ -2029,14 +2029,14 @@ final class Racketmanager_Match {
                     $result->draw_stage = 'CD - Consolation draw';
                 }
                 $result->draw_size = $this->league->championship->num_teams_first_round;
-                $result->round = match ($this->final_round) {
+                $result->round     = match ($this->final_round) {
                     'final'   => 'F',
                     'semi'    => 'SF',
                     'quarter' => 'QF',
                     'last-16' => 'R16',
                     'last-32' => 'R32',
                     'last-64' => 'R64',
-                    default => 'RR1',
+                    default   => 'RR1',
                 };
             }
             $result->matches = array();
@@ -2576,30 +2576,28 @@ final class Racketmanager_Match {
                     $next_round_matches = $this->league->get_matches( $match_args );
                     if ( $next_round_matches ) {
                         $next_round_match = $next_round_matches[ $next_round_match_no ];
-                        if ( $next_round_match ) {
-                            if ( $next_round_match->is_pending ) {
-                                $team_ref = $i + 1;
-                                $new_team = '1_' . $this->final_round . '_' . $team_ref;
-                                if ( $i & 1 ) {
-                                    $next_round_match->away_team = $new_team;
-                                } else {
-                                    $next_round_match->home_team = $new_team;
-                                }
-                                    $next_round_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
-                                if ( $this->league->event->competition->is_cup && ! empty( $next_round_details->date ) ) {
-                                    $reset_date = true;
-                                    $next_round_match->set_match_date( $next_round_details->date, 'monday', implode( ':', $this->league->event->competition->default_match_start_time ) );
-                                } else {
-                                    $reset_date = false;
-                                }
-                                if ( ! empty( $next_round_match->linked_match ) ) {
-                                    $linked_match = get_match( $next_round_match->linked_match );
-                                    if ( $linked_match ) {
-                                        $linked_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
-                                        if ( $reset_date ) {
-                                            $linked_match_date = gmdate( 'Y-m-d H:i:s', strtotime( $next_round_details->date . ' +14 day' ) );
-                                            $linked_match->set_match_date( $linked_match_date, 'monday', implode( ':', $this->league->event->competition->default_match_start_time ) );
-                                        }
+                        if ( $next_round_match && $next_round_match->is_pending ) {
+                            $team_ref = $i + 1;
+                            $new_team = '1_' . $this->final_round . '_' . $team_ref;
+                            if ( $i & 1 ) {
+                                $next_round_match->away_team = $new_team;
+                            } else {
+                                $next_round_match->home_team = $new_team;
+                            }
+                                $next_round_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
+                            if ( $this->league->event->competition->is_cup && ! empty( $next_round_details->date ) ) {
+                                $reset_date = true;
+                                $next_round_match->set_match_date( $next_round_details->date, 'monday', implode( ':', $this->league->event->competition->default_match_start_time ) );
+                            } else {
+                                $reset_date = false;
+                            }
+                            if ( ! empty( $next_round_match->linked_match ) ) {
+                                $linked_match = get_match( $next_round_match->linked_match );
+                                if ( $linked_match ) {
+                                    $linked_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
+                                    if ( $reset_date ) {
+                                        $linked_match_date = gmdate( 'Y-m-d H:i:s', strtotime( $next_round_details->date . ' +14 day' ) );
+                                        $linked_match->set_match_date( $linked_match_date, 'monday', implode( ':', $this->league->event->competition->default_match_start_time ) );
                                     }
                                 }
                             }
@@ -2633,62 +2631,79 @@ final class Racketmanager_Match {
      */
     public function result_notification( string $match_status, string $match_message, false|string $match_updated_by = false ): void {
         global $racketmanager;
-        $admin_email           = $racketmanager->get_confirmation_email( $this->league->event->competition->type );
-        $rm_options            = $racketmanager->get_options();
-        $result_notification   = $rm_options[ $this->league->event->competition->type ]['resultNotification'];
-        $confirmation_required = $rm_options[ $this->league->event->competition->type ]['confirmationRequired'];
-        if ( $admin_email ) {
-            $message_args               = array();
-            $message_args['email_from'] = $admin_email;
-            $message_args['league']     = $this->league->id;
-            if ( $this->league->is_championship ) {
-                $message_args['round'] = $this->final_round;
-            } else {
-                $message_args['matchday'] = $this->match_day;
+        $admin_email = $racketmanager->get_confirmation_email( $this->league->event->competition->type );
+        if ( empty( $admin_email ) ) {
+            return;
+        }
+        $rm_options                 = $racketmanager->get_options();
+        $result_notification        = $rm_options[ $this->league->event->competition->type ]['resultNotification'];
+        $confirmation_required      = $rm_options[ $this->league->event->competition->type ]['confirmationRequired'];
+        $message_args               = array();
+        $message_args['email_from'] = $admin_email;
+        $message_args['league']     = $this->league->id;
+        if ( $this->league->is_championship ) {
+            $message_args['round'] = $this->final_round;
+        } else {
+            $message_args['matchday'] = $this->match_day;
+        }
+        $headers            = array();
+        $subject            = $racketmanager->site_name . ' - ' . $this->league->title . ' - ' . $this->match_title . ' - ' . $match_message;
+        $confirmation_email = $this->get_confirmation_email( $match_status, $match_updated_by, $result_notification );
+        if ( $confirmation_email ) {
+            $email_to  = $confirmation_email;
+            $headers[] = $racketmanager->get_from_user_email();
+            $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+            if ( $confirmation_required ) {
+                $subject .= ' - ' . __( 'Confirmation required', 'racketmanager' );
             }
-            $headers            = array();
-            $confirmation_email = '';
-            if ( 'P' === $match_status ) {
-                if ( 'home' === $match_updated_by ) {
-                    if ( 'captain' === $result_notification ) {
-                        $confirmation_email = $this->teams['away']->contactemail;
-                    } elseif ( 'secretary' === $result_notification ) {
-                        $club               = get_club( $this->teams['away']->club_id );
-                        $confirmation_email = $club->match_secretary_email ?? '';
-                    }
-                } elseif ( 'captain' === $result_notification ) {
-                    $confirmation_email = $this->teams['home']->contactemail;
+            $message_args['confirmation_required'] = $confirmation_required;
+            $message                               = captain_result_notification( $this->id, $message_args );
+        } else {
+            $email_to  = $admin_email;
+            $headers[] = $racketmanager->get_from_user_email();
+            if ( 'Y' === $match_status ) {
+                if ( $this->has_result_check() ) {
+                    $message_args['errors'] = true;
+                    $subject               .= ' - ' . __( 'Check results', 'racketmanager' );
+                } else {
+                    $message_args['complete'] = true;
+                    $subject                 .= ' - ' . __( 'Match complete', 'racketmanager' );
+                }
+            } elseif( 'C' === $match_status ) {
+                $message_args['challenge'] = true;
+            }
+            $message = result_notification( $this->id, $message_args );
+        }
+        wp_mail( $email_to, $subject, $message, $headers );
+    }
+
+    /**
+     * Function to get confirmation email
+     *
+     * @param string $match_status
+     * @param string $match_updated_by
+     * @param string $result_notification
+     *
+     * @return string|null
+     */
+    private function get_confirmation_email( string $match_status, string $match_updated_by, string $result_notification ): ?string {
+        $confirmation_email = null;
+        if ( 'P' === $match_status || 'both' === $match_updated_by ) {
+            if ( 'home' === $match_updated_by ) {
+                if ( 'captain' === $result_notification ) {
+                    $confirmation_email = $this->teams['away']->contactemail;
                 } elseif ( 'secretary' === $result_notification ) {
                     $club               = get_club( $this->teams['away']->club_id );
                     $confirmation_email = $club->match_secretary_email ?? '';
                 }
+            } elseif ( 'captain' === $result_notification ) {
+                $confirmation_email = $this->teams['home']->contactemail;
+            } elseif ( 'secretary' === $result_notification ) {
+                $club               = get_club( $this->teams['away']->club_id );
+                $confirmation_email = $club->match_secretary_email ?? '';
             }
-            $subject = $racketmanager->site_name . ' - ' . $this->league->title . ' - ' . $this->match_title . ' - ' . $match_message;
-            if ( $confirmation_email ) {
-                $email_to  = $confirmation_email;
-                $headers[] = $racketmanager->get_from_user_email();
-                $headers[] = 'cc: ' . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
-                if ( $confirmation_required ) {
-                    $subject .= ' - ' . __( 'Confirmation required', 'racketmanager' );
-                }
-                $message_args['confirmation_required'] = $confirmation_required;
-                $message                               = captain_result_notification( $this->id, $message_args );
-            } else {
-                $email_to  = $admin_email;
-                $headers[] = $racketmanager->get_from_user_email();
-                if ( 'Y' === $match_status ) {
-                    if ( $this->has_result_check() ) {
-                        $message_args['errors'] = true;
-                        $subject               .= ' - ' . __( 'Check results', 'racketmanager' );
-                    } else {
-                        $message_args['complete'] = true;
-                        $subject                 .= ' - ' . __( 'Match complete', 'racketmanager' );
-                    }
-                }
-                $message = result_notification( $this->id, $message_args );
-            }
-            wp_mail( $email_to, $subject, $message, $headers );
         }
+        return $confirmation_email;
     }
     /**
      * Chase match results

@@ -2921,7 +2921,21 @@ final class Racketmanager_Match {
         $data->msg = $msg;
         return $data;
     }
-    public function handle_team_result_update( $match_status, $rubber_statuses, $match_comments, $rubber_ids, $rubber_types, $match_players, $match_sets ): object {
+
+    /**
+     * Function to handle team result entry
+     *
+     * @param string|null $match_status
+     * @param array $rubber_statuses
+     * @param array|null $match_comments
+     * @param array $rubber_ids
+     * @param array $rubber_types
+     * @param array $match_players
+     * @param array $match_sets
+     *
+     * @return object
+     */
+    public function handle_team_result_update( ?string $match_status, array $rubber_statuses, ?array $match_comments, array $rubber_ids, array $rubber_types, array $match_players, array $match_sets ): object {
         $validator         = new Validator_Match();
         $validator         = $validator->match_status( $match_status );
         $is_update_allowed = $this->is_update_allowed();

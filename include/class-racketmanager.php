@@ -3040,7 +3040,7 @@ class RacketManager {
 	 *
 	 * @param array $errors array of errors.
 	 */
-	protected function handle_player_errors( array $errors ): void {
+	public function handle_player_errors( array $errors ): void {
 		foreach( $errors as $error ) {
 			$row = new stdClass();
 			$row->player_id = $error->player->ID;

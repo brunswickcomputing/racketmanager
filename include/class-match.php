@@ -1422,32 +1422,33 @@ final class Racketmanager_Match {
             }
         }
         $favourited_users = array_unique( $favourited_users, SORT_REGULAR );
-        if ( $favourited_users ) {
-            $headers           = array();
-            $from_email        = $racketmanager->get_confirmation_email( $this->league->event->competition->type );
-            $headers[]         = 'From: ' . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
-            $organisation_name = $racketmanager->site_name;
-            $email_subject     = $racketmanager->site_name . ' - ' . $this->league->title . ' Result Notification';
-            $favourite_url     = $racketmanager->site_url . '/member-account/favourites';
-            $match_url         = $racketmanager->site_url . $this->link;
-            foreach ( $favourited_users as $user ) {
-                $user_details  = get_userdata( $user );
-                $email_to      = $user_details->display_name . ' <' . $user_details->user_email . '>';
-                $email_message = $racketmanager->shortcodes->load_template(
-                    'favourite-notification',
-                    array(
-                        'email_subject' => $email_subject,
-                        'from_email'    => $from_email,
-                        'match_url'     => $match_url,
-                        'favourite_url' => $favourite_url,
-                        'organisation'  => $organisation_name,
-                        'user'          => $user_details,
-                        'match'         => $this,
-                    ),
-                    'email'
-                );
-                wp_mail( $email_to, $email_subject, $email_message, $headers );
-            }
+        if ( empty( $favourited_users ) ) {
+            return;
+        }
+        $headers           = array();
+        $from_email        = $racketmanager->get_confirmation_email( $this->league->event->competition->type );
+        $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
+        $organisation_name = $racketmanager->site_name;
+        $email_subject     = $racketmanager->site_name . ' - ' . $this->league->title . ' Result Notification';
+        $favourite_url     = $racketmanager->site_url . '/member-account/favourites';
+        $match_url         = $racketmanager->site_url . $this->link;
+        foreach ( $favourited_users as $user ) {
+            $user_details  = get_userdata( $user );
+            $email_to      = $user_details->display_name . ' <' . $user_details->user_email . '>';
+            $email_message = $racketmanager->shortcodes->load_template(
+                'favourite-notification',
+                array(
+                    'email_subject' => $email_subject,
+                    'from_email'    => $from_email,
+                    'match_url'     => $match_url,
+                    'favourite_url' => $favourite_url,
+                    'organisation'  => $organisation_name,
+                    'user'          => $user_details,
+                    'match'         => $this,
+                ),
+                'email'
+            );
+            wp_mail( $email_to, $email_subject, $email_message, $headers );
         }
     }
     /**

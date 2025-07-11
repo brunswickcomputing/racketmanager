@@ -853,13 +853,7 @@ final class Racketmanager_Match {
             for ( $ix = 1; $ix <= $max_rubbers; $ix++ ) {
                 $rubber = new stdClass();
                 $type   = $this->league->type;
-                if ( 'MD' === $this->league->type ) {
-                    $type = 'MD';
-                } elseif ( 'WD' === $this->league->type ) {
-                    $type = 'WD';
-                } elseif ( 'XD' === $this->league->type ) {
-                    $type = 'XD';
-                } elseif ( 'LD' === $this->league->type ) {
+                if ( 'LD' === $this->league->type ) {
                     if ( 1 === $ix ) {
                         $type = 'WD';
                     } elseif ( 2 === $ix ) {

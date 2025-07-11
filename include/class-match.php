@@ -1157,11 +1157,12 @@ final class Racketmanager_Match {
      * @param float|null $away_points_input away points.
      * @param array|null $custom custom.
      * @param string $confirmed match status field.
-     * @param string|null $match_status match status.
+     * @param string|null|int $match_status match status.
+     * @param string|null $user_team user team.
      *
      * @return boolean
      */
-    public function update_result( ?float $home_points_input, ?float $away_points_input, ?array $custom, string $confirmed = 'Y', ?string $match_status = '' ): bool {
+    public function update_result( ?float $home_points_input, ?float $away_points_input, ?array $custom, string $confirmed = 'Y', int|string|null $match_status = '', ?string $user_team = null ): bool {
         $bye            = false;
         $updated        = false;
         $winning_points = $this->league->num_sets_to_win;
@@ -1184,6 +1185,7 @@ final class Racketmanager_Match {
         $home_walkover    = 0;
         $away_walkover    = 0;
         if ( empty( $this->num_rubbers ) ) {
+            $this->status = intval( $match_status );
             if ( empty( $home_points_input ) && empty( $away_points_input ) ) {
                 if ( isset( $custom['sets'] ) ) {
                     $this->sets = $custom['sets'];
@@ -1322,7 +1324,7 @@ final class Racketmanager_Match {
                     }
                 }
             } else {
-                $this->status = 0;
+                $this->status = intval( $match_status );
             }
         }
         if ( empty( $home_points ) && empty( $away_points ) ) {
@@ -1343,8 +1345,11 @@ final class Racketmanager_Match {
         }
         if ( ! empty( $home_points ) || ! empty( $away_points ) || 'withdrawn' === $match_status || 7 === intval( $match_status ) || 8 === intval( $match_status ) ) {
             $prev_winner = $this->winner_id;
-            $this->get_result( $home_points, $away_points );
+            $this->get_result( $home_points, $away_points, $custom );
             if ( $prev_winner !== $this->winner_id || floatval( $home_points ) !== $this->home_points || floatval( $away_points ) !== $this->away_points || $custom !== $this->custom || $confirmed !== $this->confirmed ) {
+                if ( 'P' === $confirmed && current_user_can( 'manage_racketmanager' ) ) {
+                    $confirmed = 'Y';
+                }
                 $this->home_points = $home_points;
                 $this->away_points = $away_points;
                 $this->custom      = $custom;
@@ -1352,17 +1357,15 @@ final class Racketmanager_Match {
                 foreach ( $this->custom as $key => $value ) {
                     $this->{$key} = $value;
                 }
-                $this->update_result_database();
+                $this->update_result_database( $user_team );
                 $updated = true;
                 if ( ! empty( $this->leg ) && 2 === $this->leg ) {
                     $this->update_result_tie();
                 }
                 $this->set_score();
-            }
-        }
-        if ( $updated ) {
-            if ( '-1' !== $this->home_team && '-1' !== $this->away_team ) {
-                $this->notify_favourites();
+                if ( '-1' !== $this->home_team && '-1' !== $this->away_team ) {
+                    $this->notify_favourites();
+                }
             }
         }
         return $updated;

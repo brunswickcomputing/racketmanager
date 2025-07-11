@@ -2973,8 +2973,9 @@ final class Racketmanager_Match {
             $players       = isset( $match_players[ $ix ] ) ? wp_unslash( $match_players[ $ix ] ) : array();
             $sets          = isset( $match_sets[ $ix ] ) ? wp_unslash( $match_sets[ $ix ] ) : array();
             $rubber_status = isset( $rubber_statuses[ $ix ] ) ? sanitize_text_field( wp_unslash( $rubber_statuses[ $ix ] ) ) : null;
+            $error_count   = count( $validator->err_msgs );
             $validator     = $validator->rubber( $rubber_id );
-            if ( ! empty( $validator->error ) ) {
+            if ( $error_count !== count( $validator->err_msgs ) ) {
                 continue;
             }
             $rubber           = get_rubber( $rubber_id );

@@ -828,15 +828,7 @@ final class Racketmanager_Match {
      */
     public function add(): int {
         global $wpdb;
-        $max_rubbers = 0;
-        if ( ! empty( $this->league->num_rubbers ) ) {
-            $max_rubbers = $this->league->num_rubbers;
-            if ( $this->league->is_championship && ! empty( $this->league->current_season['home_away'] ) && ! empty( $this->leg ) && 2 === $this->leg && 'MPL' === $this->league->event->scoring ) {
-                ++$max_rubbers;
-            } elseif ( '1' === $this->league->event->reverse_rubbers ) {
-                $max_rubbers = $max_rubbers * 2;
-            }
-        }
+        $max_rubbers = $this->set_max_rubbers();
         $sql = $wpdb->prepare(
             "INSERT INTO $wpdb->racketmanager_matches (date, home_team, away_team, match_day, location, league_id, season, final, custom, `group`, `host`) VALUES (%s, %s, %s, %d, %s, %d, %s, %s, %s, %s, %s)",
             $this->date,
@@ -884,6 +876,23 @@ final class Racketmanager_Match {
             }
         }
         return $this->id;
+    }
+    /**
+     * Set maximum rubbers
+     *
+     * @return float|int|string|null
+     */
+    private function set_max_rubbers(): float|int|string|null {
+        $max_rubbers = 0;
+        if ( ! empty( $this->league->num_rubbers ) ) {
+            $max_rubbers = $this->league->num_rubbers;
+            if ( $this->league->is_championship && ! empty( $this->league->current_season['home_away'] ) && ! empty( $this->leg ) && 2 === $this->leg && 'MPL' === $this->league->event->scoring ) {
+                ++$max_rubbers;
+            } elseif ( '1' === $this->league->event->reverse_rubbers ) {
+                $max_rubbers = $max_rubbers * 2;
+            }
+        }
+        return $max_rubbers;
     }
     /**
      * Update leg and linked match function

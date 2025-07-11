@@ -573,6 +573,8 @@ final class Racketmanager_Match {
             if ( ! empty( $match->custom ) ) {
                 $match->custom = stripslashes_deep( (array) maybe_unserialize( $match->custom ) );
                 $match         = (object) array_merge( (array) $match, (array) $match->custom );
+            } else {
+                $match->custom = array();
             }
             foreach ( get_object_vars( $match ) as $key => $value ) {
                 $this->$key = $value;

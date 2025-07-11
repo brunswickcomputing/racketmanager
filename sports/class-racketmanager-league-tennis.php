@@ -406,7 +406,7 @@ class Racketmanager_League_Tennis extends Racketmanager_League {
             }
             $match->home_points = $score['home'];
             $match->away_points = $score['away'];
-            $match->get_result( $match->home_points, $match->away_points );
+            $match->get_result( $match->home_points, $match->away_points, $match->custom );
         }
         return $match;
     }

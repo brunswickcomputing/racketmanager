@@ -1108,53 +1108,47 @@ final class Racketmanager_Match {
      */
     public function update_result_tie( int $home_points_tie = null, int $away_points_tie = null ): void {
         global $wpdb;
-        $update = true;
-        if ( 2 === $this->leg ) {
-            if ( is_null( $home_points_tie ) ) {
-                $home_points_tie = $this->home_points;
-                $away_points_tie = $this->away_points;
-                if ( ! empty( $this->linked_match ) ) {
-                    $linked_match = get_match( $this->linked_match );
-                    if ( $linked_match && ! empty( $linked_match->winner_id ) ) {
-                        $home_points_tie += $linked_match->home_points;
-                        $away_points_tie += $linked_match->away_points;
-                    } else {
-                        $update = false;
-                    }
-                } else {
-                    $update = false;
+        $update = false;
+        if ( 2 === $this->leg && is_null( $home_points_tie ) ) {
+            $home_points_tie = $this->home_points;
+            $away_points_tie = $this->away_points;
+            if ( ! empty( $this->linked_match ) ) {
+                $linked_match = get_match( $this->linked_match );
+                if ( $linked_match && ! empty( $linked_match->winner_id ) ) {
+                    $home_points_tie += $linked_match->home_points;
+                    $away_points_tie += $linked_match->away_points;
+                    $update           = true;
                 }
             }
+        }
+        if ( ! $update ) {
+            return;
+        }
+        if ( $home_points_tie > $away_points_tie ) {
+            $winner_id_tie = $this->home_team;
+            $loser_id_tie  = $this->away_team;
+        } elseif ( $home_points_tie < $away_points_tie ) {
+            $winner_id_tie = $this->away_team;
+            $loser_id_tie  = $this->home_team;
         } else {
-            $update = false;
+            $winner_id_tie = -1;
+            $loser_id_tie  = -1;
         }
-        if ( $update ) {
-            if ( $home_points_tie > $away_points_tie ) {
-                $winner_id_tie = $this->home_team;
-                $loser_id_tie  = $this->away_team;
-            } elseif ( $home_points_tie < $away_points_tie ) {
-                $winner_id_tie = $this->away_team;
-                $loser_id_tie  = $this->home_team;
-            } else {
-                $winner_id_tie = -1;
-                $loser_id_tie  = -1;
-            }
-            $this->home_points_tie = $home_points_tie;
-            $this->away_points_tie = $away_points_tie;
-            $this->winner_id_tie   = $winner_id_tie;
-            $this->loser_id_tie    = $loser_id_tie;
-            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_matches SET `home_points_tie` = %f, `away_points_tie` = %f, `winner_id_tie` = %d, `loser_id_tie` = %d WHERE `id` = %d",
-                    $home_points_tie,
-                    $away_points_tie,
-                    $winner_id_tie,
-                    $loser_id_tie,
-                    $this->id
-                )
-            );
-            wp_cache_set( $this->id, $this, 'matches' );
-        }
+        $this->home_points_tie = $home_points_tie;
+        $this->away_points_tie = $away_points_tie;
+        $this->winner_id_tie   = $winner_id_tie;
+        $this->loser_id_tie    = $loser_id_tie;
+        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_matches SET `home_points_tie` = %f, `away_points_tie` = %f, `winner_id_tie` = %d, `loser_id_tie` = %d WHERE `id` = %d",
+                $home_points_tie,
+                $away_points_tie,
+                $winner_id_tie,
+                $loser_id_tie,
+                $this->id
+            )
+        );
+        wp_cache_set( $this->id, $this, 'matches' );
     }
     /**
      * Update result

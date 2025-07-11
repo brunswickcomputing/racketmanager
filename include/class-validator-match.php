@@ -286,9 +286,6 @@ final class Validator_Match extends Validator {
                         break;
                 }
                 $set = $this->validate_set( $set, $set_prefix, $set_info, $set_status );
-                if ( ! empty( $this->error ) ) {
-                    return $this;
-                }
                 $set_player_1  = is_null( $set['player1'] ) ? null : strtoupper( $set['player1'] );
                 $set_player_2  = is_null( $set['player2'] ) ? null : strtoupper( $set['player2'] );
                 $set_completed = $set['completed'];

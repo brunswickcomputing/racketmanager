@@ -32,9 +32,9 @@ class Racketmanager_Competition {
 	/**
 	 * Seasons data
 	 *
-	 * @var array|string
+	 * @var array|string|null
 	 */
-	public array|string $seasons = array();
+	public array|string|null $seasons = array();
 
 	/**
 	 * Number of seasons

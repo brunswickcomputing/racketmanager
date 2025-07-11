@@ -1382,7 +1382,7 @@ final class Racketmanager_Match {
         } elseif ( 'away' === $team_ref ) {
             $this->away_points -= $penalty;
         }
-        $this->get_result( $this->home_points, $this->away_points );
+        $this->get_result( $this->home_points, $this->away_points, $this->custom );
         $this->update_result_database();
         if ( ! empty( $this->leg ) && 2 === $this->leg ) {
             $this->update_result_tie();
@@ -1565,34 +1565,34 @@ final class Racketmanager_Match {
      * @param float|null $home_points home points.
      * @param float|null$away_points away_points.
      */
-    public function get_result( ?float $home_points, ?float $away_points ): void {
+    public function get_result( ?float $home_points, ?float $away_points, array $custom ): void {
         $match = array();
         if ( 7 === $this->status ) {
             $match['winner'] = -1;
             $match['loser']  = -1;
-        } elseif ( ! empty( $this->custom['walkover'] ) || 1 === $this->status ) {
-            if ( 'home' === $this->custom['walkover'] ) {
+        } elseif ( ! empty( $custom['walkover'] ) || 1 === $this->status ) {
+            if ( 'home' === $custom['walkover'] ) {
                 $match['winner'] = $this->home_team;
                 $match['loser']  = $this->away_team;
-            } elseif ( 'away' === $this->custom['walkover'] ) {
+            } elseif ( 'away' === $custom['walkover'] ) {
                 $match['winner'] = $this->away_team;
                 $match['loser']  = $this->home_team;
             }
             $this->status = 1;
-        } elseif ( ! empty( $this->custom['retired'] ) ) {
-            if ( 'away' === $this->custom['retired'] ) {
+        } elseif ( ! empty( $custom['retired'] ) ) {
+            if ( 'away' === $custom['retired'] ) {
                 $match['winner'] = $this->home_team;
                 $match['loser']  = $this->away_team;
-            } elseif ( 'home' === $this->custom['retired'] ) {
+            } elseif ( 'home' === $custom['retired'] ) {
                 $match['winner'] = $this->away_team;
                 $match['loser']  = $this->home_team;
             }
             $this->status = 2;
-        } elseif ( ! empty( $this->custom['share'] ) ) {
+        } elseif ( ! empty( $custom['share'] ) ) {
             $match['winner'] = -1;
             $match['loser']  = -1;
             $this->status    = 3;
-        } elseif ( ! empty( $this->custom['withdrawn'] ) ) {
+        } elseif ( ! empty( $custom['withdrawn'] ) ) {
             $match['winner'] = -1;
             $match['loser']  = -1;
             $this->status    = 7;

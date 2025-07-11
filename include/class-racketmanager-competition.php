@@ -1938,12 +1938,10 @@ class Racketmanager_Competition {
 			$racketmanager->error_messages[] = __( 'Number of sets must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'num_sets';
 		}
-		if ( $this->is_team_entry ) {
-			if ( empty( $config->num_rubbers ) ) {
-				$racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
-				$racketmanager->error_fields[]   = 'num_rubbers';
-			}
-		}
+		if ( $this->is_team_entry && empty( $config->num_rubbers ) ) {
+            $racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
+            $racketmanager->error_fields[]   = 'num_rubbers';
+        }
 		if ( is_null( $config->fixed_match_dates ) ) {
 			$racketmanager->error_messages[] = __( 'Match date option must be set', 'racketmanager' );
 			$racketmanager->error_fields[]   = 'fixed_match_dates';

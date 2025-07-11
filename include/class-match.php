@@ -705,6 +705,9 @@ final class Racketmanager_Match {
      * Function to set match link
      */
     private function set_link(): void {
+        $match_url_string      = '/match/';
+        $league_url_string     = '/league/';
+        $tournament_url_string = '/tournament/';
         $this->link = null;
         if ( $this->league->is_championship ) {
             $match_ref = $this->final_round;
@@ -712,19 +715,19 @@ final class Racketmanager_Match {
             $match_ref = 'day' . $this->match_day;
         }
         if ( $this->league->event->is_box ) {
-            $this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+            $this->link = $league_url_string . seo_url( $this->league->title ) . $match_url_string . $this->id . '/';
         } elseif ( 'tournament' === $this->league->event->competition->type ) {
             $tournament_code = $this->league->event->competition->id . ',' . $this->season;
             $tournament      = get_tournament( $tournament_code, 'shortcode' );
             if ( $tournament ) {
                 if ( ! empty( $this->teams['home']->title ) && ! empty( $this->teams['away']->title ) ) {
-                    $this->link = '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
+                    $this->link = $tournament_url_string . seo_url( $tournament->name ) . $match_url_string . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
                 }
             } else {
-                $this->link = '/league/' . seo_url( $this->league->title ) . '/match/' . $this->id . '/';
+                $this->link = $league_url_string . seo_url( $this->league->title ) . $match_url_string . $this->id . '/';
             }
         } elseif ( ! empty( $this->teams['home']->title ) && ! empty( $this->teams['away']->title ) ) {
-            $this->link = '/match/' . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
+            $this->link = $match_url_string . seo_url( $this->league->title ) . '/' . $this->season . '/' . $match_ref . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/';
         } else {
             $this->link = null;
         }

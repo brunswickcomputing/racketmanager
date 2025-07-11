@@ -2392,13 +2392,13 @@ class Racketmanager_Competition {
 				if ( $this->is_league ) {
 					$is_championship = false;
 				} else {
+                    $is_championship = true;
 					if ( ! empty( $season_dtls->venue ) ) {
 						$venue_club = get_club( $season_dtls->venue );
 						if ( $venue_club ) {
 							$season_dtls->venue_name = $venue_club->shortcode;
 						}
 					}
-					$is_championship = true;
 				}
 				$date_closing     = date_create( $season_dtls->date_closing );
 				$now              = date_create();

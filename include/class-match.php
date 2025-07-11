@@ -1454,9 +1454,10 @@ final class Racketmanager_Match {
     /**
      * Update result in database function
      *
+     * @param string|null $user_team user team.
      * @return void
      */
-    private function update_result_database(): void {
+    private function update_result_database( ?string $user_team = null ): void {
         global $wpdb;
         $wpdb->query(
             $wpdb->prepare(
@@ -1472,6 +1473,28 @@ final class Racketmanager_Match {
                 $this->id
             )
         );
+        $userid = get_current_user_id();
+        if ( $user_team ) {
+            if ( 'both' === $user_team || 'home' === $user_team ) {
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "UPDATE $wpdb->racketmanager_matches SET `home_captain` = %d WHERE `id` = %d",
+                        $userid,
+                        $this->id
+                    )
+                );
+                $this->home_captain = $userid;
+            } elseif ( 'away' === $user_team ) {
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "UPDATE $wpdb->racketmanager_matches SET `away_captain` = %d WHERE `id` = %d",
+                        $userid,
+                        $this->id
+                    )
+                );
+                $this->away_captain = $userid;
+            }
+        }
         $this->set_status_flags();
         wp_cache_set( $this->id, $this, 'matches' );
         if ( 'Y' === $this->confirmed ) {

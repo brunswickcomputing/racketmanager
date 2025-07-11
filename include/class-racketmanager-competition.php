@@ -2306,8 +2306,8 @@ class Racketmanager_Competition {
 				$headers          = array();
 				$from_email       = $racketmanager->get_confirmation_email( $this->type );
 				if ( $from_email ) {
-					$headers[]         = 'From: ' . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
-					$headers[]         = 'cc: ' . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
+					$headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
+					$headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
 					$organisation_name = $racketmanager->site_name;
 					$messages_sent     = 0;
 					foreach ( $clubs as $club ) {
@@ -2409,8 +2409,8 @@ class Racketmanager_Competition {
 				$headers          = array();
 				$from_email       = $racketmanager->get_confirmation_email( $this->type );
 				if ( $from_email ) {
-					$headers[]         = 'From: ' . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
-					$headers[]         = 'cc: ' . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
+					$headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
+					$headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $this->type ) . 'Secretary <' . $from_email . '>';
 					$organisation_name = $racketmanager->site_name;
 					foreach ( $clubs as $club ) {
 						$email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
@@ -2475,8 +2475,8 @@ class Racketmanager_Competition {
 		$email_message = str_replace( '\"', '"', $email_message );
 		$headers       = array();
 		$email_from    = $racketmanager->get_confirmation_email( $this->type );
-		$headers[]     = 'From: ' . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
-		$headers[]     = 'cc: ' . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
+		$headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
+		$headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
 		$email_subject = $racketmanager->site_name . ' - ' . $this->name . ' ' . $season . ' - Important Message';
 		$email_to      = array();
 		if ( $this->is_player_entry ) {
@@ -2488,7 +2488,7 @@ class Racketmanager_Competition {
 					foreach ( $players as $player_name ) {
 						$player = get_player( $player_name, 'name' );
 						if ( $player && ! empty( $player->email ) ) {
-							$headers[] = 'bcc: ' . $player->display_name . ' <' . $player->email . '>';
+							$headers[] = RACKETMANAGER_BCC_EMAIL . $player->display_name . ' <' . $player->email . '>';
 						}
 					}
 				}
@@ -2510,10 +2510,10 @@ class Racketmanager_Competition {
 				if ( $league ) {
 					$team_dtls = $league->get_team_dtls( $team->team_id );
 					if ( ! empty( $team_dtls->contactemail ) ) {
-						$headers[] = 'bcc: ' . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
+						$headers[] = RACKETMANAGER_BCC_EMAIL . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
 					}
 					if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-						$headers[] = 'bcc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+						$headers[] = RACKETMANAGER_BCC_EMAIL . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
 					}
 				}
 			}

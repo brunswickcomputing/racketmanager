@@ -804,8 +804,9 @@ final class Racketmanager_Match {
      * @return object|null $prev_match previous match.
      */
     private function get_prev_round_matches( string $team_ref, string $season, object $league ): ?object {
-        $team  = explode( '_', $team_ref );
-        $final = $team[1] ?? null;
+        $result = null;
+        $team   = explode( '_', $team_ref );
+        $final  = $team[1] ?? null;
         if ( ! empty( $final ) ) {
             $league = get_league( $league );
             if ( $league ) {
@@ -815,16 +816,11 @@ final class Racketmanager_Match {
                 $prev_matches    = $league->get_matches( $args );
                 if ( $prev_matches ) {
                     $match_ref = $team[2] - 1;
-                    return $prev_matches[ $match_ref ];
-                } else {
-                    return null;
+                    $result = $prev_matches[ $match_ref ];
                 }
-            } else {
-                return null;
             }
-        } else {
-            return null;
         }
+        return $result;
     }
 
     /**

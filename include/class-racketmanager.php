@@ -3069,11 +3069,17 @@ class RacketManager {
         $validator     = $validator->first_name( $firstname );
         $validator     = $validator->surname( $surname );
         $validator     = $validator->gender( $gender );
+        if ( empty( $validator->error ) && empty( $player_id ) ) {
+            $name = $firstname . ' ' . $surname;
+            $player = get_player( $name, 'name' );
+            if ( $player ) {
+                $player_id = $player->ID;
+            }
+        }
         $validator     = $validator->btm( intval( $btm ), $player_id );
         $validator     = $validator->email( $email, $player_id, false );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
         $player                = new stdClass();
-        $player->data          = array();
         $player->firstname     = $firstname;
         $player->surname       = $surname;
         $player->fullname      = $firstname . ' ' . $surname;

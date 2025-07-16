@@ -60,6 +60,10 @@ function racketmanager_upgrade(): void {
             }
         }
     }
+    if ( version_compare( $installed, '9.2.0', '<' ) ) {
+        echo esc_html__( 'starting 9.2.0 upgrade', 'racketmanager' ) . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubbers} DROP `final`" );
+    }
     /*
     * Update version and dbversion
     */

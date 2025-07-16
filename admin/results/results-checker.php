@@ -160,7 +160,7 @@ foreach ( $competitions as $competition ) {
                         }
                     } else {
                         ?>
-                        <div class="col-auto my-3"><?php esc_html_e( 'No player checks found', 'racketmanager' ); ?></div>
+                        <tr><td colspan="6"><?php esc_html_e( 'No player checks found', 'racketmanager' ); ?></td></tr>
                         <?php
                     }
                     ?>

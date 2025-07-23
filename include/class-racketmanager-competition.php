@@ -1755,7 +1755,7 @@ class Racketmanager_Competition {
 		if ( $season_dtls ) {
 			if ( $matches ) {
 				foreach ( $matches as $match_id ) {
-					$match = get_match( $match_id );
+					$match = get_match( intval( $match_id ) );
 					if ( $match ) {
 						$month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
 						$day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
@@ -1773,11 +1773,8 @@ class Racketmanager_Competition {
 				$season_dtls['orderofplay'] = array();
 				$seasons[ $season ]         = $season_dtls;
 				$this->update_seasons( $seasons );
-				$racketmanager->set_message( __( 'Plan reset', 'racketmanager' ) );
-			} else {
-				$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 			}
-		}
+        }
 		return $updates;
 	}
 	/**

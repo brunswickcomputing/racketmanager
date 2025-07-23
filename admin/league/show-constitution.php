@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 /** @var object $event */
 /** @var string $season */
+/** @var array  $seasons */
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -61,7 +62,6 @@ namespace Racketmanager;
         }
         ?>
         <?php
-        $seasons = $this->get_seasons( 'DESC' );
         require_once RACKETMANAGER_PATH . 'admin/event/constitution.php';
         ?>
     </div>

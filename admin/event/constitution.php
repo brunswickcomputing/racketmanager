@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 /** @var int $event_id */
-if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
+if ( empty( $event->is_box ) && empty( $seasons ) ) {
     ?>
     <p><?php esc_html_e( 'No seasons defined', 'racketmanager' ); ?>
     <?php
@@ -63,7 +63,7 @@ if ( empty( $event->is_box ) && empty( $this->seasons ) ) {
             if ( $updates_allowed ) {
                 ?>
                 <input type="submit" value="<?php esc_html_e( 'Save', 'racketmanager' ); ?>" name="saveConstitution" id="saveConstitution" class="btn btn-primary action" />
-                <a id="addTeams" class="btn btn-secondary" href="/wp-admin/admin.php?page=racketmanager&amp;subpage=teams&amp;league_id=<?php echo esc_html( end( $leagues )->id ); ?>&amp;season=<?php echo esc_html( $latest_season ); ?>&amp;view=constitution"><?php esc_html_e( 'Add Teams', 'racketmanager' ); ?></a>
+                <a id="addTeams" class="btn btn-secondary" href="/wp-admin/admin.php?page=racketmanager-leagues&amp;view=teams&amp;league_id=<?php echo esc_html( end( $leagues )->id ); ?>&amp;season=<?php echo esc_html( $latest_season ); ?>&amp;type=constitution"><?php esc_html_e( 'Add Teams', 'racketmanager' ); ?></a>
                 <?php
             }
             ?>

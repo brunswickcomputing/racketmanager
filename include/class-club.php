@@ -596,7 +596,7 @@ final class Club {
                     $club_player            = new stdClass();
                     $club_player->club_id   = $this->id;
                     $club_player->player_id = $player->id;
-                    $club_player            = new Racketmanager_Club_Player( $club_player );
+                    $club_player            = new Club_Player( $club_player );
                     $options                = $racketmanager->get_options( 'rosters' );
                     if ( 'auto' === $options['rosterConfirmation'] || current_user_can( 'edit_teams' ) ) {
                         $club_player->approve();

@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Club_Player API: Club class
+ * Club_Player API: Club class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Club_Player object
  */
-final class Racketmanager_Club_Player {
+final class Club_Player {
     /**
      * Id
      *
@@ -148,7 +148,7 @@ final class Racketmanager_Club_Player {
             if ( ! $club_player ) {
                 return false;
             }
-            $club_player = new Racketmanager_Club_Player( $club_player );
+            $club_player = new Club_Player( $club_player );
             wp_cache_set( $club_player_id, $club_player, 'club_players' );
         }
         return $club_player;

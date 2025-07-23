@@ -728,18 +728,19 @@ function get_player_error( object|int $player_error = null ): Racketmanager_Play
  * Get club player object
  *
  * @param object|int|null $club_player ID or player_error object. Defaults to global $club_player.
- * @return Racketmanager_club_player|null
+ *
+ * @return Club_Player|null
  */
-function get_club_player( object|int $club_player = null ): ?Racketmanager_Club_Player {
+function get_club_player( object|int $club_player = null ): ?Club_Player {
     if ( empty( $club_player ) && isset( $GLOBALS['club_player'] ) ) {
         $club_player = $GLOBALS['club_player'];
     }
-    if ( $club_player instanceof Racketmanager_Club_Player ) {
+    if ( $club_player instanceof Club_Player ) {
         $_club_player = $club_player;
     } elseif ( is_object( $club_player ) ) {
-        $_club_player = new Racketmanager_Club_Player( $club_player );
+        $_club_player = new Club_Player( $club_player );
     } else {
-        $_club_player = Racketmanager_Club_Player::get_instance( $club_player );
+        $_club_player = Club_Player::get_instance( $club_player );
     }
 
     if ( ! $_club_player ) {

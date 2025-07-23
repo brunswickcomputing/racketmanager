@@ -461,10 +461,11 @@ final class Racketmanager_Tournament {
 	 * Update tournament
 	 *
 	 * @param object $updated updated tournament values.
-	 * @return boolean
-	 */
-	public function update(object $updated ): bool {
-		global $wpdb, $racketmanager;
+	 *
+	 * @return stdClass
+     */
+	public function update( object $updated ): stdClass {
+		global $wpdb;
 		$validate = $this->validate( $updated );
 		if ( $validate->valid ) {
 			$this->name             = $updated->name;
@@ -500,16 +501,8 @@ final class Racketmanager_Tournament {
 				)
 			);
 			wp_cache_set( $this->id, $this, 'tournaments' );
-			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
-			$racketmanager->error_fields   = null;
-			$racketmanager->error_messages = null;
-			return true;
-		} else {
-			$racketmanager->set_message( __( 'Error updating tournament', 'racketmanager' ), true );
-			$racketmanager->error_fields   = $validate->fld;
-			$racketmanager->error_messages = $validate->msg;
-			return false;
 		}
+        return $validate;
 	}
 	/**
 	 * Function to validate new or updated tournament

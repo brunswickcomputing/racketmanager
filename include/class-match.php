@@ -1504,7 +1504,7 @@ final class Racketmanager_Match {
                 $results_report           = new stdClass();
                 $results_report->match_id = $this->id;
                 $results_report->data     = $report;
-                new Racketmanager_Results_Report( $results_report );
+                new Results_Report( $results_report );
             }
         }
     }

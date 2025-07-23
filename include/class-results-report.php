@@ -1,10 +1,10 @@
 <?php
 /**
- * Racketmanager_Results_Report API: Racketmanager_Results_Report class
+ * Results_Report API: Results_Report class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Racketmanager_Results_Report
+ * @subpackage Results_Report
  */
 
 namespace Racketmanager;
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the results report object
  */
-final class Racketmanager_Results_Report {
+final class Results_Report {
     /**
      * Id
      *
@@ -61,7 +61,7 @@ final class Racketmanager_Results_Report {
                 return false;
             }
 
-            $results_report = new Racketmanager_Results_Report( $results_report );
+            $results_report = new Results_Report( $results_report );
 
             wp_cache_set( $results_report->id, $results_report, 'results_report' );
         }

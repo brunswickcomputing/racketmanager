@@ -608,17 +608,17 @@ function get_league_team( object|int $league_team = null ): Racketmanager_League
  *
  * @return object|null results_report|null
  */
-function get_results_report( object|int $results_report = null ): Racketmanager_Results_Report|null {
+function get_results_report( object|int $results_report = null ): Results_Report|null {
     if ( empty( $results_report ) && isset( $GLOBALS['results_report'] ) ) {
         $results_report = $GLOBALS['results_report'];
     }
 
-    if ( $results_report instanceof Racketmanager_Results_Report ) {
+    if ( $results_report instanceof Results_Report ) {
         $_results_report = $results_report;
     } elseif ( is_object( $results_report ) ) {
-        $_results_report = new Racketmanager_Results_Report( $results_report );
+        $_results_report = new Results_Report( $results_report );
     } else {
-        $_results_report = Racketmanager_Results_Report::get_instance( $results_report );
+        $_results_report = Results_Report::get_instance( $results_report );
     }
 
     if ( ! $_results_report ) {

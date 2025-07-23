@@ -28,7 +28,7 @@ jQuery(document).ready(function(){
         </div>
     </div>
 
-    <?php $this->printMessage(); ?>
+    <?php $this->show_message(); ?>
     <div>
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="">

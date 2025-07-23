@@ -23,7 +23,7 @@ namespace Racketmanager;
         </div>
     </div>
 
-    <?php $this->printMessage(); ?>
+    <?php $this->show_message(); ?>
     <div id="">
         <?php
         $leagues   = $event->get_leagues();

@@ -1074,9 +1074,9 @@ function withdrawn_team_email( array $args = array() ): string {
      *
      * @param string $message message.
      * @param string $type alert type.
-     * @param string $template modal or null.
+     * @param string|null $template modal or null.
      */
-    function show_alert( string $message, string $type, $template = null ): string {
+    function show_alert( string $message, string $type, ?string $template = null ): string {
         $args['msg']      = $message;
         $args['type']     = $type;
         $args['template'] = $template;

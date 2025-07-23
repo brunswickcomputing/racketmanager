@@ -14,7 +14,7 @@ namespace Racketmanager;
     <div class="alert_rm alert--<?php echo esc_attr( $class ); ?>">
         <div class="alert__body">
             <div class="alert__body-inner">
-                <span><?php echo esc_html( $msg ); ?></span>
+                <span><?php echo $msg; ?></span>
             </div>
         </div>
     </div>

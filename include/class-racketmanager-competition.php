@@ -1828,13 +1828,11 @@ class Racketmanager_Competition {
 	 * @param array $season season data.
 	 */
 	public function update_season( array $season ): void {
-		global $racketmanager;
 		$seasons                 = $this->seasons;
 		$season_name             = $season['name'];
 		$seasons[ $season_name ] = $season;
 		ksort( $seasons );
 		$this->update_seasons( $seasons );
-		$racketmanager->set_message( __( 'Season updated', 'racketmanager' ) );
 	}
 	/**
 	 * Set configuration function

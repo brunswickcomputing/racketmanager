@@ -1,10 +1,10 @@
 <?php
 /**
- * RacketManager-Admin-Players API: RacketManager-admin-players class
+ * RacketManager-Admin-Players API: RacketManager-admin-player class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage RacketManager-Admin-Players
+ * @subpackage RacketManager-Admin-Player
  */
 
 namespace Racketmanager;
@@ -12,25 +12,39 @@ namespace Racketmanager;
 use stdClass;
 
 /**
- * RacketManager players administration functions
+ * RacketManager player administration functions
  * Class to implement RacketManager Administration Players panel
  *
  * @author Paul Moffat
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class Admin_Players extends RacketManager_Admin {
-    private ?string $invalid_permissions;
-    private ?string $invalid_security_token;
-    private ?string $no_permission;
-
+final class Admin_Player extends Admin_Display {
     /**
-     * Constructor
+     * Function to handle administration players displays
+     *
+     * @param string|null $view
+     *
+     * @return void
      */
-    public function __construct() {
-        $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );
-        $this->invalid_security_token = __( 'Security token invalid', 'racketmanager' );
-        $this->no_permission          = __( 'You do not have permission to perform this task', 'racketmanager' );
+    public function handle_display( ?string $view ): void {
+        switch ( $view ) {
+            case 'player':
+                $this->display_player_page();
+                break;
+            case 'errors':
+                $this->display_errors_page();
+                break;
+            case 'requests':
+                $this->display_requests_page();
+                break;
+            case 'players':
+                $this->display_players_page();
+                break;
+            default:
+                $this->display_players_section();
+                break;
+        }
     }
     /**
      * Display players page
@@ -38,7 +52,7 @@ final class Admin_Players extends RacketManager_Admin {
     public function display_players_section(): void {
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $this->display_errors_page();
         }
@@ -47,9 +61,10 @@ final class Admin_Players extends RacketManager_Admin {
      * Display player errors page
      */
     public function display_errors_page(): void {
+        global $racketmanager;
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
             $racketmanager_tab = 'errors';
@@ -64,7 +79,7 @@ final class Admin_Players extends RacketManager_Admin {
         global $racketmanager;
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $club_id = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
             $status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'outstanding';
@@ -94,7 +109,7 @@ final class Admin_Players extends RacketManager_Admin {
                         }
                         $message = implode( '<br>', $msg );
                         $this->set_message( $message );
-                        $this->printMessage();
+                        $this->show_message();
                     }
                 } else {
                     $this->set_message( $this->no_permission, true );
@@ -125,7 +140,7 @@ final class Admin_Players extends RacketManager_Admin {
         global $racketmanager;
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $players = null;
             $racketmanager_tab = 'players';
@@ -133,9 +148,9 @@ final class Admin_Players extends RacketManager_Admin {
             if ( isset( $_POST['addPlayer'] ) ) {
                 if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
                     $this->set_message( $this->invalid_security_token, true );
-                    $this->printMessage();
+                    $this->show_message();
                 } else {
-                    $player_valid = $this->validate_player();
+                    $player_valid = $racketmanager->validate_player();
                     if ( $player_valid[0] ) {
                         $new_player = $player_valid[1];
                         $player     = get_player( $new_player->user_login, 'login' );  // get player by login.
@@ -181,7 +196,7 @@ final class Admin_Players extends RacketManager_Admin {
                 }
                 $tab = 'players';
             }
-            $this->printMessage();
+            $this->show_message();
             if ( ! $players ) {
                 $players = $racketmanager->get_all_players( array() );
             }
@@ -194,34 +209,34 @@ final class Admin_Players extends RacketManager_Admin {
     public function display_player_page(): void {
         global $racketmanager;
         if ( ! current_user_can( 'edit_teams' ) ) {
-            $racketmanager->set_message( $this->invalid_permissions, true );
-            $racketmanager->printMessage();
+            $this->set_message( $this->invalid_permissions, true );
+            $this->show_message();
         } else {
             $player_id     = null;
             $form_valid    = true;
             $page_referrer = null;
             if ( ! empty( $_POST ) ) {
                 if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
-                    $racketmanager->set_message( $this->invalid_security_token, true );
-                    $racketmanager->printMessage();
+                    $this->set_message( $this->invalid_security_token, true );
+                    $this->show_message();
                 } else {
                     $page_referrer = $_POST['page_referrer'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                     if ( isset( $_POST['updatePlayer'] ) ) {
                         if ( isset( $_POST['playerId'] ) ) {
-                            $player_valid = $this->validate_player();
+                            $player_valid = $racketmanager->validate_player();
                             if ( $player_valid[0] ) {
                                 $player     = get_player( intval( $_POST['playerId'] ) );
                                 $new_player = $player_valid[1];
                                 $return     = $player->update( $new_player );
-                                $racketmanager->set_message( $return->msg, $return->state );
+                                $this->set_message( $return->msg, $return->state );
                             } else {
                                 $form_valid     = false;
                                 $error_fields   = $player_valid[1];
                                 $error_messages = $player_valid[2];
-                                $racketmanager->set_message( __( 'Error with player details', 'racketmanager' ), true );
+                                $this->set_message( __( 'Error with player details', 'racketmanager' ), true );
                             }
                         } else {
-                            $racketmanager->set_message( __( 'Player id not found', 'racketmanager' ), true );
+                            $this->set_message( __( 'Player id not found', 'racketmanager' ), true );
                         }
                     } elseif ( isset( $_POST['setWTN'] ) ) {
                         $player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
@@ -233,22 +248,22 @@ final class Admin_Players extends RacketManager_Admin {
                                 $wtn         = $this->get_wtn( $player );
                                 if ( $wtn ) {
                                     $player->set_wtn( $wtn );
-                                    $racketmanager->set_message( __( 'WTN set', 'racketmanager' ) );
+                                    $this->set_message( __( 'WTN set', 'racketmanager' ) );
                                 } else {
-                                    $racketmanager->set_message( __( 'WTN not found', 'racketmanager' ), true );
+                                    $this->set_message( __( 'WTN not found', 'racketmanager' ), true );
                                 }
                             } else {
-                                $racketmanager->set_message( __( 'Player not found', 'racketmanager' ), true );
+                                $this->set_message( __( 'Player not found', 'racketmanager' ), true );
                             }
                         } else {
-                            $racketmanager->set_message( __( 'No LTA Tennis number set', 'racketmanager' ), true );
+                            $this->set_message( __( 'No LTA Tennis number set', 'racketmanager' ), true );
                         }
                     }
                 }
             } else {
                 $page_referrer = wp_get_referer();
             }
-            $racketmanager->printMessage();
+            $this->show_message();
             if ( isset( $_GET['club_id'] ) ) {
                 $club_id = intval( $_GET['club_id'] );
                 if ( $club_id ) {
@@ -303,11 +318,12 @@ final class Admin_Players extends RacketManager_Admin {
      * @return array
      */
     private function get_wtn( object $player ): array {
+        global $racketmanager;
         $player_list = array( $player->ID );
-        $args = $this->set_wtn_env( $player_list );
-        $wtn  = array();
+        $args        = $racketmanager->set_wtn_env( $player_list );
+        $wtn         = array();
         if ( $args ) {
-            $wtn_response = $this->get_player_wtn( $args, $player );
+            $wtn_response = $racketmanager->get_player_wtn( $args, $player );
             if ( $wtn_response->status ) {
                 $wtn = $wtn_response->value;
             } else {
@@ -315,7 +331,7 @@ final class Admin_Players extends RacketManager_Admin {
                 $feedback->player  = $player;
                 $feedback->message = $wtn_response->message;
                 $errors[]          = $feedback;
-                $this->handle_player_errors( $errors );
+                $racketmanager->handle_player_errors( $errors );
             }
         }
         return $wtn;

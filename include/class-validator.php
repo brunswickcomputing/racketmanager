@@ -78,6 +78,25 @@ class Validator {
         return $this;
     }
     /**
+     * Validate capability
+     *
+     * @param string|null $capability nonce name.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function capability( ?string $capability ): object {
+        if ( empty( $capability ) ) {
+            $this->error  = true;
+            $this->msg    = __( 'Capability not provided', 'racketmanager' );
+            $this->status = 401;
+        } elseif ( ! current_user_can( $capability ) ) {
+            $this->error  = true;
+            $this->msg    = __( 'You do not have permission to perform this task', 'racketmanager' );
+            $this->status = 401;
+        }
+        return $this;
+    }
+    /**
      * Validate team
      *
      * @param int|null $team_id team id.

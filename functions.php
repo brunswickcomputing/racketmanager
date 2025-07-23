@@ -276,17 +276,17 @@ function get_competition( Competition|int|string $competition = null, ?string $s
 /**
  * Get Event object
  *
- * @param int|string|Racketmanager_Event|null $event Event ID or event object. Defaults to global $event.
+ * @param int|string|Event|null $event Event ID or event object. Defaults to global $event.
  * @param string $search_term type of search.
  *
- * @return Racketmanager_Event|null event|null
+ * @return Event|null event|null
  */
-function get_event( int|string|Racketmanager_Event $event = null, string $search_term = 'id' ): Racketmanager_Event|null {
+function get_event( int|string|Event $event = null, string $search_term = 'id' ): Event|null {
     if ( empty( $event ) && isset( $GLOBALS['event'] ) ) {
         $event = $GLOBALS['event'];
     }
 
-    if ( $event instanceof Racketmanager_Event ) {
+    if ( $event instanceof Event ) {
         $_event = $event;
     } elseif ( is_object( $event ) ) {
         // check if specific sports class exists.
@@ -297,10 +297,10 @@ function get_event( int|string|Racketmanager_Event $event = null, string $search
         if ( class_exists( $instance ) ) {
             $_event = new $instance( $event );
         } else {
-            $_event = new Racketmanager_Event( $event );
+            $_event = new Event( $event );
         }
     } else {
-        $_event = Racketmanager_Event::get_instance( $event, $search_term );
+        $_event = Event::get_instance( $event, $search_term );
     }
 
     if ( ! $_event ) {

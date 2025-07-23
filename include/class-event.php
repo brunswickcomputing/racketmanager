@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Event API: Event class
+ * Event API: Event class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the Event object
  */
-class Racketmanager_Event {
+class Event {
     /**
      * Event ID
      *
@@ -457,7 +457,7 @@ class Racketmanager_Event {
             }
             $event->settings = (array) maybe_unserialize( $event->settings );
             $event           = (object) ( $event->settings + (array) $event );
-            $event           = new Racketmanager_Event( $event );
+            $event           = new Event( $event );
             wp_cache_set( $event->id, $event, 'events' );
         }
 

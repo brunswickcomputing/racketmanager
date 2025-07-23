@@ -503,9 +503,9 @@ class Racketmanager_League {
 	/**
 	 * Event
 	 *
-	 * @var Racketmanager_Event
+	 * @var Event
 	 */
-	public Racketmanager_Event $event;
+	public Event $event;
 
 	/**
 	 * Scoring

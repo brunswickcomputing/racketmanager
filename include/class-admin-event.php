@@ -124,7 +124,7 @@ final class Admin_Event extends RacketManager_Admin {
                         $event->num_sets       = $config->num_sets;
                         $event->num_rubbers    = $config->num_rubbers;
                         $event->type           = $config->type;
-                        $event                 = new RacketManager_Event( $event );
+                        $event                 = new Event( $event );
                         ?>
                         <script>
                         let url = new URL(window.location.href);

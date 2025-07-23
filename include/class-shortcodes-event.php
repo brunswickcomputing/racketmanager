@@ -351,7 +351,7 @@ class Shortcodes_Event extends Shortcodes {
                 }
 			} else {
 				$players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
-				$event->players = Racketmanager_Util::get_players_list( $players );
+				$event->players = Util::get_players_list( $players );
 			}
 			$filename = 'players';
 			return $this->load_template(

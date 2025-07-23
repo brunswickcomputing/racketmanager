@@ -246,7 +246,7 @@ $msg        = null;
                             foreach ( $racketmanager_club_charge->events as $racketmanager_event ) {
                                 ?>
                                 <div class="col-2"></div>
-                                <div class="col-3"><?php echo esc_html( Racketmanager_Util::get_event_type( $racketmanager_event->type ) ); ?></div>
+                                <div class="col-3"><?php echo esc_html( Util::get_event_type( $racketmanager_event->type ) ); ?></div>
                                 <div class="col-2"><?php echo esc_html( $racketmanager_event->count ); ?></div>
                                 <div class="col-2"><?php the_currency_amount( $racketmanager_club_charge->fee ); ?></div>
                                 <div class="col-3"></div>

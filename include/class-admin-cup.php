@@ -279,7 +279,7 @@ final class Admin_Cup extends Admin_Championship {
                         $date_end     = date_create( $season_data['date_end'] );
                         $day_end      = date_format( $date_end, 'N' );
                         $day_adjust   = $day_end - 1;
-                        $end_date     = Racketmanager_Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
+                        $end_date     = Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
                         $round_length = $season_data['round_length'] ?? 7;
                         $match_date   = null;
                         $i            = 0;
@@ -289,14 +289,14 @@ final class Admin_Cup extends Admin_Championship {
                                 $match_date = $season_data['date_end'];
                             } elseif ( 1 === $i ) {
                                 if ( $competition->fixed_match_dates ) {
-                                    $match_date = Racketmanager_Util::amend_date( $end_date, $round_length, '-' );
+                                    $match_date = Util::amend_date( $end_date, $round_length, '-' );
                                 } else {
-                                    $match_date = Racketmanager_Util::amend_date( $season_data['date_end'], 7 );
+                                    $match_date = Util::amend_date( $season_data['date_end'], 7 );
                                 }
                             } elseif ( 0 === $r && $competition->fixed_match_dates ) {
                                 $match_date = $competition->date_start;
                             } else {
-                                $match_date = Racketmanager_Util::amend_date( $match_date, $round_length, '-' );
+                                $match_date = Util::amend_date( $match_date, $round_length, '-' );
                             }
                             $match_dates[ $r ] = $match_date;
                             ++$i;
@@ -369,7 +369,7 @@ final class Admin_Cup extends Admin_Championship {
                                         if ( $i === $num_match_dates - 1 ) {
                                             $match_dates[ $i ] = $match_date;
                                         } else {
-                                            $match_dates[ $i ] = Racketmanager_Util::amend_date( $match_date, $league->event->offset, '+', 'week' );
+                                            $match_dates[ $i ] = Util::amend_date( $match_date, $league->event->offset, '+', 'week' );
                                         }
                                         ++$i;
                                     }
@@ -565,7 +565,7 @@ final class Admin_Cup extends Admin_Championship {
                             $max_matches = $final['num_matches'];
 
                             /* translators: %s: round name */
-                            $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Racketmanager_Util::get_final_name( $final_key ) );
+                            $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
                             $match_args = array(
                                 'final'   => $final_key,
                                 'orderby' => array(

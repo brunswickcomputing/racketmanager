@@ -32,7 +32,7 @@ foreach ( $player_list as $players ) {
                 ?>
                 <?php
                 $rating         = $player->wtn;
-                $match_types    = Racketmanager_Util::get_match_types();
+                $match_types    = Util::get_match_types();
                 $rating_display = '';
                 foreach ( $match_types as $match_type => $description ) {
                     $rating_display .= '[' . $match_type . ' - ' . $rating[ $match_type ] . ']';

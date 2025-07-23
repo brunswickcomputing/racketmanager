@@ -347,7 +347,7 @@ final class Results_Checker {
             $num_games_to_win = 1;
             $set_type         = $rubber->sets[1]['settype'] ?? null;
             if ( $set_type ) {
-                $set_info = Racketmanager_Util::get_set_info( $set_type );
+                $set_info = Util::get_set_info( $set_type );
                 if ( $set_info ) {
                     $num_games_to_win = $set_info->min_win;
                 }

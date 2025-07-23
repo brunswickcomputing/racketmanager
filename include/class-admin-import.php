@@ -83,7 +83,7 @@ class Admin_Import extends Admin_Display {
                     $this->set_message( __( 'Unable to access file system', 'racketmanager' ), true );
                 } else {
                     global $wp_filesystem;
-                    $new_file = Racketmanager_Util::get_file_path( $file['name'] );
+                    $new_file = Util::get_file_path( $file['name'] );
                     if ( $wp_filesystem->copy( $file['tmp_name'], $new_file, true ) ) {
                         $contents = $wp_filesystem->get_contents_array( $new_file );
                         if ( $contents ) {

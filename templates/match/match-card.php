@@ -17,7 +17,7 @@ namespace Racketmanager;
 		<div class="matchday">
 			<?php
 			if ( $match->league->event->competition->is_championship ) {
-				echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) );
+				echo esc_html( Util::get_final_name( $match->final_round ) );
 			} else {
 				echo 'Week' . esc_html( $match->match_day );
 			}

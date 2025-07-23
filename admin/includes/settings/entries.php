@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-$competition_types = Racketmanager_Util::get_competition_types();
+$competition_types = Util::get_competition_types();
 ?>
 <div class="container">
     <!-- Nav tabs -->

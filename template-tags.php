@@ -62,8 +62,8 @@ function the_currency_amount( ?string $amount ): void {
     if ( is_null( $amount ) ) {
         $amount = 0;
     }
-    $currency_fmt  = Racketmanager_Util::get_currency_format();
-    $currency_code = Racketmanager_Util::get_currency_code();
+    $currency_fmt  = Util::get_currency_format();
+    $currency_code = Util::get_currency_code();
     echo esc_html( numfmt_format_currency( $currency_fmt, $amount, $currency_code ) );
 }
     /**

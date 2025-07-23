@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Racketmanager_Util as util;
+use Racketmanager\Util as util;
 /** @var bool   $is_invalid */
 /** @var string $msg */
 ?>

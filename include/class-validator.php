@@ -363,7 +363,7 @@ class Validator {
             $this->err_flds[] = 'type';
             $this->err_msgs[] = __( 'Competition type not specified', 'racketmanager' );
         } else {
-            $valid = Racketmanager_Util::get_competition_type( $type );
+            $valid = Util::get_competition_type( $type );
             if ( ! $valid ) {
                 $this->error      = true;
                 $this->err_flds[] = 'type';
@@ -385,7 +385,7 @@ class Validator {
             $this->err_flds[] = 'age_group';
             $this->err_msgs[] = __( 'Age group not specified', 'racketmanager' );
         } else {
-            $valid = Racketmanager_Util::get_age_groups( $age_group );
+            $valid = Util::get_age_groups( $age_group );
             if ( ! $valid ) {
                 $this->error      = true;
                 $this->err_flds[] = 'age_group';

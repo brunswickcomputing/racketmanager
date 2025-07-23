@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || die( 'Access denied !' );
  * @since 1.0.0
  * @author PaulMoffat
  */
-class Racketmanager_Util {
+class Util {
 
     /**
      * Get upload directory
@@ -1030,14 +1030,14 @@ class Racketmanager_Util {
         $schedule_args  = array( $competition_type );
         if ( '' !== $options['resultPending'] ) {
             $schedule_name = 'rm_resultPending';
-            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
             if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
                 error_log( __( 'Error scheduling pending results', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             }
         }
         if ( '' !== $options['confirmationPending'] ) {
             $schedule_name = 'rm_confirmationPending';
-            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
             if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
                 error_log( __( 'Error scheduling result confirmations', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             }

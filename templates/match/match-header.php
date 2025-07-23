@@ -59,7 +59,7 @@ if ( $match->is_pending ) {
     <div class="module-container">
         <?php
         if ( ! empty( $match->status ) ) {
-            $match_status = Racketmanager_Util::get_match_status( $match->status );
+            $match_status = Util::get_match_status( $match->status );
             $info_msg     = $match_status;
             switch ( $match->status ) {
                 case 1:
@@ -105,7 +105,7 @@ if ( $match->is_pending ) {
                 <?php
                 if ( ! empty( $match->final_round ) ) {
                     ?>
-                    <span><?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
+                    <span><?php echo esc_html( Util::get_final_name( $match->final_round ) ); ?>&nbsp;&#8226</span>
                     <?php
                 } elseif ( ! empty( $match->match_day ) ) {
                     ?>

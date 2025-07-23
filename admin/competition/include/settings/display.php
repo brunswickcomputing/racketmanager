@@ -16,7 +16,7 @@ $tab_name = 'display';
         <div class="col-md-6 mb-3 mb-md-0">
             <div class="mb-3">
                 <?php
-                $point_formats = Racketmanager_Util::get_point_formats();
+                $point_formats = Util::get_point_formats();
                 ?>
                 <legend class=""><?php esc_html_e( 'Point format', 'racketmanager' ); ?></legend>
                 <div class="row gx-3">
@@ -110,7 +110,7 @@ $tab_name = 'display';
         </div>
         <div class="col-md-6">
             <?php
-            $standings_options = Racketmanager_Util::get_standings_display_options();
+            $standings_options = Util::get_standings_display_options();
             if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'standings_option', $racketmanager->error_fields, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;

@@ -1521,7 +1521,7 @@ class Event {
             $event_team->roster = maybe_unserialize( $event_team->roster );
             $event_team->club   = get_club( $event_team->club_id );
             if ( str_contains( $event_team->name, '_' ) ) {
-                $team_name = Racketmanager_Util::generate_team_name( $event_team->name );
+                $team_name = Util::generate_team_name( $event_team->name );
                 if ( ! empty( $team_name ) ) {
                     $event_team->title = $team_name;
                 }
@@ -2343,7 +2343,7 @@ class Event {
                 $settings->primary_league = $config->primary_league;
             }
             if ( $this->competition->is_league ) {
-                $match_days = Racketmanager_Util::get_match_days();
+                $match_days = Util::get_match_days();
                 foreach ( $match_days as $match_day => $value ) {
                     $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
                     if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {

@@ -662,7 +662,7 @@ class Competition {
             } else {
                 $last_round = isset( $this->current_season['match_dates'] ) ? end( $this->current_season['match_dates'] ) : null;
                 if ( $last_round ) {
-                    $this->date_end = Racketmanager_Util::amend_date( $last_round, 14 );
+                    $this->date_end = Util::amend_date( $last_round, 14 );
                 }
             }
             if ( ! empty( $this->current_season['venue_name'] ) ) {
@@ -700,8 +700,8 @@ class Competition {
                 for ( $round = 1; $round <= $max_rounds; ++$round ) {
                     $num_teams      = pow( 2, $round );
                     $num_matches    = $num_teams / 2;
-                    $key            = Racketmanager_Util::get_final_key( $num_teams );
-                    $name           = Racketmanager_Util::get_final_name( $key );
+                    $key            = Util::get_final_key( $num_teams );
+                    $name           = Util::get_final_name( $key );
                     $finals[ $key ] = array(
                         'key'         => $key,
                         'name'        => $name,
@@ -812,7 +812,7 @@ class Competition {
      */
     public function set_settings( array $settings ): void {
         global $wpdb;
-        foreach ( Racketmanager_Util::get_standings_display_options() as $key => $value ) {
+        foreach ( Util::get_standings_display_options() as $key => $value ) {
             $settings['standings'][ $key ] = isset( $settings['standings'][ $key ] ) ? 1 : 0;
         }
         $type = $settings['type'];
@@ -870,7 +870,7 @@ class Competition {
         if ( ! isset( $data ) ) {
             $today = gmdate( 'Y-m-d' );
             foreach ( array_reverse( $this->seasons ) as $season ) {
-                $date_active = empty( $season['date_closing'] ) ? null : Racketmanager_Util::amend_date( $season['date_closing'], 7 );
+                $date_active = empty( $season['date_closing'] ) ? null : Util::amend_date( $season['date_closing'], 7 );
                 if ( ! empty( $date_active ) && $date_active <= $today ) {
                     $data = $season;
                     break;
@@ -2114,7 +2114,7 @@ class Competition {
                 $settings->filler_weeks = $config->filler_weeks;
             }
             if ( 'tournament' !== $config->type ) {
-                $match_days = Racketmanager_Util::get_match_days();
+                $match_days = Util::get_match_days();
                 foreach ( $match_days as $match_day => $value ) {
                     $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
                     if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
@@ -2170,7 +2170,7 @@ class Competition {
                 $updates = true;
             }
             $settings->num_matches_per_page = $config->num_matches_per_page;
-            $standing_display_options       = Racketmanager_Util::get_standings_display_options();
+            $standing_display_options       = Util::get_standings_display_options();
             foreach ( $standing_display_options as $display_option => $value ) {
                 $config->standings[ $display_option ] = isset( $config->standings[ $display_option ] ) ? 1 : 0;
                 if ( $this->standings[ $display_option ] !== $config->standings[ $display_option ] ) {
@@ -2584,7 +2584,7 @@ class Competition {
                     )
                 );
                 foreach ( $matches as $match ) {
-                    $points       = Racketmanager_Util::calculate_championship_rating( $match, $team->team_id );
+                    $points       = Util::calculate_championship_rating( $match, $team->team_id );
                     $team_points += $points;
                 }
                 $league_team = get_league_team( $team->table_id );

@@ -37,7 +37,7 @@ class Activator {
         }
 
         // create directory.
-        wp_mkdir_p( Racketmanager_Util::get_file_path() );
+        wp_mkdir_p( Util::get_file_path() );
 
         /*
         * Set Capabilities
@@ -101,7 +101,7 @@ class Activator {
                 'content'       => '[custom-password-reset-form]',
             ),
         );
-        Racketmanager_Util::add_racketmanager_page( $page_definitions );
+        Util::add_racketmanager_page( $page_definitions );
     }
 
     /**
@@ -138,7 +138,7 @@ class Activator {
             ),
         );
 
-        Racketmanager_Util::add_racketmanager_page( $page_definitions );
+        Util::add_racketmanager_page( $page_definitions );
     }
 
     /**

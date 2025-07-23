@@ -17,7 +17,7 @@ $msg        = null;
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $scoring_types = Racketmanager_Util::get_scoring_types();
+                $scoring_types = Util::get_scoring_types();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'scoring', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;

@@ -98,7 +98,7 @@ namespace Racketmanager;
                         <?php esc_html_e( 'Select', 'racketmanager' ); ?>
                     </option>
                     <?php
-                    $event_types = Racketmanager_Util::get_event_types();
+                    $event_types = Util::get_event_types();
                     foreach ( $event_types as $key => $event_type ) {
                         ?>
                         <option value="<?php echo esc_attr( $key ); ?>"<?php selected( $team->type, $key ); ?>><?php echo esc_html( $event_type ); ?></option>

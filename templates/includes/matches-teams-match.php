@@ -45,7 +45,7 @@ if ( empty( $match->winner_id ) ) {
 			<?php
 			if ( ! empty( $match->final_round ) ) {
 				?>
-				<span><?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?></span>
+				<span><?php echo esc_html( Util::get_final_name( $match->final_round ) ); ?></span>
 				<?php
 			} elseif ( ! empty( $match->match_day ) ) {
 				?>
@@ -70,7 +70,7 @@ if ( empty( $match->winner_id ) ) {
 		</span>
 		<?php
 		if ( $match->status ) {
-			$match_message = Racketmanager_Util::get_match_status( $match->status );
+			$match_message = Util::get_match_status( $match->status );
 			?>
 			<span class="match__message match-warning"><?php echo esc_html( $match_message ); ?></span>
 			<?php

@@ -26,7 +26,7 @@ global $racketmanager;
 						<?php
 						if ( ! empty( $round ) ) {
 							?>
-							<span><?php echo esc_html( Racketmanager_Util::get_final_name( $round ) ); ?></span>
+							<span><?php echo esc_html( Util::get_final_name( $round ) ); ?></span>
 							<?php
 						} elseif ( ! empty( $match_day ) ) {
 							?>

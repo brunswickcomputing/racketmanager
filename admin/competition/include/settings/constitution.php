@@ -157,7 +157,7 @@ $msg        = null;
         <div class="col-md-6 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $ranking_types = Racketmanager_Util::get_ranking_types();
+                $ranking_types = Util::get_ranking_types();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'team_ranking', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -193,7 +193,7 @@ $msg        = null;
         <div class="col-md-6">
             <div class="form-floating">
                 <?php
-                $point_rules = Racketmanager_Util::get_point_rules();
+                $point_rules = Util::get_point_rules();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'point_rule', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;

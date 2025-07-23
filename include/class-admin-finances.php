@@ -121,7 +121,7 @@ final class Admin_Finances extends Admin_Display {
                     if ( $charge ) {
                         $schedule_name   = 'rm_send_invoices';
                         $schedule_args[] = $charge_id;
-                        Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                        Util::clear_scheduled_event( $schedule_name, $schedule_args );
                         $charge->send_invoices();
                     }
                 }

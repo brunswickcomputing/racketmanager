@@ -213,7 +213,7 @@ $tab_name = 'fixtures';
             </div>
             <div class="col-md-3 mb-3 mb-md-0">
                 <?php
-                $match_days = Racketmanager_Util::get_match_days();
+                $match_days = Util::get_match_days();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'fixed_match_dates', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;

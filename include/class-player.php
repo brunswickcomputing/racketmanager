@@ -503,7 +503,7 @@ final class Player {
             if ( ! empty( $this->btm ) ) {
                 $this->link .= $this->btm . '/';
             }
-            $match_types = Racketmanager_Util::get_match_types();
+            $match_types = Util::get_match_types();
             foreach ( $match_types as $match_type => $description ) {
                 $wtn_type                 = 'wtn_' . $match_type;
                 $this->wtn[ $match_type ] = get_user_meta( $this->ID, $wtn_type, true );

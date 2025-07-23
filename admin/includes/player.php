@@ -154,7 +154,7 @@ $is_invalid = false;
     </fieldset>
     <?php
     if ( isset( $player->wtn ) ) {
-        $match_types = Racketmanager_Util::get_match_types();
+        $match_types = Util::get_match_types();
         ?>
         <fieldset class="form-control mb-3">
             <legend><?php esc_html_e( 'Ratings', 'racketmanager' ); ?></legend>

@@ -261,8 +261,8 @@ final class Validator_Match extends Validator {
             }
             foreach ( $sets as $set ) {
                 $set_prefix = $set_prefix_start . $s . '_';
-                $set_type   = Racketmanager_Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
-                $set_info   = Racketmanager_Util::get_set_info( $set_type );
+                $set_type   = Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
+                $set_info   = Util::get_set_info( $set_type );
                 if ( 1 === $s ) {
                     $num_games_to_win = $set_info->min_win;
                 }

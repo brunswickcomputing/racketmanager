@@ -336,7 +336,7 @@ if ( $match ) {
                             if ( $match->league->is_championship ) {
                                 ?>
                                 <li class="match__header-title-item">
-                                    <?php echo esc_html( Racketmanager_Util::get_final_name( $match->final_round ) ); ?>
+                                    <?php echo esc_html( Util::get_final_name( $match->final_round ) ); ?>
                                 </li>
                                 <?php
                             }
@@ -487,8 +487,8 @@ if ( $match ) {
                                 ?>
                                 <?php
                                 if ( $match_editable || ( ! empty( $set['player1'] ) || ! empty( $set['player2'] ) ) ) {
-                                    $set_type = Racketmanager_Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, false, $match->num_rubbers, $match->leg );
-                                    $set_info = Racketmanager_Util::get_set_info( $set_type );
+                                    $set_type = Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, false, $match->num_rubbers, $match->leg );
+                                    $set_info = Util::get_set_info( $set_type );
                                     ?>
                                     <span class="set-group" id="set_<?php echo esc_html( $i ); ?>" data-settype="<?php echo esc_attr( $set_type ); ?>" data-maxwin="<?php echo esc_attr( $set_info->max_win ); ?>" data-maxloss="<?php echo esc_attr( $set_info->max_loss ); ?>" data-minwin="<?php echo esc_attr( $set_info->min_win ); ?>" data-minloss="<?php echo esc_attr( $set_info->min_loss ); ?>" data-tiebreakset="<?php echo esc_attr( $set_info->tiebreak_set ); ?>">
                                         <ul class="match-points">

@@ -165,8 +165,8 @@ class League_Tennis extends League {
 
         $league         = get_league( $this->id );
         $walkover_sets  = $league->num_sets_to_win;
-        $set_type       = Racketmanager_Util::get_set_type( $league->scoring );
-        $set_info       = Racketmanager_Util::get_set_info( $set_type );
+        $set_type       = Util::get_set_type( $league->scoring );
+        $set_info       = Util::get_set_info( $set_type );
         $games_to_win   = $set_info->min_win;
         $walkover_games = $walkover_sets * $games_to_win;
 
@@ -204,7 +204,7 @@ class League_Tennis extends League {
                                 }
                             }
                             for ( $j = 1; $j <= $league->num_sets; $j++ ) {
-                                $set_type = Racketmanager_Util::get_set_type( $league->scoring, null, $league->num_sets, $j );
+                                $set_type = Util::get_set_type( $league->scoring, null, $league->num_sets, $j );
                                 if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
                                     $set        = $rubber->sets[ $j ];
                                     $set_winner = null;

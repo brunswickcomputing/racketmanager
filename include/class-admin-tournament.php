@@ -107,7 +107,7 @@ final class Admin_Tournament extends Admin_Championship {
         );
         $seasons      = $racketmanager->get_seasons( 'DESC' );
         $competitions = $racketmanager->get_competitions( array( 'type' => 'tournament' ) );
-        $age_groups   = Racketmanager_Util::get_age_groups();
+        $age_groups   = Util::get_age_groups();
         require_once RACKETMANAGER_PATH . '/admin/show-tournaments.php';
     }
 
@@ -139,25 +139,25 @@ final class Admin_Tournament extends Admin_Championship {
                         'status' => 'confirmed',
                     )
                 );
-                $confirmed_entries       = Racketmanager_Util::get_players_list( $entries_confirmed );
+                $confirmed_entries       = Util::get_players_list( $entries_confirmed );
                 $entries_pay_due         = $tournament->get_entries(
                     array(
                         'status' => 'unpaid',
                     )
                 );
-                $pay_due_entries         = Racketmanager_Util::get_players_list( $entries_pay_due );
+                $pay_due_entries         = Util::get_players_list( $entries_pay_due );
                 $entries_pending         = $tournament->get_entries(
                     array(
                         'status' => 'pending',
                     )
                 );
-                $pending_entries         = Racketmanager_Util::get_players_list( $entries_pending );
+                $pending_entries         = Util::get_players_list( $entries_pending );
                 $entries_withdrawn       = $tournament->get_entries(
                     array(
                         'status' => 'withdrawn',
                     )
                 );
-                $withdrawn_entries       = Racketmanager_Util::get_players_list( $entries_withdrawn );
+                $withdrawn_entries       = Util::get_players_list( $entries_withdrawn );
                 require_once RACKETMANAGER_PATH . 'admin/show-tournament.php';
             }
         }
@@ -300,9 +300,9 @@ final class Admin_Tournament extends Admin_Championship {
                             if ( 0 === $i ) {
                                 $match_date = $tournament->date;
                             } elseif ( 1 === $i ) {
-                                $match_date = Racketmanager_Util::amend_date( $tournament->date, 7, '-' );
+                                $match_date = Util::amend_date( $tournament->date, 7, '-' );
                             } else {
-                                $match_date = Racketmanager_Util::amend_date( $match_date, $round_length, '-' );
+                                $match_date = Util::amend_date( $match_date, $round_length, '-' );
                             }
                             $match_dates[ $r ] = $match_date;
                             ++ $i;
@@ -606,7 +606,7 @@ final class Admin_Tournament extends Admin_Championship {
                             $max_matches = $final['num_matches'];
 
                             /* translators: %s: round name */
-                            $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Racketmanager_Util::get_final_name( $final_key ) );
+                            $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
                             $match_args = array(
                                 'final'   => $final_key,
                                 'orderby' => array(
@@ -846,7 +846,7 @@ final class Admin_Tournament extends Admin_Championship {
     public function add_season_to_competition( string $season, int $competition_id, int $num_match_days = null ): bool|array {
         $competition = get_competition( $competition_id );
         if ( ! $num_match_days ) {
-            $num_match_days = Racketmanager_Util::get_default_match_days( $competition->type );
+            $num_match_days = Util::get_default_match_days( $competition->type );
         }
         if ( ! $num_match_days ) {
             $this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
@@ -1042,7 +1042,7 @@ final class Admin_Tournament extends Admin_Championship {
             );
         } else {
             if ( ! $num_match_days ) {
-                $num_match_days = Racketmanager_Util::get_default_match_days( $event->competition->type );
+                $num_match_days = Util::get_default_match_days( $event->competition->type );
             }
             if ( ! $num_match_days ) {
                 $this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );

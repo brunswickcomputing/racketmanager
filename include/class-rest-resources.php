@@ -318,7 +318,7 @@ class Rest_Resources extends WP_REST_Controller {
         $json_result->match_time = $match->start_time;
         if ( $match->winner_id ) {
             $json_result->score  = str_replace( '"', '', $match->score );
-            $json_result->status = Racketmanager_Util::get_match_status( $match->status );
+            $json_result->status = Util::get_match_status( $match->status );
         }
         return $json_result;
     }

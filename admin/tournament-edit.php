@@ -184,7 +184,7 @@ namespace Racketmanager;
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        $grades     = Racketmanager_Util::get_event_grades();
+                        $grades     = Util::get_event_grades();
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'grade', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'grade', $racketmanager->error_fields, true );

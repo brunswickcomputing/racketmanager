@@ -716,11 +716,11 @@ class Admin_Display {
                 $schedule_args[] = intval( $competition->id );
                 $schedule_args[] = intval( $season );
                 $schedule_name   = 'rm_notify_team_entry_open';
-                Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
                 $schedule_name = 'rm_notify_team_entry_reminder';
-                Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
                 $schedule_name = 'rm_calculate_team_ratings';
-                Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
                 if ( $update ) {
                     /* translators: %s: season name */
                     $msg[] = sprintf( __( 'Season %s deleted', 'racketmanager' ), $season );

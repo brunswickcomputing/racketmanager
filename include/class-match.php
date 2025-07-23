@@ -1398,24 +1398,24 @@ final class Racketmanager_Match {
     private function notify_favourites(): void {
         global $racketmanager;
         $favourited_users = array();
-        $users            = Racketmanager_Util::get_users_for_favourite( 'league', $this->league->id );
+        $users            = Util::get_users_for_favourite( 'league', $this->league->id );
         foreach ( $users  as $user ) {
             $favourited_users[] = $user;
         }
-        $users = Racketmanager_Util::get_users_for_favourite( 'competition', $this->league->event->id );
+        $users = Util::get_users_for_favourite( 'competition', $this->league->event->id );
         foreach ( $users  as $user ) {
             $favourited_users[] = $user;
         }
         $teams = array( 'home', 'away' );
         foreach ( $teams as $team ) {
             if ( ! empty( $this->teams[ $team ]->affilatedclub ) ) {
-                $users = Racketmanager_Util::get_users_for_favourite( 'club', $this->teams[ $team ]->affilatedclub );
+                $users = Util::get_users_for_favourite( 'club', $this->teams[ $team ]->affilatedclub );
                 foreach ( $users  as $user ) {
                     $favourited_users[] = $user;
                 }
             }
             if ( ! empty( $this->teams[ $team ]->id ) ) {
-                $users = Racketmanager_Util::get_users_for_favourite( 'team', $this->teams[ $team ]->id );
+                $users = Util::get_users_for_favourite( 'team', $this->teams[ $team ]->id );
                 foreach ( $users  as $user ) {
                     $favourited_users[] = $user;
                 }
@@ -1816,8 +1816,8 @@ final class Racketmanager_Match {
             $start_date = substr( $start_date, 0, 10 );
         }
         if ( ! empty( $match_day ) ) {
-            $day        = Racketmanager_Util::get_match_day_number( $match_day );
-            $match_date = Racketmanager_Util::amend_date( $start_date, $day );
+            $day        = Util::get_match_day_number( $match_day );
+            $match_date = Util::amend_date( $start_date, $day );
         } else {
             $match_date = $start_date;
         }
@@ -2948,7 +2948,7 @@ final class Racketmanager_Match {
         }
         $this->home_points   = 0;
         $this->away_points   = 0;
-        $match_stats         = Racketmanager_Util::initialise_match_stats();
+        $match_stats         = Util::initialise_match_stats();
         $match_confirmed     = $this->confirmed;
         $home_team_score     = 0;
         $away_team_score     = 0;
@@ -3173,7 +3173,7 @@ final class Racketmanager_Match {
         }
         $this->check_result_timeout();
         $match_custom['stats'] = $match_stats;
-        $status                = Racketmanager_Util::get_match_status_code( $match_status );
+        $status                = Util::get_match_status_code( $match_status );
         $updated               = $this->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status, $user_team );
         if ( $updated && $send_notification ) {
             $this->result_notification( $match_confirmed, $msg, $user_team );

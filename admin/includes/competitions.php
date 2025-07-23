@@ -15,7 +15,7 @@ $orderby['type']                = 'ASC';
 $orderby['name']                = 'ASC';
 $competition_query['orderby']   = $orderby;
 $competitions                   = $racketmanager->get_competitions( $competition_query );
-$age_groups                     = Racketmanager_Util::get_age_groups();
+$age_groups                     = Util::get_age_groups();
 $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
 ?>
 <div class="container">

@@ -281,35 +281,35 @@ final class User {
         if ( empty( $user->email ) ) {
             $valid = false;
             $err_fld[] = 'username';
-            $err_msg[] = Racketmanager_Util::get_error_message( 'empty_username' );
+            $err_msg[] = Util::get_error_message( 'empty_username' );
         }
         if ( empty( $user->firstname ) ) {
             $valid = false;
             $err_fld[] = 'firstname';
-            $err_msg[] = Racketmanager_Util::get_error_message( 'firstname_field_empty' );
+            $err_msg[] = Util::get_error_message( 'firstname_field_empty' );
         }
         if ( empty( $user->surname ) ) {
             $valid = false;
             $err_fld[] = 'lastname';
-            $err_msg[] = Racketmanager_Util::get_error_message( 'lastname_field_empty' );
+            $err_msg[] = Util::get_error_message( 'lastname_field_empty' );
         }
         if ( empty( $user->gender ) ) {
             $valid = false;
             $err_fld[] = 'gender';
-            $err_msg[] = Racketmanager_Util::get_error_message( 'gender_field_empty' );
+            $err_msg[] = Util::get_error_message( 'gender_field_empty' );
         }
         if ( empty( $user->btm ) ) {
             $player_options = $racketmanager->get_options( 'rosters' );
             if ( isset( $player_options['btm'] ) && '1' === $player_options['btm'] ) {
                 $valid = false;
                 $err_fld[] = 'btm';
-                $err_msg[] = Racketmanager_Util::get_error_message( 'btm_field_empty' );
+                $err_msg[] = Util::get_error_message( 'btm_field_empty' );
             }
         }
         if ( $user->password !== $user->re_password ) {
             $valid = false;
             $err_fld[] = 'password';
-            $err_msg[] = Racketmanager_Util::get_error_message( 'password_reset_mismatch' );
+            $err_msg[] = Util::get_error_message( 'password_reset_mismatch' );
         }
         if ( $valid ) {
             $updates = $this->set_details( $user );
@@ -451,7 +451,7 @@ final class User {
      */
     private function update_opt_ins( object $user ): bool {
         $updates        = false;
-        $opt_in_choices = Racketmanager_Util::get_email_opt_ins();
+        $opt_in_choices = Util::get_email_opt_ins();
         $opt_ins        = array();
         foreach ( $opt_in_choices as $opt_in_choice => $opt_in_desc ) {
             $user_opt_in[ $opt_in_choice ] = ! empty( $user->opt_ins[ $opt_in_choice ] );

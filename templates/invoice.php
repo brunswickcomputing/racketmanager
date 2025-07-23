@@ -206,7 +206,7 @@ if ( is_user_logged_in() ) {
 				foreach ( $invoice->details->events as $racketmanager_event ) {
 					?>
 					<div id="invoice-item">
-					<div class="invoice-item-detail"><?php echo esc_html( Racketmanager_Util::get_event_type( $racketmanager_event->type ) ); ?></div>
+					<div class="invoice-item-detail"><?php echo esc_html( Util::get_event_type( $racketmanager_event->type ) ); ?></div>
 					<div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
 					<div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->charge->fee_event ); ?></div>
 					<div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>

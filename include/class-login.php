@@ -320,12 +320,12 @@ class Login {
         // Email address is used as both username and email. It is also the only
         // parameter we need to validate.
         if ( ! is_email( $email ) ) {
-            $errors->add( 'email', Racketmanager_Util::get_error_message( 'email' ) );
+            $errors->add( 'email', Util::get_error_message( 'email' ) );
             return $errors;
         }
 
         if ( username_exists( $email ) || email_exists( $email ) ) {
-            $errors->add( 'email_exists', Racketmanager_Util::get_error_message( 'email_exists' ) );
+            $errors->add( 'email_exists', Util::get_error_message( 'email_exists' ) );
             return $errors;
         }
 

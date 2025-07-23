@@ -2882,7 +2882,7 @@ class RacketManager {
                                                 $type_start += 16;
                                                 $type_len    = $type_end - $type_start;
                                                 $type        = substr( $wtn_block, $type_start, $type_len );
-                                                $wtn_key     = Racketmanager_Util::get_match_type_key( $type );
+                                                $wtn_key     = Util::get_match_type_key( $type );
                                                 $wtn_start   = strpos( $wtn_block, '</svg>', $type_start );
                                                 $wtn_end     = strpos( $wtn_block, '</span>', $wtn_start );
                                                 $wtn_start  += 6;

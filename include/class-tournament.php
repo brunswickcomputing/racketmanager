@@ -400,8 +400,8 @@ final class Tournament {
             for ( $round = 1; $round <= $max_rounds; ++$round ) {
                 $num_teams      = pow( 2, $round );
                 $num_matches    = $num_teams / 2;
-                $key            = Racketmanager_Util::get_final_key( $num_teams );
-                $name           = Racketmanager_Util::get_final_name( $key );
+                $key            = Util::get_final_key( $num_teams );
+                $name           = Util::get_final_name( $key );
                 $finals[ $key ] = array(
                     'key'         => $key,
                     'name'        => $name,
@@ -754,11 +754,11 @@ final class Tournament {
         global $wpdb, $racketmanager;
         $schedule_name = 'rm_calculate_tournament_ratings';
         $schedule_args = array( $this->id );
-        Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $schedule_name = 'rm_notify_tournament_entry_open';
-        Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $schedule_name = 'rm_notify_tournament_entry_reminder';
-        Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "DELETE FROM $wpdb->racketmanager_tournaments WHERE `id` = %d",
@@ -1031,7 +1031,7 @@ final class Tournament {
      */
     public function schedule_tournament_ratings(): void {
         global $racketmanager;
-        $date_schedule  = Racketmanager_Util::amend_date( $this->date_closing, 1 );
+        $date_schedule  = Util::amend_date( $this->date_closing, 1 );
         $schedule_date  = strtotime( $date_schedule );
         $day            = intval( gmdate( 'd', $schedule_date ) );
         $month          = intval( gmdate( 'm', $schedule_date ) );
@@ -1039,7 +1039,7 @@ final class Tournament {
         $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
         $schedule_name  = 'rm_calculate_tournament_ratings';
         $schedule_args  = array( $this->id );
-        Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
         if ( ! $success ) {
             $racketmanager->set_message( __( 'Error scheduling tournament ratings calculation', 'racketmanager' ), true );
@@ -1087,20 +1087,20 @@ final class Tournament {
             $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
             $schedule_name   = 'rm_notify_tournament_entry_open';
             $schedule_args[] = $this->id;
-            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
                 error_log( __( 'Error scheduling tournament open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             }
         }
         if ( ! empty( $this->date_closing ) ) {
-            $chase_date     = Racketmanager_Util::amend_date( $this->date_closing, 7, '-' );
+            $chase_date     = Util::amend_date( $this->date_closing, 7, '-' );
             $day            = substr( $chase_date, 8, 2 );
             $month          = substr( $chase_date, 5, 2 );
             $year           = substr( $chase_date, 0, 4 );
             $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
             $schedule_name  = 'rm_notify_tournament_entry_reminder';
-            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
                 error_log( __( 'Error scheduling tournament reminder emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log

@@ -49,7 +49,7 @@ class RacketmanagerMain {
         global $racketmanager;
         $this->define_tables();
 
-        require_once RACKETMANAGER_PATH . 'include/class-racketmanager-util.php';
+        require_once RACKETMANAGER_PATH . 'include/class-util.php';
         require_once RACKETMANAGER_PATH . 'include/class-racketmanager.php';
         require_once RACKETMANAGER_PATH . 'include/class-activator.php';
 

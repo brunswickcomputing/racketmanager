@@ -869,7 +869,7 @@ class League {
         foreach ( $matches as $match ) {
             $match = get_match( $match );
             if ( $match ) {
-                $status = empty( $match->status ) ? null : Racketmanager_Util::get_match_status( $match->status );
+                $status = empty( $match->status ) ? null : Util::get_match_status( $match->status );
                 if ( 'Withdrawn' !== $status ) {
                     if ( $this->is_championship ) {
                         if ( intval( $match->home_team ) === $team_id ) {
@@ -885,7 +885,7 @@ class League {
                         $match_confirmed = 'Y';
                         $home_team_score = 0;
                         $away_team_score = 0;
-                        $status          = Racketmanager_Util::get_match_status_code( 'cancelled' );
+                        $status          = Util::get_match_status_code( 'cancelled' );
                         $match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
                         $match->update_league_with_result();
                     }
@@ -1660,7 +1660,7 @@ class League {
             return false;
         }
         if ( str_contains( $team->title, '_' ) ) {
-            $team_name = Racketmanager_Util::generate_team_name( $team->title );
+            $team_name = Util::generate_team_name( $team->title );
             if ( ! empty( $team_name ) ) {
                 $team->title = $team_name;
             }
@@ -1898,7 +1898,7 @@ class League {
             $status_code = $status['status_code'] ?? null;
             $compare     = $status['compare'] ?? null;
             if ( $status_code ) {
-                $status_value = Racketmanager_Util::get_match_status_code( $status_code );
+                $status_value = Util::get_match_status_code( $status_code );
                 if ( $status_value ) {
                     if ( 'not' === $compare ) {
                         $sql   .= ' AND m.`status` != %d';
@@ -3100,8 +3100,8 @@ class League {
                     } else {
                         $match_day        = $home_team_dtls->match_day;
                         $match_time       = $home_team_dtls->match_time;
-                        $day              = Racketmanager_Util::get_match_day_number( $match_day );
-                        $match_date       = Racketmanager_Util::amend_date( $start_date, $day );
+                        $day              = Util::get_match_day_number( $match_day );
+                        $match_date       = Util::amend_date( $start_date, $day );
                         $match->date      = $match_date . ' ' . $match_time;
                         $match->match_day = $round_number;
                         $match->location  = $home_team_dtls->club->shortcode;
@@ -3124,7 +3124,7 @@ class League {
             $match->leg              = 1;
             $new_match               = clone $match;
             $weeks_diff              = empty( $this->event->competition->seasons[ $match->season ]['home_away_diff'] ) ? 2 : $this->event->competition->seasons[ $match->season ]['home_away_diff'];
-            $new_match->date         = Racketmanager_Util::amend_date( $match->date, $weeks_diff, '+', 'weeks' );
+            $new_match->date         = Util::amend_date( $match->date, $weeks_diff, '+', 'weeks' );
             $new_match->linked_match = $match->id;
             $new_match->leg          = $match->leg + 1;
             if ( ! empty( $match->host ) ) {

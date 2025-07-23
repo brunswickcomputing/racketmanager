@@ -24,7 +24,7 @@ namespace Racketmanager;
     <!-- Tab panes -->
     <div class="tab-content">
         <?php
-        $competition_types = Racketmanager_Util::get_competition_types();
+        $competition_types = Util::get_competition_types();
         $i                 = 0;
         foreach ( $competition_types as $competition_type ) {
             $i ++;

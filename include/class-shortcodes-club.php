@@ -538,7 +538,7 @@ class Shortcodes_Club extends Shortcodes {
             $msg = $this->event_not_found;
         }
         if ( empty( $msg ) ) {
-            $match_days = Racketmanager_Util::get_match_days();
+            $match_days = Util::get_match_days();
             return $this->load_template(
                 $filename,
                 array(

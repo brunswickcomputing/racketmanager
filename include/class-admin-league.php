@@ -193,7 +193,7 @@ final class Admin_League extends Admin_Display {
                                             } else {
                                                 $i = 0;
                                                 foreach( $current_season['match_dates'] as $match_date ) {
-                                                    $match_dates[ $i ] = Racketmanager_Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
+                                                    $match_dates[ $i ] = Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
                                                     ++$i;
                                                 }
                                             }
@@ -1262,7 +1262,7 @@ final class Admin_League extends Admin_Display {
 
                 if ( 'add' === $mode ) {
                     /* translators: %s: round name */
-                    $form_title = sprintf( __( 'Add Matches - %s', 'racketmanager' ), Racketmanager_Util::get_final_name( $final_key ) );
+                    $form_title = sprintf( __( 'Add Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
                     for ( $h = 0; $h < $max_matches; $h++ ) {
                         $matches[ $h ] = new stdClass();
                         if ( 'final' !== $final_key ) {
@@ -1278,7 +1278,7 @@ final class Admin_League extends Admin_Display {
                     }
                 } else {
                     /* translators: %s: round name */
-                    $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Racketmanager_Util::get_final_name( $final_key ) );
+                    $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
                     $match_args = array(
                         'final'   => $final_key,
                         'orderby' => array(

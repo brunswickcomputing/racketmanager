@@ -63,7 +63,7 @@ class Admin_Options extends Admin_Display {
                 $options['checks']['rosterLeadTime']           = isset( $_POST['playerLeadTime'] ) ? intval( $_POST['playerLeadTime'] ) : null;
                 $options['checks']['playedRounds']             = isset( $_POST['playedRounds'] ) ? intval( $_POST['playedRounds'] ) : null;
                 $options['checks']['playerLocked']             = isset( $_POST['playerLocked'] ) ? sanitize_text_field( wp_unslash( $_POST['playerLocked'] ) ) : null;
-                $competition_types                             = Racketmanager_Util::get_competition_types();
+                $competition_types                             = Util::get_competition_types();
                 foreach ( $competition_types as $competition_type ) {
                     $options[ $competition_type ]['matchCapability']         = isset( $_POST[ $competition_type ]['matchCapability'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['matchCapability'] ) ) : null;
                     $options[ $competition_type ]['resultConfirmation']      = isset( $_POST[ $competition_type ]['resultConfirmation'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['resultConfirmation'] ) ) : null;
@@ -78,11 +78,11 @@ class Admin_Options extends Admin_Display {
                     $options[ $competition_type ]['confirmationPenalty']     = isset( $_POST[ $competition_type ]['confirmationPenalty'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['confirmationPenalty'] ) ) : null;
                     $options[ $competition_type ]['confirmationRequired']    = isset( $_POST[ $competition_type ]['confirmationRequired'] );
                     $options[ $competition_type ]['entry_level']             = isset( $_POST[ $competition_type ]['entryLevel'] ) ? sanitize_text_field( wp_unslash( $_POST[ $competition_type ]['entryLevel'] ) ) : null;
-                    Racketmanager_Util::schedule_result_chase( $competition_type, $options[ $competition_type ] );
+                    Util::schedule_result_chase( $competition_type, $options[ $competition_type ] );
                 }
                 $options['championship']['numRounds']           = isset( $_POST['numRounds'] ) ? intval( $_POST['numRounds'] ) : null;
                 $options['championship']['open_lead_time']      = isset( $_POST['openLeadtime'] ) ? intval( $_POST['openLeadtime'] ) : null;
-                $grades = Racketmanager_Util::get_event_grades();
+                $grades = Util::get_event_grades();
                 foreach ( $grades as $grade => $grade_desc ) {
                     $options['championship']['date_closing'][ $grade ]    = isset( $_POST[ $grade ]['dateClose'] ) ? intval( $_POST[ $grade ]['dateClose'] ) : null;
                     $options['championship']['date_withdrawal'][ $grade ] = isset( $_POST[ $grade ]['dateWithdraw'] ) ? intval( $_POST[ $grade ]['dateWithdraw'] ) : null;

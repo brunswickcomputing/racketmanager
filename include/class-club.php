@@ -792,7 +792,7 @@ final class Club {
             }
             $player_dtl->age = $player->age;
             if ( ! empty( $options['ageLimitCheck'] ) && $age_limit && 'open' !== $age_limit ) {
-                $age_check = Racketmanager_Util::check_age_within_limit( $player->age, $age_limit, $gender, $age_offset );
+                $age_check = Util::check_age_within_limit( $player->age, $age_limit, $gender, $age_offset );
                 if ( ! $age_check->valid ) {
                     $player_invalid = true;
                 }
@@ -955,7 +955,7 @@ final class Club {
             $team_id   = $event_entry->team_id;
             $team      = get_team( $team_id );
             $team_info = $event->get_team_info( $team_id );
-            $match_day = Racketmanager_Util::get_match_day( $event_entry->match_day );
+            $match_day = Util::get_match_day( $event_entry->match_day );
             if ( ! $team_info ) {
                 $team->add_event( $event->id, $event_entry->captain_id, $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
             } else {
@@ -998,7 +998,7 @@ final class Club {
             $league_event_entry['event'] = $event_entry->name;
             $league_entries              = array();
             foreach ( $event_entry->team as $team_entry ) {
-                $match_day = Racketmanager_Util::get_match_day( $team_entry->match_day );
+                $match_day = Util::get_match_day( $team_entry->match_day );
                 if ( empty( $team_entry->id ) ) {
                     $team = $this->add_team( $event->type );
                 } else {

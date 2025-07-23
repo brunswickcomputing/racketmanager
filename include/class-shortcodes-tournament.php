@@ -313,7 +313,7 @@ class Shortcodes_Tournament extends Shortcodes {
                 }
 			} else {
 				$players             = $tournament->get_entries();
-				$tournament->players = Racketmanager_Util::get_players_list( $players );
+				$tournament->players = Util::get_players_list( $players );
 			}
 			$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
 			return $this->load_template(

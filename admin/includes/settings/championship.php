@@ -4,7 +4,7 @@
  */
 namespace Racketmanager;
 
-$grades = Racketmanager_Util::get_event_grades();
+$grades = Util::get_event_grades();
 ?>
 <div class="form-control">
     <fieldset class="row gx-3 mb-3">

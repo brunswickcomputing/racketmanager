@@ -46,8 +46,8 @@ class Ajax_Account extends Ajax {
             $user                  = wp_signon( $info, true );
             if ( is_wp_error( $user ) ) {
                 foreach ( $user->errors as $field => $error ) {
-                    $return->err_flds[] = Racketmanager_Util::get_error_field( $field );
-                    $return->err_msgs[] = Racketmanager_Util::get_error_message( $field );
+                    $return->err_flds[] = Util::get_error_field( $field );
+                    $return->err_msgs[] = Util::get_error_message( $field );
                 }
                 $return->error  = true;
                 $return->status = 401;
@@ -161,7 +161,7 @@ class Ajax_Account extends Ajax {
         if ( ! empty( $return->error ) ) {
             wp_send_json_error( $return, $return->status );
         }
-        $message_type_name = Racketmanager_Util::get_message_type( $message_type );
+        $message_type_name = Util::get_message_type( $message_type );
         $success           = $user->delete_messages( $message_type );
         if ( $success ) {
             $alert_class = 'success';

@@ -102,7 +102,7 @@ namespace Racketmanager;
                             </td>
                             <td class="col-4 col-md-2">
                                 <?php
-                                $match_types    = Racketmanager_Util::get_match_types();
+                                $match_types    = Util::get_match_types();
                                 $wtn            = $player->wtn;
                                 $wtn_display = '';
                                 foreach ( $match_types as $match_type => $description ) {

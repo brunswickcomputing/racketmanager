@@ -539,8 +539,8 @@ if ( $match->is_walkover ) {
 																		$winner_set = null;
 																	}
 																	$tabindex = $tab_base + 10 + ( $i * 10 );
-																	$set_type = Racketmanager_Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, $r, $match->num_rubbers, $match->leg );
-																	$set_info = Racketmanager_Util::get_set_info( $set_type );
+																	$set_type = Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, $r, $match->num_rubbers, $match->leg );
+																	$set_info = Util::get_set_info( $set_type );
 																	?>
 																	<ul class="match-points set-points" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>" data-settype="<?php echo esc_attr( $set_type ); ?>" data-maxwin="<?php echo esc_attr( $set_info->max_win ); ?>" data-maxloss="<?php echo esc_attr( $set_info->max_loss ); ?>" data-minwin="<?php echo esc_attr( $set_info->min_win ); ?>" data-minloss="<?php echo esc_attr( $set_info->min_loss ); ?>" data-tiebreakset="<?php echo esc_attr( $set_info->tiebreak_set ); ?>">
 																		<?php

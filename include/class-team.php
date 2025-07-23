@@ -282,7 +282,7 @@ final class Team {
             }
         }
         if ( str_contains( $this->title, '_' ) ) {
-            $team_name = Racketmanager_Util::generate_team_name( $this->title );
+            $team_name = Util::generate_team_name( $this->title );
             if ( ! empty( $team_name ) ) {
                 $this->team_ref = $this->title;
                 $this->title    = $team_name;
@@ -532,7 +532,7 @@ final class Team {
         if ( is_null( $matchday) ) {
             $match_day = '';
         } else {
-            $match_day = Racketmanager_Util::get_match_day( $matchday );
+            $match_day = Util::get_match_day( $matchday );
         }
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
@@ -570,7 +570,7 @@ final class Team {
         if ( is_null( $matchday) ) {
             $match_day = '';
         } else {
-            $match_day = Racketmanager_Util::get_match_day( $matchday );
+            $match_day = Util::get_match_day( $matchday );
         }
         $event   = get_event( $event_id );
         $current = $event->get_team_info( $this->id );

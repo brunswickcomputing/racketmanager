@@ -467,7 +467,7 @@ final class League_Team {
             );
             $this->diff         = ( $this->diff > 0 ) ? '+' . $this->diff : $this->diff;
             $this->win_percent();
-            $this->status_text = Racketmanager_Util::get_standing_status( $this->status );
+            $this->status_text = Util::get_standing_status( $this->status );
             if ( ! empty( $this->club_id ) ) {
                 $this->club = get_club( $this->club_id );
             } else {
@@ -492,7 +492,7 @@ final class League_Team {
                 $this->status_icon = 'icon-dot';
             }
             if ( str_contains( $this->title, '_' ) ) {
-                $team_name = Racketmanager_Util::generate_team_name( $this->title );
+                $team_name = Util::generate_team_name( $this->title );
                 if ( ! empty( $team_name ) ) {
                     $this->team_ref = $this->title;
                     $this->title    = $team_name;

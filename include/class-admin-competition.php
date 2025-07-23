@@ -384,7 +384,7 @@ final class Admin_Competition extends RacketManager_Admin {
         $updates = false;
         if ( ! empty( $current_season->fee_lead_time ) ) {
             $fee_lead_time = $current_season->fee_lead_time * 7;
-            $fee_date      = Racketmanager_Util::amend_date( $current_season->date_start, $fee_lead_time, '-' );
+            $fee_date      = Util::amend_date( $current_season->date_start, $fee_lead_time, '-' );
         } else {
             $fee_date = $current_season->date_start;
         }
@@ -546,10 +546,10 @@ final class Admin_Competition extends RacketManager_Admin {
         for ( $i = 0; $i < $season->num_match_days; ++$i ) {
             if ( $i === $halfway && $season->home_away_diff ) {
                 $days_diff  = $season->home_away_diff * 7;
-                $date_start = Racketmanager_Util::amend_date( $date_start, $days_diff );
+                $date_start = Util::amend_date( $date_start, $days_diff );
             }
             $match_dates[ $i ] = $date_start;
-            $date_start        = Racketmanager_Util::amend_date( $date_start, $round_length );
+            $date_start        = Util::amend_date( $date_start, $round_length );
         }
         return $match_dates;
     }
@@ -587,20 +587,20 @@ final class Admin_Competition extends RacketManager_Admin {
             $year            = intval( gmdate( 'Y', $schedule_date ) );
             $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
             $schedule_name   = 'rm_notify_team_entry_open';
-            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
                 error_log( __( 'Error scheduling team competition open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             }
         }
         if ( $today <= $season->date_closing ) {
-            $chase_date     = Racketmanager_Util::amend_date( $season->date_closing, 7, '-' );
+            $chase_date     = Util::amend_date( $season->date_closing, 7, '-' );
             $day            = substr( $chase_date, 8, 2 );
             $month          = substr( $chase_date, 5, 2 );
             $year           = substr( $chase_date, 0, 4 );
             $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
             $schedule_name  = 'rm_notify_team_entry_reminder';
-            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
                 error_log( __( 'Error scheduling team competition reminder emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -632,7 +632,7 @@ final class Admin_Competition extends RacketManager_Admin {
         $schedule_name   = 'rm_calculate_team_ratings';
         $schedule_args[] = $competition_id;
         $schedule_args[] = intval( $season->name );
-        Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
         if ( ! $success ) {
             $racketmanager->set_message( __( 'Error scheduling team ratings calculation', 'racketmanager' ), true );
@@ -656,7 +656,7 @@ final class Admin_Competition extends RacketManager_Admin {
                 $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
                 $schedule_name   = 'rm_send_invoices';
                 $schedule_args[] = $charge_id;
-                Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
                 $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
                 if ( ! $success ) {
                     error_log( __( 'Error scheduling invoice sending', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log

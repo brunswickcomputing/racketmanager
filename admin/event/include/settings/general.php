@@ -40,7 +40,7 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $types = Racketmanager_Util::get_event_types();
+                $types = Util::get_event_types();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'type', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -73,7 +73,7 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $age_limits = Racketmanager_Util::get_age_limits();
+                $age_limits = Util::get_age_limits();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'age_limit', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -134,7 +134,7 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $scoring_types = Racketmanager_Util::get_scoring_types();
+                $scoring_types = Util::get_scoring_types();
                 $scoring       = empty( $event->config->scoring ) ? null : $event->config->scoring;
                 if ( empty( $scoring ) ) {
                     $scoring = $competition->scoring ?? null;

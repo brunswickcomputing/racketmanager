@@ -449,8 +449,8 @@ class Shortcodes {
 		if ( ! $events ) {
 			return $this->return_error( __( 'No events found', 'racketmanager' ) );
 		}
-		$event_types   = Racketmanager_Util::get_event_types();
-		$age_groups   = Racketmanager_Util::get_age_groups();
+		$event_types   = Util::get_event_types();
+		$age_groups   = Util::get_age_groups();
 		$filename     = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';
 
 		return $this->load_template( $filename, array(

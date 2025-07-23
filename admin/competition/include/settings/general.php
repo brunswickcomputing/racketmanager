@@ -40,7 +40,7 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $sports = Racketmanager_Util::get_sports();
+                $sports = Util::get_sports();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'sport', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -73,7 +73,7 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $types = Racketmanager_Util::get_competition_types();
+                $types = Util::get_competition_types();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'type', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -106,7 +106,7 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                $entry_types = Racketmanager_Util::get_entry_types();
+                $entry_types = Util::get_entry_types();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'entry_type', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -141,7 +141,7 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                $age_groups = Racketmanager_Util::get_age_groups();
+                $age_groups = Util::get_age_groups();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'age_group', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -197,7 +197,7 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                $grades = Racketmanager_Util::get_event_grades();
+                $grades = Util::get_event_grades();
                 if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'grade', $racketmanager->error_fields, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;

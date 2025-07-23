@@ -63,34 +63,34 @@ jQuery(document).ready(function(){
 					case 'empty_username':
 					case 'invalid_username':
 						$username_error   = true;
-						$username_message = Racketmanager_Util::get_error_message( $error_code );
+						$username_message = Util::get_error_message( $error_code );
 						break;
 					case 'incorrect_password':
 					case 'empty_password':
 						$password_error   = true;
-						$password_message = Racketmanager_Util::get_error_message( $error_code );
+						$password_message = Util::get_error_message( $error_code );
 						break;
 					case 'email_exists':
 					case 'email':
 						$email_error   = true;
-						$email_message = Racketmanager_Util::get_error_message( $error_code );
+						$email_message = Util::get_error_message( $error_code );
 						break;
 					case 'captcha':
 						$recaptcha_error   = true;
-						$recaptcha_message = Racketmanager_Util::get_error_message( $error_code );
+						$recaptcha_message = Util::get_error_message( $error_code );
 						break;
 					case 'first_name':
 						$firstname_error   = true;
-						$firstname_message = Racketmanager_Util::get_error_message( $error_code );
+						$firstname_message = Util::get_error_message( $error_code );
 						break;
 					case 'last_name':
 						$surname_error   = true;
-						$surname_message = Racketmanager_Util::get_error_message( $error_code );
+						$surname_message = Util::get_error_message( $error_code );
 						break;
 					case 'security':
 					case 'invalidkey':
 						$other_error   = true;
-						$error_message = Racketmanager_Util::get_error_message( $error_code );
+						$error_message = Util::get_error_message( $error_code );
 						break;
 					default:
 						break;

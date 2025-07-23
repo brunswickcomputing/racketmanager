@@ -21,7 +21,7 @@ global $racketmanager;
 /** @var string $season */
 /** @var array  $events */
 /** @var object $club */
-$match_days = Racketmanager_Util::get_match_days();
+$match_days = Util::get_match_days();
 if ( $competition->is_open ) {
 	$changes_allowed = true;
 } else {

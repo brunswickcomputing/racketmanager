@@ -415,9 +415,9 @@ class Ajax_Admin extends Ajax {
             if ( $date_start ) {
                 $parameters = $racketmanager->get_options( 'championship' );
                 if ( $parameters ) {
-                    $date_open     = Racketmanager_Util::amend_date( $date_start, $parameters['open_lead_time'], '-' );
-                    $date_closing  = Racketmanager_Util::amend_date( $date_start, $parameters['date_closing'][ $grade], '-' );
-                    $date_withdraw = Racketmanager_Util::amend_date( $date_start, $parameters['date_withdrawal'][ $grade ], '-' );
+                    $date_open     = Util::amend_date( $date_start, $parameters['open_lead_time'], '-' );
+                    $date_closing  = Util::amend_date( $date_start, $parameters['date_closing'][ $grade], '-' );
+                    $date_withdraw = Util::amend_date( $date_start, $parameters['date_withdrawal'][ $grade ], '-' );
                 } else {
                     $return->error = true;
                     $return->msg   = __( 'No lead time parameters set', 'racketmanager' );

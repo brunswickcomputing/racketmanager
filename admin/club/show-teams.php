@@ -84,7 +84,7 @@ namespace Racketmanager;
                 <select class="form-select" size='1' required="required" name='team_type' id='team_type'>
                     <option value=""><?php esc_html_e( 'Select event type', 'racketmanager' ); ?></option>
                     <?php
-                    $event_types = Racketmanager_Util::get_event_types();
+                    $event_types = Util::get_event_types();
                     foreach ( $event_types as $key => $event_type ) {
                         ?>
                         <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $event_type ); ?></option>

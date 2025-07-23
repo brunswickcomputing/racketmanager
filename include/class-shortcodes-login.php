@@ -77,7 +77,7 @@ class Shortcodes_Login extends Shortcodes {
 			$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['register-errors'] ) ) );  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			foreach ( $error_codes as $code ) {
-				$errors[] = Racketmanager_Util::get_error_message( $code );
+				$errors[] = Util::get_error_message( $code );
 			}
 		}
 		$vars['errors']      = $errors;
@@ -121,7 +121,7 @@ class Shortcodes_Login extends Shortcodes {
 			$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['login'] ) ) );
 
 			foreach ( $error_codes as $code ) {
-				$errors [] = Racketmanager_Util::get_error_message( $code );
+				$errors [] = Util::get_error_message( $code );
 			}
 		}
 		$vars['errors']      = $errors;
@@ -160,7 +160,7 @@ class Shortcodes_Login extends Shortcodes {
 		if ( isset( $_REQUEST['errors'] ) ) {
 			$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['errors'] ) ) );
 			foreach ( $error_codes as $code ) {
-				$errors[] = Racketmanager_Util::get_error_message( $code );
+				$errors[] = Util::get_error_message( $code );
 			}
 		}
 		$vars['errors']      = $errors;
@@ -190,7 +190,7 @@ class Shortcodes_Login extends Shortcodes {
 			if ( isset( $_REQUEST['error'] ) ) {
 				$error_codes = explode( ',', sanitize_text_field( wp_unslash( $_REQUEST['error'] ) ) );
 				foreach ( $error_codes as $code ) {
-					$errors [] = Racketmanager_Util::get_error_message( $code );
+					$errors [] = Util::get_error_message( $code );
 				}
 			}
 			$vars['errors']      = $errors;
@@ -212,7 +212,7 @@ class Shortcodes_Login extends Shortcodes {
 		}
 		$current_user   = wp_get_current_user();
 		$user           = get_user( $current_user->ID );
-		$opt_in_choices = Racketmanager_Util::get_email_opt_ins();
+		$opt_in_choices = Util::get_email_opt_ins();
 		return $this->load_template(
 			'form-member-account',
 			array(

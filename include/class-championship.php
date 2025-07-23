@@ -217,7 +217,7 @@ final class Championship {
             $this->finals[ $finalkey ] = array(
                 'key'         => $finalkey,
                 'is_final'    => $is_final,
-                'name'        => Racketmanager_Util::get_final_name( $finalkey ),
+                'name'        => Util::get_final_name( $finalkey ),
                 'num_matches' => $num_matches,
                 'num_teams'   => $num_teams,
                 'colspan'     => ( $this->num_teams_first_round / 2 >= 4 ) ? ceil( 4 / $num_matches ) : ceil( ( $this->num_teams_first_round / 2 ) / $num_matches ),
@@ -229,7 +229,7 @@ final class Championship {
                 $finalkey                  = 'third';
                 $this->finals[ $finalkey ] = array(
                     'key'         => $finalkey,
-                    'name'        => Racketmanager_Util::get_final_name( $finalkey ),
+                    'name'        => Util::get_final_name( $finalkey ),
                     'num_matches' => $num_matches,
                     'num_teams'   => $num_teams,
                     'colspan'     => ( $this->num_teams_first_round / 2 >= 4 ) ? ceil( 4 / $num_matches ) : ceil( ( $this->num_teams_first_round / 2 ) / $num_matches ),

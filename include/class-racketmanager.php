@@ -1156,7 +1156,7 @@ class RacketManager {
                         $message_object->message_object = $message;
                         $message_object->sender         = $from;
                         $message_object->status         = 1;
-                        new Racketmanager_Message( $message_object );
+                        new Message( $message_object );
                     }
                 }
             }

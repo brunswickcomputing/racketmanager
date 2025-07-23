@@ -657,19 +657,20 @@ function get_result_check( object|int $results_check = null ): ?object {
  * Get message object
  *
  * @param int|null $message message ID or message object. Defaults to global $message.
- * @return Racketmanager_Message|null message|null
+ *
+ * @return Message|null message|null
  */
-function get_message( int $message = null ): Racketmanager_Message|null {
+function get_message( int $message = null ): Message|null {
     if ( empty( $message ) && isset( $GLOBALS['message'] ) ) {
         $message = $GLOBALS['message'];
     }
 
-    if ( $message instanceof Racketmanager_Message ) {
+    if ( $message instanceof Message ) {
         $_message = $message;
     } elseif ( is_object( $message ) ) {
-        $_message = new Racketmanager_Message( $message );
+        $_message = new Message( $message );
     } else {
-        $_message = Racketmanager_Message::get_instance( $message );
+        $_message = Message::get_instance( $message );
     }
 
     if ( ! $_message ) {

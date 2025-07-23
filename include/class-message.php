@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Message API: message class
+ * Message API: message class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -14,7 +14,7 @@ use mysqli_result;
 /**
  * Class to implement the message object
  */
-final class Racketmanager_Message {
+final class Message {
     /**
      * Id
      *
@@ -94,7 +94,7 @@ final class Racketmanager_Message {
                 return false;
             }
 
-            $message = new Racketmanager_Message( $message );
+            $message = new Message( $message );
 
             wp_cache_set( $message->id, $message, 'message' );
         }

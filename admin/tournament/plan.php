@@ -23,7 +23,7 @@ if ( '01:00:00' === $tournament->time_increment ) {
     $max_schedules = $max_schedules * 2;
 }
 $column_width = floor( 12 / $num_courts );
-$match_length = strtotime( $tournament->time_increment );
+$match_length = empty( $tournament->time_increment ) ? null : strtotime( $tournament->time_increment );
 if ( ! is_array( $tournament->order_of_play ) || count( $tournament->order_of_play ) !== intval( $tournament->num_courts ) ) {
     for ( $i = 0; $i < $tournament->num_courts; $i++ ) {
         $order_of_play[ $i ]['court']      = 'Court ' . ( $i + 1 );

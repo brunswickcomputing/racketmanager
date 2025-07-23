@@ -315,13 +315,13 @@ function get_event( int|string|Event $event = null, string $search_term = 'id' )
  *
  * @param object|int|string|null $league League ID or league object. Defaults to global $league.
  *
- * @return Racketmanager_League|null League|null
+ * @return League|null League|null
  */
-function get_league( object|int|string $league = null ): ?Racketmanager_League {
+function get_league( object|int|string $league = null ): ?League {
     if ( empty( $league ) && isset( $GLOBALS['league'] ) ) {
         $league = $GLOBALS['league'];
     }
-    if ( $league instanceof Racketmanager_League ) {
+    if ( $league instanceof League ) {
         $_league = $league;
     } elseif ( is_object( $league ) ) {
         // check if specific sports class exists.
@@ -332,10 +332,10 @@ function get_league( object|int|string $league = null ): ?Racketmanager_League {
         if ( class_exists( $instance ) ) {
             $_league = new $instance( $league );
         } else {
-            $_league = new Racketmanager_League( $league );
+            $_league = new League( $league );
         }
     } else {
-        $_league = Racketmanager_League::get_instance( $league );
+        $_league = League::get_instance( $league );
     }
     if ( ! $_league ) {
         return null;

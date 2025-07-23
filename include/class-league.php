@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_League API: League class
+ * League API: League class
  *
  * @author Kolja Schleich
  * @package RacketManager
@@ -15,7 +15,7 @@ use function get_query_var;
 /**
  * Class to implement the League object
  */
-class Racketmanager_League {
+class League {
 
     /**
      * League ID
@@ -626,7 +626,7 @@ class Racketmanager_League {
             if ( class_exists( $instance ) ) {
                 $league = new $instance( $league );
             } else {
-                $league = new Racketmanager_League( $league );
+                $league = new League( $league );
             }
             wp_cache_set( $league->id, $league, 'leagues' );
         }

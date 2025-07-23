@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_League_Tennis class
+ * League_Tennis class
  *
  * @package Racketmanager/Classes/Sports/Tennis
  */
@@ -10,7 +10,7 @@ namespace Racketmanager;
 /**
  * Tennis league class
  */
-class Racketmanager_League_Tennis extends Racketmanager_League {
+class League_Tennis extends League {
 
     /**
      * Sports key

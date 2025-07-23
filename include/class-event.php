@@ -2125,7 +2125,7 @@ class Event {
             $league->title    = $league_title;
             $league->event_id = $this->id;
         }
-        $league = new Racketmanager_League( $league );
+        $league = new League( $league );
         return $league->id;
     }
     /**

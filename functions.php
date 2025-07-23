@@ -487,12 +487,12 @@ function get_player( object|int|string $player = null, string $search_term = 'id
     if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
         $player = $GLOBALS['player'];
     }
-    if ( $player instanceof Racketmanager_Player ) {
+    if ( $player instanceof Player ) {
         $_player = $player;
     } elseif ( is_object( $player ) ) {
-        $_player = new Racketmanager_Player( $player );
+        $_player = new Player( $player );
     } else {
-        $_player = Racketmanager_Player::get_instance( $player, $search_term );
+        $_player = Player::get_instance( $player, $search_term );
     }
     if ( ! $_player ) {
         return null;
@@ -705,17 +705,17 @@ function match_add_players( array $match_players, object $match ): array {
  *
  * @return object|null
  */
-function get_player_error( object|int $player_error = null ): Racketmanager_Player_Error|null {
+function get_player_error( object|int $player_error = null ): Player_Error|null {
     if ( empty( $player_error ) && isset( $GLOBALS['player_error'] ) ) {
         $player_error = $GLOBALS['player_error'];
     }
 
-    if ( $player_error instanceof Racketmanager_Player_Error ) {
+    if ( $player_error instanceof Player_Error ) {
         $_player_error = $player_error;
     } elseif ( is_object( $player_error ) ) {
-        $_player_error = new Racketmanager_Player_Error( $player_error );
+        $_player_error = new Player_Error( $player_error );
     } else {
-        $_player_error = Racketmanager_Player_Error::get_instance( $player_error );
+        $_player_error = Player_Error::get_instance( $player_error );
     }
 
     if ( ! $_player_error ) {

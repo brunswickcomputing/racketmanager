@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Player API: player class
+ * Player API: player class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -15,7 +15,7 @@ use WP_User;
 /**
  * Class to implement the Player object
  */
-final class Racketmanager_Player {
+final class Player {
     /**
      * Id.
      *
@@ -405,7 +405,7 @@ final class Racketmanager_Player {
             if ( ! $player ) {
                 return false;
             }
-            $player = new Racketmanager_Player( $player->data );
+            $player = new Player( $player->data );
             wp_cache_set( $player_id, $player, 'players' );
         }
 

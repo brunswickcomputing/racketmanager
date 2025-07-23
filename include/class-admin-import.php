@@ -255,7 +255,7 @@ class Admin_Import extends Admin_Display {
                     $new_player = $player_valid[1];
                     $player     = get_player( $new_player->user_login, 'login' );  // get player by login.
                     if ( ! $player ) {
-                        $player = new Racketmanager_Player( $new_player );
+                        $player = new Player( $new_player );
                         if ( ! empty( $player->id ) ) {
                             ++$x;
                         }

@@ -13,9 +13,9 @@ use WP_User;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Racketmanager_Privacy_Exporters Class.
+ * Privacy_Exporters Class.
  */
-class Racketmanager_Privacy_Exporters {
+class Privacy_Exporters {
     /**
      * Finds and exports user data by email address.
      *

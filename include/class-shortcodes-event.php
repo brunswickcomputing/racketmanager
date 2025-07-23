@@ -372,7 +372,7 @@ class Shortcodes_Event extends Shortcodes {
      * @param object $event event.
      * @param string|int $player_id player id.
      *
-     * @return mixed|object|Racketmanager_Player|null
+     * @return mixed|object|Player|null
      */
     private function get_player_info( object $event, int|string $player_id ): mixed {
         if ( is_numeric( $player_id ) ) {

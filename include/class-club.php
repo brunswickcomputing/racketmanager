@@ -532,7 +532,7 @@ final class Club {
                     $return->msg        = __( 'LTA Tennis Number already used', 'racketmanager' );
                     $return->status     = 401;
                 } else {
-                    $player = new Racketmanager_Player( $new_player );
+                    $player = new Player( $new_player );
                 }
             }
         } else {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Player_Error API: player error class
+ * Player_Error API: player error class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Player Error object
  */
-final class Racketmanager_Player_Error {
+final class Player_Error {
     /**
      * Id
      *
@@ -84,7 +84,7 @@ final class Racketmanager_Player_Error {
             if ( ! $player_error ) {
                 return false;
             }
-            $player_error = new Racketmanager_Player_Error( $player_error );
+            $player_error = new Player_Error( $player_error );
             wp_cache_set( $player_error_id, $player_error, 'player_errors' );
         }
         return $player_error;

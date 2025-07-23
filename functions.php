@@ -403,19 +403,19 @@ function get_rubber( object|int $rubber = null ): Racketmanager_Rubber|null {
  * @param object|int|string|null $tournament Tournament ID or tournament object. Defaults to global $tournament.
  * @param string $search_term search term - defaults to id.
  *
- * @return Racketmanager_Tournament|null tournament|null
+ * @return Tournament|null tournament|null
  */
-function get_tournament( object|int|string $tournament = null, string $search_term = 'id' ): Racketmanager_Tournament|null {
+function get_tournament( object|int|string $tournament = null, string $search_term = 'id' ): Tournament|null {
     if ( empty( $tournament ) && isset( $GLOBALS['tournament'] ) ) {
         $tournament = $GLOBALS['tournament'];
     }
 
-    if ( $tournament instanceof Racketmanager_Tournament ) {
+    if ( $tournament instanceof Tournament ) {
         $_tournament = $tournament;
     } elseif ( is_object( $tournament ) ) {
-        $_tournament = new Racketmanager_Tournament( $tournament );
+        $_tournament = new Tournament( $tournament );
     } else {
-        $_tournament = Racketmanager_Tournament::get_instance( $tournament, $search_term );
+        $_tournament = Tournament::get_instance( $tournament, $search_term );
     }
 
     if ( ! $_tournament ) {

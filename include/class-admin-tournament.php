@@ -394,7 +394,7 @@ final class Admin_Tournament extends Admin_Championship {
                 $fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
                 $tournament->fees             = $fees;
                 $tournament->num_entries      = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
-                $tournament                   = new Racketmanager_Tournament( $tournament );
+                $tournament                   = new Tournament( $tournament );
                 if ( $racketmanager->error ) {
                     $this->show_message();
                 } else {

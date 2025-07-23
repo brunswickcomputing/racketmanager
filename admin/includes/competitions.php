@@ -42,7 +42,7 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
 </div>
 <div class="form-control" id="competitions">
     <form id="competitions-filter" method="post" action="">
-        <?php wp_nonce_field( 'competitions-bulk' ); ?>
+        <?php wp_nonce_field( 'racketmanager_competitions-bulk', 'racketmanager_nonce' ); ?>
         <div class="row gx-3 mb-3 align-items-center">
             <!-- Bulk Actions -->
             <div class="col-auto">

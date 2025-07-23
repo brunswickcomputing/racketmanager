@@ -36,36 +36,42 @@ namespace Racketmanager;
                     <button name="doTeamDel" id="doTeamDel" class="btn btn-secondary"><?php esc_html_e( 'Apply', 'racketmanager' ); ?></button>
                 </div>
             </div>
-            <div class="container">
-                <div class="row table-header">
-                    <div class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></div>
-                    <div class="col-1 column-num">ID</div>
-                    <div class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></div>
-                    <div class="col-3"><?php esc_html_e( 'Stadium', 'racketmanager' ); ?></div>
-                </div>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="col-1 check-column"><label for="selectAll" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="selectAll" id="selectAll" onclick="Racketmanager.checkAll(document.getElementById('teams-filter'));" /></th>
+                        <th class="col-1 column-num">ID</th>
+                        <th class="col-3"><?php esc_html_e( 'Title', 'racketmanager' ); ?></th>
+                        <th class="col-3"><?php esc_html_e( 'Stadium', 'racketmanager' ); ?></th>
+                    </tr>
+                </thead>
                 <?php
-                $club  = get_club( $club_id );
-                $teams = $club->get_teams();
-                $class = '';
-                foreach ( $teams as $team ) {
-                    $class = ( 'alternate' === $class ) ? '' : 'alternate';
+                if ( $teams ) {
                     ?>
-                    <div class="row table-row <?php echo esc_html( $class ); ?>">
-                        <div class="col-1 check-column">
-                            <label for="team-<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
-                        </div>
-                        <div class="col-1 column-num"><?php echo esc_html( $team->id ); ?></div>
-                        <div class="col-3 team-name">
-                            <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=team&amp;edit=<?php echo esc_html( $team->id ); ?>&amp;club_id=<?php echo esc_html( $team->club_id ); ?>">
-                                <?php echo esc_html( $team->title ); ?>
-                            </a>
-                        </div>
-                        <div class="col-3"><?php echo esc_html( $team->stadium ); ?></div>
-                    </div>
+                    <tbody>
+                        <?php
+                        foreach ( $teams as $team ) {
+                        ?>
+                        <tr>
+                            <td class="col-1 check-column">
+                                <label for="team-<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $team->id ); ?>" name="team[<?php echo esc_html( $team->id ); ?>]" id="team-<?php echo esc_html( $team->id ); ?>" />
+                            </td>
+                            <td class="col-1 column-num"><?php echo esc_html( $team->id ); ?></td>
+                            <td class="col-3 team-name">
+                                <a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=team&amp;edit=<?php echo esc_html( $team->id ); ?>&amp;club_id=<?php echo esc_html( $team->club_id ); ?>">
+                                    <?php echo esc_html( $team->title ); ?>
+                                </a>
+                            </td>
+                            <td class="col-3"><?php echo esc_html( $team->stadium ); ?></td>
+                        </tr>
+                        <?php
+                        }
+                        ?>
+                    </tbody>
                     <?php
                 }
                 ?>
-            </div>
+            </table>
         </form>
     </div>
     <!-- Add New Team -->

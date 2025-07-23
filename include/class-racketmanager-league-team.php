@@ -770,4 +770,26 @@ final class Racketmanager_League_Team {
 		    )
 	    );
     }
+    /**
+     * Update Table
+     *
+     * @param int $league_id league id.
+     * @param int $rank rank.
+     * @param string $status status.
+     * @param string $profile profile.
+     */
+    public function set_constitution_rank( int $league_id, int $rank, string $status, string $profile ): void {
+        global $wpdb;
+
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_table SET `league_id` = %d, `rank` = %d, `status` = %s, `profile` = %d WHERE `id` = %d",
+                $league_id,
+                $rank,
+                $status,
+                $profile,
+                $this->table_id
+            )
+        );
+    }
 }

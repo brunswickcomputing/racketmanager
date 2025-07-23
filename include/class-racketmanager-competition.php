@@ -1678,7 +1678,7 @@ class Racketmanager_Competition {
 				$order_of_play[ $i ]['court']      = $courts[ $i ];
 				$order_of_play[ $i ]['start_time'] = $start_times[ $i ];
 				$order_of_play[ $i ]['matches']    = $matches[ $i ];
-				$num_matches                    = count( $matches[ $i ] );
+				$num_matches                       = count( $matches[ $i ] );
 				for ( $m = 0; $m < $num_matches; $m++ ) {
 					$match_id = trim( $matches[ $i ][ $m ] );
 					if ( ! empty( $match_id ) ) {
@@ -1701,13 +1701,14 @@ class Racketmanager_Competition {
 			if ( $order_of_play !== $curr_order_of_play ) {
 				$season_dtls['orderofplay'] = $order_of_play;
 				$seasons[ $season ]         = $season_dtls;
-				$this->update_seasons( $seasons );
-				$racketmanager->set_message( __( 'Cup plan updated', 'racketmanager' ) );
+                $updates = $this->update_seasons( $seasons );
 			} else {
-				$racketmanager->set_message( __( 'No updates', 'racketmanager' ) );
+                $updates = false;
 			}
-		}
-		return true;
+		} else {
+            $updates = false;
+        }
+		return $updates;
 	}
 	/**
 	 * Update plan config
@@ -1828,13 +1829,13 @@ class Racketmanager_Competition {
 	 *
 	 * @param object $season season data.
 	 */
-	public function add_season( object $season ): void {
+	public function add_season( object $season ): bool {
 		global $racketmanager;
+        $updates                  = false;
 		$seasons                  = $this->seasons;
 		$seasons[ $season->name ] = (array) $season;
-		$this->update_seasons( $seasons );
-		$racketmanager->set_message( __( 'Season added', 'racketmanager' ) );
-        $events = $this->get_events();
+		$updates                  = $this->update_seasons( $seasons );
+        $events                   = $this->get_events();
         if ( $events ) {
             $event_season                 = new stdClass();
             $event_season->name           = $season->name;
@@ -1846,6 +1847,7 @@ class Racketmanager_Competition {
                 $event->add_season( $season_event );
             }
         }
+        return $updates;
 	}
 	/**
 	 * Update season

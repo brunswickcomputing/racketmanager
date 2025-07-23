@@ -638,12 +638,12 @@ function get_result_check( object|int $results_check = null ): ?object {
         $results_check = $GLOBALS['results_check'];
     }
 
-    if ( $results_check instanceof Racketmanager_Results_Checker ) {
+    if ( $results_check instanceof Results_Checker ) {
         $_results_check = $results_check;
     } elseif ( is_object( $results_check ) ) {
-        $_results_check = new Racketmanager_Results_Checker( $results_check );
+        $_results_check = new Results_Checker( $results_check );
     } else {
-        $_results_check = Racketmanager_Results_Checker::get_instance( $results_check );
+        $_results_check = Results_Checker::get_instance( $results_check );
     }
 
     if ( ! $_results_check ) {

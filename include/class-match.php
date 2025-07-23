@@ -1707,7 +1707,7 @@ final class Racketmanager_Match {
         $result_check->player_id   = $player;
         $result_check->rubber_id   = $rubber_id;
         $result_check->description = $error;
-        new Racketmanager_Results_Checker( $result_check );
+        new Results_Checker( $result_check );
     }
     /**
      * Add entry to results checker for errors on match result
@@ -1721,7 +1721,7 @@ final class Racketmanager_Match {
         $result_check->match_id    = $this->id;
         $result_check->team_id     = $team;
         $result_check->description = $error;
-        new Racketmanager_Results_Checker( $result_check );
+        new Results_Checker( $result_check );
     }
     /**
      * Are there result checker entries for match

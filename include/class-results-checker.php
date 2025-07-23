@@ -1,10 +1,10 @@
 <?php
 /**
- * Racketmanager_Results_Checker API: Racketmanager_Results_Checker class
+ * Results_Checker API: Results_Checker class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Racketmanager_Results_Checker
+ * @subpackage Results_Checker
  */
 
 namespace Racketmanager;
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the results checker object
  */
-final class Racketmanager_Results_Checker {
+final class Results_Checker {
     /**
      * Id
      *
@@ -133,7 +133,7 @@ final class Racketmanager_Results_Checker {
                 return false;
             }
 
-            $results_checker = new Racketmanager_Results_Checker( $results_checker );
+            $results_checker = new Results_Checker( $results_checker );
 
             wp_cache_set( $results_checker->id, $results_checker, 'results_checker' );
         }

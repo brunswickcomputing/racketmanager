@@ -582,17 +582,17 @@ function get_invoice( int $invoice = null ): Invoice|null {
  * @param object|int|null $league_team LeagueTeam ID or LeagueTeam object. Defaults to global $league_team.
  * @return object|null
  */
-function get_league_team( object|int $league_team = null ): Racketmanager_League_Team|null {
+function get_league_team( object|int $league_team = null ): League_Team|null {
     if ( empty( $league_team ) && isset( $GLOBALS['league_team'] ) ) {
         $league_team = $GLOBALS['league_team'];
     }
 
-    if ( $league_team instanceof Racketmanager_League_Team ) {
+    if ( $league_team instanceof League_Team ) {
         $_league_team = $league_team;
     } elseif ( is_object( $league_team ) ) {
-        $_league_team = new Racketmanager_League_Team( $league_team );
+        $_league_team = new League_Team( $league_team );
     } else {
-        $_league_team = Racketmanager_League_Team::get_instance( $league_team );
+        $_league_team = League_Team::get_instance( $league_team );
     }
 
     if ( ! $_league_team ) {

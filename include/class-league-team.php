@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_League_Team API: League Team class
+ * League_Team API: League Team class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the League_Team object
  */
-final class Racketmanager_League_Team {
+final class League_Team {
     /**
      * Number of done matches
      *
@@ -409,7 +409,7 @@ final class Racketmanager_League_Team {
      *
      * @return boolean|object
      */
-    public static function get_instance( int $league_team_id ): bool|Racketmanager_League_Team {
+    public static function get_instance( int $league_team_id ): bool|League_Team {
         global $wpdb;
         if ( ! $league_team_id ) {
             return false;
@@ -428,7 +428,7 @@ final class Racketmanager_League_Team {
             if ( ! $league_team ) {
                 return false;
             }
-            $league_team = new Racketmanager_League_Team( $league_team );
+            $league_team = new League_Team( $league_team );
 
             wp_cache_set( $league_team->id, $league_team, 'league-teams' );
         }
@@ -439,7 +439,7 @@ final class Racketmanager_League_Team {
     /**
      * Constructor
      *
-     * @param object|null $league_team Racketmanager_League_Team object.
+     * @param object|null $league_team League_Team object.
      */
     public function __construct( object $league_team = null ) {
         if ( ! is_null( $league_team ) ) {

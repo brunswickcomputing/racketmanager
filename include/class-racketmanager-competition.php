@@ -2490,7 +2490,6 @@ class Racketmanager_Competition {
 			}
 		}
 		wp_mail( $email_to, $email_subject, $email_message, $headers );
-		$racketmanager->set_message( __( 'Message sent', 'racketmanager' ) );
 		return true;
 	}
 	/**

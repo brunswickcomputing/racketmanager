@@ -146,7 +146,7 @@ add_action( 'init', 'Racketmanager\racketmanager_download' );
 
 /**
  * Output and Get SVG.
- * Output and get the SVG markup for an icon in the Racketmanager_SVG_Icons class.
+ * Output and get the SVG markup for an icon in the SVG_Icons class.
  *
  * @param string $svg_name The name of the icon.
  */
@@ -166,7 +166,7 @@ function racketmanager_get_svg( string $svg_name ): false|string {
 
     // Make sure that only our allowed tags and attributes are included.
     $svg = wp_kses(
-        Racketmanager_SVG_Icons::get_svg( $svg_name ),
+        SVG_Icons::get_svg( $svg_name ),
         array(
             'svg'     => array(
                 'class'       => true,

@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_SVG_Icons API: SVG_Icons class
+ * SVG_Icons API: SVG_Icons class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -9,11 +9,11 @@
 
 namespace Racketmanager;
 
-if ( ! class_exists( 'Racketmanager_SVG_Icons' ) ) {
+if ( ! class_exists( 'SVG_Icons' ) ) {
     /**
      * Get a svg icon
      */
-    class Racketmanager_SVG_Icons {
+    class SVG_Icons {
         /**
          * Get svg
          *

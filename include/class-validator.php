@@ -351,6 +351,50 @@ class Validator {
         return $this;
     }
     /**
+     * Validate competition type
+     *
+     * @param string|null $type competition type.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function competition_type( ?string $type ): object {
+        if ( empty( $type ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'type';
+            $this->err_msgs[] = __( 'Competition type not specified', 'racketmanager' );
+        } else {
+            $valid = Racketmanager_Util::get_competition_type( $type );
+            if ( ! $valid ) {
+                $this->error      = true;
+                $this->err_flds[] = 'type';
+                $this->err_msgs[] = __( 'Competition type not valid', 'racketmanager' );
+            }
+        }
+        return $this;
+    }
+    /**
+     * Validate age group
+     *
+     * @param string|null $age_group age group.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function age_group( ?string $age_group ): object {
+        if ( empty( $age_group ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'age_group';
+            $this->err_msgs[] = __( 'Age group not specified', 'racketmanager' );
+        } else {
+            $valid = Racketmanager_Util::get_age_groups( $age_group );
+            if ( ! $valid ) {
+                $this->error      = true;
+                $this->err_flds[] = 'age_group';
+                $this->err_msgs[] = __( 'Age group not valid', 'racketmanager' );
+            }
+        }
+        return $this;
+    }
+    /**
      * Validate captain details
      *
      * @param string|null $captain captain id.

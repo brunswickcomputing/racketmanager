@@ -19,14 +19,28 @@ use stdClass;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class Admin_Finances extends RacketManager_Admin {
-    private ?string $invalid_permissions;
-
+final class Admin_Finances extends Admin_Display {
     /**
-     * Constructor
+     * Function to handle administration finances displays
+     *
+     * @param string|null $view
+     *
+     * @return void
      */
-    public function __construct() {
-        $this->invalid_permissions = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );
+    public function handle_display( ?string $view ): void {
+        if ( 'charges' === $view ) {
+            $this->display_charges_page();
+        } elseif ( 'club-invoices' === $view ) {
+            $this->display_club_invoices_page();
+        } elseif ( 'player-invoices' === $view ) {
+            $this->display_player_invoices_page();
+        } elseif ( 'invoice' === $view ) {
+            $this->display_invoice_page();
+        } elseif ( 'charge' === $view ) {
+            $this->display_charge_page();
+        } else {
+            $this->display_finances_page();
+        }
     }
     /**
      * Display finances page
@@ -34,7 +48,7 @@ final class Admin_Finances extends RacketManager_Admin {
     public function display_finances_page(): void {
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $this->display_charges_page();
         }
@@ -43,10 +57,11 @@ final class Admin_Finances extends RacketManager_Admin {
      * Display club invoices page
      */
     public function display_club_invoices_page(): void {
+        global $racketmanager;
         $players = '';
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
             $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -56,7 +71,7 @@ final class Admin_Finances extends RacketManager_Admin {
             $racketmanager_tab = 'club-invoices';
             $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
             $args['type']      = 'club';
-            $finance_invoices = $this->get_invoices( $args );
+            $finance_invoices  = $racketmanager->get_invoices( $args );
             require_once RACKETMANAGER_PATH . '/admin/finances/show-invoices.php';
         }
     }
@@ -64,10 +79,11 @@ final class Admin_Finances extends RacketManager_Admin {
      * Display player invoices page
      */
     public function display_player_invoices_page(): void {
+        global $racketmanager;
         $players = '';
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
             $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -77,7 +93,7 @@ final class Admin_Finances extends RacketManager_Admin {
             $racketmanager_tab = 'player-invoices';
             $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
             $args['type'] = 'player';
-            $finance_invoices = $this->get_invoices( $args );
+            $finance_invoices = $racketmanager->get_invoices( $args );
             require_once RACKETMANAGER_PATH . '/admin/finances/show-invoices.php';
         }
     }
@@ -85,10 +101,11 @@ final class Admin_Finances extends RacketManager_Admin {
      * Display charges page
      */
     public function display_charges_page(): void {
+        global $racketmanager;
         $players = '';
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( __( $this->invalid_permissions ), true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
             $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
@@ -134,7 +151,7 @@ final class Admin_Finances extends RacketManager_Admin {
                 }
             }
 
-            $this->printMessage();
+            $this->show_message();
             $args             = array();
             if ( $competition_id ) {
                 $args['competition'] = $competition_id;
@@ -142,7 +159,7 @@ final class Admin_Finances extends RacketManager_Admin {
             if ( $season ) {
                 $args['season'] = $season;
             }
-            $finance_charges = $this->get_charges( $args );
+            $finance_charges = $racketmanager->get_charges( $args );
 
             require_once RACKETMANAGER_PATH . '/admin/finances/show-charges.php';
         }
@@ -153,13 +170,13 @@ final class Admin_Finances extends RacketManager_Admin {
     public function display_charge_page(): void {
         if ( ! current_user_can( 'edit_teams' ) ) {
             $this->set_message( $this->invalid_permissions, true );
-            $this->printMessage();
+            $this->show_message();
         } else {
             $charges = null;
             if ( isset( $_POST['saveCharges'] ) ) {
                 if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-charges' ) ) {
                     $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                    $this->printMessage();
+                    $this->show_message();
                     return;
                 }
                 if ( isset( $_POST['charges_id'] ) && '' !== $_POST['charges_id'] ) {
@@ -215,7 +232,7 @@ final class Admin_Finances extends RacketManager_Admin {
                     }
                 }
             }
-            $this->printMessage();
+            $this->show_message();
             $edit = false;
             if ( isset( $_GET['charges'] ) || ! empty( $charges->id ) ) {
                 if ( isset( $_GET['charges'] ) ) {
@@ -243,13 +260,13 @@ final class Admin_Finances extends RacketManager_Admin {
     public function display_invoice_page(): void {
         global $racketmanager;
         if ( ! current_user_can( 'edit_teams' ) ) {
-            $racketmanager->set_message( $this->invalid_permissions, true );
-            $racketmanager->printMessage();
+            $this->set_message( $this->invalid_permissions, true );
+            $this->show_message();
         } else {
             if ( isset( $_POST['saveInvoice'] ) ) {
                 if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-invoice' ) ) {
-                    $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                    $racketmanager->printMessage();
+                    $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+                    $this->show_message();
                     return;
                 }
                 if ( isset( $_POST['invoice_id'] ) ) {
@@ -265,7 +282,7 @@ final class Admin_Finances extends RacketManager_Admin {
                     }
                 }
             }
-            $racketmanager->printMessage();
+            $this->show_message();
             if ( isset( $_GET['charge'] ) && isset( $_GET['club'] ) ) {
                 $invoice_id = $this->get_invoice( intval( $_GET['charge'] ), intval( $_GET['club'] ) );
             } elseif ( isset( $_GET['invoice'] ) ) {
@@ -279,8 +296,8 @@ final class Admin_Finances extends RacketManager_Admin {
                 $invoice_view = show_invoice( $invoice->id );
                 require_once RACKETMANAGER_PATH . '/admin/finances/invoice.php';
             } else {
-                $racketmanager->set_message( __( 'Invoice not found', 'racketmanager' ), true );
-                $racketmanager->printMessage();
+                $this->set_message( __( 'Invoice not found', 'racketmanager' ), true );
+                $this->show_message();
             }
         }
     }
@@ -335,7 +352,7 @@ final class Admin_Finances extends RacketManager_Admin {
                 }
             }
         }
-        $this->printMessage();
+        $this->show_message();
         $args = array();
         if ( $club_id ) {
             $args['club'] = $club_id;

@@ -125,7 +125,7 @@ add_action( 'init', 'Racketmanager\create_new_url_querystring' );
  */
 function racketmanager_download(): void {
     if ( isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $exporter = new Racketmanager_Exporter();
+        $exporter = new Exporter();
         if ( 'calendar' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $exporter->calendar();
         } elseif ( 'fixtures' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

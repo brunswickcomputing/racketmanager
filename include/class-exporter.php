@@ -1,10 +1,10 @@
 <?php
 /**
- * Racketmanager_Exporter API: exporter
+ * Exporter API: exporter
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Racketmanager_Exporter
+ * @subpackage Exporter
  */
 
 namespace Racketmanager;
@@ -13,9 +13,9 @@ use JetBrains\PhpStorm\NoReturn;
 use stdClass;
 
 /**
- * Class to implement the Racketmanager_Exporter object
+ * Class to implement the Exporter object
  */
-class Racketmanager_Exporter {
+class Exporter {
     /**
      * Calendar export function
      */

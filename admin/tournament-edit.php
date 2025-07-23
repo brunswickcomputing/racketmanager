@@ -13,8 +13,7 @@ namespace Racketmanager;
 /** @var array   $clubs */
 /** @var string  $form_action */
 /** @var object  $tournament */
-$is_invalid = false;
-$msg        = null;
+/** @var array   $seasons */
 ?>
 <div class='container'>
     <div class='row justify-content-end'>

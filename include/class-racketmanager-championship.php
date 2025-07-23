@@ -420,107 +420,6 @@ final class Racketmanager_Championship {
     }
 
     /**
-     * Start final rounds
-     */
-    private function start_final_rounds(): bool {
-        $updates = false;
-        $home    = null;
-        $away    = null;
-        if ( is_admin() && current_user_can( 'update_results' ) ) {
-            $league        = get_league( $this->league_id );
-            $multiple_legs = false;
-            $round_name    = $this->get_final_keys( 1 );
-            $match_args    = array(
-                'final'            => $round_name,
-                'limit'            => false,
-                'match_day'        => -1,
-                'reset_query_args' => true,
-            );
-            // get first round matches.
-            if ( $league->event->current_season['home_away'] ) {
-                $multiple_legs     = true;
-                $match_args['leg'] = 1;
-            }
-            $matches_list = array();
-            $matches      = $league->get_matches( $match_args );
-            foreach ( $matches as $match ) {
-                $matches_list[] = $match->id;
-                if ( '-1' === $match->home_team ) {
-                    $home['team'] = -1;
-                    $home_team    = array( 'id' => -1 );
-                } elseif ( str_contains( $match->home_team, '_' ) ) {
-                    $home      = explode( '_', $match->home_team );
-                    $home      = array(
-                        'rank'  => $home[0],
-                        'group' => $home[1] ?? '',
-                    );
-                    $home_team = $league->get_league_teams(
-                        array(
-                            'rank'             => $home['rank'],
-                            'group'            => $home['group'],
-                            'reset_query_args' => true,
-                        )
-                    );
-                    if ( $home_team ) {
-                        $home['team']         = $home_team[0]->id;
-                        $match->home_team     = $home['team'];
-                        $match->teams['home'] = $league->get_team_dtls( $home_team[0]->id );
-                    } else {
-                        $home['team'] = -1;
-                        $home_team    = array( 'id' => -1 );
-                    }
-                } else {
-                    $home_team = '';
-                }
-                if ( '-1' === $match->away_team ) {
-                    $away['team'] = -1;
-                    $away_team    = array( 'id' => -1 );
-                } elseif ( str_contains( $match->away_team, '_' ) ) {
-                    $away      = explode( '_', $match->away_team );
-                    $away      = array(
-                        'rank'  => $away[0],
-                        'group' => $away[1] ?? '',
-                    );
-                    $away_team = $league->get_league_teams(
-                        array(
-                            'rank'             => $away['rank'],
-                            'group'            => $away['group'],
-                            'reset_query_args' => true,
-                        )
-                    );
-                    if ( $away_team ) {
-                        $away['team']         = $away_team[0]->id;
-                        $match->away_team     = $away['team'];
-                        $match->teams['away'] = $league->get_team_dtls( $away_team[0]->id );
-                    } else {
-                        $away['team'] = -1;
-                        $away_team    = array( 'id' => -1 );
-                    }
-                } else {
-                    $away_team = '';
-                }
-                if ( $home_team && $away_team ) {
-                    $this->set_teams( $match, $home['team'], $away['team'] );
-                    $updates = true;
-                }
-            }
-            if ( $matches_list ) {
-                if ( $multiple_legs ) {
-                    foreach ( $matches_list as $match_id ) {
-                        $match = get_match( $match_id );
-                        if ( $match ) {
-                            if ( $match->linked_match ) {
-                                $matches_list[] = $match->linked_match;
-                            }
-                        }
-                    }
-                }
-                $this->update_final_results( $matches_list, array(), array(), array(), 1, $league->current_season['name'] );
-            }
-        }
-        return $updates;
-    }
-    /**
      * Set teams for match function
      *
      * @param object $match match object.
@@ -529,7 +428,7 @@ final class Racketmanager_Championship {
      *
      * @return void
      */
-    private function set_teams( object $match, ?string $home_id, ?string $away_id ): void {
+    public function set_teams( object $match, ?string $home_id, ?string $away_id ): void {
         $match = get_match( $match );
         $match = $match->set_teams( $home_id, $away_id );
         if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
@@ -738,74 +637,5 @@ final class Racketmanager_Championship {
                 }
             }
         }
-    }
-    /**
-     * Handle administration panel
-     *
-     * @param object|null $league league object.
-     */
-    public function handle_admin_page( object $league = null ): string {
-        global $racketmanager, $tab;
-        $league = get_league( $league );
-        if ( isset( $_POST['action'] ) ) {
-            $action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-            if ( 'startFinals' === $action ) {
-                if ( isset( $_POST['racketmanager_proceed_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_proceed_nonce'] ) ), 'racketmanager_championship_proceed' ) ) {
-                    if ( current_user_can( 'update_results' ) ) {
-                        $updates = $this->start_final_rounds();
-                        if ( $updates ) {
-                            $racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
-                        } else {
-                            $racketmanager->set_message( __( 'First round not started', 'racketmanager' ), true );
-                        }
-                        $tab = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                    } else {
-                        $racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
-                    }
-                } else {
-                    $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                }
-                $racketmanager->printMessage();
-            } elseif ( 'updateFinalResults' === $action ) {
-                if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_update-finals' ) ) {
-                    if ( current_user_can( 'update_results' ) ) {
-                        $custom      = $_POST['custom'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $matches     = $_POST['matches'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $home_points = $_POST['home_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
-                        $season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-                        $this->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
-                    } else {
-                        $racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
-                    }
-                } else {
-                    $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                }
-            }
-            $racketmanager->printMessage();
-        }
-        if ( count( $this->groups ) > 0 ) {
-            $league->set_group( $this->groups[0] );
-        }
-
-        $tab = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-        return $tab;
-    }
-    /**
-     * Display administration panel
-     */
-    public function display_admin_page(): void {
-        global $racketmanager, $league;
-
-        if ( ! is_admin() || ! current_user_can( 'view_leagues' ) ) {
-            $racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
-            $racketmanager->printMessage();
-            return;
-        }
-        $league = get_league( $league );
-        $this->handle_admin_page( $league );
-        // phpcs:enable WordPress.Security.NonceVerification.Recommended
-        include_once RACKETMANAGER_PATH . 'admin/championship.php';
     }
 }

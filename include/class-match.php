@@ -1806,23 +1806,26 @@ final class Racketmanager_Match {
      * Adjust match date based on team match date and time
      *
      * @param string $start_date original match date.
-     * @param string $match_day match day.
-     * @param string $match_time match time.
+     * @param string|null $match_day match day.
+     * @param string|null $match_time match time.
      *
      * @return void
      */
-    public function set_match_date( string $start_date, string $match_day, string $match_time ): void {
+    public function set_match_date( string $start_date, ?string $match_day, ?string $match_time ): void {
         if ( strlen( $start_date ) > 10 ) {
             $start_date = substr( $start_date, 0, 10 );
         }
         if ( ! empty( $match_day ) ) {
-            $day = Racketmanager_Util::get_match_day_number( $match_day );
-            if ( ! empty( $match_time ) ) {
-                $match_date = Racketmanager_Util::amend_date( $start_date, $day );
-                $match_date = $match_date . ' ' . $match_time;
-                $this->update_match_date( $match_date );
-            }
+            $day        = Racketmanager_Util::get_match_day_number( $match_day );
+            $match_date = Racketmanager_Util::amend_date( $start_date, $day );
+        } else {
+            $match_date = $start_date;
         }
+        if ( empty( $match_time ) ) {
+            $match_time = '00:00';
+        }
+        $match_date = $match_date . ' ' . $match_time;
+        $this->update_match_date( $match_date );
     }
     /**
      * Update match date function

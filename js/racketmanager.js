@@ -635,20 +635,10 @@ Racketmanager.updateResults = function (link) {
 	let match_edit = false;
 	match_edit = match_status_link_id.length !== 0;
 	let alert_id = jQuery('#matchAlert');
-	let use_alert = false;
-	let notifyField = '';
 	let alert_response = '';
-	use_alert = alert_id.length !== 0;
-	if (use_alert) {
-		jQuery(alert_id).hide();
-		jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
-		alert_response = '#alertResponse';
-	} else {
-		notifyField = '#updateResponse';
-		jQuery(notifyField).removeClass("message-success message-error message-warning");
-		jQuery(notifyField).val("");
-		jQuery(notifyField).hide();
-	}
+	jQuery(alert_id).hide();
+	jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
+	alert_response = '#alertResponse';
 	jQuery(".is-invalid").removeClass("is-invalid");
 	let splash = jQuery("#splash");
 	splash.css('opacity', 1);
@@ -661,60 +651,36 @@ Racketmanager.updateResults = function (link) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let $response = response.data;
-			let $message = $response[0];
-			if (use_alert) {
-				jQuery(alert_id).show();
-				let alertClass = 'alert--' + $response[4];
-				jQuery(alert_id).addClass(alertClass);
-				jQuery(alert_response).html($message);
-			} else {
-				let alertClass = 'message-' + $response[4];
-				let updateResponse = jQuery("#updateResponse");
-				updateResponse.show();
-				updateResponse.addClass(alertClass);
-				updateResponse.html($message);
-				updateResponse.delay(10000).fadeOut('slow');
-			}
-			let homePoints = $response[1];
-			let matchHome = 0;
-			let matchAway = 0;
-			for (let i in homePoints) {
-				let formField = "#home_points-" + i;
-				let fieldVal = homePoints[i];
-				jQuery(formField).val(fieldVal);
-				matchHome = +matchHome + +homePoints[i];
-			}
-			let awayPoints = $response[2];
-			for (let j in awayPoints) {
-				let awayFormField = "#away_points-" + j;
-				let awayFieldVal = awayPoints[j];
-				jQuery(awayFormField).val(awayFieldVal);
-				matchAway = +matchAway + +awayPoints[j];
-			}
-			let $updatedRubbers = $response[3];
+			let data = response.data;
+			let message = data.msg;
+			let status = data.status;
+			let rubbers = data.rubbers;
+			let warnings = data.warnings;
+			let alertClass = 'alert--' + status;
+			jQuery(alert_id).addClass(alertClass);
+			jQuery(alert_response).html(message);
 			let rubberNo = 1;
-			for (let r in $updatedRubbers) {
-				let $rubber = $updatedRubbers[r];
-				let winner = $rubber['winner'];
+			for (let r in rubbers) {
+				let rubber = rubbers[r];
+				let winner = rubber['winner'];
 				let formField = '#match-status-' + rubberNo + '-' + winner;
 				jQuery(formField).addClass('winner');
 				jQuery(formField).val('W');
-				for (let t in $rubber['players']) { // home or away
-					let $team = $rubber['players'][t];
-					for (let p = 0; p < $team.length; p++) {
-						let $player = $team[p];
+				for (let t in rubber['players']) { // home or away
+					let team = rubber['players'][t];
+					for (let p = 0; p < team.length; p++) {
+						let player = team[p];
 						let id = p + 1;
 						let formField = '#' + t + 'player' + id + '_' + rubberNo;
-						let fieldVal = $player;
+						let fieldVal = player;
 						jQuery(formField).val(fieldVal);
 						formField = '#' + 'players_' + rubberNo + '_' + t + '_' + id;
-						fieldVal = $player;
+						fieldVal = player;
 						jQuery(formField).val(fieldVal);
 					}
 				}
-				for (let s in $rubber['sets']) {
-					let team = $rubber['sets'][s];
+				for (let s in rubber['sets']) {
+					let team = rubber['sets'][s];
 					for (let p in team) {
 						let score = team[p];
 						let formField = '#' + 'set_' + rubberNo + '_' + s + '_' + p;
@@ -723,45 +689,52 @@ Racketmanager.updateResults = function (link) {
 				}
 				rubberNo++;
 			}
-			let playerWarnings = $response[5];
-			if (playerWarnings) {
-				for (let w in playerWarnings) {
+			if (warnings) {
+				for (let w in warnings) {
 					let playerRef = '#' + w;
 					jQuery(playerRef).addClass('is-invalid');
 					let playerRefFeedback = playerRef + 'Feedback';
-					jQuery(playerRefFeedback).html(playerWarnings[w])
+					jQuery(playerRefFeedback).html(warnings[w])
 				}
 			}
 			Racketmanager.matchHeader(match_id, match_edit);
 		},
 		error: function (response) {
-			let feedback;
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let $message = data[0];
-				for (let errorMsg of data[1]) {
-					$message += '<br />' + errorMsg;
+			let message;
+			let data;
+			if (response.status === 500) {
+				if ( response.responseJSON) {
+					data = response.responseJSON.data;
+					message = data.message;
+					if (data.file) {
+						message = message.concat(' ' + data.file + ' ' + data.line);
+					}
+				} else {
+					message = response.statusText;
 				}
-				let $errorFields = data[2];
-				for (let $errorField of $errorFields) {
-					let $id = '#'.concat($errorField);
-					jQuery($id).addClass("is-invalid");
+			} else if ( response.responseJSON) {
+				data = response.responseJSON.data;
+				message = data.msg;
+				if (data.err_msgs) {
+					for (let errorMsg of data.err_msgs) {
+						message += '<br />' + errorMsg;
+					}
 				}
-				feedback = $message;
+				if (data.err_flds) {
+					for (let errorField of data.err_flds) {
+						let id = '#'.concat(errorField);
+						jQuery(id).addClass("is-invalid");
+					}
+				}
 			} else {
-				feedback = response.statusText;
+				message = response.statusText;
 			}
-			if (use_alert) {
-				jQuery(alert_id).show();
-				jQuery(alert_id).addClass('alert--danger');
-				jQuery(alert_response).html(feedback);
-			} else {
-				jQuery(notifyField).html(feedback);
-				jQuery(notifyField).show();
-				jQuery(notifyField).addClass('message-error');
-			}
+			jQuery(alert_id).addClass('alert--danger');
+			jQuery(alert_response).html(message);
+
 		},
 		complete: function () {
+			jQuery(alert_id).show();
 			let splash = jQuery('#splash');
 			splash.css('opacity', 0);
 			splash.hide();

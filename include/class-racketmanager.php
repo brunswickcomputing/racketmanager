@@ -1211,21 +1211,6 @@ class RacketManager {
 			}
 		}
 	}
-	/**
-	 * Delete page
-	 *
-	 * @param string $page_name page name.
-	 */
-	public function delete_racketmanager_page( string $page_name ): void {
-		$option  = 'racketmanager_page_' . $page_name . '_id';
-		$page_id = intval( get_option( $option ) );
-
-		// Force delete this so the Title/slug "Menu" can be used again.
-		if ( $page_id ) {
-			wp_delete_post( $page_id, true );
-			delete_option( $option );
-		}
-	}
 
 	/**
 	 * Set message

@@ -1015,5 +1015,79 @@ class Racketmanager_Util {
         }
         return $team_name;
     }
-
+    /**
+     * Schedule result chase
+     *
+     * @param string $competition_type type of competition.
+     * @param array $options array of options to use for chasing result.
+     */
+    public static function schedule_result_chase( string $competition_type, array $options ): void {
+        $day            = intval( gmdate( 'd' ) );
+        $month          = intval( gmdate( 'm' ) );
+        $year           = intval( gmdate( 'Y' ) );
+        $schedule_start = mktime( 19, 0, 0, $month, $day, $year );
+        $interval       = 'daily';
+        $schedule_args  = array( $competition_type );
+        if ( '' !== $options['resultPending'] ) {
+            $schedule_name = 'rm_resultPending';
+            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
+                error_log( __( 'Error scheduling pending results', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            }
+        }
+        if ( '' !== $options['confirmationPending'] ) {
+            $schedule_name = 'rm_confirmationPending';
+            Racketmanager_Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            if ( ! wp_next_scheduled( $schedule_name, $schedule_args ) && ! wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args ) ) {
+                error_log( __( 'Error scheduling result confirmations', 'racketmanager' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            }
+        }
+    }
+    /**
+     * Function to initialise match statistics
+     *
+     * @return array
+     */
+    public static function initialise_match_stats(): array {
+        $stats                    = array();
+        $stats['rubbers']['home'] = 0;
+        $stats['rubbers']['away'] = 0;
+        $stats['sets']['home']    = 0;
+        $stats['sets']['away']    = 0;
+        $stats['games']['home']   = 0;
+        $stats['games']['away']   = 0;
+        return $stats;
+    }
+    /**
+     * Get default number of match days
+     *
+     * @param string $type competition type.
+     *
+     * @return int default number of match days.
+     */
+    public static function get_default_match_days( string $type ): int {
+        global $racketmanager;
+        $options                = $racketmanager->get_options();
+        $rm_options             = $options['championship'];
+        $default_num_match_days = $rm_options['numRounds'] ?? 1;
+        switch ( $type ) {
+            case 'cup':
+                $args['count'] = true;
+                $args['type']  = 'affiliated';
+                $num_clubs     = $racketmanager->get_clubs( $args );
+                if ( $num_clubs ) {
+                    $num_match_days = ceil( log( $num_clubs, 2 ) );
+                } else {
+                    $num_match_days = $default_num_match_days;
+                }
+                break;
+            case 'tournament':
+                $num_match_days = $default_num_match_days;
+                break;
+            default:
+                $num_match_days = 0;
+                break;
+        }
+        return $num_match_days;
+    }
 }

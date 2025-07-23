@@ -371,23 +371,23 @@ function get_match( object|int $match = null ): Racketmanager_Match|null {
 }
 
 /**
- * Get Racketmanager_Rubber object
+ * Get Rubber object
  *
  * @param object|int|null $rubber Rubber ID or rubber object. Defaults to global $rubber.
  *
- * @return Racketmanager_Rubber|null Racketmanager_Rubber|null
+ * @return Rubber|null Rubber|null
  */
-function get_rubber( object|int $rubber = null ): Racketmanager_Rubber|null {
+function get_rubber( object|int $rubber = null ): Rubber|null {
     if ( empty( $rubber ) && isset( $GLOBALS['rubber'] ) ) {
         $rubber = $GLOBALS['rubber'];
     }
 
-    if ( $rubber instanceof Racketmanager_Rubber ) {
+    if ( $rubber instanceof Rubber ) {
         $_rubber = $rubber;
     } elseif ( is_object( $rubber ) ) {
-        $_rubber = new Racketmanager_Rubber( $rubber );
+        $_rubber = new Rubber( $rubber );
     } else {
-        $_rubber = Racketmanager_Rubber::get_instance( $rubber );
+        $_rubber = Rubber::get_instance( $rubber );
     }
 
     if ( ! $_rubber ) {

@@ -14,9 +14,9 @@ use DateTime;
 use stdClass;
 
 /**
- * Class to implement the Racketmanager_Rubber object
+ * Class to implement the Rubber object
  */
-final class Racketmanager_Rubber {
+final class Rubber {
     /**
      * Rubber id variable
      *
@@ -274,7 +274,7 @@ final class Racketmanager_Rubber {
             if ( ! $rubber ) {
                 return null;
             }
-            $rubber = new RacketManager_Rubber( $rubber );
+            $rubber = new Rubber( $rubber );
             wp_cache_set( $rubber_id, $rubber, 'rubbers' );
         }
         return $rubber;

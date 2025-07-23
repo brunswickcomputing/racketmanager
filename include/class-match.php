@@ -866,7 +866,7 @@ final class Racketmanager_Match {
                 $rubber->rubber_number = $ix;
                 $rubber->date          = $this->date;
                 $rubber->match_id      = $this->id;
-                new Racketmanager_rubber( $rubber );
+                new Rubber( $rubber );
             }
         }
         return $this->id;

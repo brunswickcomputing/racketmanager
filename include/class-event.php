@@ -640,7 +640,7 @@ class Event {
                             $rubber->rubber_number = $ix;
                             $rubber->date          = $match->date;
                             $rubber->match_id      = $match->id;
-                            new Racketmanager_rubber( $rubber );
+                            new Rubber( $rubber );
                         }
                     }
                 }

@@ -2509,4 +2509,87 @@ class Racketmanager_Competition {
 		}
 		return $rules_options;
 	}
+    /**
+     * Calculate team ratings
+     *
+     * @param int|null $season season name.
+     *
+     * @return void
+     */
+    public function calculate_team_ratings( ?int $season ): void {
+        global $racketmanager;
+        if ( $season && isset( $this->seasons[ $season ] ) ) {
+            $teams = $this->get_teams( array( 'season' => $season ) );
+            foreach ( $teams as $team ) {
+                $team_points = 0;
+                // set league ratings.
+                $prev_season      = $season - 1;
+                $league_standings = $racketmanager->get_league_standings(
+                    array(
+                        'season'    => $prev_season,
+                        'team'      => $team->team_id,
+                        'age_group' => $this->age_group,
+                    )
+                );
+                if ( $league_standings ) {
+                    foreach ( $league_standings as $league_standing ) {
+                        $points       = 0;
+                        $league       = get_league( $league_standing->id );
+                        $league_title = explode( ' ', $league->title );
+                        $league_no    = end( $league_title );
+                        if ( ! $league->event->competition->is_league ) {
+                            $position = 0;
+                        } elseif ( is_numeric( $league_no ) ) {
+                            $teams_per_league = $league->event->competition->max_teams ?? 10;
+                            $position         = ( $league_no * $teams_per_league ) + $league_standing->rank;
+                        } else {
+                            $position = $league_standing->rank;
+                        }
+                        if ( isset( $league->event->age_limit ) ) {
+                            if ( 'open' === $league->event->age_limit ) {
+                                $event_points = 1;
+                            } elseif ( $league->event->age_limit >= 30 ) {
+                                $event_points = 0.25;
+                            } elseif ( 16 === $league->event->age_limit ) {
+                                $event_points = 0.4;
+                            } elseif ( 14 === $league->event->age_limit ) {
+                                $event_points = 0.25;
+                            } elseif ( 12 === $league->event->age_limit ) {
+                                $event_points = 0.15;
+                            } else {
+                                $event_points = 1;
+                            }
+                        } else {
+                            $event_points = 1;
+                        }
+                        $position_points = array( 300, 240, 192, 180, 160, 140, 128, 120, 116, 112, 108, 104, 100, 96, 88, 80, 76, 72, 68, 64, 60, 65, 52, 48, 44, 40, 36, 32, 28, 24, 20 );
+                        $base_points     = $position_points[$position - 1] ?? 0;
+                        if ( ! empty( $base_points ) ) {
+                            $points = ceil( $base_points * $event_points );
+                        }
+                        $base_points_won = 42;
+                        $points_div      = ( $league_no - 1 ) * ( $league->event->num_rubbers * 2 );
+                        $points_won      = ( $base_points_won - round( $points_div * $event_points ) ) * $league_standing->won_matches;
+                        $points         += $points_won;
+                        $team_points    += $points;
+                    }
+                }
+                // set cup rating.
+                $matches = $this->get_matches(
+                    array(
+                        'team'     => $team->team_id,
+                        'final'    => 'all',
+                        'time'     => 365,
+                        'complete' => true,
+                    )
+                );
+                foreach ( $matches as $match ) {
+                    $points       = Racketmanager_Util::calculate_championship_rating( $match, $team->team_id );
+                    $team_points += $points;
+                }
+                $league_team = get_league_team( $team->table_id );
+                $league_team?->set_rating($team_points);
+            }
+        }
+    }
 }

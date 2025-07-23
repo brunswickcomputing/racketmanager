@@ -239,17 +239,17 @@ function get_club( object|int|string $club = null, string $search_term = 'id' ):
 /**
  * Get Competition object
  *
- * @param Racketmanager_Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
+ * @param Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
  * @param string|null $search_term type of search.
  *
- * @return Racketmanager_Competition|null competition|null
+ * @return Competition|null competition|null
  */
-function get_competition( Racketmanager_Competition|int|string $competition = null, ?string $search_term = 'id' ): ?Racketmanager_Competition {
+function get_competition( Competition|int|string $competition = null, ?string $search_term = 'id' ): ?Competition {
     if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
         $competition = $GLOBALS['competition'];
     }
 
-    if ( $competition instanceof Racketmanager_Competition ) {
+    if ( $competition instanceof Competition ) {
         $_competition = $competition;
     } elseif ( is_object( $competition ) ) {
         // check if specific sports class exists.
@@ -260,10 +260,10 @@ function get_competition( Racketmanager_Competition|int|string $competition = nu
         if ( class_exists( $instance ) ) {
             $_competition = new $instance( $competition );
         } else {
-            $_competition = new Racketmanager_Competition( $competition );
+            $_competition = new Competition( $competition );
         }
     } else {
-        $_competition = Racketmanager_Competition::get_instance( $competition, $search_term );
+        $_competition = Competition::get_instance( $competition, $search_term );
     }
 
     if ( ! $_competition ) {

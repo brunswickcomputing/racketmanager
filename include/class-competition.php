@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Competition API: Competition class
+ * Competition API: Competition class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the Competition object
  */
-class Racketmanager_Competition {
+class Competition {
     /**
      * Competition ID
      *
@@ -592,7 +592,7 @@ class Racketmanager_Competition {
             if ( class_exists( $instance ) ) {
                 $competition = new $instance( $competition );
             } else {
-                $competition = new Racketmanager_Competition( $competition );
+                $competition = new Competition( $competition );
             }
 
             wp_cache_set( $competition->id, $competition, 'competitions' );

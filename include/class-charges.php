@@ -36,9 +36,9 @@ final class Charges {
     /**
      * Competition
      *
-     * @var Racketmanager_Competition|null
+     * @var Competition|null
      */
-    public null|Racketmanager_Competition $competition;
+    public null|Competition $competition;
     /**
      * Status
      *

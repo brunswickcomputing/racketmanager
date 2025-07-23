@@ -79,7 +79,7 @@ class Admin_Index extends Admin_Display {
         $competition->name      = $name;
         $competition->type      = $type;
         $competition->age_group = $age_group;
-        $competition            = new Racketmanager_Competition( $competition );
+        $competition            = new Competition( $competition );
         $return                 = new stdClass();
         $return->msg            = __( 'Competition added', 'racketmanager' );
         return $return;

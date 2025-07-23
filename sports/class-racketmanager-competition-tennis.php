@@ -10,7 +10,7 @@ namespace Racketmanager;
 /**
  * Tennis competition clas
  */
-class Racketmanager_Competition_Tennis extends Racketmanager_Competition {
+class Competition_Tennis extends Competition {
 
 	/**
 	 * Sports key

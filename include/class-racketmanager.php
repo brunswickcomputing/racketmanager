@@ -826,7 +826,7 @@ class RacketManager {
 	    $this->shortcodes_match         = new Shortcodes_Match();
 	    $this->shortcodes_message       = new Shortcodes_Message();
         $this->shortcodes_tournament    = new Shortcodes_Tournament();
-        $this->rewrites                 = new RacketManager_Rewrites();
+        $this->rewrites                 = new Rewrites();
         $this->login                    = new Racketmanager_Login();
     }
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * RacketManager API: RacketManager_Rewrites class
+ * RacketManager API: Rewrites class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -11,8 +11,8 @@ namespace Racketmanager;
 /**
  * Main class to implement RacketManager Rewrites
  */
-class RacketManager_Rewrites {
-    protected static ? RacketManager_Rewrites $instance = null;
+class Rewrites {
+    protected static ? Rewrites $instance = null;
     /**
      * Constructor
      *

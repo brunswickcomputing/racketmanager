@@ -628,8 +628,8 @@ final class Racketmanager_Tournament {
 	 * @param string $time_increment time increment for matches.
 	 * @return boolean updates performed
 	 */
-	public function update_plan(string $start_time, int $num_courts, string $time_increment ): bool {
-		global $wpdb, $racketmanager;
+	public function update_plan( string $start_time, int $num_courts, string $time_increment ): bool {
+		global $wpdb;
 
 		$update = false;
 		if ( $start_time !== $this->start_time || $num_courts !== $this->num_courts || $time_increment !== $this->time_increment ) {
@@ -646,10 +646,7 @@ final class Racketmanager_Tournament {
 				)
 			);
 			wp_cache_set( $this->id, $this, 'tournaments' );
-			$racketmanager->set_message( __( 'Tournament updated', 'racketmanager' ) );
 			$update = true;
-		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
 		}
 		return $update;
 	}
@@ -701,13 +698,11 @@ final class Racketmanager_Tournament {
 				)
 			);
 			wp_cache_set( $this->id, $this, 'tournaments' );
-			$racketmanager->set_message( __( 'Tournament plan updated', 'racketmanager' ) );
+            return true;
 		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+            return false;
 		}
-		return true;
 	}
-
 	/**
 	 * Reset tournament plan
 	 *
@@ -750,17 +745,12 @@ final class Racketmanager_Tournament {
 			wp_cache_set( $this->id, $this, 'tournaments' );
 			$updates = true;
 		}
-		if ( $updates ) {
-			$racketmanager->set_message( __( 'Tournament plan reset', 'racketmanager' ) );
-		} else {
-			$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
-		}
 		return $updates;
 	}
 	/**
 	 * Delete tournament
 	 */
-	public function delete(): void {
+	public function delete(): bool {
 		global $wpdb, $racketmanager;
 		$schedule_name = 'rm_calculate_tournament_ratings';
 		$schedule_args = array( $this->id );
@@ -775,8 +765,8 @@ final class Racketmanager_Tournament {
 				$this->id
 			)
 		);
-		$racketmanager->set_message( __( 'Tournament Deleted', 'racketmanager' ) );
 		wp_cache_delete( $this->id, 'tournaments' );
+        return true;
 	}
 	/**
 	 * Get events function

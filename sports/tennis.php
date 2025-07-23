@@ -22,5 +22,5 @@ function racketmanager_sports_tennis( array $sports ): array {
 	return $sports;
 }
 
-require_once 'class-racketmanager-competition-tennis.php';
+require_once 'class-competition-tennis.php';
 require_once 'class-racketmanager-league-tennis.php';

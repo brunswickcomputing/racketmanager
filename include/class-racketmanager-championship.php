@@ -529,14 +529,12 @@ final class Racketmanager_Championship {
                 }
                 if ( $update ) {
                     $this->set_teams( $match, $home_team, $away_team );
-                    if ( ! empty( $league->event->primary_league ) && $league->event->primary_league === $league->id ) {
-                        if ( $round < 3 ) {
-                            if ( ! empty( $prev_home ) ) {
-                                $this->set_consolation_team( $prev_home, $current, $league );
-                            }
-                            if ( ! empty( $prev_away ) ) {
-                                $this->set_consolation_team( $prev_away, $current, $league );
-                            }
+                    if ( ! empty( $league->event->primary_league ) && $league->event->primary_league === $league->id && $round < 3 ) {
+                        if ( ! empty( $prev_home ) ) {
+                            $this->set_consolation_team( $prev_home, $current, $league );
+                        }
+                        if ( ! empty( $prev_away ) ) {
+                            $this->set_consolation_team( $prev_away, $current, $league );
                         }
                     }
                     // Set winners on final.

@@ -2,7 +2,7 @@
 /**
  * Handles registering Racketmanager custom REST endpoints.
  *
- * Class Racketmanager_Rest_Resources
+ * Class Rest_Resources
  *
  * @package Racketmanager
  */
@@ -22,9 +22,9 @@ use WP_REST_Request;
 use WP_Error;
 
 /**
- * Class to implement the Racketmanager_Rest_Resources object
+ * Class to implement the Rest_Resources object
  */
-class Racketmanager_Rest_Resources extends WP_REST_Controller {
+class Rest_Resources extends WP_REST_Controller {
     /**
      * Version
      *

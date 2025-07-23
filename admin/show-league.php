@@ -79,7 +79,7 @@ namespace Racketmanager;
 
     <?php
     if ( 'championship' === $league_mode ) {
-        $league->championship->display_admin_page();
+        require_once RACKETMANAGER_PATH . 'admin/championship.php';
     } else {
         ?>
         <div>

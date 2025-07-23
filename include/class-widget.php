@@ -14,7 +14,7 @@ use WP_Widget;
 /**
  * Class to implement the widget
  */
-class RacketManager_Widget extends WP_Widget {
+class Widget extends WP_Widget {
     /**
      * Initialize
      *

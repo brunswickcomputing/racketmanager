@@ -730,7 +730,7 @@ class RacketManager {
      * Register Widget
      */
     public function register_widget(): void {
-        register_widget( 'Racketmanager\RacketManager_Widget' );
+        register_widget( 'Racketmanager\Widget' );
     }
 
     /**
@@ -801,7 +801,7 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-email.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-tournament.php';
         require_once RACKETMANAGER_PATH . 'include/class-racketmanager-login.php';
-        require_once RACKETMANAGER_PATH . 'include/class-racketmanager-widget.php';
+        require_once RACKETMANAGER_PATH . 'include/class-widget.php';
 
         // template tags & functions.
         require_once RACKETMANAGER_PATH . '/template-tags.php';

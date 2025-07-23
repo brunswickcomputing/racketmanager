@@ -13,9 +13,9 @@ namespace Racketmanager;
 * @author   Kolja Schleich
 * @author  Paul Moffat
 * @package  RacketManager
-* @subpackage Racketmanager_Championship
+* @subpackage Championship
 */
-final class Racketmanager_Championship {
+final class Championship {
     /**
      * League ID
      *

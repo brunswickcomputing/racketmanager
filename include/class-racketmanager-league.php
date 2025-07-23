@@ -452,11 +452,11 @@ class Racketmanager_League {
 	public bool $is_championship = false;
 
 	/**
-	 * Racketmanager_Championship object
+	 * Championship object
 	 *
-	 * @var Racketmanager_Championship|null
+	 * @var Championship|null
 	 */
-	public ?Racketmanager_Championship $championship = null;
+	public ?Championship $championship = null;
 
 	/**
 	 * Event id
@@ -708,7 +708,7 @@ class Racketmanager_League {
 		// Championship.
 		if ( 'championship' === $this->mode ) {
 			$this->is_championship = true;
-			$this->championship    = new Racketmanager_Championship( $this, $this->settings );
+			$this->championship    = new Championship( $this, $this->settings );
 		}
 
 		// add actions & filter.

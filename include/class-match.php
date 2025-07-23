@@ -982,7 +982,7 @@ final class Racketmanager_Match {
      */
     private function set_teams_details( string $team = 'both' ): void {
         // get championship final rounds teams.
-        if ( $this->league->championship instanceof Racketmanager_Championship && $this->final_round ) {
+        if ( $this->league->championship instanceof Championship && $this->final_round ) {
             $teams = $this->league->championship->get_final_teams( $this->final_round );
         }
         if ( 'both' === $team || 'home' === $team ) {

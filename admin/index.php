@@ -32,10 +32,10 @@ use Racketmanager\Racketmanager_Util as util;
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_name', $racketmanager->error_fields, true ) ) ) {
+                        if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'competition', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
-                            $msg_id     = array_search( 'competition_name', $racketmanager->error_fields, true );
-                            $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                            $msg_id     = array_search( 'competition', $validator->err_flds, true );
+                            $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
                         <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter name for new competition', 'racketmanager' ); ?>" type="text" name="competition_name" id="competition_name" value="" size="30" />
@@ -56,10 +56,10 @@ use Racketmanager\Racketmanager_Util as util;
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'type', $racketmanager->error_fields, true ) ) ) {
+                        if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'type', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
-                            $msg_id     = array_search( 'type', $racketmanager->error_fields, true );
-                            $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                            $msg_id     = array_search( 'type', $validator->err_flds, true );
+                            $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type">
@@ -87,10 +87,10 @@ use Racketmanager\Racketmanager_Util as util;
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'age_group', $racketmanager->error_fields, true ) ) ) {
+                        if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'age_group', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
-                            $msg_id     = array_search( 'age_group', $racketmanager->error_fields, true );
-                            $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                            $msg_id     = array_search( 'age_group', $validator->err_flds, true );
+                            $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_group" id="age_group">

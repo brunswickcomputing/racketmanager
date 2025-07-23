@@ -1721,45 +1721,21 @@ class Racketmanager_Competition {
 	 * @return boolean updates performed
 	 */
 	public function update_plan( int $season, ?string $start_time, ?int $num_courts, ?string $time_increment ): bool {
-		global $racketmanager;
 		$update      = false;
-		$valid       = true;
-		$err_msg     = array();
 		$seasons     = $this->seasons;
 		$season_dtls = $this->seasons[$season] ?? null;
 		if ( $season_dtls ) {
 			$curr_start_time     = $season_dtls['starttime'] ?? null;
 			$curr_num_courts     = $season_dtls['num_courts'] ?? null;
 			$curr_time_increment = $season_dtls['time_increment'] ?? null;
-			if ( empty( $start_time ) ) {
-				$valid     = false;
-				$err_msg[] = __( 'Start time not set', 'racketmanager' );
-			}
-			if ( empty( $num_courts ) ) {
-				$valid     = false;
-				$err_msg[] = __( 'Number of courts not set', 'racketmanager' );
-			}
-			if ( empty( $time_increment ) ) {
-				$valid     = false;
-				$err_msg[] = __( 'Time increment not set', 'racketmanager' );
-			}
-			if ( $valid ) {
-				if ( $start_time !== $curr_start_time || $num_courts !== $curr_num_courts || $time_increment !== $curr_time_increment ) {
-					$season_dtls['starttime']      = $start_time;
-					$season_dtls['num_courts']     = $num_courts;
-					$season_dtls['time_increment'] = $time_increment;
-					$seasons[ $season ]            = $season_dtls;
-					$this->update_seasons( $seasons );
-					$racketmanager->set_message( __( 'Cup plan updated', 'racketmanager' ) );
-					$update = true;
-				} else {
-					$racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
-				}
-			} else {
-				$racketmanager->set_message( implode( '<br>', $err_msg ), true );
-			}
-		} else {
-			$racketmanager->set_message( __( 'Season not found', 'racketmanager' ), true );
+            if ( $start_time !== $curr_start_time || $num_courts !== $curr_num_courts || $time_increment !== $curr_time_increment ) {
+                $season_dtls['starttime']      = $start_time;
+                $season_dtls['num_courts']     = $num_courts;
+                $season_dtls['time_increment'] = $time_increment;
+                $seasons[ $season ]            = $season_dtls;
+                $this->update_seasons( $seasons );
+                $update = true;
+            }
 		}
 		return $update;
 	}

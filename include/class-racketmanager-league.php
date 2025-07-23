@@ -829,8 +829,7 @@ class Racketmanager_League {
 	 * @param string $season season.
 	 */
 	public function delete_team( int $team, string $season ): void {
-		global $wpdb, $racketmanager;
-
+		global $wpdb;
 		$matches = $this->get_matches(
 			array(
 				'team_id' => $team,
@@ -849,8 +848,6 @@ class Racketmanager_League {
 				$season
 			)
 		);
-
-		$racketmanager->set_message( __( 'Team Deleted', 'racketmanager' ) );
 	}
 	/**
 	 * Withdraw team from League

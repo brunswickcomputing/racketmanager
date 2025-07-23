@@ -439,6 +439,21 @@ class Validator {
         return $this;
     }
     /**
+     * Validate number of courts available
+     *
+     * @param int|null $num_courts_available number of courts available.
+     * @return object $validation updated validation object.
+     */
+    public function num_courts_available( ?int $num_courts_available ): object {
+        if ( empty( $num_courts_available ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'numCourtsAvailable';
+            /* translators: %s: competition name */
+            $this->err_msgs[] = __( 'You must specify the number of courts available', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
      * Get validation details
      *
      * @return stdClass

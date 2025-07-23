@@ -129,7 +129,8 @@ $leagues = $event->get_leagues();
                 if ( $league_id ) {
                     ?>
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="sequence" id="sequence" value="<?php echo esc_html( $league_edit->sequence ); ?>" size="30" />
+                        <input type="hidden" name="league_title" value="<?php echo esc_html( $league_title ); ?>" />
+                        <input type="text" class="form-control" required="required" placeholder="<?php esc_html_e( 'Enter new league name', 'racketmanager' ); ?>" name="sequence" id="sequence" value="<?php echo esc_html( $league_edit->sequence ); ?>" />
                         <label for="sequence"><?php esc_html_e( 'League sequence', 'racketmanager' ); ?></label>
                     </div>
                     <?php

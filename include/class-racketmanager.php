@@ -838,11 +838,14 @@ class RacketManager {
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-svg-icons.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-team.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-player.php';
-		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-tournament.php';
+        require_once RACKETMANAGER_PATH . 'include/class-racketmanager-team.php';
+		require_once RACKETMANAGER_PATH . 'include/class-season.php';
+        require_once RACKETMANAGER_PATH . 'include/class-racketmanager-tournament.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-tournament-entry.php';
 		require_once RACKETMANAGER_PATH . 'include/class-validator.php';
 		require_once RACKETMANAGER_PATH . 'include/class-validator-entry-form.php';
         require_once RACKETMANAGER_PATH . 'include/class-validator-match.php';
+        require_once RACKETMANAGER_PATH . 'include/class-validator-plan.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-exporter.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-report.php';
 		require_once RACKETMANAGER_PATH . 'include/class-racketmanager-results-checker.php';

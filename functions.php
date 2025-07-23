@@ -511,12 +511,12 @@ function get_user( object|int|string $user = null ): ?object {
     if ( empty( $user ) && isset( $GLOBALS['user'] ) ) {
         $user = $GLOBALS['user'];
     }
-    if ( $user instanceof Racketmanager_User ) {
+    if ( $user instanceof User ) {
         $_user = $user;
     } elseif ( is_object( $user ) ) {
-        $_user = new Racketmanager_User( $user );
+        $_user = new User( $user );
     } else {
-        $_user = Racketmanager_User::get_instance( $user );
+        $_user = User::get_instance( $user );
     }
     if ( ! $_user ) {
         return null;

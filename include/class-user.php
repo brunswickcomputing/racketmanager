@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_User API: user class
+ * User API: user class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the User object
  */
-final class Racketmanager_User {
+final class User {
 	/**
 	 * Id.
 	 *
@@ -224,7 +224,7 @@ final class Racketmanager_User {
 			return false;
 		}
 		$user = wp_cache_get( $user_id, 'users' );
-		return new Racketmanager_User( $user );
+		return new User( $user );
 	}
 
 	/**

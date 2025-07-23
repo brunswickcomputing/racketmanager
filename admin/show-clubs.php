@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $clubs */
 ?>
 <div class="container">
     <h1><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h1>
@@ -42,7 +43,6 @@ namespace Racketmanager;
                 </thead>
                 <tbody>
                     <?php
-                    $clubs = $this->get_clubs();
                     $class = '';
                     foreach ( $clubs as $club ) {
                         $club  = get_club( $club );
@@ -53,7 +53,7 @@ namespace Racketmanager;
                                 <label for="club-<?php echo esc_html( $club->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $club->id ); ?>" name="club[<?php echo esc_html( $club->id ); ?>]" id="club-<?php echo esc_html( $club->id ); ?>" />
                             </td>
                             <td class="d-none d-md-table-cell column-num"><?php echo esc_html( $club->id ); ?></td>
-                            <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></td>
+                            <td class="club-name"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club&amp;club_id=<?php echo esc_html( $club->id ); ?> "><?php echo esc_html( $club->name ); ?></a></td>
                             <td class="d-none d-md-table-cell"><?php echo esc_html( $club->match_secretary_name ); ?></td>
                             <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
                             <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
@@ -67,6 +67,6 @@ namespace Racketmanager;
     </div>
     <div class="mb-3">
         <!-- Add New Club -->
-        <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
+        <a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=club" class="btn btn-primary submit"><?php esc_html_e( 'Add Club', 'racketmanager' ); ?></a>
     </div>
 </div>

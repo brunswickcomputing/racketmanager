@@ -305,7 +305,7 @@ class Validator {
         if ( empty( $competition ) ) {
             $this->error      = true;
             $this->err_flds[] = 'competition';
-            $this->err_msgs[] = __( 'Competition not found', 'racketmanager' );
+            $this->err_msgs[] = __( 'Competition not specified', 'racketmanager' );
         }
         return $this;
     }

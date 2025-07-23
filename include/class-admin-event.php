@@ -19,7 +19,7 @@ use stdClass;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class Admin_Event extends RacketManager_Admin {
+final class Admin_Event extends Admin {
 
     /**
      * Constructor

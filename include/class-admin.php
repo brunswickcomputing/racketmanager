@@ -20,7 +20,7 @@ use WP_Error;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-class RacketManager_Admin extends RacketManager {
+class Admin extends RacketManager {
 
     /**
      * Instance of this class.

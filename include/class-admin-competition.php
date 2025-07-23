@@ -19,7 +19,7 @@ use stdClass;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class Admin_Competition extends RacketManager_Admin {
+final class Admin_Competition extends Admin {
     /**
      * Handle config page function
      *

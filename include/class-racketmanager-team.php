@@ -30,9 +30,9 @@ final class Racketmanager_Team {
 	/**
 	 * Stadium variable
 	 *
-	 * @var string
+	 * @var string|null
 	 */
-	public string $stadium;
+	public ?string $stadium = null;
 	/**
 	 * Roster variable
 	 *
@@ -48,9 +48,9 @@ final class Racketmanager_Team {
 	/**
 	 * Club id variable
 	 *
-	 * @var int
+	 * @var int|null
 	 */
-	public int $club_id;
+	public ?int $club_id;
 	/**
 	 * Club object variable
 	 *
@@ -267,7 +267,7 @@ final class Racketmanager_Team {
             $this->add();
         }
         $this->title   = htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
-        $this->stadium = stripslashes( $this->stadium );
+        $this->stadium = empty( $this->stadium) ? null : stripslashes( $this->stadium );
         $this->roster  = maybe_unserialize( $this->roster );
         $this->profile = intval( $this->profile );
         if ( $this->club_id ) {
@@ -328,6 +328,9 @@ final class Racketmanager_Team {
             }
             $this->roster = $players;
         }
+        if ( empty( $this->club_id ) ) {
+            $this->club_id = null;
+        }
         $this->stadium = '';
         $this->profile = '';
         $result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -359,6 +362,12 @@ final class Racketmanager_Team {
         global $wpdb;
         if ( empty( $this->team_type ) ) {
             $this->team_type = null;
+        }
+        if ( empty( $this->club_id ) ) {
+            $this->club_id = null;
+        }
+        if ( empty( $this->stadium ) ) {
+            $this->stadium = null;
         }
         $this->roster  = '';
         $this->profile = '';

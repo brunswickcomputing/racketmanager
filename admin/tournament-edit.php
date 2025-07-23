@@ -43,6 +43,8 @@ $msg        = null;
             <div class="row">
                 <div class="form-floating mb-3">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'tournamentName', $racketmanager->error_fields, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'tournamentName', $racketmanager->error_fields, true );
@@ -56,8 +58,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -66,6 +66,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_id', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'competition_id', $racketmanager->error_fields, true );
@@ -88,8 +90,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -97,6 +97,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'season', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'season', $racketmanager->error_fields, true );
@@ -106,11 +108,12 @@ $msg        = null;
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="season" id="season" >
                             <option disabled <?php selected( null, empty( $tournament->season ) ? null : $tournament->season ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
                             <?php
-                            $seasons = $this->get_seasons( 'DESC' );
                             foreach ( $seasons as $season ) {
                                 ?>
                                 <option value="<?php echo esc_html( $season->name ); ?>" <?php selected( $season->name, $tournament->season ?? ''); ?>><?php echo esc_html( $season->name ); ?></option>
-                            <?php } ?>
+                                <?php
+                            }
+                            ?>
                         </select>
                         <label for="season" class="form-label"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
                         <?php
@@ -118,8 +121,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -129,6 +130,8 @@ $msg        = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'venue', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'venue', $racketmanager->error_fields, true );
@@ -151,8 +154,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -160,6 +161,8 @@ $msg        = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'competition_code', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'competition_code', $racketmanager->error_fields, true );
@@ -173,8 +176,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -182,7 +183,9 @@ $msg        = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
-                        $grades = Racketmanager_Util::get_event_grades();
+                        $is_invalid = false;
+                        $msg        = null;
+                        $grades     = Racketmanager_Util::get_event_grades();
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'grade', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'grade', $racketmanager->error_fields, true );
@@ -205,8 +208,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -220,6 +221,8 @@ $msg        = null;
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'feeCompetition', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeCompetition', $racketmanager->error_fields, true );
@@ -233,8 +236,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -242,6 +243,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'feeEvent', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeEvent', $racketmanager->error_fields, true );
@@ -255,8 +258,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -269,6 +270,8 @@ $msg        = null;
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( empty( $tournament->competition->num_entries ) ) {
                             $num_entries = empty( $tournament->num_entries ) ? null : $tournament->num_entries;
                         } else {
@@ -287,8 +290,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -301,6 +302,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateStart', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'dateStart', $racketmanager->error_fields, true );
@@ -314,8 +317,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -323,6 +324,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateEnd', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'dateEnd', $racketmanager->error_fields, true );
@@ -336,8 +339,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -347,6 +348,8 @@ $msg        = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateOpen', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'dateOpen', $racketmanager->error_fields, true );
@@ -360,8 +363,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -369,6 +370,8 @@ $msg        = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateClose', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'dateClose', $racketmanager->error_fields, true );
@@ -382,8 +385,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -391,6 +392,8 @@ $msg        = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'dateWithdraw', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'dateWithdraw', $racketmanager->error_fields, true );
@@ -404,8 +407,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>

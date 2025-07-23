@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Tournament_Entry API: tournament class
+ * Tournament_Entry API: tournament class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Tournament Entry object
  */
-final class Racketmanager_Tournament_Entry {
+final class Tournament_Entry {
     /**
      * Id
      *
@@ -97,7 +97,7 @@ final class Racketmanager_Tournament_Entry {
             if ( ! $tournament_entry ) {
                 return false;
             }
-            $tournament_entry = new Racketmanager_Tournament_Entry( $tournament_entry );
+            $tournament_entry = new Tournament_Entry( $tournament_entry );
             wp_cache_set( $tournament_entry_id, $tournament_entry, 'tournament_entries' );
         }
         return $tournament_entry;

@@ -1616,7 +1616,7 @@ final class Tournament {
             if ( $club ) {
                 $tournament_entry->club_id = $club;
             }
-            new Racketmanager_Tournament_Entry( $tournament_entry );
+            new Tournament_Entry( $tournament_entry );
         }
     }
 

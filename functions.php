@@ -432,16 +432,16 @@ function get_tournament( object|int|string $tournament = null, string $search_te
  *
  * @return object|null tournament|null
  */
-function get_tournament_entry( object|int|string $tournament_entry = null, string $search_term = 'id' ): Racketmanager_Tournament_Entry|null {
+function get_tournament_entry( object|int|string $tournament_entry = null, string $search_term = 'id' ): Tournament_Entry|null {
     if ( empty( $tournament_entry ) && isset( $GLOBALS['tournament_entry'] ) ) {
         $tournament_entry = $GLOBALS['tournament_entry'];
     }
-    if ( $tournament_entry instanceof Racketmanager_Tournament_Entry ) {
+    if ( $tournament_entry instanceof Tournament_Entry ) {
         $_tournament_entry = $tournament_entry;
     } elseif ( is_object( $tournament_entry ) ) {
-        $_tournament_entry = new Racketmanager_Tournament_Entry( $tournament_entry );
+        $_tournament_entry = new Tournament_Entry( $tournament_entry );
     } else {
-        $_tournament_entry = Racketmanager_Tournament_Entry::get_instance( $tournament_entry, $search_term );
+        $_tournament_entry = Tournament_Entry::get_instance( $tournament_entry, $search_term );
     }
     if ( ! $_tournament_entry ) {
         return null;

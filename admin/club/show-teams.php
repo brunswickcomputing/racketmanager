@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 /** @var object $club */
 /** @var int    $club_id */
+/** @var array  $teams */
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -21,7 +22,7 @@ namespace Racketmanager;
     <!-- View Teams -->
     <div class="mb-3">
         <form id="teams-filter" method="post" action="" class="form-control">
-            <?php wp_nonce_field( 'teams-bulk' ); ?>
+            <?php wp_nonce_field( 'racketmanager_teams-bulk', 'racketmanager_nonce' ); ?>
             <div class="row gx-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
                 <div class="col-auto">
@@ -78,7 +79,7 @@ namespace Racketmanager;
     <div class="mb-3">
         <h3><?php esc_html_e( 'Add Team', 'racketmanager' ); ?></h3>
         <form action="" method="post" class="form-control">
-            <?php wp_nonce_field( 'racketmanager_add-team' ); ?>
+            <?php wp_nonce_field( 'racketmanager_add-team', 'racketmanager_nonce' ); ?>
             <div class="form-floating mb-3">
                 <select class="form-select" size='1' required="required" name='team_type' id='team_type'>
                     <option value=""><?php esc_html_e( 'Select event type', 'racketmanager' ); ?></option>

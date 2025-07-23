@@ -25,581 +25,581 @@ use WP_Error;
  * Class to implement the Racketmanager_Rest_Resources object
  */
 class Racketmanager_Rest_Resources extends WP_REST_Controller {
-	/**
-	 * Version
-	 *
-	 * @var string|int
-	 */
-	public string|int $version;
-	/**
-	 * Namespace
-	 *
-	 * @var string
-	 */
-	public $namespace;
-	/**
-	 * Constructor
-	 *
-	 * @return void
-	 */
-	public function __construct() {
-		$this->version   = '1';
-		$this->namespace = 'racketmanager/v' . $this->version;
-	}
-	/**
-	 * Register the routes for the objects of the controller.
-	 */
-	public function register_routes(): void {
-		$base      = 'stripe';
-		register_rest_route(
-			$this->namespace,
-			'/' . $base,
-			array(
-				array(
-					'methods'             => array( WP_REST_Server::CREATABLE, WP_REST_Server::READABLE),
-					'callback'            => array( $this, 'stripe_event' ),
-					'permission_callback' => '__return_true',
-				),
-			)
-		);
-		$base      = 'standings';
-		register_rest_route(
-			$this->namespace,
-			'/' . $base,
-			array(
-				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_standings' ),
-					'permission_callback' => '__return_true',
-					'args'                => array(
-						'club'        => $this->get_arg( 'club' ),
-						'competition' => $this->get_arg( 'competition' ),
-						'event'       => $this->get_arg( 'event' ),
-						'league'      => $this->get_arg( 'league' ),
-						'season'      => $this->get_arg( 'season' ),
-					),
-				),
-			)
-		);
-		$base = 'fixtures';
-		register_rest_route(
-			$this->namespace,
-			'/' . $base,
-			array(
-				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_matches' ),
-					'permission_callback' => '__return_true',
-					'args'                => array(
-						'club'        => $this->get_arg( 'club' ),
-						'competition' => $this->get_arg( 'competition' ),
-						'event'       => $this->get_arg( 'event' ),
-						'league'      => $this->get_arg( 'league' ),
-						'season'      => $this->get_arg( 'season' ),
-						'home'        => $this->get_arg( 'home' ),
-					),
-				),
-			)
-		);
-		$base = 'results';
-		register_rest_route(
-			$this->namespace,
-			'/' . $base,
-			array(
-				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( $this, 'get_matches' ),
-					'permission_callback' => '__return_true',
-					'args'                => array(
-						'club'        => $this->get_arg( 'club' ),
-						'competition' => $this->get_arg( 'competition' ),
-						'event'       => $this->get_arg( 'event' ),
-						'league'      => $this->get_arg( 'league' ),
-						'season'      => $this->get_arg( 'season' ),
-						'days'        => $this->get_arg( 'days' ),
-					),
-				),
-			)
-		);
-		register_rest_route(
-			$this->namespace,
-			'/' . $base . '/schema',
-			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( $this, 'get_public_item_schema' ),
-				'permission_callback' => '__return_true',
-			)
-		);
-	}
-	/**
-	 * Get a collection of standings
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_Error|WP_REST_Response
-	 */
-	public function get_standings( WP_REST_Request $request ): WP_Error|WP_REST_Response {
-		$season  = $request['season'] ?? null;
-		$club    = $request['club'] ?? null;
-		$events  = array();
-		$league  = null;
-		$club_id = null;
-		if ( $club ) {
-			$club_name = un_seo_url( $request['club'] );
-			$club      = get_club( $club_name, 'shortcode' );
-			$club_id   = $club?->id;
-		}
-		$is_league = false;
-		if ( isset( $request['competition'] ) ) {
-			$competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
-			$competition = get_competition( $competition, 'name' );
-			if ( $competition ) {
-				if ( $season ) {
-					if ( empty( $competition->seasons[ $season ] ) ) {
-						return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
-					}
-				}
-				$events = $competition->get_events();
-			}
-		} elseif ( isset( $request['event'] ) ) {
-			$event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
-			$event = get_event( $event, 'name' );
-			if ( $event ) {
-				if ( $season ) {
-					if ( empty( $event->seasons[ $season ] ) ) {
-						return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
-					}
-				}
-				$events[] = $event;
-			}
-		} elseif ( isset( $request['league'] ) ) {
-			$league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
-			$league = get_league( $league );
-			if ( $league ) {
-				$is_league = true;
-				$events[]  = $league->event;
-			}
-		} else {
-			return new WP_Error( 'rest_invalid_param', esc_html__( 'The standings grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
-		}
-		$data = array();
-		foreach ( $events as $event ) {
-			$event = get_event( $event );
-			if ( $event ) {
-				if ( empty( $is_league ) ) {
-					$leagues = $event->get_leagues();
-				} else {
-					$leagues[] = $league;
-				}
-				foreach ( $leagues as $league ) {
-					$league = get_league( $league->id );
-					$teams  = $league->get_league_teams(
-						array(
-							'season' => $season,
-							'club'   => $club_id,
-						)
-					);
-					$i      = 0;
-					foreach ( $teams as $team ) {
-						$team->league = $league->title;
-						$teams[ $i ]  = $team;
-						++$i;
-					}
-					if ( $teams ) {
-						foreach ( $teams as $team ) {
-							$json_result = new stdClass();
-							if ( ! empty( $club ) ) {
-								$json_result->club = str_replace( '"', '', $club->shortcode );
-							}
-							$json_result->league = $team->league;
-							$json_result->season = $team->season;
-							$json_result->team   = $team->title;
-							$json_result->rank   = $team->rank;
-							$json_result->status = $team->status;
-							$json_result->played = $team->done_matches;
-							$json_result->won    = $team->won_matches;
-							$json_result->drawn  = $team->draw_matches;
-							$json_result->lost   = $team->lost_matches;
-							$json_result->points = $team->points['plus'];
-							$data[]              = $json_result;
-						}
-					}
-				}
-			}
-		}
+    /**
+     * Version
+     *
+     * @var string|int
+     */
+    public string|int $version;
+    /**
+     * Namespace
+     *
+     * @var string
+     */
+    public $namespace;
+    /**
+     * Constructor
+     *
+     * @return void
+     */
+    public function __construct() {
+        $this->version   = '1';
+        $this->namespace = 'racketmanager/v' . $this->version;
+    }
+    /**
+     * Register the routes for the objects of the controller.
+     */
+    public function register_routes(): void {
+        $base      = 'stripe';
+        register_rest_route(
+            $this->namespace,
+            '/' . $base,
+            array(
+                array(
+                    'methods'             => array( WP_REST_Server::CREATABLE, WP_REST_Server::READABLE),
+                    'callback'            => array( $this, 'stripe_event' ),
+                    'permission_callback' => '__return_true',
+                ),
+            )
+        );
+        $base      = 'standings';
+        register_rest_route(
+            $this->namespace,
+            '/' . $base,
+            array(
+                array(
+                    'methods'             => WP_REST_Server::READABLE,
+                    'callback'            => array( $this, 'get_standings' ),
+                    'permission_callback' => '__return_true',
+                    'args'                => array(
+                        'club'        => $this->get_arg( 'club' ),
+                        'competition' => $this->get_arg( 'competition' ),
+                        'event'       => $this->get_arg( 'event' ),
+                        'league'      => $this->get_arg( 'league' ),
+                        'season'      => $this->get_arg( 'season' ),
+                    ),
+                ),
+            )
+        );
+        $base = 'fixtures';
+        register_rest_route(
+            $this->namespace,
+            '/' . $base,
+            array(
+                array(
+                    'methods'             => WP_REST_Server::READABLE,
+                    'callback'            => array( $this, 'get_matches' ),
+                    'permission_callback' => '__return_true',
+                    'args'                => array(
+                        'club'        => $this->get_arg( 'club' ),
+                        'competition' => $this->get_arg( 'competition' ),
+                        'event'       => $this->get_arg( 'event' ),
+                        'league'      => $this->get_arg( 'league' ),
+                        'season'      => $this->get_arg( 'season' ),
+                        'home'        => $this->get_arg( 'home' ),
+                    ),
+                ),
+            )
+        );
+        $base = 'results';
+        register_rest_route(
+            $this->namespace,
+            '/' . $base,
+            array(
+                array(
+                    'methods'             => WP_REST_Server::READABLE,
+                    'callback'            => array( $this, 'get_matches' ),
+                    'permission_callback' => '__return_true',
+                    'args'                => array(
+                        'club'        => $this->get_arg( 'club' ),
+                        'competition' => $this->get_arg( 'competition' ),
+                        'event'       => $this->get_arg( 'event' ),
+                        'league'      => $this->get_arg( 'league' ),
+                        'season'      => $this->get_arg( 'season' ),
+                        'days'        => $this->get_arg( 'days' ),
+                    ),
+                ),
+            )
+        );
+        register_rest_route(
+            $this->namespace,
+            '/' . $base . '/schema',
+            array(
+                'methods'             => WP_REST_Server::READABLE,
+                'callback'            => array( $this, 'get_public_item_schema' ),
+                'permission_callback' => '__return_true',
+            )
+        );
+    }
+    /**
+     * Get a collection of standings
+     *
+     * @param WP_REST_Request $request Full data about the request.
+     * @return WP_Error|WP_REST_Response
+     */
+    public function get_standings( WP_REST_Request $request ): WP_Error|WP_REST_Response {
+        $season  = $request['season'] ?? null;
+        $club    = $request['club'] ?? null;
+        $events  = array();
+        $league  = null;
+        $club_id = null;
+        if ( $club ) {
+            $club_name = un_seo_url( $request['club'] );
+            $club      = get_club( $club_name, 'shortcode' );
+            $club_id   = $club?->id;
+        }
+        $is_league = false;
+        if ( isset( $request['competition'] ) ) {
+            $competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
+            $competition = get_competition( $competition, 'name' );
+            if ( $competition ) {
+                if ( $season ) {
+                    if ( empty( $competition->seasons[ $season ] ) ) {
+                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
+                    }
+                }
+                $events = $competition->get_events();
+            }
+        } elseif ( isset( $request['event'] ) ) {
+            $event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
+            $event = get_event( $event, 'name' );
+            if ( $event ) {
+                if ( $season ) {
+                    if ( empty( $event->seasons[ $season ] ) ) {
+                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
+                    }
+                }
+                $events[] = $event;
+            }
+        } elseif ( isset( $request['league'] ) ) {
+            $league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
+            $league = get_league( $league );
+            if ( $league ) {
+                $is_league = true;
+                $events[]  = $league->event;
+            }
+        } else {
+            return new WP_Error( 'rest_invalid_param', esc_html__( 'The standings grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
+        }
+        $data = array();
+        foreach ( $events as $event ) {
+            $event = get_event( $event );
+            if ( $event ) {
+                if ( empty( $is_league ) ) {
+                    $leagues = $event->get_leagues();
+                } else {
+                    $leagues[] = $league;
+                }
+                foreach ( $leagues as $league ) {
+                    $league = get_league( $league->id );
+                    $teams  = $league->get_league_teams(
+                        array(
+                            'season' => $season,
+                            'club'   => $club_id,
+                        )
+                    );
+                    $i      = 0;
+                    foreach ( $teams as $team ) {
+                        $team->league = $league->title;
+                        $teams[ $i ]  = $team;
+                        ++$i;
+                    }
+                    if ( $teams ) {
+                        foreach ( $teams as $team ) {
+                            $json_result = new stdClass();
+                            if ( ! empty( $club ) ) {
+                                $json_result->club = str_replace( '"', '', $club->shortcode );
+                            }
+                            $json_result->league = $team->league;
+                            $json_result->season = $team->season;
+                            $json_result->team   = $team->title;
+                            $json_result->rank   = $team->rank;
+                            $json_result->status = $team->status;
+                            $json_result->played = $team->done_matches;
+                            $json_result->won    = $team->won_matches;
+                            $json_result->drawn  = $team->draw_matches;
+                            $json_result->lost   = $team->lost_matches;
+                            $json_result->points = $team->points['plus'];
+                            $data[]              = $json_result;
+                        }
+                    }
+                }
+            }
+        }
 
-		return new WP_REST_Response( $data, 200 );
-	}
-	/**
-	 * Get a collection of matches
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_Error|WP_REST_Response
-	 */
-	public function get_matches( WP_REST_Request $request ): WP_Error|WP_REST_Response {
-		global $racketmanager;
-		$match_args = array();
-		$season     = $request['season'] ?? null;
-		$club       = $request['club'] ?? null;
-		$home       = $request['home'] ?? null;
-		if ( $club ) {
-			$club_name = un_seo_url( $request['club'] );
-			$club      = get_club( $club_name, 'shortcode' );
-			if ( $club ) {
-				$match_args['club'] = $club->id;
-				if ( $home ) {
-					$match_args['home_club'] = $club->id;
-				}
-			}
-		}
-		$match_args['season'] = $season;
-		if ( isset( $request['days'] ) ) {
-			$match_args['time']    = 'latest';
-			$match_args['days']    = $request['days'];
-			$match_args['history'] = $request['days'];
-		}
-		if ( isset( $request['competition'] ) ) {
-			$competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
-			$competition = get_competition( $competition, 'name' );
-			if ( $competition ) {
-				if ( $season ) {
-					if ( empty( $competition->seasons[ $season ] ) ) {
-						return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
-					}
-				}
-				$match_args['competition_id'] = $competition->id;
-				$matches                      = $racketmanager->get_matches( $match_args );
-			} else {
-				return new WP_Error( 'rest_invalid_param', esc_html__( 'Competition not found', 'racketmanager' ), array( 'status' => 400 ) );
-			}
-		} elseif ( isset( $request['event'] ) ) {
-			$event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
-			$event = get_event( $event, 'name' );
-			if ( $event ) {
-				if ( $season ) {
-					if ( empty( $event->seasons[ $season ] ) ) {
-						return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
-					}
-				}
-				$matches = $event->get_matches( $match_args );
-			} else {
-				return new WP_Error( 'rest_invalid_param', esc_html__( 'Event not found', 'racketmanager' ), array( 'status' => 400 ) );
-			}
-		} elseif ( isset( $request['league'] ) ) {
-			$league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
-			$league = get_league( $league );
-			if ( $league ) {
-				$matches = $league->get_matches( $match_args );
-			} else {
-				return new WP_Error( 'rest_invalid_param', esc_html__( 'League not found', 'racketmanager' ), array( 'status' => 400 ) );
-			}
-		} else {
-			return new WP_Error( 'rest_invalid_param', esc_html__( 'The matches grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
-		}
-		$data = array();
-		foreach ( $matches as $match ) {
-			$item_data = $this->prepare_match_for_response( $match );
-			/** @noinspection PhpParamsInspection */
-			$data[]    = $this->prepare_response_for_collection( $item_data );
-		}
-		return new WP_REST_Response( $data, 200 );
-	}
-	/**
-	 * Prepare the match for the REST response
-	 *
-	 * @param object $match representation of the item.
-	 * @return object
-	 */
-	public function prepare_match_for_response(object $match ): object {
-		$json_result             = new stdClass();
-		$json_result->league     = str_replace( '"', '', $match->league->title );
-		$json_result->home_team  = str_replace( '"', '', $match->teams['home']->title );
-		$json_result->away_team  = str_replace( '"', '', $match->teams['away']->title );
-		$json_result->match_date = substr( $match->date, 0, 10 );
-		$json_result->match_time = $match->start_time;
-		if ( $match->winner_id ) {
-			$json_result->score  = str_replace( '"', '', $match->score );
-			$json_result->status = Racketmanager_Util::get_match_status( $match->status );
-		}
-		return $json_result;
-	}
+        return new WP_REST_Response( $data, 200 );
+    }
+    /**
+     * Get a collection of matches
+     *
+     * @param WP_REST_Request $request Full data about the request.
+     * @return WP_Error|WP_REST_Response
+     */
+    public function get_matches( WP_REST_Request $request ): WP_Error|WP_REST_Response {
+        global $racketmanager;
+        $match_args = array();
+        $season     = $request['season'] ?? null;
+        $club       = $request['club'] ?? null;
+        $home       = $request['home'] ?? null;
+        if ( $club ) {
+            $club_name = un_seo_url( $request['club'] );
+            $club      = get_club( $club_name, 'shortcode' );
+            if ( $club ) {
+                $match_args['club'] = $club->id;
+                if ( $home ) {
+                    $match_args['home_club'] = $club->id;
+                }
+            }
+        }
+        $match_args['season'] = $season;
+        if ( isset( $request['days'] ) ) {
+            $match_args['time']    = 'latest';
+            $match_args['days']    = $request['days'];
+            $match_args['history'] = $request['days'];
+        }
+        if ( isset( $request['competition'] ) ) {
+            $competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
+            $competition = get_competition( $competition, 'name' );
+            if ( $competition ) {
+                if ( $season ) {
+                    if ( empty( $competition->seasons[ $season ] ) ) {
+                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
+                    }
+                }
+                $match_args['competition_id'] = $competition->id;
+                $matches                      = $racketmanager->get_matches( $match_args );
+            } else {
+                return new WP_Error( 'rest_invalid_param', esc_html__( 'Competition not found', 'racketmanager' ), array( 'status' => 400 ) );
+            }
+        } elseif ( isset( $request['event'] ) ) {
+            $event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
+            $event = get_event( $event, 'name' );
+            if ( $event ) {
+                if ( $season ) {
+                    if ( empty( $event->seasons[ $season ] ) ) {
+                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
+                    }
+                }
+                $matches = $event->get_matches( $match_args );
+            } else {
+                return new WP_Error( 'rest_invalid_param', esc_html__( 'Event not found', 'racketmanager' ), array( 'status' => 400 ) );
+            }
+        } elseif ( isset( $request['league'] ) ) {
+            $league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
+            $league = get_league( $league );
+            if ( $league ) {
+                $matches = $league->get_matches( $match_args );
+            } else {
+                return new WP_Error( 'rest_invalid_param', esc_html__( 'League not found', 'racketmanager' ), array( 'status' => 400 ) );
+            }
+        } else {
+            return new WP_Error( 'rest_invalid_param', esc_html__( 'The matches grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
+        }
+        $data = array();
+        foreach ( $matches as $match ) {
+            $item_data = $this->prepare_match_for_response( $match );
+            /** @noinspection PhpParamsInspection */
+            $data[]    = $this->prepare_response_for_collection( $item_data );
+        }
+        return new WP_REST_Response( $data, 200 );
+    }
+    /**
+     * Prepare the match for the REST response
+     *
+     * @param object $match representation of the item.
+     * @return object
+     */
+    public function prepare_match_for_response(object $match ): object {
+        $json_result             = new stdClass();
+        $json_result->league     = str_replace( '"', '', $match->league->title );
+        $json_result->home_team  = str_replace( '"', '', $match->teams['home']->title );
+        $json_result->away_team  = str_replace( '"', '', $match->teams['away']->title );
+        $json_result->match_date = substr( $match->date, 0, 10 );
+        $json_result->match_time = $match->start_time;
+        if ( $match->winner_id ) {
+            $json_result->score  = str_replace( '"', '', $match->score );
+            $json_result->status = Racketmanager_Util::get_match_status( $match->status );
+        }
+        return $json_result;
+    }
 
-	/**
-	 * Get the query params for collections
-	 *
-	 * @return array
-	 */
-	public function get_collection_params(): array {
-		return array(
-			'page'     => array(
-				'description'       => 'Current page of the collection.',
-				'type'              => 'integer',
-				'default'           => 1,
-				'sanitize_callback' => 'absint',
-			),
-			'per_page' => array(
-				'description'       => 'Maximum number of items to be returned in result set.',
-				'type'              => 'integer',
-				'default'           => 10,
-				'sanitize_callback' => 'absint',
-			),
-			'search'   => array(
-				'description'       => 'Limit results to those matching a string.',
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-			),
-		);
-	}
-	/**
-	 * Get argument details function
-	 *
-	 * @param string $type argument name.
-	 * @return array
-	 */
-	private function get_arg(string $type ): array {
-		return match ($type) {
-			'club' => array(
-				'description' => __('Club name', 'racketmanager'),
-				'type' => 'string',
-				'required' => false,
-				'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
-				'enum' => $this->get_clubs(),
-				'validate_callback' => array( $this, 'string_arg_validate_callback' ),
-			),
-			'competition' => array(
-				'description' => __('Competition name', 'racketmanager'),
-				'type' => 'string',
-				'required' => false,
-				'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-				'enum' => $this->get_competitions(),
-				'validate_callback' => array($this, 'string_arg_validate_callback'),
-			),
-			'event' => array(
-				'description' => __('Event name', 'racketmanager'),
-				'type' => 'string',
-				'required' => false,
-				'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-				'enum' => $this->get_events(),
-				'validate_callback' => array($this, 'string_arg_validate_callback'),
-			),
-			'league' => array(
-				'description' => __('League name', 'racketmanager'),
-				'type' => 'string',
-				'required' => false,
-				'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-				'enum' => $this->get_leagues(),
-				'validate_callback' => array($this, 'string_arg_validate_callback'),
-			),
-			'season' => array(
-				'description' => __('Season', 'racketmanager'),
-				'type' => 'integer',
-				'required' => true,
-				'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
-				'enum' => $this->get_seasons(),
-				'validate_callback' => array($this, 'int_arg_validate_callback'),
-			),
-			'days' => array(
-				'description' => __('Number of days to look for results', 'racketmanager'),
-				'type' => 'integer',
-				'required' => false,
-				'default' => 7,
-			),
-			default => array(),
-		};
-	}
-	/**
-	 * Sanitize a request argument based on details registered to the route.
-	 *
-	 * @param  mixed           $value   Value of the 'filter' argument.
-	 * @return string
-	 */
-	public function data_arg_sanitize_callback(mixed $value): string {
-		// It is as simple as returning the sanitized value.
-		return sanitize_text_field( $value );
-	}
+    /**
+     * Get the query params for collections
+     *
+     * @return array
+     */
+    public function get_collection_params(): array {
+        return array(
+            'page'     => array(
+                'description'       => 'Current page of the collection.',
+                'type'              => 'integer',
+                'default'           => 1,
+                'sanitize_callback' => 'absint',
+            ),
+            'per_page' => array(
+                'description'       => 'Maximum number of items to be returned in result set.',
+                'type'              => 'integer',
+                'default'           => 10,
+                'sanitize_callback' => 'absint',
+            ),
+            'search'   => array(
+                'description'       => 'Limit results to those matching a string.',
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ),
+        );
+    }
+    /**
+     * Get argument details function
+     *
+     * @param string $type argument name.
+     * @return array
+     */
+    private function get_arg(string $type ): array {
+        return match ($type) {
+            'club' => array(
+                'description' => __('Club name', 'racketmanager'),
+                'type' => 'string',
+                'required' => false,
+                'sanitize_callback' => array( $this, 'data_arg_sanitize_callback' ),
+                'enum' => $this->get_clubs(),
+                'validate_callback' => array( $this, 'string_arg_validate_callback' ),
+            ),
+            'competition' => array(
+                'description' => __('Competition name', 'racketmanager'),
+                'type' => 'string',
+                'required' => false,
+                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
+                'enum' => $this->get_competitions(),
+                'validate_callback' => array($this, 'string_arg_validate_callback'),
+            ),
+            'event' => array(
+                'description' => __('Event name', 'racketmanager'),
+                'type' => 'string',
+                'required' => false,
+                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
+                'enum' => $this->get_events(),
+                'validate_callback' => array($this, 'string_arg_validate_callback'),
+            ),
+            'league' => array(
+                'description' => __('League name', 'racketmanager'),
+                'type' => 'string',
+                'required' => false,
+                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
+                'enum' => $this->get_leagues(),
+                'validate_callback' => array($this, 'string_arg_validate_callback'),
+            ),
+            'season' => array(
+                'description' => __('Season', 'racketmanager'),
+                'type' => 'integer',
+                'required' => true,
+                'sanitize_callback' => array($this, 'data_arg_sanitize_callback'),
+                'enum' => $this->get_seasons(),
+                'validate_callback' => array($this, 'int_arg_validate_callback'),
+            ),
+            'days' => array(
+                'description' => __('Number of days to look for results', 'racketmanager'),
+                'type' => 'integer',
+                'required' => false,
+                'default' => 7,
+            ),
+            default => array(),
+        };
+    }
+    /**
+     * Sanitize a request argument based on details registered to the route.
+     *
+     * @param  mixed           $value   Value of the 'filter' argument.
+     * @return string
+     */
+    public function data_arg_sanitize_callback(mixed $value): string {
+        // It is as simple as returning the sanitized value.
+        return sanitize_text_field( $value );
+    }
 
-	/**
-	 * Validate string argument function
-	 *
-	 * @param mixed $value value to check.
-	 * @param WP_REST_Request $request request object.
-	 * @param string $param parameter value.
-	 * @return true|WP_Error
-	 */
-	public function string_arg_validate_callback( mixed $value, WP_REST_Request $request, string $param ): true|WP_Error {
-		// If the argument is not a string return an error.
-		if ( ! is_string( $value ) ) {
-			return new WP_Error( 'rest_invalid_param', esc_html__( 'The argument must be a string.', 'racketmanager' ), array( 'status' => 400 ) );
-		}
+    /**
+     * Validate string argument function
+     *
+     * @param mixed $value value to check.
+     * @param WP_REST_Request $request request object.
+     * @param string $param parameter value.
+     * @return true|WP_Error
+     */
+    public function string_arg_validate_callback( mixed $value, WP_REST_Request $request, string $param ): true|WP_Error {
+        // If the argument is not a string return an error.
+        if ( ! is_string( $value ) ) {
+            return new WP_Error( 'rest_invalid_param', esc_html__( 'The argument must be a string.', 'racketmanager' ), array( 'status' => 400 ) );
+        }
 
-		// Get the registered attributes for this endpoint request.
-		$attributes = $request->get_attributes();
+        // Get the registered attributes for this endpoint request.
+        $attributes = $request->get_attributes();
 
-		// Grab the filter param schema.
-		$args = $attributes['args'][ $param ];
+        // Grab the filter param schema.
+        $args = $attributes['args'][ $param ];
 
-		// If the param is not a value in our enum then we should return an error as well.
-		if ( ! in_array( $value, $args['enum'], true ) ) {
-			/* translators: %1$s: value passed */
-			return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not valid', 'racketmanager' ), $param ), array( 'status' => 400 ) );
-		}
-		return true;
-	}
+        // If the param is not a value in our enum then we should return an error as well.
+        if ( ! in_array( $value, $args['enum'], true ) ) {
+            /* translators: %1$s: value passed */
+            return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not valid', 'racketmanager' ), $param ), array( 'status' => 400 ) );
+        }
+        return true;
+    }
 
-	/**
-	 * Validate integer argument function
-	 *
-	 * @param int|mixed $value value to check.
-	 * @param WP_REST_Request $request request object.
-	 * @param mixed $param parameter value.
-	 * @return true|WP_Error|null
-	 */
-	public function int_arg_validate_callback( mixed $value, WP_REST_Request $request, mixed $param ): true|WP_Error|null {
-		// If the argument is not an integer return an error.
-		if ( ! is_numeric( $value ) ) {
-			return new WP_Error( 'rest_invalid_param', esc_html__( 'The argument must be an integer.', 'racketmanager' ), array( 'status' => 400 ) );
-		}
+    /**
+     * Validate integer argument function
+     *
+     * @param int|mixed $value value to check.
+     * @param WP_REST_Request $request request object.
+     * @param mixed $param parameter value.
+     * @return true|WP_Error|null
+     */
+    public function int_arg_validate_callback( mixed $value, WP_REST_Request $request, mixed $param ): true|WP_Error|null {
+        // If the argument is not an integer return an error.
+        if ( ! is_numeric( $value ) ) {
+            return new WP_Error( 'rest_invalid_param', esc_html__( 'The argument must be an integer.', 'racketmanager' ), array( 'status' => 400 ) );
+        }
 
-		// Get the registered attributes for this endpoint request.
-		$attributes = $request->get_attributes();
+        // Get the registered attributes for this endpoint request.
+        $attributes = $request->get_attributes();
 
-		// Grab the filter param schema.
-		$args = $attributes['args'][ $param ];
+        // Grab the filter param schema.
+        $args = $attributes['args'][ $param ];
 
-		// If the param is not a value in our enum then we should return an error as well.
-		if ( ! in_array( $value, $args['enum'], true ) ) {
-			/* translators: %1$s: value passed */
-			return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not valid', 'racketmanager' ), $param ), array( 'status' => 400 ) );
-		}
-		return true;
-	}
-	/**
-	 * Get clubs function
-	 *
-	 * @return array
-	 */
-	private function get_clubs(): array {
-		global $racketmanager;
-		$clubs = $racketmanager->get_clubs();
-		foreach ( $clubs as $i => $club ) {
-			$clubs[ $i ] = seo_url( $club->shortcode );
-		}
-		return $clubs;
-	}
-	/**
-	 * Get competitions function
-	 *
-	 * @return array
-	 */
-	private function get_competitions(): array {
-		global $racketmanager;
-		$competitions = $racketmanager->get_competitions();
-		foreach ( $competitions as $i => $competition ) {
-			$competitions[ $i ] = seo_url( $competition->name );
-		}
-		return $competitions;
-	}
-	/**
-	 * Get events function
-	 *
-	 * @return array
-	 */
-	private function get_events(): array {
-		global $racketmanager;
-		$events = $racketmanager->get_events();
-		foreach ( $events as $i => $event ) {
-			$events[ $i ] = seo_url( $event->name );
-		}
-		return $events;
-	}
-	/**
-	 * Get leagues function
-	 *
-	 * @return array
-	 */
-	private function get_leagues(): array {
-		global $racketmanager;
-		$leagues = $racketmanager->get_leagues();
-		foreach ( $leagues as $i => $league ) {
-			$leagues[ $i ] = seo_url( $league->title );
-		}
-		return $leagues;
-	}
-	/**
-	 * Get seasons function
-	 *
-	 * @return array
-	 */
-	private function get_seasons(): array {
-		global $racketmanager;
-		$seasons = $racketmanager->get_seasons();
-		foreach ( $seasons as $i => $season ) {
-			$seasons[ $i ] = seo_url( $season->name );
-		}
-		return $seasons;
-	}
-	/**
-	 * Process stripe callback
-	 *
-	 * @return WP_Error|WP_REST_Response
-	 * @noinspection PhpPossiblePolymorphicInvocationInspection
-	 */
-	public function stripe_event(): WP_Error|WP_REST_Response {
-		$data           = null;
-		$status         = 200;
-		$stripe_details = new Racketmanager_Stripe();
-		Stripe::setApiKey( $stripe_details->api_secret_key );
-		$payload = @file_get_contents('php://input');
-		try {
-			$event = Event::constructFrom(
-				json_decode($payload, true)
-			);
-		} catch( UnexpectedValueException ) {
-			echo '⚠️  Webhook error while parsing basic request.';
-			$status = 400;
-			return new WP_REST_Response( $data, $status );
-		}
-		if ( $stripe_details->api_endpoint_key ) {
-			// Only verify the event if there is an endpoint secret defined
-			// Otherwise use the basic decoded event
-			$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-			try {
-				$event = Webhook::constructEvent(
-					$payload, $sig_header, $stripe_details->api_endpoint_key
-				);
-			} catch( SignatureVerificationException ) {
-				// Invalid signature
-				echo '⚠️  Webhook error while validating signature.';
-				$status = 400;
-				return new WP_REST_Response( $data, $status );
-			}
-		}
-		// Handle the event
-		switch ($event->type) {
-			case 'payment_intent.succeeded':
-				$payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
-				$stripe_details->update_payment( $payment_intent->id);
-			// Then define and call a method to handle the successful payment intent.
-			// handlePaymentIntentSucceeded($payment_intent);
-				break;
-			case 'payment_intent.processing':
-				$payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
-				$stripe_details->update_payment( $payment_intent->id, 'pending' );
-				break;
-			case 'payment_intent.payment_failed':
-				$payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
-				$stripe_details->update_payment( $payment_intent->id, 'failed' );
-				break;
-			case 'payment_method.attached':
-			case 'payment_intent.created':
-			case 'charge.succeeded':
-			case 'charge.updated':
-				break;
-			default:
-			// Unexpected event type
-				error_log('Received unknown event type');
-				error_log( $event->type );
-				$status = 400;
-		}
-		return new WP_REST_Response( $data, $status );
-	}
+        // If the param is not a value in our enum then we should return an error as well.
+        if ( ! in_array( $value, $args['enum'], true ) ) {
+            /* translators: %1$s: value passed */
+            return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not valid', 'racketmanager' ), $param ), array( 'status' => 400 ) );
+        }
+        return true;
+    }
+    /**
+     * Get clubs function
+     *
+     * @return array
+     */
+    private function get_clubs(): array {
+        global $racketmanager;
+        $clubs = $racketmanager->get_clubs();
+        foreach ( $clubs as $i => $club ) {
+            $clubs[ $i ] = seo_url( $club->shortcode );
+        }
+        return $clubs;
+    }
+    /**
+     * Get competitions function
+     *
+     * @return array
+     */
+    private function get_competitions(): array {
+        global $racketmanager;
+        $competitions = $racketmanager->get_competitions();
+        foreach ( $competitions as $i => $competition ) {
+            $competitions[ $i ] = seo_url( $competition->name );
+        }
+        return $competitions;
+    }
+    /**
+     * Get events function
+     *
+     * @return array
+     */
+    private function get_events(): array {
+        global $racketmanager;
+        $events = $racketmanager->get_events();
+        foreach ( $events as $i => $event ) {
+            $events[ $i ] = seo_url( $event->name );
+        }
+        return $events;
+    }
+    /**
+     * Get leagues function
+     *
+     * @return array
+     */
+    private function get_leagues(): array {
+        global $racketmanager;
+        $leagues = $racketmanager->get_leagues();
+        foreach ( $leagues as $i => $league ) {
+            $leagues[ $i ] = seo_url( $league->title );
+        }
+        return $leagues;
+    }
+    /**
+     * Get seasons function
+     *
+     * @return array
+     */
+    private function get_seasons(): array {
+        global $racketmanager;
+        $seasons = $racketmanager->get_seasons();
+        foreach ( $seasons as $i => $season ) {
+            $seasons[ $i ] = seo_url( $season->name );
+        }
+        return $seasons;
+    }
+    /**
+     * Process stripe callback
+     *
+     * @return WP_Error|WP_REST_Response
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
+     */
+    public function stripe_event(): WP_Error|WP_REST_Response {
+        $data           = null;
+        $status         = 200;
+        $stripe_details = new Racketmanager_Stripe();
+        Stripe::setApiKey( $stripe_details->api_secret_key );
+        $payload = @file_get_contents('php://input');
+        try {
+            $event = Event::constructFrom(
+                json_decode($payload, true)
+            );
+        } catch( UnexpectedValueException ) {
+            echo '⚠️  Webhook error while parsing basic request.';
+            $status = 400;
+            return new WP_REST_Response( $data, $status );
+        }
+        if ( $stripe_details->api_endpoint_key ) {
+            // Only verify the event if there is an endpoint secret defined
+            // Otherwise use the basic decoded event
+            $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
+            try {
+                $event = Webhook::constructEvent(
+                    $payload, $sig_header, $stripe_details->api_endpoint_key
+                );
+            } catch( SignatureVerificationException ) {
+                // Invalid signature
+                echo '⚠️  Webhook error while validating signature.';
+                $status = 400;
+                return new WP_REST_Response( $data, $status );
+            }
+        }
+        // Handle the event
+        switch ($event->type) {
+            case 'payment_intent.succeeded':
+                $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                $stripe_details->update_payment( $payment_intent->id);
+            // Then define and call a method to handle the successful payment intent.
+            // handlePaymentIntentSucceeded($payment_intent);
+                break;
+            case 'payment_intent.processing':
+                $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                $stripe_details->update_payment( $payment_intent->id, 'pending' );
+                break;
+            case 'payment_intent.payment_failed':
+                $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                $stripe_details->update_payment( $payment_intent->id, 'failed' );
+                break;
+            case 'payment_method.attached':
+            case 'payment_intent.created':
+            case 'charge.succeeded':
+            case 'charge.updated':
+                break;
+            default:
+            // Unexpected event type
+                error_log('Received unknown event type');
+                error_log( $event->type );
+                $status = 400;
+        }
+        return new WP_REST_Response( $data, $status );
+    }
 }

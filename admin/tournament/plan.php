@@ -82,22 +82,70 @@ jQuery(document).ready(function(){
                 <div class="row g-3">
                     <div class="col">
                         <div class="form-floating mb-3">
-                            <input type="time" class="form-control" name="startTime" id="startTime" value="<?php echo esc_html( $tournament->start_time ); ?>" />
+                            <?php
+                            $is_invalid = false;
+                            $msg        = null;
+                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'startTime', $validator->err_flds, true ) ) ) {
+                                $is_invalid = true;
+                                $msg_id     = array_search( 'startTime', $validator->err_flds, true );
+                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
+                            }
+                            ?>
+                            <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="startTime" id="startTime" value="<?php echo esc_html( $tournament->start_time ); ?>" />
                             <label for="startTime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
+                            <?php
+                            if ( $is_invalid ) {
+                                ?>
+                                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                                <?php
+                            }
+                            ?>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-floating mb-3">
-                            <input type="time" class="form-control" name="timeIncrement" id="timeIncrement" value="<?php echo esc_html( $tournament->time_increment ); ?>" />
+                            <?php
+                            $is_invalid = false;
+                            $msg        = null;
+                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'timeIncrement', $validator->err_flds, true ) ) ) {
+                                $is_invalid = true;
+                                $msg_id     = array_search( 'timeIncrement', $validator->err_flds, true );
+                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
+                            }
+                            ?>
+                            <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="timeIncrement" id="timeIncrement" value="<?php echo esc_html( $tournament->time_increment ); ?>" />
                             <label for="timeIncrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
+                            <?php
+                            if ( $is_invalid ) {
+                                ?>
+                                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                                <?php
+                            }
+                            ?>
                         </div>
                     </div>
                 </div>
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
                         <div class="form-floating mb-3">
-                            <input type="number" class="form-control" name="numCourts" id="numCourts" value="<?php echo esc_html( $tournament->num_courts ); ?>" />
-                            <label for="numCourts"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
+                            <?php
+                            $is_invalid = false;
+                            $msg        = null;
+                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'numCourtsAvailable', $validator->err_flds, true ) ) ) {
+                                $is_invalid = true;
+                                $msg_id     = array_search( 'numCourtsAvailable', $validator->err_flds, true );
+                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
+                            }
+                            ?>
+                            <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="numCourtsAvailable" id="numCourtsAvailable" value="<?php echo esc_html( $tournament->num_courts ); ?>" />
+                            <label for="numCourtsAvailable"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
+                            <?php
+                            if ( $is_invalid ) {
+                                ?>
+                                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                                <?php
+                            }
+                            ?>
                         </div>
                     </div>
                 </div>

@@ -1400,9 +1400,10 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 		type: "POST",
 		data: $form,
 		success: function (response) {
-			let message = response.data[0];
-			let modal = '#' + response.data[1];
-			let match_id = response.data[2];
+			let data = response.data;
+			let message = data.msg;
+			let modal = '#' + data.modal;
+			let match_id = data.match_id;
 			let matchForm = 'form-match-' + match_id;
 			Racketmanager.resetMatchScores(e, matchForm);
 			if (!is_tournament) {
@@ -1876,7 +1877,7 @@ Racketmanager.tabDataLink = function (e, target, id, season = null, link = null,
 			"link_id": linkId,
 			"target": target,
 		},
-		function () {
+		function (response, status) {
 			jQuery(tabContent).removeClass('is-loading');
 			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}

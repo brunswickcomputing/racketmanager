@@ -11,9 +11,9 @@ namespace Racketmanager;
 /** @var string $season_select */
 /** @var string $competition_select */
 /** @var string $age_group_select */
-$seasons      = $this->get_seasons( 'DESC' );
-$competitions = $this->get_competitions( array( 'type' => 'tournament' ) );
-$age_groups   = Racketmanager_Util::get_age_groups();
+/** @var array  $seasons */
+/** @var array  $competitions */
+/** @var array  $age_groups */
 ?>
 <div class="container">
     <h1><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></h1>

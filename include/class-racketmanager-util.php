@@ -776,7 +776,7 @@ class Racketmanager_Util {
 		return $age_limits;
 	}
 	/**
-	 * Get match status value function
+	 * Get age limit value function
 	 *
 	 * @param string|null $age_limit age limit.
 	 * @return string age_limit text
@@ -797,6 +797,16 @@ class Racketmanager_Util {
 		$age_groups['senior'] = __( 'Senior', 'racketmanager' );
 		return $age_groups;
 	}
+    /**
+     * Get age group value function
+     *
+     * @param string|null $age_group age limit.
+     * @return string age_limit text
+     */
+    public static function get_age_group( ?string $age_group ): string {
+        $age_groups = self::get_age_groups();
+        return empty( $age_groups[ $age_group ] ) ? false : $age_groups[ $age_group ];
+    }
 	/**
 	 * Amend date function
 	 *

@@ -14,7 +14,8 @@ namespace Racketmanager;
 /** @var int $tournament_id */
 /** @var object $tournament */
 /** @var array $teams */
-if ( 'constitution' === $view ) {
+/** @var string $type */
+if ( 'constitution' === $type ) {
     $page_title = __( 'Add Teams to Constitution', 'racketmanager' );
     $page_link  = $league->event->name;
     $breadcrumb = 'show-event&amp;event_id=' . $league->event_id;

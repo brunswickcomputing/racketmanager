@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Stripe API: stripe class
+ * Stripe API: stripe class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Stripe object
  */
-final class Racketmanager_Stripe {
+final class Stripe {
 
     /**
      * Currency

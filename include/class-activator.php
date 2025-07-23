@@ -1,9 +1,9 @@
 <?php
 /**
- * Racketmanager_Activator API: Racketmanager_Activator class
+ * Activator API: Activator class
  *
  * @author Paul Moffat
- * @package Racketmanager_Activator
+ * @package Activator
  */
 
 namespace Racketmanager;
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || die( 'Access denied !' );
 /**
  * Class for tasks to do during plugin activation and deactivation phases
  */
-class Racketmanager_Activator {
+class Activator {
     /**
      * Activate plugin
      */

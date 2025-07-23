@@ -51,12 +51,12 @@ class RacketmanagerMain {
 
         require_once RACKETMANAGER_PATH . 'include/class-racketmanager-util.php';
         require_once RACKETMANAGER_PATH . 'include/class-racketmanager.php';
-        require_once RACKETMANAGER_PATH . 'include/class-racketmanager-activator.php';
+        require_once RACKETMANAGER_PATH . 'include/class-activator.php';
 
         load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 
-        register_activation_hook( __FILE__, array( 'RacketManager\Racketmanager_Activator', 'activate' ) );
-        register_deactivation_hook( __FILE__, array( 'RacketManager\Racketmanager_Activator', 'deactivate' ) );
+        register_activation_hook( __FILE__, array( 'RacketManager\Activator', 'activate' ) );
+        register_deactivation_hook( __FILE__, array( 'RacketManager\Activator', 'deactivate' ) );
         add_action( 'plugins_loaded', array( 'RacketManager\RacketManager', 'get_instance' ) );
 
         if ( is_admin() ) {

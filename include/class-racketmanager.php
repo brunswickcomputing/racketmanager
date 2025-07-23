@@ -800,7 +800,7 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-login.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-email.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-tournament.php';
-        require_once RACKETMANAGER_PATH . 'include/class-racketmanager-login.php';
+        require_once RACKETMANAGER_PATH . 'include/class-login.php';
         require_once RACKETMANAGER_PATH . 'include/class-widget.php';
 
         // template tags & functions.
@@ -827,7 +827,7 @@ class RacketManager {
         $this->shortcodes_message       = new Shortcodes_Message();
         $this->shortcodes_tournament    = new Shortcodes_Tournament();
         $this->rewrites                 = new Rewrites();
-        $this->login                    = new Racketmanager_Login();
+        $this->login                    = new Login();
     }
     /**
      * Load shortcodes

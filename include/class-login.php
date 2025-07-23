@@ -16,7 +16,7 @@ use WP_User;
 /**
  * Class for plugin login
  */
-class RacketManager_Login {
+class Login {
     /**
      * Url for registration
      *

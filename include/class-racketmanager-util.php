@@ -157,6 +157,16 @@ class Racketmanager_Util {
 		$competition_types['tournament'] = __( 'tournament', 'racketmanager' );
 		return $competition_types;
 	}
+    /**
+     * Get competition type
+     *
+     * @param string|null $type competition type.
+     * @return string|bool competition type text
+     */
+    public static function get_competition_type( ?string $type ): string|bool {
+        $competition_types = self::get_competition_types();
+        return empty( $competition_types[ $type ] ) ? false : $competition_types[ $type ];
+    }
 
 	/**
 	 * Get available league modes

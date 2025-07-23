@@ -570,7 +570,7 @@ class RacketManager {
 	 *
 	 * @return array
 	 */
-	private function get_league_standings( array $args = array() ): array {
+	public function get_league_standings( array $args = array() ): array {
 		global $wpdb;
 		$defaults = array(
 			'season'     => false,

@@ -1532,7 +1532,7 @@ class Racketmanager_League {
 				if ( $this->event->competition->is_tournament ) {
 					$team->team_type = 'S';
 				}
-				$team = new Racketmanager_Team( $team );
+				$team = new Team( $team );
 			}
 			$team_id = $team->id;
 		}

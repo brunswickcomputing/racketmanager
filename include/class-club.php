@@ -429,7 +429,7 @@ final class Club {
         $team->stadium = $this->name;
         $team->club_id = $this->id;
         $team->type    = $type;
-        return new Racketmanager_Team( $team );
+        return new Team( $team );
     }
     /**
      * Get teams for club

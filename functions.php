@@ -460,12 +460,12 @@ function get_team( object|int|string $team = null ): ?object {
         $team = $GLOBALS['team'];
     }
 
-    if ( $team instanceof Racketmanager_Team ) {
+    if ( $team instanceof Team ) {
         $_team = $team;
     } elseif ( is_object( $team ) ) {
-        $_team = new Racketmanager_Team( $team );
+        $_team = new Team( $team );
     } else {
-        $_team = Racketmanager_Team::get_instance( $team );
+        $_team = Team::get_instance( $team );
     }
 
     if ( ! $_team ) {

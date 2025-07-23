@@ -1455,7 +1455,7 @@ final class Tournament {
                             $team->type       = $league->type;
                             $team->team_type  = 'P';
                             $team->club_id    = $club->id;
-                            $team             = new Racketmanager_Team( $team );
+                            $team             = new Team( $team );
                         }
                         $team->set_event( $league->event_id, $player->id, $player->contactno, $player->email );
                         $league_entry_id = $league->add_team( $team->id, $this->season );

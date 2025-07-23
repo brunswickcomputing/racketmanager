@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Team API: Team class
+ * Team API: Team class
  *
  * @author Kolja Schleich
  * @package RacketManager
@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the Team object
  */
-final class Racketmanager_Team {
+final class Team {
     /**
      * ID variable
      *
@@ -235,7 +235,7 @@ final class Racketmanager_Team {
             if ( ! $team ) {
                 return false;
             }
-            $team = new Racketmanager_Team( $team );
+            $team = new Team( $team );
             wp_cache_set( $team->id, $team, 'teams' );
         }
 

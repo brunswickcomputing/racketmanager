@@ -1,6 +1,6 @@
 <?php
 /**
- * Racketmanager_Schedule_Round_Robin API: stripe class
+ * Schedule_Round_Robin API: stripe class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -10,9 +10,9 @@
 namespace Racketmanager;
 
 /**
- * Class to implement the Racketmanager_Schedule_Round_Robin object
+ * Class to implement the Schedule_Round_Robin object
  */
-final class Racketmanager_Schedule_Round_Robin {
+final class Schedule_Round_Robin {
 
     private int $num_teams;
     private array $teams;

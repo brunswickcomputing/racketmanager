@@ -104,18 +104,7 @@ jQuery(document).ready(function () {
 			let playerId = "#matchSecretaryId";
 			let contactno = "#matchSecretaryContactNo";
 			let contactemail = "#matchSecretaryEmail";
-			if (ui.item === null) {
-				jQuery(this).val('');
-				jQuery(player).val('');
-				jQuery(playerId).val('');
-				jQuery(contactno).val('');
-				jQuery(contactemail).val('');
-			} else {
-				jQuery(player).val(ui.item.value);
-				jQuery(playerId).val(ui.item.playerId);
-				jQuery(contactno).val(ui.item.contactno);
-				jQuery(contactemail).val(ui.item.user_email);
-			}
+			setPlayerDetails(ui,player,playerId,contactno,contactemail);
 		}
 	});
 
@@ -208,6 +197,20 @@ jQuery(document).ready(function () {
 	});
 	FavouriteInit();
 });
+function setPlayerDetails(ui,player,playerId,contactno,contactemail) {
+	if (ui.item === null) {
+		jQuery(this).val('');
+		jQuery(player).val('');
+		jQuery(playerId).val('');
+		jQuery(contactno).val('');
+		jQuery(contactemail).val('');
+	} else {
+		jQuery(player).val(ui.item.value);
+		jQuery(playerId).val(ui.item.playerId);
+		jQuery(contactno).val(ui.item.contactno);
+		jQuery(contactemail).val(ui.item.user_email);
+	}
+}
 jQuery(document).ajaxComplete(function () {
 	FavouriteInit();
 	PartnerLookup();
@@ -248,18 +251,7 @@ function CaptainLookup() {
 			let playerId = "#captainId".concat(ref);
 			let contactno = "#contactno".concat(ref);
 			let contactemail = "#contactemail".concat(ref);
-			if (ui.item === null) {
-				jQuery(this).val('');
-				jQuery(player).val('');
-				jQuery(playerId).val('');
-				jQuery(contactno).val('');
-				jQuery(contactemail).val('');
-			} else {
-				jQuery(player).val(ui.item.value);
-				jQuery(playerId).val(ui.item.playerId);
-				jQuery(contactno).val(ui.item.contactno);
-				jQuery(contactemail).val(ui.item.user_email);
-			}
+			setPlayerDetails(ui,player,playerId,contactno,contactemail);
 		}
 	});
 }
@@ -361,30 +353,10 @@ function PartnerLookup() {
 			response(get_player_details('name', request.term, club, notifyField, partnerGender));
 		},
 		select: function (event, ui) {
-			if (ui.item.value === 'null') {
-				ui.item.value = '';
-			}
-			let player = "#partner";
-			let playerId = "#partnerId";
-			let playerBTM = "#partnerBTM";
-			jQuery(player).val(ui.item.name);
-			jQuery(playerId).val(ui.item.playerId);
-			jQuery(playerBTM).val(ui.item.btm);
+			selectPartnerName(ui);
 		},
 		change: function (event, ui) {
-			let player = "#partner";
-			let playerId = "#partnerId";
-			let playerBTM = "#partnerBTM";
-			if (ui.item === null) {
-				jQuery(this).val('');
-				jQuery(player).val('');
-				jQuery(playerId).val('');
-				jQuery(playerBTM).val('');
-			} else {
-				jQuery(player).val(ui.item.name);
-				jQuery(playerId).val(ui.item.playerId);
-				jQuery(playerBTM).val(ui.item.btm);
-			}
+			changePartnerName(ui);
 		}
 	});
 	jQuery('.partner-btm').autocomplete({
@@ -396,30 +368,10 @@ function PartnerLookup() {
 			response(get_player_details('btm', request.term, club, notifyField, partnerGender));
 		},
 		select: function (event, ui) {
-			if (ui.item.value === 'null') {
-				ui.item.value = '';
-			}
-			let player = "#partner";
-			let playerId = "#partnerId";
-			let playerBTM = "#partnerBTM";
-			jQuery(player).val(ui.item.name);
-			jQuery(playerId).val(ui.item.playerId);
-			jQuery(playerBTM).val(ui.item.btm);
+			selectPartnerName(ui);
 		},
 		change: function (event, ui) {
-			let player = "#partner";
-			let playerId = "#partnerId";
-			let playerBTM = "#partnerBTM";
-			if (ui.item === null) {
-				jQuery(this).val('');
-				jQuery(player).val('');
-				jQuery(playerId).val('');
-				jQuery(playerBTM).val('');
-			} else {
-				jQuery(player).val(ui.item.name);
-				jQuery(playerId).val(ui.item.playerId);
-				jQuery(playerBTM).val(ui.item.btm);
-			}
+			changePartnerName(ui);
 		}
 	});
 	jQuery('#partnerModal').on('hidden.bs.modal', function (e) {
@@ -435,6 +387,32 @@ function PartnerLookup() {
 			}
 		}
 	});
+}
+function selectPartnerName(ui) {
+	let player = "#partner";
+	let playerId = "#partnerId";
+	let playerBTM = "#partnerBTM";
+	if (ui.item.value === 'null') {
+		ui.item.value = '';
+	}
+	jQuery(player).val(ui.item.name);
+	jQuery(playerId).val(ui.item.playerId);
+	jQuery(playerBTM).val(ui.item.btm);
+}
+function changePartnerName(ui) {
+	let player = "#partner";
+	let playerId = "#partnerId";
+	let playerBTM = "#partnerBTM";
+	if (ui.item === null) {
+		jQuery(this).val('');
+		jQuery(player).val('');
+		jQuery(playerId).val('');
+		jQuery(playerBTM).val('');
+	} else {
+		jQuery(player).val(ui.item.name);
+		jQuery(playerId).val(ui.item.playerId);
+		jQuery(playerBTM).val(ui.item.btm);
+	}
 }
 function MatchDayChange() {
 	/* Friendly URL rewrite */
@@ -703,15 +681,7 @@ Racketmanager.updateResults = function (link) {
 			let message;
 			let data;
 			if (response.status === 500) {
-				if ( response.responseJSON) {
-					data = response.responseJSON.data;
-					message = data.message;
-					if (data.file) {
-						message = message.concat(' ' + data.file + ' ' + data.line);
-					}
-				} else {
-					message = response.statusText;
-				}
+				message = Racketmanager.getMessageFromResponse(response);
 			} else if ( response.responseJSON) {
 				data = response.responseJSON.data;
 				message = data.msg;
@@ -874,15 +844,7 @@ Racketmanager.handleAjaxError = function(response, alertTextField, alertField) {
 	let message;
 	let data;
 	if (response.status === 500) {
-		if ( response.responseJSON) {
-			data = response.responseJSON.data;
-			message = data.message;
-			if (data.file) {
-				message = message.concat(' ' + data.file + ' ' + data.line);
-			}
-		} else {
-			message = response.statusText;
-		}
+		message = Racketmanager.getMessageFromResponse(response);
 	} else if ( response.responseJSON) {
 		data = response.responseJSON.data;
 		message = data.msg;
@@ -1130,31 +1092,8 @@ Racketmanager.setMatchStatus = function (link) {
 			if (numRubbers) {
 				for (let x = 1; x <= numRubbers; x++) {
 					let rubberNumber = x;
-					for (let i in statusMessages) {
-						let statusMessage = statusMessages[i];
-						let teamRef = statusMessage[0];
-						let teamMessage = statusMessage[1];
-						let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
-						if (teamMessage) {
-							jQuery(messageRef).html(teamMessage);
-							jQuery(messageRef).removeClass('d-none');
-							jQuery(messageRef).addClass('match-warning');
-						} else {
-							jQuery(messageRef).addClass('d-none');
-							jQuery(messageRef).removeClass('match-warning');
-							jQuery(messageRef).html('');
-						}
-					}
-					for (let i in statusClasses) {
-						let statusClass = statusClasses[i];
-						let teamRef = statusClass[0];
-						let teamClass = statusClass[1];
-						let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
-						jQuery(statusRef).removeClass('winner loser tie');
-						if (teamClass) {
-							jQuery(statusRef).addClass(teamClass);
-						}
-					}
+					Racketmanager.setRubberStatusMessages(rubberNumber,statusMessages);
+					Racketmanager.setRubberStatusClasses(rubberNumber,statusClasses);
 					let matchStatusRef = '#match_status_' + rubberNumber;
 					jQuery(matchStatusRef).attr('value', scoreStatus);
 				}
@@ -1164,15 +1103,7 @@ Racketmanager.setMatchStatus = function (link) {
 					let teamRef = statusMessage[0];
 					let teamMessage = statusMessage[1];
 					let messageRef = '#match-message-' + teamRef;
-					if (teamMessage) {
-						jQuery(messageRef).html(teamMessage);
-						jQuery(messageRef).removeClass('d-none');
-						jQuery(messageRef).addClass('match-warning');
-					} else {
-						jQuery(messageRef).addClass('d-none');
-						jQuery(messageRef).removeClass('match-warning');
-						jQuery(messageRef).html('');
-					}
+					Racketmanager.setTeamMessage(messageRef, teamMessage);
 				}
 				for (let i in statusClasses) {
 					let statusClass = statusClasses[i];
@@ -1241,39 +1172,16 @@ Racketmanager.setMatchRubberStatus = function (link) {
 			let rubberNumber = data.rubber_number;
 			let scoreStatus = data.score_status;
 			let statusMessages = Object.entries(data.status_message);
-			for (let i in statusMessages) {
-				let statusMessage = statusMessages[i];
-				let teamRef = statusMessage[0];
-				let teamMessage = statusMessage[1];
-				let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
-				if (teamMessage) {
-					jQuery(messageRef).html(teamMessage);
-					jQuery(messageRef).removeClass('d-none');
-					jQuery(messageRef).addClass('match-warning');
-				} else {
-					jQuery(messageRef).addClass('d-none');
-					jQuery(messageRef).removeClass('match-warning');
-					jQuery(messageRef).html('');
-				}
-			}
 			let statusClasses = Object.entries(data.status_class);
-			for (let i in statusClasses) {
-				let statusClass = statusClasses[i];
-				let teamRef = statusClass[0];
-				let teamClass = statusClass[1];
-				let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
-				jQuery(statusRef).removeClass('winner loser tie');
-				if (teamClass) {
-					jQuery(statusRef).addClass(teamClass);
-				}
-			}
+			Racketmanager.setRubberStatusMessages(rubberNumber,statusMessages);
+			Racketmanager.setRubberStatusClasses(rubberNumber,statusClasses);
 			let modal = '#' + data.modal;
 			let matchStatusRef = '#' + 'match_status_' + rubberNumber;
 			jQuery(matchStatusRef).val(scoreStatus);
 			jQuery(modal).modal('hide')
 		},
 		error: function (response) {
-			Racketmanager.handleAjaxError(response, scoreStatusResponseField, scoreStatusResponse);
+			Racketmanager.handleAjaxError(response, alertTextField, notifyField);
 			jQuery(notifyField).show();
 		},
 		complete: function () {
@@ -1877,7 +1785,7 @@ Racketmanager.tabDataLink = function (e, target, id, season = null, link = null,
 			"link_id": linkId,
 			"target": target,
 		},
-		function (response, status) {
+		function () {
 			jQuery(tabContent).removeClass('is-loading');
 			history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
 		}
@@ -2257,6 +2165,54 @@ Racketmanager.accountUpdate = function (e, link) {
 		}
 	});
 };
+Racketmanager.setRubberStatusMessages = function(rubberNumber,statusMessages) {
+	for (let i in statusMessages) {
+		let statusMessage = statusMessages[i];
+		let teamRef = statusMessage[0];
+		let teamMessage = statusMessage[1];
+		let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
+		Racketmanager.setTeamMessage(messageRef, teamMessage);
+	}
+}
+Racketmanager.setRubberStatusClasses = function(rubberNumber,statusClasses) {
+	for (let i in statusClasses) {
+		let statusClass = statusClasses[i];
+		let teamRef = statusClass[0];
+		let teamClass = statusClass[1];
+		let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
+		jQuery(statusRef).removeClass('winner loser tie');
+		if (teamClass) {
+			jQuery(statusRef).addClass(teamClass);
+		}
+	}
+}
+Racketmanager.setTeamMessage = function(messageRef, teamMessage) {
+	if (teamMessage) {
+		jQuery(messageRef).html(teamMessage);
+		jQuery(messageRef).removeClass('d-none');
+		jQuery(messageRef).addClass('match-warning');
+	} else {
+		jQuery(messageRef).addClass('d-none');
+		jQuery(messageRef).removeClass('match-warning');
+		jQuery(messageRef).html('');
+	}
+
+}
+Racketmanager.getMessageFromResponse = function(response) {
+	let message;
+	let data;
+	if ( response.responseJSON) {
+		data = response.responseJSON.data;
+		message = data.message;
+		if (data.file) {
+			message = message.concat(' ' + data.file + ' ' + data.line);
+		}
+	} else {
+		message = response.statusText;
+	}
+	return message;
+}
+
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
 	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');

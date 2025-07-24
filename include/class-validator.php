@@ -280,6 +280,26 @@ class Validator {
         return $this;
     }
     /**
+     * Validate season for event/competition
+     *
+     * @param string|null $season season.
+     * @param array|null  $seasons
+     *
+     * @return object $validation updated validation object.
+     */
+    public function season_set( ?string $season, ?array $seasons ): object {
+        if ( empty( $season ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'season';
+            $this->err_msgs[] = __( 'Season is required', 'racketmanager' );
+        } elseif( empty( $seasons ) || empty( $seasons[ $season ] ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'season';
+            $this->err_msgs[] = __( 'Season not found', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
      * Validate club
      *
      * @param string|null $club club.
@@ -312,11 +332,11 @@ class Validator {
     /**
      * Validate event
      *
-     * @param object|int|null $event event.
+     * @param object|int|null|string $event event.
      *
      * @return object $validation updated validation object.
      */
-    public function event( object|int|null $event ): object {
+    public function event( object|int|null|string $event ): object {
         if ( empty( $event ) ) {
             $this->error      = true;
             $this->err_flds[] = 'event';
@@ -325,12 +345,14 @@ class Validator {
         } else {
             if ( is_int( $event ) ) {
                 $event = get_event( $event );
-                if ( ! $event ) {
-                    $this->error      = true;
-                    $this->err_flds[] = 'event';
-                    $this->err_msgs[] = __( 'Event not found', 'racketmanager' );
-                    $this->status     = 404;
-                }
+            } elseif ( is_string( $event ) ) {
+                $event = get_event( $event, 'name' );
+            }
+            if ( ! $event ) {
+                $this->error      = true;
+                $this->err_flds[] = 'event';
+                $this->err_msgs[] = __( 'Event not found', 'racketmanager' );
+                $this->status     = 404;
             }
         }
         return $this;
@@ -385,7 +407,7 @@ class Validator {
             $this->err_flds[] = 'age_group';
             $this->err_msgs[] = __( 'Age group not specified', 'racketmanager' );
         } else {
-            $valid = Util::get_age_groups( $age_group );
+            $valid = Util::get_age_group( $age_group );
             if ( ! $valid ) {
                 $this->error      = true;
                 $this->err_flds[] = 'age_group';

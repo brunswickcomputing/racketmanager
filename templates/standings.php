@@ -10,123 +10,123 @@ namespace Racketmanager;
 /** @var object $league */
 /** @var array $teams */
 if ( count( $league->teams ) ) {
-	?>
-	<div class="table-responsive">
-		<table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
-			<thead class="">
-				<tr>
-					<th class="num">
-						<?php esc_html_e( 'Pos', 'racketmanager' ); ?>
-					</th>
-					<?php
-					if ( show_standings( 'status' ) ) {
-						?>
-						<th class="num d-none d-md-table-cell">
-							&#160;
-						</th>
-						<?php
-					}
-					?>
-					<th class="team">
-						<?php esc_html_e( 'Team', 'racketmanager' ); ?>
-					</th>
-					<?php
-					if ( show_standings( 'pld' ) ) {
-						?>
-						<th class="num">
-							<?php esc_html_e( 'Pld', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<?php
-					if ( show_standings( 'won' ) ) {
-						?>
-						<th class="num d-none d-md-table-cell">
-							<?php esc_html_e( 'W', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<?php
-					if ( show_standings( 'tie' ) ) {
-						?>
-						<th class="num d-none d-md-table-cell">
-							<?php esc_html_e( 'T', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<?php
-					if ( show_standings( 'lost' ) ) {
-						?>
-						<th class="num d-none d-md-table-cell">
-							<?php esc_html_e( 'L', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<?php
-					if ( show_standings( 'winPercent' ) ) {
-						?>
-						<th class="num d-none d-md-table-cell">
-							<?php esc_html_e( 'PCT', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<?php
-					if ( show_standings( 'sets' ) ) {
-						?>
-						<th class='num'>
-							<?php esc_html_e( 'Sets', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<?php
-					if ( show_standings( 'games' ) ) {
-						?>
-						<th class='num'>
-							<?php esc_html_e( 'Games', 'racketmanager' ); ?>
-						</th>
-						<?php
-					}
-					?>
-					<th class="num">
-						<?php esc_html_e( 'Pts', 'racketmanager' ); ?>
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
-				foreach ( $teams as $team ) {
-					?>
+    ?>
+    <div class="table-responsive">
+        <table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
+            <thead class="">
+                <tr>
+                    <th class="num">
+                        <?php esc_html_e( 'Pos', 'racketmanager' ); ?>
+                    </th>
+                    <?php
+                    if ( show_standings( 'status' ) ) {
+                        ?>
+                        <th class="num d-none d-md-table-cell">
+                            &#160;
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <th class="team">
+                        <?php esc_html_e( 'Team', 'racketmanager' ); ?>
+                    </th>
+                    <?php
+                    if ( show_standings( 'pld' ) ) {
+                        ?>
+                        <th class="num">
+                            <?php esc_html_e( 'Pld', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    if ( show_standings( 'won' ) ) {
+                        ?>
+                        <th class="num d-none d-md-table-cell">
+                            <?php esc_html_e( 'W', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    if ( show_standings( 'tie' ) ) {
+                        ?>
+                        <th class="num d-none d-md-table-cell">
+                            <?php esc_html_e( 'T', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    if ( show_standings( 'lost' ) ) {
+                        ?>
+                        <th class="num d-none d-md-table-cell">
+                            <?php esc_html_e( 'L', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    if ( show_standings( 'winPercent' ) ) {
+                        ?>
+                        <th class="num d-none d-md-table-cell">
+                            <?php esc_html_e( 'PCT', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    if ( show_standings( 'sets' ) ) {
+                        ?>
+                        <th class='num'>
+                            <?php esc_html_e( 'Sets', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    if ( show_standings( 'games' ) ) {
+                        ?>
+                        <th class='num'>
+                            <?php esc_html_e( 'Games', 'racketmanager' ); ?>
+                        </th>
+                        <?php
+                    }
+                    ?>
+                    <th class="num">
+                        <?php esc_html_e( 'Pts', 'racketmanager' ); ?>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                foreach ( $teams as $team ) {
+                    ?>
                     <tr class="">
                         <td class='num'>
                             <span class="rank">
                                 <?php echo esc_html( $team->rank ); ?>
                             </span>
                         </td>
-						<?php
-						if ( show_standings( 'status' ) ) {
-							?>
+                        <?php
+                        if ( show_standings( 'status' ) ) {
+                            ?>
                             <td class="num d-none d-md-table-cell" title="<?php echo esc_html( $team->status_text ); ?>">
                                 <i class="racketmanager-svg-icon">
-									<?php racketmanager_the_svg( $team->status_icon ); ?>
+                                    <?php racketmanager_the_svg( $team->status_icon ); ?>
                                 </i>
                             </td>
-							<?php
-						}
-						?>
+                            <?php
+                        }
+                        ?>
                         <td>
-							<?php
-							if ( $team->is_withdrawn ) {
-							$title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
-							?>
+                            <?php
+                            if ( $team->is_withdrawn ) {
+                            $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+                            ?>
                                 <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
-								<?php
-							}
+                                <?php
+                            }
                             if ( $league->event->is_box ) {
                                 $season_link = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
                             } else {
@@ -145,84 +145,84 @@ if ( count( $league->teams ) ) {
                             }
                             ?>
                         </td>
-						<?php
-						if ( show_standings( 'pld' ) ) {
-							?>
+                        <?php
+                        if ( show_standings( 'pld' ) ) {
+                            ?>
                             <td class='num'>
-								<?php echo esc_html( $team->done_matches ); ?>
+                                <?php echo esc_html( $team->done_matches ); ?>
                             </td>
-							<?php
-						}
-						?>
-						<?php
-						if ( show_standings( 'won' ) ) {
-							?>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( show_standings( 'won' ) ) {
+                            ?>
                             <td class='num d-none d-md-table-cell'>
-								<?php echo esc_html( $team->won_matches ); ?>
+                                <?php echo esc_html( $team->won_matches ); ?>
                             </td>
-							<?php
-						}
-						?>
-						<?php
-						if ( show_standings( 'tie' ) ) {
-							?>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( show_standings( 'tie' ) ) {
+                            ?>
                             <td class='num d-none d-md-table-cell'>
-								<?php echo esc_html( $team->draw_matches ); ?>
+                                <?php echo esc_html( $team->draw_matches ); ?>
                             </td>
-							<?php
-						}
-						?>
-						<?php
-						if ( show_standings( 'lost' ) ) {
-							?>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( show_standings( 'lost' ) ) {
+                            ?>
                             <td class='num d-none d-md-table-cell'>
-								<?php echo esc_html( $team->lost_matches ) ?>
+                                <?php echo esc_html( $team->lost_matches ) ?>
                             </td>
-							<?php
-						}
-						?>
-						<?php
-						if ( show_standings( 'winPercent' ) ) {
-							?>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( show_standings( 'winPercent' ) ) {
+                            ?>
                             <td class="num d-none d-md-table-cell">
-								<?php echo esc_html( $team->win_percent ); ?>
+                                <?php echo esc_html( $team->win_percent ); ?>
                             </td>
-							<?php
-						}
-						?>
-						<?php
-						if ( show_standings( 'sets' ) ) {
-							?>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( show_standings( 'sets' ) ) {
+                            ?>
                             <td class='num'>
-								<?php echo esc_html( $team->sets_won . '-' . $team->sets_allowed ); ?>
+                                <?php echo esc_html( $team->sets_won . '-' . $team->sets_allowed ); ?>
                             </td>
-							<?php
-						}
-						?>
-						<?php
-						if ( show_standings( 'games' ) ) {
-							?>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( show_standings( 'games' ) ) {
+                            ?>
                             <td class='num'>
-								<?php echo esc_html( $team->games_won . '-' . $team->games_allowed ); ?>
+                                <?php echo esc_html( $team->games_won . '-' . $team->games_allowed ); ?>
                             </td>
-							<?php
-						}
-						?>
+                            <?php
+                        }
+                        ?>
                         <td class='num'>
-							<?php echo esc_html( $team->points_formatted['primary'] ); ?>
+                            <?php echo esc_html( $team->points_formatted['primary'] ); ?>
                         </td>
                     </tr>
-					<?php
-				}
-				?>
-			</tbody>
-		</table>
-	</div>
-	<?php
+                    <?php
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
 } else {
-	?>
-	<div>
-		<?php echo esc_html__( 'No teams for this season', 'racketmanager' ); ?>
-	</div>
-	<?php
+    ?>
+    <div>
+        <?php echo esc_html__( 'No teams for this season', 'racketmanager' ); ?>
+    </div>
+    <?php
 }

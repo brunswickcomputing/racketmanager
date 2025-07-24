@@ -17,27 +17,27 @@ namespace Racketmanager;
 /** @var array  $matches_list */
 ?>
 <div class="module module--card">
-	<div class="module__banner">
-		<h<?php echo esc_attr( $header_level ); ?> class="module__title"><?php esc_html_e( 'Latest Results', 'racketmanager' ); ?></h<?php echo esc_attr( $header_level ); ?>>
-	</div>
-	<div class="module__content">
-		<div class="module-container">
-			<div class="module">
-				<?php
-				if ( $matches_list ) {
-					?>
-					<?php
-					$matches_key = 'league';
-					require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
-					?>
-					<?php
-				} else {
-					?>
-					<p><?php esc_html_e( 'No recent results', 'racketmanager' ); ?></p>
-					<?php
-				}
-				?>
-			</div>
-		</div>
-	</div>
+    <div class="module__banner">
+        <h<?php echo esc_attr( $header_level ); ?> class="module__title"><?php esc_html_e( 'Latest Results', 'racketmanager' ); ?></h<?php echo esc_attr( $header_level ); ?>>
+    </div>
+    <div class="module__content">
+        <div class="module-container">
+            <div class="module">
+                <?php
+                if ( $matches_list ) {
+                    ?>
+                    <?php
+                    $matches_key = 'league';
+                    require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
+                    ?>
+                    <?php
+                } else {
+                    ?>
+                    <p><?php esc_html_e( 'No recent results', 'racketmanager' ); ?></p>
+                    <?php
+                }
+                ?>
+            </div>
+        </div>
+    </div>
 </div>

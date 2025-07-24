@@ -24,37 +24,37 @@ namespace Racketmanager;
     </div>
     <div class="module__content">
         <div class="module-container">
-			<?php
-			if ( ! $league->event->is_box ) {
-				include 'matches-selections.php';
-			}
-			if ( $matches ) {
-				$show_header = false;
-				if ( $league->event->competition->is_team_entry ) {
-					if ( -1 === $league->match_day ) {
-						$matches_list = $matches;
-						$matches_key  = 'match_day';
-						require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
-					} else {
-						require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
-					}
-				} else {
-					?>
+            <?php
+            if ( ! $league->event->is_box ) {
+                include 'matches-selections.php';
+            }
+            if ( $matches ) {
+                $show_header = false;
+                if ( $league->event->competition->is_team_entry ) {
+                    if ( -1 === $league->match_day ) {
+                        $matches_list = $matches;
+                        $matches_key  = 'match_day';
+                        require RACKETMANAGER_PATH . 'templates/includes/matches-team-list-group.php';
+                    } else {
+                        require RACKETMANAGER_PATH . 'templates/includes/matches-team-list.php';
+                    }
+                } else {
+                    ?>
                     <div class="tournament-matches">
-						<?php
-						foreach ( $matches as $no => $match ) {
-							?>
-							<?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
-							<?php
-						}
-						?>
+                        <?php
+                        foreach ( $matches as $no => $match ) {
+                            ?>
+                            <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
+                            <?php
+                        }
+                        ?>
                     </div>
-					<?php
-				}
-			} else {
-				esc_html_e( 'No matches found', 'racketmanager' );
-			}
-			?>
+                    <?php
+                }
+            } else {
+                esc_html_e( 'No matches found', 'racketmanager' );
+            }
+            ?>
         </div>
     </div>
 </div>

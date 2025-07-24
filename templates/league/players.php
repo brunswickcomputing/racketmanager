@@ -14,33 +14,33 @@ You can check the content of a variable when you insert the tag <?php var_dump($
 namespace Racketmanager;
 
 /** @var object $league */
-	if ( $league->players ) {
+    if ( $league->players ) {
         ?>
-		<table class='racketmanager player stats table' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . $league->title; ?>'>
-			<thead>
-				<tr>
-					<th class='player' scope="col"><?php _e( 'Player', 'racketmanager' ); ?></th>
-					<th class="team" scope="col"><?php _e( 'Team', 'racketmanager' ); ?></th>
-					<th scope="col"><?php _e( 'Won', 'racketmanager' ); ?></th>
-					<th scope="col"><?php _e( 'Lost', 'racketmanager' ); ?></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php
+        <table class='racketmanager player stats table' title='<?php echo __( 'Player Stats', 'racketmanager' ) . ' ' . $league->title; ?>'>
+            <thead>
+                <tr>
+                    <th class='player' scope="col"><?php _e( 'Player', 'racketmanager' ); ?></th>
+                    <th class="team" scope="col"><?php _e( 'Team', 'racketmanager' ); ?></th>
+                    <th scope="col"><?php _e( 'Won', 'racketmanager' ); ?></th>
+                    <th scope="col"><?php _e( 'Lost', 'racketmanager' ); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
                 foreach ( $league->players as $player ) {
                     ?>
-					<tr>
-						<td><?php echo $player['player-name']; ?></td>
-						<td><?php echo $player['team']; ?></td>
-						<td><?php echo $player['won']; ?></td>
-						<td><?php echo $player['lost']; ?></td>
-					</tr>
-				    <?php
+                    <tr>
+                        <td><?php echo $player['player-name']; ?></td>
+                        <td><?php echo $player['team']; ?></td>
+                        <td><?php echo $player['won']; ?></td>
+                        <td><?php echo $player['lost']; ?></td>
+                    </tr>
+                    <?php
                 }
                 ?>
-			</tbody>
-		</table>
+            </tbody>
+        </table>
 
-	    <?php
+        <?php
     }
     ?>

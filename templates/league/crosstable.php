@@ -11,14 +11,14 @@ namespace Racketmanager;
 /** @var array  $teams */
 ?>
 <div class="module module--card">
-	<div class="module__banner">
-		<h3 class="module__title"><?php esc_html_e( 'Crosstable', 'racketmanager' ); ?></h3>
-	</div>
-	<div class="module__content">
-		<div class="module-container">
-			<?php
+    <div class="module__banner">
+        <h3 class="module__title"><?php esc_html_e( 'Crosstable', 'racketmanager' ); ?></h3>
+    </div>
+    <div class="module__content">
+        <div class="module-container">
+            <?php
             if ( empty( $teams ) ) {
-	            esc_html_e( 'No teams found', 'racketmanager' );
+                esc_html_e( 'No teams found', 'racketmanager' );
             } else {
                 ?>
                 <div class="table-responsive">
@@ -43,13 +43,13 @@ namespace Racketmanager;
                                 <tr>
                                     <th scope="row" class="rank"><?php echo esc_html( $team->rank ); ?></th>
                                     <td><?php echo esc_html( $team->title ); ?></td>
-		                            <?php
-		                            for ( $i = 1; $i <= $num_teams; $i++ ) {
-			                            ?>
-			                            <td><?php echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id ); ?></td>
-			                            <?php
-		                            }
-		                            ?>
+                                    <?php
+                                    for ( $i = 1; $i <= $num_teams; $i++ ) {
+                                        ?>
+                                        <td><?php echo $league->get_crosstable_field( $team->id, $league->teams[ $i - 1 ]->id ); ?></td>
+                                        <?php
+                                    }
+                                    ?>
                                 </tr>
                                 <?php
                             }
@@ -59,6 +59,6 @@ namespace Racketmanager;
                 <?php
             }
             ?>
-		</div>
-	</div>
+        </div>
+    </div>
 </div>

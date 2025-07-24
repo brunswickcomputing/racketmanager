@@ -403,6 +403,12 @@ final class League_Team {
      */
     public object $info;
     /**
+     * League variable
+     *
+     * @var string
+     */
+    public string $league;
+    /**
      * Get instance function
      *
      * @param int $league_team_id league team id.

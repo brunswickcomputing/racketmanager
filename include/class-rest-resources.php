@@ -149,33 +149,49 @@ class Rest_Resources extends WP_REST_Controller {
             $club_id   = $club?->id;
         }
         $is_league = false;
-        if ( isset( $request['competition'] ) ) {
-            $competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
-            $competition = get_competition( $competition, 'name' );
-            if ( $competition ) {
-                if ( $season && empty( $competition->seasons[ $season ] ) ) {
-                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
+        $competition_name = isset( $request['competition'] ) ? sanitize_text_field( wp_unslash( $request['competition'] ) ) : null;
+        $event_name       = isset( $request['event'] ) ? sanitize_text_field( wp_unslash( $request['event'] ) ) : null;
+        $league_name      = isset( $request['league'] ) ? sanitize_text_field( $request['league'] ) : null;
+        $validator        = new Validator();
+        if ( $competition_name ) {
+            $competition_name = un_seo_url( $competition_name );
+            $validator        = $validator->competition( $competition_name );
+            if ( empty( $validator->error ) ) {
+                $competition = get_competition( $competition_name, 'name' );
+                if ( $competition ) {
+                    $validator = $validator->season_set( $season, $competition->seasons );
+                    if ( empty( $validator->error ) ) {
+                        $events = $competition->get_events();
+                    }
                 }
-                $events = $competition->get_events();
             }
-        } elseif ( isset( $request['event'] ) ) {
-            $event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
-            $event = get_event( $event, 'name' );
-            if ( $event ) {
-                if ( $season && empty( $event->seasons[ $season ] ) ) {
-                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
+        } elseif ( $event_name ) {
+            $event_name = un_seo_url( $event_name );
+            $validator  = $validator->event( $event_name );
+            if ( empty( $validator->error ) ) {
+                $event = get_event( $event_name, 'name' );
+                if ( $event ) {
+                    $validator = $validator->season_set( $season, $event->seasons );
+                    if ( empty( $validator->error ) ) {
+                        $events[] = $event;
+                    }
                 }
-                $events[] = $event;
             }
-        } elseif ( isset( $request['league'] ) ) {
-            $league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
+        } elseif ( $league_name ) {
+            $league = un_seo_url( $league_name );
             $league = get_league( $league );
             if ( $league ) {
                 $is_league = true;
                 $events[]  = $league->event;
             }
         } else {
-            return new WP_Error( 'rest_invalid_param', esc_html__( 'The standings grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
+            $validator->error = true;
+            $validator->err_msgs[] = __( 'The standings grouping is missing', 'racketmanager' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            $msg    = $return->err_msgs[0];
+            return new WP_Error( 'rest_invalid_param', esc_html( $msg ), array( 'status' => 400 ) );
         }
         $data = array();
         foreach ( $events as $event ) {
@@ -233,6 +249,7 @@ class Rest_Resources extends WP_REST_Controller {
      */
     public function get_matches( WP_REST_Request $request ): WP_Error|WP_REST_Response {
         global $racketmanager;
+        $matches    = null;
         $match_args = array();
         $season     = $request['season'] ?? null;
         $club       = $request['club'] ?? null;
@@ -253,39 +270,58 @@ class Rest_Resources extends WP_REST_Controller {
             $match_args['days']    = $request['days'];
             $match_args['history'] = $request['days'];
         }
-        if ( isset( $request['competition'] ) ) {
-            $competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
-            $competition = get_competition( $competition, 'name' );
-            if ( $competition ) {
-                if ( $season && empty( $competition->seasons[ $season ] ) ) {
-                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
+        $competition_name = isset( $request['competition'] ) ? sanitize_text_field( wp_unslash( $request['competition'] ) ) : null;
+        $event_name       = isset( $request['event'] ) ? sanitize_text_field( wp_unslash( $request['event'] ) ) : null;
+        $league_name      = isset( $request['league'] ) ? sanitize_text_field( $request['league'] ) : null;
+        $validator        = new Validator();
+        if ( $competition_name ) {
+            $competition_name = un_seo_url( $competition_name );
+            $validator        = $validator->competition( $competition_name );
+            if ( empty( $validator->error ) ) {
+                $competition = get_competition( $competition_name, 'name' );
+                if ( $competition ) {
+                    $validator = $validator->season_set( $season, $competition->seasons );
+                    if ( empty( $validator->error ) ) {
+                        $match_args['competition_id'] = $competition->id;
+                        $matches                      = $racketmanager->get_matches( $match_args );
+                    }
+                } else {
+                    $validator->error = true;
+                    $validator->err_msgs[] = __( 'Competition not found', 'racketmanager' );
                 }
-                $match_args['competition_id'] = $competition->id;
-                $matches                      = $racketmanager->get_matches( $match_args );
-            } else {
-                return new WP_Error( 'rest_invalid_param', esc_html__( 'Competition not found', 'racketmanager' ), array( 'status' => 400 ) );
             }
-        } elseif ( isset( $request['event'] ) ) {
-            $event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
-            $event = get_event( $event, 'name' );
-            if ( $event ) {
-                if ( $season && empty( $event->seasons[ $season ] ) ) {
-                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
+        } elseif ( $event_name ) {
+            $event_name = un_seo_url( $event_name );
+            $validator  = $validator->event( $event_name );
+            if ( empty( $validator->error ) ) {
+                $event = get_event( $event_name, 'name' );
+                if ( $event ) {
+                    $validator = $validator->season_set( $season, $event->seasons );
+                    if ( empty( $validator->error ) ) {
+                        $matches = $event->get_matches( $match_args );
+                    }
+                } else {
+                    $validator->error = true;
+                    $validator->err_msgs[] = __( 'Event not found', 'racketmanager' );
                 }
-                $matches = $event->get_matches( $match_args );
-            } else {
-                return new WP_Error( 'rest_invalid_param', esc_html__( 'Event not found', 'racketmanager' ), array( 'status' => 400 ) );
             }
-        } elseif ( isset( $request['league'] ) ) {
-            $league = un_seo_url( sanitize_text_field( wp_unslash( $request['league'] ) ) );
+        } elseif ( $league_name ) {
+            $league = un_seo_url( $league_name );
             $league = get_league( $league );
             if ( $league ) {
                 $matches = $league->get_matches( $match_args );
             } else {
-                return new WP_Error( 'rest_invalid_param', esc_html__( 'League not found', 'racketmanager' ), array( 'status' => 400 ) );
+                $validator->error = true;
+                $validator->err_msgs[] = __( 'League not found', 'racketmanager' );
             }
         } else {
-            return new WP_Error( 'rest_invalid_param', esc_html__( 'The matches grouping is missing', 'racketmanager' ), array( 'status' => 400 ) );
+            $validator->error = true;
+            $validator->err_msgs[] = __( 'The matches grouping is missing', 'racketmanager' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            $msg    = $return->err_msgs[0];
+            return new WP_Error( 'rest_invalid_param', esc_html( $msg ), array( 'status' => 400 ) );
         }
         $data = array();
         foreach ( $matches as $match ) {
@@ -310,7 +346,11 @@ class Rest_Resources extends WP_REST_Controller {
         $json_result->match_time = $match->start_time;
         if ( $match->winner_id ) {
             $json_result->score  = str_replace( '"', '', $match->score );
-            $json_result->status = Util::get_match_status( $match->status );
+            if ( ! is_null( $match->status ) ) {
+                $json_result->status = Util::get_match_status( $match->status );
+            } else {
+                $json_result->status = $match->status;
+            }
         }
         return $json_result;
     }
@@ -538,7 +578,7 @@ class Rest_Resources extends WP_REST_Controller {
     public function stripe_event(): WP_Error|WP_REST_Response {
         $data           = null;
         $status         = 200;
-        $stripe_details = new Stripe();
+        $stripe_details = new Stripe_Settings();
         Stripe::setApiKey( $stripe_details->api_secret_key );
         $payload = @file_get_contents('php://input');
         try {

@@ -816,11 +816,8 @@ final class Player {
             }
         }
         $search_args[] = $this->id;
-        $search        = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
-        $sql = "SELECT `club_id`, `created_date`, `removed_date`, cp.`id` as `club_player_id` FROM $wpdb->racketmanager_club_players cp, $wpdb->racketmanager_clubs c WHERE cp.`club_id` = c.`id` AND `player_id` = %d";
+        $search        = Util::search_string( $search_terms );
+        $sql           = "SELECT `club_id`, `created_date`, `removed_date`, cp.`id` as `club_player_id` FROM $wpdb->racketmanager_club_players cp, $wpdb->racketmanager_clubs c WHERE cp.`club_id` = c.`id` AND `player_id` = %d";
         if ( '' !== $search ) {
             $sql .= " AND $search";
         }
@@ -1113,10 +1110,7 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
+        $search          = Util::search_string( $search_terms );
         $group_by_string = 'c.id, c.name, m.season';
         $orderby_string  = 'm.season DESC, c.name ASC';
         $sql             = "SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE `player_id` = $this->ID AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
@@ -1173,10 +1167,7 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 't.`season` = %s', $season );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
+        $search          = Util::search_string( $search_terms );
         $group_by_string = 't3.`id`';
         $orderby_string  = 't3.`season` DESC, t3.`name` ASC';
         $sql             = "SELECT t3.id FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_table t, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t3 WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t3.`competition_id` = c.`id` AND t3.`season` = t.`season`";
@@ -1222,10 +1213,7 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
+        $search         = Util::search_string( $search_terms );
         $orderby_string = 'm.`season` DESC, t.`name` ASC';
         $sql            = "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t WHERE tp.`player_id` = $this->ID AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season`";
         if ( '' !== $search ) {
@@ -1368,10 +1356,7 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
+        $search         = Util::search_string( $search_terms );
         $orderby_string = 'm.`season`, e.`type`';
         $sql            = "SELECT 'teams' as `stat_type`, m.`season`, e.`type` ,rp.`player_team`, m.`home_team`, m.`away_team`, r.`winner_id`, r.`loser_id` FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE rp.`player_id` = $this->ID AND rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
         if ( '' !== $search ) {
@@ -1405,10 +1390,7 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
+        $search         = Util::search_string( $search_terms );
         $orderby_string = 'm.`season`, e.`type`';
         $sql            = "SELECT 'players' as `stat_type`,m.`season`, e.`type` ,tp.`team_id`, m.`home_team`, m.`away_team`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_teams t,$wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
         if ( '' !== $search ) {

@@ -801,7 +801,7 @@ class Shortcodes_Competition extends Shortcodes {
             }
         }
         if ( $valid ) {
-            $stripe_details = new Stripe();
+            $stripe_details = new Stripe_Settings();
             $filename       = ( ! empty( $template ) ) ? 'tournament-payment-' . $template : 'tournament-payment';
 
             return $this->load_template(

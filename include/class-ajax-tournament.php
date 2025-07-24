@@ -203,7 +203,7 @@ class Ajax_Tournament extends Ajax {
         $args['currency']                    = $racketmanager->currency_code;
         $args['payment_method_types']        = array('card');
         $args['statement_descriptor_suffix'] = $tournament->name;
-        $stripe_details                      = new Stripe();
+        $stripe_details                      = new Stripe_Settings();
         $stripe                              = new StripeClient( $stripe_details->api_secret_key );
         try {
             // Create a PaymentIntent with amount and currency
@@ -226,7 +226,7 @@ class Ajax_Tournament extends Ajax {
         if ( empty( $return->error ) ) {
             $payment_reference = isset( $_POST['paymentReference'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentReference'] ) ) : null;
             $payment_status    = isset( $_post['paymentStatus'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentStatus'] ) ) : null;
-            $stripe = new Stripe();
+            $stripe = new Stripe_Settings();
             if ( $payment_reference ) {
                 $stripe->update_payment( $payment_reference, $payment_status );
             }

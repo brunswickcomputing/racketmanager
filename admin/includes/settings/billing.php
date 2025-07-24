@@ -74,7 +74,7 @@ namespace Racketmanager;
         </div>
     </fieldset>
     <fieldset class="row gx-3 mb-3">
-        <legend><?php esc_html_e( 'Stripe gateway', 'racketmanager' ); ?></legend>
+        <legend><?php esc_html_e( 'Stripe_Settings gateway', 'racketmanager' ); ?></legend>
         <div class="row">
             <div class="col-12">
                 <div class="form-check">

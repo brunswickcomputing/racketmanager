@@ -153,10 +153,8 @@ class Rest_Resources extends WP_REST_Controller {
             $competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
             $competition = get_competition( $competition, 'name' );
             if ( $competition ) {
-                if ( $season ) {
-                    if ( empty( $competition->seasons[ $season ] ) ) {
-                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
-                    }
+                if ( $season && empty( $competition->seasons[ $season ] ) ) {
+                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
                 }
                 $events = $competition->get_events();
             }
@@ -164,10 +162,8 @@ class Rest_Resources extends WP_REST_Controller {
             $event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
             $event = get_event( $event, 'name' );
             if ( $event ) {
-                if ( $season ) {
-                    if ( empty( $event->seasons[ $season ] ) ) {
-                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
-                    }
+                if ( $season && empty( $event->seasons[ $season ] ) ) {
+                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
                 }
                 $events[] = $event;
             }
@@ -261,10 +257,8 @@ class Rest_Resources extends WP_REST_Controller {
             $competition = un_seo_url( sanitize_text_field( wp_unslash( $request['competition'] ) ) );
             $competition = get_competition( $competition, 'name' );
             if ( $competition ) {
-                if ( $season ) {
-                    if ( empty( $competition->seasons[ $season ] ) ) {
-                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
-                    }
+                if ( $season && empty( $competition->seasons[ $season ] ) ) {
+                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for competition not found', 'racketmanager' ), array( 'status' => 400 ) );
                 }
                 $match_args['competition_id'] = $competition->id;
                 $matches                      = $racketmanager->get_matches( $match_args );
@@ -275,10 +269,8 @@ class Rest_Resources extends WP_REST_Controller {
             $event = un_seo_url( sanitize_text_field( wp_unslash( $request['event'] ) ) );
             $event = get_event( $event, 'name' );
             if ( $event ) {
-                if ( $season ) {
-                    if ( empty( $event->seasons[ $season ] ) ) {
-                        return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
-                    }
+                if ( $season && empty( $event->seasons[ $season ] ) ) {
+                    return new WP_Error( 'rest_invalid_param', esc_html__( 'Season not found for event not found', 'racketmanager' ), array( 'status' => 400 ) );
                 }
                 $matches = $event->get_matches( $match_args );
             } else {
@@ -576,17 +568,17 @@ class Rest_Resources extends WP_REST_Controller {
         // Handle the event
         switch ($event->type) {
             case 'payment_intent.succeeded':
-                $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
                 $stripe_details->update_payment( $payment_intent->id);
             // Then define and call a method to handle the successful payment intent.
             // handlePaymentIntentSucceeded($payment_intent);
                 break;
             case 'payment_intent.processing':
-                $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
                 $stripe_details->update_payment( $payment_intent->id, 'pending' );
                 break;
             case 'payment_intent.payment_failed':
-                $payment_intent = $event->data->object; // contains a \Stripe\PaymentIntent
+                $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
                 $stripe_details->update_payment( $payment_intent->id, 'failed' );
                 break;
             case 'payment_method.attached':

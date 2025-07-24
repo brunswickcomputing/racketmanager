@@ -1,18 +1,18 @@
 <?php
 /**
- * Stripe API: stripe class
+ * Stripe_Settings API: stripe class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Stripe
+ * @subpackage Stripe_Settings
  */
 
 namespace Racketmanager;
 
 /**
- * Class to implement the Stripe object
+ * Class to implement the Stripe_Settings object
  */
-final class Stripe {
+final class Stripe_Settings {
 
     /**
      * Currency

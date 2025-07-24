@@ -17,7 +17,6 @@ use stdClass;
  */
 class Ajax {
     public string $event_not_found;
-    public string $entry_form_errors ;
     /**
      * Register ajax actions.
      */

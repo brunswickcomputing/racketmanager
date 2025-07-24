@@ -121,7 +121,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
 								</div>
 							</div>
 						</div>
-						<ol class="list list--naked">
+						<ol class="list list--naked" id="entry-details">
 							<li id="liClubDetails" class="club-entry__panel">
 								<div id="clubDetails">
 									<input type="hidden" name="clubId" id="clubId" value="<?php echo esc_html( $club->id ); ?>" />
@@ -284,6 +284,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
 									</div>
 								</div>
 							</li>
+                            <?php require_once RACKETMANAGER_PATH . 'templates/includes/loading.php'; ?>
 						</ol>
 						<div id="entry-acceptance" class="col-12 col-md-8">
 							<div class="form-check form-switch form-check-reverse mb-3">

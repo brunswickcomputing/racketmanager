@@ -495,7 +495,7 @@ class Ajax_Frontend extends Ajax {
 			wp_send_json_success( $msg );
 		} else {
 			$return = $validator;
-			$return->msg = $this->entry_form_errors;
+			$return->msg = __( 'Errors in entry form', 'racketmanager' );
 			if ( empty( $return->status ) ) {
 				$return->status = 400;
 			}
@@ -549,6 +549,7 @@ class Ajax_Frontend extends Ajax {
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
 				if ( $competition ) {
+                    $competition->set_season( $season );
 					$validator = $validator->competition_open( $competition );
 				} else {
 					$validator = $validator->competition( $competition );
@@ -711,7 +712,7 @@ class Ajax_Frontend extends Ajax {
 			wp_send_json_success( $msg );
 		} else {
 			$return = $validator->get_details();
-			$return->msg = $this->entry_form_errors;
+			$return->msg = __( 'Errors in entry form', 'racketmanager' );
 			if ( empty( $return->status ) ) {
 				$return->status = 400;
 			}

@@ -38,7 +38,6 @@ class Ajax_Tournament extends Ajax {
         add_action( 'wp_ajax_nopriv_racketmanager_team_partner', array( &$this, 'logged_out_modal' ) );
         add_action( 'wp_ajax_racketmanager_validate_partner', array( &$this, 'validate_partner' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_validate_partner', array( &$this, 'logged_out_modal' ) );
-        $this->entry_form_errors = __( 'Errors in entry form', 'racketmanager' );
         $this->event_not_found   = __( 'Event not found', 'racketmanager' );
     }
     /**
@@ -150,7 +149,7 @@ class Ajax_Tournament extends Ajax {
             wp_send_json_success( $return );
         } else {
             $return = $validator;
-            $return->msg = $this->entry_form_errors;
+            $return->msg = __( 'Errors in entry form', 'racketmanager' );
             if ( empty( $return->status ) ) {
                 $return->status = 400;
             }

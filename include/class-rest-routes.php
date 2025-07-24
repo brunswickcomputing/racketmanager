@@ -20,7 +20,7 @@ class Rest_Routes {
         global $wp_version;
 
         if ( version_compare( $wp_version, '4.7', '>=' ) && class_exists( 'WP_REST_Controller' ) ) {
-            include plugin_dir_path( __FILE__ ) . 'class-rest-resources.php';
+            require_once plugin_dir_path( __FILE__ ) . 'class-rest-resources.php';
             add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
         }
     }

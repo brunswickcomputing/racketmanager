@@ -589,8 +589,7 @@ class Util {
      */
     public static function get_match_type_key( string $match_type ): string {
         $match_types = self::get_match_types();
-        $key         = array_search( $match_type, $match_types, true );
-        return ( $key );
+        return array_search( $match_type, $match_types, true );
     }
 
     /**
@@ -1090,6 +1089,14 @@ class Util {
         }
         return $num_match_days;
     }
+
+    /**
+     * Function to return search string from array
+     *
+     * @param array $search_terms
+     *
+     * @return string
+     */
     public static function search_string( array $search_terms ) : string {
         $search = '';
         if ( ! empty( $search_terms ) ) {

@@ -784,7 +784,7 @@ class RacketManager {
         }
 
         // Global libraries.
-        require_once RACKETMANAGER_PATH . 'include/class-stripe.php';
+        require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax-account.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax-frontend.php';

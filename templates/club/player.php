@@ -99,28 +99,26 @@ if ( ! $page_referrer ) {
                             }
                             ?>
                             <?php
-                            if ( is_user_logged_in() ) {
-                                if ( ! empty( $player->year_of_birth ) || $user_can_update ) {
-                                    ?>
-                                    <div class="form-floating col-md-6 mb-3">
-                                        <select class="form-select" id="year_of_birth" name="year_of_birth" <?php disabled( $user_can_update, false ); ?>>
-                                            <option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
-                                            <?php
-                                            $current_year = gmdate( 'Y' );
-                                            $start_year   = $current_year - 5;
-                                            $end_year     = $start_year - 100;
-                                            for ( $i = $start_year; $i > $end_year; $i-- ) {
-                                                ?>
-                                                <option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $player->year_of_birth ); ?>><?php echo esc_html( $i ); ?></option>
-                                                <?php
-                                            }
+                            if ( is_user_logged_in() && ( ! empty( $player->year_of_birth ) || $user_can_update ) ) {
+                                ?>
+                                <div class="form-floating col-md-6 mb-3">
+                                    <select class="form-select" id="year_of_birth" name="year_of_birth" <?php disabled( $user_can_update, false ); ?>>
+                                        <option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
+                                        <?php
+                                        $current_year = gmdate( 'Y' );
+                                        $start_year   = $current_year - 5;
+                                        $end_year     = $start_year - 100;
+                                        for ( $i = $start_year; $i > $end_year; $i-- ) {
                                             ?>
-                                        </select>
-                                        <label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
-                                        <div id="year_of_birthFeedback" class="invalid-feedback"></div>
-                                    </div>
-                                    <?php
-                                }
+                                            <option value="<?php echo esc_attr( $i ); ?>" <?php selected( $i, $player->year_of_birth ); ?>><?php echo esc_html( $i ); ?></option>
+                                            <?php
+                                        }
+                                        ?>
+                                    </select>
+                                    <label for="year_of_birth"><?php esc_html_e( 'Year of birth', 'racketmanager' ); ?></label>
+                                    <div id="year_of_birthFeedback" class="invalid-feedback"></div>
+                                </div>
+                                <?php
                             }
                             ?>
                         </div>

@@ -34,6 +34,7 @@ if ( ! empty( $club->entry ) ) {
     $entered    = false;
     $form_title = __( 'Enter online', 'racketmanager' );
 }
+$additional_information = __( 'Additional information', 'racketmanager' );
 ?>
 <div class="container">
     <?php
@@ -161,7 +162,7 @@ if ( ! empty( $club->entry ) ) {
                                             <div class="form-checkboxes__conditional <?php echo $event->status ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-event-<?php echo esc_html( $event->id ); ?>" <?php echo $event->status ? 'aria-expanded="true"' : ''; ?>>
                                                 <div class="form-floating mb-3">
                                                     <select size="1" class="cupteam form-select" name="team[<?php echo esc_html( $event->id ); ?>]" id="team-<?php echo esc_html( $event->id ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?>>
-                                                        <option value="" disabled <?php selected( empty( $event->team->team_id ), true ); ?>><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
+                                                        <option value="" disabled <?php selected( empty( $event->team->team_id ) ); ?>><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
                                                         <?php
                                                         foreach ( $team_list as $team ) {
                                                             ?>
@@ -239,15 +240,15 @@ if ( ! empty( $club->entry ) ) {
                             <li id="liCommentDetails" class="club-entry__panel">
                                 <div id="comment_Details">
                                     <div class="hgroup">
-                                        <h4 class="hgroup__heading"><?php esc_html_e( 'Additional information', 'racketmanager' ); ?></h4>
+                                        <h4 class="hgroup__heading"><?php esc_html( $additional_information ); ?></h4>
                                         <p class="hgroup__subheading">
                                             <?php esc_html_e( 'Please leave any additional information for the Organiser here', 'racketmanager' ); ?>
                                         </p>
                                     </div>
                                     <div class="col-12 col-md-8">
                                         <div class="form-floating">
-                                            <textarea class="form-control" placeholder="<?php esc_attr_e( 'Additional information', 'racketmanager' ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
-                                            <label for="commentDetails"><?php esc_attr_e( 'Additional information', 'racketmanager' ); ?></label>
+                                            <textarea class="form-control" placeholder="<?php esc_attr( $additional_information ); ?>" id="commentDetails" name="commentDetails" <?php echo $changes_allowed ? null : 'disabled'; ?>></textarea>
+                                            <label for="commentDetails"><?php esc_attr( $additional_information ); ?></label>
                                             <div id="commentDetailsFeedback" class="invalid-feedback"></div>
                                         </div>
                                     </div>

@@ -2204,12 +2204,10 @@ class Event {
                         $count_club[ $club_id ] = 0;
                     }
                     $count_club[ $club_id ] += 1;
-                    if ( $club_teams_curr > $teams_per_club ) {
-                        if ( $count_club[ $club_id ] === $teams_per_club ) {
-                            $new_league_id = $next_league->id;
-                            $status        = 'RT';
-                            ++$num_relegated;
-                        }
+                    if ( $club_teams_curr > $teams_per_club && $count_club[ $club_id ] === $teams_per_club ) {
+                        $new_league_id = $next_league->id;
+                        $status        = 'RT';
+                        ++$num_relegated;
                     }
                     if ( $num_relegated < $teams_prom_relg && $old_rank >= $highest_relegation ) {
                         if ( $rank === $num_entries ) {
@@ -2298,23 +2296,17 @@ class Event {
             $racketmanager->error_messages[] = __( 'Number of sets must be set', 'racketmanager' );
             $racketmanager->error_fields[]   = 'num_sets';
         }
-        if ( $this->competition->is_team_entry ) {
-            if ( empty( $config->num_rubbers ) ) {
-                $racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'num_rubbers';
-            }
+        if ( $this->competition->is_team_entry && empty( $config->num_rubbers ) ) {
+            $racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
+            $racketmanager->error_fields[]   = 'num_rubbers';
         }
-        if ( ! $this->competition->is_tournament ) {
-            if ( is_null( $config->offset ) ) {
-                $racketmanager->error_messages[] = __( 'Offset must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'offset';
-            }
+        if ( ! $this->competition->is_tournament && is_null( $config->offset ) ) {
+            $racketmanager->error_messages[] = __( 'Offset must be set', 'racketmanager' );
+            $racketmanager->error_fields[]   = 'offset';
         }
-        if ( $this->competition->is_championship ) {
-            if ( empty( $config->primary_league ) ) {
-                $racketmanager->error_messages[] = __( 'Primary league must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'primary_league';
-            }
+        if ( $this->competition->is_championship && empty( $config->primary_league ) ) {
+            $racketmanager->error_messages[] = __( 'Primary league must be set', 'racketmanager' );
+            $racketmanager->error_fields[]   = 'primary_league';
         }
         if ( empty( $racketmanager->error_fields ) ) {
             $settings = new stdClass();

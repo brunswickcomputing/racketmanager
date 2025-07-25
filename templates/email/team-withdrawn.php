@@ -9,25 +9,24 @@ namespace Racketmanager;
 
 /** @var object $team */
 /** @var object $league */
+/** @var string $paragraph */
+/** @var string $contact */
+/** @var string $closing */
 require_once 'email-header.php';
-?>
-            <?php
-            $paragraph_text = __( 'Dear Captain', 'racketmanager' );
-            require 'components/paragraph.php';
-            /* translators: %1$s: team name %2$s: league name */
-            $paragraph_text = sprintf( __( 'Unfortunately %1$s have withdrawn from the %2$s league.', 'racketmanager' ), $team->title, $league->title );
-            require 'components/paragraph.php';
-            /* translators: %s: team name */
-            $paragraph_text = sprintf( __( 'All unplayed matches involving %s have been cancelled.', 'racketmanager' ), $team->title );
-            require 'components/paragraph.php';
-            /* translators: %s: team name */
-            $paragraph_text = sprintf( __( 'All points from any completed match involving %s have been removed.', 'racketmanager' ), $team->title );
-            require 'components/paragraph.php';
-            if ( ! empty( $email_from ) ) {
-                $contact_email = $email_from;
-                require_once 'components/contact.php';
-            }
-            require_once 'components/closing.php';
-            ?>
-<?php
+$paragraph_text = __( 'Dear Captain', 'racketmanager' );
+require $paragraph;
+/* translators: %1$s: team name %2$s: league name */
+$paragraph_text = sprintf( __( 'Unfortunately %1$s have withdrawn from the %2$s league.', 'racketmanager' ), $team->title, $league->title );
+require $paragraph;
+/* translators: %s: team name */
+$paragraph_text = sprintf( __( 'All unplayed matches involving %s have been cancelled.', 'racketmanager' ), $team->title );
+require $paragraph;
+/* translators: %s: team name */
+$paragraph_text = sprintf( __( 'All points from any completed match involving %s have been removed.', 'racketmanager' ), $team->title );
+require $paragraph;
+if ( ! empty( $email_from ) ) {
+    $contact_email = $email_from;
+    require $contact;
+}
+require $closing;
 require_once 'email-footer.php';

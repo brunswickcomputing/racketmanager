@@ -18,8 +18,8 @@ add_filter( 'racketmanager_sports', 'Racketmanager\\racketmanager_sports_tennis'
  * @return array
  */
 function racketmanager_sports_tennis( array $sports ): array {
-	$sports['tennis'] = __( 'Tennis', 'racketmanager' );
-	return $sports;
+    $sports['tennis'] = __( 'Tennis', 'racketmanager' );
+    return $sports;
 }
 
 require_once 'class-competition-tennis.php';

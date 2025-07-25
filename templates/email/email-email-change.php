@@ -17,18 +17,18 @@ $email_subject = __( 'Email Change', 'racketmanager' );
 $email_link    = $vars['email_link'];
 require 'email-header.php';
 ?>
-			<?php $salutation_link = $username; ?>
-			<?php require 'components/salutation.php'; ?>
-			<?php
-			/* translators: %s: organisation name */
-			$paragraph_text = sprintf( __( 'Your email address has now been changed for your %s account.', 'racketmanager' ), $organisation );
-			require 'components/paragraph.php';
-			?>
-			<?php
-			$paragraph_text = __( 'The new email address is ###NEW_EMAIL###.', 'racketmanager' );
-			require 'components/paragraph.php';
-			?>
-			<?php require 'components/contact-urgent.php'; ?>
-			<?php require 'components/closing.php'; ?>
+            <?php $salutation_link = $username; ?>
+            <?php require 'components/salutation.php'; ?>
+            <?php
+            /* translators: %s: organisation name */
+            $paragraph_text = sprintf( __( 'Your email address has now been changed for your %s account.', 'racketmanager' ), $organisation );
+            require 'components/paragraph.php';
+            ?>
+            <?php
+            $paragraph_text = __( 'The new email address is ###NEW_EMAIL###.', 'racketmanager' );
+            require 'components/paragraph.php';
+            ?>
+            <?php require 'components/contact-urgent.php'; ?>
+            <?php require 'components/closing.php'; ?>
 <?php
 require 'email-footer.php';

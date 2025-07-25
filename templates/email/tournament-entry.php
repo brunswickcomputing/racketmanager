@@ -125,18 +125,18 @@ require 'components/title.php';
 </div>
 <?php
 if ( ! empty( $comments ) ) {
-	require 'components/hr.php';
-	$title_text  = __( 'Additional comments', 'racketmanager' );
-	$title_level = '3';
-	require 'components/title.php';
-	$paragraph_text = $comments;
-	require 'components/paragraph.php';
+    require 'components/hr.php';
+    $title_text  = __( 'Additional comments', 'racketmanager' );
+    $title_level = '3';
+    require 'components/title.php';
+    $paragraph_text = $comments;
+    require 'components/paragraph.php';
 }
 require 'components/hr.php';
 $paragraph_text = __( 'You will be notified when the draws have taken place.', 'racketmanager' );
 require 'components/paragraph.php';
 if ( ! empty( $contact_email ) ) {
-	require 'components/contact.php';
+    require 'components/contact.php';
 }
 require 'components/closing.php';
 require 'email-footer.php';

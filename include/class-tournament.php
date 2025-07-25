@@ -280,6 +280,12 @@ final class Tournament {
      * @var array
      */
     public array $match_dates;
+    /**
+     * Entry link.
+     *
+     * @var string
+     */
+    private string $entry_link;
 
     /**
      * Retrieve tournament instance
@@ -353,10 +359,12 @@ final class Tournament {
             if ( ! isset( $this->id ) ) {
                 $this->add();
             }
+            $dummy_time                    = '0000-00-00';
             $this->link                    = '/tournament/' . seo_url( $this->name ) . '/';
-            $this->date_display            = ( str_starts_with( $this->date, '0000-00-00') ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
-            $this->date_closing_display    = ( str_starts_with( $this->date_closing, '0000-00-00' ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
-            $this->date_withdrawal_display = ( str_starts_with( $this->date_closing, '0000-00-00' ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
+            $this->entry_link              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+            $this->date_display            = ( str_starts_with( $this->date, $dummy_time ) ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
+            $this->date_closing_display    = ( str_starts_with( $this->date_closing, $dummy_time ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
+            $this->date_withdrawal_display = ( str_starts_with( $this->date_closing, $dummy_time ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
             $this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
             $this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
             $today                         = gmdate( 'Y-m-d' );
@@ -661,7 +669,7 @@ final class Tournament {
      * @return boolean updates performed
      */
     public function save_plan(array $courts, array $start_times, array $matches, array $match_times ): bool {
-        global $wpdb, $racketmanager;
+        global $wpdb;
         $order_of_play = array();
         $num_courts    = count( $courts );
         for ( $i = 0; $i < $num_courts; $i++ ) {
@@ -751,7 +759,7 @@ final class Tournament {
      * Delete tournament
      */
     public function delete(): bool {
-        global $wpdb, $racketmanager;
+        global $wpdb;
         $schedule_name = 'rm_calculate_tournament_ratings';
         $schedule_args = array( $this->id );
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
@@ -842,11 +850,7 @@ final class Tournament {
         if ( $active ) {
             $search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) )";
         }
-        $search        = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
+        $search         = Util::search_string( $search_terms );
         $orderby_string = '';
         $order          = '';
         $i              = 0;
@@ -953,11 +957,7 @@ final class Tournament {
                 $search_terms[] = '`status` = 3';
             }
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
+        $search         = Util::search_string( $search_terms );
         $orderby_string = '';
         $order          = '';
         $i              = 0;
@@ -1116,7 +1116,7 @@ final class Tournament {
         global $racketmanager;
         $return           = new stdClass();
         $msg              = array();
-        $url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+        $url              = $this->entry_link;
         $competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
         if ( empty( $return->error ) ) {
             $clubs = $racketmanager->get_clubs(
@@ -1133,12 +1133,12 @@ final class Tournament {
             $from_email = $racketmanager->get_confirmation_email( 'tournament' );
             if ( $from_email ) {
                 $message_sent      = false;
-                $headers[]         = 'From: Tournament Secretary <' . $from_email . '>';
-                $headers[]         = 'cc: Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_FROM_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_CC_EMAIL . 'Tournament Secretary <' . $from_email . '>';
                 $organisation_name = $racketmanager->site_name;
                 $account_link      = '<a href="' . $racketmanager->site_url . '/member-account/" style="text-decoration: none; color: #006800;">' . __( 'link', 'racketmanager' ) . '</a>';
+                $email_subject     = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' );
                 foreach ( $players as $player ) {
-                    $email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' );
                     $email_to      = $player->display_name . ' <' . $player->email . '>';
                     $action_url    = $url;
                     $email_message = $racketmanager->shortcodes->load_template(
@@ -1158,9 +1158,9 @@ final class Tournament {
                     wp_mail( $email_to, $email_subject, $email_message, $headers );
                     $message_sent = true;
                 }
-
+                $base_subject = $email_subject;
                 foreach ( $clubs as $club ) {
-                    $email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
+                    $email_subject = $base_subject . ' - ' . $club->name;
                     $email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
                     $action_url    = $url . seo_url( $club->shortcode ) . '/';
                     $email_message = $racketmanager->shortcodes->load_template(
@@ -1207,7 +1207,7 @@ final class Tournament {
         global $racketmanager;
         $return           = new stdClass();
         $msg              = array();
-        $url              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+        $url              = $this->entry_link;
         $competition_name = $this->name . ' ' . __( 'Tournament', 'racketmanager' );
         $date_closing     = date_create( $this->date_closing );
         $now              = date_create();
@@ -1222,8 +1222,8 @@ final class Tournament {
             $from_email = $racketmanager->get_confirmation_email( 'tournament' );
             if ( $from_email ) {
                 $message_sent      = false;
-                $headers[]         = 'From: Tournament Secretary <' . $from_email . '>';
-                $headers[]         = 'cc: Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_FROM_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_CC_EMAIL . 'Tournament Secretary <' . $from_email . '>';
                 $organisation_name = $racketmanager->site_name;
                 $account_link      = '<a href="' . $racketmanager->site_url . '/member-account/" style="text-decoration: none; color: #006800;">' . __( 'link', 'racketmanager' ) . '</a>';
                 foreach ( $players as $player ) {
@@ -1292,11 +1292,7 @@ final class Tournament {
             $search_terms[] = "te.`player_id` NOT IN (SELECT `player_id` FROM $wpdb->racketmanager_tournament_entries WHERE `tournament_id` = %d)";
             $search_args[]  = $this->id;
         }
-        $search        = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
+        $search  = Util::search_string( $search_terms );
         $sql     = $wpdb->prepare(
             "SELECT DISTINCT(te.player_id) FROM $wpdb->racketmanager_tournament_entries te, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t INNER JOIN (SELECT t.`id` FROM $wpdb->racketmanager_tournaments t, $wpdb->racketmanager_competitions c WHERE t.`competition_id` = c.`id` AND c.`age_group` = %s AND t.`id` != %d ORDER BY t.`id` DESC LIMIT %d) t1 ON t.`id` = t1.`id` WHERE te.`tournament_id` = t.`id` AND c.`id` = t.`competition_id` AND c.`age_group` = %s AND te.`player_id` IN (SELECT DISTINCT `player_id` FROM $wpdb->racketmanager_club_players WHERE `removed_date` IS NULL) " . $search,
                 $search_args
@@ -1500,12 +1496,12 @@ final class Tournament {
             $email_to                            = $player->display_name . ' <' . $player->email . '>';
             $email_from                          = $racketmanager->get_confirmation_email( 'tournament' );
             $email_subject                       = $racketmanager->site_name . ' - ' . $this->name . ' Tournament Entry';
-            $action_url                          = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+            $action_url                          = $this->entry_link;
             $tournament_link                     = '<a href="' . $racketmanager->site_url . ( $this->link ) . '/">' . $this->name . '</a>';
             $headers                             = array();
             $secretary_email                     = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-            $headers[]                           = 'From: ' . $secretary_email;
-            $headers[]                           = 'Cc: ' . $secretary_email;
+            $headers[]                           = RACKETMANAGER_FROM_EMAIL . $secretary_email;
+            $headers[]                           = RACKETMANAGER_CC_EMAIL . $secretary_email;
             $template                            = 'tournament-entry';
             $template_args['tournament_name']    = $this->name;
             $template_args['tournament_link']    = $tournament_link;
@@ -1632,22 +1628,7 @@ final class Tournament {
         $updates       = false;
         $player        = get_player( $player_id );
         if ( $player ) {
-            $events = $this->competition->get_events();
-            foreach ( $events as $event ) {
-                $teams  = $event->get_teams(
-                    array(
-                        'player' => $player_id,
-                        'season' => $this->season,
-                    )
-                );
-                $league = get_league( $event->primary_league );
-                if ( $league ) {
-                    foreach ( $teams as $team ) {
-                        $updates = true;
-                        $league->delete_team( $team->team_id, $this->season );
-                    }
-                }
-            }
+            $updates = $this->withdraw_from_event( $player_id );
         }
         if ( $updates ) {
             $amount_paid    = 0;
@@ -1667,12 +1648,12 @@ final class Tournament {
             $email_to                         = $player->display_name . ' <' . $player->email . '>';
             $email_from                       = $racketmanager->get_confirmation_email( 'tournament' );
             $email_subject                    = $racketmanager->site_name . ' - ' . $this->name . ' Tournament Withdrawal';
-            $action_url                       = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+            $action_url                       = $this->entry_link;
             $tournament_link                  = '<a href="' . $racketmanager->site_url . ( $this->link ) . '/">' . $this->name . '</a>';
             $headers                          = array();
             $secretary_email                  = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-            $headers[]                        = 'From: ' . $secretary_email;
-            $headers[]                        = 'Cc: ' . $secretary_email;
+            $headers[]                        = RACKETMANAGER_FROM_EMAIL . $secretary_email;
+            $headers[]                        = RACKETMANAGER_CC_EMAIL . $secretary_email;
             $template                         = 'tournament-withdrawal';
             $template_args['tournament']      = $this;
             $template_args['tournament_name'] = $this->name;
@@ -1689,6 +1670,34 @@ final class Tournament {
             wp_mail( $email_to, $email_subject, $email_message, $headers );
         }
         return $amount_refund;
+    }
+
+    /**
+     * Function to withdrawn player from event
+     *
+     * @param int $player_id
+     *
+     * @return bool
+     */
+    private function withdraw_from_event( int $player_id ): bool {
+        $updates = false;
+        $events = $this->competition->get_events();
+        foreach ( $events as $event ) {
+            $teams  = $event->get_teams(
+                array(
+                    'player' => $player_id,
+                    'season' => $this->season,
+                )
+            );
+            $league = get_league( $event->primary_league );
+            if ( $league ) {
+                foreach ( $teams as $team ) {
+                    $updates = true;
+                    $league->delete_team( $team->team_id, $this->season );
+                }
+            }
+        }
+        return $updates;
     }
     /**
      * Set tournament entry to withdrawn
@@ -1760,15 +1769,15 @@ final class Tournament {
         $email_message = str_replace( '\"', '"', $email_message );
         $headers       = array();
         $email_from    = $racketmanager->get_confirmation_email( $this->competition->type );
-        $headers[]     = 'From: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
-        $headers[]     = 'cc: ' . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
+        $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
+        $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
         $email_subject = $racketmanager->site_name . ' - ' . $this->name . ' - Important Message';
         $email_to      = array();
         $players       = $this->get_players( array( 'active' => $active ) );
         foreach ( $players as $player_name ) {
             $player = get_player( $player_name, 'name' );
             if ( $player && ! empty( $player->email ) ) {
-                $headers[] = 'bcc: ' . $player->display_name . ' <' . $player->email . '>';
+                $headers[] = RACKETMANAGER_BCC_EMAIL . $player->display_name . ' <' . $player->email . '>';
             }
         }
         wp_mail( $email_to, $email_subject, $email_message, $headers );

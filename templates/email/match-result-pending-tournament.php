@@ -10,6 +10,8 @@ namespace Racketmanager;
 /** @var string $organisation */
 /** @var int    $time_period */
 /** @var object $match */
+/** @var string $contact */
+/** @var string $closing */
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
 $email_subject = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
@@ -69,10 +71,10 @@ if ( $time_period ) {
             <?php
             if ( ! empty( $from_email ) ) {
                 $contact_email = $from_email;
-                require 'components/contact.php';
+                require $contact;
             }
             ?>
-            <?php require 'components/closing.php'; ?>
+            <?php require $closing; ?>
             <?php require 'components/link-text.php'; ?>
 <?php
 require 'email-footer.php';

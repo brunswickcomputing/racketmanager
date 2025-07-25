@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 /** @var array $vars */
+/** @var string $salutation */
+/** @var string $paragraph */
+/** @var string $closing */
 $organisation  = $vars['site_name'];
 $sitename      = $vars['site_name'];
 $siteurl       = $vars['site_url'];
@@ -18,17 +21,17 @@ $email_link    = $vars['email_link'];
 require 'email-header.php';
 ?>
             <?php $salutation_link = $username; ?>
-            <?php require 'components/salutation.php'; ?>
+            <?php require $salutation; ?>
             <?php
             /* translators: %s: organisation name */
             $paragraph_text = sprintf( __( 'Your email address has now been changed for your %s account.', 'racketmanager' ), $organisation );
-            require 'components/paragraph.php';
+            require $paragraph;
             ?>
             <?php
             $paragraph_text = __( 'The new email address is ###NEW_EMAIL###.', 'racketmanager' );
-            require 'components/paragraph.php';
+            require $paragraph;
             ?>
             <?php require 'components/contact-urgent.php'; ?>
-            <?php require 'components/closing.php'; ?>
+            <?php require $closing; ?>
 <?php
 require 'email-footer.php';

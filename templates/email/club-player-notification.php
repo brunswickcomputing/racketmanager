@@ -12,10 +12,12 @@ namespace Racketmanager;
 /** @var string $club */
 /** @var string $player */
 /** @var string $btm */
+/** @var string $salutation */
+/** @var string $closing */
 require 'email-header.php';
 ?>
     <?php $salutation_link = $requestor; ?>
-            <?php require 'components/salutation.php'; ?>
+            <?php require $salutation; ?>
             <!-- introduction -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -63,7 +65,7 @@ require 'email-header.php';
             $action_link_text = __( 'View player', 'racketmanager' );
             require 'components/action-link.php';
             ?>
-            <?php require 'components/closing.php'; ?>
+            <?php require $closing; ?>
             <?php
             require 'components/link-text.php';
             ?>

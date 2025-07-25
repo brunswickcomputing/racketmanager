@@ -9,10 +9,13 @@ namespace Racketmanager;
 
 /** @var bool   $resend */
 /** @var object $invoice */
+/** @var string $salutation */
+/** @var string $contact */
+/** @var string $closing */
 require 'email-header.php';
 ?>
             <?php $salutation_link = __( 'Match Secretary', 'racketmanager' ); ?>
-            <?php require 'components/salutation.php'; ?>
+            <?php require $salutation; ?>
             <!-- introduction -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -59,10 +62,10 @@ require 'email-header.php';
             <?php
             if ( ! empty( $from_email ) ) {
                 $contact_email = $from_email;
-                require 'components/contact.php';
+                require $contact;
             }
             ?>
-            <?php require 'components/closing.php'; ?>
+            <?php require $closing; ?>
             <?php require 'components/link-text.php'; ?>
 <?php
 require 'email-footer.php';

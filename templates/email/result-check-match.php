@@ -10,15 +10,19 @@ namespace Racketmanager;
 /** @var string $captain */
 /** @var string $reason */
 /** @var string $penalty */
+/** @var string $salutation */
+/** @var string $paragraph */
+/** @var string $contact */
+/** @var string $closing */
 require 'email-header.php';
 ?>
             <?php
             $salutation_link = $captain;
-            require 'components/salutation.php';
+            require $salutation;
             ?>
             <?php
             $paragraph_text = __( 'You broke one of the rules for this match.', 'racketmanager' );
-            require 'components/paragraph.php';
+            require $paragraph;
             ?>
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -53,14 +57,14 @@ require 'email-header.php';
             if ( $penalty ) {
                 /* translators: %s: penalty */
                 $paragraph_text = sprintf( __( 'You have been deducted %s point.', 'racketmanager' ), $penalty );
-                require 'components/paragraph.php';
+                require $paragraph;
             }
             ?>
             <?php
             if ( ! empty( $contact_email ) ) {
-                require 'components/contact.php';
+                require $contact;
             }
             ?>
-            <?php require 'components/closing.php'; ?>
+            <?php require $closing; ?>
 <?php
 require 'email-footer.php';

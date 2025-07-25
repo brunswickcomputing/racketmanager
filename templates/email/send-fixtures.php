@@ -12,12 +12,15 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var array  $matches */
 /** @var object $team */
+/** @var string $salutation */
+/** @var string $contact */
+/** @var string $closing */
 $email_subject = __( 'Fixtures', 'racketmanager' );
 require 'email-header.php';
 ?>
     <?php
             $salutation_link = $captain; ?>
-            <?php require 'components/salutation.php'; ?>
+            <?php require $salutation; ?>
             <!-- introduction -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
                 <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -96,10 +99,10 @@ require 'email-header.php';
             <?php require 'components/action-link.php'; ?>
             <?php
             if ( ! empty( $contact_email ) ) {
-                require 'components/contact.php';
+                require $contact;
             }
             ?>
-            <?php require 'components/closing.php'; ?>
+            <?php require $closing; ?>
             <?php require 'components/link-text.php'; ?>
 <?php
 require 'email-footer.php';

@@ -11,27 +11,32 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var string $club */
 /** @var array  $cup_entries */
+/** @var string $salutation */
+/** @var string $paragraph */
+/** @var string $contact */
+/** @var string $closing */
+/** @var string $title */
 $email_subject = __( 'Cup Entry', 'racketmanager' ) . ' - ' . ucfirst( $competition_name ) . ' - ' . $season;
 require 'email-header.php';
 $title_text  = __( 'Entry confirmation', 'racketmanager' );
 $title_level = '1';
-require 'components/title.php';
+require $title;
 $salutation_link = $club;
-require 'components/salutation.php';
+require $salutation;
 /* translators: $s: competition name */
 $paragraph_text = sprintf( __( 'Thank you for your entry for the %s. You will find confirmation of your entry below.', 'racketmanager' ), $competition_name );
-require 'components/paragraph.php';
+require $paragraph;
 require 'components/hr.php';
 $title_text  = __( 'Entry Details', 'racketmanager' );
 $title_level = '2';
-require 'components/title.php';
+require $title;
 $title_text  = __( 'Events', 'racketmanager' );
 $title_level = '3';
-require 'components/title.php';
+require $title;
 foreach ( $cup_entries as $event_entry ) {
 $title_text  = $event_entry['event'];
 $title_level = '4';
-require 'components/title.php';
+require $title;
 ?>
 <div style="font-size: 14px; color: #000; background-color: #fff; padding: 0 20px;">
     <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -85,16 +90,16 @@ if ( ! empty( $comments ) ) {
 require 'components/hr.php';
 $title_text  = __( 'Additional comments', 'racketmanager' );
 $title_level = '3';
-require 'components/title.php';
+require $title;
 $paragraph_text = $comments;
-require 'components/paragraph.php';
+require $paragraph;
 }
 require 'components/hr.php';
 $paragraph_text = __( 'Captains will be notified when the draws have taken place.', 'racketmanager' );
-require 'components/paragraph.php';
+require $paragraph;
 if ( ! empty( $contact_email ) ) {
-    require 'components/contact.php';
+    require $contact;
 }
 ?>
-<?php require 'components/closing.php';
+<?php require $closing;
 require 'email-footer.php';

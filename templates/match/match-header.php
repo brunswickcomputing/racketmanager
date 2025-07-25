@@ -29,6 +29,7 @@ $allow_switch_match       = false;
 $allow_amend_score        = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
+$default_match_stat       = '0 - 0';
 if ( $match->is_pending ) {
     if ( ! $edit_mode && $user_can_update ) {
         $allow_amend_score = true;
@@ -316,7 +317,7 @@ if ( $match->is_pending ) {
         if ( isset( $match->custom['stats']['rubbers'] ) ) {
             $match_stat = $match->custom['stats']['rubbers']['home'] . ' - ' . $match->custom['stats']['rubbers']['away'];
         } else {
-            $match_stat = '0 - 0';
+            $match_stat = $default_match_stat;
         }
         ?>
         <span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
@@ -327,7 +328,7 @@ if ( $match->is_pending ) {
         if ( isset( $match->custom['stats']['sets'] ) ) {
             $match_stat = $match->custom['stats']['sets']['home'] . ' - ' . $match->custom['stats']['sets']['away'];
         } else {
-            $match_stat = '0 - 0';
+            $match_stat = $default_match_stat;
         }
         ?>
         <span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
@@ -338,7 +339,7 @@ if ( $match->is_pending ) {
         if ( isset( $match->custom['stats']['games'] ) ) {
             $match_stat = $match->custom['stats']['games']['home'] . ' - ' . $match->custom['stats']['games']['away'];
         } else {
-            $match_stat = '0 - 0';
+            $match_stat = $default_match_stat;
         }
         ?>
         <span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>

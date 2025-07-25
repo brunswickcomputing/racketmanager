@@ -35,7 +35,7 @@ if ( empty( $event ) ) {
                         <div class="row mb-2 row-list">
                             <div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
                                 <?php
-                                $url_link       = '/tournament/' . seo_url( $tournament->name ) . '/event/' . seo_url( $event->name ) . '/';
+                                $url_link       = $tournament->link . 'event/' . seo_url( $event->name ) . '/';
                                 $hidden         = true;
                                 $favourite_type = 'competition';
                                 $favourite_id   = $event->id;
@@ -68,7 +68,7 @@ if ( empty( $event ) ) {
             <h3 class="module__title">
                 <?php echo esc_html( $event->name ); ?>
                 <?php
-                $draw_link      = '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $event->name ) . '/';
+                $draw_link      = $tournament->link . 'draw/' . seo_url( $event->name ) . '/';
                 $competition    = $event;
                 $favourite_type = 'competition';
                 $favourite_id   = $event->id;
@@ -130,7 +130,7 @@ if ( empty( $event ) ) {
                                 <?php
                                 if ( ! empty( $entry->players ) ) {
                                     foreach ( $entry->players as $player ) {
-                                        $player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( $player->display_name ) . '/';
+                                        $player_link = $tournament->link . 'player/' . seo_url( $player->display_name ) . '/';
                                         ?>
                                         <div class="team-player">
                                             <a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">

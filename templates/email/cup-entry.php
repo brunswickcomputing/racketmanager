@@ -16,6 +16,7 @@ namespace Racketmanager;
 /** @var string $contact */
 /** @var string $closing */
 /** @var string $title */
+/** @var string $hr */
 $email_subject = __( 'Cup Entry', 'racketmanager' ) . ' - ' . ucfirst( $competition_name ) . ' - ' . $season;
 require 'email-header.php';
 $title_text  = __( 'Entry confirmation', 'racketmanager' );
@@ -26,7 +27,7 @@ require $salutation;
 /* translators: $s: competition name */
 $paragraph_text = sprintf( __( 'Thank you for your entry for the %s. You will find confirmation of your entry below.', 'racketmanager' ), $competition_name );
 require $paragraph;
-require 'components/hr.php';
+require $hr;
 $title_text  = __( 'Entry Details', 'racketmanager' );
 $title_level = '2';
 require $title;
@@ -87,14 +88,14 @@ require $title;
 <?php
 }
 if ( ! empty( $comments ) ) {
-require 'components/hr.php';
+require $hr;
 $title_text  = __( 'Additional comments', 'racketmanager' );
 $title_level = '3';
 require $title;
 $paragraph_text = $comments;
 require $paragraph;
 }
-require 'components/hr.php';
+require $hr;
 $paragraph_text = __( 'Captains will be notified when the draws have taken place.', 'racketmanager' );
 require $paragraph;
 if ( ! empty( $contact_email ) ) {

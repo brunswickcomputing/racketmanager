@@ -264,7 +264,7 @@ class Admin extends RacketManager {
      */
     public function scroll_top() {
         ?>
-        <a class="go-top dashicons dashicons-arrow-up-alt2"></a>
+        <a class="go-top dashicons dashicons-arrow-up-alt2 visually-hidden"><?php esc_html_e( 'Top', 'racketmanager' ); ?></a>
         <?php
     }
 

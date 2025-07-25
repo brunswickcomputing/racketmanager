@@ -11,29 +11,35 @@ namespace Racketmanager;
 /** @var object $player */
 /** @var string $tournament_link */
 /** @var array $tournament_entries */
+/** @var string $title */
+/** @var string $paragraph */
+/** @var string $hr */
+/** @var string $salutation */
+/** @var string $contact */
+/** @var string $closing */
 $email_subject = __( 'Tournament Entry', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
 require 'email-header.php';
 $title_text  = __( 'Entry confirmation', 'racketmanager' );
 $title_level = '1';
-require 'components/title.php';
+require $title;
 $salutation_link = $player->fullname;
-require 'components/salutation.php';
+require $salutation;
 /* translators: $s: tournament link */
 $paragraph_text  = sprintf( __( 'Thank you for your entry for the %s tournament. You will find confirmation of your entry below.', 'racketmanager' ), $tournament_link );
 $paragraph_imbed = true;
-require 'components/paragraph.php';
+require $paragraph;
 $paragraph_imbed = false;
 $paragraph_text = __( 'Click the following button if you want to view or change your entry if necessary.', 'racketmanager' );
-require 'components/paragraph.php';
+require $paragraph;
 $action_link_text = __( 'View entry', 'racketmanager' );
 require 'components/action-link.php';
-require 'components/hr.php';
+require $hr;
 $title_text  = __( 'Entry Details', 'racketmanager' );
 $title_level = '2';
-require 'components/title.php';
+require $title;
 $title_text  = __( 'Personal Details', 'racketmanager' );
 $title_level = '3';
-require 'components/title.php';
+require $title;
 ?>
 <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
     <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -74,10 +80,10 @@ require 'components/title.php';
     </table>
 </div>
 <?php
-require 'components/hr.php';
+require $hr;
 $title_text  = __( 'Events', 'racketmanager' );
 $title_level = '3';
-require 'components/title.php';
+require $title;
 ?>
 <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
     <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
@@ -125,18 +131,18 @@ require 'components/title.php';
 </div>
 <?php
 if ( ! empty( $comments ) ) {
-    require 'components/hr.php';
+    require $hr;
     $title_text  = __( 'Additional comments', 'racketmanager' );
     $title_level = '3';
-    require 'components/title.php';
+    require $title;
     $paragraph_text = $comments;
-    require 'components/paragraph.php';
+    require $paragraph;
 }
-require 'components/hr.php';
+require $hr;
 $paragraph_text = __( 'You will be notified when the draws have taken place.', 'racketmanager' );
-require 'components/paragraph.php';
+require $paragraph;
 if ( ! empty( $contact_email ) ) {
-    require 'components/contact.php';
+    require $contact;
 }
-require 'components/closing.php';
+require $closing;
 require 'email-footer.php';

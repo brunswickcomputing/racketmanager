@@ -9,8 +9,9 @@ namespace Racketmanager;
 
 /** @var array $finals */
 /** @var object $league */
-if ( ! $finals )
+if ( ! $finals ) {
     return;
+}
 $num_rounds = count( $finals );
 if ( ! empty( $num_rounds ) ) {
     $cols = floor( 12 / $num_rounds );

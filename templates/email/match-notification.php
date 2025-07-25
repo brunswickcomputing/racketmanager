@@ -13,6 +13,7 @@ namespace Racketmanager;
 /** @var string $draw_link */
 /** @var array  $teams */
 /** @var string $rules_link */
+/** @var string $tournament_link */
 /** @var string $paragraph */
 /** @var string $contact */
 /** @var string $closing */
@@ -39,7 +40,7 @@ $paragraph_text = sprintf(
     /* translators: %1$s: draw link %2$s: tournament link */
     __( 'Please find below details of your next match in the %1$s event in the %2$s tournament.', 'racketmanager' ),
     $draw_link,
-    $tournament->link,
+    $tournament_link,
 );
 $paragraph_imbed = true;
 require $paragraph;

@@ -53,17 +53,18 @@ class Shortcodes_Email extends Shortcodes {
 			'away' => new stdClass(),
 		);
 
-		$home_dtls  = array();
-		$away_dtls  = array();
-		$match_link = '';
-		$cup_link   = '';
-		$draw_link  = '';
-		$rules_link = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
+		$home_dtls       = array();
+		$away_dtls       = array();
+        $tournament_link = '';
+		$match_link      = '';
+		$cup_link        = '';
+		$draw_link       = '';
+		$rules_link      = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
 		if ( 'tournament' === $competition_type ) {
-			$tournament       = get_tournament( $tournament );
-			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
-			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
-			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
+			$tournament      = get_tournament( $tournament );
+			$tournament_link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
+			$draw_link       = '<a href="' . $racketmanager->site_url .  $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
+			$match_link      = $racketmanager->site_url . $tournament->link . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 			if ( substr( $match->league->type, 1, 1 ) === 'D' ) {
 				$teams['home']->title = __( 'Home Players', 'racketmanager' );
 				$teams['away']->title = __( 'Away Players', 'racketmanager' );
@@ -133,19 +134,20 @@ class Shortcodes_Email extends Shortcodes {
 		return $this->load_template(
 			$filename,
 			array(
-				'tournament'   => $tournament,
-				'competition'  => $competition,
-				'match'        => $match,
-				'home_dtls'    => $home_dtls,
-				'away_dtls'    => $away_dtls,
-				'round'        => $round,
-				'organisation' => $organisation,
-				'email_from'   => $email_from,
-				'teams'        => $teams,
-				'draw_link'    => $draw_link,
-				'action_url'   => $match_link,
-				'rules_link'   => $rules_link,
-				'cup_link'     => $cup_link,
+				'tournament'      => $tournament,
+				'competition'     => $competition,
+				'match'           => $match,
+				'home_dtls'       => $home_dtls,
+				'away_dtls'       => $away_dtls,
+				'round'           => $round,
+				'organisation'    => $organisation,
+				'email_from'      => $email_from,
+				'teams'           => $teams,
+                'tournament_link' => $tournament_link,
+				'draw_link'       => $draw_link,
+				'action_url'      => $match_link,
+				'rules_link'      => $rules_link,
+				'cup_link'        => $cup_link,
 			),
 			'email'
 		);
@@ -427,9 +429,9 @@ class Shortcodes_Email extends Shortcodes {
 		$rules_link       = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
 		if ( 'tournament' === $competition_type ) {
 			$tournament       = get_tournament( $tournament );
-			$tournament->link = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/">' . $tournament->name . '</a>';
-			$draw_link        = '<a href="' . $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
-			$match_link       = $racketmanager->site_url . '/tournament/' . seo_url( $tournament->name ) . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
+			$tournament->link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
+			$draw_link        = '<a href="' . $racketmanager->site_url . $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
+			$match_link       = $racketmanager->site_url . $tournament->link . 'match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
 		} elseif ( 'cup' === $competition_type ) {
 			$competition_link = '<a href="' . $racketmanager->site_url . '/cups/' . seo_url( $match->league->title ) . '/' . $match->season . '/">' . $match->league->title . '</a>';
 			$match_link       = $racketmanager->site_url . $match->link;

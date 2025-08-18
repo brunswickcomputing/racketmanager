@@ -63,7 +63,7 @@ class Admin_Index extends Admin_Display {
                 $name      = isset( $_POST['competition_name'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_name'] ) ) : null;
                 $type      = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
                 $age_group = isset( $_POST['age_group'] ) ? sanitize_text_field( wp_unslash( $_POST['age_group'] ) ) : null;
-                $validator = $validator->competition( $name );
+                $validator = $validator->competition( $name, false );
                 $validator = $validator->competition_type( $type );
                 $validator = $validator->age_group( $age_group );
             }

@@ -69,7 +69,7 @@ class Event {
      *
      * @var string
      */
-    public string $point_format2 = '%d-%d';
+    public string $point_2_format = '%d-%d';
 
     /**
      * League mode

@@ -438,13 +438,13 @@ class Ajax_Frontend extends Ajax {
 				if ( $competition_id ) {
 					$competition = get_competition( $competition_id );
 					if ( $competition ) {
-						if ( ! empty( $competition->min_start_time_weekday ) && ! empty( $competition->max_start_time_weekday ) ) {
-							$start_times['weekday']['min'] = $competition->min_start_time_weekday;
-							$start_times['weekday']['max'] = $competition->max_start_time_weekday;
+						if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
+							$start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
+							$start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
 						}
-						if ( ! empty( $competition->min_start_time_weekend ) && ! empty( $competition->max_start_time_weekend ) ) {
-							$start_times['weekend']['min'] = $competition->min_start_time_weekend;
-							$start_times['weekend']['max'] = $competition->max_start_time_weekend;
+						if ( ! empty( $competition->start_time['weekend']['min'] ) && ! empty( $competition->start_time['weekend']['max'] ) ) {
+							$start_times['weekend']['min'] = $competition->start_time['weekend']['min'];
+							$start_times['weekend']['max'] = $competition->start_time['weekend']['max'];
 						}
 					} else {
 						$validator = $validator->competition( $competition );
@@ -560,13 +560,13 @@ class Ajax_Frontend extends Ajax {
 					$match_day_restriction = true;
 				}
 				$weekend_allowed = isset( $competition->match_day_weekends );
-				if ( ! empty( $competition->min_start_time_weekday ) && ! empty( $competition->max_start_time_weekday ) ) {
-					$start_times['weekday']['min'] = $competition->min_start_time_weekday;
-					$start_times['weekday']['max'] = $competition->max_start_time_weekday;
+				if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
+					$start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
+					$start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
 				}
-				if ( ! empty( $competition->min_start_time_weekend ) && ! empty( $competition->max_start_time_weekend ) ) {
-					$start_times['weekend']['min'] = $competition->min_start_time_weekend;
-					$start_times['weekend']['max'] = $competition->max_start_time_weekend;
+				if ( ! empty( $competition->start_time['weekend']['min'] ) && ! empty( $competition->start_time['weekend']['max'] ) ) {
+					$start_times['weekend']['min'] = $competition->start_time['weekend']['min'];
+					$start_times['weekend']['max'] = $competition->start_time['weekend']['max'];
 				}
 				$club_entry->competition = $competition;
 				for ( $i = 0; $i < 7; ++$i ) {

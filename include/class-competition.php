@@ -69,7 +69,7 @@ class Competition {
      *
      * @var string
      */
-    public string $point_format2 = '%d-%d';
+    public string $point_2_format = '%d-%d';
 
     /**
      * Team ranking mode
@@ -418,29 +418,11 @@ class Competition {
      */
     public array $match_days_allowed;
     /**
-     * Earliest weekday start time
+     * Start times - weekday/weekend/min/max
      *
-     * @var string|null
+     * @var array|null
      */
-    public string|null $min_start_time_weekday;
-    /**
-     * Latest weekday start time
-     *
-     * @var string|null
-     */
-    public ?string $max_start_time_weekday;
-    /**
-     * Earliest weekend start time
-     *
-     * @var string|null
-     */
-    public ?string $min_start_time_weekend;
-    /**
-     * Latest weekend start time
-     *
-     * @var string|null
-     */
-    public ?string $max_start_time_weekend;
+    public array|null $start_time;
     /**
      * Rules
      *

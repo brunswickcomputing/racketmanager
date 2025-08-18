@@ -64,6 +64,73 @@ function racketmanager_upgrade(): void {
         echo esc_html__( 'starting 9.2.0 upgrade', 'racketmanager' ) . "<br />\n";
         $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_rubbers} DROP `final`" );
     }
+    if ( version_compare( $installed, '9.2.1', '<' ) ) {
+        echo esc_html__( 'starting 9.2.1 upgrade', 'racketmanager' ) . "<br />\n";
+        $competitions = $racketmanager->get_competitions();
+        foreach ( $competitions as $competition ) {
+            $update = false;
+            if ( isset( $competition->settings['point_format2'] ) ) {
+                if ( ! isset( $competition->settings['point_2_format'] ) ) {
+                    $competition->settings['point_2_format'] = $competition->settings['point_format2'];
+                }
+                unset( $competition->settings['point_format2'] );
+                $update = true;
+            }
+            if ( $update ) {
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "UPDATE {$wpdb->racketmanager_competitions} SET `settings` = %s WHERE `id` = %d",
+                        maybe_serialize( $competition->settings ),
+                        $competition->id
+                    )
+                );
+            }
+        }
+    }
+    if ( version_compare( $installed, '9.2.2', '<' ) ) {
+        echo esc_html__( 'starting 9.2.2 upgrade', 'racketmanager' ) . "<br />\n";
+        $competitions = $racketmanager->get_competitions();
+        foreach ( $competitions as $competition ) {
+            $update = false;
+            if ( isset( $competition->settings['min_start_time_weekday'] ) ) {
+                if ( ! isset( $competition->settings['start_time']['weekday']['min'] ) ) {
+                    $competition->settings['start_time']['weekday']['min'] = $competition->settings['min_start_time_weekday'];
+                }
+                unset( $competition->settings['min_start_time_weekday'] );
+                $update = true;
+            }
+            if ( isset( $competition->settings['max_start_time_weekday'] ) ) {
+                if ( ! isset( $competition->settings['start_time']['weekday']['max'] ) ) {
+                    $competition->settings['start_time']['weekday']['max'] = $competition->settings['max_start_time_weekday'];
+                }
+                unset( $competition->settings['max_start_time_weekday'] );
+                $update = true;
+            }
+            if ( isset( $competition->settings['min_start_time_weekend'] ) ) {
+                if ( ! isset( $competition->settings['start_time']['weekend']['min'] ) ) {
+                    $competition->settings['start_time']['weekend']['min'] = $competition->settings['min_start_time_weekend'];
+                }
+                unset( $competition->settings['min_start_time_weekend'] );
+                $update = true;
+            }
+            if ( isset( $competition->settings['max_start_time_weekend'] ) ) {
+                if ( ! isset( $competition->settings['start_time']['weekend']['max'] ) ) {
+                    $competition->settings['start_time']['weekend']['max'] = $competition->settings['max_start_time_weekend'];
+                }
+                unset( $competition->settings['max_start_time_weekend'] );
+                $update = true;
+            }
+            if ( $update ) {
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "UPDATE {$wpdb->racketmanager_competitions} SET `settings` = %s WHERE `id` = %d",
+                        maybe_serialize( $competition->settings ),
+                        $competition->id
+                    )
+                );
+            }
+        }
+    }
     /*
     * Update version and dbversion
     */

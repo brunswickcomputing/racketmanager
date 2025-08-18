@@ -77,7 +77,7 @@ class League {
      *
      * @var string
      */
-    public string $point_format2 = '%d-%d';
+    public string $point_2_format = '%d-%d';
 
     /**
      * League mode
@@ -681,9 +681,9 @@ class League {
         $this->set_match_query_args();
         $this->set_num_matches(); // for pagination.
         $this->set_num_teams( true ); // get total number of teams.
-        $this->standings     = $event->standings;
-        $this->point_format  = $event->competition->point_format;
-        $this->point_format2 = $event->competition->point_format2;
+        $this->standings      = $event->standings;
+        $this->point_format   = $event->competition->point_format;
+        $this->point_2_format = $event->competition->point_2_format;
         // set default standings display options for additional team fields.
         if ( count( $this->fields_team ) > 0 ) {
             foreach ( $this->fields_team as $key => $data ) {
@@ -1463,7 +1463,7 @@ class League {
                 $team->class   = implode( ' ', $class );
                 $team->points_formatted = array(
                     'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
-                    'secondary' => sprintf( $this->point_format2, $team->points2_plus, $team->points2_minus ),
+                    'secondary' => sprintf( $this->point_2_format, $team->points2_plus, $team->points2_minus ),
                 );
                 if ( ! empty( $team->players ) ) {
                     $type        = substr( $this->event->type, 1, 1 );
@@ -1690,7 +1690,7 @@ class League {
         $team->roster           = maybe_unserialize( $team->roster );
         $team->points_formatted = array(
             'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
-            'secondary' => sprintf( $this->point_format2, $team->points2_plus, $team->points2_minus ),
+            'secondary' => sprintf( $this->point_2_format, $team->points2_plus, $team->points2_minus ),
         );
         if ( 'P' === $team->team_type && null !== $team->roster ) {
             $team->players = array();
@@ -2885,7 +2885,7 @@ class League {
                     echo '</td>';
                 } elseif ( show_standings( $key ) ) {
                     if ( is_array( $team->{$key} ) ) {
-                        $team->{$key} = vsprintf( $this->point_format2, $team->{$key} );
+                        $team->{$key} = vsprintf( $this->point_2_format, $team->{$key} );
                     }
                     echo '<td class="num column-' . esc_html( $key ) . ' d-none d-md-table-cell d-none d-md-table-cell" data-colname="' . esc_html( $data['label'] ) . '">' . esc_html( $team->{$key} ) . '</td>';
                 }

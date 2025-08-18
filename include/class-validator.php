@@ -317,15 +317,57 @@ class Validator {
     /**
      * Validate competition
      *
-     * @param string|null $competition competition.
+     * @param int|string|null $competition competition.
+     * @param bool $exists check if competition exists.
      *
      * @return object $validation updated validation object.
      */
-    public function competition( ?string $competition ): object {
+    public function competition( int|string|null $competition, bool $exists = true ): object {
         if ( empty( $competition ) ) {
             $this->error      = true;
             $this->err_flds[] = 'competition';
             $this->err_msgs[] = __( 'Competition not specified', 'racketmanager' );
+        } else {
+            if ( is_int( $competition ) ) {
+                $competition = get_competition( $competition );
+            } elseif ( is_string( $competition ) ) {
+                $competition = get_competition( $competition, 'name' );
+            }
+            if ( ! $competition ) {
+                if ( $exists ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'event';
+                    $this->err_msgs[] = __( 'Competition not found', 'racketmanager' );
+                    $this->status     = 404;
+                }
+            } else {
+                if ( ! $exists ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'competition';
+                    $this->err_msgs[] = __( 'Competition already found', 'racketmanager' );
+                    $this->status     = 404;
+                }
+            }
+        }
+        return $this;
+    }
+    /**
+     * Compare values
+     *
+     * @param int|string|null $passed new value.
+     * @param int|string|null $original original value.
+     * @return object $validation updated validation object.
+     */
+    public function compare( int|string|null $passed, int|string|null $original ): object {
+        if ( empty( $passed ) ) {
+            $this->error      = true;
+            $this->err_msgs[] = __( 'New value not found', 'racketmanager' );
+        } elseif ( empty( $original ) ) {
+            $this->error      = true;
+            $this->err_msgs[] = __( 'Original value not found', 'racketmanager' );
+        } elseif( $passed !== $original ) {
+            $this->error      = true;
+            $this->err_msgs[] = __( 'Passed values do not match', 'racketmanager' );
         }
         return $this;
     }

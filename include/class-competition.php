@@ -1809,12 +1809,12 @@ class Competition {
      *
      * @param array $season season data.
      */
-    public function update_season( array $season ): void {
+    public function update_season( array $season ): bool {
         $seasons                 = $this->seasons;
         $season_name             = $season['name'];
         $seasons[ $season_name ] = $season;
         ksort( $seasons );
-        $this->update_seasons( $seasons );
+        return $this->update_seasons( $seasons );
     }
     /**
      * Set configuration function

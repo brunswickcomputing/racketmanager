@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+/** @var array $clubs */
 ?>
 <div class="form-control">
     <table class="table table-striped align-middle" aria-describedby="<?php esc_html_e( 'Court availability', 'racketmanager' ); ?>">
@@ -18,11 +19,6 @@ namespace Racketmanager;
         </thead>
         <tbody>
             <?php
-            $clubs = $this->get_clubs(
-                array(
-                    'type' => 'affiliated',
-                )
-            );
             foreach ( $clubs as $club ) {
                 ?>
                 <tr>

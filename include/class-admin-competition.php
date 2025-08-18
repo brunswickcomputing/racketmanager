@@ -19,7 +19,7 @@ use stdClass;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class Admin_Competition extends Admin {
+final class Admin_Competition extends Admin_Display {
     /**
      * Handle config page function
      *
@@ -27,106 +27,183 @@ final class Admin_Competition extends Admin {
      */
     public function display_config_page(): void {
         global $racketmanager;
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $racketmanager->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-            $racketmanager->printMessage();
-        } elseif ( isset( $_GET['competition_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition    = get_competition( $competition_id );
-            if ( $competition ) {
-                $tournament = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-                if ( $tournament ) {
-                    $tournament = get_tournament( $tournament );
-                }
-                $competition->config = (object) $competition->settings;
-                $competition->config->age_group = $competition->age_group;
-                if ( isset( $_POST['updateCompetitionConfig'] ) ) {
-                    if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-competition-config' ) ) {
-                        $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                        $racketmanager->printMessage();
-                    } elseif ( isset( $_POST['competition_id'] ) ) {
-                        if ( intval( $_POST['competition_id'] ) !== $competition_id ) {
-                            $racketmanager->set_message( __( 'Competition id differs', 'racketmanager' ), true );
-                        } else {
-                            $config                           = new stdClass();
-                            $config->name                     = isset( $_POST['competition_title'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) : null;
-                            $config->sport                    = isset( $_POST['sport'] ) ? sanitize_text_field( wp_unslash( $_POST['sport'] ) ) : null;
-                            $config->type                     = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
-                            $config->mode                     = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;
-                            $config->entry_type               = isset( $_POST['entry_type'] ) ? sanitize_text_field( wp_unslash( $_POST['entry_type'] ) ) : null;
-                            $config->age_group                = isset( $_POST['age_group'] ) ? sanitize_text_field( wp_unslash( $_POST['age_group'] ) ) : null;
-                            $config->competition_code         = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-                            $config->grade                    = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
-                            $config->max_teams                = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
-                            $config->num_entries              = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
-                            $config->teams_per_club           = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
-                            $config->teams_prom_relg          = isset( $_POST['teams_prom_relg'] ) ? intval( $_POST['teams_prom_relg'] ) : null;
-                            $config->lowest_promotion         = isset( $_POST['lowest_promotion'] ) ? intval( $_POST['lowest_promotion'] ) : null;
-                            $config->team_ranking             = isset( $_POST['team_ranking'] ) ? sanitize_text_field( wp_unslash( $_POST['team_ranking'] ) ) : null;
-                            $config->point_rule               = isset( $_POST['point_rule'] ) ? sanitize_text_field( wp_unslash( $_POST['point_rule'] ) ) : null;
-                            $config->scoring                  = isset( $_POST['scoring'] ) ? sanitize_text_field( wp_unslash( $_POST['scoring'] ) ) : null;
-                            $config->num_sets                 = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
-                            $config->num_rubbers              = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
-                            $config->reverse_rubbers          = isset( $_POST['reverse_rubbers'] ) ? intval( $_POST['reverse_rubbers'] ) : null;
-                            $config->fixed_match_dates        = isset( $_POST['fixed_match_dates'] ) && 'true' === $_POST['fixed_match_dates'];
-                            $config->home_away                = isset( $_POST['home_away'] ) && 'true' === $_POST['home_away'];
-                            $config->round_length             = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
-                            $config->home_away_diff           = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : null;
-                            $config->filler_weeks             = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : null;
-                            $config->match_day_restriction    = isset($_POST['match_day_restriction']) && 'true' === $_POST['match_day_restriction'];
-                            $config->match_day_weekends       = isset($_POST['match_day_weekends']) && 'true' === $_POST['match_day_weekends'];
-                            $config->match_days_allowed       = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
-                            $config->default_match_start_time = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;
-                            $config->min_start_time_weekday   = isset( $_POST['min_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekday'] ) ) : null;
-                            $config->max_start_time_weekday   = isset( $_POST['max_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekday'] ) ) : null;
-                            $config->min_start_time_weekend   = isset( $_POST['min_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekend'] ) ) : null;
-                            $config->max_start_time_weekend   = isset( $_POST['max_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekend'] ) ) : null;
-                            $config->point_format             = isset( $_POST['point_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format'] ) ) : null;
-                            $config->point_format2            = isset( $_POST['point_format2'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format2'] ) ) : null;
-                            $config->num_matches_per_page     = isset( $_POST['num_matches_per_page'] ) ? intval( $_POST['num_matches_per_page'] ) : null;
-                            $config->rules                    = isset( $_POST['rules'] ) ? wp_unslash( $_POST['rules'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            $config->standings                = isset( $_POST['standings'] ) ? wp_unslash( $_POST['standings'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            $config->num_courts_available     = isset( $_POST['num_courts_available'] ) ? wp_unslash( $_POST['num_courts_available'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            $competition->config              = $config;
-                            $updates                          = $competition->set_config( $config );
-                            if ( $updates ) {
-                                $racketmanager->set_message( __( 'Competition config updated', 'racketmanager' ) );
-                            } elseif ( empty( $racketmanager->error_messages ) ) {
-                                $racketmanager->set_message( __( 'No updates found', 'racketmanager' ), 'warning' );
-                            } else {
-                                $racketmanager->set_message( __( 'Errors found', 'racketmanager' ), true );
-                            }
-                        }
-                        $racketmanager->printMessage();
-                    }
-                } elseif ( isset( $_POST['doActionEvent'] ) ) {
-                    if ( ! isset( $_POST['racketmanager_event_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_event_nonce'] ) ), 'racketmanager__events-bulk' ) ) {
-                        $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                        $racketmanager->printMessage();
-                    } elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-                        $events = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : null;
-                        if ( $events ) {
-                            foreach ( $events as $event_id ) {
-                                $event = get_event( $event_id );
-                                $event?->delete();
-                            }
-                        }
-                    }
-                }
-                $tab              = 'general';
-                $forwin           = 0;
-                $fordraw          = 0;
-                $forloss          = 0;
-                $forwin_overtime  = 0;
-                $forloss_overtime = 0;
-                $is_invalid       = false;
-                $rules_options    = $competition->get_rules_options();
-                require_once RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
+        $validator = new Validator_Config();
+        $validator->capability( 'edit_leagues' );
+        if ( empty( $validator->error ) ) {
+            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+            $validator->competition( $competition_id );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->err_msgs[0], true );
+            $this->show_message();
+            return;
+        }
+        $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $competition    = get_competition( $competition_id );
+        $tournament     = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
+        if ( $tournament ) {
+            $tournament = get_tournament( $tournament );
+        }
+        $competition->config = (object) $competition->settings;
+        $competition->config->age_group = $competition->age_group;
+        if ( isset( $_POST['updateCompetitionConfig'] ) ) {
+            $validator = $this->handle_config_update( $competition );
+        } elseif ( isset( $_POST['doActionEvent'] ) ) {
+            $validator = new Validator();
+            $validator = $validator->check_security_token( 'racketmanager_event_nonce', 'racketmanager_events-bulk' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+                $this->delete_events();
             } else {
-                $racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );
-                $racketmanager->printMessage();
+                $tab = 'events';
+                $this->set_message( __( 'No action specified', 'racketmanager' ), 'warning' );
             }
         }
+        $this->show_message();
+        if ( empty( $tab ) ) {
+            $tab = 'general';
+        }
+        $forwin           = 0;
+        $fordraw          = 0;
+        $forloss          = 0;
+        $forwin_overtime  = 0;
+        $forloss_overtime = 0;
+        $is_invalid       = false;
+        $rules_options    = $competition->get_rules_options();
+        $clubs            = $racketmanager->get_clubs(
+            array(
+                'type' => 'affiliated',
+            )
+        );
+        require_once RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
+    }
+    /**
+     * Function to handle competition config update
+     *
+     * @param object $competition
+     *
+     * @return object
+     */
+    private function handle_config_update( object $competition ): object {
+        $validator = new Validator_Config();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-competition-config' );
+        if ( empty( $validator->error ) ) {
+            $competition_id_passed = isset( $_POST['competition_id'] ) ?  intval( $_POST['competition_id'] ) : null;
+            $validator             = $validator->compare( $competition_id_passed, $competition->id );
+        }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $msg = $validator->err_msgs[0];
+            } else {
+                $msg = $validator->msg;
+            }
+            $this->set_message( $msg, true );
+        }
+        $config                               = new stdClass();
+        $config->name                         = isset( $_POST['competition_title'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) : null;
+        $config->sport                        = isset( $_POST['sport'] ) ? sanitize_text_field( wp_unslash( $_POST['sport'] ) ) : null;
+        $config->type                         = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : null;
+        $config->mode                         = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;
+        $config->entry_type                   = isset( $_POST['entry_type'] ) ? sanitize_text_field( wp_unslash( $_POST['entry_type'] ) ) : null;
+        $config->age_group                    = isset( $_POST['age_group'] ) ? sanitize_text_field( wp_unslash( $_POST['age_group'] ) ) : null;
+        $config->competition_code             = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+        $config->grade                        = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
+        $config->max_teams                    = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
+        $config->num_entries                  = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
+        $config->teams_per_club               = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
+        $config->teams_prom_relg              = isset( $_POST['teams_prom_relg'] ) ? intval( $_POST['teams_prom_relg'] ) : null;
+        $config->lowest_promotion             = isset( $_POST['lowest_promotion'] ) ? intval( $_POST['lowest_promotion'] ) : null;
+        $config->team_ranking                 = isset( $_POST['team_ranking'] ) ? sanitize_text_field( wp_unslash( $_POST['team_ranking'] ) ) : null;
+        $config->point_rule                   = isset( $_POST['point_rule'] ) ? sanitize_text_field( wp_unslash( $_POST['point_rule'] ) ) : null;
+        $config->scoring                      = isset( $_POST['scoring'] ) ? sanitize_text_field( wp_unslash( $_POST['scoring'] ) ) : null;
+        $config->num_sets                     = isset( $_POST['num_sets'] ) ? intval( $_POST['num_sets'] ) : null;
+        $config->num_rubbers                  = isset( $_POST['num_rubbers'] ) ? intval( $_POST['num_rubbers'] ) : null;
+        $config->reverse_rubbers              = isset( $_POST['reverse_rubbers'] ) && 'true' === $_POST['reverse_rubbers'];
+        $config->fixed_match_dates            = isset( $_POST['fixed_match_dates'] ) && 'true' === $_POST['fixed_match_dates'];
+        $config->home_away                    = isset( $_POST['home_away'] ) && 'true' === $_POST['home_away'];
+        $config->round_length                 = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
+        $config->home_away_diff               = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : null;
+        $config->filler_weeks                 = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : null;
+        $config->match_day_restriction        = isset( $_POST['match_day_restriction'] ) && 'true' === $_POST['match_day_restriction'];
+        $config->match_day_weekends           = isset( $_POST['match_day_weekends'] ) && 'true' === $_POST['match_day_weekends'];
+        $config->match_days_allowed           = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
+        $config->default_match_start_time     = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;
+        $config->start_time['weekday']['min'] = isset( $_POST['min_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekday'] ) ) : null;
+        $config->start_time['weekday']['max'] = isset( $_POST['max_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekday'] ) ) : null;
+        $config->start_time['weekend']['min'] = isset( $_POST['min_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekend'] ) ) : null;
+        $config->start_time['weekend']['max'] = isset( $_POST['max_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekend'] ) ) : null;
+        $config->point_format                 = isset( $_POST['point_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format'] ) ) : null;
+        $config->point_2_format               = isset( $_POST['point_2_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_2_format'] ) ) : null;
+        $config->num_matches_per_page         = isset( $_POST['num_matches_per_page'] ) ? intval( $_POST['num_matches_per_page'] ) : null;
+        $config->rules                        = isset( $_POST['rules'] ) ? wp_unslash( $_POST['rules'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $config->standings                    = isset( $_POST['standings'] ) ? wp_unslash( $_POST['standings'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $config->num_courts_available         = isset( $_POST['num_courts_available'] ) ? wp_unslash( $_POST['num_courts_available'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $validator = $validator->name( $config->name );
+        $validator = $validator->sport( $config->sport );
+        $validator = $validator->competition_type( $config->type );
+        $validator = $validator->entry_type( $config->entry_type );
+        $validator = $validator->age_group( $config->age_group );
+        $validator = $validator->grade( $config->grade );
+        if ( 'league' === $config->type ) {
+            $validator = $validator->max_teams( $config->max_teams );
+            $validator = $validator->teams_per_club( $config->teams_per_club );
+            $validator = $validator->teams_prom_relg( $config->teams_prom_relg, $config->teams_per_club );
+            $validator = $validator->lowest_promotion( $config->lowest_promotion );
+        } elseif ( 'tournament' === $config->type ) {
+            $validator = $validator->num_entries( $config->num_entries );
+        }
+        $validator = $validator->team_ranking( $config->team_ranking );
+        $validator = $validator->point_rule( $config->point_rule );
+        $validator = $validator->scoring( $config->scoring );
+        $validator = $validator->num_sets( $config->num_sets );
+        if ( $competition->is_team_entry ) {
+            $validator = $validator->num_rubbers( $config->num_rubbers );
+        }
+        $validator = $validator->match_date_option( $config->fixed_match_dates);
+        $validator = $validator->fixture_type( $config->home_away );
+        $validator = $validator->round_length( $config->round_length );
+        if ( 'tournament' !== $config->type ) {
+            $validator = $validator->match_day_restriction( $config->match_day_restriction, $config->match_days_allowed, $config->start_time );
+        }
+        $validator = $validator->point_format( $config->point_format );
+        $validator = $validator->point_2_format( $config->point_2_format );
+        $validator = $validator->num_matches_per_page( $config->num_matches_per_page );
+        $return    = $validator->get_details();
+        if ( empty( $validator->error ) ) {
+            $competition->config = $config;
+            $updates             = $competition->set_config( $config );
+            if ( $updates ) {
+                $this->set_message( __( 'Competition config updated', 'racketmanager' ) );
+            } else {
+                $this->set_message( __( 'No updates found', 'racketmanager' ), 'warning' );
+            }
+        } else {
+            $this->set_message( __( 'Errors found', 'racketmanager' ), true );
+        }
+        return $return;
+    }
+    /**
+     * Function to delete events for competition
+     * @return void
+     */
+    private function delete_events(): void {
+        $events = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : null;
+        if ( $events ) {
+            $msg = array();
+            foreach ( $events as $event_id ) {
+                $event = get_event( $event_id );
+                if ( $event ) {
+                    $event->delete();
+                    $msg[] = sprintf( __( '%s has been deleted', 'racketmanager' ), $event->name );
+                }
+            }
+            $message = implode( '<br>', $msg );
+            $this->set_message( $message );
+        } else {
+            $this->set_message( __( 'No events were found to delete', 'racketmanager' ), 'warning' );
+        }
+
     }
     /**
      *
@@ -134,241 +211,205 @@ final class Admin_Competition extends Admin {
      */
     public function display_season_modify_page(): void {
         global $racketmanager;
-        $racketmanager->error_fields   = array();
-        $racketmanager->error_messages = array();
-        if ( ! current_user_can( 'edit_seasons' ) ) {
-            $this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-        } elseif ( isset( $_POST['addSeason'] ) ) {
-            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
-                $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-            } elseif ( isset( $_POST['competition_id'] ) ) {
-                $competition_id = intval( $_POST['competition_id'] );
-                $competition    = get_competition( $competition_id );
-                if ( $competition ) {
-                    $season                            = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    $current_season                    = new stdClass();
-                    $current_season->name              = $season;
-                    $current_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-                    $current_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
-                    $current_season->date_open         = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
-                    $current_season->date_closing      = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
-                    $current_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
-                    $current_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-                    $current_season->fixed_match_dates = isset( $_POST['fixedMatchDates']) && 'true' === $_POST['fixedMatchDates'];
-                    $current_season->home_away         = isset( $_POST['homeAway']) && 'true' === $_POST['homeAway'];
-                    $current_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
-                    $current_season->max_teams         = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
-                    $current_season->teams_per_club    = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
-                    $current_season->teams_prom_relg   = isset( $_POST['teams_prom_relg'] ) ? intval( $_POST['teams_prom_relg'] ) : null;
-                    $current_season->lowest_promotion  = isset( $_POST['lowest_promotion'] ) ? intval( $_POST['lowest_promotion'] ) : null;
-                    $current_season->num_match_days    = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
-                    $current_season->round_length      = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
-                    $current_season->home_away_diff    = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : 0;
-                    $current_season->filler_weeks      = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : 0;
-                    $current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
-                    $current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
-                    $current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
-                    $current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
-                    $this->set_competition_dates( $current_season, $competition );
-                    if ( $racketmanager->error ) {
-                        $racketmanager->printMessage();
-                    } else {
-                        $racketmanager->set_message( __( 'Season added to competition', 'racketmanager' ) );
-                        $this->schedule_open_activities( $competition->id, $current_season );
+        $edit_mode = true;
+        $validator = new Validator_Config();
+        $validator = $validator->capability( 'edit_seasons' );
+        if ( empty( $validator->error ) ) {
+            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+            $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+            $validator      = $validator->competition( $competition_id );
+            if ( empty( $validator->error ) ) {
+                $competition = get_competition( $competition_id );
+                if ( $season ) {
+                    $validator = $validator->season_set( $season, $competition->seasons );
+                    if ( ! empty( $validator->error ) ) {
+                        $this->set_message( $validator->err_msgs[0], true );
                     }
                 } else {
-                    $racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );
+                    $edit_mode = false;
+                }
+            } else {
+                $this->set_message( $validator->err_msgs[0], true );
+            }
+        } else {
+            $this->set_message( $validator->msg, true );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['addSeason'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-season' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+                $this->show_message();
+            } else {
+                $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+                $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                $validator      = $validator->competition( $competition_id );
+                if ( empty( $validator->error ) ) {
+                    $validator = $validator->season( $season );
+                }
+                if ( ! empty( $validator->error ) ) {
+                    $this->set_message( $validator->err_msgs[0], true );
+                } else {
+                    $current_season = $this->get_season_input( $season );
+                    $validator      = $this->set_competition_dates( $current_season, $competition );
+                    if ( empty( $validator->error ) ) {
+                        $this->schedule_open_activities( $competition->id, $current_season );
+                        $this->set_message( __( 'Season added to competition', 'racketmanager' ) );
+                        $edit_mode = true;
+                    }
                 }
             }
         } elseif ( isset( $_POST['editSeason'] ) ) {
-            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-season' ) ) {
-                $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-            } elseif ( isset( $_POST['competition_id'] ) ) {
-                $competition_id = intval( $_POST['competition_id'] );
-                $competition    = get_competition( $competition_id );
-                if ( $competition ) {
-                    $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    if ( $season ) {
-                        $current_season                    = new stdClass();
-                        $current_season->name              = $season;
-                        $current_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
-                        $current_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
-                        $current_season->date_open         = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
-                        $current_season->date_closing      = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
-                        $current_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
-                        $current_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
-                        $current_season->fixed_match_dates = isset($_POST['fixedMatchDates']) && 'true' === $_POST['fixedMatchDates'];
-                        $current_season->home_away         = isset($_POST['homeAway']) && 'true' === $_POST['homeAway'];
-                        $current_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
-                        $current_season->max_teams         = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
-                        $current_season->teams_per_club    = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
-                        $current_season->teams_prom_relg   = isset( $_POST['teams_prom_relg'] ) ? intval( $_POST['teams_prom_relg'] ) : null;
-                        $current_season->lowest_promotion  = isset( $_POST['lowest_promotion'] ) ? intval( $_POST['lowest_promotion'] ) : null;
-                        $current_season->num_match_days    = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
-                        $current_season->round_length      = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
-                        $current_season->home_away_diff    = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : 0;
-                        $current_season->filler_weeks      = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : 0;
-                        $current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
-                        $current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
-                        $current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
-                        $current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
-                        $this->set_competition_dates( $current_season, $competition );
-                        $this->schedule_open_activities( $competition->id, $current_season );
-                    } else {
-                        $racketmanager->set_message( __( 'Season not found', 'racketmanager' ), true );
-                    }
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-season' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } else {
+                $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+                $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                $validator      = $validator->competition( $competition_id );
+                if ( empty( $validator->error ) ) {
+                    $validator = $validator->season( $season );
+                }
+                if ( ! empty( $validator->error ) ) {
+                    $this->set_message( $validator->err_msgs[0], true );
                 } else {
-                    $racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );
+                    $current_season = $this->get_season_input( $season );
+                    $validator      = $this->set_competition_dates( $current_season, $competition );
+                    if ( empty( $validator->error ) ) {
+                        if ( $validator->updates ) {
+                            $this->set_message( __( 'Season updated', 'racketmanager' ) );
+                        } else {
+                            $this->set_message( __( 'No updates found', 'racketmanager' ), 'warning' );
+                        }
+                    }
                 }
             }
-        } elseif ( isset( $_GET['competition_id'] ) ) {
-            $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition    = get_competition( $competition_id );
-            if ( $competition ) {
-                $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-                if ( $season ) {
-                    $current_season = isset( $competition->seasons[ $season ] ) ? (object) $competition->seasons[ $season ] : null;
-                    if ( $current_season ) {
-                        $fee_competition = 0;
-                        $fee_event       = 0;
-                        $fee_status      = null;
-                        $fee_id          = null;
-                        $charges         = $racketmanager->get_charges(
-                            array(
-                                'competition' => $competition_id,
-                                'season'      => $season,
-                            )
-                        );
-                        switch ( count( $charges ) ) {
-                            case 1:
-                                $fee_competition = $charges[0]->fee_competition;
-                                $fee_event       = $charges[0]->fee_event;
-                                $fee_status      = $charges[0]->status;
-                                $fee_id          = $charges[0]->id;
-                                break;
-                            case 0:
-                                break;
-                            default:
-                                foreach ( $charges as $charge ) {
-                                    $fee_competition += $charge->fee_competition;
-                                    $fee_event       += $charge->fee_event;
-                                    $fee_status       = $charge->status;
-                                }
-                                break;
-                        }
-                        $current_season->fee_competition = $fee_competition;
-                        $current_season->fee_event       = $fee_event;
-                        $current_season->fee_status      = $fee_status;
-                        $current_season->fee_id          = $fee_id;
-                    } else {
-                        $racketmanager->set_message( __( 'Season not found for competition', 'racketmanager' ), true );
+        } else {
+            if ( $season ) {
+                $current_season = isset( $competition->seasons[ $season ] ) ? (object) $competition->seasons[ $season ] : null;
+                if ( $current_season ) {
+                    $fee_competition = 0;
+                    $fee_event       = 0;
+                    $fee_status      = null;
+                    $fee_id          = null;
+                    $charges         = $racketmanager->get_charges(
+                        array(
+                            'competition' => $competition_id,
+                            'season'      => $season,
+                        )
+                    );
+                    switch ( count( $charges ) ) {
+                        case 1:
+                            $fee_competition = $charges[0]->fee_competition;
+                            $fee_event       = $charges[0]->fee_event;
+                            $fee_status      = $charges[0]->status;
+                            $fee_id          = $charges[0]->id;
+                            break;
+                        case 0:
+                            break;
+                        default:
+                            foreach ( $charges as $charge ) {
+                                $fee_competition += $charge->fee_competition;
+                                $fee_event       += $charge->fee_event;
+                                $fee_status       = $charge->status;
+                            }
+                            break;
                     }
+                    $current_season->fee_competition = $fee_competition;
+                    $current_season->fee_event       = $fee_event;
+                    $current_season->fee_status      = $fee_status;
+                    $current_season->fee_id          = $fee_id;
                 } else {
-                    $racketmanager->set_message( __( 'New season', 'racketmanager' ), 'info' );
+                    $this->set_message( __( 'Season not found for competition', 'racketmanager' ), true );
                 }
             } else {
-                $racketmanager->set_message( __( 'Competition not found', 'racketmanager' ), true );
+                $this->set_message( __( 'New season', 'racketmanager' ), 'info' );
             }
         }
-        $racketmanager->printMessage();
-        $clubs = $this->get_clubs(
+        $this->show_message();
+        $seasons = $racketmanager->get_seasons( 'DESC' );
+        $clubs   = $racketmanager->get_clubs(
             array(
                 'type' => 'affiliated',
             )
         );
         require_once RACKETMANAGER_PATH . 'admin/includes/season-edit.php';
     }
+
+    /**
+     * Function to get season input
+     *
+     * @param string $season
+     *
+     * @return object
+     */
+    private function get_season_input( string $season ): object {
+        $current_season                    = new stdClass();
+        $current_season->name              = $season;
+        $current_season->venue             = isset( $_POST['venue'] ) ? intval( $_POST['venue'] ) : null;
+        $current_season->date_end          = isset( $_POST['dateEnd'] ) ? sanitize_text_field( wp_unslash( $_POST['dateEnd'] ) ) : null;
+        $current_season->date_open         = isset( $_POST['dateOpen'] ) ? sanitize_text_field( wp_unslash( $_POST['dateOpen'] ) ) : null;
+        $current_season->date_closing      = isset( $_POST['dateClose'] ) ? sanitize_text_field( wp_unslash( $_POST['dateClose'] ) ) : null;
+        $current_season->date_start        = isset( $_POST['dateStart'] ) ? sanitize_text_field( wp_unslash( $_POST['dateStart'] ) ) : null;
+        $current_season->competition_code  = isset( $_POST['competition_code'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_code'] ) ) : null;
+        $current_season->fixed_match_dates = isset( $_POST['fixedMatchDates']) && 'true' === $_POST['fixedMatchDates'];
+        $current_season->home_away         = isset( $_POST['homeAway']) && 'true' === $_POST['homeAway'];
+        $current_season->grade             = isset( $_POST['grade'] ) ? sanitize_text_field( wp_unslash( $_POST['grade'] ) ) : null;
+        $current_season->max_teams         = isset( $_POST['max_teams'] ) ? intval( $_POST['max_teams'] ) : null;
+        $current_season->teams_per_club    = isset( $_POST['teams_per_club'] ) ? intval( $_POST['teams_per_club'] ) : null;
+        $current_season->teams_prom_relg   = isset( $_POST['teams_prom_relg'] ) ? intval( $_POST['teams_prom_relg'] ) : null;
+        $current_season->lowest_promotion  = isset( $_POST['lowest_promotion'] ) ? intval( $_POST['lowest_promotion'] ) : null;
+        $current_season->num_match_days    = isset( $_POST['num_match_days'] ) ? intval( $_POST['num_match_days'] ) : null;
+        $current_season->round_length      = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
+        $current_season->home_away_diff    = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : 0;
+        $current_season->filler_weeks      = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : 0;
+        $current_season->fee_competition   = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
+        $current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
+        $current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
+        $current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
+        return $current_season;
+    }
     /**
      * Set season dates for competition season function
      *
      * @param object $current_season season details.
      * @param object $competition competition details.
-     * @return void
+     * @return object
      */
-    private function set_competition_dates( object $current_season, object $competition ): void {
-        global $racketmanager;
-        if ( empty( $current_season->name ) ) {
-            $racketmanager->error_fields[]   = 'season';
-            $racketmanager->error_messages[] = __( 'Season not specified', 'racketmanager' );
-        }
-        if ( empty( $current_season->date_open ) ) {
-            $racketmanager->error_messages[] = __( 'Opening date must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'date_open';
-        }
-        if ( empty( $current_season->date_end ) ) {
-            $racketmanager->error_messages[] = __( 'End date must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'date_end';
-        }
-        if ( empty( $current_season->date_start ) ) {
-            $racketmanager->error_messages[] = __( 'Start date must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'date_start';
-        }
-        if ( empty( $current_season->date_closing ) ) {
-            $racketmanager->error_messages[] = __( 'Closing date must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'date_closing';
-        }
+    private function set_competition_dates( object $current_season, object $competition ): object {
+        $return    = new stdClass();
+        $validator = new Validator_Config();
+        $validator = $validator->season( $current_season->name );
+        $validator = $validator->grade( $current_season->grade );
+        $validator = $validator->date( $current_season->date_open, 'open' );
+        $validator = $validator->date( $current_season->date_end, 'end' );
+        $validator = $validator->date( $current_season->date_closing, 'closing' );
+        $validator = $validator->date( $current_season->date_start, 'start' );
         if ( $competition->is_league ) {
-            if ( empty( $current_season->max_teams ) ) {
-                $racketmanager->error_messages[] = __( 'Maximum number of teams must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'max_teams';
-            }
-            if ( empty( $current_season->teams_per_club ) ) {
-                $racketmanager->error_messages[] = __( 'Number of teams per club must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'teams_per_club';
-            }
-            if ( empty( $current_season->teams_prom_relg ) ) {
-                $racketmanager->error_messages[] = __( 'Number of promoted/relegated teams must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'teams_prom_relg';
-            }
-            if ( $current_season->teams_prom_relg > $current_season->teams_per_club ) {
-                $racketmanager->error_messages[] = __( 'Number of promoted/relegated teams must be at most number of teams per club', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'teams_prom_relg';
-            }
-            if ( empty( $current_season->lowest_promotion ) ) {
-                $racketmanager->error_messages[] = __( 'Lowest promotion position must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'lowest_promotion';
-            }
-            if ( empty( $current_season->num_match_days ) ) {
-                $racketmanager->error_messages[] = __( 'Number of match days must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'num_match_days';
-            }
-            if ( is_null( $current_season->home_away_diff ) ) {
-                $racketmanager->error_messages[] = __( 'Difference between fixtures must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'home_away_diff';
-            }
-            if ( is_null( $current_season->filler_weeks ) ) {
-                $racketmanager->error_messages[] = __( 'Number of filler weeks must be set', 'racketmanager' );
-                $racketmanager->error_fields[]   = 'filler_weeks';
-            }
-        } elseif ( empty( $current_season->venue ) ) {
-            $racketmanager->error_messages[] = __( 'Venue must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'venue';
-        }
-        if ( empty( $current_season->round_length ) ) {
-            $racketmanager->error_messages[] = __( 'Round length must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'round_length';
-        }
-        if ( is_null( $current_season->fixed_match_dates ) ) {
-            $racketmanager->error_messages[] = __( 'Match date option must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'fixedMatchDates';
-        }
-        if ( is_null( $current_season->home_away ) ) {
-            $racketmanager->error_messages[] = __( 'Number of legs must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'homeAway';
-        }
-        if ( empty( $current_season->grade ) ) {
-            $racketmanager->error_messages[] = __( 'Grade must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'grade';
-        }
-        if ( empty( $current_season->fee_lead_time ) && ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) ) {
-            $racketmanager->error_messages[] = __( 'Fee lead time must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'feeLeadTime';
-        }
-        if ( empty( $racketmanager->error_fields ) ) {
-            $this->update_competition_season_settings( $current_season, $competition );
+            $validator = $validator->max_teams( $current_season->max_teams );
+            $validator = $validator->teams_per_club( $current_season->teams_per_club );
+            $validator = $validator->teams_prom_relg( $current_season->teams_prom_relg, $current_season->teams_per_club );
+            $validator = $validator->lowest_promotion( $current_season->lowest_promotion );
+            $validator = $validator->num_match_days( $current_season->num_match_days );
         } else {
-            $racketmanager->set_message( __( 'Errors found', 'racketmanager' ), true );
+            $validator = $validator->venue( $current_season->venue );
         }
+        $validator = $validator->match_date_option( $current_season->fixed_match_dates);
+        $validator = $validator->fixture_type( $current_season->home_away );
+        $validator = $validator->round_length( $current_season->round_length );
+        $validator = $validator->fixture_gap( $current_season->home_away_diff );
+        $validator = $validator->filler_weeks( $current_season->filler_weeks );
+        $validator = $validator->fees( $current_season->fee_lead_time, $current_season->fee_competition, $current_season->fee_event );
+        if ( empty( $validator->error ) ) {
+            $return->updates = $this->update_competition_season_settings( $current_season, $competition );
+        } else {
+            $return = $validator->get_details();
+            $this->set_message( __( 'Errors found', 'racketmanager' ), true );
+        }
+        return $return;
     }
 
     /**
@@ -377,10 +418,9 @@ final class Admin_Competition extends Admin {
      * @param object $current_season
      * @param object $competition
      *
-     * @return void
+     * @return bool
      */
-    private function update_competition_season_settings( object $current_season, object $competition ): void {
-        global $racketmanager;
+    private function update_competition_season_settings( object $current_season, object $competition ): bool {
         $updates = false;
         if ( ! empty( $current_season->fee_lead_time ) ) {
             $fee_lead_time = $current_season->fee_lead_time * 7;
@@ -392,11 +432,11 @@ final class Admin_Competition extends Admin {
             $charge = get_charge( $current_season->fee_id );
             if ( $charge ) {
                 $charge_update = false;
-                if ( $charge->fee_competition !== $current_season->fee_competition ) {
+                if ( floatval( $charge->fee_competition ) !== $current_season->fee_competition ) {
                     $charge->set_club_fee( $current_season->fee_competition );
                     $charge_update = true;
                 }
-                if ( $charge->fee_event !== $current_season->fee_event ) {
+                if ( floatval( $charge->fee_event ) !== $current_season->fee_event ) {
                     $charge->set_team_fee( $current_season->fee_event );
                     $charge_update = true;
                 }
@@ -496,7 +536,7 @@ final class Admin_Competition extends Admin {
                 if ( ! empty( $match_days_change ) ) {
                     $season['match_dates'] = $this->set_match_dates( $current_season );
                 }
-                $competition->update_season( $season );
+                $updates = $competition->update_season( $season );
                 $events = $competition->get_events();
                 if ( $events ) {
                     $event_season                   = array();
@@ -508,8 +548,6 @@ final class Admin_Competition extends Admin {
                         $event->update_season( $event_season );
                     }
                 }
-            } elseif ( empty( $charge_create ) && empty( $charge_update ) ) {
-                $racketmanager->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
             }
         } else {
             $current_season->match_dates = $this->set_match_dates( $current_season );
@@ -525,8 +563,11 @@ final class Admin_Competition extends Admin {
             $charge->fee_event       = $current_season->fee_event;
             $charge                  = new Charges( $charge );
             $this->schedule_invoice_send( $charge->id );
+            $updates = true;
+        } elseif( ! empty( $charge_update ) ) {
+            $updates = true;
         }
-
+        return $updates;
     }
     /**
      * Set match dates function

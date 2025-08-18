@@ -562,6 +562,21 @@ class Validator {
         return $this;
     }
     /**
+     * Validate venue
+     *
+     * @param int|null $venue venue.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function venue( ?int $venue ): object {
+        if ( empty( $venue ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'venue';
+            $this->err_msgs[] = __( 'Venue is required', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
      * Get validation details
      *
      * @return stdClass

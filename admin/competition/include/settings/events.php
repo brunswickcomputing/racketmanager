@@ -14,7 +14,7 @@ $events   = $competition->get_events();
 ?>
 <div class="mb-3 form-control">
     <form id='events-action' method='post' action='' class='form-control mb-3'>
-        <?php wp_nonce_field( 'racketmanager__events-bulk', 'racketmanager_event_nonce' ); ?>
+        <?php wp_nonce_field( 'racketmanager_events-bulk', 'racketmanager_event_nonce' ); ?>
         <input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
         <div class="row gx-3 mb-3 align-items-center">
             <!-- Bulk Actions -->
@@ -64,5 +64,5 @@ $events   = $competition->get_events();
 </div>
 <div class="mb-3">
     <!-- Add New Event -->
-    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=event&competition_id=<?php echo esc_attr( $competition->id ); ?><?php echo esc_attr( $add_link ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Event', 'racketmanager' ); ?></a>
+    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=event-config&competition_id=<?php echo esc_attr( $competition->id ); ?><?php echo esc_attr( $add_link ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Event', 'racketmanager' ); ?></a>
 </div>

@@ -23,11 +23,11 @@ $tab_name = 'display';
                     <div class="col-6">
                         <div class="form-floating">
                             <?php
-                            if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'point_format', $racketmanager->error_fields, true ) ) ) {
+                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'point_format', $validator->err_flds, true ) ) ) {
                                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                                 $is_invalid = true;
-                                $msg_id     = array_search( 'point_format', $racketmanager->error_fields, true );
-                                $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                                $msg_id     = array_search( 'point_format', $validator->err_flds, true );
+                                $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
                             ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format" id="point_format" >
@@ -55,24 +55,24 @@ $tab_name = 'display';
                     <div class="col-6">
                         <div class="form-floating">
                             <?php
-                            if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'point_format2', $racketmanager->error_fields, true ) ) ) {
+                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'point_2_format', $validator->err_flds, true ) ) ) {
                                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                                 $is_invalid = true;
-                                $msg_id     = array_search( 'point_format2', $racketmanager->error_fields, true );
-                                $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                                $msg_id     = array_search( 'point_2_format', $validator->err_flds, true );
+                                $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
                             ?>
-                            <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format2" id="point_format2" >
-                                <option disabled <?php selected( null, empty( $competition->config->point_format2 ) ? null : $competition->config->point_format2 ); ?>><?php esc_html_e( 'Select point format 2', 'racketmanager' ); ?></option>
+                            <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_2_format" id="point_2_format" >
+                                <option disabled <?php selected( null, empty( $competition->config->point_2_format ) ? null : $competition->config->point_2_format ); ?>><?php esc_html_e( 'Select point 2 format', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $point_formats as $point_format => $desc ) {
                                     ?>
-                                    <option value="<?php echo esc_html( $point_format ); ?>" <?php selected( $point_format, empty( $competition->config->point_format2 ) ? null : $competition->config->point_format2 ); ?>><?php echo esc_html( $desc ); ?></option>
+                                    <option value="<?php echo esc_html( $point_format ); ?>" <?php selected( $point_format, empty( $competition->config->point_2_format ) ? null : $competition->config->point_2_format ); ?>><?php echo esc_html( $desc ); ?></option>
                                     <?php
                                 }
                                 ?>
                             </select>
-                            <label for="point_format2" class="form-label"><?php esc_html_e( 'Point format 2', 'racketmanager' ); ?></label>
+                            <label for="point_2_format" class="form-label"><?php esc_html_e( 'Point 2 format', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
                                 ?>
@@ -88,11 +88,11 @@ $tab_name = 'display';
             </div>
             <div class="form-floating mb-3">
                 <?php
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_matches_per_page', $racketmanager->error_fields, true ) ) ) {
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_matches_per_page', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'num_matches_per_page', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'num_matches_per_page', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo isset( $competition->config->num_matches_per_page ) ? esc_html( $competition->config->num_matches_per_page ) : null; ?>" />
@@ -111,11 +111,11 @@ $tab_name = 'display';
         <div class="col-md-6">
             <?php
             $standings_options = Util::get_standings_display_options();
-            if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'standings_option', $racketmanager->error_fields, true ) ) ) {
+            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'standings_option', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
-                $msg_id     = array_search( 'standings_option', $racketmanager->error_fields, true );
-                $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                $msg_id     = array_search( 'standings_option', $validator->err_flds, true );
+                $msg        = $validator->err_msgs[$msg_id] ?? null;
             }
             ?>
             <legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></legend>

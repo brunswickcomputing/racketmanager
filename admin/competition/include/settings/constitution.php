@@ -21,11 +21,11 @@ $msg        = null;
             <div class="col-md-6 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'max_teams', $racketmanager->error_fields, true ) ) ) {
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'max_teams', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'max_teams', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'max_teams', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->max_teams ) ? esc_html( $competition->config->max_teams ) : null; ?>" />
@@ -44,11 +44,11 @@ $msg        = null;
             <div class="col-md-6">
                 <div class="form-floating">
                     <?php
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'teams_per_club', $racketmanager->error_fields, true ) ) ) {
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'teams_per_club', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'teams_per_club', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'teams_per_club', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_per_club" id="teams_per_club" placeholder="<?php esc_html_e( 'Club teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->teams_per_club ) ? esc_html( $competition->config->teams_per_club ) : null; ?>" />
@@ -73,11 +73,11 @@ $msg        = null;
             <div class="col-md-6 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_entries', $racketmanager->error_fields, true ) ) ) {
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_entries', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'num_entries', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'num_entries', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" placeholder="<?php esc_html_e( 'Max number of entries', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->num_entries ) ? esc_html( $competition->config->num_entries ) : null; ?>" />
@@ -105,11 +105,11 @@ $msg        = null;
             <div class="col-md-6 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'teams_prom_relg', $racketmanager->error_fields, true ) ) ) {
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'teams_prom_relg', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'teams_prom_relg', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'teams_prom_relg', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_prom_relg" id="teams_prom_relg" placeholder="<?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->teams_prom_relg ) ? esc_html( $competition->config->teams_prom_relg ) : null; ?>" />
@@ -128,11 +128,11 @@ $msg        = null;
             <div class="col-md-6">
                 <div class="form-floating">
                     <?php
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'lowest_promotion', $racketmanager->error_fields, true ) ) ) {
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'lowest_promotion', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'lowest_promotion', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'lowest_promotion', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="lowest_promotion" id="lowest_promotion" placeholder="<?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->lowest_promotion ) ? esc_html( $competition->config->lowest_promotion ) : null; ?>" />
@@ -158,11 +158,11 @@ $msg        = null;
             <div class="form-floating">
                 <?php
                 $ranking_types = Util::get_ranking_types();
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'team_ranking', $racketmanager->error_fields, true ) ) ) {
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'team_ranking', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'team_ranking', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'team_ranking', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="team_ranking" id="team_ranking" >
@@ -194,11 +194,11 @@ $msg        = null;
             <div class="form-floating">
                 <?php
                 $point_rules = Util::get_point_rules();
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'point_rule', $racketmanager->error_fields, true ) ) ) {
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'point_rule', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'point_rule', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'point_rule', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_rule" id="point_rule" >

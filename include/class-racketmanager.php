@@ -760,6 +760,7 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-validator-entry-form.php';
         require_once RACKETMANAGER_PATH . 'include/class-validator-match.php';
         require_once RACKETMANAGER_PATH . 'include/class-validator-plan.php';
+        require_once RACKETMANAGER_PATH . 'include/class-validator-config.php';
         require_once RACKETMANAGER_PATH . 'include/class-exporter.php';
         require_once RACKETMANAGER_PATH . 'include/class-results-report.php';
         require_once RACKETMANAGER_PATH . 'include/class-results-checker.php';

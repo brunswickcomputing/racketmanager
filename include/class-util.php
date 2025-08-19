@@ -1100,7 +1100,7 @@ class Util {
     public static function search_string( array $search_terms ) : string {
         $search = '';
         if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
+            $search = ' AND ' . implode( ' AND ', $search_terms );
         }
         return $search;
     }

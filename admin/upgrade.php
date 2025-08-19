@@ -131,6 +131,26 @@ function racketmanager_upgrade(): void {
             }
         }
     }
+    if ( version_compare( $installed, '9.2.3', '<' ) ) {
+        echo esc_html__( 'starting 9.2.3 upgrade', 'racketmanager' ) . "<br />\n";
+        $events = $racketmanager->get_events();
+        foreach ( $events as $event ) {
+            $update = false;
+            if ( isset( $event->settings['point_format2'] ) ) {
+                unset( $event->settings['point_format2'] );
+                $update = true;
+            }
+            if ( $update ) {
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "UPDATE {$wpdb->racketmanager_events} SET `settings` = %s WHERE `id` = %d",
+                        maybe_serialize( $event->settings ),
+                        $event->id
+                    )
+                );
+            }
+        }
+    }
     /*
     * Update version and dbversion
     */

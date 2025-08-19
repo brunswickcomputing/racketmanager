@@ -819,7 +819,7 @@ final class Player {
         $search        = Util::search_string( $search_terms );
         $sql           = "SELECT `club_id`, `created_date`, `removed_date`, cp.`id` as `club_player_id` FROM $wpdb->racketmanager_club_players cp, $wpdb->racketmanager_clubs c WHERE cp.`club_id` = c.`id` AND `player_id` = %d";
         if ( '' !== $search ) {
-            $sql .= " AND $search";
+            $sql .= " $search";
         }
         $sql = $wpdb->prepare($sql, $search_args );
 

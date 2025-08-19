@@ -264,7 +264,7 @@ final class Validator_Config extends Validator {
      * @return object $validation updated validation object.
      */
     public function match_date_option( ?bool $match_date_option ): object {
-        if ( ! $match_date_option ) {
+        if ( is_null( $match_date_option ) ) {
             $this->error      = true;
             $this->err_flds[] = 'fixed_match_dates';
             $this->err_msgs[] = __( 'Match date option must be set', 'racketmanager' );
@@ -281,7 +281,7 @@ final class Validator_Config extends Validator {
      * @return object $validation updated validation object.
      */
     public function fixture_type( ?bool $fixture_type ): object {
-        if ( ! $fixture_type ) {
+        if ( is_null( $fixture_type ) ) {
             $this->error      = true;
             $this->err_flds[] = 'home_away';
             $this->err_msgs[] = __( 'Fixture types must be set', 'racketmanager' );

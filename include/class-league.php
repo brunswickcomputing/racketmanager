@@ -1067,6 +1067,7 @@ class League {
             $data = end( $this->event->seasons );
         }
         if ( ! $data ) {
+            $data                   = array();
             $data['name']           = '';
             $data['num_match_days'] = 0;
         }

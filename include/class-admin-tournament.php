@@ -51,7 +51,7 @@ final class Admin_Tournament extends Admin_Championship {
             $this->display_teams_list();
         } elseif ( 'config' === $view ) {
             $this->admin_competition->display_config_page();
-        } elseif ( 'event' === $view ) {
+        } elseif ( 'event-config' === $view ) {
             $this->admin_event->display_config_page();
         } elseif ( 'team' === $view ) {
             $this->admin_club->display_team_page();
@@ -290,8 +290,9 @@ final class Admin_Tournament extends Admin_Championship {
             if ( $tournament_id ) {
                 $tournament = get_tournament( $tournament_id );
                 if ( $tournament ) {
-                    $match_dates = $tournament->competition->seasons[ $season ]['match_dates'] ?? array();
+                    $match_dates = $tournament->competition->seasons[ $season ]['match_dates'] ?? null;
                     if ( empty( $match_dates ) ) {
+                        $match_dates  = array();
                         $match_date   = null;
                         $round_length = $tournament->competition->round_length ?? 7;
                         $i            = 0;

@@ -522,7 +522,7 @@ class Ajax_Frontend extends Ajax {
 			$validator = $validator->logged_in_entry();
 		} else {
 			$season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
-			$competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
+			$competition_id = isset( $_POST['competitionId'] ) ? intval( $_POST['competitionId'] ) : null;
 			$validator      = $validator->competition( $competition_id );
 			$club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
 			$validator      = $validator->club( $club_id );

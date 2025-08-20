@@ -44,9 +44,8 @@ final class Admin_Competition extends Admin_Display {
         if ( $tournament ) {
             $tournament = get_tournament( $tournament );
         }
-        $competition->config = (object) $competition->settings;
-        $competition->config->age_group = $competition->age_group;
         if ( isset( $_POST['updateCompetitionConfig'] ) ) {
+            $competition->config = $this->get_config_input();
             $validator = $this->handle_config_update( $competition );
         } elseif ( isset( $_POST['doActionEvent'] ) ) {
             $validator = new Validator();
@@ -59,6 +58,9 @@ final class Admin_Competition extends Admin_Display {
                 $tab = 'events';
                 $this->set_message( __( 'No action specified', 'racketmanager' ), 'warning' );
             }
+        } else {
+            $competition->config            = (object) $competition->settings;
+            $competition->config->age_group = $competition->age_group;
         }
         $this->show_message();
         if ( empty( $tab ) ) {
@@ -78,28 +80,7 @@ final class Admin_Competition extends Admin_Display {
         );
         require_once RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
     }
-    /**
-     * Function to handle competition config update
-     *
-     * @param object $competition
-     *
-     * @return object
-     */
-    private function handle_config_update( object $competition ): object {
-        $validator = new Validator_Config();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-competition-config' );
-        if ( empty( $validator->error ) ) {
-            $competition_id_passed = isset( $_POST['competition_id'] ) ?  intval( $_POST['competition_id'] ) : null;
-            $validator             = $validator->compare( $competition_id_passed, $competition->id );
-        }
-        if ( ! empty( $validator->error ) ) {
-            if ( empty( $validator->msg ) ) {
-                $msg = $validator->err_msgs[0];
-            } else {
-                $msg = $validator->msg;
-            }
-            $this->set_message( $msg, true );
-        }
+    private function get_config_input(): object {
         $config                               = new stdClass();
         $config->name                         = isset( $_POST['competition_title'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_title'] ) ) : null;
         $config->sport                        = isset( $_POST['sport'] ) ? sanitize_text_field( wp_unslash( $_POST['sport'] ) ) : null;
@@ -139,6 +120,31 @@ final class Admin_Competition extends Admin_Display {
         $config->rules                        = isset( $_POST['rules'] ) ? wp_unslash( $_POST['rules'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $config->standings                    = isset( $_POST['standings'] ) ? wp_unslash( $_POST['standings'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $config->num_courts_available         = isset( $_POST['num_courts_available'] ) ? wp_unslash( $_POST['num_courts_available'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        return $config;
+    }
+    /**
+     * Function to handle competition config update
+     *
+     * @param object $competition
+     *
+     * @return object
+     */
+    private function handle_config_update( object $competition ): object {
+        $validator = new Validator_Config();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-competition-config' );
+        if ( empty( $validator->error ) ) {
+            $competition_id_passed = isset( $_POST['competition_id'] ) ?  intval( $_POST['competition_id'] ) : null;
+            $validator             = $validator->compare( $competition_id_passed, $competition->id );
+        }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $msg = $validator->err_msgs[0];
+            } else {
+                $msg = $validator->msg;
+            }
+            $this->set_message( $msg, true );
+        }
+        $config    = $competition->config;
         $validator = $validator->name( $config->name );
         $validator = $validator->sport( $config->sport );
         $validator = $validator->competition_type( $config->type );

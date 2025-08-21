@@ -30,7 +30,7 @@ global $racketmanager;
         </div>
     </div>
 
-    <?php $this->printMessage(); ?>
+    <?php $this->show_message(); ?>
     <div id="">
         <form id='schedule-filter' method='post' action='' class='form-control mb-3'>
             <?php wp_nonce_field( 'racketmanager_schedule-matches', 'racketmanager_nonce' ); ?>

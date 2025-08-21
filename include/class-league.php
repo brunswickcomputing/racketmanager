@@ -905,7 +905,7 @@ class League {
             $this->update_standings( $season );
         }
         if ( ! $this->is_championship ) {
-            $this->notify_league_team_withdrawn( $team_id );
+            $this->notify_league_team_withdrawn( $team_id, $season );
         }
     }
 

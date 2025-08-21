@@ -1675,7 +1675,7 @@ class League {
             $team->contactno    = get_user_meta( $captain->ID, 'contactno', true );
             $team->contactemail = $captain->user_email;
         } else {
-            $team->captain_id   = '';
+            $team->captain_id   = 0;
             $team->captain      = '';
             $team->contactno    = '';
             $team->contactemail = '';

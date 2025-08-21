@@ -735,7 +735,7 @@ final class Admin_League extends Admin_Display {
      * @return object $validation
      */
     private function validate_schedule( array $events ): object {
-        global $wpdb;
+        global $racketmanager, $wpdb;
 
         $validation          = new stdClass();
         $validation->success = true;
@@ -746,7 +746,7 @@ final class Admin_League extends Admin_Display {
         foreach ( $events as $event_id ) {
             $event       = get_event( $event_id );
             $season      = $event->get_season();
-            $match_count = $this->get_matches(
+            $match_count = $racketmanager->get_matches(
                 array(
                     'count'    => true,
                     'event_id' => $event->id,

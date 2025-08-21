@@ -409,6 +409,12 @@ final class League_Team {
      */
     public string $league;
     /**
+     * League status variable
+     *
+     * @var string
+     */
+    public string $league_status;
+    /**
      * Get instance function
      *
      * @param int $league_team_id league team id.

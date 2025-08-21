@@ -339,7 +339,6 @@ class Ajax_Admin extends Ajax {
         if ( ! isset( $return->error ) ) {
             $event_id          = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
             $event             = get_event( $event_id );
-            $season            = $event->current_season['name'];
             $message_sent      = false;
             $return            = array();
             $from_email        = $racketmanager->get_confirmation_email( $event->competition->type );
@@ -371,7 +370,7 @@ class Ajax_Admin extends Ajax {
                             array(
                                 'competition'   => $event->name,
                                 'captain'       => $team->captain,
-                                'season'        => $season,
+                                'season'        => $team->season,
                                 'matches'       => $matches,
                                 'team'          => $team,
                                 'action_url'    => $action_url,

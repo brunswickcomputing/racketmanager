@@ -554,12 +554,12 @@ final class Admin_League extends Admin_Display {
             }
             if ( isset( $_POST['actionSchedule'] ) ) {
                 if ( 'schedule' === $_POST['actionSchedule'] ) {
-                    $events = sanitize_text_field( $_POST['event'] ) ?? array();
+                    $events = wp_unslash( $_POST['event'] ) ?? array();
                     if ( $events ) {
                         $this->schedule_league_matches( $events );
                     }
                 } elseif ( 'delete' === $_POST['actionSchedule'] ) {
-                    $events = sanitize_text_field( $_POST['event'] ) ?? array();
+                    $events = wp_unslash( $_POST['event'] ) ?? array();
                     if ( $events ) {
                         foreach ( $events as $event_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                             $this->delete_event_matches( $event_id );

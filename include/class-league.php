@@ -3012,7 +3012,7 @@ class League {
         foreach ( $schedule_teams as $team ) {
             if ( ! $team->group ) {
                 $group = $refs[0];
-                $racketmanager->set_table_group( $group, $team->table_id );
+                Util::set_table_group( $group, $team->table_id );
                 array_splice( $refs, 0, 1 );
             }
         }

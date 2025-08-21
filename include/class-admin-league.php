@@ -954,8 +954,8 @@ final class Admin_League extends Admin_Display {
                             }
                         }
                         if ( false !== $alt_found ) {
-                            $this->set_table_group( $ref, $table1 );
-                            $this->set_table_group( $alt_ref, $table2 );
+                            Util::set_table_group( $ref, $table1 );
+                            Util::set_table_group( $alt_ref, $table2 );
                         } else {
                             $validation->success = false;
                             /* translators: %1$d: league %2$d team 1 %2$d team 2 */
@@ -1062,8 +1062,8 @@ final class Admin_League extends Admin_Display {
                                 $alt_found = in_array(intval($ref), $refs, true);
                             }
                             if ( false !== $alt_found ) {
-                                $this->set_table_group( $ref, $table1 );
-                                $this->set_table_group( $alt_ref, $table2 );
+                                Util::set_table_group( $ref, $table1 );
+                                Util::set_table_group( $alt_ref, $table2 );
                             } else {
                                 $validation->success = false;
                                 $league              = get_league( $league1 );
@@ -1081,8 +1081,8 @@ final class Admin_League extends Admin_Display {
                                 }
                                 $alt_found = in_array(intval($ref), $refs, true);
                                 if ( false !== $alt_found ) {
-                                    $this->set_table_group( $ref, $table1 );
-                                    $this->set_table_group( $alt_ref, $table2 );
+                                    Util::set_table_group( $ref, $table1 );
+                                    Util::set_table_group( $alt_ref, $table2 );
                                 } else {
                                     $validation->success = false;
                                     $league              = get_league( $league1 );
@@ -1101,8 +1101,8 @@ final class Admin_League extends Admin_Display {
                                     $alt_found = in_array(intval($alt_ref), $alt_refs, true);
                                     if ( false !== $alt_found ) {
                                         $ref_set = true;
-                                        $this->set_table_group( $ref, $table1 );
-                                        $this->set_table_group( $alt_ref, $table2 );
+                                        Util::set_table_group( $ref, $table1 );
+                                        Util::set_table_group( $alt_ref, $table2 );
                                         break;
                                     }
                                 }
@@ -1129,23 +1129,6 @@ final class Admin_League extends Admin_Display {
         return $validation;
     }
 
-    /**
-     * Set table group
-     *
-     * @param string $group group.
-     * @param integer $id id.
-     */
-    public function set_table_group( string $group, int $id ): void {
-        global $wpdb;
-
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_table SET `group` = %s WHERE `id` = %d",
-                $group,
-                $id
-            )
-        );
-    }
 
     /**
      * Set get table groups

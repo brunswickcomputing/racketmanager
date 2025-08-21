@@ -1104,4 +1104,21 @@ class Util {
         }
         return $search;
     }
+    /**
+     * Set table group
+     *
+     * @param string $group group.
+     * @param integer $id id.
+     */
+    public static function set_table_group( string $group, int $id ): void {
+        global $wpdb;
+
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_table SET `group` = %s WHERE `id` = %d",
+                $group,
+                $id
+            )
+        );
+    }
 }

@@ -746,32 +746,40 @@ class Util {
     /**
      * Get match status values function
      *
+     * @param string $age_range age range.
      * @return array
      */
-    public static function get_age_limits(): array {
+    public static function get_age_limits( string $age_range = null ): array {
         $age_limits         = array();
-        $age_limits['open'] = __( 'Open', 'racketmanager' );
-        $age_limits['30']   = __( 'Over 30', 'racketmanager' );
-        $age_limits['35']   = __( 'Over 35', 'racketmanager' );
-        $age_limits['40']   = __( 'Over 40', 'racketmanager' );
-        $age_limits['45']   = __( 'Over 45', 'racketmanager' );
-        $age_limits['50']   = __( 'Over 50', 'racketmanager' );
-        $age_limits['55']   = __( 'Over 55', 'racketmanager' );
-        $age_limits['60']   = __( 'Over 60', 'racketmanager' );
-        $age_limits['65']   = __( 'Over 65', 'racketmanager' );
-        $age_limits['70']   = __( 'Over 70', 'racketmanager' );
-        $age_limits['75']   = __( 'Over 75', 'racketmanager' );
-        $age_limits['80']   = __( 'Over 80', 'racketmanager' );
-        $age_limits['85']   = __( 'Over 85', 'racketmanager' );
-        $age_limits['8']    = __( 'Under 8', 'racketmanager' );
-        $age_limits['9']    = __( 'Under 9', 'racketmanager' );
-        $age_limits['10']   = __( 'Under 10', 'racketmanager' );
-        $age_limits['11']   = __( 'Under 11', 'racketmanager' );
-        $age_limits['12']   = __( 'Under 12', 'racketmanager' );
-        $age_limits['14']   = __( 'Under 14', 'racketmanager' );
-        $age_limits['16']   = __( 'Under 16', 'racketmanager' );
-        $age_limits['18']   = __( 'Under 18', 'racketmanager' );
-        $age_limits['21']   = __( 'Under 21', 'racketmanager' );
+        if ( empty( $age_range ) || 'open' == $age_range ) {
+            $age_limits['open'] = __( 'Open', 'racketmanager' );
+        }
+        if ( empty( $age_range ) || 'junior' == $age_range ) {
+            $age_limits['8']    = __( 'Under 8', 'racketmanager' );
+            $age_limits['9']    = __( 'Under 9', 'racketmanager' );
+            $age_limits['10']   = __( 'Under 10', 'racketmanager' );
+            $age_limits['11']   = __( 'Under 11', 'racketmanager' );
+            $age_limits['12']   = __( 'Under 12', 'racketmanager' );
+            $age_limits['14']   = __( 'Under 14', 'racketmanager' );
+            $age_limits['16']   = __( 'Under 16', 'racketmanager' );
+            $age_limits['18']   = __( 'Under 18', 'racketmanager' );
+            $age_limits['21']   = __( 'Under 21', 'racketmanager' );
+
+        }
+        if ( empty( $age_range ) || 'senior' == $age_range ) {
+            $age_limits['30']   = __( 'Over 30', 'racketmanager' );
+            $age_limits['35']   = __( 'Over 35', 'racketmanager' );
+            $age_limits['40']   = __( 'Over 40', 'racketmanager' );
+            $age_limits['45']   = __( 'Over 45', 'racketmanager' );
+            $age_limits['50']   = __( 'Over 50', 'racketmanager' );
+            $age_limits['55']   = __( 'Over 55', 'racketmanager' );
+            $age_limits['60']   = __( 'Over 60', 'racketmanager' );
+            $age_limits['65']   = __( 'Over 65', 'racketmanager' );
+            $age_limits['70']   = __( 'Over 70', 'racketmanager' );
+            $age_limits['75']   = __( 'Over 75', 'racketmanager' );
+            $age_limits['80']   = __( 'Over 80', 'racketmanager' );
+            $age_limits['85']   = __( 'Over 85', 'racketmanager' );
+        }
         return $age_limits;
     }
     /**

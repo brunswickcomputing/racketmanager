@@ -46,7 +46,7 @@ final class Admin_Competition extends Admin_Display {
         }
         if ( isset( $_POST['updateCompetitionConfig'] ) ) {
             $competition->config = $this->get_config_input();
-            $validator = $this->handle_config_update( $competition );
+            $validator           = $this->handle_config_update( $competition );
         } elseif ( isset( $_POST['doActionEvent'] ) ) {
             $validator = new Validator();
             $validator = $validator->check_security_token( 'racketmanager_event_nonce', 'racketmanager_events-bulk' );

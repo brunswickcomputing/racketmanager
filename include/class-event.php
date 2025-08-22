@@ -2045,7 +2045,11 @@ class Event {
         if ( $this->competition->is_league ) {
             $curr_season = end( $seasons );
             $prev_season = prev( $seasons );
-            $teams       = $this->build_constitution( array( 'season' => $prev_season['name'] ) );
+            if ( $prev_season ) {
+                $teams = $this->build_constitution( array( 'season' => $prev_season['name'] ) );
+            } else {
+                $teams = array();
+            }
             $status      = '';
             $profile     = '0';
             $rank        = 1;

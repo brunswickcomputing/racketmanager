@@ -19,12 +19,13 @@ $tab_name = 'fixtures';
         <div class="row gx-3 mb-3">
             <div class="col-md-3 mb-3 mb-md-0">
                 <?php
+                $is_invalid = false;
                 $match_days = Util::get_match_days();
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'fixed_match_dates', $racketmanager->error_fields, true ) ) ) {
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'fixed_match_dates', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'fixed_match_dates', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'fixed_match_dates', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Match days allowed', 'racketmanager' ); ?></legend>
@@ -43,8 +44,6 @@ $tab_name = 'fixtures';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -57,11 +56,12 @@ $tab_name = 'fixtures';
             <legend class="<?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>"><?php esc_html_e( 'Main fixture date offset', 'racketmanager' ); ?></legend>
             <div class="form-floating">
                 <?php
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'offset', $racketmanager->error_fields, true ) ) ) {
+                $is_invalid = false;
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'offset', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'offset', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'offset', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='offset' id='offset'>
@@ -75,8 +75,6 @@ $tab_name = 'fixtures';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>

@@ -21,11 +21,12 @@ $leagues = $event->get_leagues();
     <div class="row">
         <div class="col-md-3">
             <?php
+            $is_invalid = false;
             if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'primary_league', $racketmanager->error_fields, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
                 $msg_id     = array_search( 'primary_league', $racketmanager->error_fields, true );
-                $msg        = $racketmanager->error_messages[ $msg_id ] ?? null;
+                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             ?>
             <div class="form-floating mb-3">
@@ -46,8 +47,6 @@ $leagues = $event->get_leagues();
                 ?>
                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                 <?php
-                $is_invalid = false;
-                $msg        = null;
             }
             ?>
         </div>

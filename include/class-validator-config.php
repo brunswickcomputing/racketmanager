@@ -29,7 +29,21 @@ final class Validator_Config extends Validator {
 
         return $this;
     }
-
+    /**
+     * Validate type
+     *
+     * @param string|null $type type.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function type( ?string $type ): object {
+        if ( ! $type ) {
+            $this->error      = true;
+            $this->err_flds[] = 'type';
+            $this->err_msgs[] = __( 'Type must be specified', 'racketmanager' );
+        }
+        return $this;
+    }
     /**
      * Validate sport
      *
@@ -512,6 +526,66 @@ final class Validator_Config extends Validator {
             $this->error      = true;
             $this->err_flds[] = 'feeLeadTime';
             $this->err_msgs[] = __( 'Fee lead time must be set', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
+     * Validate age limit
+     *
+     * @param string|null $age_limit age limit.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function age_limit( ?string $age_limit ): object {
+        if ( ! $age_limit ) {
+            $this->error      = true;
+            $this->err_flds[] = 'age_limit';
+            $this->err_msgs[] = __( 'Age limit must be specified', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
+     * Validate age limit
+     *
+     * @param string|null $age_offset age offset.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function age_offset( ?string $age_offset ): object {
+        if ( is_null( $age_offset ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'age_offset';
+            $this->err_msgs[] = __( 'Age offset must be specified', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
+     * Validate offset
+     *
+     * @param string|null $offset offset.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function offset( ?string $offset ): object {
+        if ( is_null( $offset ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'offset';
+            $this->err_msgs[] = __( 'Offset must be specified', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
+     * Validate primary league
+     *
+     * @param int|null $primary_league primary league.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function primary_league( ?int $primary_league ): object {
+        if ( empty( $primary_league ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'primary_league';
+            $this->err_msgs[] = __( 'Primary league must be specified', 'racketmanager' );
         }
         return $this;
     }

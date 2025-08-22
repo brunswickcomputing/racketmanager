@@ -2270,106 +2270,67 @@ class Event {
      * @return bool
      */
     public function set_config(object $config ): bool {
-        global $racketmanager;
         $updates   = false;
-        if ( empty( $config->name ) ) {
-            $racketmanager->error_messages[] = __( 'Name must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'name';
+        $settings = new stdClass();
+        if ( empty( $this->age_limit ) || $this->age_limit !== $config->age_limit ) {
+            $updates = true;
         }
-        if ( empty( $config->type ) ) {
-            $racketmanager->error_messages[] = __( 'Type must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'type';
+        $settings->age_limit = $config->age_limit;
+        if ( empty( $this->age_offset ) || $this->age_offset !== $config->age_offset ) {
+            $updates = true;
         }
-        if ( empty( $config->age_limit ) ) {
-            $racketmanager->error_messages[] = __( 'Age limit must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'age_limit';
+        $settings->age_offset = $config->age_offset;
+        if ( empty( $this->scoring ) || $this->scoring !== $config->scoring ) {
+            $updates = true;
         }
-        if ( is_null( $config->age_offset ) ) {
-            $racketmanager->error_messages[] = __( 'Age offset must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'age_offset';
-        }
-        if ( empty( $config->scoring ) ) {
-            $racketmanager->error_messages[] = __( 'Scoring method must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'scoring';
-        }
-        if ( empty( $config->num_sets ) ) {
-            $racketmanager->error_messages[] = __( 'Number of sets must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'num_sets';
-        }
-        if ( $this->competition->is_team_entry && empty( $config->num_rubbers ) ) {
-            $racketmanager->error_messages[] = __( 'Number of rubbers must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'num_rubbers';
-        }
-        if ( ! $this->competition->is_tournament && is_null( $config->offset ) ) {
-            $racketmanager->error_messages[] = __( 'Offset must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'offset';
-        }
-        if ( $this->competition->is_championship && empty( $config->primary_league ) ) {
-            $racketmanager->error_messages[] = __( 'Primary league must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'primary_league';
-        }
-        if ( empty( $racketmanager->error_fields ) ) {
-            $settings = new stdClass();
-            if ( empty( $this->age_limit ) || $this->age_limit !== $config->age_limit ) {
+        $settings->scoring = $config->scoring;
+        if ( ! $this->competition->is_tournament ) {
+            if ( empty( $this->offset ) || $this->offset !== $config->offset ) {
                 $updates = true;
             }
-            $settings->age_limit = $config->age_limit;
-            if ( empty( $this->age_offset ) || $this->age_offset !== $config->age_offset ) {
+            $settings->offset = $config->offset;
+        }
+        if ( $this->competition->is_championship ) {
+            if ( empty( $this->primary_league ) || $this->primary_league !== $config->primary_league ) {
                 $updates = true;
             }
-            $settings->age_offset = $config->age_offset;
-            if ( empty( $this->scoring ) || $this->scoring !== $config->scoring ) {
-                $updates = true;
-            }
-            $settings->scoring = $config->scoring;
-            if ( ! $this->competition->is_tournament ) {
-                if ( empty( $this->offset ) || $this->offset !== $config->offset ) {
+            $settings->primary_league = $config->primary_league;
+        }
+        if ( $this->competition->is_league ) {
+            $match_days = Util::get_match_days();
+            foreach ( $match_days as $match_day => $value ) {
+                $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
+                if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
                     $updates = true;
                 }
-                $settings->offset = $config->offset;
             }
-            if ( $this->competition->is_championship ) {
-                if ( empty( $this->primary_league ) || $this->primary_league !== $config->primary_league ) {
-                    $updates = true;
-                }
-                $settings->primary_league = $config->primary_league;
-            }
-            if ( $this->competition->is_league ) {
-                $match_days = Util::get_match_days();
-                foreach ( $match_days as $match_day => $value ) {
-                    $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
-                    if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
-                        $updates = true;
-                    }
-                }
-                $settings->match_days_allowed = $config->match_days_allowed;
-            }
-            if ( $this->competition->is_team_entry ) {
-                if ( empty( $this->num_rubbers ) || $this->num_rubbers !== $config->num_rubbers ) {
-                    $updates = true;
-                }
-                $this->num_rubbers = $config->num_rubbers;
-                if ( empty( $this->reverse_rubbers ) || $this->reverse_rubbers !== $config->reverse_rubbers ) {
-                    $updates = true;
-                }
-                $settings->reverse_rubbers = $config->reverse_rubbers;
-            }
-            if ( empty( $this->num_sets ) || $this->num_sets !== $config->num_sets ) {
+            $settings->match_days_allowed = $config->match_days_allowed;
+        }
+        if ( $this->competition->is_team_entry ) {
+            if ( empty( $this->num_rubbers ) || $this->num_rubbers !== $config->num_rubbers ) {
                 $updates = true;
             }
-            $this->num_sets = $config->num_sets;
-            if ( empty( $this->type ) || $this->type !== $config->type ) {
+            $this->num_rubbers = $config->num_rubbers;
+            if ( empty( $this->reverse_rubbers ) || $this->reverse_rubbers !== $config->reverse_rubbers ) {
                 $updates = true;
             }
-            $this->type = $config->type;
-            if ( $updates ) {
-                $this->settings = (array) $settings;
-                $this->update_settings();
-            }
-            if ( empty( $this->name ) || $this->name !== $config->name ) {
-                $this->set_name( $config->name );
-                $updates = true;
-            }
+            $settings->reverse_rubbers = $config->reverse_rubbers;
+        }
+        if ( empty( $this->num_sets ) || $this->num_sets !== $config->num_sets ) {
+            $updates = true;
+        }
+        $this->num_sets = $config->num_sets;
+        if ( empty( $this->type ) || $this->type !== $config->type ) {
+            $updates = true;
+        }
+        $this->type = $config->type;
+        if ( $updates ) {
+            $this->settings = (array) $settings;
+            $this->update_settings();
+        }
+        if ( empty( $this->name ) || $this->name !== $config->name ) {
+            $this->set_name( $config->name );
+            $updates = true;
         }
         return $updates;
     }

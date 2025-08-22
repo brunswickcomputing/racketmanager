@@ -11,15 +11,15 @@ namespace Racketmanager;
 /** @var object $event */
 /** @var string $season */
 /** @var string $tab */
-if ( empty( $event ) ) {
+/** @var bool $new_event */
+if ( $new_event ) {
     $page_title = __( 'New event config', 'racketmanager' );
 } else {
     $page_title = $event->name . ' - ' . __( 'config', 'racketmanager' );
 }
 if ( empty( $tournament ) ) {
-    if ( empty( $event ) ) {
+    if ( $new_event ) {
         $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ' . __( 'New event', 'racketmanager' );
-
     } else {
         $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $season . '">' . $event->name . '</a>';
     }
@@ -84,7 +84,7 @@ if ( empty( $tournament ) ) {
                 </div>
                 <div class="mb-3">
                     <input type="hidden" name="event_id" value="<?php echo empty( $event->id ) ? null : esc_attr( $event->id ); ?>" />
-                    <button name="<?php echo empty( $event ) ? 'add' : 'update'; ?>EventConfig" class="btn btn-primary"><?php esc_html_e( 'Save Settings', 'racketmanager' ); ?></button>
+                    <button name="<?php echo empty( $new_event ) ? 'update' : 'add'; ?>EventConfig" class="btn btn-primary"><?php esc_html_e( 'Save Settings', 'racketmanager' ); ?></button>
                 </div>
                 <div class="tab-content">
                     <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">

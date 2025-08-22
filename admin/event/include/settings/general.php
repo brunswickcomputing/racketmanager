@@ -16,11 +16,12 @@ $tab_name = 'general';
     <div class="row gx-3 mb-3">
         <div class="form-floating">
             <?php
-            if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'name', $racketmanager->error_fields, true ) ) ) {
+            $is_invalid = false;
+            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'name', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
-                $msg_id     = array_search( 'name', $racketmanager->error_fields, true );
-                $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                $msg_id     = array_search( 'name', $validator->err_flds, true );
+                $msg        = $validator->err_msgs[$msg_id] ?? null;
             }
             ?>
             <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="event_name" id="event_name" value="<?php echo isset( $event->name ) ? esc_html( $event->name ) : null; ?>"  placeholder="<?php esc_html_e( 'Event name', 'racketmanager' ); ?>" />
@@ -30,8 +31,6 @@ $tab_name = 'general';
                 ?>
                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                 <?php
-                $is_invalid = false;
-                $msg        = null;
             }
             ?>
         </div>
@@ -40,12 +39,13 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $types = Util::get_event_types();
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'type', $racketmanager->error_fields, true ) ) ) {
+                $is_invalid = false;
+                $types      = Util::get_event_types();
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'type', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'type', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'type', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type" onchange="Racketmanager.setEventName()">
@@ -64,8 +64,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -73,12 +71,13 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $age_limits = Util::get_age_limits();
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'age_limit', $racketmanager->error_fields, true ) ) ) {
+                $is_invalid = false;
+                $age_limits = Util::get_age_limits( $competition->age_group );
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'age_limit', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'age_limit', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'age_limit', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='age_limit' id='age_limit' onchange="Racketmanager.setEventName()">
@@ -97,8 +96,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -106,11 +103,12 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'age_offset', $racketmanager->error_fields, true ) ) ) {
+                $is_invalid = false;
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'age_offset', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'age_offset', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'age_offset', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_offset" id="age_offset" >
@@ -123,8 +121,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -134,16 +130,17 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
+                $is_invalid    = false;
                 $scoring_types = Util::get_scoring_types();
                 $scoring       = empty( $event->config->scoring ) ? null : $event->config->scoring;
                 if ( empty( $scoring ) ) {
                     $scoring = $competition->scoring ?? null;
                 }
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'scoring', $racketmanager->error_fields, true ) ) ) {
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'scoring', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'scoring', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'scoring', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='scoring' id='scoring'>
@@ -162,8 +159,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -173,15 +168,16 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $num_sets = empty( $event->config->num_sets ) ? null : $event->config->num_sets;
+                $is_invalid = false;
+                $num_sets   = empty( $event->config->num_sets ) ? null : $event->config->num_sets;
                 if ( empty( $num_sets ) ) {
                     $num_sets = $competition->num_sets ?? null;
                 }
-                if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_sets', $racketmanager->error_fields, true ) ) ) {
+                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_sets', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
-                    $msg_id     = array_search( 'num_sets', $racketmanager->error_fields, true );
-                    $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                    $msg_id     = array_search( 'num_sets', $validator->err_flds, true );
+                    $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
                 ?>
                 <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_sets" id="num_sets" value="<?php echo isset( $num_sets ) ? esc_html( $num_sets ) : null; ?>" placeholder="<?php esc_html_e( 'Number of sets', 'racketmanager' ); ?>" />
@@ -191,8 +187,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -211,11 +205,12 @@ $tab_name = 'general';
                     if ( empty( $num_rubbers ) ) {
                         $num_rubbers = $competition->num_rubbers ?? null;
                     }
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'num_rubbers', $racketmanager->error_fields, true ) ) ) {
+                    $is_invalid = false;
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_rubbers', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'num_rubbers', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'num_rubbers', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $num_rubbers ) ? esc_html( $num_rubbers ) : null; ?>" placeholder="<?php esc_html_e( 'Number of rubbers', 'racketmanager' ); ?>" />
@@ -225,8 +220,6 @@ $tab_name = 'general';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -238,11 +231,12 @@ $tab_name = 'general';
                     if ( empty( $reverse_rubbers ) ) {
                         $reverse_rubbers = $competition->reverse_rubbers ?? null;
                     }
-                    if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'reverse_rubbers', $racketmanager->error_fields, true ) ) ) {
+                    $is_invalid = false;
+                    if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'reverse_rubbers', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
-                        $msg_id     = array_search( 'reverse_rubbers', $racketmanager->error_fields, true );
-                        $msg        = $racketmanager->error_messages[$msg_id] ?? null;
+                        $msg_id     = array_search( 'reverse_rubbers', $validator->err_flds, true );
+                        $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
                     <input type="checkbox" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="reverse_rubbers" id="reverse_rubbers" <?php checked( $reverse_rubbers, 1 ); ?> value="1" />
@@ -252,8 +246,6 @@ $tab_name = 'general';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>

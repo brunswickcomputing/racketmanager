@@ -597,23 +597,6 @@ class Admin extends RacketManager {
         }
         return $rs;
     }
-
-    /**
-     * Print formatted message
-     */
-    public function printMessage(): void {
-        if ( ! empty( $this->message ) ) {
-            $alert_class = match ( $this->error ) {
-                'error'   => 'danger',
-                'warning' => 'warning',
-                'info'    => 'info',
-                default   => 'success',
-            };
-            echo show_alert( $this->message, $alert_class ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        }
-        $this->message = '';
-    }
-
     /**
      * Schedule player ratings calculation
      */

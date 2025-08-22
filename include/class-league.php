@@ -3063,8 +3063,8 @@ class League {
         if ( $num_teams & 1 ) {
             ++$num_teams;
         }
-        $Racketmanager_Schedule_Round_Robin = new Schedule_Round_Robin();
-        $rounds                             = $Racketmanager_Schedule_Round_Robin->generate( $num_teams, $num_rounds, $home_away );
+        $schedule_round_robin = new Schedule_Round_Robin();
+        $rounds               = $schedule_round_robin->generate( $num_teams, $num_rounds, $home_away );
         $this->create_match_schedule( $rounds, $teams, $match_dates, $season, $this->event->is_box );
     }
     /**

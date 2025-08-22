@@ -151,8 +151,8 @@ class Admin_Championship extends Admin_Display {
      */
     public function handle_championship_admin_page( object $league = null ): string {
         $validator = new Validator();
-        global $racketmanager, $tab;
         $league = get_league( $league );
+        $tab    = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
         if ( isset( $_POST['action'] ) ) {
             $action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
             if ( 'startFinals' === $action ) {
@@ -163,37 +163,40 @@ class Admin_Championship extends Admin_Display {
                 if ( empty( $validator->error ) ) {
                     $updates = $this->start_final_rounds( $league );
                     if ( $updates ) {
-                        $racketmanager->set_message( __( 'First round started', 'racketmanager' ) );
+                        $this->set_message( __( 'First round started', 'racketmanager' ) );
                     } else {
-                        $racketmanager->set_message( __( 'First round not started', 'racketmanager' ), true );
+                        $this->set_message( __( 'First round not started', 'racketmanager' ), true );
+                        $tab = 'preliminary'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
                     }
-                    $tab = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
                 }
-                $racketmanager->printMessage();
             } elseif ( 'updateFinalResults' === $action ) {
-                if ( isset( $_POST['racketmanager_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_update-finals' ) ) {
-                    if ( current_user_can( 'update_results' ) ) {
-                        $custom      = $_POST['custom'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $matches     = $_POST['matches'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $home_points = $_POST['home_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
-                        $season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-                        $league->championship->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
-                    } else {
-                        $racketmanager->set_message( __( 'You do not have sufficient permissions to access this page.', 'racketmanager' ), true );
+                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_update-finals' );
+                if ( empty( $validator->error ) ) {
+                    $validator = $validator->capability( 'update_results');
+                }
+                if ( empty( $validator->error ) ) {
+                    $custom      = $_POST['custom'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                    $matches     = $_POST['matches'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                    $home_points = $_POST['home_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                    $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                    $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
+                    $season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+                    $league->championship->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
+                }
+                if ( ! empty( $validator->error ) ) {
+                    if ( empty( $validator->msg ) ) {
+                        $validator->msg = __( 'Errors found', 'racketmanager' );
                     }
-                } else {
-                    $racketmanager->set_message( __( 'Security token invalid', 'racketmanager' ), true );
+                    $this->set_message( $validator->msg, true );
                 }
             }
-            $racketmanager->printMessage();
+            $this->show_message();
         }
         if ( count( $league->championship->groups ) > 0 ) {
             $league->set_group( $league->championship->groups[0] );
         }
 
-        return 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+        return $tab; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
     }
     /**
      * Start final rounds

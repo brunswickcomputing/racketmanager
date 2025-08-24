@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.3.0 =
+* UPDATE: rename classes to remove racketmanager from name
+* UPDATE: fix SONARCUBE errors
+
 = 9.2.0 =
 * BUGFIX: check status using correct type
 * BUGFIX: handle login errors correctly

@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.3.1 =
+* BUGFIX: handle null confirmed indicator for match update result
+* BUGFIX: include sport competition and league classes
+
 = 9.3.0 =
 * UPDATE: rename classes to remove racketmanager from name
 * UPDATE: fix SONARCUBE errors

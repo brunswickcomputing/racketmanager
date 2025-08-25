@@ -570,7 +570,7 @@ class Competition {
             if ( ! isset( $competition->sport ) ) {
                 $competition->sport = '';
             }
-            $instance = 'Racketmanager\Racketmanager_Competition_' . ucfirst( $competition->sport );
+            $instance = 'Racketmanager\Competition_' . ucfirst( $competition->sport );
             if ( class_exists( $instance ) ) {
                 $competition = new $instance( $competition );
             } else {

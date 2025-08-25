@@ -1156,13 +1156,13 @@ final class Racketmanager_Match {
      * @param float|null $home_points_input home points.
      * @param float|null $away_points_input away points.
      * @param array|null $custom custom.
-     * @param string $confirmed match status field.
+     * @param string|null $confirmed match status field.
      * @param string|null|int $match_status match status.
      * @param string|null $user_team user team.
      *
      * @return boolean
      */
-    public function update_result( ?float $home_points_input, ?float $away_points_input, ?array $custom, string $confirmed = 'Y', int|string|null $match_status = '', ?string $user_team = null ): bool {
+    public function update_result( ?float $home_points_input, ?float $away_points_input, ?array $custom, ?string $confirmed = 'Y', int|string|null $match_status = '', ?string $user_team = null ): bool {
         $bye            = false;
         $updated        = false;
         $winning_points = $this->league->num_sets_to_win;

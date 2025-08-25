@@ -256,7 +256,7 @@ function get_competition( Competition|int|string $competition = null, ?string $s
         if ( ! isset( $competition->sport ) ) {
             $competition->sport = '';
         }
-        $instance = 'Racketmanager\Racketmanager_Competition_' . ucfirst( $competition->sport );
+        $instance = 'Racketmanager\Competition_' . ucfirst( $competition->sport );
         if ( class_exists( $instance ) ) {
             $_competition = new $instance( $competition );
         } else {
@@ -293,7 +293,7 @@ function get_event( int|string|Event $event = null, string $search_term = 'id' )
         if ( ! isset( $event->competition->sport ) ) {
             $event->competition->sport = '';
         }
-        $instance = 'Racketmanager\Racketmanager_Event_' . ucfirst( $event->competition->sport );
+        $instance = 'Racketmanager\Event_' . ucfirst( $event->competition->sport );
         if ( class_exists( $instance ) ) {
             $_event = new $instance( $event );
         } else {
@@ -328,7 +328,7 @@ function get_league( object|int|string $league = null ): ?League {
         if ( ! isset( $league->sport ) ) {
             $league->sport = '';
         }
-        $instance = 'Racketmanager\Racketmanager_League_' . ucfirst( $league->sport );
+        $instance = 'Racketmanager\League_' . ucfirst( $league->sport );
         if ( class_exists( $instance ) ) {
             $_league = new $instance( $league );
         } else {

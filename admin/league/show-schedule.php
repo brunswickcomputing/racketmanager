@@ -87,15 +87,10 @@ global $racketmanager;
                                 <td><a href="<?php echo esc_html( $event_link ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
                                 <td>
                                     <?php
-                                    if ( ! empty( $match_count ) ) {
+                                    if ( ! empty( $match_count ) && empty( $match_completion_count ) ) {
                                         ?>
-                                        <a class="btn btn-secondary" href="/wp-admin/admin.php?page=racketmanager&amp;subpage=show-event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;view=matches"><?php esc_html_e( 'View matches', 'racketmanager' ); ?></a>
+                                        <button class="btn btn-secondary" onclick="Racketmanager.sendFixtures('<?php echo esc_html( $event->id ); ?>');"><?php esc_html_e( 'Send fixtures', 'racketmanager' ); ?></button>
                                         <?php
-                                        if ( empty( $match_completion_count ) ) {
-                                            ?>
-                                            <button class="btn btn-secondary" onclick="Racketmanager.sendFixtures('<?php echo esc_html( $event->id ); ?>');"><?php esc_html_e( 'Send fixtures', 'racketmanager' ); ?></button>
-                                            <?php
-                                        }
                                     }
                                     ?>
                                 </td>

@@ -69,24 +69,25 @@ final class Admin_League extends Admin_Display {
      * Display leagues page
      */
     public function display_leagues_page(): void {
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
-        } else {
-            $competition_type  = 'league';
-            $type              = '';
-            $season            = '';
-            $standalone        = true;
-            $competition_query = array( 'type' => $competition_type );
-            $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-            require_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
+            return;
         }
+        $competition_type  = 'league';
+        $type              = '';
+        $season            = '';
+        $standalone        = true;
+        $competition_query = array( 'type' => $competition_type );
+        $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
+        require_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
     }
     /**
      * Display season list
      */
     public function display_seasons_page(): void {
-        global $racketmanager;
         $competition = null;
         if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
             $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -100,7 +101,6 @@ final class Admin_League extends Admin_Display {
             } else {
                 $this->set_message( __( 'Competition id not found', 'racketmanager' ), true );
             }
-            $this->show_message();
         } elseif ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $competition    = get_competition( $competition_id );
@@ -140,173 +140,182 @@ final class Admin_League extends Admin_Display {
      */
     public function display_setup_page(): void {
         global $racketmanager;
-        if ( ! current_user_can( 'edit_matches' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_matches' );
+        if (  ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
-        } else {
-            if ( isset( $_POST['action'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add_championship-matches' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                } else {
-                    $msg            = array();
-                    $valid          = true;
-                    $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                    $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    if ( $competition_id ) {
-                        $competition = get_competition( $competition_id );
-                        if ( $competition ) {
-                            $current_season = $competition->seasons[ $season ];
-                            if ( isset( $_POST['rounds'] ) ) {
-                                $rounds = array();
-                                foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                                    if ( empty( $round['match_date'] ) ) {
-                                        /* translators: $s: $round number */
-                                        $msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
-                                        $valid = false;
-                                    } elseif ( ! empty( $next_round_date ) && $round['match_date'] <= $next_round_date ) {
-                                        /* translators: $s: $round number */
-                                        $msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
-                                        $valid = false;
-                                    } else {
-                                        $round_date      = $round['match_date'];
-                                        $rounds[]        = $round_date;
-                                        $next_round_date = $round_date;
-                                    }
-                                }
-                                if ( $valid ) {
-                                    $current_season['match_dates'] = array();
-                                    foreach ( $rounds as $match_date ) {
-                                        $current_season['match_dates'][] = $match_date;
-                                    }
-                                    $seasons            = $competition->seasons;
-                                    $seasons[ $season ] = $current_season;
-                                    $updates            = $competition->update_seasons( $seasons );
-                                    if ( $updates ) {
-                                        $match_dates = array();
-                                        $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
-                                        $events = $competition->get_events();
-                                        foreach ( $events as $competition_event ) {
-                                            $seasons = $competition_event->seasons;
-                                            if ( empty( $competition_event->offset ) ) {
-                                                $match_dates = $current_season['match_dates'];
-                                            } else {
-                                                $i = 0;
-                                                foreach( $current_season['match_dates'] as $match_date ) {
-                                                    $match_dates[ $i ] = Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
-                                                    ++$i;
-                                                }
-                                            }
-                                            $seasons[ $season ]['match_dates'] = $match_dates;
-                                            $updates                           = $competition_event->update_seasons( $seasons );
-                                        }
-                                    } else {
-                                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
-                                    }
-                                } else {
-                                    $message = implode( '<br>', $msg );
-                                    $this->set_message( $message, true );
-                                }
-                                $this->show_message();
-                            }
-                        }
-                    }
-                }
-            } elseif ( isset( $_POST['rank'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                } else {
-                    $valid          = true;
-                    $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
-                    $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    $competition    = get_competition( $competition_id );
-                    if ( $competition && $season ) {
-                        $racketmanager->calculate_team_ratings( $competition->id, $season );
-                    }
-                    $this->set_message( __( 'League ratings set', 'racketmanager' ) );
-                }
+            return;
+        }
+        if ( isset( $_POST['action'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
                 $this->show_message();
+                return;
             }
-            $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+            $msg            = array();
+            $valid          = true;
             $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
             if ( $competition_id ) {
                 $competition = get_competition( $competition_id );
                 if ( $competition ) {
                     $current_season = $competition->seasons[ $season ];
-                    require_once RACKETMANAGER_PATH . 'admin/includes/setup.php';
+                    if ( isset( $_POST['rounds'] ) ) {
+                        $rounds = array();
+                        foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                            if ( empty( $round['match_date'] ) ) {
+                                /* translators: $s: $round number */
+                                $msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
+                                $valid = false;
+                            } elseif ( ! empty( $next_round_date ) && $round['match_date'] <= $next_round_date ) {
+                                /* translators: $s: $round number */
+                                $msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
+                                $valid = false;
+                            } else {
+                                $round_date      = $round['match_date'];
+                                $rounds[]        = $round_date;
+                                $next_round_date = $round_date;
+                            }
+                        }
+                        if ( $valid ) {
+                            $current_season['match_dates'] = array();
+                            foreach ( $rounds as $match_date ) {
+                                $current_season['match_dates'][] = $match_date;
+                            }
+                            $seasons            = $competition->seasons;
+                            $seasons[ $season ] = $current_season;
+                            $updates            = $competition->update_seasons( $seasons );
+                            if ( $updates ) {
+                                $match_dates = array();
+                                $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
+                                $events = $competition->get_events();
+                                foreach ( $events as $competition_event ) {
+                                    $seasons = $competition_event->seasons;
+                                    if ( empty( $competition_event->offset ) ) {
+                                        $match_dates = $current_season['match_dates'];
+                                    } else {
+                                        $i = 0;
+                                        foreach( $current_season['match_dates'] as $match_date ) {
+                                            $match_dates[ $i ] = Util::amend_date( $match_date, $competition_event->offset, '+', 'week' );
+                                            ++$i;
+                                        }
+                                    }
+                                    $seasons[ $season ]['match_dates'] = $match_dates;
+                                    $updates                           = $competition_event->update_seasons( $seasons );
+                                }
+                            } else {
+                                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                            }
+                        } else {
+                            $message = implode( '<br>', $msg );
+                            $this->set_message( $message, true );
+                        }
+                    }
                 }
             }
+        } elseif ( isset( $_POST['rank'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_calculate_ratings' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+                $this->show_message();
+                return;
+            }
+            $valid          = true;
+            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+            $competition    = get_competition( $competition_id );
+            if ( $competition && $season ) {
+                $racketmanager->calculate_team_ratings( $competition->id, $season );
+            }
+            $this->set_message( __( 'League ratings set', 'racketmanager' ) );
+        }
+        $this->show_message();
+        $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $validator      = $validator->competition( $competition_id );
+        if ( empty( $validator->error ) ) {
+            $competition = get_competition( $competition_id );
+            $current_season = $competition->seasons[ $season ];
+            require_once RACKETMANAGER_PATH . 'admin/includes/setup.php';
+        } else {
+            $this->set_message( $validator->err_msg[0], true );
+            $this->show_message();
         }
     }
     /**
      * Display event setup
      */
     public function display_setup_event_page(): void {
-        if ( ! current_user_can( 'edit_matches' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_matches' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
-        } else {
-            if ( isset( $_POST['action'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add_championship-matches' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                } else {
-                    $msg      = array();
-                    $valid    = true;
-                    $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                    $season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    if ( $event_id ) {
-                        $event = get_event( $event_id );
-                        if ( $event ) {
-                            $current_season = $event->seasons[ $season ];
-                            if ( isset( $_POST['rounds'] ) ) {
-                                $rounds = array();
-                                foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                                    if ( empty( $round['match_date'] ) ) {
-                                        /* translators: $s: $round number */
-                                        $msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
-                                        $valid = false;
-                                    } elseif ( ! empty( $next_round_date ) && $round['match_date'] <= $next_round_date ) {
-                                        /* translators: $s: $round number */
-                                        $msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
-                                        $valid = false;
-                                    } else {
-                                        $round_date      = $round['match_date'];
-                                        $rounds[]        = $round_date;
-                                        $next_round_date = $round_date;
-                                    }
-                                }
-                                if ( $valid ) {
-                                    $current_season['match_dates'] = array();
-                                    foreach ( $rounds as $match_date ) {
-                                        $current_season['match_dates'][] = $match_date;
-                                    }
-                                    $seasons            = $event->seasons;
-                                    $seasons[ $season ] = $current_season;
-                                    $updates            = $event->update_seasons( $seasons );
-                                    if ( $updates ) {
-                                        $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
-                                    } else {
-                                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
-                                    }
-                                } else {
-                                    $message = implode( '<br>', $msg );
-                                    $this->set_message( $message, true );
-                                }
-                                $this->show_message();
-                            }
-                        }
-                    }
-                }
+            return;
+        }
+        if ( isset( $_POST['action'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+                $this->show_message();
+                return;
             }
-            $season   = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+            $msg      = array();
+            $valid    = true;
             $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $season   = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
             if ( $event_id ) {
                 $event = get_event( $event_id );
                 if ( $event ) {
                     $current_season = $event->seasons[ $season ];
-                    require_once RACKETMANAGER_PATH . 'admin/includes/setup.php';
+                    if ( isset( $_POST['rounds'] ) ) {
+                        $rounds = array();
+                        foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                            if ( empty( $round['match_date'] ) ) {
+                                /* translators: $s: $round number */
+                                $msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
+                                $valid = false;
+                            } elseif ( ! empty( $next_round_date ) && $round['match_date'] <= $next_round_date ) {
+                                /* translators: $s: $round number */
+                                $msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
+                                $valid = false;
+                            } else {
+                                $round_date      = $round['match_date'];
+                                $rounds[]        = $round_date;
+                                $next_round_date = $round_date;
+                            }
+                        }
+                        if ( $valid ) {
+                            $current_season['match_dates'] = array();
+                            foreach ( $rounds as $match_date ) {
+                                $current_season['match_dates'][] = $match_date;
+                            }
+                            $seasons            = $event->seasons;
+                            $seasons[ $season ] = $current_season;
+                            $updates            = $event->update_seasons( $seasons );
+                            if ( $updates ) {
+                                $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
+                            } else {
+                                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                            }
+                        } else {
+                            $message = implode( '<br>', $msg );
+                            $this->set_message( $message, true );
+                        }
+                        $this->show_message();
+                    }
                 }
+            }
+        }
+        $season   = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( $event_id ) {
+            $event = get_event( $event_id );
+            if ( $event ) {
+                $current_season = $event->seasons[ $season ];
+                require_once RACKETMANAGER_PATH . 'admin/includes/setup.php';
             }
         }
     }
@@ -541,52 +550,67 @@ final class Admin_League extends Admin_Display {
      * Display schedule page
      */
     public function display_schedule_page(): void {
-        global $racketmanager;
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( empty( $validator->error ) ) {
+            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+            $validator      = $validator->competition( $competition_id );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->err_msgs[0], true );
+            }
+        } else {
+            $this->set_message( $validator->msg, true );
+        }
+        if ( ! empty( $validator->error ) ) {
             $this->show_message();
-        } elseif ( isset( $_POST['scheduleAction'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            return;
+        }
+        if ( isset( $_POST['scheduleAction'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
             $tab = 'schedule';
-            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_schedule-matches' ) ) {
-                $this->set_message( $this->invalid_security_token, true );
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_schedule-matches' );
+            if (  ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
                 $this->show_message();
                 return;
             }
-            if ( isset( $_POST['actionSchedule'] ) ) {
-                if ( 'schedule' === $_POST['actionSchedule'] ) {
+            $action = isset( $_POST['actionSchedule'] ) ? sanitize_text_field( wp_unslash( $_POST['actionSchedule'] ) ) : null;
+            switch ( $action ) {
+                case 'schedule':
                     $events = wp_unslash( $_POST['event'] ) ?? array();
                     if ( $events ) {
                         $this->schedule_league_matches( $events );
                     }
-                } elseif ( 'delete' === $_POST['actionSchedule'] ) {
+                    break;
+                case 'delete':
                     $events = wp_unslash( $_POST['event'] ) ?? array();
                     if ( $events ) {
                         foreach ( $events as $event_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                             $this->delete_event_matches( $event_id );
                         }
                     }
-                }
-                $this->show_message();
+                    break;
+                default:
+                    $this->set_message( __( 'No action specified', 'raketmanager' ), 'warning' );
+                    break;
             }
+            $this->show_message();
         }
-        if ( isset( $_GET['competition_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition    = get_competition( $competition_id );
-            $league_id      = false;
-            $league_title   = '';
-            $season_id      = false;
-            $season_data    = array(
-                'name'           => '',
-                'num_match_days' => '',
-                'homeAndAway'    => '',
-            );
-            $club_id        = 0;
-            if ( ! isset( $season ) ) {
-                $event_season = $competition->current_season['name'] ?? '';
-                $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            }
-            require_once RACKETMANAGER_PATH . 'admin/league/show-schedule.php';
+        $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $competition    = get_competition( $competition_id );
+        $league_id      = false;
+        $league_title   = '';
+        $season_id      = false;
+        $season_data    = array(
+            'name'           => '',
+            'num_match_days' => '',
+            'homeAndAway'    => '',
+        );
+        $club_id        = 0;
+        if ( ! isset( $season ) ) {
+            $event_season = $competition->current_season['name'] ?? '';
+            $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         }
+        require_once RACKETMANAGER_PATH . 'admin/league/show-schedule.php';
     }
     /**
      * Action promotion and relegation function
@@ -594,65 +618,68 @@ final class Admin_League extends Admin_Display {
      * @return void
      */
     private function action_promotion_relegation(): void {
-        global $racketmanager;
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
-        } elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'constitution-bulk' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
-        } else {
-            $teams = array();
-            $valid = true;
-            $js    = false;
-            if ( isset( $_POST['js-active'] ) ) {
-                $js = 1 === intval( $_POST['js-active'] );
-            }
-            $rank = 0;
-            if ( isset( $_POST['table_id'] ) ) {
-                $latest_season = isset( $_POST['latest_season'] ) ? sanitize_text_field( wp_unslash( $_POST['latest_season'] ) ) : null;
-                // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                $event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
-                if ( $event_id ) {
-                    $event = get_event( $event_id );
-                    if ( $event ) {
-                        foreach ( $_POST['table_id'] as $table_id ) {
-                            $status = $_POST['status'][$table_id] ?? null;
-                            if ( empty( $rank ) && $status ) {
-                                $valid = false;
-                            }
-                            $team_id   = $_POST['team_id'][$table_id] ?? null;
-                            $league_id = $_POST['league_id'][$table_id] ?? null;
-                            $old_rank  = $_POST['old_rank'][$table_id] ?? null;
-                            $status    = $_POST['status'][$table_id] ?? null;
-                            if ( $js ) {
-                                ++$rank;
-                            } else {
-                                $rank = $_POST['rank'][$table_id] ?? '';
-                            }
-                            $team            = new stdClass();
-                            $team->team_id   = $team_id;
-                            $team->league_id = $league_id;
-                            $team->table_id  = $table_id;
-                            $team->rank      = $rank;
-                            $team->old_rank  = $old_rank;
-                            $team->status    = $status;
-                            $teams[]         = $team;
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'constitution-bulk' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'edit_leagues' );
+        }
+        if (  ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        $teams = array();
+        $valid = true;
+        $js    = false;
+        if ( isset( $_POST['js-active'] ) ) {
+            $js = 1 === intval( $_POST['js-active'] );
+        }
+        $rank = 0;
+        if ( isset( $_POST['table_id'] ) ) {
+            $latest_season = isset( $_POST['latest_season'] ) ? sanitize_text_field( wp_unslash( $_POST['latest_season'] ) ) : null;
+            // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+            $event_id = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
+            if ( $event_id ) {
+                $event = get_event( $event_id );
+                if ( $event ) {
+                    foreach ( $_POST['table_id'] as $table_id ) {
+                        $status = $_POST['status'][$table_id] ?? null;
+                        if ( empty( $rank ) && $status ) {
+                            $valid = false;
                         }
-                    }
-                    if ( $valid ) {
-                        if ( $teams ) {
-                            $result = $event->promote_and_relegate( $teams, $latest_season );
-                            if ( $result ) {
-                                $this->set_message( __( 'Promotion and relegation actioned', 'racketmanager' ) );
-                            } else {
-                                $this->set_message( __( 'Error with promotion and relegation', 'racketmanager' ), true );
-                            }
+                        $team_id   = $_POST['team_id'][$table_id] ?? null;
+                        $league_id = $_POST['league_id'][$table_id] ?? null;
+                        $old_rank  = $_POST['old_rank'][$table_id] ?? null;
+                        $status    = $_POST['status'][$table_id] ?? null;
+                        if ( $js ) {
+                            ++$rank;
+                        } else {
+                            $rank = $_POST['rank'][$table_id] ?? '';
                         }
-                    } else {
-                        $this->set_message( __( 'Promotion and relegation has already occurred', 'racketmanager' ), true );
+                        $team            = new stdClass();
+                        $team->team_id   = $team_id;
+                        $team->league_id = $league_id;
+                        $team->table_id  = $table_id;
+                        $team->rank      = $rank;
+                        $team->old_rank  = $old_rank;
+                        $team->status    = $status;
+                        $teams[]         = $team;
                     }
                 }
-                // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                if ( $valid ) {
+                    if ( $teams ) {
+                        $result = $event->promote_and_relegate( $teams, $latest_season );
+                        if ( $result ) {
+                            $this->set_message( __( 'Promotion and relegation actioned', 'racketmanager' ) );
+                        } else {
+                            $this->set_message( __( 'Error with promotion and relegation', 'racketmanager' ), true );
+                        }
+                    }
+                } else {
+                    $this->set_message( __( 'Promotion and relegation has already occurred', 'racketmanager' ), true );
+                }
             }
+            // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
         }
     }
     /**
@@ -1161,7 +1188,6 @@ final class Admin_League extends Admin_Display {
         $away_team       = null;
         if ( ! current_user_can( 'edit_matches' ) ) {
             $this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
-            $this->set_message();
         } else {
             //phpcs:disable WordPress.Security.NonceVerification.Recommended
             $is_finals       = false;
@@ -1395,24 +1421,24 @@ final class Admin_League extends Admin_Display {
      * Delete matches from league in admin screen
      */
     private function delete_matches_from_league(): void {
-        global $racketmanager;
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_matches-bulk' ) ) {
-            $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-        } elseif ( isset( $_POST['delMatchOption'] ) && 'delete' === $_POST['delMatchOption'] ) {
-            if ( current_user_can( 'del_matches' ) ) {
-                $messages = array();
-                if ( isset( $_POST['match'] ) ) {
-                    foreach ( $_POST['match'] as $match_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                        $match = get_match( $match_id );
-                        $match->delete();
-                        /* translators: %d: Match id */
-                        $messages[] = ( sprintf( __( 'Match id %d deleted', 'racketmanager' ), $match_id ) );
-                        $message    = implode( '<br>', $messages );
-                        $this->set_message( $message );
-                    }
-                }
-            } else {
-                $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_matches-bulk' );
+        if ( empty( $validator->error() ) ) {
+            $validator = $validator->capability( 'del_matches' );
+        }
+        if ( ! empty( $validator->error() ) ) {
+            $this->set_message( $validator->msg, true );
+            return;
+        }
+        $messages = array();
+        if ( isset( $_POST['match'] ) ) {
+            foreach ( $_POST['match'] as $match_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                $match = get_match( $match_id );
+                $match->delete();
+                /* translators: %d: Match id */
+                $messages[] = ( sprintf( __( 'Match id %d deleted', 'racketmanager' ), $match_id ) );
+                $message    = implode( '<br>', $messages );
+                $this->set_message( $message );
             }
         }
     }
@@ -1422,27 +1448,33 @@ final class Admin_League extends Admin_Display {
      * @param object $league league object.
      */
     private function league_manage_team( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
-            $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-        } elseif ( current_user_can( 'edit_teams' ) ) {
-            if ( isset( $_POST['action'] ) && 'Add' === $_POST['action'] ) {
-                $this->set_message( __( 'New team cannot be added to a league', 'racketmanager' ), true );
-            } elseif ( isset( $_POST['team_id'] ) ) {
-                $team = get_team( intval( $_POST['team_id'] ) );
-                if ( ! empty( $_POST['league_id'] ) && ! empty( $_POST['editTeam'] ) ) {
-                    $league       = get_league( $league );
-                    $captain      = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
-                    $contactno    = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-                    $contactemail = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
-                    $match_day    = isset( $_POST['matchday'] ) ? intval( $_POST['matchday'] ) : null;
-                    $matchtime    = isset( $_POST['matchtime'] ) ? sanitize_text_field( wp_unslash( $_POST['matchtime'] ) ) : null;
-                    $team->set_event( $league->event->id, $captain, $contactno, $contactemail, $match_day, $matchtime );
-                } elseif ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
-                    $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
-                }
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-teams' );
+        if ( empty( $validator->error() ) ) {
+            $validator = $validator->capability( 'edit_teams' );
+        }
+        if ( ! empty( $validator->error() ) ) {
+            $this->set_message( $validator->msg, true );
+            return;
+        }
+        if ( isset( $_POST['action'] ) && 'Add' === $_POST['action'] ) {
+            $this->set_message( __( 'New team cannot be added to a league', 'racketmanager' ), true );
+            return;
+        }
+        $team_id = isset( $_POST['team_id'] ) ? intval( $_POST['team_id'] ) : null;
+        if ( $team_id ) {
+            $team = get_team( intval( $_POST['team_id'] ) );
+            if ( ! empty( $_POST['league_id'] ) && ! empty( $_POST['editTeam'] ) ) {
+                $league       = get_league( $league );
+                $captain      = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
+                $contactno    = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
+                $contactemail = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
+                $match_day    = isset( $_POST['matchday'] ) ? intval( $_POST['matchday'] ) : null;
+                $matchtime    = isset( $_POST['matchtime'] ) ? sanitize_text_field( wp_unslash( $_POST['matchtime'] ) ) : null;
+                $team->set_event( $league->event->id, $captain, $contactno, $contactemail, $match_day, $matchtime );
+            } elseif ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
+                $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
             }
-        } else {
-            $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
         }
     }
     /**
@@ -1450,28 +1482,26 @@ final class Admin_League extends Admin_Display {
      */
     private function update_results_in_league(): void {
         global $league;
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_matches-bulk' ) ) {
-            $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-        } elseif ( current_user_can( 'update_results' ) ) {
-            //phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $custom      = $_POST['custom'] ?? array();
-            $matches     = $_POST['matches'] ?? array();
-            $home_points = $_POST['home_points'] ?? array();
-            $away_points = $_POST['away_points'] ?? array();
-            //phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $season = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-            if ( ! empty( $matches ) && ! empty( $home_points ) && ! empty( $away_points ) && ! empty( $season ) ) {
-                if ( ! current_user_can( 'update_results' ) ) {
-                    $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-                } else {
-                    $league->set_finals( false );
-                    $num_matches = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, false );
-                    /* translators: %d: number of matches updated */
-                    $this->set_message( sprintf( __( 'Updated Results of %d matches', 'racketmanager' ), $num_matches ) );
-                }
-            }
-        } else {
-            $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_matches-bulk' );
+        if ( empty( $validator->error() ) ) {
+            $validator = $validator->capability( 'update_results' );
+        }
+        if ( ! empty( $validator->error() ) ) {
+            $this->set_message( $validator->msg, true );
+            return;
+        }
+        $custom      = $_POST['custom'] ?? array();
+        $matches     = $_POST['matches'] ?? array();
+        $home_points = $_POST['home_points'] ?? array();
+        $away_points = $_POST['away_points'] ?? array();
+        //phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $season = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+        if ( ! empty( $matches ) && ! empty( $home_points ) && ! empty( $away_points ) && ! empty( $season ) ) {
+            $league->set_finals( false );
+            $num_matches = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, false );
+            /* translators: %d: number of matches updated */
+            $this->set_message( sprintf( __( 'Updated Results of %d matches', 'racketmanager' ), $num_matches ) );
         }
     }
     /**
@@ -1480,47 +1510,53 @@ final class Admin_League extends Admin_Display {
      * @param object $league league object.
      */
     private function league_manual_rank( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
-            $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-        } elseif ( current_user_can( 'update_results' ) ) {
-            $points = array();
-            if ( isset( $_POST['points_plus'] ) && isset( $_POST['points_minus'] ) && isset( $_POST['add_points'] ) && isset( $_POST['num_done_matches'] ) && isset( $_POST['num_won_matches'] ) && isset( $_POST['num_draw_matches'] ) && isset( $_POST['num_lost_matches'] ) ) {
-                $league = get_league( $league );
-                //phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $points['points_plus']       = $_POST['points_plus'];
-                $points['points_minus']      = $_POST['points_minus'];
-                $points['add_points']        = $_POST['add_points'];
-                $matches                     = array();
-                $matches['num_done_matches'] = $_POST['num_done_matches'];
-                $matches['num_won_matches']  = $_POST['num_won_matches'];
-                $matches['num_draw_matches'] = $_POST['num_draw_matches'];
-                $matches['num_lost_matches'] = $_POST['num_lost_matches'];
-                if ( isset( $_POST['team_id'] ) && isset( $_POST['custom'] ) ) {
-                    $league->save_standings_manually( $_POST['team_id'], $points, $matches, $_POST['custom'] );
-                    $this->set_message( __( 'Standings Table updated', 'racketmanager' ) );
-                }
-                //phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_teams-bulk' );
+        if ( empty( $validator->error() ) ) {
+            $validator = $validator->capability( 'update_results' );
+        }
+        if ( ! empty( $validator->error() ) ) {
+            $this->set_message( $validator->msg, true );
+            return;
+        }
+        $points = array();
+        if ( isset( $_POST['points_plus'] ) && isset( $_POST['points_minus'] ) && isset( $_POST['add_points'] ) && isset( $_POST['num_done_matches'] ) && isset( $_POST['num_won_matches'] ) && isset( $_POST['num_draw_matches'] ) && isset( $_POST['num_lost_matches'] ) ) {
+            $league = get_league( $league );
+            //phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $points['points_plus']       = $_POST['points_plus'];
+            $points['points_minus']      = $_POST['points_minus'];
+            $points['add_points']        = $_POST['add_points'];
+            $matches                     = array();
+            $matches['num_done_matches'] = $_POST['num_done_matches'];
+            $matches['num_won_matches']  = $_POST['num_won_matches'];
+            $matches['num_draw_matches'] = $_POST['num_draw_matches'];
+            $matches['num_lost_matches'] = $_POST['num_lost_matches'];
+            if ( isset( $_POST['team_id'] ) && isset( $_POST['custom'] ) ) {
+                $league->save_standings_manually( $_POST['team_id'], $points, $matches, $_POST['custom'] );
+                $this->set_message( __( 'Standings Table updated', 'racketmanager' ) );
             }
-        } else {
-            $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+            //phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         }
     }
     /**
      * Contact teams in league in admin screen
      */
     private function league_contact_teams(): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_contact-teams-preview' ) ) {
-            $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-        } elseif ( current_user_can( 'edit_teams' ) ) {
-            if ( isset( $_POST['league_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
-                $league = get_league( $_POST['league_id'] );
-                $sent = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                if ( $sent ) {
-                    $this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
-                }
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
+        if ( empty( $validator->error() ) ) {
+            $validator = $validator->capability( 'edit_teams' );
+        }
+        if ( ! empty( $validator->error() ) ) {
+            $this->set_message( $validator->msg, true );
+            return;
+        }
+        if ( isset( $_POST['league_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
+            $league = get_league( $_POST['league_id'] );
+            $sent = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            if ( $sent ) {
+                $this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
             }
-        } else {
-            $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
         }
     }
     /**

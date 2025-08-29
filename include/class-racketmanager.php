@@ -443,6 +443,25 @@ class RacketManager {
         }
     }
     /**
+     * Calculate team ratings
+     *
+     * @param int $competition_id competition id.
+     *
+     * @return void
+     */
+    public function calculate_team_ratings( int $competition_id, int $season ): void {
+        if ( $competition_id ) {
+            $competition = get_competition( $competition_id );
+            if ( $competition ) {
+                if ( $season ) {
+                    if ( isset( $competition->seasons[ $season ] ) ) {
+                        $competition->calculate_team_ratings( $season );
+                    }
+                }
+            }
+        }
+    }
+    /**
      * Calculate tournament ratings
      *
      * @param int $tournament_id tournament id.

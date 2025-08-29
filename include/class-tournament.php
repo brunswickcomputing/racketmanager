@@ -767,6 +767,9 @@ final class Tournament {
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $schedule_name = 'rm_notify_tournament_entry_reminder';
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        if ( isset( $this->charge ) ) {
+            $this->charge->delete();
+        }
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "DELETE FROM $wpdb->racketmanager_tournaments WHERE `id` = %d",

@@ -217,7 +217,7 @@ class Shortcodes_League extends Shortcodes {
      * @param boolean $widget widget indicator.
      * @return false|string
      */
-    public function showStandings( array $atts, bool $widget = false ): false|string {
+    public function show_standings( array $atts, bool $widget = false ): false|string {
         global $league;
         $args = shortcode_atts(
             array(
@@ -280,7 +280,7 @@ class Shortcodes_League extends Shortcodes {
      * @param array $atts shortcode attributes.
      * @return false|string
      */
-    public function showCrosstable( array $atts ): false|string {
+    public function show_crosstable( array $atts ): false|string {
         global $league;
         $args      = shortcode_atts(
             array(

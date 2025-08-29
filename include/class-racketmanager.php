@@ -907,8 +907,8 @@ class RacketManager {
 
         add_shortcode( 'championship', array( $this->shortcodes_league, 'show_championship' ) );
         add_shortcode( 'leaguearchive', array( $this->shortcodes_league, 'show_archive' ) );
-        add_shortcode( 'standings', array( $this->shortcodes_league, 'showStandings' ) );
-        add_shortcode( 'crosstable', array( $this->shortcodes_league, 'showCrosstable' ) );
+        add_shortcode( 'standings', array( $this->shortcodes_league, 'show_standings' ) );
+        add_shortcode( 'crosstable', array( $this->shortcodes_league, 'show_crosstable' ) );
         add_shortcode( 'matches', array( $this->shortcodes_league, 'show_matches' ) );
         add_shortcode( 'match', array( $this->shortcodes_league, 'show_match' ) );
         add_shortcode( 'teams', array( $this->shortcodes_league, 'show_teams' ) );

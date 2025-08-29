@@ -1103,7 +1103,8 @@ class Util {
     /**
      * Function to return search string from array
      *
-     * @param array $search_terms
+     * @param array $search_terms search terms.
+     * @param bool $standalone standalone indicator.
      *
      * @return string
      */

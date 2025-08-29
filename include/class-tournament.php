@@ -433,12 +433,90 @@ final class Tournament {
      * Add tournament
      */
     private function add(): void {
-        global $wpdb, $racketmanager;
-        $validate = $this->validate( $this );
-        if ( $validate->valid ) {
+        global $wpdb;
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "INSERT INTO $wpdb->racketmanager_tournaments (`name`, `competition_id`, `season`, `venue`, `date_open`, `date_closing`, `date_withdrawal`, `date_start`, `date`, `competition_code`, `grade`, `num_entries` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d )",
+                $this->name,
+                $this->competition_id,
+                $this->season,
+                $this->venue,
+                $this->date_open,
+                $this->date_closing,
+                $this->date_withdrawal,
+                $this->date_start,
+                $this->date,
+                $this->competition_code,
+                $this->grade,
+                $this->num_entries,
+            )
+        );
+        $this->id            = $wpdb->insert_id;
+        $this->order_of_play = '';
+    }
+
+    /**
+     * Update tournament
+     *
+     * @param object $updated updated tournament values.
+     *
+     * @return bool
+     */
+    public function update( object $updated ): bool {
+        global $wpdb;
+        $updates = false;
+        if ( $this->name !== $updated->name ) {
+            $updates    = true;
+            $this->name = $updated->name;
+        }
+        if ( $this->competition_id !== $updated->competition_id ) {
+            $updates              = true;
+            $this->competition_id = $updated->competition_id;
+        }
+        if ( $this->season !== $updated->season ) {
+            $updates      = true;
+            $this->season = $updated->season;
+        }
+        if ( $this->venue !== $updated->venue ) {
+            $updates     = true;
+            $this->venue = $updated->venue;
+        }
+        if ( $this->date_open !== $updated->date_open ) {
+            $updates         = true;
+            $this->date_open = $updated->date_open;
+        }
+        if ( $this->date_closing !== $updated->date_closing ) {
+            $updates            = true;
+            $this->date_closing = $updated->date_closing;
+        }
+        if ( $this->date_withdrawal !== $updated->date_withdrawal ) {
+            $updates               = true;
+            $this->date_withdrawal = $updated->date_withdrawal;
+        }
+        if ( $this->date_start !== $updated->date_start ) {
+            $updates          = true;
+            $this->date_start = $updated->date_start;
+        }
+        if ( $this->date !== $updated->date ) {
+            $updates    = true;
+            $this->date = $updated->date;
+        }
+        if ( $this->competition_code !== $updated->competition_code ) {
+            $updates                = true;
+            $this->competition_code = $updated->competition_code;
+        }
+        if ( $this->grade !== $updated->grade ) {
+            $updates     = true;
+            $this->grade = $updated->grade;
+        }
+        if ( $this->num_entries !== $updated->num_entries ) {
+            $updates           = true;
+            $this->num_entries = $updated->num_entries;
+        }
+        if ( $updates ) {
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
-                    "INSERT INTO $wpdb->racketmanager_tournaments (`name`, `competition_id`, `season`, `venue`, `date_open`, `date_closing`, `date_withdrawal`, `date_start`, `date`, `competition_code`, `grade`, `num_entries` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d )",
+                    "UPDATE $wpdb->racketmanager_tournaments SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `date_closing` = %s, `date_withdrawal` = %s, `date_start` = %s, `date` = %s, `competition_code` = %s, `grade` = %s, `num_entries` = %d WHERE `id` = %d",
                     $this->name,
                     $this->competition_id,
                     $this->season,
@@ -451,182 +529,59 @@ final class Tournament {
                     $this->competition_code,
                     $this->grade,
                     $this->num_entries,
-                )
-            );
-            $racketmanager->set_message( __( 'Tournament added', 'racketmanager' ) );
-            $this->id                      = $wpdb->insert_id;
-            $this->order_of_play             = '';
-            $racketmanager->error_fields   = null;
-            $racketmanager->error_messages = null;
-        } else {
-            $racketmanager->error_fields   = $validate->fld;
-            $racketmanager->error_messages = $validate->msg;
-            $racketmanager->set_message( __( 'Error creating tournament', 'racketmanager' ), true );
-        }
-    }
-
-    /**
-     * Update tournament
-     *
-     * @param object $updated updated tournament values.
-     *
-     * @return stdClass
-     */
-    public function update( object $updated ): stdClass {
-        global $wpdb;
-        $validate = $this->validate( $updated );
-        if ( $validate->valid ) {
-            $this->name             = $updated->name;
-            $this->competition_id   = $updated->competition_id;
-            $this->season           = $updated->season;
-            $this->venue            = $updated->venue;
-            $this->date_open        = $updated->date_open;
-            $this->date_closing     = $updated->date_closing;
-            $this->date_withdrawal  = $updated->date_withdrawal;
-            $this->date_start       = $updated->date_start;
-            $this->date             = $updated->date;
-            $this->start_time       = $updated->start_time;
-            $this->competition_code = $updated->competition_code;
-            $this->grade            = $updated->grade;
-            $this->num_entries      = $updated->num_entries;
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_tournaments SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `date_closing` = %s, `date_withdrawal` = %s, `date_start` = %s, `date` = %s, `starttime` = %s, `competition_code` = %s, `grade` = %s, `num_entries` = %d WHERE `id` = %d",
-                    $updated->name,
-                    $updated->competition_id,
-                    $updated->season,
-                    $updated->venue,
-                    $updated->date_open,
-                    $updated->date_closing,
-                    $updated->date_withdrawal,
-                    $updated->date_start,
-                    $updated->date,
-                    $updated->start_time,
-                    $updated->competition_code,
-                    $this->grade,
-                    $this->num_entries,
                     $this->id
                 )
             );
             wp_cache_set( $this->id, $this, 'tournaments' );
         }
-        return $validate;
+        $charge_updates = $this->update_charges( $updated->fees );
+        if ( $charge_updates ) {
+            $updates = true;
+        }
+        return $updates;
     }
+
     /**
-     * Function to validate new or updated tournament
+     * Function to update tournament fees
      *
-     * @param object $tournament tournament details.
-     * @return object
+     * @param object $fees tournament fees.
+     *
+     * @return bool
      */
-    private function validate(object $tournament ): object {
-        $return  = new stdClass();
-        $valid   = true;
-        $err_msg = array();
-        $err_fld = array();
-        if ( empty( $tournament->name ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Name is required', 'racketmanager' );
-            $err_fld[] = 'tournamentName';
-        }
-        if ( empty( $tournament->competition_id ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Competition is required', 'racketmanager' );
-            $err_fld[] = 'competition_id';
-        }
-        if ( empty( $tournament->season ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Season is required', 'racketmanager' );
-            $err_fld[] = 'season';
-        }
-        if ( empty( $tournament->venue ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Venue is required', 'racketmanager' );
-            $err_fld[] = 'venue';
-        }
-        if ( empty( $tournament->grade ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Grade is required', 'racketmanager' );
-            $err_fld[] = 'grade';
-        }
-        if ( empty( $tournament->num_entries ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Number of entries is required', 'racketmanager' );
-            $err_fld[] = 'num_entries';
-        }
-        if ( empty( $tournament->date_open ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Opening date is required', 'racketmanager' );
-            $err_fld[] = 'dateOpen';
-        }
-        if ( empty( $tournament->date_closing ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Closing date is required', 'racketmanager' );
-            $err_fld[] = 'dateClose';
-        } elseif ( ! empty( $tournament->date_open ) && $tournament->date_closing <= $tournament->date_open ) {
-            $valid     = false;
-            $err_msg[] = __( 'Closing date must be after open date', 'racketmanager' );
-            $err_fld[] = 'dateClose';
-        }
-        if ( empty( $tournament->date_withdrawal ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Withdrawal date is required', 'racketmanager' );
-            $err_fld[] = 'dateWithdraw';
-        } elseif ( ! empty( $tournament->date_closing ) && $tournament->date_withdrawal <= $tournament->date_closing ) {
-            $valid     = false;
-            $err_msg[] = __( 'Withdrawal date must be after closing date', 'racketmanager' );
-            $err_fld[] = 'dateClose';
-        }
-        if ( empty( $tournament->date_start ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Start date is required', 'racketmanager' );
-            $err_fld[] = 'dateStart';
-        } elseif ( ! empty( $tournament->date_withdrawal ) && $tournament->date_start <= $tournament->date_withdrawal ) {
-            $valid     = false;
-            $err_msg[] = __( 'Start date must be after withdrawal date', 'racketmanager' );
-            $err_fld[] = 'dateStart';
-        }
-        if ( empty( $tournament->date ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'End date is required', 'racketmanager' );
-            $err_fld[] = 'dateEnd';
-        } elseif ( ! empty( $tournament->date_start ) && $tournament->date <= $tournament->date_start ) {
-            $valid     = false;
-            $err_msg[] = __( 'End date must be after start date', 'racketmanager' );
-            $err_fld[] = 'dateEnd';
-        }
-        if ( $valid ) {
-            $return->valid = true;
-            $charge_create = false;
-            if ( ! empty( $tournament->fees->id ) ) {
-                $charge = get_charge( $tournament->fees->id );
-                if ( $charge ) {
-                    if ( $charge->fee_competition !== $tournament->fees->competition ) {
-                        $charge->set_club_fee( $tournament->fees->competition );
-                    }
-                    if ( $charge->fee_event !== $tournament->fees->event ) {
-                        $charge->set_team_fee( $tournament->fees->event );
-                    }
-                } elseif ( ! empty( $tournament->fees->competition ) || ! empty( $tournament->fees->event ) ) {
-                    $charge_create = true;
-                }
-            } elseif ( ! empty( $tournament->fees->competition ) || ! empty( $tournament->fees->event ) ) {
-                $charge_create = true;
+    private function update_charges( object $fees ): bool {
+        $updates       = false;
+        $charge_create = false;
+        $charge_update = false;
+        if ( isset( $this->charge ) ) {
+            if ( floatval( $this->charge->fee_competition ) !== $fees->competition ) {
+                $this->charge->set_club_fee( $fees->competition );
+                $this->fees->competition = $fees->competition;
+                $charge_update = true;
             }
-            if ( $charge_create ) {
-                $charge                  = new stdClass();
-                $charge->competition_id  = $this->competition_id;
-                $charge->season          = $this->season;
-                $charge->date            = $this->date_start;
-                $charge->fee_competition = $tournament->fees->competition;
-                $charge->fee_event       = $tournament->fees->event;
-                $this->charge            = new Charges( $charge );
+            if ( floatval( $this->charge->fee_event ) !== $fees->event ) {
+                $this->charge->set_team_fee( $fees->event );
+                $this->fees->event = $fees->event;
+                $charge_update = true;
             }
-        } else {
-            $return->valid = false;
-            $return->msg   = $err_msg;
-            $return->fld   = $err_fld;
+        } elseif ( ! empty( $fees->competition ) || ! empty( $fees->event ) ) {
+            $charge_create = true;
         }
-        return $return;
+        if ( $charge_update ) {
+            $updates = true;
+        }
+        if ( $charge_create ) {
+            $updates                 = true;
+            $charge                  = new stdClass();
+            $charge->competition_id  = $this->competition_id;
+            $charge->season          = $this->season;
+            $charge->date            = $this->date_start;
+            $charge->fee_competition = $fees->competition;
+            $charge->fee_event       = $fees->event;
+            $this->charge            = new Charges( $charge );
+            $this->fees->competition = $fees->competition;
+            $this->fees->event       = $fees->event;
+        }
+        return $updates;
     }
     /**
      * Update tournament plan

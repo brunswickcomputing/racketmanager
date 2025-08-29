@@ -924,9 +924,9 @@ final class Admin_Tournament extends Admin_Championship {
         }
         ksort( $object->seasons );
         if ( 'competition' === $season_data->type ) {
-            $this->save_competition_seasons( $object->seasons, $season_data->object_id );
+            $competition->update_seasons( $object->seasons );
         } elseif ( 'event' === $season_data->type ) {
-            $this->save_event_seasons( $object->seasons, $season_data->object_id );
+            $event->save_seasons(  $object->seasons );
         }
         if ( 'competition' === $season_data->type ) {
             $events = $competition->get_events();
@@ -983,47 +983,6 @@ final class Admin_Tournament extends Admin_Championship {
             );
         }
         ksort( $event->seasons );
-        $this->save_event_seasons( $event->seasons, $event->id );
-        /* translators: %s: season name */
-        $this->set_message( sprintf( __( 'Season %s added', 'racketmanager' ), $season ) );
-    }
-    /**
-     * Save seasons array to database
-     *
-     * @param array $seasons seasons.
-     * @param int $competition_id competition id.
-     *
-     * @return void
-     */
-    private function save_competition_seasons( array $seasons, int $competition_id ): void {
-        global $wpdb, $racketmanager;
-        $wpdb->query(
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_competitions SET `seasons` = %s WHERE `id` = %d",
-                maybe_serialize( $seasons ),
-                $competition_id
-            )
-        ); // db call ok, no cache ok.
-        wp_cache_delete( $competition_id, 'competitions' );
-        $racketmanager->set_message( 'Season deleted', 'racketmanager' );
-    }
-    /**
-     * Save seasons array to database
-     *
-     * @param array $seasons seasons.
-     * @param int $event_id event id.
-     *
-     * @return void
-     */
-    private function save_event_seasons( array $seasons, int $event_id ): void {
-        global $wpdb;
-        $wpdb->query(
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_events SET `seasons` = %s WHERE `id` = %d",
-                maybe_serialize( $seasons ),
-                $event_id
-            )
-        ); // db call ok, no cache ok.
-        wp_cache_delete( $event_id, 'events' );
+        $event->save_seasons( $event->seasons );
     }
 }

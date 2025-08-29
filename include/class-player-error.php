@@ -114,36 +114,20 @@ final class Player_Error {
      * Add player error
      */
     private function add(): false|int {
-        global $wpdb, $racketmanager;
-        $valid   = true;
-        $err_msg = array();
-        if ( empty( $this->player_id ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Player is required', 'racketmanager' );
+        global $wpdb;
+        if ( empty( $this->status ) ) {
+            $this->status = 0;
         }
-        if ( empty( $this->message ) ) {
-            $valid     = false;
-            $err_msg[] = __( 'Message is required', 'racketmanager' );
-        }
-        if ( $valid ) {
-            if ( empty( $this->status ) ) {
-                $this->status = 0;
-            }
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "INSERT INTO $wpdb->racketmanager_player_errors (`player_id`, `message`, `status`, `created_date`) VALUES (%d, %s, %d, NOW())",
-                    $this->player_id,
-                    $this->message,
-                    $this->status,
-                )
-            );
-            $racketmanager->set_message( __( 'Player error added', 'racketmanager' ) );
-            $this->id = $wpdb->insert_id;
-            return $this->id;
-        } else {
-            $racketmanager->set_message( implode( '<br>', $err_msg ), true );
-            return false;
-        }
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "INSERT INTO $wpdb->racketmanager_player_errors (`player_id`, `message`, `status`, `created_date`) VALUES (%d, %s, %d, NOW())",
+                $this->player_id,
+                $this->message,
+                $this->status,
+            )
+        );
+        $this->id = $wpdb->insert_id;
+        return $this->id;
     }
     /**
      * Set player error status

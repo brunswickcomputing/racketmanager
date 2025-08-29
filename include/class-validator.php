@@ -411,6 +411,17 @@ class Validator {
             $this->error      = true;
             $this->err_flds[] = 'tournament';
             $this->err_msgs[] = __( 'Tournament not found', 'racketmanager' );
+        } else {
+            if ( is_numeric( $tournament ) ) {
+                $tournament = get_tournament( $tournament );
+            } else {
+                $tournament = get_tournament( $tournament, 'name' );
+            }
+            if ( ! $tournament ) {
+                $this->error      = true;
+                $this->err_flds[] = 'tournament';
+                $this->err_msgs[] = __( 'Tournament not valid', 'racketmanager' );
+            }
         }
         return $this;
     }

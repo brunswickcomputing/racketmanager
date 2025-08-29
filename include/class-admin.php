@@ -572,27 +572,6 @@ class Admin extends RacketManager {
         //phpcs:enable WordPress.Security.NonceVerification.Missing
     }
 
-    /************
-     *
-     *   CLUB PLAYERS SECTION
-     */
-
-    /**
-     * Recursively apply htmlspecialchars to an array
-     *
-     * @param array $arr array.
-     */
-    public function htmlspecialchars_array( array $arr = array() ): array {
-        $rs = array();
-        foreach ( $arr as $key => $val ) {
-            if ( is_array( $val ) ) {
-                $rs[ $key ] = $this->htmlspecialchars_array( $val );
-            } else {
-                $rs[ $key ] = htmlspecialchars( $val, ENT_QUOTES );
-            }
-        }
-        return $rs;
-    }
     /**
      * Schedule player ratings calculation
      */

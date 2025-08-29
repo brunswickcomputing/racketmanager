@@ -94,7 +94,7 @@ final class Player_Error {
      *
      * @param object|null $player_error Player Error object.
      */
-    public function __construct( object $player_error = null ) {
+    public function __construct( ?object $player_error = null ) {
         if ( ! is_null( $player_error ) ) {
             foreach ( $player_error as $key => $value ) {
                 $this->$key = $value;

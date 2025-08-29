@@ -158,7 +158,7 @@ final class Club_Player {
      *
      * @param object|null $club_player Club_Player object.
      */
-    public function __construct( object $club_player = null ) {
+    public function __construct( ?object $club_player = null ) {
         if ( ! is_null( $club_player ) ) {
             foreach ( get_object_vars( $club_player ) as $key => $value ) {
                 $this->$key = $value;

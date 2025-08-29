@@ -141,7 +141,7 @@ class Util {
      *
      * @return string
      */
-    public static function get_standing_status( string $status = null ): string {
+    public static function get_standing_status( ?string $status = null ): string {
         $standing_statuses = self::get_standing_statuses();
         return empty( $standing_statuses[ $status ] ) ? __( 'Unknown', 'racketmanager' ) : $standing_statuses[ $status ];
     }

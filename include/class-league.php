@@ -749,7 +749,7 @@ class League {
      * @param string $title title.
      * @param string|null $sequence sequence.
      */
-    public function update( string $title, string $sequence = null ): void {
+    public function update( string $title, ?string $sequence = null ): void {
         global $wpdb;
         $this->title = $title;
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -1521,7 +1521,7 @@ class League {
      *
      * @return int|boolean $table_id
      */
-    public function add_team( int|string $team_id, string $season, string $rank = null, string $status = null, int|string $profile = 1 ): bool|int {
+    public function add_team( int|string $team_id, string $season, ?string $rank = null, ?string $status = null, int|string $profile = 1 ): bool|int {
         global $wpdb, $racketmanager;
         $valid = true;
         if ( ! is_numeric( $team_id ) ) {
@@ -1620,7 +1620,7 @@ class League {
      *
      * @return object|false
      */
-    public function get_team_dtls( int $team_id, string $season = null ): object|false {
+    public function get_team_dtls( int $team_id, ?string $season = null ): object|false {
         global $wpdb;
         if ( empty( $season ) ) {
             $season = $this->current_season['name'];
@@ -2183,7 +2183,7 @@ class League {
      *
      * @return int
      */
-    public function get_num_teams( string $status = null, bool $latest = false ): int {
+    public function get_num_teams( ?string $status = null, bool $latest = false ): int {
         $args['count']            = true;
         $args['season']           = $this->current_season['name'];
         $args['reset_query_args'] = true;

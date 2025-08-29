@@ -468,7 +468,7 @@ final class Player {
      *
      * @param object|null $player Player object.
      */
-    public function __construct( object $player = null ) {
+    public function __construct( ?object $player = null ) {
         if ( ! is_null( $player ) ) {
             foreach ( $player as $key => $value ) {
                 $this->$key = $value;
@@ -852,7 +852,7 @@ final class Player {
      * @param string|null $type match type.
      * @return array of matches.
      */
-    public function get_matches( ?object $grouping, ?string $season, string $match_source, int $period = null, string $type = null ): array {
+    public function get_matches( ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array {
         global $racketmanager;
         $statistics = array();
         if ( 'league' === $match_source ) {

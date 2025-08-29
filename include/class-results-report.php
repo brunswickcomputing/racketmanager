@@ -74,7 +74,7 @@ final class Results_Report {
      *
      * @param object|null $results_report results_report object.
      */
-    public function __construct( object $results_report = null ) {
+    public function __construct( ?object $results_report = null ) {
         if ( ! is_null( $results_report ) ) {
             foreach ( get_object_vars( $results_report ) as $key => $value ) {
                 $this->$key = $value;

@@ -453,7 +453,7 @@ final class League_Team {
      *
      * @param object|null $league_team League_Team object.
      */
-    public function __construct( object $league_team = null ) {
+    public function __construct( ?object $league_team = null ) {
         if ( ! is_null( $league_team ) ) {
             if ( empty( $league_team->custom ) ) {
                 $league_team->custom = array();

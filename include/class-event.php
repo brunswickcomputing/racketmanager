@@ -665,7 +665,7 @@ class Event {
      * @param string|null $season season.
      * @param boolean $force_overwrite force overwrite.
      */
-    public function set_season( string $season = null, bool $force_overwrite = false ): void {
+    public function set_season( ?string $season = null, bool $force_overwrite = false ): void {
          global $wp;
         if ( ! empty( $season ) && true === $force_overwrite ) {
             $data = $this->seasons[ $season ];
@@ -2035,7 +2035,7 @@ class Event {
      *
      * @param array $season season data.
      */
-    public function add_season(array $season ): void {
+    public function add_season( array $season ): void {
         global $racketmanager;
         $seasons                 = $this->seasons;
         $season_name             = $season['name'];
@@ -2116,7 +2116,7 @@ class Event {
      *
      * @return false|int
      */
-    public function add_league( string $league_title = null ): false|int {
+    public function add_league( ? string $league_title = null ): false|int {
         if ( empty( $league_title ) ) {
             $league_count = $this->has_leagues();
             ++$league_count;

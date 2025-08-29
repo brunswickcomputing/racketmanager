@@ -107,7 +107,7 @@ final class Message {
      *
      * @param object|null $message message object.
      */
-    public function __construct( object $message = null ) {
+    public function __construct( ?object $message = null ) {
         if ( ! is_null( $message ) ) {
             foreach ( get_object_vars( $message ) as $key => $value ) {
                 $this->$key = $value;

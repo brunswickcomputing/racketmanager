@@ -107,7 +107,7 @@ final class Tournament_Entry {
      *
      * @param object|null $tournament_entry Tournament Entry object.
      */
-    public function __construct( object $tournament_entry = null ) {
+    public function __construct( ?object $tournament_entry = null ) {
         if ( ! is_null( $tournament_entry ) ) {
             foreach ( $tournament_entry as $key => $value ) {
                 $this->$key = $value;

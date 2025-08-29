@@ -1033,7 +1033,7 @@ class Shortcodes_Competition extends Shortcodes {
      * @param string|null $template template name.
      * @return string content
      */
-    private function show_tournament_entry( object $tournament, object $player = null, string $template = null ): string {
+    private function show_tournament_entry( object $tournament, ?object $player = null, ?string $template = null ): string {
         global $racketmanager;
         if ( ! $tournament ) {
             return $this->return_error( $this->tournament_not_found );

@@ -257,7 +257,7 @@ final class Rubber {
      * @param int|null $rubber_id rubber id.
      * @return null|object rubber.
      */
-    public static function get_instance(int $rubber_id = null ): object|null {
+    public static function get_instance( ?int $rubber_id = null ): object|null {
         global $wpdb;
         $rubber_id = (int) $rubber_id;
         if ( ! $rubber_id ) {
@@ -284,7 +284,7 @@ final class Rubber {
      *
      * @param object|null $rubber rubber object.
      */
-    public function __construct(object $rubber = null ) {
+    public function __construct( ?object $rubber = null ) {
         global $racketmanager;
         if ( ! is_null( $rubber ) ) {
             if ( ! empty( $rubber->custom ) ) {

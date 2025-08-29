@@ -232,7 +232,7 @@ final class User {
      *
      * @param object|null $user User object.
      */
-    public function __construct( object $user = null ) {
+    public function __construct( ?object $user = null ) {
         if ( ! is_null( $user ) ) {
             foreach ( $user as $key => $value ) {
                 $this->$key = $value;
@@ -571,7 +571,7 @@ final class User {
      * @param string|null $favourites_type optional favourites search criteria.
      * @return array
      */
-    public function get_favourites( string $favourites_type = null ): array {
+    public function get_favourites( ?string $favourites_type = null ): array {
         $favourites_types = array( 'competition', 'league', 'club', 'team', 'player' );
         $favourites       = array();
         if ( $favourites_type ) {

@@ -515,7 +515,7 @@ class Shortcodes {
 	 * @param string|null $directory optional directory name.
 	 * @return boolean
 	 */
-	public function check_template( string $template, string $directory = null ): bool {
+	public function check_template( string $template, ?string $directory = null ): bool {
 		$template_dir = 'templates/';
 		if ( $directory ) {
 			$template_dir .= $directory . '/';
@@ -581,7 +581,7 @@ class Shortcodes {
      *
      * @return string output html
      */
-	public function return_error( string $msg, string $template = null ): string {
+	public function return_error( string $msg, ?string $template = null ): string {
         $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
         return $this->load_template( $filename, array(
                 'msg'   => $msg,

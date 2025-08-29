@@ -66,7 +66,7 @@ final class Validator_Entry_Form extends Validator {
      * @param int|null $max_entries maximum number of entries.
      * @return object $validation updated validation object.
      */
-    public function events_entry( array $events, int $max_entries = null ): object {
+    public function events_entry( array $events, ?int $max_entries = null ): object {
         if ( empty( $events ) ) {
             $this->error      = true;
             $this->err_flds[] = 'event';

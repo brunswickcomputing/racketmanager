@@ -146,7 +146,7 @@ final class Results_Checker {
      *
      * @param object|null $results_checker results_checker object.
      */
-    public function __construct( object $results_checker = null ) {
+    public function __construct( ?object $results_checker = null ) {
         if ( ! is_null( $results_checker ) ) {
             foreach ( get_object_vars( $results_checker ) as $key => $value ) {
                 $this->$key = $value;

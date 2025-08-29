@@ -247,7 +247,7 @@ final class Team {
      *
      * @param object|null $team Team object.
      */
-    public function __construct( object $team = null ) {
+    public function __construct( ?object $team = null ) {
         $this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
         $this->msg_team_added         = __( 'Team added', 'racketmanager' );
         $this->msg_team_update_error  = __( 'Team update error', 'racketmanager' );
@@ -491,7 +491,7 @@ final class Team {
      * @param string|null $match_time optional match time.
      * @return boolean
      */
-    public function set_event( int $event_id, string $captain = null, string $contact_no = null, string $contact_email = null, int|null $match_day = null, string|null $match_time = null ): bool {
+    public function set_event( int $event_id, ?string $captain = null, ?string $contact_no = null, ?string $contact_email = null, int|null $match_day = null, string|null $match_time = null ): bool {
         global $wpdb, $racketmanager;
 
         $count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -527,7 +527,7 @@ final class Team {
      * @param string|null $matchtime optional match time.
      * @return int $team_event_id
      */
-    public function add_event( int $event_id, string $captain = null, string $contactno = null, string $contactemail = null, int|null $matchday = null, string $matchtime = null ): int {
+    public function add_event( int $event_id, ?string $captain = null, ?string $contactno = null, ?string $contactemail = null, int|null $matchday = null, string $matchtime = null ): int {
         global $wpdb;
         if ( is_null( $matchday) ) {
             $match_day = '';

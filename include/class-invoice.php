@@ -145,7 +145,7 @@ final class Invoice {
      *
      * @param object|null $invoice invoice object.
      */
-    public function __construct(object $invoice = null ) {
+    public function __construct( ?object $invoice = null ) {
         $this->racketmanager = RacketManager::get_instance();
         if ( ! is_null( $invoice ) ) {
             if ( isset( $invoice->details ) ) {

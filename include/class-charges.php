@@ -118,7 +118,7 @@ final class Charges {
      *
      * @param object|null $charges charges object.
      */
-    public function __construct( object $charges = null ) {
+    public function __construct( ?object $charges = null ) {
         if ( ! is_null( $charges ) ) {
             foreach ( get_object_vars( $charges ) as $key => $value ) {
                 $this->$key = $value;

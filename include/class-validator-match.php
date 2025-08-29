@@ -524,7 +524,7 @@ final class Validator_Match extends Validator {
      *
      * @return void
      */
-    private function validate_set_score( array $set, string $set_prefix, string $team_1, string $team_2, object $set_info, string $match_status = null ): void {
+    private function validate_set_score( array $set, string $set_prefix, string $team_1, string $team_2, object $set_info, ?string $match_status = null ): void {
         $game_difference_incorrect = __( 'Games difference incorrect', 'racketmanager' );
         $tie_break_score_required  = __( 'Tie break score required', 'racketmanager' );
         $tiebreak_allowed  = $set_info->tiebreak_allowed;

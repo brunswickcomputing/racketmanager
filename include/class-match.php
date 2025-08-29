@@ -567,7 +567,7 @@ final class Racketmanager_Match {
      *
      * @param object|null $match Racketmanager_Match object.
      */
-    public function __construct( object $match = null ) {
+    public function __construct( ?object $match = null ) {
         global $wp;
         if ( ! is_null( $match ) ) {
             if ( ! empty( $match->custom ) ) {
@@ -1106,7 +1106,7 @@ final class Racketmanager_Match {
      *
      * @return void
      */
-    public function update_result_tie( int $home_points_tie = null, int $away_points_tie = null ): void {
+    public function update_result_tie( ?int $home_points_tie = null, ?int $away_points_tie = null ): void {
         global $wpdb;
         $update = false;
         if ( 2 === $this->leg && is_null( $home_points_tie ) ) {
@@ -1627,7 +1627,7 @@ final class Racketmanager_Match {
      *
      * @return array|int
      */
-    public function get_rubbers( int $player = null, bool $count = false ): array|int {
+    public function get_rubbers( ?int $player = null, bool $count = false ): array|int {
         global $wpdb;
 
         if ( $count ) {
@@ -1835,7 +1835,7 @@ final class Racketmanager_Match {
      *
      * @return object
      */
-    public function update_match_date( string $match_date, string $original_date = null ): object {
+    public function update_match_date( string $match_date, ?string $original_date = null ): object {
         global $wpdb;
         if ( ! empty( $match_date ) ) {
             $this->set_match_date_in_db( $match_date );
@@ -1984,7 +1984,7 @@ final class Racketmanager_Match {
      *
      * @return object|null
      */
-    public function report_result( string $competition_code = null ): object|null {
+    public function report_result( ?string $competition_code = null ): object|null {
         global $racketmanager;
         $result = null;
         if ( empty( $competition_code ) ) {

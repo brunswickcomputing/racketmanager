@@ -70,8 +70,8 @@ class Admin extends RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-validator-config.php';
         require_once RACKETMANAGER_PATH . 'include/class-validator-tournament.php';
 
-        add_action( 'admin_enqueue_scripts', array( &$this, 'loadScripts' ) );
-        add_action( 'admin_enqueue_scripts', array( &$this, 'loadStyles' ) );
+        add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );
+        add_action( 'admin_enqueue_scripts', array( &$this, 'load_styles' ) );
 
         add_action( 'admin_menu', array( &$this, 'menu' ) );
         add_action( 'admin_footer', array( &$this, 'scroll_top' ) );
@@ -117,8 +117,8 @@ class Admin extends RacketManager {
             'data:image/svg+xml;base64,' . base64_encode( $svg ),
             2
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager', // parent page.
@@ -128,8 +128,8 @@ class Admin extends RacketManager {
             'racketmanager', // menu slug.
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -139,8 +139,8 @@ class Admin extends RacketManager {
             'racketmanager-leagues',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -150,8 +150,8 @@ class Admin extends RacketManager {
             'racketmanager-cups',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -161,8 +161,8 @@ class Admin extends RacketManager {
             'racketmanager-tournaments',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -172,8 +172,8 @@ class Admin extends RacketManager {
             'racketmanager-clubs',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -183,8 +183,8 @@ class Admin extends RacketManager {
             'racketmanager-results',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -194,8 +194,8 @@ class Admin extends RacketManager {
             'racketmanager-players',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -205,8 +205,8 @@ class Admin extends RacketManager {
             'racketmanager-seasons',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -216,8 +216,8 @@ class Admin extends RacketManager {
             'racketmanager-finances',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -227,8 +227,8 @@ class Admin extends RacketManager {
             'racketmanager-settings',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -238,8 +238,8 @@ class Admin extends RacketManager {
             'racketmanager-import',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         $page = add_submenu_page(
             'racketmanager',
@@ -249,8 +249,8 @@ class Admin extends RacketManager {
             'racketmanager-doc',
             array( $this->admin_display, 'display' )
         );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
-        add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_scripts' ) );
+        add_action( "admin_print_scripts-$page", array( &$this, 'load_styles' ) );
 
         add_filter( 'plugin_action_links_' . RACKETMANAGER_PLUGIN_BASENAME, array( &$this, 'plugin_actions' ) );
     }
@@ -387,7 +387,7 @@ class Admin extends RacketManager {
     /**
      * Load Javascript
      */
-    public function loadScripts(): void {
+    public function load_scripts(): void {
         wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-bootstrap' );
         wp_register_script( 'racketmanager-functions', plugins_url( '/admin/js/functions.js', __DIR__ ), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
@@ -438,7 +438,7 @@ class Admin extends RacketManager {
     /**
      * Load CSS styles
      */
-    public function loadStyles(): void {
+    public function load_styles(): void {
         wp_enqueue_style( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', false, RACKETMANAGER_VERSION, 'screen' );
         wp_enqueue_style( 'racketmanager', plugins_url( '/css/admin.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
         wp_enqueue_style( 'racketmanager-modal', plugins_url( '/css/modal.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );

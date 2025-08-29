@@ -343,7 +343,7 @@ $tab_name = 'fixtures';
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
                     ?>
-                    <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="min_start_time_weekend" id="min_start_time_weekend" placeholder="<?php esc_html_e( 'Min weekend start time', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->start_time['weekend']['minx'] ) ? esc_html( $competition->config->start_time['weekend']['minx'] ) : null; ?>" />
+                    <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="min_start_time_weekend" id="min_start_time_weekend" placeholder="<?php esc_html_e( 'Min weekend start time', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->start_time['weekend']['min'] ) ? esc_html( $competition->config->start_time['weekend']['min'] ) : null; ?>" />
                     <label for="min_start_time_weekend" class="form-label"><?php esc_html_e( 'Minimum weekend start time', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {

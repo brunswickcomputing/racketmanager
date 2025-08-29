@@ -333,6 +333,9 @@ final class Team {
         }
         $this->stadium = '';
         $this->profile = '';
+        if ( ! isset( $this->status ) ) {
+            $this->status  = '';
+        }
         $result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "INSERT INTO $wpdb->racketmanager_teams (`title`, `club_id`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",

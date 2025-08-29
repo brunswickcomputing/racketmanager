@@ -36,13 +36,7 @@ class Admin extends RacketManager {
      * @var array|null $error_messages
      */
     public ?array $error_messages;
-    /**
-     * Error fields.
-     *
-     * @var array|null $error_messages
-     */
-    public ?array $error_fields;
-    public object $ajax_admin;
+     public object $ajax_admin;
     private Admin_Display $admin_display;
 
     /**

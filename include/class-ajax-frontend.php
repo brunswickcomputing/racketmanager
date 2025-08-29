@@ -79,7 +79,7 @@ class Ajax_Frontend extends Ajax {
 		global $racketmanager;
 		$return = $this->check_security_token('racketmanager_nonce','club-player-request' );
 		if ( empty( $return->error ) ) {
-			$player_valid = $racketmanager->validatePlayer();
+			$player_valid = $racketmanager->validate_player();
 			if ( $player_valid[0] ) {
 				$new_player = $player_valid[1];
 				if ( isset( $_POST['club'] ) ) {
@@ -327,7 +327,7 @@ class Ajax_Frontend extends Ajax {
 		if ( empty( $return->error ) ) {
 			$player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
 			if ( $player_id ) {
-				$player_valid = $racketmanager->validatePlayer();
+				$player_valid = $racketmanager->validate_player();
 				if ( $player_valid[0] ) {
 					$player     = get_player( $player_id );
 					$new_player = $player_valid[1];

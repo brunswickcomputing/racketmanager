@@ -12,7 +12,7 @@ namespace Racketmanager;
 /**
  * Class to implement the Config Validator object
  */
-final class Validator_Config extends Validator {
+class Validator_Config extends Validator {
     /**
      * Validate name
      *

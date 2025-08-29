@@ -720,10 +720,10 @@ final class Club {
             return $this->num_players;
         }
         $sql         = 'SELECT `id` as `roster_id`, `player_id`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`' . $sql;
-        $players_out = array();
-        $players     = wp_cache_get( md5( $sql ), 'club-players' );
-        if ( ! $players ) {
-            $players = $wpdb->get_results(
+        $players_out = wp_cache_get( md5( $sql ), 'club-players' );
+        if ( ! $players_out ) {
+            $players_out = array();
+            $players     = $wpdb->get_results(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $sql
             ); // db call ok.

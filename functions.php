@@ -218,7 +218,7 @@ function wp_get_current_url(): ?string {
  *
  * @return Club|null club|null
  */
-function get_club( object|int|string $club = null, string $search_term = 'id' ): Club|null {
+function get_club( object|int|string|null $club = null, string $search_term = 'id' ): Club|null {
     if ( empty( $club ) && isset( $GLOBALS['club'] ) ) {
         $club = $GLOBALS['club'];
     }
@@ -244,7 +244,7 @@ function get_club( object|int|string $club = null, string $search_term = 'id' ):
  *
  * @return Competition|null competition|null
  */
-function get_competition( Competition|int|string $competition = null, ?string $search_term = 'id' ): ?Competition {
+function get_competition( Competition|int|string|null $competition = null, ?string $search_term = 'id' ): ?Competition {
     if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
         $competition = $GLOBALS['competition'];
     }
@@ -281,7 +281,7 @@ function get_competition( Competition|int|string $competition = null, ?string $s
  *
  * @return Event|null event|null
  */
-function get_event( int|string|Event $event = null, string $search_term = 'id' ): Event|null {
+function get_event( int|string|Event|null $event = null, string $search_term = 'id' ): Event|null {
     if ( empty( $event ) && isset( $GLOBALS['event'] ) ) {
         $event = $GLOBALS['event'];
     }
@@ -317,7 +317,7 @@ function get_event( int|string|Event $event = null, string $search_term = 'id' )
  *
  * @return League|null League|null
  */
-function get_league( object|int|string $league = null ): ?League {
+function get_league( object|int|string|null $league = null ): ?League {
     if ( empty( $league ) && isset( $GLOBALS['league'] ) ) {
         $league = $GLOBALS['league'];
     }
@@ -350,7 +350,7 @@ function get_league( object|int|string $league = null ): ?League {
  *
  * @return Racketmanager_Match|null Racketmanager_Match|null
  */
-function get_match( object|int $match = null ): Racketmanager_Match|null {
+function get_match( object|int|null $match = null ): Racketmanager_Match|null {
     if ( empty( $match ) && isset( $GLOBALS['match'] ) ) {
         $match = $GLOBALS['match'];
     }
@@ -377,7 +377,7 @@ function get_match( object|int $match = null ): Racketmanager_Match|null {
  *
  * @return Rubber|null Rubber|null
  */
-function get_rubber( object|int $rubber = null ): Rubber|null {
+function get_rubber( object|int|null $rubber = null ): Rubber|null {
     if ( empty( $rubber ) && isset( $GLOBALS['rubber'] ) ) {
         $rubber = $GLOBALS['rubber'];
     }
@@ -405,7 +405,7 @@ function get_rubber( object|int $rubber = null ): Rubber|null {
  *
  * @return Tournament|null tournament|null
  */
-function get_tournament( object|int|string $tournament = null, string $search_term = 'id' ): Tournament|null {
+function get_tournament( object|int|string|null $tournament = null, string $search_term = 'id' ): Tournament|null {
     if ( empty( $tournament ) && isset( $GLOBALS['tournament'] ) ) {
         $tournament = $GLOBALS['tournament'];
     }
@@ -432,7 +432,7 @@ function get_tournament( object|int|string $tournament = null, string $search_te
  *
  * @return object|null tournament|null
  */
-function get_tournament_entry( object|int|string $tournament_entry = null, string $search_term = 'id' ): Tournament_Entry|null {
+function get_tournament_entry( object|int|string|null $tournament_entry = null, string $search_term = 'id' ): Tournament_Entry|null {
     if ( empty( $tournament_entry ) && isset( $GLOBALS['tournament_entry'] ) ) {
         $tournament_entry = $GLOBALS['tournament_entry'];
     }
@@ -455,7 +455,7 @@ function get_tournament_entry( object|int|string $tournament_entry = null, strin
  *
  * @return object|null Team|null
  */
-function get_team( object|int|string $team = null ): ?object {
+function get_team( object|int|string|null $team = null ): ?object {
     if ( empty( $team ) && isset( $GLOBALS['team'] ) ) {
         $team = $GLOBALS['team'];
     }
@@ -483,7 +483,7 @@ function get_team( object|int|string $team = null ): ?object {
  *
  * @return object|null player|null
  */
-function get_player( object|int|string $player = null, string $search_term = 'id' ): ?object {
+function get_player( object|int|string|null $player = null, string $search_term = 'id' ): ?object {
     if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
         $player = $GLOBALS['player'];
     }
@@ -507,7 +507,7 @@ function get_player( object|int|string $player = null, string $search_term = 'id
  *
  * @return object|null user|null
  */
-function get_user( object|int|string $user = null ): ?object {
+function get_user( object|int|string|null $user = null ): ?object {
     if ( empty( $user ) && isset( $GLOBALS['user'] ) ) {
         $user = $GLOBALS['user'];
     }
@@ -531,7 +531,7 @@ function get_user( object|int|string $user = null ): ?object {
  *
  * @return object|null charges|null
  */
-function get_charge( object|int|string $charges = null ): ?object {
+function get_charge( object|int|string|null $charges = null ): ?object {
     if ( empty( $charges ) && isset( $GLOBALS['charges'] ) ) {
         $charges = $GLOBALS['charges'];
     }
@@ -557,7 +557,7 @@ function get_charge( object|int|string $charges = null ): ?object {
  *
  * @return object|null invoice|null
  */
-function get_invoice( int $invoice = null ): Invoice|null {
+function get_invoice( ?int $invoice = null ): Invoice|null {
     if ( empty( $invoice ) && isset( $GLOBALS['invoice'] ) ) {
         $invoice = $GLOBALS['invoice'];
     }
@@ -582,7 +582,7 @@ function get_invoice( int $invoice = null ): Invoice|null {
  * @param object|int|null $league_team LeagueTeam ID or LeagueTeam object. Defaults to global $league_team.
  * @return object|null
  */
-function get_league_team( object|int $league_team = null ): League_Team|null {
+function get_league_team( object|int|null $league_team = null ): League_Team|null {
     if ( empty( $league_team ) && isset( $GLOBALS['league_team'] ) ) {
         $league_team = $GLOBALS['league_team'];
     }
@@ -608,7 +608,7 @@ function get_league_team( object|int $league_team = null ): League_Team|null {
  *
  * @return object|null results_report|null
  */
-function get_results_report( object|int $results_report = null ): Results_Report|null {
+function get_results_report( object|int|null $results_report = null ): Results_Report|null {
     if ( empty( $results_report ) && isset( $GLOBALS['results_report'] ) ) {
         $results_report = $GLOBALS['results_report'];
     }
@@ -633,7 +633,7 @@ function get_results_report( object|int $results_report = null ): Results_Report
  * @param int|null|object $results_check results_check ID or results_check object. Defaults to global $results_check.
  * @return object|null results_check|null
  */
-function get_result_check( object|int $results_check = null ): ?object {
+function get_result_check( object|int|null $results_check = null ): ?object {
     if ( empty( $results_check ) && isset( $GLOBALS['results_check'] ) ) {
         $results_check = $GLOBALS['results_check'];
     }
@@ -660,7 +660,7 @@ function get_result_check( object|int $results_check = null ): ?object {
  *
  * @return Message|null message|null
  */
-function get_message( int $message = null ): Message|null {
+function get_message( ?int $message = null ): Message|null {
     if ( empty( $message ) && isset( $GLOBALS['message'] ) ) {
         $message = $GLOBALS['message'];
     }
@@ -706,7 +706,7 @@ function match_add_players( array $match_players, object $match ): array {
  *
  * @return object|null
  */
-function get_player_error( object|int $player_error = null ): Player_Error|null {
+function get_player_error( object|int|null $player_error = null ): Player_Error|null {
     if ( empty( $player_error ) && isset( $GLOBALS['player_error'] ) ) {
         $player_error = $GLOBALS['player_error'];
     }
@@ -732,7 +732,7 @@ function get_player_error( object|int $player_error = null ): Player_Error|null 
  *
  * @return Club_Player|null
  */
-function get_club_player( object|int $club_player = null ): ?Club_Player {
+function get_club_player( object|int|null $club_player = null ): ?Club_Player {
     if ( empty( $club_player ) && isset( $GLOBALS['club_player'] ) ) {
         $club_player = $GLOBALS['club_player'];
     }
@@ -755,7 +755,7 @@ function get_club_player( object|int $club_player = null ): ?Club_Player {
  * @param int|null $season season ID or season object. Defaults to global $season.
  * @return Racketmanager_Season|null season|null
  */
-function get_season( int $season = null ): Season|null {
+function get_season( ?int $season = null ): Season|null {
     if ( empty( $season ) && isset( $GLOBALS['season'] ) ) {
         $season = $GLOBALS['season'];
     }

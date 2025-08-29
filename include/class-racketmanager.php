@@ -442,10 +442,12 @@ class RacketManager {
             $this->wtn_update( $wtn_list, $club_id );
         }
     }
+
     /**
      * Calculate team ratings
      *
      * @param int $competition_id competition id.
+     * @param int $season
      *
      * @return void
      */

@@ -74,25 +74,25 @@ final class Team {
      *
      * @var string
      */
-    public string $player1;
+    public string $player_1;
     /**
      * Player2 name variable
      *
      * @var string
      */
-    public string $player2;
+    public string $player_2;
     /**
      * Player 1 id variable
      *
      * @var int
      */
-    public int $player1_id;
+    public int $player_1_id;
     /**
      * Player 2 ID variable
      *
      * @var int
      */
-    public int $player2_id;
+    public int $player_2_id;
     /**
      * Team type variable
      *
@@ -320,11 +320,11 @@ final class Team {
         }
         $players = array();
         if ( empty( $this->title ) ) {
-            $this->title = $this->player1;
-            $players[]   = $this->player1_id;
+            $this->title = $this->player_1;
+            $players[]   = $this->player_1_id;
             if ( substr( $this->type, 1, 1 ) === 'D' ) {
-                $this->title .= ' / ' . $this->player2;
-                $players[]    = $this->player2_id;
+                $this->title .= ' / ' . $this->player_2;
+                $players[]    = $this->player_2_id;
             }
             $this->roster = $players;
         }
@@ -431,21 +431,21 @@ final class Team {
     /**
      * Update team for players
      *
-     * @param string $player1 player 1 name.
-     * @param int $player1_id player 1 id.
-     * @param string $player2 player 2 name.
-     * @param int $player2_id player 2 id.
+     * @param string $player_1
+     * @param int $player_1_id
+     * @param string $player_2
+     * @param int $player_2_id
      * @param int $club_id affiliated club id.
      */
-    public function update_player( string $player1, int $player1_id, string $player2, int $player2_id, int $club_id ): void {
+    public function update_player( string $player_1, int $player_1_id, string $player_2, int $player_2_id, int $club_id ): void {
         global $wpdb, $racketmanager;
 
         $players   = array();
-        $players[] = $player1_id;
-        $title     = $player1;
-        if ( $player2_id ) {
-            $title    .= ' / ' . $player2;
-            $players[] = $player2_id;
+        $players[] = $player_1_id;
+        $title     = $player_1;
+        if ( $player_2_id ) {
+            $title    .= ' / ' . $player_2;
+            $players[] = $player_2_id;
         }
 
         $club    = get_club( $club_id );

@@ -1401,15 +1401,15 @@ final class Tournament {
                             }
                         }
                         if ( $new_team ) {
-                            $team             = new stdClass();
-                            $team->player1    = $player->display_name;
-                            $team->player1_id = $player->id;
-                            $team->player2    = $partner_name;
-                            $team->player2_id = $partner_id;
-                            $team->type       = $league->type;
-                            $team->team_type  = 'P';
-                            $team->club_id    = $club->id;
-                            $team             = new Team( $team );
+                            $team              = new stdClass();
+                            $team->player_1    = $player->display_name;
+                            $team->player_1_id = $player->id;
+                            $team->player_2    = $partner_name;
+                            $team->player_2_id = $partner_id;
+                            $team->type        = $league->type;
+                            $team->team_type   = 'P';
+                            $team->club_id     = $club->id;
+                            $team              = new Team( $team );
                         }
                         $team->set_event( $league->event_id, $player->id, $player->contactno, $player->email );
                         $league_entry_id = $league->add_team( $team->id, $this->season );

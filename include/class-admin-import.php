@@ -148,15 +148,15 @@ class Admin_Import extends Admin_Display {
                             $league_team->lost_matches = $line[4] ?? 0;
                             if ( isset( $line[5] ) ) {
                                 if (str_contains($line[5], ':')) {
-                                    $points2 = explode( ':', $line[5] );
+                                    $points_2 = explode( ':', $line[5] );
                                 } else {
-                                    $points2 = array( $line[5], 0 );
+                                    $points_2 = array( $line[5], 0 );
                                 }
                             } else {
-                                $points2 = array( 0, 0 );
+                                $points_2 = array( 0, 0 );
                             }
-                            $league_team->points2_plus  = intval( $points2[0] );
-                            $league_team->points2_minus = intval( $points2[1] );
+                            $league_team->points_2_plus  = intval( $points_2[0] );
+                            $league_team->points_2_minus = intval( $points_2[1] );
                             if ( isset( $line[6] ) ) {
                                 if (str_contains($line[6], ':')) {
                                     $points = explode( ':', $line[6] );

@@ -151,6 +151,11 @@ function racketmanager_upgrade(): void {
             }
         }
     }
+    if ( version_compare( $installed, '9.3.0', '<' ) ) {
+        echo esc_html__( 'starting 9.3.0 upgrade', 'racketmanager' ) . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `points_2_plus` `points_2_plus` INT NOT NULL DEFAULT '0';" );
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `points_2_minus` `points_2_minus` INT NOT NULL DEFAULT '0';" );
+    }
     /*
     * Update version and dbversion
     */

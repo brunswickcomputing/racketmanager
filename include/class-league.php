@@ -1362,7 +1362,7 @@ class League {
         if ( $count ) {
             $sql = 'SELECT COUNT(*)';
         } else {
-            $sql = 'SELECT B.`id` AS `id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points2_plus`, A.`points2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating`';
+            $sql = 'SELECT B.`id` AS `id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points_2_plus`, A.`points_2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating`';
         }
         $sql .= " FROM $wpdb->racketmanager_teams B INNER JOIN $wpdb->racketmanager_table A ON B.id = A.team_id WHERE `league_id` = %d";
 
@@ -1464,7 +1464,7 @@ class League {
                 $team->class   = implode( ' ', $class );
                 $team->points_formatted = array(
                     'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
-                    'secondary' => sprintf( $this->point_2_format, $team->points2_plus, $team->points2_minus ),
+                    'secondary' => sprintf( $this->point_2_format, $team->points_2_plus, $team->points_2_minus ),
                 );
                 if ( ! empty( $team->players ) ) {
                     $type        = substr( $this->event->type, 1, 1 );
@@ -1641,7 +1641,7 @@ class League {
         }
 
         $sql = $wpdb->prepare(
-            "SELECT A.`title`, B.`captain`, A.`club_id`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points2_plus`, C.`points2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_table C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN $wpdb->racketmanager_team_events B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM $wpdb->racketmanager WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
+            "SELECT A.`title`, B.`captain`, A.`club_id`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points_2_plus`, C.`points_2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_table C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN $wpdb->racketmanager_team_events B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM $wpdb->racketmanager WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
             $this->id,
             $this->id,
             $team_id,
@@ -1691,7 +1691,7 @@ class League {
         $team->roster           = maybe_unserialize( $team->roster );
         $team->points_formatted = array(
             'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),
-            'secondary' => sprintf( $this->point_2_format, $team->points2_plus, $team->points2_minus ),
+            'secondary' => sprintf( $this->point_2_format, $team->points_2_plus, $team->points_2_minus ),
         );
         if ( 'P' === $team->team_type && null !== $team->roster ) {
             $team->players = array();
@@ -2057,8 +2057,8 @@ class League {
             $team->lost_matches  = 0;
             $team->points_plus   = 0;
             $team->points_minus  = 0;
-            $team->points2_plus  = 0;
-            $team->points2_minus = 0;
+            $team->points_2_plus  = 0;
+            $team->points_2_minus = 0;
 
             // get matches.
             $matches = $this->get_matches( $match_args );
@@ -2079,9 +2079,9 @@ class League {
             $team->points         = $this->calculate_points( $team, $matches );
             $team->points_plus    = $team->points['plus'];
             $team->points_minus   = $team->points['minus'];
-            $team->points2_plus   = 0;
-            $team->points2_minus  = 0;
-            $team->diff           = $team->points2_plus - $team->points2_minus;
+            $team->points_2_plus   = 0;
+            $team->points_2_minus  = 0;
+            $team->diff           = $team->points_2_plus - $team->points_2_minus;
             $team->custom['diff'] = $team->diff;
             $team->win_percent();
             $custom = $this->get_standings_data( $team->id, $team->custom, $matches );
@@ -2555,17 +2555,17 @@ class League {
         $season = $this->current_season['name'];
 
         foreach ( array_keys( $teams ) as $id ) {
-            $points2_plus  = 0;
-            $points2_minus = 0;
-            $diff          = 0;
+            $points_2_plus  = 0;
+            $points_2_minus = 0;
+            $diff           = 0;
 
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_table SET `points_plus` = %d, `points_minus` = %d, `points2_plus` = %d, `points2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `add_points` = %d WHERE `team_id` = %d and `league_id` = %d AND `season` = %s",
+                    "UPDATE $wpdb->racketmanager_table SET `points_plus` = %d, `points_minus` = %d, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `add_points` = %d WHERE `team_id` = %d and `league_id` = %d AND `season` = %s",
                     $points['points_plus'][ $id ],
                     $points['points_minus'][ $id ],
-                    $points2_plus,
-                    $points2_minus,
+                    $points_2_plus,
+                    $points_2_minus,
                     $matches['num_done_matches'][ $id ],
                     $matches['num_won_matches'][ $id ],
                     $matches['num_draw_matches'][ $id ],
@@ -2655,7 +2655,7 @@ class League {
 
             $league_team->points  = $this->calculate_points( $league_team );
             $league_team->diff    = 0;
-            $league_team->points2 = array(
+            $league_team->points_2 = array(
                 'plus'  => 0,
                 'minus' => 0,
             );
@@ -2663,11 +2663,11 @@ class League {
             $league_team->custom = $this->get_standings_data( $league_team->id, $league_team->custom );
             $wpdb->query(
                 $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_table SET `points_plus` = %f, `points_minus` = %f, `points2_plus` = %d, `points2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `custom` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",
+                    "UPDATE $wpdb->racketmanager_table SET `points_plus` = %f, `points_minus` = %f, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `custom` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",
                     $league_team->points['plus'],
                     $league_team->points['minus'],
-                    $league_team->points2['plus'],
-                    $league_team->points2['minus'],
+                    $league_team->points_2['plus'],
+                    $league_team->points_2['minus'],
                     $league_team->done_matches,
                     $league_team->won_matches,
                     $league_team->draw_matches,
@@ -2803,7 +2803,7 @@ class League {
         if ( $team1->diff === $team2->diff ) {
             $res['diff'] = true;
         }
-        if ( $team1->points2['plus'] === $team2->points2['plus'] ) {
+        if ( $team1->points_2['plus'] === $team2->points_2['plus'] ) {
             $res['secondary'] = true;
         }
         if ( $team1->win_percent === $team2->win_percent ) {

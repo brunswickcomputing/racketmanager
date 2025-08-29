@@ -1107,10 +1107,15 @@ class Util {
      *
      * @return string
      */
-    public static function search_string( array $search_terms ) : string {
+    public static function search_string( array $search_terms, bool $standalone = false ) : string {
         $search = '';
         if ( ! empty( $search_terms ) ) {
-            $search = ' AND ' . implode( ' AND ', $search_terms );
+            if ( $standalone ) {
+                $search = ' WHERE ';
+            } else {
+                $search = ' AND ';
+            }
+            $search .= implode( ' AND ', $search_terms );
         }
         return $search;
     }

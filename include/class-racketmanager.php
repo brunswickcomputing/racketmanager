@@ -452,12 +452,8 @@ class RacketManager {
     public function calculate_team_ratings( int $competition_id, int $season ): void {
         if ( $competition_id ) {
             $competition = get_competition( $competition_id );
-            if ( $competition ) {
-                if ( $season ) {
-                    if ( isset( $competition->seasons[ $season ] ) ) {
-                        $competition->calculate_team_ratings( $season );
-                    }
-                }
+            if ( $competition && $season && isset( $competition->seasons[ $season ] ) ) {
+                $competition->calculate_team_ratings( $season );
             }
         }
     }

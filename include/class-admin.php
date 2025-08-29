@@ -252,7 +252,7 @@ class Admin extends RacketManager {
         add_action( "admin_print_scripts-$page", array( &$this, 'loadScripts' ) );
         add_action( "admin_print_scripts-$page", array( &$this, 'loadStyles' ) );
 
-        add_filter( 'plugin_action_links_' . RACKETMANAGER_PLUGIN_BASENAME, array( &$this, 'pluginActions' ) );
+        add_filter( 'plugin_action_links_' . RACKETMANAGER_PLUGIN_BASENAME, array( &$this, 'plugin_actions' ) );
     }
 
     /**
@@ -378,7 +378,7 @@ class Admin extends RacketManager {
      *
      * @return array
      */
-    public function pluginActions( array $links ): array {
+    public function plugin_actions( array $links ): array {
         $links['settings']      = '<a href="/wp-admin/admin.php?page=racketmanager-settings">' . __( 'Settings', 'racketmanager' ) . '</a>';
         $links['documentation'] = '<a href="/wp-admin/admin.php?page=racketmanager-doc">' . __( 'Documentation', 'racketmanager' ) . '</a>';
         return $links;

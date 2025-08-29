@@ -662,7 +662,6 @@ final class Admin_Competition extends Admin_Display {
      * @return void
      */
     private function schedule_team_ratings( int $competition_id, object $season ): void {
-        global $racketmanager;
         if ( empty( $season->date_closing ) ) {
             $day            = intval( gmdate( 'd' ) );
             $month          = intval( gmdate( 'm' ) );
@@ -682,7 +681,7 @@ final class Admin_Competition extends Admin_Display {
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
         if ( ! $success ) {
-            $racketmanager->set_message( __( 'Error scheduling team ratings calculation', 'racketmanager' ), true );
+            $this->set_message( __( 'Error scheduling team ratings calculation', 'racketmanager' ), true );
         }
     }
     /**

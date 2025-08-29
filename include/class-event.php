@@ -2013,7 +2013,7 @@ class Event {
      *
      * @param array $seasons season data.
      */
-    public function update_seasons(array $seasons ): bool {
+    public function update_seasons( array $seasons ): bool {
         global $wpdb;
         if ( $this->seasons !== $seasons ) {
             $this->seasons = $seasons;

@@ -297,7 +297,7 @@ class Util {
      * @param int|null $leg leg number.
      * @return string set type.
      */
-    public static function get_set_type( string $scoring, string $round = null, int $num_sets = 99, int $set = 1, int $rubber_number = null, int $num_rubbers = null, int $leg = null ): string {
+    public static function get_set_type( string $scoring, ?string $round = null, int $num_sets = 99, int $set = 1, ?int $rubber_number = null, ?int $num_rubbers = null, ?int $leg = null ): string {
         if ( 'TB' === $scoring ) {
             $set_type = 'TB';
         } elseif ( 'TBM' === $scoring ) {
@@ -743,13 +743,15 @@ class Util {
         $event_grades['U'] = __( 'Ungraded', 'racketmanager' );
         return $event_grades;
     }
+
     /**
      * Get match status values function
      *
-     * @param string $age_range age range.
+     * @param string|null $age_range age range.
+     *
      * @return array
      */
-    public static function get_age_limits( string $age_range = null ): array {
+    public static function get_age_limits( ?string $age_range = null ): array {
         $age_limits         = array();
         if ( empty( $age_range ) || 'open' == $age_range ) {
             $age_limits['open'] = __( 'Open', 'racketmanager' );

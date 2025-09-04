@@ -153,8 +153,8 @@ function racketmanager_upgrade(): void {
     }
     if ( version_compare( $installed, '9.3.0', '<' ) ) {
         echo esc_html__( 'starting 9.3.0 upgrade', 'racketmanager' ) . "<br />\n";
-        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `points_2_plus` `points_2_plus` INT NOT NULL DEFAULT '0';" );
-        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `points_2_minus` `points_2_minus` INT NOT NULL DEFAULT '0';" );
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `points2_plus` `points_2_plus` INT NOT NULL DEFAULT '0';" );
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_table} CHANGE `points2_minus` `points_2_minus` INT NOT NULL DEFAULT '0';" );
         $tables = $wpdb->get_results( "SELECT `id`, `custom` FROM {$wpdb->racketmanager_table} WHERE `custom` LIKE '%{s:7:\"points2\"%'");
         foreach ( $tables as $table ) {
             $custom = unserialize( $table->custom );

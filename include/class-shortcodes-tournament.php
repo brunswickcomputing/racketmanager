@@ -76,6 +76,7 @@ class Shortcodes_Tournament extends Shortcodes {
 				),
 			)
 		);
+        $wp->set_query_var( 'season', $tournament->season );
         $tab      = get_tab();
 		$filename = ( ! empty( $template ) ) ? 'tournament-' . $template : 'tournament';
 

@@ -10,6 +10,7 @@ namespace Racketmanager;
 /** @var string $intro */
 /** @var array  $body */
 /** @var string $closing */
+/** @var string $closing_text */
 /** @var string $object_type */
 /** @var string $title */
 /** @var string $paragraph */
@@ -32,8 +33,8 @@ foreach ( $body as $i => $body_entry ) {
         require $paragraph;
     }
 }
-if ( $closing ) {
-    $paragraph_text = $closing;
+if ( $closing_text ) {
+    $paragraph_text = $closing_text;
     require $paragraph;
 }
 require $closing;

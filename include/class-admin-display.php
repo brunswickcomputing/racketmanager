@@ -196,7 +196,7 @@ class Admin_Display {
                         'title_text'    => $email_title,
                         'intro'         => $email_intro,
                         'body'          => $email_body,
-                        'closing'       => $email_close,
+                        'closing_text'  => $email_close,
                         'email_subject' => $email_subject,
                     ),
                     'email'

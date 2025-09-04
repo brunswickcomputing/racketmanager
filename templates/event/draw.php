@@ -33,7 +33,7 @@ namespace Racketmanager;
     </div>
 </div>
 <script type="text/javascript">
-    const matchLinks = document.querySelectorAll('.score-row__wrapper');
+    let matchLinks = document.querySelectorAll('.score-row__wrapper');
     matchLinks.forEach(el => el.addEventListener('click', function (e) {
         Racketmanager.viewMatch(e)
     }));

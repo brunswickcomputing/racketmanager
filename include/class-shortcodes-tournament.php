@@ -680,7 +680,7 @@ class Shortcodes_Tournament extends Shortcodes {
 		$order_of_play           = array();
 		$times  = array();
 		$courts = array();
-		foreach ($tournament->order_of_play as $final_courts ) {
+		foreach ( $tournament->order_of_play as $final_courts ) {
 			$court = $final_courts['court'];
 			$courts[ $court ] = array();
 			foreach ( $final_courts['matches'] as $match_id ) {
@@ -704,6 +704,7 @@ class Shortcodes_Tournament extends Shortcodes {
 				}
 			}
 		}
+        sort( $times );
 		foreach ( $times as $time ) {
 			foreach ( $courts as $court => $court_matches ) {
 				if ( ! isset( $court_matches[ $time ] ) ) {

@@ -295,9 +295,9 @@ final class Player {
     /**
      * Win pct variable
      *
-     * @var float
+     * @var float|null
      */
-    public float $win_pct;
+    public ?float $win_pct;
     /**
      * Played variable
      *

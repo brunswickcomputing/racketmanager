@@ -953,12 +953,7 @@ class Competition {
         $search_terms   = array();
         $search_terms[] = $wpdb->prepare( '`competition_id` = %d', $this->id );
 
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' WHERE ';
-            $search .= implode( ' AND ', $search_terms );
-        }
-
+        $search         = Util::search_string( $search_terms, true );
         $orderby_string = '';
         $i              = 0;
         foreach ( $orderby as $order => $direction ) {
@@ -1066,12 +1061,7 @@ class Competition {
             $search_terms[] = $wpdb->prepare( 't2.`title` like %s', '%' . $name . '%' );
         }
 
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
-
+        $search = Util::search_string( $search_terms );
         if ( $count ) {
             $sql = 'SELECT COUNT(*)';
         } else {
@@ -1200,11 +1190,7 @@ class Competition {
                 $search_args[]   = $club;
                 $search_args[]   = 'away';
             }
-            $search = '';
-            if ( ! empty( $search_terms ) ) {
-                $search  = ' AND ';
-                $search .= implode( ' AND ', $search_terms );
-            }
+            $search         = Util::search_string( $search_terms );
             $orderby_string = '';
             $order          = '';
             $i              = 0;
@@ -1336,12 +1322,7 @@ class Competition {
             $search_terms[] = $wpdb->prepare( 'c.`id` = %d', intval( $club_id ) );
         }
 
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
-
+        $search = Util::search_string( $search_terms );
         if ( $count ) {
             $sql = 'SELECT COUNT(*)';
         } else {
@@ -1424,28 +1405,29 @@ class Competition {
         $result_pending       = $match_args['resultPending'];
         $status               = $match_args['status'];
         $sql_from             = " FROM $wpdb->racketmanager_matches AS m, $wpdb->racketmanager AS l, $wpdb->racketmanager_events AS e, $wpdb->racketmanager_rubbers AS r";
+        $search_terms         = array();
         if ( $count ) {
             $sql_fields = 'SELECT COUNT(*)';
-            $sql        = " WHERE 1 = 1 AND l.`event_id` = e.`id` AND e.`competition_id` = $this->id";
+            $sql        = " WHERE l.`event_id` = e.`id` ";
         } else {
             $sql_fields = "SELECT DISTINCT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, m.`leg`";
-            $sql        = " WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id` AND l.`event_id` = e.`id` AND e.`competition_id` = $this->id";
+            $sql        = " WHERE m.`league_id` = l.`id` AND m.`id` = r.`match_id` AND l.`event_id` = e.`id` ";
         }
-
+        $search_terms[] = $wpdb->prepare( "e.`competition_id` = %d", $this->id );
         if ( $match_date ) {
-            $sql .= " AND DATEDIFF('" . htmlspecialchars( wp_strip_all_tags( $match_date ) ) . "', `date`) = 0";
+            $search_terms[] = $wpdb->prepare( " DATEDIFF( %s, `date`) = 0", htmlspecialchars( wp_strip_all_tags( $match_date ) ) );
         }
         if ( $league_id ) {
-            $sql .= " AND `league_id`  = '" . $league_id . "'";
+            $search_terms[] = $wpdb->prepare( "`league_id` = %d", $league_id );
         }
         if ( $league_name ) {
-            $sql .= " AND `league_id` in (select `id` from $wpdb->racketmanager WHERE `title` = '" . $league_name . "')";
+            $search_terms[] = $wpdb->prepare( "league_id` in (select `id` from $wpdb->racketmanager WHERE `title` = %s ", $league_name);
         }
         if ( $season ) {
-            $sql .= " AND `season`  = '" . $season . "'";
+            $search_terms[] = $wpdb->prepare( ' `season` = %s ', $season );
         }
         if ( $final ) {
-            $sql .= " AND `final`  = '" . $final . "'";
+            $search_terms[] = $wpdb->prepare( "`final` = %d", $final );
         }
         if ( $time_offset ) {
             $time_offset = intval( $time_offset ) . ':00:00';
@@ -1453,18 +1435,18 @@ class Competition {
             $time_offset = '00:00:00';
         }
         if ( $status ) {
-            $sql .= " AND `confirmed` = '" . $status . "'";
+            $search_terms[] = $wpdb->prepare( "`confirmed` = %d", $status );
         }
         if ( $confirmed ) {
-            $sql .= " AND `confirmed` in ('P','A','C')";
+            $search_terms[] = "`confirmed` in ('P','A','C')";
             if ( $time_offset ) {
-                $sql .= " AND ADDTIME(`updated`,'" . $time_offset . "') <= NOW()";
+                $search_terms[] = $wpdb->prepare( "ADDTIME( `updated`, %s ) <= NOW()", $time_offset );
             }
         }
         if ( $player ) {
             $sql_from .= ", $wpdb->racketmanager_rubber_players AS rp";
-            $sql      .= ' AND r.`id` = rp.`rubber_id`';
-            $sql      .= " AND rp.`player_id` = '$player'";
+            $search_terms[] = ' r.`id` = rp.`rubber_id`';
+            $search_terms[] = $wpdb->prepare( "rp.`player_id` = %d", $player );
         }
         if ( $confirmation_pending ) {
             $confirmation_pending = intval( $confirmation_pending ) . ':00:00';
@@ -1477,36 +1459,40 @@ class Competition {
 
         // get only finished matches with score for time 'latest'.
         if ( 'latest' === $time ) {
-            $sql .= " AND (m.`home_points` != '' OR m.`away_points` != '')";
+            $search_terms[] = " (m.`home_points` != '' OR m.`away_points` != '') ";
         } elseif ( 'outstanding' === $time ) {
-            $sql .= " AND ADDTIME(m.`date`,'" . $time_offset . "') <= NOW() AND m.`winner_id` = 0 AND `confirmed` IS NULL";
+            $search_terms[] = $wpdb->prepare(" ADDTIME(m.`date`, %s) <= NOW() ", $time_offset );
+            $search_terms[] = " m.`winner_id` = 0 ";
+            $search_terms[] = " `confirmed` IS NULL ";
         } elseif ( 'next' === $time ) {
-            $sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0';
+            $search_terms[] = ' TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0';
         }
         // get only updated matches in specified period for history.
         if ( $history ) {
-            $sql .= ' AND `updated` >= NOW() - INTERVAL ' . $history . ' DAY';
+            $search_terms[] = $wpdb->prepare( "`updated` >= NOW() - INTERVAL %s DAY", $history );
         }
 
         if ( $club ) {
-            $sql .= " AND (`home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = " . $club . ") OR `away_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = " . $club . '))';
+            $search_terms[] = $wpdb->prepare( " (`home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d ) OR `away_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d ) ) ",  $club, $club );
         }
         if ( $home_club ) {
-            $sql .= " AND `home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = " . $home_club . ')';
+            $search_terms[] = $wpdb->prepare( " `home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d )", $home_club );
         }
         if ( ! empty( $home_team ) ) {
-            $sql .= ' AND `home_team` = ' . $home_team . ' ';
+            $search_terms[] = $wpdb->prepare( " `home_team` = %s", $home_team );
         }
         if ( ! empty( $away_team ) ) {
-            $sql .= ' AND `away_team` = ' . $away_team . ' ';
+            $search_terms[] = $wpdb->prepare( " `away_team` = %s", $away_team );
         }
         if ( ! empty( $team_name ) ) {
-            $sql .= " AND (`home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `title` LIKE '%" . $team_name . "%') OR `away_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `title` LIKE '%" . $team_name . "%'))";
+            $team_name_search = '%' . $team_name . '%';
+            $search_terms[] = $wpdb->prepare( " (`home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `title` LIKE %s) OR `away_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `title` LIKE %s)) ", $team_name_search, $team_name_search );
         }
         if ( $match_day && intval( $match_day ) > 0 ) {
-            $sql .= ' AND `match_day` = ' . $match_day . ' ';
+            $search_terms[] = $wpdb->prepare( " `match_day` = %d", $match_day );
         }
-        $sql = $sql_fields . $sql_from . $sql;
+        $search = Util::search_string( $search_terms );
+        $sql = $sql_fields . $sql_from . $sql . $search;
         if ( $count ) {
             $matches = intval(
                 $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

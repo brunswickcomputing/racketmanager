@@ -699,6 +699,9 @@ final class Club {
         if ( $active ) {
             $search_terms[] = '`removed_date` IS NULL';
         }
+        if ( $gender ) {
+            $search_terms[] = $wpdb->prepare( "%s = %s", $gender, $gender );
+        }
         $search = '';
         if ( ! empty( $search_terms ) ) {
             $search = implode( ' AND ', $search_terms );

@@ -47,6 +47,21 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.4.0 =
+* BUGFIX: add mising overview tab to allowed tabs list
+* BUGFIX: add missing order of play tab option
+* BUGFIX: use explicit nullable type
+* BUGFIX: use correct weekend min start time field
+* BUGFIX: set status if not provided
+* BUGFIX: use correct function name
+* BUGFIX: use correct cache
+* BUGFIX: ensure times are in order
+* BUGFIX: set season from tournament
+* BUGFIX: handle retired player scores correctly
+* BUGFIX: allow match links to be set for each invocation
+* BUGFIX: allow empty win percentage
+* UPDATE: remove validation
+
 = 9.3.1 =
 * BUGFIX: handle null confirmed indicator for match update result
 * BUGFIX: include sport competition and league classes

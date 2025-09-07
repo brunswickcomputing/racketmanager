@@ -702,14 +702,8 @@ final class Club {
         if ( $gender ) {
             $search_terms[] = $wpdb->prepare( "%s = %s", $gender, $gender );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search = implode( ' AND ', $search_terms );
-        }
-        $sql   = $wpdb->prepare(" FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` > 0", $this->id );
-        if ( ! empty( $search ) ) {
-            $sql .= ' AND ' . $search;
-        }
+        $search = Util::search_string( $search_terms );
+        $sql    = $wpdb->prepare(" FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` > 0 " . $search, $this->id );
         if ( $count ) {
             $sql = 'SELECT COUNT(ID)' . $sql;
             $cache_key = md5( $sql );

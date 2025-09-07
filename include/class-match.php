@@ -3062,7 +3062,7 @@ final class Racketmanager_Match {
                 if ( empty( $share ) && empty( $is_withdrawn ) && empty( $is_cancelled ) ) {
                     $validator = $validator->players_involved( $players, $player_numbers, $ix, $playoff, $rubber->reverse_rubber );
                 }
-                $validator = $validator->match_score( $this, $sets, $match_status, $set_prefix, $ix ); //$match, $sets, $set_prefix, $errors, $rubber_number, $match_status
+                $validator = $validator->match_score( $this, $sets, $rubber_status, $set_prefix, $ix ); //$match, $sets, $set_prefix, $errors, $rubber_number, $match_status
                 if ( empty( $validator->error ) ) {
                     $sets        = $validator->sets;
                     $stats       = $validator->stats;

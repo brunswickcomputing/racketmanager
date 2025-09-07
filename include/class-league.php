@@ -3211,11 +3211,7 @@ class League {
             $search_args[]   = $club;
             $search_args[]   = 'away';
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
+        $search         = Util::search_string( $search_terms );
         $orderby_string = '';
         $order          = '';
         $i              = 0;
@@ -3350,13 +3346,9 @@ class League {
             $search_terms[] = 'ro.`player_id` = %d';
             $search_args[]  = intval( $player );
         }
-        $search = '';
-        if ( ! empty( $search_terms ) ) {
-            $search  = ' AND ';
-            $search .= implode( ' AND ', $search_terms );
-        }
-        $sql = "SELECT distinct t.`id`, t.`title` FROM $wpdb->racketmanager_teams AS t, $wpdb->racketmanager_rubbers AS r, $wpdb->racketmanager_rubber_players AS rp, $wpdb->racketmanager_matches AS m, $wpdb->racketmanager_club_players AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND rp.`club_player_id` = ro.`id` AND ((rp.`player_team` = 'home' AND m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND m.`away_team` = t.`id`)) AND ro.`club_id` = t.`club_id` AND r.`match_id` = m.`id` AND m.`league_id` = %d " . $search;
-        $sql = $wpdb->prepare(
+        $search = Util::search_string( $search_terms );
+        $sql    = "SELECT distinct t.`id`, t.`title` FROM $wpdb->racketmanager_teams AS t, $wpdb->racketmanager_rubbers AS r, $wpdb->racketmanager_rubber_players AS rp, $wpdb->racketmanager_matches AS m, $wpdb->racketmanager_club_players AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND rp.`club_player_id` = ro.`id` AND ((rp.`player_team` = 'home' AND m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND m.`away_team` = t.`id`)) AND ro.`club_id` = t.`club_id` AND r.`match_id` = m.`id` AND m.`league_id` = %d " . $search;
+        $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,
             $search_args,

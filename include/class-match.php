@@ -3388,7 +3388,7 @@ final class Racketmanager_Match {
             case 'walkover_player2':
                 if ( 'MD' === $match_type || 'BD' === $match_type ) {
                     $players['home']['1'] = $dummy_players['home']['noplayer']['male']->roster_id;
-                    $players['home']['2'] = $dummy_players['home']['home']['1'];
+                    $players['home']['2'] = $players['home']['1'];
                     if ( empty( $players['away']['1'] ) ) {
                         $players['away']['1'] = $dummy_players['away']['walkover']['male']->roster_id;
                     }

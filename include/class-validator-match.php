@@ -426,7 +426,10 @@ final class Validator_Match extends Validator {
     public function validate_set( array $set, string $set_prefix, object $set_info, ?string $match_status ): array {
         $completed_set  = false;
         $set_type       = $set_info->set_type;
-        if ( 'walkover_player1' === $match_status || 'walkover_player2' === $match_status ) {
+        $retired        = ! empty( $match_status ) && str_starts_with( $match_status, 'retired' );
+        $walkover       = ! empty( $match_status ) && str_starts_with( $match_status, 'walkover' );
+
+        if ( $walkover ) {
             if ( 'null' === $set_type ) {
                 $set['player1'] = '';
                 $set['player2'] = '';
@@ -435,7 +438,7 @@ final class Validator_Match extends Validator {
                 $set['player2'] = null;
             }
             $set['tiebreak'] = '';
-        } elseif ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status ) {
+        } elseif ( $retired || 'abandoned' === $match_status ) {
             if ( 'null' === $set_type ) {
                 $set['player1']  = '';
                 $set['player2']  = '';
@@ -475,14 +478,14 @@ final class Validator_Match extends Validator {
                     $this->err_msgs[] = __( 'Both scores must be shared', 'racketmanager' );
                 }
             } elseif ( empty( $set['player1'] ) && empty( $set['player2'] ) ) {
-                if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status && 'abandoned' !== $match_status ) {
+                if ( ! $retired && ! $walkover && 'abandoned' !== $match_status ) {
                     $this->error      = true;
                     $this->err_flds[] = $set_prefix . 'player1';
                     $this->err_flds[] = $set_prefix . 'player2';
                     $this->err_msgs[] = __( 'Set scores must be entered', 'racketmanager' );
                 }
             } elseif ( $set['player1'] === $set['player2'] ) {
-                if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status && 'abandoned' !== $match_status ) {
+                if ( ! $retired && ! $walkover && 'abandoned' !== $match_status ) {
                     $this->error      = true;
                     $this->err_flds[] = $set_prefix . 'player1';
                     $this->err_flds[] = $set_prefix . 'player2';
@@ -495,7 +498,7 @@ final class Validator_Match extends Validator {
                 $this->validate_set_score( $set, $set_prefix, 'player2', 'player1', $set_info, $match_status );
                 $completed_set   = $this->completed_set;
             } elseif ( '' === $set['player1'] || '' === $set['player2'] ) {
-                if ( 'retired_player1' !== $match_status && 'retired_player2' !== $match_status ) {
+                if ( ! $retired && ! $walkover ) {
                     $this->error = true;
                     if ( '' === $set['player1'] ) {
                         $this->err_flds[] = $set_prefix . 'player1';

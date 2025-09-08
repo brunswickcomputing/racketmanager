@@ -1387,7 +1387,7 @@ class Competition {
             $search_terms[] = $wpdb->prepare( ' `season` = %s ', $season );
         }
         if ( $final ) {
-            $search_terms[] = $wpdb->prepare( "`final` = %d", $final );
+            $search_terms[] = $wpdb->prepare( "`final` = %s", $final );
         }
         if ( $time_offset ) {
             $time_offset = intval( $time_offset ) . ':00:00';

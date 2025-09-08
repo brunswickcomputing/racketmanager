@@ -1424,21 +1424,7 @@ class League {
                 wp_cache_set( md5( $sql ), $teams, 'leaguetable' );
             }
         } else {
-            $orderby_string = '';
-            $i              = 0;
-            foreach ( $orderby as $order => $direction ) {
-                if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                    $direction = 'ASC';
-                }
-                $orderby_string .= '`' . $order . '` ' . $direction;
-                if ( $i < ( count( $orderby ) - 1 ) ) {
-                    $orderby_string .= ',';
-                }
-                ++$i;
-            }
-            $orderby = $orderby_string;
-
-            $sql .= ' ORDER BY ' . $orderby;
+            $sql .= Util::order_by_string( $orderby );
             $sql  = $wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $sql,
@@ -1932,21 +1918,8 @@ class League {
                 wp_cache_set( md5( $sql ), $matches, 'num_matches' );
             }
         } else {
-            $orderby_string = '';
-            $i              = 0;
-            foreach ( $orderby as $order => $direction ) {
-                if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                    $direction = 'ASC';
-                }
-                $orderby_string .= 'm.`' . $order . '` ' . $direction;
-                if ( $i < ( count( $orderby ) - 1 ) ) {
-                    $orderby_string .= ',';
-                }
-                ++$i;
-            }
-            $order  = $orderby_string;
+            $sql   .= Util::order_by_string( $orderby );
             $offset = intval( $limit > 0 ) ? ( $this->get_current_page() - 1 ) * $limit : 0;
-            $sql   .= " ORDER BY $order";
             if ( intval( $limit > 0 ) ) {
                 $sql .= ' LIMIT ' . intval( $offset ) . ',' . intval( $limit );
             }
@@ -3211,23 +3184,8 @@ class League {
             $search_args[]   = $club;
             $search_args[]   = 'away';
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = '';
-        $order          = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        if ( $orderby_string ) {
-            $order = ' ORDER BY ' . $orderby_string;
-        }
+        $search = Util::search_string( $search_terms );
+        $order  = Util::order_by_string( $orderby );
         if ( $count ) {
             $sql = 'SELECT COUNT(*)';
         } else {

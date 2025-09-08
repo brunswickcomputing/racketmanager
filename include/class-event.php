@@ -817,22 +817,10 @@ class Event {
                 $sql //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             );
         }
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql     = $wpdb->prepare(
+        $order = Util::order_by_string( $orderby );
+        $sql   = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `title`, `id`, `settings`, `event_id` FROM $wpdb->racketmanager $search ORDER BY $orderby LIMIT %d, %d",
+            "SELECT `title`, `id`, `settings`, `event_id` FROM $wpdb->racketmanager $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1001,22 +989,9 @@ class Event {
             $search_terms[] = 'B.`home` = 1';
         }
 
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-
-        $sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM $wpdb->racketmanager_teams B, $wpdb->racketmanager_table A, $wpdb->racketmanager_team_events C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.event_id in (select `event_id` from $wpdb->racketmanager WHERE `id` = A.league_id) AND C.`event_id` = " . $this->id . ' AND A.season = ' . $this->get_season() . " $search ORDER BY $orderby";
+        $search = Util::search_string( $search_terms );
+        $order  = Util::order_by_string( $orderby );
+        $sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM $wpdb->racketmanager_teams B, $wpdb->racketmanager_table A, $wpdb->racketmanager_team_events C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.event_id in (select `event_id` from $wpdb->racketmanager WHERE `id` = A.league_id) AND C.`event_id` = " . $this->id . ' AND A.season = ' . $this->get_season() . " $search $order";
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
         if ( ! $teams ) {
@@ -1453,21 +1428,8 @@ class Event {
             }
             return $event_teams;
         }
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql    .= ' ORDER BY ' . $orderby;
-        $sql     = $wpdb->prepare(
+        $sql .= Util::order_by_string( $orderby );
+        $sql  = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql . ' LIMIT %d, %d',
             intval( $offset ),
@@ -1588,24 +1550,9 @@ class Event {
             $search_args[]  = $club;
             $search_args[]  = 'away';
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = '';
-        $order          = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        if ( $orderby_string ) {
-            $order = ' ORDER BY ' . $orderby_string;
-        }
-        $sql .= $search;
+        $search = Util::search_string( $search_terms );
+        $order  = Util::order_by_string( $orderby );
+        $sql   .= $search;
         if ( $count ) {
             $sql = $wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -1861,18 +1808,7 @@ class Event {
                 )
             );
         } else {
-            $orderby_string = '';
-            $i              = 0;
-            if ( is_array( $orderby ) ) {
-                foreach ( $orderby as $order => $direction ) {
-                    $orderby_string .= '`' . $order . '` ' . $direction;
-                    if ( $i < ( count( $orderby ) - 1 ) ) {
-                        $orderby_string .= ',';
-                    }
-                    ++$i;
-                }
-            }
-            $sql = $sql . ' ORDER BY ' . $orderby_string;
+            $sql .= Util::order_by_string( $orderby );
             // get matches.
             $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared

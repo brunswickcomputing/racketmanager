@@ -953,23 +953,11 @@ class Competition {
         $search_terms   = array();
         $search_terms[] = $wpdb->prepare( '`competition_id` = %d', $this->id );
 
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql     = $wpdb->prepare(
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+        $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `name`, `id`, `settings`, `competition_id` FROM $wpdb->racketmanager_events $search ORDER BY $orderby LIMIT %d, %d",
+            "SELECT `name`, `id`, `settings`, `competition_id` FROM $wpdb->racketmanager_events $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1075,21 +1063,8 @@ class Competition {
                 $sql
             ); // db call ok.
         }
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql    .= ' ORDER BY ' . $orderby;
-        $sql     = $wpdb->prepare(
+        $sql .= Util::order_by_string( $orderby );
+        $sql  = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql . ' LIMIT %d, %d',
             intval( $offset ),
@@ -1190,23 +1165,8 @@ class Competition {
                 $search_args[]   = $club;
                 $search_args[]   = 'away';
             }
-            $search         = Util::search_string( $search_terms );
-            $orderby_string = '';
-            $order          = '';
-            $i              = 0;
-            foreach ( $orderby as $order => $direction ) {
-                if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                    $direction = 'ASC';
-                }
-                $orderby_string .= '`' . $order . '` ' . $direction;
-                if ( $i < ( count( $orderby ) - 1 ) ) {
-                    $orderby_string .= ',';
-                }
-                ++$i;
-            }
-            if ( $orderby_string ) {
-                $order = ' ORDER BY ' . $orderby_string;
-            }
+            $search = Util::search_string( $search_terms );
+            $order  = Util::order_by_string( $orderby );
             if ( $count ) {
                 $sql = 'SELECT COUNT(distinct(`player_id`))';
             } else {
@@ -1501,18 +1461,7 @@ class Competition {
                 )
             );
         } else {
-            $orderby_string = '';
-            $i              = 0;
-            if ( is_array( $orderby ) ) {
-                foreach ( $orderby as $order => $direction ) {
-                    $orderby_string .= '`' . $order . '` ' . $direction;
-                    if ( $i < ( count( $orderby ) - 1 ) ) {
-                        $orderby_string .= ',';
-                    }
-                    ++$i;
-                }
-            }
-            $sql = $sql . ' ORDER BY ' . $orderby_string;
+            $sql .= Util::order_by_string( $orderby );
             // get matches.
             $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared

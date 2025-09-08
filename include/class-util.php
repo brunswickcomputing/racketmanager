@@ -1120,6 +1120,33 @@ class Util {
         }
         return $search;
     }
+
+    /**
+     * Function to return order by string from array
+     *
+     * @param array $order_by order by terms.
+     *
+     * @return string
+     */
+    public static function order_by_string( array $order_by ) : string {
+        $orderby_string = '';
+        $order          = '';
+        $i              = 0;
+        foreach ( $order_by as $order => $direction ) {
+            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
+                $direction = 'ASC';
+            }
+            $orderby_string .= '`' . $order . '` ' . $direction;
+            if ( $i < ( count( $order_by ) - 1 ) ) {
+                $orderby_string .= ',';
+            }
+            ++$i;
+        }
+        if ( $orderby_string ) {
+            $order = ' ORDER BY ' . $orderby_string;
+        }
+        return $order;
+    }
     /**
      * Set table group
      *

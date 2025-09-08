@@ -813,6 +813,9 @@ final class Racketmanager_Match {
                 $args['final']   = $final;
                 $args['season']  = $season;
                 $args['orderby'] = array( 'id' => 'ASC' );
+                if ( $league->event->current_season['home_away'] ) {
+                    $args['leg']     = '2';
+                }
                 $prev_matches    = $league->get_matches( $args );
                 if ( $prev_matches ) {
                     $match_ref = $team[2] - 1;

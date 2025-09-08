@@ -73,7 +73,7 @@ final class Admin_Event extends Admin_Display {
                             if ( $updates ) {
                                 $this->set_message( __( 'Event config updated', 'racketmanager' ) );
                             } else {
-                                $this->set_message( __( 'No updates found', 'racketmanager' ), 'warning' );
+                                $this->set_message( $this->no_updates, 'warning' );
                             }
                         }
                     }
@@ -140,7 +140,7 @@ final class Admin_Event extends Admin_Display {
                             if ( $updates ) {
                                 $this->set_message( __( 'Event added', 'racketmanager' ) );
                             } elseif ( empty( $racketmanager->error_messages ) ) {
-                                $this->set_message( __( 'No updates found', 'racketmanager' ), 'warning' );
+                                $this->set_message( $this->no_updates, 'warning' );
                             } else {
                                 $this->set_message( __( 'Errors found', 'racketmanager' ), true );
                             }

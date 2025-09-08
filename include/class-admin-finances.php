@@ -213,7 +213,7 @@ final class Admin_Finances extends Admin_Display {
                     if ( $updates ) {
                         $this->set_message( __( 'Charge updated', 'racketmanager' ) );
                     } else {
-                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                        $this->set_message( $this->no_updates, 'warning' );
                     }
                 } else {
                     $charge                  = new stdClass();
@@ -278,7 +278,7 @@ final class Admin_Finances extends Admin_Display {
                     if ( $updates ) {
                         $this->set_message( __( 'Invoice updated', 'racketmanager' ) );
                     } else {
-                        $this->set_message( __( 'No updates', 'racketmanager' ), true );
+                        $this->set_message( $this->no_updates, true );
                     }
                 }
             }

@@ -39,7 +39,7 @@ class Admin_Display {
     protected ?string $invalid_permissions;
     protected ?string $invalid_security_token = 'invalid';
     protected ?string $no_permission;
-    protected ?string $team_ranking_saved;
+    protected ?string $team_ranking_saved = 'Team ranking saved';
     public Admin_Club $admin_club;
     public Admin_Tournament $admin_tournament;
     public Admin_Event $admin_event;
@@ -49,6 +49,8 @@ class Admin_Display {
     public Admin_Result $admin_results;
     public Admin_Options $admin_options;
     public Admin_Index $admin_index;
+    protected ?string $no_updates = 'No updates';
+    protected ?string $errors_found = 'Errors found';
 
     /**
      * Constructor
@@ -61,6 +63,8 @@ class Admin_Display {
         $this->invalid_security_token = __( 'Security token invalid', 'racketmanager' );
         $this->no_permission          = __( 'You do not have permission to perform this task', 'racketmanager' );
         $this->team_ranking_saved     = __( 'Team ranking saved', 'racketmanager' );
+        $this->no_updates             = __( 'No updates', 'racketmanager' );
+        $this->errors_found           = __( 'Errors found', 'racketmanager' );
     }
     /**
      * ShowMenu() - show admin menu

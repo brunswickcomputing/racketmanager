@@ -437,7 +437,7 @@ final class Admin_Tournament extends Admin_Championship {
                         $this->set_competition_dates( $tournament );
                         $tournament->schedule_activities();
                     } else {
-                        $this->set_message( __( 'No updates found', 'racketmanager' ), 'warning' );
+                        $this->set_message( $this->no_updates, 'warning' );
                     }
                 } else {
                     $tournament = $tournament_input;
@@ -527,7 +527,7 @@ final class Admin_Tournament extends Admin_Championship {
                     if ( $updates ) {
                         $this->set_message( __( 'Plan updated', 'racketmanager' ) );
                     } else {
-                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                        $this->set_message( $this->no_updates, 'warning' );
                     }
                     $this->show_message();
                 }
@@ -540,7 +540,7 @@ final class Admin_Tournament extends Admin_Championship {
                     if ( $updates ) {
                         $this->set_message( __( 'Plan reset', 'racketmanager' ) );
                     } else {
-                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                        $this->set_message( $this->no_updates, 'warning' );
                     }
                     $this->show_message();
                 }
@@ -561,7 +561,7 @@ final class Admin_Tournament extends Admin_Championship {
                         if ( $updates ) {
                             $this->set_message( __( 'Plan updated', 'racketmanager' ) );
                         } else {
-                            $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                            $this->set_message( $this->no_updates, 'warning' );
                         }
                     } else {
                         $this->set_message( __( 'Unable to update plan', 'racketmanager' ), true );

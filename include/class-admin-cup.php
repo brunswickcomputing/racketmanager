@@ -417,7 +417,7 @@ final class Admin_Cup extends Admin_Championship {
                             if ( $updates ) {
                                 $this->set_message( __( 'Plan updated', 'racketmanager' ) );
                             } else {
-                                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                                $this->set_message( $this->no_updates, 'warning' );
                             }
                         } else {
                             $this->set_message( __( 'Season not specified', 'racketmanager' ), true );
@@ -440,7 +440,7 @@ final class Admin_Cup extends Admin_Championship {
                             if ( $updates ) {
                                 $this->set_message( __( 'Plan reset', 'racketmanager' ) );
                             } else {
-                                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                                $this->set_message( $this->no_updates, 'warning' );
                             }
                         }
                     }
@@ -467,7 +467,7 @@ final class Admin_Cup extends Admin_Championship {
                                 if ( $updates ) {
                                     $this->set_message( __( 'Plan updated', 'racketmanager' ) );
                                 } else {
-                                    $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                                    $this->set_message(  $this->no_updates, 'warning' );
                                 }
                             } else {
                                 $this->set_message( __( 'Unable to update plan', 'racketmanager' ), true );

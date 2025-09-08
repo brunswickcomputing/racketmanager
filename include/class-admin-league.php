@@ -206,7 +206,7 @@ final class Admin_League extends Admin_Display {
                                     $updates                           = $competition_event->update_seasons( $seasons );
                                 }
                             } else {
-                                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                                $this->set_message( $this->no_updates, 'warning' );
                             }
                         } else {
                             $message = implode( '<br>', $msg );
@@ -298,7 +298,7 @@ final class Admin_League extends Admin_Display {
                             if ( $updates ) {
                                 $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
                             } else {
-                                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                                $this->set_message( $this->no_updates, 'warning' );
                             }
                         } else {
                             $message = implode( '<br>', $msg );
@@ -1630,7 +1630,7 @@ final class Admin_League extends Admin_Display {
         } else {
             $league = get_league( intval( $_POST['league_id'] ) );
             if ( sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) === $league->title ) {
-                $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                $this->set_message( $this->no_updates, 'warning' );
             } else {
                 $league_title = isset( $_POST['league_title'] ) ? sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) : null;
                 $sequence     = isset( $_POST['sequence'] ) ? sanitize_text_field( wp_unslash( $_POST['sequence'] ) ) : null;
@@ -1708,7 +1708,7 @@ final class Admin_League extends Admin_Display {
                     if ( $updates ) {
                         $this->set_message( __( 'Updated', 'racketmanager' ) );
                     } else {
-                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                        $this->set_message( $this->no_updates, 'warning' );
                     }
                 }
             }

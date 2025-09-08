@@ -509,19 +509,7 @@ final class User {
             $sql   .= " AND $search";
         }
 
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $order = $orderby_string;
+        $order = Util::order_by_string( $orderby );
         if ( $count ) {
             $sql = 'SELECT COUNT(ID)' . $sql;
             return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -532,7 +520,7 @@ final class User {
 
         $sql = 'SELECT `id` ' . $sql;
         if ( '' !== $order ) {
-            $sql .= " ORDER BY $order";
+            $sql .= $order;
         }
 
         $messages = wp_cache_get( md5( $sql ), 'messages' );

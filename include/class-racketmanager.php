@@ -1374,24 +1374,11 @@ class RacketManager {
         if ( $age_group ) {
             $search_terms[] = $wpdb->prepare(" `competition_id` in (select `id` from $wpdb->racketmanager_competitions WHERE `age_group` = %s)", $age_group );
         }
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-
-        $sql = $wpdb->prepare(
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+        $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `id` FROM $wpdb->racketmanager_tournaments $search ORDER BY $orderby LIMIT %d, %d",
+            "SELECT `id` FROM $wpdb->racketmanager_tournaments $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1552,23 +1539,11 @@ class RacketManager {
         if ( $age_group ) {
             $search_terms[] = $wpdb->prepare( '`age_group` = %s', $age_group );
         }
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql     = $wpdb->prepare(
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+        $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `id` FROM $wpdb->racketmanager_competitions $search ORDER BY $orderby LIMIT %d, %d",
+            "SELECT `id` FROM $wpdb->racketmanager_competitions $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1641,23 +1616,11 @@ class RacketManager {
             default:
                 break;
         }
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql     = $wpdb->prepare(
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+        $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `name`, `id`, `type`, `settings`, `seasons` FROM $wpdb->racketmanager_events $search ORDER BY $orderby LIMIT %d, %d",
+            "SELECT `name`, `id`, `type`, `settings`, `seasons` FROM $wpdb->racketmanager_events $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1732,23 +1695,11 @@ class RacketManager {
         if ( $competition_type ) {
             $search_terms[] = $wpdb->prepare( "`event_id` in (select e.`id` from $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE e.`competition_id` = c.`id` AND c.`type` = %s)", $competition_type );
         }
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql     = $wpdb->prepare(
+        $search = Util::search_string( $search_terms, true );
+        $order  = Util::order_by_string( $orderby );
+        $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `id` FROM $wpdb->racketmanager $search ORDER BY $orderby LIMIT %d, %d",
+            "SELECT `id` FROM $wpdb->racketmanager $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1857,21 +1808,7 @@ class RacketManager {
             default:
                 break;
         }
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $order = $orderby_string;
-
+        $search = Util::search_string( $search_terms, true );
         if ( $count ) {
             $sql = "SELECT COUNT(ID) FROM $wpdb->racketmanager_club_players " . $search;
             return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
@@ -1879,12 +1816,8 @@ class RacketManager {
                 $sql
             );
         }
-
-        $sql = "SELECT A.`id` FROM $wpdb->racketmanager_club_players A INNER JOIN $wpdb->users B ON A.`player_id` = B.`ID` " . $search;
-        if ( '' !== $order ) {
-            $sql .= " ORDER BY $order";
-        }
-
+        $order        = Util::order_by_string( $orderby );
+        $sql          = "SELECT A.`id` FROM $wpdb->racketmanager_club_players A INNER JOIN $wpdb->users B ON A.`player_id` = B.`ID` " . $search . $order;
         $club_players = wp_cache_get( md5( $sql ), 'club_players' );
         if ( ! $club_players ) {
             $club_players = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
@@ -2209,18 +2142,8 @@ class RacketManager {
                 )
             );
         }
-        $orderby_string = '';
-        $i              = 0;
-        if ( is_array( $orderby ) ) {
-            foreach ( $orderby as $order => $direction ) {
-                $orderby_string .= '`' . $order . '` ' . $direction;
-                if ( $i < ( count( $orderby ) - 1 ) ) {
-                    $orderby_string .= ',';
-                }
-                ++$i;
-            }
-        }
-        $sql     = $sql_fields . $sql_from . $sql . ' ORDER BY ' . $orderby_string;
+        $order   = Util::order_by_string( $orderby );
+        $sql     = $sql_fields . $sql_from . $sql . $order;
         $matches = wp_cache_get( md5( $sql ), 'matches' );
         if ( ! $matches ) {
             $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -2492,19 +2415,10 @@ class RacketManager {
             default:
                 break;
         }
-        $search         = Util::search_string( $search_terms, true );
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
+        $search  = Util::search_string( $search_terms, true );
+        $order   = Util::order_by_string( $orderby );
         $charges = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            "SELECT `id` FROM $wpdb->racketmanager_charges $search ORDER BY $orderby" //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            "SELECT `id` FROM $wpdb->racketmanager_charges $search $order" //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         );
         $i       = 0;
         foreach ( $charges as $charge ) {
@@ -2639,21 +2553,8 @@ class RacketManager {
             }
             return $teams;
         }
-        $orderby_string = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        $orderby = $orderby_string;
-        $sql    .= ' ORDER BY ' . $orderby;
-        $sql     = $wpdb->prepare(
+        $sql .= Util::order_by_string( $orderby );
+        $sql  = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql . ' LIMIT %d, %d',
             intval( $offset ),

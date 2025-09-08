@@ -808,24 +808,7 @@ final class Tournament {
         if ( $active ) {
             $search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) )";
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = '';
-        $order          = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        if ( $orderby_string ) {
-            $order = ' ORDER BY ' . $orderby_string;
-        }
-        $sql .= $search;
+        $sql .= Util::search_string( $search_terms );
         if ( $count ) {
             $sql = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -842,7 +825,7 @@ final class Tournament {
             }
             return $num_players;
         }
-        $sql .= $order;
+        $sql .= Util::order_by_string( $orderby );
         $sql  = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,
@@ -915,24 +898,7 @@ final class Tournament {
                 $search_terms[] = '`status` = 3';
             }
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = '';
-        $order          = '';
-        $i              = 0;
-        foreach ( $orderby as $order => $direction ) {
-            if ( ! in_array( $direction, array( 'DESC', 'ASC', 'desc', 'asc' ), true ) ) {
-                $direction = 'ASC';
-            }
-            $orderby_string .= '`' . $order . '` ' . $direction;
-            if ( $i < ( count( $orderby ) - 1 ) ) {
-                $orderby_string .= ',';
-            }
-            ++$i;
-        }
-        if ( $orderby_string ) {
-            $order = ' ORDER BY ' . $orderby_string;
-        }
-        $sql .= $search;
+        $sql .= Util::search_string( $search_terms );
         if ( $count ) {
             $sql = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -949,7 +915,7 @@ final class Tournament {
             }
             return $num_players;
         }
-        $sql .= $order;
+        $sql .= Util::order_by_string( $orderby );
         $sql  = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,

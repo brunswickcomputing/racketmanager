@@ -1110,15 +1110,10 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search          = Util::search_string( $search_terms );
-        $group_by_string = 'c.id, c.name, m.season';
-        $orderby_string  = 'm.season DESC, c.name ASC';
-        $sql             = "SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE `player_id` = $this->ID AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
-        if ( '' !== $search ) {
-            $sql .= " $search";
-        }
-        $sql         .= " GROUP BY $group_by_string";
-        $sql         .= " ORDER BY $orderby_string";
+        $sql          = "SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE `player_id` = $this->ID AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
+        $sql         .= Util::search_string( $search_terms );
+        $sql         .= " GROUP BY c.id, c.name, m.season";
+        $sql         .= " ORDER BY m.season DESC, c.name ASC";
         $competitions = wp_cache_get( md5( $sql ), 'player_competitions' );
         if ( ! $competitions ) {
             $competitions = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
@@ -1167,15 +1162,10 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 't.`season` = %s', $season );
         }
-        $search          = Util::search_string( $search_terms );
-        $group_by_string = 't3.`id`';
-        $orderby_string  = 't3.`season` DESC, t3.`name` ASC';
-        $sql             = "SELECT t3.id FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_table t, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t3 WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t3.`competition_id` = c.`id` AND t3.`season` = t.`season`";
-        if ( '' !== $search ) {
-            $sql .= " $search";
-        }
-        $sql        .= " GROUP BY $group_by_string";
-        $sql        .= " ORDER BY $orderby_string";
+        $sql         = "SELECT t3.id FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_table t, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t3 WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t3.`competition_id` = c.`id` AND t3.`season` = t.`season`";
+        $sql        .= Util::search_string( $search_terms );
+        $sql        .= " GROUP BY t3.`id`";
+        $sql        .= " ORDER BY t3.`season` DESC, t3.`name` ASC";
         $tournaments = wp_cache_get( md5( $sql ), 'player_tournaments' );
         if ( ! $tournaments ) {
             $tournaments = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
@@ -1213,13 +1203,9 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = 'm.`season` DESC, t.`name` ASC';
-        $sql            = "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t WHERE tp.`player_id` = $this->ID AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season`";
-        if ( '' !== $search ) {
-            $sql .= " $search";
-        }
-        $sql    .= " ORDER BY $orderby_string";
+        $sql     = "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t WHERE tp.`player_id` = $this->ID AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season`";
+        $sql    .= Util::search_string( $search_terms );
+        $sql    .= " ORDER BY m.`season` DESC, t.`name` ASC";
         $matches = wp_cache_get( md5( $sql ), 'player_finals' );
         if ( ! $matches ) {
             $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
@@ -1356,13 +1342,9 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = 'm.`season`, e.`type`';
-        $sql            = "SELECT 'teams' as `stat_type`, m.`season`, e.`type` ,rp.`player_team`, m.`home_team`, m.`away_team`, r.`winner_id`, r.`loser_id` FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE rp.`player_id` = $this->ID AND rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
-        if ( '' !== $search ) {
-            $sql .= " $search";
-        }
-        $sql    .= " ORDER BY $orderby_string";
+        $search  = Util::search_string( $search_terms );
+        $sql     = "SELECT 'teams' as `stat_type`, m.`season`, e.`type` ,rp.`player_team`, m.`home_team`, m.`away_team`, r.`winner_id`, r.`loser_id` FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE rp.`player_id` = $this->ID AND rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
+        $sql    .= $search . " ORDER BY m.`season`, e.`type`";
         $matches = wp_cache_get( md5( $sql ), 'player_stats_teams' );
         if ( ! $matches ) {
             $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
@@ -1390,13 +1372,9 @@ final class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $search         = Util::search_string( $search_terms );
-        $orderby_string = 'm.`season`, e.`type`';
-        $sql            = "SELECT 'players' as `stat_type`,m.`season`, e.`type` ,tp.`team_id`, m.`home_team`, m.`away_team`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_teams t,$wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
-        if ( '' !== $search ) {
-            $sql .= " $search";
-        }
-        $sql    .= " ORDER BY $orderby_string";
+        $search  = Util::search_string( $search_terms );
+        $sql     = "SELECT 'players' as `stat_type`,m.`season`, e.`type` ,tp.`team_id`, m.`home_team`, m.`away_team`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_teams t,$wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
+        $sql    .= $search . " ORDER BY m.`season`, e.`type`";
         $matches = wp_cache_get( md5( $sql ), 'player_stats_players' );
         if ( ! $matches ) {
             $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,

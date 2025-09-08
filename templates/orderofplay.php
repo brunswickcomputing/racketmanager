@@ -1,6 +1,6 @@
 <?php
 /**
- * Template for tournament order of play
+ * Template for order of play
  *
  * @package Racketmanager/Templates
  */

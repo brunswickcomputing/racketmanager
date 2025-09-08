@@ -350,6 +350,12 @@ class Rewrites {
         );
         // cup - season - overview.
         add_rewrite_rule(
+            '(.+?)-cups/([0-9]{4})/order_of_play/?$',
+            'index.php?pagename=competition&competition=$matches[1]-cups&season=$matches[2]&tab=order_of_play',
+            'top'
+        );
+        // cup - season - overview.
+        add_rewrite_rule(
             '(.+?)-cups/([0-9]{4})/overview/?$',
             'index.php?pagename=competition&competition=$matches[1]-cups&season=$matches[2]&tab=overview',
             'top'

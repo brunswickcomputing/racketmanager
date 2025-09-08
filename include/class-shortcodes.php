@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use stdClass;
 /**
  * Class to implement shortcode functions
  */
@@ -673,5 +674,104 @@ class Shortcodes {
                 $club_players['f'] = array();
         }
         return $club_players;
+    }
+    /**
+     * Function to display finals order of play
+     *
+     *    [orderofplay id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string the content
+     */
+    public function show_order_of_play( array $atts ): string {
+        wp_verify_nonce( 'order-of-play' );
+        $args          = shortcode_atts(
+            array(
+                'id'             => '',
+                'competition_id' => null,
+                'season'         => null,
+                'template'       => '',
+            ),
+            $atts
+        );
+        $tournament_id  = $args['id'];
+        $competition_id = $args['competition_id'];
+        $season         = $args['season'];
+        $template       = $args['template'];
+        $msg            = null;
+        if ( $tournament_id ) {
+            $tournament = get_tournament( $tournament_id );
+            if ( $tournament ) {
+                $finals_order = $tournament->order_of_play;
+            } else {
+                $msg = $this->tournament_not_found;
+            }
+        } elseif ( $competition_id ) {
+            $competition = get_competition( $competition_id );
+            if ( $competition ) {
+                if ( $season ) {
+                    if ( isset( $competition->seasons[ $season ] ) ) {
+                        $finals_order = $competition->seasons[ $season ]['orderofplay'];
+                    } else{
+                        $msg = $this->season_not_found_for_competition;
+                    }
+                } else {
+                    $msg = $this->season_not_found;
+                }
+            } else {
+                $msg = $this->competition_not_found;
+            }
+        } else {
+            $msg = $this->competition_not_found;
+        }
+        if ( $msg ) {
+            return $this->return_error( $msg );
+        }
+        $order_of_play = array();
+        $times  = array();
+        $courts = array();
+        foreach ( $finals_order as $final_courts ) {
+            $court = $final_courts['court'];
+            $courts[ $court ] = array();
+            foreach ( $final_courts['matches'] as $match_id ) {
+                if ( $match_id ) {
+                    $match = get_match( $match_id );
+                    if ( $match ) {
+                        $final_match           = new stdClass();
+                        $final_match->id       = $match_id;
+                        $final_match->time     = $match->hour . ':' . $match->minutes;
+                        $final_match->league   = $match->league->title;
+                        $final_match->location = $match->location;
+                        $final_match->winner   = $match->winner_id;
+                        $time                  = $final_match->time;
+                        if ( ! in_array( $time, $times, true ) ) {
+                            $times[] = $time;
+                        }
+                        $order_of_play['match_time'][ $time ][ $court ] = $final_match;
+                        // now just add the row data.
+                        $courts[ $court ][ $time ][] = $final_match;
+                    }
+                }
+            }
+        }
+        sort( $times );
+        foreach ( $times as $time ) {
+            foreach ( $courts as $court => $court_matches ) {
+                if ( ! isset( $court_matches[ $time ] ) ) {
+                    $courts[ $court ][ $time ] = array();
+                }
+                ksort( $courts[ $court ] );
+            }
+        }
+        $order_of_play['courts'] = $courts;
+        $order_of_play['times']  = $times;
+        $filename = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
+
+        return $this->load_template(
+            $filename,
+            array(
+                'order_of_play' => $order_of_play,
+            )
+        );
     }
 }

@@ -791,6 +791,22 @@ function competition_players( int $competition_id, array $args = array() ): void
     echo do_shortcode( $shortcode );
 }
 /**
+ * Display competition order of play function
+ *
+ * @param int $competition_id competition.
+ * @param array $args array of arguments.
+ */
+function competition_order_of_play( int $competition_id, array $args = array() ): void {
+    $args['competition_id'] = $competition_id;
+    $shortcode  = '[orderofplay';
+    foreach ( $args as $key => $value ) {
+        $shortcode .= ' ' . $key . "='" . $value . "'";
+    }
+    $shortcode .= ']';
+    echo do_shortcode( $shortcode );
+}
+
+/**
  * Display event standings function
  *
  * @param int $event_id event.

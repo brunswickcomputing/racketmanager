@@ -58,6 +58,14 @@ $menu_options['players']  = array(
     'available'   => true,
     'description' => __( 'Players', 'racketmanager' ),
 );
+if ( $competition->is_cup ) {
+    $menu_options['order_of_play'] = array(
+        'name'        => 'order_of_play',
+        'selected'    => 'order_of_play' === $tab,
+        'available'   => ! empty( $competition_season['orderofplay'] ),
+        'description' => __( 'Order of play', 'racketmanager' ),
+    );
+}
 $menu_options['winners']  = array(
     'name'        => 'winners',
     'selected'    => 'winners' === $tab,

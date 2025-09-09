@@ -79,7 +79,7 @@ final class Admin_Event extends Admin_Display {
                     }
                     if ( ! empty( $validator->error ) ) {
                         if ( empty( $validator->msg ) ) {
-                            $this->set_message( __( 'Errors found', 'racketmanager' ), true );
+                            $this->set_message( $this->errors_found, true );
                         } else {
                             $this->set_message( $validator->msg, true );
                         }
@@ -142,11 +142,11 @@ final class Admin_Event extends Admin_Display {
                             } elseif ( empty( $racketmanager->error_messages ) ) {
                                 $this->set_message( $this->no_updates, 'warning' );
                             } else {
-                                $this->set_message( __( 'Errors found', 'racketmanager' ), true );
+                                $this->set_message( $this->errors_found, true );
                             }
                         } else {
                             if ( empty( $validator->msg ) ) {
-                                $this->set_message( __( 'Errors found', 'racketmanager' ), true );
+                                $this->set_message( $this->errors_found, true );
                             } else {
                                 $this->set_message( $validator->msg, true );
                             }

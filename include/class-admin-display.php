@@ -494,7 +494,7 @@ class Admin_Display {
             default:
                 break;
         }
-        $this->set_message( __( 'Team ranking saved', 'racketmanager' ) );
+        $this->set_message( $this->team_ranking_saved );
     }
     /**
      * Randomly rank teams league in admin screen

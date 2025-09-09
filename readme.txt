@@ -47,6 +47,15 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.5.0 =
+* BUGFIX: add gender to search terms
+* BUGFIX: use correct player details
+* BUGFIX: pass correct status to score validator
+* BUGFIX: handle walkovers and retirements correctly
+* BUGFIX: show only 2nd leg of 2 leg matches
+* BUGFIX: use correct field substitution variable
+* UPDATE: add order of play to competition if cup
+
 = 9.4.0 =
 * BUGFIX: add mising overview tab to allowed tabs list
 * BUGFIX: add missing order of play tab option

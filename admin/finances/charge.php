@@ -53,8 +53,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -62,6 +60,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'season', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'season', $racketmanager->error_fields, true );
@@ -85,8 +85,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -97,9 +95,11 @@ $msg        = null;
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
-                        if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'season', $racketmanager->error_fields, true ) ) ) {
+                        $is_invalid = false;
+                        $msg        = null;
+                        if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'status', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
-                            $msg_id     = array_search( 'season', $racketmanager->error_fields, true );
+                            $msg_id     = array_search( 'status', $racketmanager->error_fields, true );
                             $msg        = $racketmanager->error_messages[$msg_id] ?? null;
                         }
                         ?>
@@ -114,8 +114,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -123,6 +121,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'date', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date', $racketmanager->error_fields, true );
@@ -136,8 +136,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -148,6 +146,8 @@ $msg        = null;
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'feeClub', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeClub', $racketmanager->error_fields, true );
@@ -161,8 +161,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -170,6 +168,8 @@ $msg        = null;
                 <div class="col-md-6">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'feeTeam', $racketmanager->error_fields, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeTeam', $racketmanager->error_fields, true );
@@ -183,8 +183,6 @@ $msg        = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>

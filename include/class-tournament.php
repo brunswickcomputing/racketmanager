@@ -1311,8 +1311,8 @@ final class Tournament {
                 if ( isset( $entry->events[ $event_id ] ) ) {
                     $tournament_entry = array();
                     $partner          = '';
-                    $partner_name     = '';
-                    $partner_id       = '';
+                    $partner_name     = null;
+                    $partner_id       = null;
                     $new_team         = false;
                     $existing_entry   = false;
                     $new_entry        = false;

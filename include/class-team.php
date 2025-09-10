@@ -78,9 +78,9 @@ final class Team {
     /**
      * Player2 name variable
      *
-     * @var string
+     * @var string|null
      */
-    public string $player_2;
+    public ?string $player_2;
     /**
      * Player 1 id variable
      *
@@ -90,9 +90,9 @@ final class Team {
     /**
      * Player 2 ID variable
      *
-     * @var int
+     * @var int|null
      */
-    public int $player_2_id;
+    public ?int $player_2_id;
     /**
      * Team type variable
      *

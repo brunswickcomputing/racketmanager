@@ -84,8 +84,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -93,6 +91,8 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( empty( $current_season->grade ) ) {
                             $current_grade = empty( $competition->grade ) ? null : $competition->grade;
                         } else {
@@ -121,8 +121,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -135,6 +133,8 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid = false;
+                            $msg        = null;
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'venue', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'venue', $validator->err_flds, true );
@@ -157,8 +157,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -169,6 +167,8 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( empty( $current_season->competition_code ) ) {
                             $competition_code = empty( $competition->competition_code ) ? null : $competition->competition_code;
                         } else {
@@ -187,8 +187,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -204,6 +202,8 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid = false;
+                            $msg        = null;
                             if ( empty( $current_season->max_teams ) ) {
                                 $max_teams = empty( $competition->max_teams ) ? null : $competition->max_teams;
                             } else {
@@ -222,8 +222,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -231,6 +229,8 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid = false;
+                            $msg        = null;
                             if ( empty( $current_season->teams_per_club ) ) {
                                 $teams_per_club = empty( $competition->teams_per_club ) ? null : $competition->teams_per_club;
                             } else {
@@ -249,8 +249,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -260,6 +258,8 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid = false;
+                            $msg        = null;
                             if ( empty( $current_season->teams_prom_relg ) ) {
                                 $teams_prom_relg = empty( $competition->teams_prom_relg ) ? null : $competition->teams_prom_relg;
                             } else {
@@ -278,8 +278,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -287,6 +285,8 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid = false;
+                            $msg        = null;
                             if ( empty( $current_season->lowest_promotion ) ) {
                                 $lowest_promotion = empty( $competition->lowest_promotion ) ? null : $competition->lowest_promotion;
                             } else {
@@ -305,8 +305,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -321,6 +319,8 @@ $msg         = null;
             <div class="row g-3">
                 <div class="col-md-4">
                     <?php
+                    $is_invalid        = false;
+                    $msg               = null;
                     $fixed_match_dates = $current_season->fixed_match_dates ?? ( $competition->fixed_match_dates ?? null );
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'fixedMatchDates', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
@@ -342,13 +342,13 @@ $msg         = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
                 <div class="col-md-4">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( $competition->is_league ) {
                         $home_away_desc_true  = __( 'Home and away', 'racketmanager' );
                         $home_away_desc_false = __( 'Home only', 'racketmanager' );
@@ -377,14 +377,14 @@ $msg         = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid     = false;
+                        $msg            = null;
                         $num_match_days = $current_season->num_match_days ?? ( $competition->num_match_days ?? null );
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_match_days', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
@@ -399,8 +399,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -410,6 +408,8 @@ $msg         = null;
                 <div class="col-md-4">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid   = false;
+                        $msg          = null;
                         $round_length = $current_season->round_length ?? ( $competition->round_length ?? null );
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'round_length', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
@@ -424,8 +424,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -436,6 +434,8 @@ $msg         = null;
                     <div class="col-md-4">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid     = false;
+                            $msg            = null;
                             $home_away_diff = $current_season->home_away_diff ?? ( $competition->home_away_diff ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'home_away_diff', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
@@ -450,8 +450,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -459,6 +457,8 @@ $msg         = null;
                     <div class="col-md-4">
                         <div class="form-floating mb-3">
                             <?php
+                            $is_invalid   = false;
+                            $msg          = null;
                             $filler_weeks = $current_season->filler_weeks ?? ( $competition->filler_weeks ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'filler_weeks', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
@@ -473,8 +473,6 @@ $msg         = null;
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -491,6 +489,8 @@ $msg         = null;
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'feeClub', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeClub', $validator->err_flds, true );
@@ -504,8 +504,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -513,6 +511,8 @@ $msg         = null;
                 <div class="col-md-4">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'feeClub', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeClub', $validator->err_flds, true );
@@ -526,8 +526,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -535,6 +533,8 @@ $msg         = null;
                 <div class="col-md-4">
                     <div class="form-floating">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'feeLeadTime', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'feeLeadTime', $validator->err_flds, true );
@@ -548,8 +548,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -562,6 +560,8 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'date_open', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date_open', $validator->err_flds, true );
@@ -575,8 +575,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -584,6 +582,8 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'date_closing', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date_closing', $validator->err_flds, true );
@@ -597,8 +597,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -608,6 +606,8 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'date_start', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date_start', $validator->err_flds, true );
@@ -621,8 +621,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>
@@ -630,6 +628,8 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
+                        $is_invalid = false;
+                        $msg        = null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'date_end', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date_end', $validator->err_flds, true );
@@ -643,8 +643,6 @@ $msg         = null;
                             ?>
                             <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
                         }
                         ?>
                     </div>

@@ -479,7 +479,11 @@ final class League_Team {
             );
             $this->diff         = ( $this->diff > 0 ) ? '+' . $this->diff : $this->diff;
             $this->win_percent();
-            $this->status_text = Util::get_standing_status( $this->status );
+            if ( empty( $this->status ) ) {
+                $this->status_text = '';
+            } else {
+                $this->status_text = Util::get_standing_status( $this->status );
+            }
             if ( ! empty( $this->club_id ) ) {
                 $this->club = get_club( $this->club_id );
             } else {

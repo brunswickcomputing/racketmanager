@@ -168,91 +168,115 @@ final class Admin_Finances extends Admin_Display {
      * Display charges page
      */
     public function display_charge_page(): void {
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator_Finance();
+        $validator = $validator->capability( 'edit_teams' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, 'error' );
             $this->show_message();
-        } else {
-            $charges = null;
-            if ( isset( $_POST['saveCharges'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-charges' ) ) {
-                    $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                    $this->show_message();
-                    return;
+            return;
+        }
+        $edit       = false;
+        $charges    = null;
+        $charges_id = isset( $_GET['charges'] ) ?  intval( $_GET['charges'] ) : null;
+        if ( $charges_id ) {
+            $edit      = true;
+            $validator = $validator->charge( $charges_id );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->err_msgs[0], true );
+                $this->show_message();
+                return;
+            }
+            $charges = get_charge( $charges_id );
+        }
+        if ( isset( $_POST['saveCharge'] ) ) {
+            $update    = null;
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-charges' );
+            if ( empty( $validator->error ) ) {
+                if ( isset( $_POST['editCharge'] ) ) {
+                    $charges_id = isset( $_POST['charges_id'] ) ? intval( $_POST['charges_id'] ) : null;
+                    $validator  = $validator->compare( $charges_id, $charges_id );
+                    $update     = true;
+                } elseif ( isset( $_POST['addCharge'] ) ) {
+                    $update = false;
+                } else {
+                    $validator->error = true;
+                    $validator->msg   = __( 'Invalid action', 'racketmanager' );
                 }
-                if ( isset( $_POST['charges_id'] ) && '' !== $_POST['charges_id'] ) {
-                    $charges = get_charge( intval( $_POST['charges_id'] ) );
-                    $updates = false;
-                    if ( isset( $_POST['feeClub'] ) && $charges->fee_competition !== $_POST['feeClub'] ) {
-                        $charges->set_club_fee( floatval( $_POST['feeClub'] ) );
-                        $updates = true;
-                    }
-                    if ( isset( $_POST['feeTeam'] ) && $charges->fee_event !== $_POST['feeTeam'] ) {
-                        $charges->set_team_fee( floatval( $_POST['feeTeam'] ) );
-                        $updates = true;
-                    }
-                    if ( isset( $_POST['status'] ) && $charges->status !== $_POST['status'] ) {
-                        $charges->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
-                        $updates = true;
-                    }
-                    if ( isset( $_POST['competitionType'] ) && $charges->competition_type !== $_POST['competitionType'] ) {
-                        $charges->set_competition_type( sanitize_text_field( wp_unslash( $_POST['competitionType'] ) ) );
-                        $updates = true;
-                    }
-                    if ( isset( $_POST['type'] ) && $charges->type !== $_POST['type'] ) {
-                        $charges->set_type( sanitize_text_field( wp_unslash( $_POST['type'] ) ) );
-                        $updates = true;
-                    }
-                    if ( isset( $_POST['date'] ) && $charges->date !== $_POST['date'] ) {
-                        $charges->set_date( sanitize_text_field( wp_unslash( $_POST['date'] ) ) );
-                        $updates = true;
-                    }
-                    if ( isset( $_POST['season'] ) && $charges->season !== $_POST['season'] ) {
-                        $charges->set_season( sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
-                        $updates = true;
-                    }
-                    if ( $updates ) {
-                        $this->set_message( __( 'Charge updated', 'racketmanager' ) );
+            }
+            if ( ! empty( $validator->error ) ) {
+                if ( empty( $validator->msg ) ) {
+                    $msg = $validator->err_msgs[0];
+                } else {
+                    $msg = $validator->msg;
+                }
+                $this->set_message( $msg, true );
+            } else {
+                if ( $update ) {
+                    $charge_input = $this->get_charge_input( $charges );
+                    $validator    = $this->validate_charge( $charge_input );
+                    if ( empty( $validator->error ) ) {
+                        $updates = $charges->update( $charge_input );
+                        if ( $updates ) {
+                            $this->set_message( __( 'Charge updated', 'racketmanager' ) );
+                        } else {
+                            $this->set_message( $this->no_updates, 'warning' );
+                        }
                     } else {
-                        $this->set_message( $this->no_updates, 'warning' );
+                        $charges = $charge_input;
+                        $this->set_message( __( 'Error updating charge', 'racketmanager' ), true );
                     }
                 } else {
-                    $charge                  = new stdClass();
-                    $charge->competition_id  = empty( $_POST['competition_id'] ) ? null : intval( $_POST['competition_id'] );
-                    $charge->season          = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-                    $charge->status          = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;
-                    $charge->date            = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
-                    $charge->fee_competition = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
-                    $charge->fee_event       = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
-                    $valid                   = $this->validate_charge( $charge );
-                    if ( $valid ) {
-                        $charge = new Charges( $charge );
-                        $this->set_message( __( 'Charges added', 'racketmanager' ) );
+                    $charges   = $this->get_charge_input();
+                    $validator = $this->validate_charge( $charges );
+                    if ( empty( $validator->error ) ) {
+                        $charges = new Charges( $charges );
+                        $edit   = true;
+                        ?>
+                        <script>
+                            let url = new URL(window.location.href);
+                            url.searchParams.append('charges', <?php echo esc_attr( $charges->id ); ?>);
+                            history.pushState('', '', url.toString());
+                        </script>
+                        <?php
+                        $this->set_message( __( 'Charge added', 'racketmanager' ) );
                     } else {
                         $this->set_message( __( 'Error with charge creation', 'racketmanager' ), 'error' );
                     }
                 }
             }
-            $this->show_message();
-            $edit = false;
-            if ( isset( $_GET['charges'] ) || ! empty( $charges->id ) ) {
-                if ( isset( $_GET['charges'] ) ) {
-                    $charges_id = intval( $_GET['charges'] );
-                } else {
-                    $charges_id = $charges->id;
-                }
-                $edit    = true;
-                $charges = get_charge( $charges_id );
-
-                $form_title  = __( 'Edit Charge', 'racketmanager' );
-                $form_action = __( 'Update', 'racketmanager' );
-            } else {
-                $charges_id               = '';
-                $form_title               = __( 'Add Charge', 'racketmanager' );
-                $form_action              = __( 'Add', 'racketmanager' );
-            }
-
-            require_once RACKETMANAGER_PATH . '/admin/finances/charge.php';
         }
+        $this->show_message();
+        if ( $edit ) {
+            $form_title  = __( 'Edit Charge', 'racketmanager' );
+            $form_action = __( 'Update', 'racketmanager' );
+        } else {
+            $form_title  = __( 'Add Charge', 'racketmanager' );
+            $form_action = __( 'Add', 'racketmanager' );
+        }
+
+        require_once RACKETMANAGER_PATH . '/admin/finances/charge.php';
+    }
+
+    /**
+     * Function to get charge inout data from screen
+     *
+     * @param object|null $charge charge object.
+     *
+     * @return object
+     */
+    private function get_charge_input( ?object $charge = null ): object {
+        if ( empty( $charge ) ) {
+            $charge = new stdClass();
+        } else {
+            $charge = clone $charge;
+        }
+        $charge->competition_id  = empty( $_POST['competition_id'] ) ? null : intval( $_POST['competition_id'] );
+        $charge->season          = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+        $charge->status          = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;
+        $charge->date            = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : null;
+        $charge->fee_competition = isset( $_POST['feeClub'] ) ? floatval( $_POST['feeClub'] ) : null;
+        $charge->fee_event       = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
+        return $charge;
     }
     /**
      * Display invoice page
@@ -370,30 +394,17 @@ final class Admin_Finances extends Admin_Display {
     /**
      * Validate charge
      *
-     * @param object $charge charge object
+     * @param object $charge charge object.
      *
-     * @return bool
+     * @return object
      *
      */
-    private function validate_charge( object $charge ): bool {
-        global $racketmanager;
-        if ( empty ( $charge->competition_id ) ) {
-            $racketmanager->error_messages[] = __( 'Competition must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'competition_id';
-        }
-        if ( empty( $charge->season ) ) {
-            $racketmanager->error_messages[] = __( 'Season must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'season';
-        }
-        if ( empty( $charge->status ) ) {
-            $racketmanager->error_messages[] = __( 'Status must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'status';
-        }
-        if ( empty( $charge->date ) ) {
-            $racketmanager->error_messages[] = __( 'Date must be set', 'racketmanager' );
-            $racketmanager->error_fields[]   = 'date';
-        }
-
-        return empty( $racketmanager->error_fields );
+    private function validate_charge( object $charge ): object {
+        $validator = new Validator_Finance();
+        $validator = $validator->competition( $charge->competition_id );
+        $validator = $validator->season( $charge->season );
+        $validator = $validator->status( $charge->status );
+        $validator = $validator->date( $charge->date );
+        return $validator->get_details();
     }
 }

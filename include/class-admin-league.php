@@ -770,6 +770,7 @@ final class Admin_League extends Admin_Display {
         $c                   = 0;
         $num_match_days      = 0;
         $home_away           = '';
+        $match_dates         = array();
         foreach ( $events as $event_id ) {
             $event       = get_event( $event_id );
             $season      = $event->get_season();
@@ -780,17 +781,19 @@ final class Admin_League extends Admin_Display {
                     'season'   => $season,
                 )
             );
-            if ( 0 !== $match_count ) {
+            if ( $match_count ) {
                 $validation->success = false;
                 /* translators: %1$s: event name %2$d season */
                 $messages[] = sprintf( __( '%1$s already has matches scheduled for %2$d', 'racketmanager' ), $event->name, $season );
                 break;
-            } elseif ( 0 === $c ) {
+            } elseif ( empty( $c ) ) {
                 $num_match_days = $event->current_season['num_match_days'];
                 if ( ! isset( $event->current_season['match_dates'] ) ) {
                     $validation->success = false;
                     /* translators: %s: event name */
                     $messages[] = sprintf( __( 'Events match dates not set for %s', 'racketmanager' ), $event->name );
+                } else {
+                    $match_dates = $event->current_season['match_dates'];
                 }
                 $home_away = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
                 if ( $home_away ) {
@@ -807,6 +810,9 @@ final class Admin_League extends Admin_Display {
                     $validation->success = false;
                     /* translators: %s: event name */
                     $messages[] = sprintf( __( 'Events match dates not set for %s', 'racketmanager' ), $event->name );
+                } elseif ( $event->current_season['match_dates'] !== $match_dates ) {
+                    $validation->success = false;
+                    $messages[]          = __( 'Events have different match dates', 'racketmanager' );
                 }
                 $home_away_new = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
                 if ( $home_away_new !== $home_away ) {

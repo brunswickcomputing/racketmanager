@@ -499,21 +499,30 @@ class Validator_Config extends Validator {
      * Validate date
      *
      * @param string|null $date date.
-     * @param string $type type of date.
+     * @param string|null $type type of date.
      * @param string|null $prev_date prev date.
      * @param string|null $prev_type type of prev date.
      *
      * @return object $validation updated validation object.
      */
-    public function date( ?string $date, string $type, ?string $prev_date = null, ?string $prev_type = null ): object {
+    public function date( ?string $date, ?string $type = null, ?string $prev_date = null, ?string $prev_type = null ): object {
+        if ( $type ) {
+            $field_suffix = '_' . $type;
+        } else {
+            $field_suffix = null;
+        }
         if ( empty( $date ) ) {
             $this->error      = true;
-            $this->err_flds[] = 'date_' . $type;
-            $this->err_msgs[] = ucfirst( $type ) . ' ' . __( 'date must be set', 'racketmanager' );
+            $this->err_flds[] = 'date' . $field_suffix;
+            if ( $type ) {
+                $this->err_msgs[] = ucfirst( $type ) . ' ' . __( 'date must be set', 'racketmanager' );
+            } else {
+                $this->err_msgs[] = __( 'Date must be set', 'racketmanager' );
+            }
         } elseif ( ! empty( $prev_date ) && $date <= $prev_date ) {
             $this->error      = false;
             $this->err_msgs[] = sprintf( __( '%s date must be after %s date', 'racketmanager' ), ucfirst( $type ), $prev_type );
-            $this->err_flds[] = 'date_' . $type;
+            $this->err_flds[] = 'date' . $field_suffix;
         }
 
         return $this;

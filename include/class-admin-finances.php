@@ -247,8 +247,9 @@ final class Admin_Finances extends Admin_Display {
         }
         $this->show_message();
         if ( $edit ) {
-            $form_title  = __( 'Edit Charge', 'racketmanager' );
-            $form_action = __( 'Update', 'racketmanager' );
+            $form_title   = __( 'Edit Charge', 'racketmanager' );
+            $form_action  = __( 'Update', 'racketmanager' );
+            $club_charges = $charges->get_club_entries();
         } else {
             $form_title  = __( 'Add Charge', 'racketmanager' );
             $form_action = __( 'Add', 'racketmanager' );
@@ -330,9 +331,9 @@ final class Admin_Finances extends Admin_Display {
      *
      * @param int $charge charge used by invoice.
      * @param int $club club for whom invoice is created.
-     * @return int $invoice_id
+     * @return null|int $invoice_id
      */
-    private function get_invoice( int $charge, int $club ): int {
+    private function get_invoice( int $charge, int $club ): ?int {
         global $wpdb;
 
         return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

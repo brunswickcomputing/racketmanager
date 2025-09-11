@@ -11,6 +11,7 @@ namespace Racketmanager;
 /** @var string $form_title */
 /** @var string $edit */
 /** @var string $form_action */
+/** @var array  $club_charges */
 global $racketmanager;
 $is_invalid = false;
 $msg        = null;
@@ -215,8 +216,7 @@ $msg        = null;
             ?>
             <h2><?php esc_html_e( 'Club charges', 'racketmanager' ); ?></h2>
             <?php
-            $racketmanager_club_charges = $charges->get_club_entries();
-            if ( $racketmanager_club_charges ) {
+            if ( $club_charges ) {
                 ?>
                 <form action="/wp-admin/admin.php?page=racketmanager-finances" method="post" enctype="multipart/form-data" name="clubcharges" class="form-control">
                     <div class="row fw-bold">
@@ -225,28 +225,19 @@ $msg        = null;
                         <div class="col-2"><?php esc_html_e( 'Fee', 'racketmanager' ); ?></div>
                     </div>
                     <?php
-                    foreach ( $racketmanager_club_charges as $racketmanager_club_charge ) {
+                    foreach ( $club_charges as $club_charge ) {
                         ?>
                         <div class="row mt-3">
-                            <div class="col-5"><?php echo esc_html( $racketmanager_club_charge->name ); ?></div>
-                            <div class="col-2"><?php echo esc_html( $racketmanager_club_charge->num_teams ); ?></div>
-                            <div class="col-2"><?php the_currency_amount( $racketmanager_club_charge->fee ); ?></div>
-                            <div class="col-3">
-                                <?php
-                                if ( 'final' === $charges->status ) {
-                                    ?>
-                                    <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=invoice&amp;club=<?php echo esc_html( $racketmanager_club_charge->id ); ?>&amp;charge=<?php echo esc_html( $charges->id ); ?>&amp;tab=racketmanager-charges" class="btn btn-secondary"><?php esc_html_e( 'View Invoice', 'racketmanager' ); ?></a>
-                                    <?php
-                                }
-                                ?>
-                            </div>
+                            <div class="col-5"><?php echo esc_html( $club_charge->name ); ?></div>
+                            <div class="col-2"><?php echo esc_html( $club_charge->num_teams ); ?></div>
+                            <div class="col-2"><?php the_currency_amount( $club_charge->fee ); ?></div>
                             <?php
-                            foreach ( $racketmanager_club_charge->events as $racketmanager_event ) {
+                            foreach ( $club_charge->events as $event ) {
                                 ?>
                                 <div class="col-2"></div>
-                                <div class="col-3"><?php echo esc_html( Util::get_event_type( $racketmanager_event->type ) ); ?></div>
-                                <div class="col-2"><?php echo esc_html( $racketmanager_event->count ); ?></div>
-                                <div class="col-2"><?php the_currency_amount( $racketmanager_club_charge->fee ); ?></div>
+                                <div class="col-3"><?php echo esc_html( Util::get_event_type( $event->type ) ); ?></div>
+                                <div class="col-2"><?php echo esc_html( $event->count ); ?></div>
+                                <div class="col-2"><?php the_currency_amount( $club_charge->fee ); ?></div>
                                 <div class="col-3"></div>
                                 <?php
                             }

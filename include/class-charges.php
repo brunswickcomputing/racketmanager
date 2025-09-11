@@ -152,7 +152,34 @@ final class Charges {
         );
         $this->id = $wpdb->insert_id;
     }
-
+    public function update( object $update ): bool {
+        $updates = false;
+        if ( floatval( $this->fee_competition ) !== floatval( $update->fee_competition ) ) {
+            $this->set_club_fee( $update->fee_competition );
+            $updates = true;
+        }
+        if ( floatval($this->fee_event ) !== floatval( $update->fee_event ) ) {
+            $this->set_team_fee( $update->fee_event );
+            $updates = true;
+        }
+        if ( $this->status !== $_POST['status'] ) {
+            $this->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
+            $updates = true;
+        }
+        if ( $this->competition_id !== $update->competition_id ) {
+            $this->set_competition_id( $update->competition_id );
+            $updates = true;
+        }
+        if ( $this->date !== $update->date ) {
+            $this->set_date( $update->date );
+            $updates = true;
+        }
+        if ( $this->season !== $update->season ) {
+            $this->set_season( $update->season );
+            $updates = true;
+        }
+        return $updates;
+    }
     /**
      * Set charge status
      *
@@ -218,6 +245,23 @@ final class Charges {
             $wpdb->prepare(
                 "UPDATE $wpdb->racketmanager_charges set `season` = %s WHERE `id` = %d",
                 $season,
+                $this->id
+            )
+        );
+        wp_cache_set( $this->id, $this, 'charges' );
+    }
+    /**
+     * Set competition id
+     *
+     * @param int $competition_id competition id.
+     */
+    public function set_competition_id( int $competition_id ): void {
+        global $wpdb;
+        $this->competition_id = $competition_id;
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_charges set `competition_id` = %d WHERE `id` = %d",
+                $competition_id,
                 $this->id
             )
         );

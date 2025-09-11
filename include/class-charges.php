@@ -302,7 +302,7 @@ final class Charges {
         $club_events = array();
         $competition = get_competition( $this->competition_id );
         if ( $competition ) {
-            $events      = $competition->get_events();
+            $events = $competition->get_events();
             foreach ( $events as $event ) {
                 $event     = get_event( $event->id );
                 $num_teams = $event->get_teams(

@@ -9,9 +9,6 @@
 
 namespace Racketmanager;
 
-use DateMalformedStringException;
-use DateTime;
-
 /**
  * Class to implement the PlanValidator object
  */

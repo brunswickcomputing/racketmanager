@@ -48,6 +48,9 @@ jQuery(document).ready(function(){
                             <a class="nav-link" id="constitution-tab" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&view=constitution&competition_id=<?php echo esc_attr( $event->competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>&event_id=<?php echo esc_attr( $event->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></a>
                         </li>
                         <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="matches-tab" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&view=matches&competition_id=<?php echo esc_attr( $event->competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>&event_id=<?php echo esc_attr( $event->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></a>
+                        </li>
+                        <li class="nav-item" role="presentation">
                             <a class="nav-link" id="config-tab" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&view=event-config&competition_id=<?php echo esc_attr( $event->competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>&event_id=<?php echo esc_attr( $event->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></a>
                         </li>
                     </ul>

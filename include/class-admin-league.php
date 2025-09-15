@@ -134,26 +134,39 @@ final class Admin_League extends Admin_Display {
      * Display season overview
      */
     public function display_overview_page(): void {
-        if ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition    = get_competition( $competition_id );
-            if ( $competition ) {
-                $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                if ( $season && isset( $competition->seasons[ $season ] ) ) {
-                    $competition->events          = $competition->get_events();
-                    $tab                          = 'overview';
-                    $current_season               = (object) $competition->seasons[ $season ];
-                    if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
-                        $current_season->is_active = true;
-                    } else {
-                        $current_season->is_active = false;
-                    }
-                    $current_season->is_open = false;
-                    $current_season->entries = $competition->get_clubs( array( 'status' => 1 ) );
-                    require_once RACKETMANAGER_PATH . 'admin/league/show-season.php';
-                }
+        $competition_id = null;
+        $competition    = null;
+        $validator      = new Validator();
+        $validator      = $validator->capability( 'edit_leagues' );
+        if  ( empty( $validator->error ) ) {
+            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+            $validator      = $validator->competition( $competition_id );
+            if ( empty( $validator->error ) ) {
+                $competition = get_competition( $competition_id );
+                $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $validator   = $validator->season_set( $season, $competition->seasons );
             }
         }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $this->set_message( $validator->err_msg[0] , true );
+            } else {
+                $this->set_message( $validator->msg, true );
+            }
+            $this->show_message();
+            return;
+        }
+        $competition->events = $competition->get_events();
+        $tab                 = 'overview';
+        $current_season      = (object) $competition->seasons[ $season ];
+        if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
+            $current_season->is_active = true;
+        } else {
+            $current_season->is_active = false;
+        }
+        $current_season->is_open = false;
+        $current_season->entries = $competition->get_clubs( array( 'status' => 1 ) );
+        require_once RACKETMANAGER_PATH . 'admin/league/show-season.php';
     }
     /**
      * Display setup

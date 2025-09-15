@@ -28,41 +28,61 @@ final class Admin_League extends Admin_Display {
      * @return void
      */
     public function handle_display( ?string $view ): void {
-        $this->admin_competition = new Admin_Competition();
-        $this->admin_club        = new Admin_Club();
-        $this->admin_event       = new Admin_Event();
-        if ( 'seasons' === $view ) {
-            $this->display_seasons_page();
-        } elseif ( 'overview' === $view ) {
-            $this->display_overview_page();
-        } elseif ( 'setup' === $view ) {
-            $this->display_setup_page();
-        } elseif ( 'setup-event' === $view ) {
-            $this->display_setup_event_page();
-        } elseif ( 'modify' === $view ) {
-            $this->admin_competition->display_season_modify_page();
-        } elseif ( 'event' === $view ) {
-            $this->display_event_page();
-        } elseif ( 'constitution' === $view ) {
-            $this->display_constitution_page();
-        } elseif ( 'league' === $view ) {
-            $this->display_league_page();
-        } elseif ( 'match' === $view ) {
-            $this->display_match_page();
-        } elseif ( 'plan' === $view ) {
-            $this->display_schedule_page();
-        } elseif ( 'teams' === $view ) {
-            $this->display_teams_list();
-        } elseif ( 'team' === $view ) {
-            $this->admin_club->display_team_page();
-        } elseif ( 'contact' === $view ) {
-            $this->display_contact_page();
-        } elseif ( 'event-config' === $view ) {
-            $this->admin_event->display_config_page();
-        } elseif ( 'config' === $view ) {
-            $this->admin_competition->display_config_page();
-        } else {
-            $this->display_leagues_page();
+        switch ( $view ) {
+            case 'seasons':
+                $this->display_seasons_page();
+                break;
+            case 'overview':
+                $this->display_overview_page();
+                break;
+            case 'setup':
+                $this->display_setup_page();
+                break;
+            case 'setup-event':
+                $this->display_setup_event_page();
+                break;
+            case 'modify':
+                $this->admin_competition = new Admin_Competition();
+                $this->admin_competition->display_season_modify_page();
+                break;
+            case 'config':
+                $this->admin_competition = new Admin_Competition();
+                $this->admin_competition->display_config_page();
+                break;
+            case 'event-config':
+                $this->display_league_page();
+                break;
+            case 'event':
+                $this->admin_event = new Admin_Event();
+                $this->admin_event->display_config_page();
+                break;
+            case 'constitution':
+                $this->display_constitution_page();
+                break;
+            case 'league':
+                break;
+            case 'matches':
+                $this->display_matches_page();
+                break;
+            case 'match':
+                $this->display_match_page();
+                break;
+            case 'plan':
+                $this->display_schedule_page();
+                break;
+            case 'teams':
+                $this->display_teams_list();
+                break;
+            case 'team':
+                $this->admin_club = new Admin_Club();
+                $this->admin_club->display_team_page();
+                break;
+            case 'contact':
+                $this->display_contact_page();
+                break;
+            default:
+                $this->display_leagues_page();
+                break;
         }
     }
     /**

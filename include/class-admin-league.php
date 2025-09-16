@@ -489,46 +489,42 @@ final class Admin_League extends Admin_Display {
      * Display event page
      */
     public function display_event_page(): void {
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( empty( $validator->error ) ) {
+            $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
+            $validator = $validator->event( $event_id );
+        }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $this->set_message( $validator->err_msgs(), true );
+            } else {
+                $this->set_message( $validator->msg, true );
+            }
+        }
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( $this->invalid_permissions, true );
             $this->show_message();
-        } else {
-            $tab = 'leagues';
-            if ( isset( $_GET['event_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $event_id     = intval( $_GET['event_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $event        = get_event( $event_id );
-                $league_id    = false;
-                $league_title = '';
-                $season_id    = false;
-                $season_data  = array(
-                    'name'           => '',
-                    'num_match_days' => '',
-                    'homeAndAway'    => '',
-                );
-                $club_id      = 0;
-                if ( isset( $_POST['addLeague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                    $this->add_league_to_event();
-                    $this->show_message();
-                } elseif ( isset( $_GET['edit_league'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                    $league_id    = intval( $_GET['edit_league'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                    $league_edit  = get_league( $league_id );
-                    $league_title = $league_edit->title;
-                } elseif ( isset( $_POST['doActionLeague'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                    $this->delete_leagues_from_event();
-                    $this->show_message();
-                } elseif ( isset( $_POST['updateSettings'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                    $tab = 'settings';
-                    $this->update_event_settings( $event );
-                    $this->show_message();
-                }
-                if ( ! isset( $season ) ) {
-                    $event_season = $event->current_season['name'] ?? '';
-                    $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                }
-                require_once RACKETMANAGER_PATH . 'admin/league/show-event.php';
-
-            }
+            return;
         }
+        $tab       = 'leagues';
+        $event     = get_event( $event_id );
+        $league_id = false;
+        if ( isset( $_POST['addLeague'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $this->add_league_to_event();
+        } elseif ( isset( $_GET['edit_league'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $league_id    = intval( $_GET['edit_league'] );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $league_edit  = get_league( $league_id );
+            $league_title = $league_edit->title;
+        } elseif ( isset( $_POST['doActionLeague'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $this->delete_leagues_from_event();
+        }
+        $this->show_message();
+        if ( ! isset( $season ) ) {
+            $event_season = $event->current_season['name'] ?? '';
+            $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        }
+        require_once RACKETMANAGER_PATH . 'admin/event/show-leagues.php';
     }
     /**
      * Display constitution page

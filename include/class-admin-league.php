@@ -1878,28 +1878,4 @@ final class Admin_League extends Admin_Display {
             $this->set_message( __( 'No event set', 'racketmanager' ), true );
         }
     }
-    /**
-     * Update event settings via admin
-     *
-     * @param object $event event object.
-     */
-    protected function update_event_settings( object $event ): void {
-        $validator = new Validator();
-        $validator = $validator->capability( 'edit_league_settings' );
-        if ( empty( $validator->error ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-event-options' );
-        }
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            return;
-        }
-        $event = get_event( $event );
-        $settings = $_POST['settings']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-        if ( sanitize_text_field( wp_unslash( $_POST['event_title'] ) ) !== $event->name ) {
-            $event->set_name( sanitize_text_field( wp_unslash( $_POST['event_title'] ) ) );
-        }
-        $event->set_settings( $settings );
-        $event->reload_settings();
-        $this->set_message( __( 'Settings saved', 'racketmanager' ) );
-    }
 }

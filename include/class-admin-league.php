@@ -1208,6 +1208,44 @@ final class Admin_League extends Admin_Display {
             "SELECT `group` as `value` FROM $wpdb->racketmanager_table WHERE `league_id` = $league AND `season` = $season AND `group` != ''"
         );
     }
+    public function display_matches_page(): void {
+        $event_id  = null;
+        $event     = null;
+        $season    = null;
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( empty( $validator->error ) ) {
+            $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null;
+            $validator = $validator->event( $event_id );
+            if ( empty( $validator->error ) ) {
+                $event     = get_event( $event_id );
+                $season    = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+                $validator = $validator->season_set( $season, $event->seasons );
+            }
+        }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $this->set_message( $validator->err_msgs[0], true );
+            } else {
+                $this->set_message( $validator->msg, true );
+            }
+            $this->show_message();
+            return;
+        }
+        $matches = $event->get_matches(
+            array(
+                'event_id' => $event->id,
+                'season'   => $season,
+                'orderby'  => array(
+                    'match_day' => 'ASC',
+                    'date'      => 'ASC',
+                    'league_id' => 'ASC',
+                    'home_team' => 'ASC',
+                ),
+            )
+        );
+        require_once RACKETMANAGER_PATH . '/admin/event/show-matches.php';
+    }
     /**
      * Display match editing page
      */

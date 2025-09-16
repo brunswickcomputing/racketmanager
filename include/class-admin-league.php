@@ -1618,16 +1618,16 @@ final class Admin_League extends Admin_Display {
     private function league_contact_teams(): void {
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
-        if ( empty( $validator->error() ) ) {
+        if ( empty( $validator->error ) ) {
             $validator = $validator->capability( 'edit_teams' );
         }
-        if ( ! empty( $validator->error() ) ) {
+        if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             return;
         }
         if ( isset( $_POST['league_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
             $league = get_league( $_POST['league_id'] );
-            $sent = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $sent   = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             if ( $sent ) {
                 $this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
             }

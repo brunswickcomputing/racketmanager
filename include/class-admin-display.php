@@ -183,6 +183,68 @@ class Admin_Display {
             require_once RACKETMANAGER_PATH . '/admin/includes/contact.php';
         }
     }
+
+    /**
+     * Function to show contact preview
+     *
+     * @return void
+     */
+    private function show_contact_preview() {
+        global $racketmanager;
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['league_id'] ) ) {
+            $league      = get_league( intval( $_POST['league_id'] ) );
+            $title       = $league->title;
+            $object_type = 'league';
+            $object      = $league;
+            $object_name = 'league_id';
+            $object_id   = $league->id;
+        } elseif ( isset( $_POST['competition_id'] ) ) {
+            $competition = get_competition( intval( $_POST['competition_id'] ) );
+            $title       = $competition->name;
+            $object_type = 'competition';
+            $object      = $competition;
+            $object_name = 'competition_id';
+            $object_id   = $competition->id;
+        } elseif ( isset( $_POST['tournament_id'] ) ) {
+            $tournament = get_tournament( intval( $_POST['tournament_id'] ) );
+            $title       = $tournament->name;
+            $object_type = 'tournament';
+            $object      = $tournament;
+            $object_name = 'tournament_id';
+            $object_id   = $tournament->id;
+        }
+        if ( isset( $_POST['season'] ) ) {
+            $season = sanitize_text_field( wp_unslash( $_POST['season'] ) );
+        }
+        $tab           = 'preview';
+        $email_title   = isset( $_POST['contactTitle'] ) ? sanitize_text_field( wp_unslash( $_POST['contactTitle'] ) ) : null;
+        $email_intro   = isset( $_POST['contactIntro'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactIntro'] ) ) : null;
+        $email_body    = $_POST['contactBody'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
+        $email_subject = $racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
+        $email_message = $racketmanager->shortcodes->load_template(
+            'contact-teams',
+            array(
+                $object_type    => $object,
+                'organisation'  => $racketmanager->site_name,
+                'season'        => $season,
+                'title_text'    => $email_title,
+                'intro'         => $email_intro,
+                'body'          => $email_body,
+                'closing_text'  => $email_close,
+                'email_subject' => $email_subject,
+            ),
+            'email'
+        );
+        require_once RACKETMANAGER_PATH . '/admin/includes/contact.php';
+    }
     /**
      * Handle league teams action function
      *

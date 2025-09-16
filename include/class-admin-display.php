@@ -83,10 +83,6 @@ class Admin_Display {
             racketmanager_upgrade_page();
             return;
         }
-        $this->admin_club = new Admin_Club();
-        $this->admin_players = new Admin_Player();
-        $this->admin_competition = new Admin_Competition();
-
         $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         switch ( $page ) {

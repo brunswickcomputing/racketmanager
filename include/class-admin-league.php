@@ -50,16 +50,17 @@ final class Admin_League extends Admin_Display {
                 $this->admin_competition->display_config_page();
                 break;
             case 'event-config':
-                $this->display_league_page();
-                break;
-            case 'event':
                 $this->admin_event = new Admin_Event();
                 $this->admin_event->display_config_page();
+                break;
+            case 'event':
+                $this->display_event_page();
                 break;
             case 'constitution':
                 $this->display_constitution_page();
                 break;
             case 'league':
+                $this->display_league_page();
                 break;
             case 'matches':
                 $this->display_matches_page();

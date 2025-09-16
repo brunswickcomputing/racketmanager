@@ -141,95 +141,45 @@ class Admin_Display {
      * Display contact page
      */
     protected function display_contact_page(): void {
-        global $racketmanager;
-        $title = null;
-        $season = null;
+        $title       = null;
+        $season      = null;
         $object_type = null;
-        $object = null;
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $object      = null;
+        $validator   = new Validator();
+        $validator   = $validator->capability( 'edit_teams' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['contactTeamPreview'] ) ) {
+            $this->show_contact_preview();
         } else {
-            if ( isset( $_POST['contactTeamPreview'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_contact-teams' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                    return;
-                }
-                if ( isset( $_POST['league_id'] ) ) {
-                    $league      = get_league( intval( $_POST['league_id'] ) );
-                    $title       = $league->title;
-                    $object_type = 'league';
-                    $object      = $league;
-                    $object_name = 'league_id';
-                    $object_id   = $league->id;
-                } elseif ( isset( $_POST['competition_id'] ) ) {
-                    $competition = get_competition( intval( $_POST['competition_id'] ) );
-                    $title       = $competition->name;
-                    $object_type = 'competition';
-                    $object      = $competition;
-                    $object_name = 'competition_id';
-                    $object_id   = $competition->id;
-                } elseif ( isset( $_POST['tournament_id'] ) ) {
-                    $tournament = get_tournament( intval( $_POST['tournament_id'] ) );
-                    $title       = $tournament->name;
-                    $object_type = 'tournament';
-                    $object      = $tournament;
-                    $object_name = 'tournament_id';
-                    $object_id   = $tournament->id;
-                }
-                if ( isset( $_POST['season'] ) ) {
-                    $season = sanitize_text_field( wp_unslash( $_POST['season'] ) );
-                }
-                $email_title   = isset( $_POST['contactTitle'] ) ? sanitize_text_field( wp_unslash( $_POST['contactTitle'] ) ) : null;
-                $email_intro   = isset( $_POST['contactIntro'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactIntro'] ) ) : null;
-                $email_body    = $_POST['contactBody'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
-                $email_subject = $racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
-
-                $email_message = $racketmanager->shortcodes->load_template(
-                    'contact-teams',
-                    array(
-                        $object_type    => $object,
-                        'organisation'  => $racketmanager->site_name,
-                        'season'        => $season,
-                        'title_text'    => $email_title,
-                        'intro'         => $email_intro,
-                        'body'          => $email_body,
-                        'closing_text'  => $email_close,
-                        'email_subject' => $email_subject,
-                    ),
-                    'email'
-                );
-                $tab           = 'preview';
-            } else {
-                if ( isset( $_GET['league_id'] ) ) {
-                    $league      = get_league( intval( $_GET['league_id'] ) );
-                    $object_type = 'league';
-                    $object_name = 'league_id';
-                    $object_id   = $league->id;
-                } elseif ( isset( $_GET['competition_id'] ) ) {
-                    $competition = get_competition( intval( $_GET['competition_id'] ) );
-                    $object_type = 'competition';
-                    $object_name = 'competition_id';
-                    $object_id   = $competition->id;
-                } elseif ( isset( $_GET['tournament_id'] ) ) {
-                    $tournament = get_tournament( intval( $_GET['tournament_id'] ) );
-                    $object_type = 'tournament';
-                    $object_name = 'tournament_id';
-                    $object_id   = $tournament->id;
-                }
-                if ( isset( $_GET['season'] ) ) {
-                    $season = sanitize_text_field( wp_unslash( $_GET['season'] ) );
-                }
-                $email_title   = '';
-                $email_intro   = '';
-                $email_close   = '';
-                $email_body    = array();
-                $email_message = '';
-                $tab           = 'compose';
+            if ( isset( $_GET['league_id'] ) ) {
+                $league      = get_league( intval( $_GET['league_id'] ) );
+                $object_type = 'league';
+                $object_name = 'league_id';
+                $object_id   = $league->id;
+            } elseif ( isset( $_GET['competition_id'] ) ) {
+                $competition = get_competition( intval( $_GET['competition_id'] ) );
+                $object_type = 'competition';
+                $object_name = 'competition_id';
+                $object_id   = $competition->id;
+            } elseif ( isset( $_GET['tournament_id'] ) ) {
+                $tournament = get_tournament( intval( $_GET['tournament_id'] ) );
+                $object_type = 'tournament';
+                $object_name = 'tournament_id';
+                $object_id   = $tournament->id;
             }
-
+            if ( isset( $_GET['season'] ) ) {
+                $season = sanitize_text_field( wp_unslash( $_GET['season'] ) );
+            }
+            $email_title   = '';
+            $email_intro   = '';
+            $email_close   = '';
+            $email_body    = array();
+            $email_message = '';
+            $tab           = 'compose';
             require_once RACKETMANAGER_PATH . '/admin/includes/contact.php';
         }
     }

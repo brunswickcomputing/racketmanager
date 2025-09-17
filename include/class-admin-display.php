@@ -490,96 +490,79 @@ class Admin_Display {
             $this->set_message( $validator->msg, true );
             return;
         }
-        $league     = get_league( $league );
-        switch ( $type ) {
-            case 'random':
-                $this->league_random_rank_teams( $league );
-                break;
-            case 'ratings':
-                $this->league_rating_points_rank_teams( $league );
-                break;
-            case 'manual':
-            default:
-                break;
+        $team_ids = isset( $_POST['table_id'] ) ? array_values( $_POST['table_id'] ) : array();
+        if ( $team_ids ) {
+            $league = get_league( $league );
+            switch ( $type ) {
+                case 'random':
+                    $team_ids = $this->league_random_rank_teams( $team_ids );
+                    break;
+                case 'ratings':
+                    $team_ids = $this->league_rating_points_rank_teams( $team_ids, $league );
+                    break;
+                case 'manual':
+                    $team_ids = $this->league_manual_rank_teams( $team_ids );
+                default:
+                    break;
+            }
+            if ( $team_ids ) {
+                $team_ranks = array();
+                foreach ( $team_ids as $key => $team_id ) {
+                    $rank                    = $key + 1;
+                    $team                    = get_league_team( $team_id );
+                    $team_ranks[ $rank - 1 ] = $team;
+                }
+                $team_ranks = $league->get_ranking( $team_ranks );
+                $league->update_ranking( $team_ranks );
+                $this->set_message( $this->team_ranking_saved );
+            } else {
+                $this->set_message( $this->no_updates, 'warning' );
+            }
         }
-        $this->set_message( $this->team_ranking_saved );
     }
     /**
      * Randomly rank teams league in admin screen
      *
-     * @param object $league league object.
+     * @param array $team_ids team ids.
+     * @return array team ids sorted.
      */
-    protected function league_random_rank_teams( object $league ): void {
-        $team_ranks = array();
-        $team_ids   = isset( $_POST['table_id'] ) ? array_values( $_POST['table_id'] ) : array();
-        if ( $team_ids ) {
-            shuffle( $team_ids );
-            foreach ( $team_ids as $key => $team_id ) {
-                $rank                    = $key + 1;
-                $team                    = get_league_team( $team_id );
-                $team_ranks[ $rank - 1 ] = $team;
-            }
-            $team_ranks = $league->get_ranking( $team_ranks );
-            $league->update_ranking( $team_ranks );
-        }
+    protected function league_random_rank_teams( array $team_ids ): array {
+        shuffle( $team_ids );
+        return $team_ids;
     }
     /**
      * Rating points rank teams league in admin screen
      *
-     * @param object $league league object.
+     * @param array $team_ids team ids.
+     * @return array team ids sorted.
      */
-    protected function league_rating_points_rank_teams( object $league ): void {
-        global $racketmanager;
-        $league     = get_league( $league );
-        $team_ranks = array();
-        if ( isset( $_POST['table_id'] ) ) {
-            $display_opt = $racketmanager->get_options( 'display' );
-            $team_ids    = array_values( $_POST['table_id'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            if ( isset( $_POST['rating_points'] ) ) {
-                $rating_points = array_values( $_POST['rating_points'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                if ( empty( $display_opt['wtn'] ) || $league->event->competition->is_team_entry ) {
-                    array_multisort( $rating_points, SORT_DESC, $team_ids, SORT_ASC );
-                } else {
-                    array_multisort( $rating_points, SORT_ASC, $team_ids, SORT_ASC );
-                }
-            }
-            foreach ( $team_ids as $key => $team_id ) {
-                $rank                    = $key + 1;
-                $team                    = get_league_team( $team_id );
-                $team_ranks[ $rank - 1 ] = $team;
-            }
-            $team_ranks = $league->get_ranking( $team_ranks );
-            $league->update_ranking( $team_ranks );
+    protected function league_rating_points_rank_teams( array $team_ids, object $league ): array {
+        if ( isset( $_POST['rating_points'] ) ) {
+            $rating_points = array_values( $_POST['rating_points'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            array_multisort( $rating_points, SORT_ASC, $team_ids, SORT_ASC );
         }
+        if ( $league->is_championship && $league->championship->num_seeds ) {
+            $teams_seeded   = array_slice( $team_ids, 0, $league->championship->num_seeds );
+            $teams_unseeded = array_slice( $team_ids, $league->championship->num_seeds );
+            $teams_unseeded = $this->league_random_rank_teams( $teams_unseeded );
+            $team_ids       = array_merge( $teams_seeded, $teams_unseeded );
+        }
+        return $team_ids;
     }
     /**
      * Manually rank teams league in admin screen
      *
-     * @param object $league league object.
+     * @param array $team_ids team ids.
+     * @return array team ids sorted.
      */
-    protected function league_manual_rank_teams( object $league ): void {
-        if ( isset( $_POST['js-active'] ) && '1' === $_POST['js-active'] ) {
-            $js = true;
-        } else {
-            $js = false;
-        }
-        $team_ranks = array();
-        $league     = get_league( $league );
-        $team_ids   = isset( $_POST['table_id'] ) ? array_values( $_POST['table_id'] ) : array();
-        if ( $team_ids ) {
-            foreach ( $team_ids as $key => $team_id ) {
-                if ( $js ) {
-                    $rank = $key + 1;
-                } else {
-                    $rank = isset( $_POST['rank'][ $team_id ] ) ? intval( $_POST['rank'][ $team_id ] ) : 0;
-                }
-                $team                    = get_league_team( $team_id );
-                $team_ranks[ $rank - 1 ] = $team;
+    protected function league_manual_rank_teams( array $team_ids ): array {
+        if ( ! isset( $_POST['js-active'] ) && '1' !== $_POST['js-active'] ) {
+            $ranks = isset( $_POST['rank'] ) ? array_values( $_POST['rank'] ) :  array();
+            if ( $ranks ) {
+                array_multisort( $ranks, SORT_ASC, $team_ids, SORT_ASC );
             }
-            ksort( $team_ranks );
-            $team_ranks = $league->get_ranking( $team_ranks );
-            $league->update_ranking( $team_ranks );
         }
+        return $team_ids;
     }
     /**
      * Manage matches in league in admin screen

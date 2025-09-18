@@ -588,6 +588,30 @@ class Validator {
         return $this;
     }
     /**
+     * Validate league
+     *
+     * @param int|null $league_ref league.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function league( ?int $league_ref ): object {
+        if ( empty( $league_ref ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'league';
+            $this->err_msgs[] = __( 'League id not found', 'racketmanager' );
+            $this->status     = 404;
+        } else {
+            $league = get_league( $league_ref );
+            if ( ! $league ) {
+                $this->error      = true;
+                $this->err_flds[] = 'league_id';
+                $this->err_msgs[] = __( 'League not found', 'racketmanager' );
+                $this->status     = 404;
+            }
+        }
+        return $this;
+    }
+    /**
      * Get validation details
      *
      * @return stdClass

@@ -327,135 +327,177 @@ class Admin_Display {
      * Display teams list page
      */
     protected function display_teams_list(): void {
-        global $racketmanager;
-        //phpcs:disable WordPress.Security.NonceVerification.Recommended
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
-            $this->show_message();
-        } elseif ( isset( $_GET['league_id'] ) ) {
-            $league_id   = intval( $_GET['league_id'] );
-            $league      = get_league( $league_id );
-            $league_type = $league->type;
-            if ( 'LD' === $league_type ) {
-                $league_type = 'XD';
-            }
-            if ( $league->event->competition->is_player_entry ) {
-                $entry_type = 'player';
-            } else {
-                $entry_type = '';
-            }
-            $teams = array();
-            if ( empty( $league->championship->is_consolation ) ) {
-                $clubs = $racketmanager->get_clubs();
-                if ( $clubs ) {
-                    foreach ( $clubs as $club ) {
-                        $club       = get_club( $club );
-                        $club_teams = $club->get_teams( array( 'players' => $entry_type, 'type' => $league_type ) );
-                        if ( $club_teams ) {
-                            foreach ( $club_teams as $team ) {
-                                $teams[] = $team;
-                            }
-                        }
-                    }
-                }
-            } else {
-                $primary_league = get_league( $league->event->primary_league );
-                $teams          = $primary_league->get_league_teams();
-                $t              = 0;
-                foreach ( $teams as $team ) {
-                    $match_array                     = array();
-                    $match_array['loser_id']         = $team->id;
-                    $match_array['count']            = true;
-                    $match_array['final']            = 'all';
-                    $match_array['reset_query_args'] = true;
-                    $matches                         = $primary_league->get_matches( $match_array );
-                    if ( ! $matches ) { // team did not lose a match.
-                        unset( $teams[ $t ] );
-                    } else {
-                        $match_array['loser_id'] = null;
-                        $match_array['team_id']  = $team->id;
-                        $matches                 = $primary_league->get_matches( $match_array );
-                        $last_match              = null;
-                        if ( $matches > 2 ) { // team played more than 2 matches.
-                            unset( $teams[ $t ] );
-                        } elseif ( 2 === $matches ) { // team played 2 matches in main league.
-                            $match_array['count'] = false;
-                            $matches              = $primary_league->get_matches( $match_array );
-                            if ( $matches ) {
-                                $first_match = $matches[0];
-                                if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) { // first match not a bye.
-                                    unset( $teams[ $t ] );
-                                } else {
-                                    $last_match = $matches[1];
-                                }
-                            }
-                        } elseif ( 1 === $matches ) {
-                            $match_array['count'] = false;
-                            $matches              = $primary_league->get_matches( $match_array );
-                            $last_match           = $matches[0];
-                        }
-                        if ( $last_match && $last_match->is_walkover ) {
-                            unset( $teams[ $t ] );
-                        }
-                    }
-                    ++$t;
-                }
-                $match_array                     = array();
-                $match_array['reset_query_args'] = true;
-                $final_name                      = $primary_league->championship->get_final_keys( 1 );
-                $match_array['final']            = $final_name;
-                $match_array['pending']          = true;
-                $matches                         = $primary_league->get_matches( $match_array );
-                if ( $matches ) {
-                    foreach ( $matches as $match ) {
-                        $team          = new stdClass();
-                        $team->id      = '2_' . $final_name . '_' . $match->id;
-                        $team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
-                        $team->stadium = '';
-                        $teams[]       = $team;
-                    }
-                }
-                $final_name           = $primary_league->championship->get_final_keys( 2 );
-                $match_array['final'] = $final_name;
-                $matches              = $primary_league->get_matches( $match_array );
-                if ( $matches ) {
-                    foreach ( $matches as $match ) {
-                        $possible   = 0;
-                        $team_types = array( 'home', 'away' );
-                        foreach ( $team_types as $team_type ) {
-                            $team_ref = $team_type . '_team';
-                            if ( is_numeric( $match->$team_ref ) ) {
-                                $match_array['pending']   = false;
-                                $match_array['final']     = 'all';
-                                $match_array['winner_id'] = $match->$team_ref;
-                                $team_matches             = $primary_league->get_matches( $match_array );
-                                foreach ( $team_matches as $team_match ) {
-                                    if ( '-1' === $team_match->home_team || '-1' === $team_match->away_team ) {
-                                        ++$possible;
-                                    }
-                                }
-                            }
-                        }
-                        if ( $possible ) {
-                            $team          = new stdClass();
-                            $team->id      = '2_' . $final_name . '_' . $match->id;
-                            $team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
-                            $team->stadium = '';
-                            $teams[]       = $team;
-                        }
-                    }
-                }
-            }
-            $season        = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
-            $view          = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';
-            $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-            $type          = isset( $_GET['type'] ) ? sanitize_text_field( wp_unslash( $_GET['type'] ) ) : null;
-            if ( $tournament_id ) {
-                $tournament = get_tournament( $tournament_id );
-            }
-            //phpcs:enable WordPress.Security.NonceVerification.Recommended
-            require_once RACKETMANAGER_PATH . '/admin/includes/teams-list.php';
+        $validator = new Validator();
+        $league_id = isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null;
+        $validator = $validator->capability( 'edit_teams' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->league( $league_id );
         }
+        if ( ! empty(  $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $this->set_message( $validator->err_msgs[0], true );
+            } else {
+                $this->set_message( $validator->msg, true );
+            }
+            $this->show_message();
+            return;
+        }
+        $league      = get_league( $league_id );
+        $league_type = $league->type;
+        if ( 'LD' === $league_type ) {
+            $league_type = 'XD';
+        }
+        $entry_type = '';
+        if ( $league->event->competition->is_player_entry ) {
+            $entry_type = 'player';
+        }
+        if ( empty( $league->championship->is_consolation ) ) {
+            $teams = $this->get_club_teams( $entry_type, $league_type );
+        } else {
+            $teams = $this->get_consolation_teams( $league );
+        }
+        $season        = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
+        $view          = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : '';
+        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
+        $type          = isset( $_GET['type'] ) ? sanitize_text_field( wp_unslash( $_GET['type'] ) ) : null;
+        if ( $tournament_id ) {
+            $tournament = get_tournament( $tournament_id );
+        }
+        //phpcs:enable WordPress.Security.NonceVerification.Recommended
+        require_once RACKETMANAGER_PATH . '/admin/includes/teams-list.php';
+    }
+
+    /**
+     * Function to get club teams for list.
+     *
+     * @param string $entry_type entry type.
+     * @param string $league_type league type.
+     *
+     * @return array
+     */
+    private function get_club_teams( string $entry_type, string $league_type ): array {
+        global $racketmanager;
+        $teams = array();
+        $clubs = $racketmanager->get_clubs();
+        if ( $clubs ) {
+            foreach ( $clubs as $club ) {
+                $club       = get_club( $club );
+                $club_teams = $club->get_teams( array( 'players' => $entry_type, 'type' => $league_type ) );
+                if ( $club_teams ) {
+                    foreach ( $club_teams as $team ) {
+                        $teams[] = $team;
+                    }
+                }
+            }
+        }
+        return $teams;
+    }
+
+    /**
+     * Function to get consolation teams
+     *
+     * @param object $league league object.
+     *
+     * @return array
+     */
+    private function get_consolation_teams( object $league ): array {
+        $primary_league = get_league( $league->event->primary_league );
+        $teams          = $primary_league->get_league_teams();
+        $t              = 0;
+        foreach ( $teams as $team ) {
+            $match_array                     = array();
+            $match_array['loser_id']         = $team->id;
+            $match_array['count']            = true;
+            $match_array['final']            = 'all';
+            $match_array['reset_query_args'] = true;
+            $matches                         = $primary_league->get_matches( $match_array );
+            if ( ! $matches ) { // team did not lose a match.
+                unset( $teams[ $t ] );
+            } else {
+                $match_array['loser_id'] = null;
+                $match_array['team_id']  = $team->id;
+                $matches                 = $primary_league->get_matches( $match_array );
+                $last_match              = null;
+                if ( $matches > 2 ) { // team played more than 2 matches.
+                    unset( $teams[ $t ] );
+                } elseif ( 2 === $matches ) { // team played 2 matches in main league.
+                    $match_array['count'] = false;
+                    $matches              = $primary_league->get_matches( $match_array );
+                    if ( $matches ) {
+                        $first_match = $matches[0];
+                        if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) { // first match not a bye.
+                            unset( $teams[ $t ] );
+                        } else {
+                            $last_match = $matches[1];
+                        }
+                    }
+                } elseif ( 1 === $matches ) {
+                    $match_array['count'] = false;
+                    $matches              = $primary_league->get_matches( $match_array );
+                    $last_match           = $matches[0];
+                }
+                if ( $last_match && $last_match->is_walkover ) {
+                    unset( $teams[ $t ] );
+                }
+            }
+            ++$t;
+        }
+        $match_array                     = array();
+        $match_array['reset_query_args'] = true;
+        $final_name                      = $primary_league->championship->get_final_keys( 1 );
+        $match_array['final']            = $final_name;
+        $match_array['pending']          = true;
+        $matches                         = $primary_league->get_matches( $match_array );
+        if ( $matches ) {
+            foreach ( $matches as $match ) {
+                $team    = $this->build_loser_team( $final_name, $match );
+                $teams[] = $team;
+            }
+        }
+        $final_name           = $primary_league->championship->get_final_keys( 2 );
+        $match_array['final'] = $final_name;
+        $matches              = $primary_league->get_matches( $match_array );
+        if ( $matches ) {
+            foreach ( $matches as $match ) {
+                $possible   = 0;
+                $team_types = array( 'home', 'away' );
+                foreach ( $team_types as $team_type ) {
+                    $team_ref = $team_type . '_team';
+                    if ( is_numeric( $match->$team_ref ) ) {
+                        $match_array['pending']   = false;
+                        $match_array['final']     = 'all';
+                        $match_array['winner_id'] = $match->$team_ref;
+                        $team_matches             = $primary_league->get_matches( $match_array );
+                        foreach ( $team_matches as $team_match ) {
+                            if ( '-1' === $team_match->home_team || '-1' === $team_match->away_team ) {
+                                ++$possible;
+                            }
+                        }
+                    }
+                }
+                if ( $possible ) {
+                    $team    = $this->build_loser_team( $final_name, $match );
+                    $teams[] = $team;
+                }
+            }
+        }
+        return $teams;
+    }
+
+    /**
+     * Function to build loser team entry
+     *
+     * @param string $final_name name of final round.
+     * @param object $match match object.
+     *
+     * @return stdClass
+     */
+    private function build_loser_team( string $final_name, object $match ): object {
+        $team          = new stdClass();
+        $team->id      = '2_' . $final_name . '_' . $match->id;
+        $team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+        $team->stadium = '';
+        return $team;
     }
     /**
      * Add teams to league in admin screen

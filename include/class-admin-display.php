@@ -189,7 +189,7 @@ class Admin_Display {
      *
      * @return void
      */
-    private function show_contact_preview() {
+    private function show_contact_preview(): void {
         global $racketmanager;
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams' );

@@ -544,6 +544,7 @@ class Admin_Display {
                     break;
                 case 'manual':
                     $team_ids = $this->league_manual_rank_teams( $team_ids );
+                    break;
                 default:
                     break;
             }

@@ -226,7 +226,7 @@ class Admin_Display {
         $tab           = 'preview';
         $email_title   = isset( $_POST['contactTitle'] ) ? sanitize_text_field( wp_unslash( $_POST['contactTitle'] ) ) : null;
         $email_intro   = isset( $_POST['contactIntro'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactIntro'] ) ) : null;
-        $email_body    = $_POST['contactBody'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $email_body    = isset( $_POST['contactBody'] ) ? wp_unslash( $_POST['contactBody'] ) : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
         $email_subject = $racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
         $email_message = $racketmanager->shortcodes->load_template(

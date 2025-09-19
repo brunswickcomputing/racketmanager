@@ -97,7 +97,7 @@ jQuery(document).ready(function(){
                     <textarea class="form-control contactText" rows="3" name="contactIntro" id="contactIntro" placeholder="Enter intro"><?php echo esc_html( $email_intro ); ?></textarea>
                 </div>
                 <?php
-                for ( $i = 1; $i <= 5; $i++ ) {
+                for ( $i = 1; $i <= 10; $i++ ) {
                     ?>
                     <div class="col-12 mb-3">
                         <label for="contactBody-<?php echo esc_html( $i ); ?>"><?php esc_html_e( 'Paragraph', 'racketmanager' ); ?> <?php echo esc_html( $i ); ?></label>

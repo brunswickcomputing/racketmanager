@@ -159,6 +159,11 @@ if ( is_user_logged_in() ) {
             } else {
                 echo esc_html( __( 'Payment Due', 'racketmanager' ) . ': ' . mysql2date( $racketmanager->date_format, $invoice->date_due ) );
             }
+            if ( $invoice->purchase_order ) {
+                ?>
+                <div class="text-end"><?php echo esc_html( __( 'Purchase Order', 'racketmanager' ) . ': ' . strtoupper( $invoice->purchase_order ) ); ?></div>
+                <?php
+            }
             if ( 'paid' === $invoice->status ) {
                 ?>
                 <div class="text-end"><?php echo esc_html( strtoupper( $invoice->status ) ); ?></div>

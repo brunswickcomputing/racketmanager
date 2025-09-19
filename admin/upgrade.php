@@ -165,6 +165,10 @@ function racketmanager_upgrade(): void {
             $wpdb->query( "UPDATE {$wpdb->racketmanager_table} SET `custom` = '" . $table->custom . "' WHERE `id` = " . $table->id );
         }
     }
+    if ( version_compare( $installed, '9.5.0', '<' ) ) {
+        echo esc_html__( 'starting 9.5.0 upgrade', 'racketmanager' ) . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `purchase_order` VARCHAR(50) NULL AFTER `payment_reference`" );
+    }
     /*
     * Update version and dbversion
     */

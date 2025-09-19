@@ -32,7 +32,7 @@ if ( empty( $invoice->player_id ) ) {
     <form method="post" enctype="multipart/form-data" name="invoice_edit" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_manage-invoice', 'racketmanager_nonce' ); ?>
         <div class="row justify-content-start align-items-center mb-3">
-            <h2><?php esc_html_e( 'Change status', 'racketmanager' ); ?></h2>
+            <h2><?php esc_html_e( 'Amend', 'racketmanager' ); ?></h2>
             <div class="form-floating col-4">
                 <select class="form-select" size="1" name="status" id="status" >
                     <option><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
@@ -44,6 +44,10 @@ if ( empty( $invoice->player_id ) ) {
                     <option value="paid" <?php selected( 'paid', $invoice->status ); ?>><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
                 </select>
                 <label for="status"><?php esc_html_e( 'Status', 'racketmanager' ); ?></label>
+            </div>
+            <div class="form-floating col-4">
+                <input class="form-control" type="text" id="purchaseOrder" name="purchaseOrder" placeholder="Purchase Order" value="<?php echo esc_html( $invoice->purchase_order ); ?>" />
+                <label for="purchaseOrder"><?php esc_html_e( 'Purchase Order', 'racketmanager' ); ?></label>
             </div>
             <div class="col-auto">
                 <input type="hidden" name="invoice_id" id="invoice_id" value="<?php echo esc_html( $invoice->id ); ?>" />

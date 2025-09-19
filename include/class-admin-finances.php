@@ -298,7 +298,16 @@ final class Admin_Finances extends Admin_Display {
                     $invoice = get_invoice( intval( $_POST['invoice_id'] ) );
                     $updates = false;
                     if ( isset( $_POST['status'] ) && $invoice->status !== $_POST['status'] ) {
-                        $updates = $invoice->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
+                        $invoice_update = $invoice->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
+                        if ( $invoice_update ) {
+                            $updates = true;
+                        }
+                    }
+                    if ( isset( $_POST['purchaseOrder'] ) && $invoice->purchase_order !== $_POST['purchaseOrder'] ) {
+                        $invoice_update = $invoice->set_purchase_order( sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) );
+                        if ( $invoice_update ) {
+                            $updates = true;
+                        }
                     }
                     if ( $updates ) {
                         $this->set_message( __( 'Invoice updated', 'racketmanager' ) );

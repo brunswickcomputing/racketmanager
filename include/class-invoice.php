@@ -97,6 +97,12 @@ final class Invoice {
      */
     public string|null $payment_reference;
     /**
+     * Purchase order
+     *
+     * @var string|null
+     */
+    public string|null $purchase_order;
+    /**
      * Details
      *
      * @var object|string|null
@@ -123,7 +129,7 @@ final class Invoice {
         if ( ! $invoice ) {
             $invoice = $wpdb->get_row(
                 $wpdb->prepare(
-                    "SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference`, `details` FROM $wpdb->racketmanager_invoices WHERE `id` = %d LIMIT 1",
+                    "SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference`, `purchase_order`, `details` FROM $wpdb->racketmanager_invoices WHERE `id` = %d LIMIT 1",
                     $invoice_id
                 )
             );  // db call ok.
@@ -220,8 +226,8 @@ final class Invoice {
                 );
             }
             if ( $result ) {
-                $this->id                            = $wpdb->insert_id;
-                $billing['invoiceNumber']           += 1;
+                $this->id                  = $wpdb->insert_id;
+                $billing['invoiceNumber'] += 1;
                 $racketmanager->set_options( 'billing', $billing );
             }
         }
@@ -295,6 +301,25 @@ final class Invoice {
             $wpdb->prepare(
                 "UPDATE $wpdb->racketmanager_invoices set `payment_reference` = %s WHERE `id` = %d",
                 $this->payment_reference,
+                $this->id
+            )
+        );  // db call ok.
+        wp_cache_set( $this->id, $this, 'invoice' );
+        return true;
+    }
+    /**
+     * Set purchase order
+     *
+     * @param string $purchase_order purchase order.
+     */
+    public function set_purchase_order(string $purchase_order ): bool {
+        global $wpdb;
+
+        $this->purchase_order = $purchase_order;
+        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_invoices set `purchase_order` = %s WHERE `id` = %d",
+                $this->purchase_order,
                 $this->id
             )
         );  // db call ok.

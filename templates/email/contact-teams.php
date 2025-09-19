@@ -29,6 +29,7 @@ if ( $intro ) {
 }
 foreach ( $body as $i => $body_entry ) {
     if ( $body_entry ) {
+        $paragraph_imbed = true;
         $paragraph_text = $body_entry;
         require $paragraph;
     }

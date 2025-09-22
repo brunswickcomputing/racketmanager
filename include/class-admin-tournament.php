@@ -926,7 +926,7 @@ final class Admin_Tournament extends Admin_Championship {
         if ( 'competition' === $season_data->type ) {
             $competition->update_seasons( $object->seasons );
         } elseif ( 'event' === $season_data->type ) {
-            $event->save_seasons(  $object->seasons );
+            $event->update_seasons(  $object->seasons );
         }
         if ( 'competition' === $season_data->type ) {
             $events = $competition->get_events();
@@ -983,6 +983,6 @@ final class Admin_Tournament extends Admin_Championship {
             );
         }
         ksort( $event->seasons );
-        $event->save_seasons( $event->seasons );
+        $event->update_seasons( $event->seasons );
     }
 }

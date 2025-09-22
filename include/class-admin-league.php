@@ -1497,10 +1497,10 @@ final class Admin_League extends Admin_Display {
     private function delete_matches_from_league(): void {
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_matches-bulk' );
-        if ( empty( $validator->error() ) ) {
+        if ( empty( $validator->error ) ) {
             $validator = $validator->capability( 'del_matches' );
         }
-        if ( ! empty( $validator->error() ) ) {
+        if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             return;
         }
@@ -1524,10 +1524,10 @@ final class Admin_League extends Admin_Display {
     private function league_manage_team( object $league ): void {
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-teams' );
-        if ( empty( $validator->error() ) ) {
+        if ( empty( $validator->error ) ) {
             $validator = $validator->capability( 'edit_teams' );
         }
-        if ( ! empty( $validator->error() ) ) {
+        if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             return;
         }
@@ -1558,10 +1558,10 @@ final class Admin_League extends Admin_Display {
         global $league;
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_matches-bulk' );
-        if ( empty( $validator->error() ) ) {
+        if ( empty( $validator->error ) ) {
             $validator = $validator->capability( 'update_results' );
         }
-        if ( ! empty( $validator->error() ) ) {
+        if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             return;
         }
@@ -1586,10 +1586,10 @@ final class Admin_League extends Admin_Display {
     private function league_manual_rank( object $league ): void {
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_teams-bulk' );
-        if ( empty( $validator->error() ) ) {
+        if ( empty( $validator->error ) ) {
             $validator = $validator->capability( 'update_results' );
         }
-        if ( ! empty( $validator->error() ) ) {
+        if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             return;
         }

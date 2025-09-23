@@ -26,6 +26,6 @@ require $paragraph;
 /* translators: %s: number of errors */
 $paragraph_text = sprintf( __( 'There were %s errors.', 'racketmanager' ), count( $messages ) );
 require $paragraph;
-require $paragraph;
+require 'components/closing.php';
 ?>
 <?php require 'email-footer.php'; ?>

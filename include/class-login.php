@@ -150,18 +150,16 @@ class Login {
      *
      * @return array
      */
-    public function racketmanager_password_change_email( array $password_change_message, array $user_data, array $user_data_new ): array {
+    public function racketmanager_password_change_email( array $password_change_mail, array $user_data, array $user_data_new ): array {
         global $racketmanager;
-
         add_filter( 'wp_mail_content_type', array( $this, 'racketmanager_wp_email_content_type' ) );
-        $vars['site_name']                  = $racketmanager->site_name;
-        $vars['site_url']                   = $racketmanager->site_url;
-        $vars['user_login']                 = $user_data['user_login'];
-        $vars['display_name']               = $user_data['display_name'];
-        $vars['email_link']                 = $racketmanager->admin_email;
-        $password_change_message['message'] = $racketmanager->shortcodes->load_template( 'email-password-change', $vars, 'email' );
-
-        return $password_change_message;
+        $vars['site_name']               = $racketmanager->site_name;
+        $vars['site_url']                = $racketmanager->site_url;
+        $vars['user_login']              = $user_data['user_login'];
+        $vars['display_name']            = $user_data['display_name'];
+        $vars['email_link']              = $racketmanager->admin_email;
+        $password_change_mail['message'] = $racketmanager->shortcodes->load_template( 'email-password-change', $vars, 'email' );
+        return $password_change_mail;
     }
     /**
      * Function to set privacy personal data email

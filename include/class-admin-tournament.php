@@ -896,8 +896,9 @@ final class Admin_Tournament extends Admin_Championship {
      * @param object $season_data season data.
      */
     private function edit_season( object $season_data ): void {
-        global $competition;
-        $object = null;
+        $competition = null;
+        $event       = null;
+        $object      = null;
         if ( 'competition' === $season_data->type ) {
             $competition = get_competition( $season_data->object_id );
             $object      = $competition;
@@ -905,7 +906,8 @@ final class Admin_Tournament extends Admin_Championship {
             $event  = get_event( $season_data->object_id );
             $object = $event;
         }
-        $object->seasons[ $season_data->season ] = array(
+        $seasons                         = $object->seasons;
+        $seasons[ $season_data->season ] = array(
             'name'              => $season_data->season,
             'num_match_days'    => $season_data->num_match_days,
             'match_dates'       => $season_data->match_dates,
@@ -915,18 +917,18 @@ final class Admin_Tournament extends Admin_Championship {
             'date_closing'      => $season_data->date_closing,
         );
         if ( 'competition' === $season_data->type ) {
-            $object->seasons[ $season_data->season ]['date_open']        = $season_data->date_open;
-            $object->seasons[ $season_data->season ]['date_start']       = $season_data->date_start;
-            $object->seasons[ $season_data->season ]['date_end']         = $season_data->date_end;
-            $object->seasons[ $season_data->season ]['competition_code'] = $season_data->competition_code;
-            $object->seasons[ $season_data->season ]['venue']            = $season_data->venue ?? null;
-            $object->seasons[ $season_data->season ]['grade']            = $season_data->grade ?? null;
+            $seasons[ $season_data->season ]['date_open']        = $season_data->date_open;
+            $seasons[ $season_data->season ]['date_start']       = $season_data->date_start;
+            $seasons[ $season_data->season ]['date_end']         = $season_data->date_end;
+            $seasons[ $season_data->season ]['competition_code'] = $season_data->competition_code;
+            $seasons[ $season_data->season ]['venue']            = $season_data->venue ?? null;
+            $seasons[ $season_data->season ]['grade']            = $season_data->grade ?? null;
         }
-        ksort( $object->seasons );
+        ksort( $seasons );
         if ( 'competition' === $season_data->type ) {
-            $competition->update_seasons( $object->seasons );
+            $competition->update_seasons( $seasons );
         } elseif ( 'event' === $season_data->type ) {
-            $event->update_seasons(  $object->seasons );
+            $event->update_seasons(  $seasons );
         }
         if ( 'competition' === $season_data->type ) {
             $events = $competition->get_events();
@@ -959,10 +961,12 @@ final class Admin_Tournament extends Admin_Championship {
 
         $event = get_event( $event_id );
         if ( '' === $event->seasons ) {
-            $event->seasons = array();
+            $event_seasons = array();
+        } else {
+            $event_seasons = $event->seasons;
         }
         if ( $event->is_box ) {
-            $event->seasons[ $season ] = array(
+            $event_seasons[ $season ] = array(
                 'name'           => $season,
                 'num_match_days' => 0,
                 'status'         => 'draft',
@@ -973,16 +977,15 @@ final class Admin_Tournament extends Admin_Championship {
             }
             if ( ! $num_match_days ) {
                 $this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
-
                 return;
             }
-            $event->seasons[ $season ] = array(
+            $event_seasons[ $season ] = array(
                 'name'           => $season,
                 'num_match_days' => $num_match_days,
                 'status'         => 'draft',
             );
         }
         ksort( $event->seasons );
-        $event->update_seasons( $event->seasons );
+        $event->update_seasons( $event_seasons );
     }
 }

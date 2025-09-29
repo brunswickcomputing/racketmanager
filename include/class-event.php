@@ -892,7 +892,7 @@ class Event {
             $search_terms2[] = $wpdb->prepare( "ro.`id` = %d", $player );
         }
         if ( ! $system ) {
-            $search_terms2 = "ro.`system_record` IS NULL";
+            $search_terms2[] = "ro.`system_record` IS NULL";
         }
 
         $order       = '`club_id`, `fullname` ';

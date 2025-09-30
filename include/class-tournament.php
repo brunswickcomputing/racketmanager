@@ -743,7 +743,9 @@ final class Tournament {
     public function get_events( false|string $name = false ): object|array {
         $competition = get_competition( $this->competition_id );
         if ( $competition ) {
-            $events       = $competition->get_events();
+            $event_args           = array();
+            $event_args['season'] = $this->season;
+            $events               = $competition->get_events( $event_args );
             $this->events = array();
             foreach ( $events as $event ) {
                 $event = get_event( $event );

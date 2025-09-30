@@ -943,11 +943,13 @@ class Competition {
         $defaults = array(
             'offset'  => 0,
             'limit'   => 99999999,
+            'season'  => null,
             'orderby' => array( 'name' => 'ASC' ),
         );
         $args     = array_merge( $defaults, $args );
         $offset   = $args['offset'];
         $limit    = $args['limit'];
+        $season   = $args['season'];
         $orderby  = $args['orderby'];
 
         $search_terms   = array();
@@ -957,7 +959,7 @@ class Competition {
         $order  = Util::order_by_string( $orderby );
         $sql    = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `name`, `id`, `settings`, `competition_id` FROM $wpdb->racketmanager_events $search $order LIMIT %d, %d",
+            "SELECT `id` FROM $wpdb->racketmanager_events $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -972,9 +974,13 @@ class Competition {
 
         $event_index = array();
         foreach ( $events as $i => $event ) {
-            $event_index[ $event->id ] = $i;
-            $event                     = get_event( $event->id );
-            $events[ $i ]              = $event;
+            $event = get_event( $event->id );
+            if ( $season && empty( $event->seasons[ $season ] ) ) {
+                unset( $events[ $i ] );
+            } else {
+                $event_index[ $event->id ] = $i;
+                $events[ $i ]              = $event;
+            }
         }
 
         $this->events      = $events;

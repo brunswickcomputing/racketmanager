@@ -233,7 +233,7 @@ class Validator {
             if ( $player && $player_id !== $player->ID ) {
                 $this->error      = true;
                 $this->err_flds[] = $field_ref;
-                $this->err_msgs[] = __( 'Email address already used', 'racketmanager' );
+                $this->err_msgs[] = sprintf( __( 'Email address already used by %s', 'racketmanager' ), $player->display_name );
             }
         }
         return $this;
@@ -259,7 +259,7 @@ class Validator {
             if ( $player && $player_id !== $player->ID ) {
                 $this->error      = true;
                 $this->err_flds[] = 'btm';
-                $this->err_msgs[] = __( 'LTA Tennis Number already used', 'racketmanager' );
+                $this->err_msgs[] = sprintf( __( 'LTA Tennis Number already used by %s', 'racketmanager' ), $player->display_name );
             }
         }
         return $this;

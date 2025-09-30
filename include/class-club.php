@@ -522,14 +522,14 @@ final class Club {
             if ( $player ) {
                 $old_player = true;
                 $return->error      = true;
-                $return->msg        = __( 'Email address already used', 'racketmanager' );
+                $return->msg        = sprintf( __( 'Email address already used by %s', 'racketmanager' ), $player->display_name );
                 $return->status     = 401;
             } else {
                 $player = get_player( $new_player->btm, 'btm' );
                 if ( $player ) {
                     $old_player = true;
                     $return->error      = true;
-                    $return->msg        = __( 'LTA Tennis Number already used', 'racketmanager' );
+                    $return->msg        = sprintf( __( 'LTA Tennis Number already used by %s', 'racketmanager' ), $player->display_name );
                     $return->status     = 401;
                 } else {
                     $player = new Player( $new_player );

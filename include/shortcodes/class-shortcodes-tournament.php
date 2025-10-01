@@ -8,9 +8,20 @@
  * @subpackage Shortcodes/Competition
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Util;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_player_id;
+use function Racketmanager\get_tab;
+use function Racketmanager\get_tournament;
+use function Racketmanager\get_tournament_entry;
+use function Racketmanager\seo_url;
+use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement the Racketmanager_Shortcodes_Tournament object
@@ -18,19 +29,19 @@ use JetBrains\PhpStorm\NoReturn;
 class Shortcodes_Tournament extends Shortcodes {
     private string $base_tournaments;
     /**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
+     * Initialize shortcodes
+     */
+    public function __construct() {
         parent::__construct();
         $this->base_tournaments = '/tournaments/';
-	}
-	/**
-	 * Show tournament function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_tournament( array $atts ): string {
+    }
+    /**
+     * Show tournament function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_tournament( array $atts ): string {
 		global $racketmanager, $wp;
 		$args        = shortcode_atts(
 			array(
@@ -87,14 +98,14 @@ class Shortcodes_Tournament extends Shortcodes {
 				'tab'         => $tab,
 			)
 		);
-	}
-	/**
-	 * Show tournament overview function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_tournament_overview( array $atts ): string {
+    }
+    /**
+     * Show tournament overview function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_tournament_overview( array $atts ): string {
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
@@ -121,14 +132,14 @@ class Shortcodes_Tournament extends Shortcodes {
 			),
 			'tournament'
 		);
-	}
-	/**
-	 * Show event function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_events( array $atts ): string {
+    }
+    /**
+     * Show event function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_events( array $atts ): string {
 		global $wp;
 		$args               = shortcode_atts(
 			array(
@@ -198,14 +209,14 @@ class Shortcodes_Tournament extends Shortcodes {
 			),
 			'tournament'
 		);
-	}
-	/**
-	 * Show draw function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_draws( array $atts ): string {
+    }
+    /**
+     * Show draw function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_draws( array $atts ): string {
 		global $racketmanager, $league, $wp;
 		$args          = shortcode_atts(
 			array(
@@ -281,14 +292,14 @@ class Shortcodes_Tournament extends Shortcodes {
 			),
 			'tournament'
 		);
-	}
-	/**
-	 * Show tournament_players function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_tournament_players(array $atts ): string {
+    }
+    /**
+     * Show tournament_players function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_tournament_players(array $atts ): string {
 		$args          = shortcode_atts(
 			array(
 				'id'       => false,
@@ -328,7 +339,7 @@ class Shortcodes_Tournament extends Shortcodes {
 			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
-	}
+    }
 
     /**
      * Get tournament player information function
@@ -338,7 +349,7 @@ class Shortcodes_Tournament extends Shortcodes {
      *
      * @return object|string
      */
-	public function get_player_info( int|string $player_id, object $tournament ): object|string {
+    public function get_player_info( int|string $player_id, object $tournament ): object|string {
 		global $racketmanager;
         if ( is_numeric( $player_id ) ) {
             $player = get_player( $player_id ); // get player by name.
@@ -468,14 +479,14 @@ class Shortcodes_Tournament extends Shortcodes {
 		}
 		$player->statistics = $player->get_stats( $player->statistics );
 		return $player;
-	}
-	/**
-	 * Show tournament winners function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_tournament_winners(array $atts ): string {
+    }
+    /**
+     * Show tournament winners function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_tournament_winners(array $atts ): string {
 		global $racketmanager;
 		$args          = shortcode_atts(
 			array(
@@ -503,14 +514,14 @@ class Shortcodes_Tournament extends Shortcodes {
 			),
 			'tournament'
 		);
-	}
-	/**
-	 * Show tournament_players function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_tournament_matches(array $atts ): string {
+    }
+    /**
+     * Show tournament_players function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_tournament_matches(array $atts ): string {
 		global $racketmanager, $wp;
 		$args          = shortcode_atts(
 			array(
@@ -587,19 +598,19 @@ class Shortcodes_Tournament extends Shortcodes {
 			),
 			'tournament'
 		);
-	}
-	/**
-	 * Display single tournament match
-	 *
-	 * [match id="1" template="name"]
-	 *
-	 * - id is the ID of the match to display
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string
-	 */
-	public function show_tournament_match( array $atts ): string {
+    }
+    /**
+     * Display single tournament match
+     *
+     * [match id="1" template="name"]
+     *
+     * - id is the ID of the match to display
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "match-template.php" (optional)
+     *
+     * @param array $atts shortcode attributes.
+     * @return string
+     */
+    public function show_tournament_match( array $atts ): string {
 		global $wp;
 		$args       = shortcode_atts(
 			array(
@@ -652,14 +663,14 @@ class Shortcodes_Tournament extends Shortcodes {
 			$msg = $this->match_not_found;
 		}
         return $this->return_error( $msg );
-	}
-	/**
-	 * Show latest tournament function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	#[NoReturn] public function show_latest_tournament( array $atts ): string {
+    }
+    /**
+     * Show latest tournament function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    #[NoReturn] public function show_latest_tournament( array $atts ): string {
 		global $racketmanager, $wp;
 		$args      = shortcode_atts(
 			array(
@@ -685,16 +696,16 @@ class Shortcodes_Tournament extends Shortcodes {
 		}
 		echo '<script>location.href = "' . esc_url( $new_url ) . '"</script>';
 		exit;
-	}
-	/**
-	 * Function to display Tournament withdrawal modal
-	 *
-	 *    [tournament-withdrawal id=ID player_id=x modal=x template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string the content
-	 */
-	public function show_tournament_withdrawal_modal( array $atts ): string {
+    }
+    /**
+     * Function to display Tournament withdrawal modal
+     *
+     *    [tournament-withdrawal id=ID player_id=x modal=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string the content
+     */
+    public function show_tournament_withdrawal_modal( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'        => '',
@@ -754,5 +765,5 @@ class Shortcodes_Tournament extends Shortcodes {
 			return $this->return_error( $msg, 'modal' );
 		}
 
-	}
+    }
 }

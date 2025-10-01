@@ -8,21 +8,33 @@
  * @subpackage Shortcodes/Competition
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
+use Racketmanager\Stripe_Settings;
+use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_charge;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_player;
+use function Racketmanager\get_tab;
+use function Racketmanager\get_tournament;
+use function Racketmanager\get_tournament_entry;
+use function Racketmanager\seo_url;
+use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement the Shortcodes_Competition object
  */
 class Shortcodes_Competition extends Shortcodes {
-	/**
-	 * Show competitions function
-	 *
-	 * @param array $atts attributes.
-	 * @return string display output
-	 */
-	public function show_competitions( array $atts ): string {
+    /**
+     * Show competitions function
+     *
+     * @param array $atts attributes.
+     * @return string display output
+     */
+    public function show_competitions( array $atts ): string {
 		global $wp, $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -84,14 +96,14 @@ class Shortcodes_Competition extends Shortcodes {
 				'user_competitions' => $user_competitions,
 			)
 		);
-	}
-	/**
-	 * Show competition function
-	 *
-	 * @param array $atts attributes.
-	 * @return string display output
-	 */
-	public function show_competition( array $atts ): string {
+    }
+    /**
+     * Show competition function
+     *
+     * @param array $atts attributes.
+     * @return string display output
+     */
+    public function show_competition( array $atts ): string {
 		global $wp;
 		$args        = shortcode_atts(
 			array(
@@ -164,14 +176,14 @@ class Shortcodes_Competition extends Shortcodes {
             }
        }
        return $this->return_error( $msg );
-	}
-	/**
-	 * Show competition overview function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_competition_overview( array $atts ): string {
+    }
+    /**
+     * Show competition overview function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_competition_overview( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
@@ -214,14 +226,14 @@ class Shortcodes_Competition extends Shortcodes {
 			),
 			'competition'
 		);
-	}
-	/**
-	 * Show events function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_competition_events( array $atts ): string {
+    }
+    /**
+     * Show events function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_competition_events( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
@@ -268,14 +280,14 @@ class Shortcodes_Competition extends Shortcodes {
 			),
 			'competition'
 		);
-	}
-	/**
-	 * Show teams function
-	 *
-	 * @param array $atts function attributes.
-	 * @return string
-	 */
-	public function show_competition_teams( array $atts ): string {
+    }
+    /**
+     * Show teams function
+     *
+     * @param array $atts function attributes.
+     * @return string
+     */
+    public function show_competition_teams( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => false,
@@ -316,14 +328,14 @@ class Shortcodes_Competition extends Shortcodes {
 			),
 			'competition'
 		);
-	}
-	/**
-	 * Function to display competition Clubs
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string the content
-	 */
-	public function show_competition_clubs( array $atts ): string {
+    }
+    /**
+     * Function to display competition Clubs
+     *
+     * @param array $atts shortcode attributes.
+     * @return string the content
+     */
+    public function show_competition_clubs( array $atts ): string {
 		global $wp;
 		$args           = shortcode_atts(
 			array(
@@ -427,14 +439,14 @@ class Shortcodes_Competition extends Shortcodes {
 			),
 			'competition'
 		);
-	}
-	/**
-	 * Function to display competition Players
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string the content
-	 */
-	public function show_competition_players( array $atts ): string {
+    }
+    /**
+     * Function to display competition Players
+     *
+     * @param array $atts shortcode attributes.
+     * @return string the content
+     */
+    public function show_competition_players( array $atts ): string {
 		global $wp;
 		$args           = shortcode_atts(
 			array(
@@ -487,14 +499,14 @@ class Shortcodes_Competition extends Shortcodes {
 			),
 			'competition'
 		);
-	}
-	/**
-	 * Function to display competition winners
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string the content
-	 */
-	public function show_competition_winners( array $atts ): string {
+    }
+    /**
+     * Function to display competition winners
+     *
+     * @param array $atts shortcode attributes.
+     * @return string the content
+     */
+    public function show_competition_winners( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -523,7 +535,7 @@ class Shortcodes_Competition extends Shortcodes {
 			),
 			'competition'
 		);
-	}
+    }
     /**
      * Function to display Competition Entry Page
      *

@@ -7,9 +7,23 @@
  * @subpackage RacketManagerShortcodes
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
+use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_invoice;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_tournament;
+use function Racketmanager\get_user;
+use function Racketmanager\player_search;
+use function Racketmanager\show_alert;
+use function Racketmanager\sort;
+use function Racketmanager\un_seo_url;
+
 /**
  * Class to implement shortcode functions
  */
@@ -32,10 +46,10 @@ class Shortcodes {
     public string $no_team_id;
     public string $club_player_not_found;
     public string $season_not_found_for_competition;
-	/**
-	 * Initialize shortcodes
-	 */
-	public function __construct() {
+    /**
+     * Initialize shortcodes
+     */
+    public function __construct() {
         $this->competition_not_found            = __( 'Competition not found', 'racketmanager' );
         $this->club_not_found                   = __( 'Club not found', 'racketmanager' );
         $this->club_player_not_found            = __( 'Player not found for club', 'racketmanager' );
@@ -54,21 +68,21 @@ class Shortcodes {
         $this->not_played                       = __( 'Not played', 'racketmanager' );
         $this->retired_player                   = __( 'Retired - %s', 'racketmanager' );
         $this->not_played_no_opponent           = __( 'Match not played - %s did not show', 'racketmanager' );
-	}
-	/**
-	 * Display Daily Matches
-	 *
-	 *    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
-	 *
-	 * - league_id is the ID of league (optional)
-	 * - competition_id is the ID of the competition (optional)
-	 * - season: display specific season (optional)
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string
-	 */
-	public function show_daily_matches( array $atts ): string {
+    }
+    /**
+     * Display Daily Matches
+     *
+     *    [dailymatches league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+     *
+     * - league_id is the ID of league (optional)
+     * - competition_id is the ID of the competition (optional)
+     * - season: display specific season (optional)
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     *
+     * @param array $atts shortcode attributes.
+     * @return string
+     */
+    public function show_daily_matches( array $atts ): string {
 		global $racketmanager, $wp;
 		wp_verify_nonce( 'matches-daily' );
 		$args             = shortcode_atts(
@@ -118,21 +132,21 @@ class Shortcodes {
 				'match_date'   => $match_date,
 			)
 		);
-	}
-	/**
-	 * Display Latest Match results
-	 *
-	 *    [latest_results league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
-	 *
-	 * - league_id is the ID of league (optional)
-	 * - competition_id is the ID of the competition (optional)
-	 * - season: display specific season (optional)
-	 * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string
-	 */
-	public function show_latest_results( array $atts ): string {
+    }
+    /**
+     * Display Latest Match results
+     *
+     *    [latest_results league_id="1" competition_id="1" match_date="dd/mm/yyyy" template="name"]
+     *
+     * - league_id is the ID of league (optional)
+     * - competition_id is the ID of the competition (optional)
+     * - season: display specific season (optional)
+     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     *
+     * @param array $atts shortcode attributes.
+     * @return string
+     */
+    public function show_latest_results( array $atts ): string {
 		global $racketmanager, $wp;
 
 		$args             = shortcode_atts(
@@ -209,16 +223,16 @@ class Shortcodes {
 				'header_level' => $header_level,
 			)
 		);
-	}
-	/**
-	 * Function to display Players
-	 *
-	 *  [[players] template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_players( array $atts ): string {
+    }
+    /**
+     * Function to display Players
+     *
+     *  [[players] template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_players( array $atts ): string {
 		$args           = shortcode_atts(
 			array(
 				'template' => '',
@@ -246,16 +260,16 @@ class Shortcodes {
 				'search_results' => $search_results,
 			)
 		);
-	}
-	/**
-	 * Function to display Player
-	 *
-	 *  [[player] template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_player( array $atts ): string {
+    }
+    /**
+     * Function to display Player
+     *
+     *  [[player] template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_player( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -294,16 +308,16 @@ class Shortcodes {
 				'player' => $player,
 			)
 		);
-	}
-	/**
-	 * Function to show favourites
-	 *
-	 *    [favourites template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_favourites( array $atts ): string {
+    }
+    /**
+     * Function to show favourites
+     *
+     *    [favourites template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_favourites( array $atts ): string {
 		$args = shortcode_atts(
 			array(
 				'template' => '',
@@ -318,16 +332,16 @@ class Shortcodes {
 		$favourites = $user->get_favourites();
 		$filename   = ( ! empty( $template ) ) ? 'form-favourites-' . $template : 'form-favourites';
 		return $this->load_template( $filename, array( 'favourite_types' => $favourites ), 'form' );
-	}
-	/**
-	 * Function to show invoice
-	 *
-	 *    [invoice template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_invoice( array $atts ): string {
+    }
+    /**
+     * Function to show invoice
+     *
+     *    [invoice template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_invoice( array $atts ): string {
         global $racketmanager;
 		$args = shortcode_atts(
 			array(
@@ -365,7 +379,7 @@ class Shortcodes {
 			}
 		}
 		return $this->return_error( __( 'No invoice found', 'racketmanager' ) );
-	}
+    }
     /**
      * Function to show purchase order
      *
@@ -406,15 +420,15 @@ class Shortcodes {
         $msg = __( 'Invoice not found', 'racketmanager' );
         return $this->return_error( $msg, 'modal' );
     }
-	/**
-	 * Function to show memberships
-	 *
-	 *    [memberships template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_memberships( array $atts ): string {
+    /**
+     * Function to show memberships
+     *
+     *    [memberships template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_memberships( array $atts ): string {
 		$args = shortcode_atts(
 			array(
 				'template' => '',
@@ -435,16 +449,16 @@ class Shortcodes {
 		$filename = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
 
 		return $this->load_template( $filename, array( 'player' => $player ), 'account' );
-	}
-	/**
-	 * Function to search players
-	 *
-	 *    [search-players search=x template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_player_search( array $atts ): string {
+    }
+    /**
+     * Function to search players
+     *
+     *    [search-players search=x template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_player_search( array $atts ): string {
 		global $racketmanager;
 		$args          = shortcode_atts(
 			array(
@@ -459,16 +473,16 @@ class Shortcodes {
 		$filename      = ( ! empty( $template ) ) ? 'players-list-' . $template : 'players-list';
 
 		return $this->load_template( $filename, array( 'players' => $players ) );
-	}
-	/**
-	 * Function to show team order
-	 *
-	 *    [team-order]
-	 *
-	 * @param array $atts shortcode attributes.
-	 * @return string content
-	 */
-	public function show_team_order( array $atts ): string {
+    }
+    /**
+     * Function to show team order
+     *
+     *    [team-order]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_team_order( array $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -501,17 +515,17 @@ class Shortcodes {
 													  'age_groups'  => $age_groups,
 													  )
 									);
-	}
-	/**
-	 * Load template for user display. First the current theme directory is checked for a template
-	 * before defaulting to the plugin
-	 *
-	 * @param string $template Name of the template file (without extension).
-	 * @param array $vars Array of variables name=>value available to display code (optional).
-	 * @param false|string $template_type Type of content template (email, page).
-	 * @return string the content
-	 */
-	public function load_template( string $template, array $vars = array(), false|string $template_type = false ): string {
+    }
+    /**
+     * Load template for user display. First the current theme directory is checked for a template
+     * before defaulting to the plugin
+     *
+     * @param string $template Name of the template file (without extension).
+     * @param array $vars Array of variables name=>value available to display code (optional).
+     * @param false|string $template_type Type of content template (email, page).
+     * @return string the content
+     */
+    public function load_template( string $template, array $vars = array(), false|string $template_type = false ): string {
 		if ( $template_type ) {
 			$template_dir = match ($template_type) {
 				'competition' => 'templates/competition',
@@ -548,28 +562,28 @@ class Shortcodes {
 		$output = ob_get_contents();
 		ob_end_clean();
 		return $output;
-	}
-	/**
-	 * Check if template exists
-	 *
-	 * @param string $template template name.
-	 * @param string|null $directory optional directory name.
-	 * @return boolean
-	 */
-	public function check_template( string $template, ?string $directory = null ): bool {
+    }
+    /**
+     * Check if template exists
+     *
+     * @param string $template template name.
+     * @param string|null $directory optional directory name.
+     * @return boolean
+     */
+    public function check_template( string $template, ?string $directory = null ): bool {
 		$template_dir = 'templates/';
 		if ( $directory ) {
 			$template_dir .= $directory . '/';
 		}
 		return file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) || file_exists( get_template_directory() . "/racketmanager/$template.php" ) || file_exists( RACKETMANAGER_PATH . $template_dir . $template . '.php' );
-	}
-	/**
-	 * Get league
-	 *
-	 * @param int $league_id league id.
-	 * @return object
-	 */
-	public function get_league( int $league_id ): object {
+    }
+    /**
+     * Get league
+     *
+     * @param int $league_id league id.
+     * @return object
+     */
+    public function get_league( int $league_id ): object {
 		global $league;
 
 		if ( 0 === $league_id ) {
@@ -578,15 +592,15 @@ class Shortcodes {
 			$league = get_league( $league_id );
 		}
 		return $league;
-	}
-	/**
-	 * Get draws for event function
-	 *
-	 * @param object $event event object.
-	 * @param string $season season.
-	 * @return array of leagues with draws.
-	 */
-	public function get_draw( object $event, string $season ): array {
+    }
+    /**
+     * Get draws for event function
+     *
+     * @param object $event event object.
+     * @param string $season season.
+     * @return array of leagues with draws.
+     */
+    public function get_draw( object $event, string $season ): array {
 		$leagues = $event->get_leagues();
 		foreach ( $leagues as $l => $league ) {
 			$league = get_league( $league->id );
@@ -612,7 +626,7 @@ class Shortcodes {
 			$leagues[ $l ]  = $league;
 		}
 		return $leagues;
-	}
+    }
 
     /**
      * Return error function
@@ -622,14 +636,14 @@ class Shortcodes {
      *
      * @return string output html
      */
-	public function return_error( string $msg, ?string $template = null ): string {
+    public function return_error( string $msg, ?string $template = null ): string {
         $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
         return $this->load_template( $filename, array(
                 'msg'   => $msg,
                 'class' => 'danger',
             )
         );
-	}
+    }
     /**
      * Show alert function
      *

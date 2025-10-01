@@ -7,9 +7,12 @@
  * @subpackage Shortcodes
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
 use stdClass;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_rubber;
 
 /**
  * Class to implement the Shortcodes_Match object

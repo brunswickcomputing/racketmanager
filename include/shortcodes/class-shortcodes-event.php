@@ -7,22 +7,31 @@
  * @subpackage Shortcodes/Event
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
+
+use Racketmanager\Player;
+use Racketmanager\Util;
+use function Racketmanager\get_club;
+use function Racketmanager\get_event;
+use function Racketmanager\get_player;
+use function Racketmanager\get_tab;
+use function Racketmanager\get_team;
+use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement the Shortcodes_Event object
  */
 class Shortcodes_Event extends Shortcodes {
-	/**
-	 * Show Event
-	 *
-	 * [event_id=ID season=X template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string
-	 */
-	public function show_event( array $atts ): string {
+    /**
+     * Show Event
+     *
+     * [event_id=ID season=X template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string
+     */
+    public function show_event( array $atts ): string {
 		$args   = shortcode_atts(
 			array(
 				'id'     => 0,
@@ -65,15 +74,15 @@ class Shortcodes_Event extends Shortcodes {
             $msg = $this->event_not_found;
         }
 		return $this->return_error( $msg );
-	}
-	/**
-	 * Function to display event standings
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_event_standings( array $atts ): string {
+    }
+    /**
+     * Function to display event standings
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_standings( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -100,15 +109,15 @@ class Shortcodes_Event extends Shortcodes {
 			),
 			'event'
 		);
-	}
-	/**
-	 * Function to display event draw
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_event_draw( array $atts ): string {
+    }
+    /**
+     * Function to display event draw
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_draw( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -139,15 +148,15 @@ class Shortcodes_Event extends Shortcodes {
 			),
 			'event'
 		);
-	}
-	/**
-	 * Function to display event matches
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_event_matches( array $atts ): string {
+    }
+    /**
+     * Function to display event matches
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_matches( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'id'       => 0,
@@ -178,15 +187,15 @@ class Shortcodes_Event extends Shortcodes {
 			),
 			'event'
 		);
-	}
-	/**
-	 * Function to display event Clubs
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_event_clubs( array $atts ): string {
+    }
+    /**
+     * Function to display event Clubs
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_clubs( array $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -235,15 +244,15 @@ class Shortcodes_Event extends Shortcodes {
 			),
 			'event'
 		);
-	}
-	/**
-	 * Function to display event teams
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_event_teams( array $atts ): string {
+    }
+    /**
+     * Function to display event teams
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_teams( array $atts ): string {
 		global $wp;
 		$args     = shortcode_atts(
 			array(
@@ -313,15 +322,15 @@ class Shortcodes_Event extends Shortcodes {
 			),
 			'event'
 		);
-	}
-	/**
-	 * Function to display event Players
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_event_players( array $atts ): string {
+    }
+    /**
+     * Function to display event Players
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_event_players( array $atts ): string {
 		global $wp;
 		$args      = shortcode_atts(
 			array(
@@ -365,7 +374,7 @@ class Shortcodes_Event extends Shortcodes {
 			$msg = $this->event_not_found;
 			return $this->return_error( $msg );
 		}
-	}
+    }
     /**
      * Function to get player information for event
      *

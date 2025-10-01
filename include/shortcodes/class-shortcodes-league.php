@@ -7,9 +7,16 @@
  * @subpackage Shortcodes/League
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
 use stdClass;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_tab;
+use function Racketmanager\get_team;
+use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement the Shortcodes_League object

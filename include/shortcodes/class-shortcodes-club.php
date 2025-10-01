@@ -7,24 +7,33 @@
  * @subpackage RacketManagerShortcodesClub
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
+use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_invoice;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\show_invoice;
+use function Racketmanager\un_seo_url;
 
 /**
  * Class to implement shortcode functions
  */
 class Shortcodes_Club extends Shortcodes {
-	/**
-	 * Function to display Clubs Info Page
-	 *
-	 *    [clubs template=X]
-	 *
-	 * @param array $atts attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_clubs( array $atts ): string {
+    /**
+     * Function to display Clubs Info Page
+     *
+     *    [clubs template=X]
+     *
+     * @param array $atts attributes.
+     *
+     * @return string - the content
+     */
+    public function show_clubs( array $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -48,18 +57,18 @@ class Shortcodes_Club extends Shortcodes {
 				'standalone'             => false,
 			)
 		);
-	}
+    }
 
-	/**
-	 * Function to display Club Info Page
-	 *
-	 *    [club id=ID template=X]
-	 *
-	 * @param array $atts attributes.
-	 *
-	 * @return false|string - the content
-	 */
-	public function show_club( array $atts ): false|string {
+    /**
+     * Function to display Club Info Page
+     *
+     *    [club id=ID template=X]
+     *
+     * @param array $atts attributes.
+     *
+     * @return false|string - the content
+     */
+    public function show_club( array $atts ): false|string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -123,17 +132,17 @@ class Shortcodes_Club extends Shortcodes {
 				'standalone'             => true,
 			)
 		);
-	}
-	/**
-	 * Function to display Club Players
-	 *
-	 *  [club-players player_id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_club_players( array $atts ): string {
+    }
+    /**
+     * Function to display Club Players
+     *
+     *  [club-players player_id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_players( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -179,7 +188,7 @@ class Shortcodes_Club extends Shortcodes {
             $msg = $this->club_not_found;
 		}
         return $this->return_error( $msg );
-	}
+    }
 
     /**
      * Get player details
@@ -207,16 +216,16 @@ class Shortcodes_Club extends Shortcodes {
             return $this->player_not_found;
         }
     }
-	/**
-	 * Function to display Club competitions
-	 *
-	 *  [club-competitions club= competition_name= template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_club_competitions( array $atts ): string {
+    /**
+     * Function to display Club competitions
+     *
+     *  [club-competitions club= competition_name= template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_competitions( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -262,7 +271,7 @@ class Shortcodes_Club extends Shortcodes {
 			$msg = $this->club_not_found;
 		}
         return $this->return_error( $msg );
-	}
+    }
 
     /**
      * Get competitions for club
@@ -312,16 +321,16 @@ class Shortcodes_Club extends Shortcodes {
         }
         return $club_competitions;
     }
-	/**
-	 * Function to display Club team
-	 *
-	 *  [club-team club= team= template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_club_team( array $atts ): string {
+    /**
+     * Function to display Club team
+     *
+     *  [club-team club= team= template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_team( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -375,17 +384,17 @@ class Shortcodes_Club extends Shortcodes {
             );
         }
         return $this->return_error( $msg );
-	}
-	/**
-	 * Function to display Club event
-	 *
-	 *  [club-event club= event= template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_club_event( array $atts ): string {
+    }
+    /**
+     * Function to display Club event
+     *
+     *  [club-event club= event= template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_event( array $atts ): string {
 		$args     = shortcode_atts(
 			array(
 				'template' => '',
@@ -435,17 +444,17 @@ class Shortcodes_Club extends Shortcodes {
             );
         }
         return $this->return_error( $msg );
-	}
-	/**
-	 * Function to display Club Invoices
-	 *
-	 *  [club-invoices invoice_id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string - the content
-	 */
-	public function show_club_invoices( array $atts ): string {
+    }
+    /**
+     * Function to display Club Invoices
+     *
+     *  [club-invoices invoice_id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_invoices( array $atts ): string {
         global $racketmanager;
 		$args            = shortcode_atts(
 			array(
@@ -508,7 +517,7 @@ class Shortcodes_Club extends Shortcodes {
         } else{
             return $this->return_error( $msg );
         }
-	}
+    }
     /**
      * Function to display Club Invoices
      *

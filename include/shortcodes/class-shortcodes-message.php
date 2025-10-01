@@ -7,7 +7,10 @@
  * @subpackage Shortcodes
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
+
+use function Racketmanager\get_message;
+use function Racketmanager\get_user;
 
 /**
  * Class to implement the Shortcodes_Message object

@@ -7,24 +7,30 @@
  * @subpackage Shortcodes
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
 
 use stdClass;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
+use function Racketmanager\seo_url;
 
 /**
  * Class to implement shortcode functions for emails
  */
 class Shortcodes_Email extends Shortcodes {
-	/**
-	 * Function to show match notification
-	 *
-	 *    [match-notification id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_match_notification( array $atts ): string {
+    /**
+     * Function to show match notification
+     *
+     *    [match-notification id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_match_notification( array $atts ): string {
 		global $racketmanager;
 		$args            = shortcode_atts(
 			array(
@@ -151,18 +157,18 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'email'
 		);
-	}
+    }
 
-	/**
-	 * Function to show result notification
-	 *
-	 *    [result-notification id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_result_notification( array $atts ): string {
+    /**
+     * Function to show result notification
+     *
+     *    [result-notification id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_result_notification( array $atts ): string {
 		global $racketmanager;
 		$args       = shortcode_atts(
 			array(
@@ -215,18 +221,18 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'email'
 		);
-	}
+    }
 
-	/**
-	 * Function to show result notification
-	 *
-	 *    [result-notification-captain id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_captain_result_notification( array $atts ): string {
+    /**
+     * Function to show result notification
+     *
+     *    [result-notification-captain id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_captain_result_notification( array $atts ): string {
 		global $racketmanager;
 
 		$args        = shortcode_atts(
@@ -275,18 +281,18 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'email'
 		);
-	}
+    }
 
-	/**
-	 * Function to show result outstanding notification
-	 *
-	 *    [result-outstanding-notification id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_result_outstanding_notification( array $atts ): string {
+    /**
+     * Function to show result outstanding notification
+     *
+     *    [result-outstanding-notification id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_result_outstanding_notification( array $atts ): string {
 		global $racketmanager;
 
 		$args        = shortcode_atts(
@@ -333,18 +339,18 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'email'
 		);
-	}
+    }
 
-	/**
-	 * Function to show club player notification
-	 *
-	 *    [club-player-notification club=club template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_club_player_notification( array $atts ): string {
+    /**
+     * Function to show club player notification
+     *
+     *    [club-player-notification club=club template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_club_player_notification( array $atts ): string {
 		global $racketmanager;
 
 		$args       = shortcode_atts(
@@ -382,17 +388,17 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'email'
 		);
-	}
-	/**
-	 * Function to show match date change notification
-	 *
-	 *    [match-notification id=ID template=X]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_match_date_change_notification( array $atts ): string {
+    }
+    /**
+     * Function to show match date change notification
+     *
+     *    [match-notification id=ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_match_date_change_notification( array $atts ): string {
 		global $racketmanager;
 		$args            = shortcode_atts(
 			array(
@@ -465,17 +471,17 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'email'
 		);
-	}
-	/**
-	 * Function to show team withdrawn email
-	 *
-	 *    [team-withdrawn]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_team_withdrawn( array $atts ): string {
+    }
+    /**
+     * Function to show team withdrawn email
+     *
+     *    [team-withdrawn]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_team_withdrawn( array $atts ): string {
 		global $racketmanager;
 		$args      = shortcode_atts(
 			array(
@@ -543,7 +549,7 @@ class Shortcodes_Email extends Shortcodes {
 		} else {
 			return $this->return_error( $msg );
 		}
-	}
+    }
     /**
      * Function to show match notification
      *
@@ -590,16 +596,16 @@ class Shortcodes_Email extends Shortcodes {
             'email'
         );
     }
-	/**
-	 * Function to show event constitution email
-	 *
-	 *    [event-constitution]
-	 *
-	 * @param array $atts shortcode attributes.
-	 *
-	 * @return string content
-	 */
-	public function show_event_constitution( array $atts ): string {
+    /**
+     * Function to show event constitution email
+     *
+     *    [event-constitution]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string content
+     */
+    public function show_event_constitution( array $atts ): string {
 		global $racketmanager;
 		$args     = shortcode_atts(
 			array(
@@ -628,5 +634,5 @@ class Shortcodes_Email extends Shortcodes {
 			),
 			'event'
 		);
-	}
+    }
 }

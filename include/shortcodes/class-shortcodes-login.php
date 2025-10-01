@@ -7,34 +7,37 @@
  * @subpackage RacketManagerShortcodesLogin
  */
 
-namespace Racketmanager;
+namespace Racketmanager\shortcodes;
+
+use Racketmanager\Util;
+use function Racketmanager\get_user;
 
 /**
  * Class to implement shortcode functions
  */
 class Shortcodes_Login extends Shortcodes {
-	/**
-	 * Text to return if already signed in
-	 *
-	 * @var string
-	 */
-	private string $already_signed_in = '';
-	/**
-	 * Load translations function
-	 *
-	 * @return void
-	 */
-	public function load_translations(): void {
+    /**
+     * Text to return if already signed in
+     *
+     * @var string
+     */
+    private string $already_signed_in = '';
+    /**
+     * Load translations function
+     *
+     * @return void
+     */
+    public function load_translations(): void {
 		$this->already_signed_in = __( 'You are already signed in', 'racketmanager' );
-	}
-	/**
-	 * A shortcode for rendering the login form.
-	 *
-	 * @param array $vars  Shortcode vars.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_login_form( array $vars ): string {
+    }
+    /**
+     * A shortcode for rendering the login form.
+     *
+     * @param array $vars  Shortcode vars.
+     *
+     * @return string  The shortcode output
+     */
+    public function render_login_form( array $vars ): string {
 		global $racketmanager;
 		if ( is_user_logged_in() ) {
 			if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'GET' === $_SERVER['REQUEST_METHOD'] ) {
@@ -60,15 +63,15 @@ class Shortcodes_Login extends Shortcodes {
 		} else {
 			return $this->form_login( $vars );
 		}
-	}
-	/**
-	 * Function to display register form
-	 *
-	 * @param array $vars array of variables.
-	 *
-	 * @return string
-	 */
-	public function form_register( array $vars ): string {
+    }
+    /**
+     * Function to display register form
+     *
+     * @param array $vars array of variables.
+     *
+     * @return string
+     */
+    public function form_register( array $vars ): string {
 		// Retrieve possible errors from request parameters.
 		$errors      = array();
 		$error_codes = array();
@@ -88,15 +91,15 @@ class Shortcodes_Login extends Shortcodes {
 		} else {
 			return $this->load_template( 'form-login', $vars, 'form' );
 		}
-	}
-	/**
-	 * Function to display login form
-	 *
-	 * @param array $vars array of variables.
-	 *
-	 * @return string
-	 */
-	public function form_login( array $vars ): string {
+    }
+    /**
+     * Function to display login form
+     *
+     * @param array $vars array of variables.
+     *
+     * @return string
+     */
+    public function form_login( array $vars ): string {
 		global $racketmanager;
 		// Check if the user just registered.
 		$vars['registered'] = isset( $_REQUEST['registered'] );  //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -138,15 +141,15 @@ class Shortcodes_Login extends Shortcodes {
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		// Render the login form using an external template.
 		return $this->load_template( 'form-login', $vars, 'form' );
-	}
-	/**
-	 * A shortcode for rendering the form used to initiate the password reset.
-	 *
-	 * @param array $vars  Shortcode vars.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_password_lost_form( array $vars ): string {
+    }
+    /**
+     * A shortcode for rendering the form used to initiate the password reset.
+     *
+     * @param array $vars  Shortcode vars.
+     *
+     * @return string  The shortcode output
+     */
+    public function render_password_lost_form( array $vars ): string {
 		if ( is_user_logged_in() ) {
 			return $this->already_signed_in;
 		}
@@ -169,15 +172,15 @@ class Shortcodes_Login extends Shortcodes {
 		$vars['lost_password_sent'] = isset( $_REQUEST['checkemail'] ) && 'confirm' === $_REQUEST['checkemail'];
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		return $this->load_template( 'form-password-lost', $vars, 'form' );
-	}
-	/**
-	 * A shortcode for rendering the form used to reset a user's password.
-	 *
-	 * @param array $vars  Shortcode vars.
-	 *
-	 * @return string  The shortcode output
-	 */
-	public function render_password_reset_form( array $vars ): string {
+    }
+    /**
+     * A shortcode for rendering the form used to reset a user's password.
+     *
+     * @param array $vars  Shortcode vars.
+     *
+     * @return string  The shortcode output
+     */
+    public function render_password_reset_form( array $vars ): string {
 		// Parse shortcode vars.
 		$default_vars = array( 'show_title' => false );
 		$vars         = shortcode_atts( $default_vars, $vars );
@@ -200,13 +203,13 @@ class Shortcodes_Login extends Shortcodes {
 			return __( 'Invalid password reset link.', 'racketmanager' );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
-	}
-	/**
-	 * Generate the form used to display a member account.
-	 *
-	 * @return string  The output
-	 */
-	public function generate_member_account_form(): string {
+    }
+    /**
+     * Generate the form used to display a member account.
+     *
+     * @return string  The output
+     */
+    public function generate_member_account_form(): string {
 		if ( ! is_user_logged_in() ) {
 			return __( 'You must be signed in to access this page', 'racketmanager' );
 		}
@@ -221,5 +224,5 @@ class Shortcodes_Login extends Shortcodes {
 			),
 			'form'
 		);
-	}
+    }
 }

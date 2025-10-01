@@ -14,6 +14,16 @@ use Racketmanager\ajax\Ajax_Finance;
 use Racketmanager\ajax\Ajax_Frontend;
 use Racketmanager\ajax\Ajax_Match;
 use Racketmanager\ajax\Ajax_Tournament;
+use Racketmanager\shortcodes\Shortcodes;
+use Racketmanager\shortcodes\Shortcodes_Club;
+use Racketmanager\shortcodes\Shortcodes_Competition;
+use Racketmanager\shortcodes\Shortcodes_Email;
+use Racketmanager\shortcodes\Shortcodes_Event;
+use Racketmanager\shortcodes\Shortcodes_League;
+use Racketmanager\shortcodes\Shortcodes_Login;
+use Racketmanager\shortcodes\Shortcodes_Match;
+use Racketmanager\shortcodes\Shortcodes_Message;
+use Racketmanager\shortcodes\Shortcodes_Tournament;
 use stdClass;
 
 /**
@@ -814,16 +824,16 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-finance.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-match.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-tournament.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-club.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-competition.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-event.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-league.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-match.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-message.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-login.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-email.php';
-        require_once RACKETMANAGER_PATH . 'include/class-shortcodes-tournament.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-club.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-competition.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-event.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-league.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-match.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-message.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-login.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-email.php';
+        require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-tournament.php';
         require_once RACKETMANAGER_PATH . 'include/class-login.php';
         require_once RACKETMANAGER_PATH . 'include/class-widget.php';
 

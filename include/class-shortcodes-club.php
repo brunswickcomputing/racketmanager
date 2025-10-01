@@ -447,52 +447,67 @@ class Shortcodes_Club extends Shortcodes {
 	 */
 	public function show_club_invoices( array $atts ): string {
         global $racketmanager;
-		$args     = shortcode_atts(
+		$args            = shortcode_atts(
 			array(
 				'template' => '',
 			),
 			$atts
 		);
-		$template = $args['template'];
+		$template        = $args['template'];
+        $msg             = null;
+        $template_ref    = null;
+        $user_can_update = null;
 		// Get Club by Name.
 		$club_name = get_query_var( 'club_name' );
 		$club_name = un_seo_url( $club_name );
 		$club      = get_club( $club_name, 'shortcode' );
 		if ( ! $club ) {
-			return $this->return_error( $this->club_not_found );
+            $msg = $this->club_not_found;
+        }
+        if ( empty( $msg ) ) {
+            $user_can_update       = new stdClass();
+            $user_can_update->club = false;
+            if ( is_user_logged_in() ) {
+                $user   = wp_get_current_user();
+                $userid = $user->ID;
+                if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
+                    $user_can_update->club   = true;
+                }
+            }
+            // Get Invoice.
+            $invoice_ref = get_query_var( 'invoice' );
+            if ( $invoice_ref ) {
+                $invoice = get_invoice( $invoice_ref );
+                if ( $invoice ) {
+                    if ( $invoice->club_id === $club->id ) {
+                        $invoice->details = show_invoice( $invoice->id );
+                        $club->invoice    = $invoice;
+                        $template_ref     = 'invoice';
+                    } else {
+                        $msg = __( 'Invoice not for this club', 'racketmanager' );
+                    }
+                } else {
+                    $msg = __( 'Invoice not found', 'racketmanager' );
+                }
+            } else {
+                $club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
+                $template_ref   = 'invoices';
+            }
 		}
-		// Get Invoice.
-		$invoice_ref = get_query_var( 'invoice' );
-		if ( $invoice_ref ) {
-			$invoice = get_invoice( $invoice_ref );
-			if ( ! $invoice ) {
-				return $this->return_error( __( 'Invoice not found', 'racketmanager' ) );
-			}
-			$invoice->details = show_invoice( $invoice->id );
-			$club->invoice    = $invoice;
-            $template_ref     = 'invoice';
-		} else {
-			$club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
-            $template_ref   = 'invoices';
-		}
-		$user_can_update       = new stdClass();
-		$user_can_update->club = false;
-		if ( is_user_logged_in() ) {
-			$user   = wp_get_current_user();
-			$userid = $user->ID;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
-				$user_can_update->club   = true;
-			}
-		}
-		$filename = ( ! empty( $template ) ) ? $template_ref . '-' . $template : $template_ref;
-		return $this->load_template(
-			$filename,
-			array(
-				'club'            => $club,
-				'user_can_manage' => $user_can_update,
-			),
-			'club'
-		);
+        if ( empty( $msg ) ) {
+            $filename = ( ! empty( $template ) ) ? $template_ref . '-' . $template : $template_ref;
+
+            return $this->load_template(
+                $filename,
+                array(
+                    'club'            => $club,
+                    'user_can_manage' => $user_can_update,
+                ),
+                'club'
+            );
+        } else{
+            return $this->return_error( $msg );
+        }
 	}
     /**
      * Function to display Club Invoices

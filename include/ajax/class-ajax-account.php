@@ -8,7 +8,6 @@
 
 namespace Racketmanager\ajax;
 
-use Racketmanager\Ajax;
 use Racketmanager\Util;
 use function Racketmanager\get_message;
 use function Racketmanager\get_user;

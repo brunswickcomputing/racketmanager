@@ -6,9 +6,10 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
 
 use stdClass;
+use function Racketmanager\get_player;
 
 /**
  * Implement AJAX responses for calls from both front end and admin.

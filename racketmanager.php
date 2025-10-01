@@ -62,7 +62,7 @@ class RacketmanagerMain {
         add_action( 'plugins_loaded', array( 'RacketManager\RacketManager', 'get_instance' ) );
 
         if ( is_admin() ) {
-            require_once RACKETMANAGER_PATH . 'include/class-admin.php';
+            require_once RACKETMANAGER_PATH . 'include/admin/class-admin.php';
             add_action( 'plugins_loaded', array( 'Racketmanager\admin\Admin', 'get_instance' ) );
             $racketmanager = new Admin();
         } else {

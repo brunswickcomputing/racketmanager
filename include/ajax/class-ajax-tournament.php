@@ -9,7 +9,6 @@
 namespace Racketmanager\ajax;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Ajax;
 use Racketmanager\Stripe_Settings;
 use Racketmanager\Validator_Entry_Form;
 use stdClass;

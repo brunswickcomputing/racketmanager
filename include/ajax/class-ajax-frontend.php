@@ -10,7 +10,6 @@ namespace Racketmanager\ajax;
 
 use DateMalformedStringException;
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Ajax;
 use Racketmanager\Validator;
 use Racketmanager\Validator_Entry_Form;
 use stdClass;

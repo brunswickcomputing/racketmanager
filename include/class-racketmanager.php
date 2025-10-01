@@ -808,12 +808,12 @@ class RacketManager {
 
         // Global libraries.
         require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
-        require_once RACKETMANAGER_PATH . 'include/class-ajax.php';
-        require_once RACKETMANAGER_PATH . 'include/class-ajax-account.php';
-        require_once RACKETMANAGER_PATH . 'include/class-ajax-frontend.php';
-        require_once RACKETMANAGER_PATH . 'include/class-ajax-finance.php';
-        require_once RACKETMANAGER_PATH . 'include/class-ajax-match.php';
-        require_once RACKETMANAGER_PATH . 'include/class-ajax-tournament.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-account.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-frontend.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-finance.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-match.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-tournament.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-club.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes-competition.php';

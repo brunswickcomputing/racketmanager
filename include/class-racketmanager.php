@@ -24,6 +24,7 @@ use Racketmanager\shortcodes\Shortcodes_Login;
 use Racketmanager\shortcodes\Shortcodes_Match;
 use Racketmanager\shortcodes\Shortcodes_Message;
 use Racketmanager\shortcodes\Shortcodes_Tournament;
+use Racketmanager\validator\Validator;
 use stdClass;
 
 /**
@@ -775,35 +776,22 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
         require_once RACKETMANAGER_PATH . 'include/class-club.php';
         require_once RACKETMANAGER_PATH . 'include/class-club-player.php';
-        require_once RACKETMANAGER_PATH . 'include/class-championship.php';
         require_once RACKETMANAGER_PATH . 'include/class-competition.php';
         require_once RACKETMANAGER_PATH . 'include/class-event.php';
         require_once RACKETMANAGER_PATH . 'include/class-league.php';
         require_once RACKETMANAGER_PATH . 'include/class-league-team.php';
         require_once RACKETMANAGER_PATH . 'include/class-match.php';
+        require_once RACKETMANAGER_PATH . 'include/class-message.php';
         require_once RACKETMANAGER_PATH . 'include/class-rubber.php';
-        require_once RACKETMANAGER_PATH . 'include/class-svg-icons.php';
         require_once RACKETMANAGER_PATH . 'include/class-player.php';
+        require_once RACKETMANAGER_PATH . 'include/class-player-error.php';
+        require_once RACKETMANAGER_PATH . 'include/class-results-report.php';
+        require_once RACKETMANAGER_PATH . 'include/class-results-checker.php';
         require_once RACKETMANAGER_PATH . 'include/class-team.php';
         require_once RACKETMANAGER_PATH . 'include/class-season.php';
         require_once RACKETMANAGER_PATH . 'include/class-tournament.php';
         require_once RACKETMANAGER_PATH . 'include/class-tournament-entry.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator-entry-form.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator-match.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator-plan.php';
-        require_once RACKETMANAGER_PATH . 'include/class-exporter.php';
-        require_once RACKETMANAGER_PATH . 'include/class-results-report.php';
-        require_once RACKETMANAGER_PATH . 'include/class-results-checker.php';
-        require_once RACKETMANAGER_PATH . 'include/class-rest-routes.php';
-        require_once RACKETMANAGER_PATH . 'include/class-message.php';
         require_once RACKETMANAGER_PATH . 'include/class-user.php';
-        require_once RACKETMANAGER_PATH . 'include/class-rewrites.php';
-        require_once RACKETMANAGER_PATH . 'include/class-player-error.php';
-        require_once RACKETMANAGER_PATH . 'include/class-schedule-round-robin.php';
-        require_once RACKETMANAGER_PATH . 'vendor/autoload.php';
-        require_once RACKETMANAGER_PATH . 'include/class-privacy-exporters.php';
-
         /*
         * load sports libraries
         */
@@ -816,7 +804,6 @@ class RacketManager {
         }
 
         // Global libraries.
-        require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-account.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-frontend.php';
@@ -833,8 +820,21 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-login.php';
         require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-email.php';
         require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-tournament.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-entry-form.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-match.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-plan.php';
+        require_once RACKETMANAGER_PATH . 'include/class-championship.php';
+        require_once RACKETMANAGER_PATH . 'include/class-exporter.php';
         require_once RACKETMANAGER_PATH . 'include/class-login.php';
+        require_once RACKETMANAGER_PATH . 'include/class-privacy-exporters.php';
+        require_once RACKETMANAGER_PATH . 'include/class-rest-routes.php';
+        require_once RACKETMANAGER_PATH . 'include/class-rewrites.php';
+        require_once RACKETMANAGER_PATH . 'include/class-schedule-round-robin.php';
+        require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
+        require_once RACKETMANAGER_PATH . 'include/class-svg-icons.php';
         require_once RACKETMANAGER_PATH . 'include/class-widget.php';
+        require_once RACKETMANAGER_PATH . 'vendor/autoload.php';
 
         // template tags & functions.
         require_once RACKETMANAGER_PATH . '/template-tags.php';

@@ -11,8 +11,8 @@ namespace Racketmanager\admin;
 
 use Racketmanager\Tournament;
 use Racketmanager\Util;
-use Racketmanager\Validator_Plan;
-use Racketmanager\Validator_Tournament;
+use Racketmanager\validator\Validator_Plan;
+use Racketmanager\validator\Validator_Tournament;
 use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;

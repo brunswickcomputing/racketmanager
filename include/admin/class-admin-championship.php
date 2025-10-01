@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\Validator;
+use Racketmanager\validator\Validator;
 use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;

@@ -11,7 +11,7 @@ namespace Racketmanager\admin;
 
 use Racketmanager\Charges;
 use Racketmanager\Util;
-use Racketmanager\Validator_Finance;
+use Racketmanager\validator\Validator_Finance;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_invoice;

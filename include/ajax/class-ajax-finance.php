@@ -9,7 +9,7 @@
 namespace Racketmanager\ajax;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Validator_Finance;
+use Racketmanager\validator\Validator_Finance;
 use stdClass;
 use function Racketmanager\get_invoice;
 use function Racketmanager\show_alert;

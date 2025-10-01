@@ -7,7 +7,13 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager;
+namespace Racketmanager\validator;
+
+use Racketmanager\Util;
+use function Racketmanager\get_club_player;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_rubber;
 
 /**
  * Class to implement the Match Validator object

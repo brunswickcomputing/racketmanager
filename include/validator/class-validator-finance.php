@@ -7,7 +7,10 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager;
+namespace Racketmanager\validator;
+
+use function Racketmanager\get_charge;
+use function Racketmanager\get_invoice;
 
 /**
  * Class to implement the Finance Validator object

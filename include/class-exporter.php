@@ -10,6 +10,7 @@
 namespace Racketmanager;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\validator\Validator;
 use stdClass;
 
 /**

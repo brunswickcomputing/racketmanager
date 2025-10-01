@@ -72,9 +72,9 @@ class Admin extends RacketManager {
         require_once RACKETMANAGER_PATH . 'include/admin/class-admin-player.php';
         require_once RACKETMANAGER_PATH . 'include/admin/class-admin-result.php';
         require_once RACKETMANAGER_PATH . 'include/admin/class-admin-season.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator-config.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator-finance.php';
-        require_once RACKETMANAGER_PATH . 'include/class-validator-tournament.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-config.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-finance.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-tournament.php';
 
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_styles' ) );

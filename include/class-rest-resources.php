@@ -9,17 +9,18 @@
 
 namespace Racketmanager;
 
+use Racketmanager\validator\Validator;
 use stdClass;
 use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
 use Stripe\Webhook;
 use UnexpectedValueException;
-use WP_REST_Server;
-use WP_REST_Controller;
-use WP_REST_Response;
-use WP_REST_Request;
 use WP_Error;
+use WP_REST_Controller;
+use WP_REST_Request;
+use WP_REST_Response;
+use WP_REST_Server;
 
 /**
  * Class to implement the Rest_Resources object

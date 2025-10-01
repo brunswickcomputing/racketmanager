@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\validator\Validator_Match;
 use stdClass;
 
 /**

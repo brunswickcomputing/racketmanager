@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager;
+namespace Racketmanager\validator;
 
 /**
  * Class to implement the PlanValidator object

@@ -7,9 +7,17 @@
  * @subpackage Validator
  */
 
-namespace Racketmanager;
+namespace Racketmanager\validator;
 
+use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
+use function Racketmanager\is_lta_number_required;
 
 /**
  * Class to implement the Validator object

@@ -1349,10 +1349,10 @@ final class Racketmanager_Match {
         if ( ! empty( $home_points ) || ! empty( $away_points ) || 'withdrawn' === $match_status || 7 === intval( $match_status ) || 8 === intval( $match_status ) ) {
             $prev_winner = $this->winner_id;
             $this->get_result( $home_points, $away_points, $custom );
+            if ( 'P' === $confirmed && current_user_can( 'manage_racketmanager' ) ) {
+                $confirmed = 'Y';
+            }
             if ( $prev_winner !== $this->winner_id || floatval( $home_points ) !== $this->home_points || floatval( $away_points ) !== $this->away_points || $custom !== $this->custom || $confirmed !== $this->confirmed ) {
-                if ( 'P' === $confirmed && current_user_can( 'manage_racketmanager' ) ) {
-                    $confirmed = 'Y';
-                }
                 $this->home_points = $home_points;
                 $this->away_points = $away_points;
                 $this->custom      = $custom;

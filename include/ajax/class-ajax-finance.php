@@ -6,10 +6,16 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Ajax;
+use Racketmanager\Validator_Finance;
 use stdClass;
+use function Racketmanager\get_invoice;
+use function Racketmanager\show_alert;
+use function Racketmanager\show_invoice;
+use function Racketmanager\show_purchase_order_modal;
 
 /**
  * Implement AJAX front end responses.

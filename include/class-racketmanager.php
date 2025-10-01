@@ -9,6 +9,11 @@
 namespace Racketmanager;
 
 use NumberFormatter;
+use Racketmanager\ajax\Ajax_Account;
+use Racketmanager\ajax\Ajax_Finance;
+use Racketmanager\ajax\Ajax_Frontend;
+use Racketmanager\ajax\Ajax_Match;
+use Racketmanager\ajax\Ajax_Tournament;
 use stdClass;
 
 /**

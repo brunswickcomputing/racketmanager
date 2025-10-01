@@ -6,11 +6,30 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
 
 use DateMalformedStringException;
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Ajax;
+use Racketmanager\Validator;
+use Racketmanager\Validator_Entry_Form;
 use stdClass;
+use function Racketmanager\event_team_match_dropdown;
+use function Racketmanager\get_club;
+use function Racketmanager\get_club_player;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_message;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
+use function Racketmanager\player_search;
+use function Racketmanager\show_alert;
+use function Racketmanager\show_message;
+use function Racketmanager\show_team_edit_modal;
+use function Racketmanager\team_order_players;
 
 /**
  * Implement AJAX front end responses.

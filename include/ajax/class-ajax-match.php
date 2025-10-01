@@ -6,10 +6,19 @@
  * @subpackage RacketManager_Ajax_Frontend_Match
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Ajax;
+use Racketmanager\Validator_Match;
 use stdClass;
+use function Racketmanager\get_match;
+use function Racketmanager\match_header;
+use function Racketmanager\match_option_modal;
+use function Racketmanager\match_status_modal;
+use function Racketmanager\rubber_status_modal;
+use function Racketmanager\show_alert;
+use function Racketmanager\show_match_card;
 
 /**
  * Implement AJAX front end match responses.

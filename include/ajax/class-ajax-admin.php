@@ -6,7 +6,24 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
+
+use Racketmanager\Ajax;
+use Racketmanager\Util;
+use function Racketmanager\event_dropdown;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_league_team;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
+use function Racketmanager\league_dropdown;
+use function Racketmanager\match_dropdown;
+use function Racketmanager\season_dropdown;
+use function Racketmanager\seo_url;
 
 /**
  * Implement AJAX responses for admin only functions.

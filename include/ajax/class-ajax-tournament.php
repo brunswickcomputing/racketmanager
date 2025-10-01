@@ -6,12 +6,23 @@
  * @subpackage RacketManager_Ajax_Frontend_Tournament
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Ajax;
+use Racketmanager\Stripe_Settings;
+use Racketmanager\Validator_Entry_Form;
 use stdClass;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
+use function Racketmanager\event_partner_modal;
+use function Racketmanager\get_event;
+use function Racketmanager\get_invoice;
+use function Racketmanager\get_player;
+use function Racketmanager\get_tournament;
+use function Racketmanager\get_tournament_entry;
+use function Racketmanager\seo_url;
+use function Racketmanager\tournament_withdrawal_modal;
 
 /**
  * Implement AJAX front end tournament responses.

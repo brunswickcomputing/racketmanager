@@ -6,7 +6,13 @@
  * @subpackage RacketManager_Ajax_Account
  */
 
-namespace Racketmanager;
+namespace Racketmanager\ajax;
+
+use Racketmanager\Ajax;
+use Racketmanager\Util;
+use function Racketmanager\get_message;
+use function Racketmanager\get_user;
+use function Racketmanager\show_alert;
 
 /**
  * Implement AJAX front end account responses.

@@ -366,6 +366,46 @@ class Shortcodes {
 		}
 		return $this->return_error( __( 'No invoice found', 'racketmanager' ) );
 	}
+    /**
+     * Function to show purchase order
+     *
+     *    [purchase-order id=X template=X]
+     *
+     * @param array $atts shortcode attributes.
+     * @return string content
+     */
+    public function show_purchase_order( array $atts ): string {
+        $args = shortcode_atts(
+            array(
+                'id'       => 0,
+                'modal'    => null,
+                'template' => null,
+            ),
+            $atts
+        );
+        $id       = $args['id'];
+        $modal    = $args['modal'];
+        $template = $args['template'];
+        if ( ! $id ) {
+            $id = get_query_var( 'id' );
+        }
+        if ( $id ) {
+            $invoice = get_invoice( $id );
+            if ( $invoice ) {
+                $filename = ( ! empty( $template ) ) ? 'purchase-order-modal-' . $template : 'purchase-order-modal';
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'invoice' => $invoice,
+                        'modal'   => $modal,
+                    ),
+                    'club'
+                );
+            }
+        }
+        $msg = __( 'Invoice not found', 'racketmanager' );
+        return $this->return_error( $msg, 'modal' );
+    }
 	/**
 	 * Function to show memberships
 	 *

@@ -2212,6 +2212,64 @@ Racketmanager.getMessageFromResponse = function(response) {
 	}
 	return message;
 }
+Racketmanager.POModal = function (event, invoiceId) {
+	event.preventDefault();
+	let modal = 'POModal';
+	let notifyField = "#" + modal;
+	jQuery(notifyField).val("");
+	jQuery(notifyField).load(
+		ajax_var.url,
+		{
+			"invoiceId": invoiceId,
+			"modal": modal,
+			"action": "racketmanager_purchase_order_modal",
+			"security": ajax_var.ajax_nonce,
+		},
+		function () {
+			jQuery(notifyField).show();
+			jQuery(notifyField).modal('show');
+		}
+	);
+};
+Racketmanager.setPurchaseOrder = function (e, link) {
+	let formId = '#'.concat(link.form.id);
+	let $form = jQuery(formId).serialize();
+	$form += "&action=racketmanager_set_purchase_order";
+	let invoiceAlertId = '#invoiceAlert';
+	let invoiceResponse = '#invoiceResponse';
+	jQuery(invoiceAlertId).hide();
+	jQuery(invoiceAlertId).removeClass('alert--success alert--warning alert--danger');
+	let POAlertId = '#POUpdateResponse';
+	jQuery(POAlertId).hide();
+	jQuery(POAlertId).removeClass('alert--success alert--warning alert--danger');
+	let POResponse = '#POUpdateResponseText';
+	jQuery(".is-invalid").removeClass("is-invalid");
+
+	jQuery.ajax({
+		url: ajax_var.url,
+		type: "POST",
+		data: $form,
+		success: function (response) {
+			let data = response.data;
+			let message = data.msg;
+			let modal = '#' + data.modal;
+			let invoice = data.invoice;
+			jQuery(invoiceAlertId).show();
+			jQuery(invoiceAlertId).addClass('alert--success');
+			jQuery(invoiceResponse).html(message);
+			jQuery(modal).modal('hide')
+			if (invoice) {
+				jQuery('#invoiceDetails').html(invoice);
+			}
+		},
+		error: function (response) {
+			Racketmanager.handleAjaxError(response, POResponse, POAlertId);
+			jQuery(POAlertId).show();
+		},
+		complete: function () {
+		}
+	});
+}
 
 function activaTab(tab) {
 	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');

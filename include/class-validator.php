@@ -612,6 +612,21 @@ class Validator {
         return $this;
     }
     /**
+     * Validate modal
+     *
+     * @param ?string $modal modal name.
+     * @param string $error_field error field.
+     * @return object $validation updated validation object.
+     */
+    public function modal( ?string $modal, string $error_field = 'match' ): object {
+        if ( empty( $modal ) ) {
+            $this->error      = true;
+            $this->err_flds[] = $error_field;
+            $this->err_msgs[] = __( 'Modal name not supplied', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
      * Get validation details
      *
      * @return stdClass

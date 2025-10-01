@@ -470,12 +470,13 @@ class Shortcodes_Club extends Shortcodes {
 			}
 			$invoice->details = show_invoice( $invoice->id );
 			$club->invoice    = $invoice;
+            $template_ref     = 'invoice';
 		} else {
 			$club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
+            $template_ref   = 'invoices';
 		}
-		$user_can_update         = new stdClass();
-		$user_can_update->club   = false;
-		$user_can_update->player = false;
+		$user_can_update       = new stdClass();
+		$user_can_update->club = false;
 		if ( is_user_logged_in() ) {
 			$user   = wp_get_current_user();
 			$userid = $user->ID;
@@ -483,7 +484,7 @@ class Shortcodes_Club extends Shortcodes {
 				$user_can_update->club   = true;
 			}
 		}
-		$filename = ( ! empty( $template ) ) ? 'invoices-' . $template : 'invoices';
+		$filename = ( ! empty( $template ) ) ? $template_ref . '-' . $template : $template_ref;
 		return $this->load_template(
 			$filename,
 			array(

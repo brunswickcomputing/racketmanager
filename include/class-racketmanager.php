@@ -90,6 +90,7 @@ class RacketManager {
     public ?NumberFormatter $currency_fmt;
     public object $ajax;
     public object $ajax_account;
+    public object $ajax_finance;
     public object $ajax_frontend;
     public object $ajax_match;
     public object $ajax_tournament ;
@@ -805,6 +806,7 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-ajax.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax-account.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax-frontend.php';
+        require_once RACKETMANAGER_PATH . 'include/class-ajax-finance.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax-match.php';
         require_once RACKETMANAGER_PATH . 'include/class-ajax-tournament.php';
         require_once RACKETMANAGER_PATH . 'include/class-shortcodes.php';
@@ -830,6 +832,7 @@ class RacketManager {
      */
     public function init_components(): void {
         $this->ajax_account             = new Ajax_Account();
+        $this->ajax_finance             = new Ajax_Finance();
         $this->ajax_frontend            = new Ajax_Frontend();
         $this->ajax_match               = new Ajax_Match();
         $this->ajax_tournament          = new Ajax_Tournament();
@@ -856,6 +859,7 @@ class RacketManager {
         add_shortcode( 'player', array( $this->shortcodes, 'show_player' ) );
         add_shortcode( 'favourites', array( $this->shortcodes, 'show_favourites' ) );
         add_shortcode( 'invoice', array( $this->shortcodes, 'show_invoice' ) );
+        add_shortcode( 'purchase-order', array( $this->shortcodes, 'show_purchase_order' ) );
         add_shortcode( 'memberships', array( $this->shortcodes, 'show_memberships' ) );
         add_shortcode( 'search-players', array( $this->shortcodes, 'show_player_search' ) );
         add_shortcode( 'team-order', array( $this->shortcodes, 'show_team_order' ) );

@@ -4122,6 +4122,10 @@ h5.media__title {
 .btn--link .nav-link__value {
 	line-height: 20px;
 }
+.module__aside .btn.btn--link {
+	color: var(--e-global-color-global_color_1) !important;
+	background: #FFF;
+}
 
 .tournament__match {
 	border: 1px solid;

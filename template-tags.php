@@ -1163,3 +1163,20 @@ function withdrawn_team_email( array $args = array() ): string {
         }
         return $btm_required;
     }
+    /**
+     * Display purchase order modal
+     *
+     * @param int $invoice_id invoice.
+     * @param array $args additional arguments as associative array (optional).
+     *
+     * @category template-tags
+     */
+    function show_purchase_order_modal( int $invoice_id, array $args = array() ): string {
+        $args['id'] = $invoice_id;
+        $shortcode  = '[purchase-order';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }

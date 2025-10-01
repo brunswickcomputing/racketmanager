@@ -771,7 +771,7 @@ class RacketManager {
      */
     private function load_libraries(): void {
         // Objects.
-        require_once RACKETMANAGER_PATH . 'include/class-charges.php';
+        require_once RACKETMANAGER_PATH . 'include/class-charge.php';
         require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
         require_once RACKETMANAGER_PATH . 'include/class-club.php';
         require_once RACKETMANAGER_PATH . 'include/class-club-player.php';
@@ -783,7 +783,6 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-match.php';
         require_once RACKETMANAGER_PATH . 'include/class-rubber.php';
         require_once RACKETMANAGER_PATH . 'include/class-svg-icons.php';
-        require_once RACKETMANAGER_PATH . 'include/class-team.php';
         require_once RACKETMANAGER_PATH . 'include/class-player.php';
         require_once RACKETMANAGER_PATH . 'include/class-team.php';
         require_once RACKETMANAGER_PATH . 'include/class-season.php';

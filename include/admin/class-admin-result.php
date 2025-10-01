@@ -7,9 +7,9 @@
  * @subpackage Admin/Result
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
-use stdClass;
+use function Racketmanager\get_result_check;
 
 /**
  * RacketManager Season Admin functions

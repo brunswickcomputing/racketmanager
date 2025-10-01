@@ -7,9 +7,16 @@
  * @subpackage Import
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Player;
+use Racketmanager\Racketmanager_Match;
+use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_club;
+use function Racketmanager\get_league;
+use function Racketmanager\get_league_team;
+use function Racketmanager\get_player;
 
 /**
  * RacketManager Import functions

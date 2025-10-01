@@ -7,9 +7,9 @@
  * @subpackage Admin/Options
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
-use stdClass;
+use Racketmanager\Util;
 
 /**
  * RacketManager Season Options functions

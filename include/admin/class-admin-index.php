@@ -7,9 +7,12 @@
  * @subpackage Admin/Index
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Competition;
+use Racketmanager\Validator;
 use stdClass;
+use function Racketmanager\get_competition;
 
 /**
  * RacketManager Index Admin functions

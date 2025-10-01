@@ -7,9 +7,14 @@
  * @subpackage RacketManager-Admin
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Ajax_Admin;
+use Racketmanager\RacketManager;
 use WP_Error;
+use function Racketmanager\get_league;
+use function Racketmanager\match_dropdown;
+use function Racketmanager\season_dropdown;
 
 /**
  * RacketManager administration functions

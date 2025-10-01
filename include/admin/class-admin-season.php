@@ -7,9 +7,12 @@
  * @subpackage Admin/Season
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Season;
+use Racketmanager\Validator;
 use stdClass;
+use function Racketmanager\get_season;
 
 /**
  * RacketManager Season Admin functions

@@ -7,9 +7,19 @@
  * @subpackage Admin-Display
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Util;
+use Racketmanager\Validator;
 use stdClass;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_league;
+use function Racketmanager\get_league_team;
+use function Racketmanager\get_match;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
+use function Racketmanager\show_alert;
 
 /**
  * RacketManager administration display functions

@@ -7,9 +7,14 @@
  * @subpackage RacketManager-Admin-Player
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Player;
 use stdClass;
+use function Racketmanager\get_club;
+use function Racketmanager\get_club_player;
+use function Racketmanager\get_player;
+use function Racketmanager\get_player_error;
 
 /**
  * RacketManager player administration functions

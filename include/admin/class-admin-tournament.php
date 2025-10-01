@@ -7,9 +7,19 @@
  * @subpackage RacketManager-Admin-Tournament
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Tournament;
+use Racketmanager\Util;
+use Racketmanager\Validator_Plan;
+use Racketmanager\Validator_Tournament;
 use stdClass;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
 
 /**
  * RacketManager administration functions

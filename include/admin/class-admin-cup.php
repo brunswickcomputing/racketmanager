@@ -7,7 +7,15 @@
  * @subpackage RacketManager-Admin-Cup
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
+
+use Racketmanager\Util;
+use Racketmanager\Validator_Plan;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_team;
 
 /**
  * RacketManager administration functions

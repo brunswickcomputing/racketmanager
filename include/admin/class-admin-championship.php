@@ -7,9 +7,13 @@
  * @subpackage Admin/Championship
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Validator;
 use stdClass;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_match;
 
 /**
  * RacketManager Championship Admin functions

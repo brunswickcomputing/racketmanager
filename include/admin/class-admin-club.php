@@ -7,9 +7,16 @@
  * @subpackage Admin/Club
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Club;
+use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_club;
+use function Racketmanager\get_club_player;
+use function Racketmanager\get_league;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament;
 
 /**
  * RacketManager Club Admin Club functions

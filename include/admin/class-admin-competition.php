@@ -7,9 +7,17 @@
  * @subpackage RacketManager-Admin-Competition
  */
 
-namespace Racketmanager;
+namespace Racketmanager\admin;
 
+use Racketmanager\Charges;
+use Racketmanager\Util;
+use Racketmanager\Validator;
+use Racketmanager\Validator_Config;
 use stdClass;
+use function Racketmanager\get_charge;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_tournament;
 
 /**
  * RacketManager administration functions

@@ -39,10 +39,10 @@ jQuery(document).ready(function () {
 	MatchDayChange();
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_winners #selection').on('change', function () {
-		let selection = jQuery(`#selection`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		selection = selection.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		selection = selection.replace("-", "_"); // Replace '-' with a '-' symbol */
-		selection = selection.replace(/\s/g, "-"); // Replace space with a '-' symbol */
+		let selection = jQuery(`#selection`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
+		selection = selection.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		selection = selection.replaceAll("-", "_"); // Replace '-' with a '-' symbol */
+		selection = selection.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
 		let competitionSeason = jQuery(`#competitionSeason`).val();
 		let competitionType = jQuery(`#competitionType`).val();
 
@@ -51,10 +51,10 @@ jQuery(document).ready(function () {
 		return false;  // Prevent default button behaviour
 	});
 	jQuery('#racketmanager_orderofplay #tournament_id').on('change', function () {
-		let tournament = jQuery(`#tournament_id`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replace("-", "_"); // Replace '-' with a '_' symbol */
-		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '-' symbol */
+		let tournament = jQuery(`#tournament_id`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
+		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		tournament = tournament.replaceAll("-", "_"); // Replace '-' with a '_' symbol */
+		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
 		let season = jQuery(`#season`).val();
 
 		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/';
@@ -62,10 +62,10 @@ jQuery(document).ready(function () {
 		return false;  // Prevent default button behaviour
 	});
 	jQuery('#racketmanager_tournament #tournament_id').on('change', function () {
-		let tournament = jQuery(`#tournament_id`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replace("-", "_"); // Replace space with a '_' symbol */
-		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '_' symbol */
+		let tournament = jQuery(`#tournament_id`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
+		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		tournament = tournament.replaceAll("-", "_"); // Replace space with a '_' symbol */
+		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '_' symbol */
 		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
@@ -418,8 +418,8 @@ function MatchDayChange() {
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_match_day_selection').on('change', function (e) {
 		let league = jQuery('#league_id').val();
-		league = league.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		league = league.replace(/\s/g, "-"); // Replace space with a '-' symbol */
+		league = league.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		league = league.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
 		let season = jQuery('#season').val();
 		let matchday = jQuery('#match_day').val();
 		if (matchday === -1) matchday = 0;
@@ -431,11 +431,11 @@ function MatchDayChange() {
 }
 function TournamentDateChange() {
 	jQuery('#tournament-match-date-form #match_date').on('change', function (e) {
-		let match_date = jQuery(`#match_date`).val().replace(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
+		let match_date = jQuery(`#match_date`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
 		let tournament = jQuery(`#tournament_id`).val();
-		tournament = tournament.replace(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replace("-", "_"); // Replace space with a '_' symbol */
-		tournament = tournament.replace(/\s/g, "-"); // Replace space with a '_' symbol */
+		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
+		tournament = tournament.replaceAll("-", "_"); // Replace space with a '_' symbol */
+		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '_' symbol */
 		let tournamentLink = '/tournament/' + tournament.toLowerCase() + '/matches/' + match_date + '/';
 		let linkId = match_date;
 		let linkType = 'matches';

@@ -526,6 +526,8 @@ class Competition {
         'resultPending'       => false,
         'status'              => false,
     );
+    private string $select_count = 'SELECT COUNT(*)';
+    private string $time_zero = ':00:00';
     /**
      * Retrieve competition instance
      *
@@ -1057,7 +1059,7 @@ class Competition {
 
         $search = Util::search_string( $search_terms );
         if ( $count ) {
-            $sql = 'SELECT COUNT(*)';
+            $sql = $this->select_count;
         } else {
             $sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`status` AS `team_type`, e.`name` AS `event_name`';
         }
@@ -1290,7 +1292,7 @@ class Competition {
 
         $search = Util::search_string( $search_terms );
         if ( $count ) {
-            $sql = 'SELECT COUNT(*)';
+            $sql = $this->select_count;
         } else {
             $sql = 'SELECT t2.`club_id`, count(t2.`id`) as `team_count`';
         }
@@ -1373,7 +1375,7 @@ class Competition {
         $sql_from             = " FROM $wpdb->racketmanager_matches AS m, $wpdb->racketmanager AS l, $wpdb->racketmanager_events AS e, $wpdb->racketmanager_rubbers AS r";
         $search_terms         = array();
         if ( $count ) {
-            $sql_fields = 'SELECT COUNT(*)';
+            $sql_fields = $this->select_count;
             $sql        = " WHERE l.`event_id` = e.`id` ";
         } else {
             $sql_fields = "SELECT DISTINCT m.`final` AS final_round, m.`group`, `home_team`, `away_team`, DATE_FORMAT(m.`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(m.`date`, '%e') AS day, DATE_FORMAT(m.`date`, '%c') AS month, DATE_FORMAT(m.`date`, '%Y') AS year, DATE_FORMAT(m.`date`, '%H') AS `hour`, DATE_FORMAT(m.`date`, '%i') AS `minutes`, `match_day`, `location`, l.`id` AS `league_id`, m.`home_points`, m.`away_points`, m.`winner_id`, m.`loser_id`, m.`post_id`, `season`, m.`id` AS `id`, m.`custom`, `confirmed`, `home_captain`, `away_captain`, `comments`, `updated`, m.`leg`";
@@ -1396,7 +1398,7 @@ class Competition {
             $search_terms[] = $wpdb->prepare( "`final` = %s", $final );
         }
         if ( $time_offset ) {
-            $time_offset = intval( $time_offset ) . ':00:00';
+            $time_offset = intval( $time_offset ) . $this->time_zero;
         } else {
             $time_offset = '00:00:00';
         }
@@ -1415,11 +1417,11 @@ class Competition {
             $search_terms[] = $wpdb->prepare( "rp.`player_id` = %d", $player );
         }
         if ( $confirmation_pending ) {
-            $confirmation_pending = intval( $confirmation_pending ) . ':00:00';
+            $confirmation_pending = intval( $confirmation_pending ) . $this->time_zero;
             $sql_fields          .= ",ADDTIME(`updated`,'" . $confirmation_pending . "') as confirmation_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`updated`,'" . $confirmation_pending . "')), '%H')/24 as overdue_time";
         }
         if ( $result_pending ) {
-            $result_pending = intval( $result_pending ) . ':00:00';
+            $result_pending = intval( $result_pending ) . $this->time_zero;
             $sql_fields    .= ",ADDTIME(`date`,'" . $result_pending . "') as result_overdue_date, TIME_FORMAT(TIMEDIFF(now(),ADDTIME(`date`,'" . $result_pending . "')), '%H')/24 as overdue_time";
         }
 
@@ -1591,7 +1593,6 @@ class Competition {
      * @return boolean updates performed
      */
     public function save_plan( int $season, array $courts, array $start_times, array $matches, array $match_times ): bool {
-        global $racketmanager;
         $seasons     = $this->seasons;
         $season_dtls = $this->seasons[$season] ?? null;
         if ( $season_dtls ) {
@@ -1671,7 +1672,6 @@ class Competition {
      * @return boolean updates performed
      */
     public function reset_plan( int $season, array $matches ): bool {
-        global $racketmanager;
         $seasons     = $this->seasons;
         $season_dtls = $this->seasons[$season] ?? null;
         $updates     = false;
@@ -1726,8 +1726,6 @@ class Competition {
      * @param object $season season data.
      */
     public function add_season( object $season ): bool {
-        global $racketmanager;
-        $updates                  = false;
         $seasons                  = $this->seasons;
         $seasons[ $season->name ] = (array) $season;
         $updates                  = $this->update_seasons( $seasons );

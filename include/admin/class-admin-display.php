@@ -256,6 +256,41 @@ class Admin_Display {
         require_once RACKETMANAGER_PATH . '/admin/includes/contact.php';
     }
     /**
+     * Contact teams in league in admin screen
+     */
+    protected function contact_teams(): void {
+        $sent      = false;
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'edit_teams' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            return;
+        }
+        $league_id      = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
+        $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+        $season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+        $message        = isset( $_POST['emailMessage'] ) ? htmlspecialchars_decode( $_POST['emailMessage'] ) : null;
+        if ( $season && $message ) {
+            if ( $league_id ) {
+                $league = get_league( $league_id );
+                if ( $league ) {
+                    $sent = $league->contact_teams( $season, $message );
+                }
+            } elseif ( $competition_id ) {
+                $competition = get_competition( $competition_id );
+                if ( $competition ) {
+                    $sent = $competition->contact_teams( $season, $message );
+                }
+            }
+        }
+        if ( $sent ) {
+            $this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
+        }
+    }
+    /**
      * Handle league teams action function
      *
      * @param object $league league object.

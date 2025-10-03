@@ -165,6 +165,11 @@ final class Admin_League extends Admin_Display {
             $this->show_message();
             return;
         }
+        if ( isset( $_POST['contactTeam'] ) ) {
+            $this->contact_teams();
+        }
+        $this->show_message();
+        //contactTeam
         $competition->events = $competition->get_events();
         $tab                 = 'overview';
         $current_season      = (object) $competition->seasons[ $season ];
@@ -405,7 +410,7 @@ final class Admin_League extends Admin_Display {
                             $tab = 'preliminary';
                         }
                     } elseif ( isset( $_POST['contactTeam'] ) ) {
-                        $this->league_contact_teams();
+                        $this->contact_teams();
                     } elseif ( isset( $_POST['saveRanking'] ) ) {
                         $this->rank_teams( $league, 'manual' );
                     } elseif ( isset( $_POST['randomRanking'] ) ) {
@@ -1618,27 +1623,6 @@ final class Admin_League extends Admin_Display {
                 $this->set_message( __( 'Standings Table updated', 'racketmanager' ) );
             }
             //phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        }
-    }
-    /**
-     * Contact teams in league in admin screen
-     */
-    private function league_contact_teams(): void {
-        $validator = new Validator();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
-        if ( empty( $validator->error ) ) {
-            $validator = $validator->capability( 'edit_teams' );
-        }
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            return;
-        }
-        if ( isset( $_POST['league_id'] ) && isset( $_POST['season'] ) && isset( $_POST['emailMessage'] ) ) {
-            $league = get_league( $_POST['league_id'] );
-            $sent   = $league->contact_teams( sanitize_text_field( wp_unslash( $_POST['season'] ) ), htmlspecialchars_decode( $_POST['emailMessage'] ) ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            if ( $sent ) {
-                $this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
-            }
         }
     }
     /**

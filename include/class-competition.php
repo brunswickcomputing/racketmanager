@@ -2210,7 +2210,7 @@ class Competition {
      *
      * @return boolean
      */
-    private function contact_teams( string $season, string $email_message ): bool {
+    public function contact_teams( string $season, string $email_message ): bool {
         global $racketmanager;
         $email_message = str_replace( '\"', '"', $email_message );
         $headers       = array();

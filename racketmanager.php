@@ -15,8 +15,6 @@
 
 namespace Racketmanager;
 
-use Racketmanager\admin\Admin;
-
 /**
  * RacketManager is a feature-rich racket management plugin supporting various different sport types including
  * - tennis
@@ -62,8 +60,8 @@ class RacketmanagerMain {
         add_action( 'plugins_loaded', array( 'RacketManager\RacketManager', 'get_instance' ) );
 
         if ( is_admin() ) {
-            require_once RACKETMANAGER_PATH . 'include/admin/class-admin.php';
-            add_action( 'plugins_loaded', array( 'Racketmanager\admin\Admin', 'get_instance' ) );
+            require_once RACKETMANAGER_PATH . 'include/class-admin.php';
+            add_action( 'plugins_loaded', array( 'Racketmanager\Admin', 'get_instance' ) );
             $racketmanager = new Admin();
         } else {
             $racketmanager = new RacketManager();

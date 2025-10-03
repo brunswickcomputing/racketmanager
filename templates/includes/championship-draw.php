@@ -76,15 +76,24 @@ if ( $league->event->competition->is_player_entry && isset( $league->event->type
         <div class="x-swiper-container knockout-carousel__draw-carousel carousel-inner">
             <div class="knockout-tree x-swiper-wrapper row">
                 <?php
-                $f = 1;
+                $f     = 1;
+                $today = gmdate( 'Y-m-d' );
                 foreach ( $finals as $final ) {
                     if ( count( $finals ) === $f ) {
                         $last_round = true;
                     } else {
                         $last_round = false;
                     }
+                    $round_date = $league->seasons[ $league->current_season['name'] ]['rounds'][ $final->key ]->date ?? null;
+                    if ( $round_date >= $today ) {
+                        $carousel_active = true;
+                    } elseif ( $last_round ) {
+                        $carousel_active = true;
+                    } else {
+                        $carousel_active = false;
+                    }
                     ?>
-                    <div class="carousel-item <?php echo 1 === $f ? 'active' : ''; ?>">
+                    <div class="carousel-item <?php echo $carousel_active ? 'active' : ''; ?>">
                         <div class="knockout-carousel__header row">
                             <h4 class="d-block d-md-none"><?php echo esc_html( $final->name ); ?></h4>
                         </div>

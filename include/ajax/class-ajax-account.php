@@ -12,6 +12,7 @@ use Racketmanager\Util;
 use function Racketmanager\get_message;
 use function Racketmanager\get_user;
 use function Racketmanager\show_alert;
+use function Racketmanager\show_message;
 
 /**
  * Implement AJAX front end account responses.
@@ -25,7 +26,7 @@ class Ajax_Account extends Ajax {
     public function __construct() {
         parent::__construct();
         add_action( 'wp_ajax_racketmanager_add_favourite', array( &$this, 'add_favourite' ) );
-        add_action( 'wp_ajax_racketmanager_get_message', array( &$this, 'get_message' ) );
+        add_action( 'wp_ajax_racketmanager_get_message', array( &$this, 'get_user_message' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_get_message', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_delete_message', array( &$this, 'delete_message' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_delete_message', array( &$this, 'logged_out' ) );
@@ -95,6 +96,22 @@ class Ajax_Account extends Ajax {
             wp_send_json_success( $return );
         } else {
             wp_send_json_error( $return->msg, 500 );
+        }
+    }
+    /**
+     * Build screen to show message
+     */
+    public function get_user_message(): void {
+        $return      = $this->check_security_token();
+        if ( empty( $return->error ) ) {
+            $message_id  = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+            $output      = show_message(  $message_id );
+            $message_dtl = get_message( $message_id );
+            $return->status = $message_dtl?->status;
+            $return->output = $output;
+            wp_send_json_success( $return );
+        } else {
+            wp_send_json_error( $return->msg, $return->status );
         }
     }
     /**

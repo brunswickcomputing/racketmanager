@@ -20,13 +20,11 @@ use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
-use function Racketmanager\get_message;
 use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
-use function Racketmanager\show_message;
 use function Racketmanager\show_team_edit_modal;
 use function Racketmanager\team_order_players;
 
@@ -735,22 +733,6 @@ class Ajax_Frontend extends Ajax {
 				$return->status = 400;
 			}
 			wp_send_json_error( $return, $return->status );
-		}
-	}
-	/**
-	 * Build screen to show message
-	 */
-	public function get_message(): void {
-		$return      = $this->check_security_token();
-		if ( empty( $return->error ) ) {
-			$message_id  = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
-            $output      = show_message(  $message_id );
-            $message_dtl = get_message( $message_id );
-            $return->status = $message_dtl?->status;
-            $return->output = $output;
-            wp_send_json_success( $return );
-        } else {
-			wp_send_json_error( $return->msg, $return->status );
 		}
 	}
 	/**

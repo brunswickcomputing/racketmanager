@@ -424,7 +424,8 @@ Racketmanager.removeField = function(id, parent_id) {
 Racketmanager.reInit = function() {
 	tb_init('a.thickbox, area.thickbox, input.thickbox');
 }
-Racketmanager.sendFixtures = function(eventId) {
+Racketmanager.sendFixtures = function(e,eventId) {
+	e.preventDefault();
 	let notifyField1 = "#alert-season";
 	jQuery(notifyField1).hide();
 	jQuery(notifyField1).removeClass('alert--success alert--danger');

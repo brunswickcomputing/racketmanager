@@ -89,7 +89,7 @@ global $racketmanager;
                                     <?php
                                     if ( ! empty( $match_count ) && empty( $match_completion_count ) ) {
                                         ?>
-                                        <button class="btn btn-secondary" onclick="Racketmanager.sendFixtures('<?php echo esc_html( $event->id ); ?>');"><?php esc_html_e( 'Send fixtures', 'racketmanager' ); ?></button>
+                                        <button class="btn btn-secondary sendFixtures" data-event-id=<?php echo esc_html( $event->id ); ?>><?php esc_html_e( 'Send fixtures', 'racketmanager' ); ?></button>
                                         <?php
                                     }
                                     ?>
@@ -104,3 +104,10 @@ global $racketmanager;
         </form>
     </div>
 </div>
+<script type="text/javascript">
+    const sendFixtures = document.querySelectorAll('.sendFixtures');
+    sendFixtures.forEach(el => el.addEventListener('click', function (e) {
+        let eventId = this.dataset.eventId;
+        Racketmanager.sendFixtures(e, eventId)
+    }));
+</script>

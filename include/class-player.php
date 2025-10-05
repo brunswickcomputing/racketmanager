@@ -617,7 +617,7 @@ final class Player {
     }
 
     /**
-     * Set user data to be updated
+     * Set main user data to be updated
      *
      * @param object $player
      *

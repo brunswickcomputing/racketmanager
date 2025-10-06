@@ -549,8 +549,8 @@ final class User {
         global $wpdb;
         return $wpdb->delete( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->racketmanager_messages,
-            array( 'status' => $type ),
-            array( '%s' ),
+            array( 'status' => $type, 'userid' => $this->ID ),
+            array( '%s', '%d' ),
         );
     }
     /**

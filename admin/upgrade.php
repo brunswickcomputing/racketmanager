@@ -169,6 +169,10 @@ function racketmanager_upgrade(): void {
         echo esc_html__( 'starting 9.5.0 upgrade', 'racketmanager' ) . "<br />\n";
         $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_invoices} ADD `purchase_order` VARCHAR(50) NULL AFTER `payment_reference`" );
     }
+    if ( version_compare( $installed, '9.6.0', '<' ) ) {
+        echo esc_html__( 'starting 9.6.0 upgrade', 'racketmanager' ) . "<br />\n";
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `information` longtext NULL AFTER `orderofplay `" );
+    }
     /*
     * Update version and dbversion
     */

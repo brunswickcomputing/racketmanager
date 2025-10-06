@@ -286,7 +286,12 @@ final class Tournament {
      * @var string
      */
     private string $entry_link;
-
+    /**
+     * Information.
+     *
+     * @var string|object|null
+     */
+    public string|null|object $information;
     /**
      * Retrieve tournament instance
      *
@@ -331,7 +336,7 @@ final class Tournament {
             $tournament = $wpdb->get_row(
                 $wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                    "SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`date_closing`, '%%Y-%%m-%%d') AS `date_closing`, `date_start`, `date_open`, `date_withdrawal`, `grade`, `num_entries`, `numcourts` AS `num_courts`, `starttime` as `start_time`, `timeincrement` AS `time_increment`, `orderofplay` as `order_of_play`, `competition_code` FROM $wpdb->racketmanager_tournaments WHERE $search"
+                    "SELECT `id`, `name`, `competition_id`, `season`, `venue`, DATE_FORMAT(`date`, '%%Y-%%m-%%d') AS date, DATE_FORMAT(`date_closing`, '%%Y-%%m-%%d') AS `date_closing`, `date_start`, `date_open`, `date_withdrawal`, `grade`, `num_entries`, `numcourts` AS `num_courts`, `starttime` as `start_time`, `timeincrement` AS `time_increment`, `orderofplay` as `order_of_play`, `competition_code`, `information` FROM $wpdb->racketmanager_tournaments WHERE $search"
                 )
             ); // db call ok.
             if ( ! $tournament ) {
@@ -352,6 +357,9 @@ final class Tournament {
     public function __construct( object $tournament = null ) {
         global $racketmanager, $wp;
         if ( ! is_null( $tournament ) ) {
+            if ( isset( $tournament->information ) ) {
+                $tournament->information = json_decode( $tournament->information );
+            }
             foreach ( $tournament as $key => $value ) {
                 $this->$key = $value;
             }
@@ -722,6 +730,8 @@ final class Tournament {
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
         $schedule_name = 'rm_notify_tournament_entry_reminder';
         Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        $schedule_name = 'rm_notify_tournament_finalists';
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
         if ( isset( $this->charge ) ) {
             $this->charge->delete();
         }
@@ -786,12 +796,14 @@ final class Tournament {
             'count'   => false,
             'player'  => false,
             'active'  => false,
+            'round'   => false,
         );
         $args     = array_merge( $defaults, $args );
         $orderby  = $args['orderby'];
         $count    = $args['count'];
         $player   = $args['player'];
         $active   = $args['active'];
+        $round    = $args['round'];
 
         if ( $count ) {
             $sql = 'SELECT COUNT(distinct(`player_id`))';
@@ -809,6 +821,11 @@ final class Tournament {
         }
         if ( $active ) {
             $search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) )";
+        }
+        if ( $round ) {
+            $search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.final = %s) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.final = %s) )";
+            $search_args[]  = $round;
+            $search_args[]  = $round;
         }
         $sql .= Util::search_string( $search_terms );
         if ( $count ) {
@@ -1030,6 +1047,19 @@ final class Tournament {
             $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
             if ( ! $success ) {
                 error_log( __( 'Error scheduling tournament reminder emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            }
+        }
+        if ( ! empty( $this->date ) ) {
+            $finalists_date = Util::amend_date( $this->date, 5, '-' );
+            $day            = substr( $finalists_date, 8, 2 );
+            $month          = substr( $finalists_date, 5, 2 );
+            $year           = substr( $finalists_date, 0, 4 );
+            $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
+            $schedule_name  = 'rm_notify_tournament_finalists';
+            Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+            if ( ! $success ) {
+                error_log( __( 'Error scheduling tournament finalists emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
             }
         }
     }
@@ -1709,5 +1739,109 @@ final class Tournament {
         wp_mail( $email_to, $email_subject, $email_message, $headers );
         $racketmanager->set_message( __( 'Message sent', 'racketmanager' ) );
         return true;
+    }
+    /**
+     * Set information
+     *
+     * @param object $information information.
+     */
+    public function set_information( object $information ): bool {
+        global $wpdb;
+        if ( $information != $this->information ) {
+            $this->information = $information;
+            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    "UPDATE $wpdb->racketmanager_tournaments set `information` = %s WHERE `id` = %d",
+                    wp_json_encode( $this->information ),
+                    $this->id
+                )
+            );  // db call ok.
+            wp_cache_set( $this->id, $this, 'tournament' );
+            $updates = true;
+        } else {
+            $updates = false;
+        }
+        return $updates;
+    }
+    /**
+     * Notify finalists of final day details
+     *
+     * @return object notification status
+     */
+    public function notify_finalists(): object {
+        global $racketmanager;
+        $return     = new stdClass();
+        $msg        = array();
+        $action_url = $racketmanager->site_url . $this->link . 'order_of_play/';
+        if ( empty( $return->error ) ) {
+            $players = $this->get_players( array( 'round' => 'final' ) );
+            foreach ( $players as $i => $player_name ) {
+                $player = get_player( $player_name, 'name' );
+                if ( $player && ! empty( $player->email ) ) {
+                    $players [ $i ] = $player;
+                } else {
+                    unset( $players[ $i ] );
+                }
+            }
+            $times = array();
+            foreach ( $this->order_of_play as $final_courts ) {
+                foreach ( $final_courts['matches'] as $match_id ) {
+                    if ( $match_id ) {
+                        $match = get_match( $match_id );
+                        if ( $match ) {
+                            $time = $match->hour . ':' . $match->minutes;
+                            if ( ! in_array( $time, $times, true ) ) {
+                                $times[] = $time;
+                            }
+                        }
+                    }
+                }
+            }
+            sort( $times );
+            $headers    = array();
+            $from_email = $racketmanager->get_confirmation_email( 'tournament' );
+            if ( $from_email ) {
+                $message_sent      = false;
+                $headers[]         = RACKETMANAGER_FROM_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_CC_EMAIL . 'Tournament Secretary <' . $from_email . '>';
+                $organisation_name = $racketmanager->site_name;
+                $email_subject     = $racketmanager->site_name . ' ' . ucwords( $this->name ) . ' ' . __( 'tournament finals day', 'racketmanager' );
+                foreach ( $players as $player ) {
+                    $email_to      = $player->display_name . ' <' . $player->email . '>';
+                    $email_message = $racketmanager->shortcodes->load_template(
+                        'tournament-finalists',
+                        array(
+                            'email_subject' => $email_subject,
+                            'from_email'    => $from_email,
+                            'action_url'    => $action_url,
+                            'organisation'  => $organisation_name,
+                            'tournament'    => $this,
+                            'rounds'        => $times,
+                            'addressee'     => $player->display_name,
+                        ),
+                        'email'
+                    );
+                    wp_mail( $email_to, $email_subject, $email_message, $headers );
+                    $message_sent = true;
+                }
+                if ( $message_sent ) {
+                    $return->error = false;
+                    $return->msg   = __( 'Finalists notified', 'racketmanager' );
+                } else {
+                    $return->error = true;
+                    $msg[]         = __( 'No notification', 'racketmanager' );
+                }
+            } else {
+                $return->error = true;
+                $msg[]         = __( 'No secretary email', 'racketmanager' );
+            }
+        }
+        if ( ! empty( $return->error ) ) {
+            $return->msg = __( 'Notification error', 'racketmanager' );
+            foreach ( $msg as $error ) {
+                $return->msg .= '<br>' . $error;
+            }
+        }
+        return $return;
     }
 }

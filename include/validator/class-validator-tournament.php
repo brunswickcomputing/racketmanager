@@ -26,7 +26,16 @@ final class Validator_Tournament extends Validator_Config {
             $this->err_flds[] = 'tournamentName';
             $this->err_msgs[] = __( 'Name must be specified', 'racketmanager' );
         }
-
+        return $this;
+    }
+    /**
+     * Validate information
+     *
+     * @param object|null $information information.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function information( ?object $information ): object {
         return $this;
     }
 }

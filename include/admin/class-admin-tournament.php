@@ -67,6 +67,8 @@ final class Admin_Tournament extends Admin_Championship {
             $this->admin_club->display_team_page();
         } elseif ( 'contact' === $view ) {
             $this->display_contact_page();
+        } elseif ( 'information' === $view ) {
+            $this->display_information_page();
         } else {
             $this->display_tournaments_page();
         }
@@ -851,6 +853,57 @@ final class Admin_Tournament extends Admin_Championship {
                 $this->set_message( __( 'Tournament not found', 'racketmanager' ), true );
             }
         }
+    }
+    /**
+     * Display tournament information page
+     */
+    public function display_information_page(): void {
+        global $racketmanager;
+        $validator = new Validator_Tournament();
+        $validator = $validator->capability( 'edit_teams' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        $tournament_id = isset( $_GET['tournament_id'] ) ? intval( $_GET['tournament_id'] ) : null;
+        if ( $tournament_id ) {
+            $validator = $validator->tournament( $tournament_id );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->err_msgs[0], true );
+                $this->show_message();
+                return;
+            }
+            $tournament = get_tournament( $tournament_id );
+            if ( isset( $_POST['setInformation'] ) ) {
+                $information               = new stdClass();
+                $information->parking      = isset( $_POST['parking'] ) ? sanitize_text_field( wp_unslash( $_POST['parking'] ) ) : null;
+                $information->catering     = isset( $_POST['catering'] ) ? sanitize_text_field( wp_unslash( $_POST['catering'] ) ) : null;
+                $information->photography  = isset( $_POST['photography'] ) ? sanitize_text_field( wp_unslash( $_POST['photography'] ) ) : null;
+                $information->spectators   = isset( $_POST['spectators'] ) ? sanitize_text_field( wp_unslash( $_POST['spectators'] ) ) : null;
+                $information->referee      = isset( $_POST['referee'] ) ? sanitize_text_field( wp_unslash( $_POST['referee'] ) ) : null;
+                $information->match_format = isset( $_POST['matchFormat'] ) ? sanitize_text_field( wp_unslash( $_POST['matchFormat'] ) ) : null;
+                $validator                 = $validator->information( $information );
+                if ( empty( $validator->error ) ) {
+                    $updates = $tournament->set_information( $information );
+                    if ( $updates ) {
+                        $this->set_message( __( 'Information updated', 'racketmanager' ) );
+                    } else {
+                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                    }
+                } else {
+                    $this->set_message( __( 'Information not updated', 'racketmanager' ), true );
+                }
+            } else {
+                if ( isset( $_POST['notifyFinalists'] ) ) {
+                    $return = $tournament->notify_finalists();
+                    $this->set_message( $return->msg, $return->error );
+                }
+                $information = $tournament->information;
+            }
+        }
+        $this->show_message();
+        require_once RACKETMANAGER_PATH . '/admin/tournament/information.php';
     }
     /**
      * Calculate team ratings function

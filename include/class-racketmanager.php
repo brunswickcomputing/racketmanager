@@ -155,6 +155,7 @@ class RacketManager {
             add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
             add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ) );
             add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
+            add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
             add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ) );
         }
         self::$instance = $this;
@@ -582,6 +583,21 @@ class RacketManager {
         if ( $tournament_id ) {
             $tournament = get_tournament( $tournament_id );
             $tournament?->notify_entry_reminder();
+        }
+    }
+    /**
+     * Notify tournament finalists
+     *
+     * @param int $tournament_id tournament id.
+     *
+     * @return void
+     */
+    public function notify_tournament_finalists( int $tournament_id ): void {
+        if ( $tournament_id ) {
+            $tournament = get_tournament( $tournament_id );
+            if ( $tournament ) {
+                $tournament->notify_finalists();
+            }
         }
     }
     /**

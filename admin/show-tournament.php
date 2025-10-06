@@ -56,6 +56,9 @@ jQuery(document).ready(function(){
                     <li class="nav-item">
                         <a class="nav-link" id="contact-tab" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=contact&tournament_id=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="information-tab" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=information&tournament_id=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Information', 'racketmanager' ); ?></a>
+                    </li>
                 </ul>
             </div>
         </nav>

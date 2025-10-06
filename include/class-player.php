@@ -567,9 +567,9 @@ final class Player {
         $return    = new stdClass();
         $update    = false;
         $user_data = $this->set_user_data( $player );
-		if ( ! empty( $user_data ) ) {
-			$update = true;
-		}
+        if ( ! empty( $user_data ) ) {
+            $update = true;
+        }
         if ( $this->gender !== $player->gender ) {
             $update = true;
             update_user_meta( $this->ID, 'gender', $player->gender );

@@ -47,6 +47,30 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.6.0 =
+* BUGFIX: handle cancelled rubbers correctly
+* BUGFIX: fix tournament entry team creation
+* BUGFIX: add draw to list of valid tabs
+* BUGFIX: set seasons for event correctly
+* BUGFIX: use correct closing
+* BUGFIX: set event and competition seasons correctly for tournaments
+* BUGFIX: prevent result entry error
+* BUGFIX: confirm result if user is admin (#41)
+* BUGFIX: send fixtures from admin correctly
+* BUGFIX: show selected user message
+* BUGFIX: handle player details update correctly
+* BUGFIX: only delete messages for current user
+* UPDATE: check events have same match dates when scheduling matches
+* UPDATE: allowed embedded links in team contact emails
+* UPDATE: add purchase order to invoice (#36)
+* UPDATE: show player with matching details
+* UPDATE: only show events for season
+* UPDATE: allow Purchase Order set on front end
+* UPDATE: only show invoice for selected club
+* UPDATE: show active round in draw view (#42)
+* UPDATE: add tournament information in admin
+* UPDATE: send emails to tournament finalists with information (#35)
+
 = 9.5.0 =
 * BUGFIX: add gender to search terms
 * BUGFIX: use correct player details

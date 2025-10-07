@@ -2645,6 +2645,7 @@ final class Racketmanager_Match {
         $rm_options                 = $racketmanager->get_options();
         $result_notification        = $rm_options[ $this->league->event->competition->type ]['resultNotification'];
         $confirmation_required      = $rm_options[ $this->league->event->competition->type ]['confirmationRequired'];
+        $confirmation_timeout       = $rm_options[ $this->league->event->competition->type ]['confirmationTimeout'];
         $message_args               = array();
         $message_args['email_from'] = $admin_email;
         $message_args['league']     = $this->league->id;
@@ -2664,6 +2665,7 @@ final class Racketmanager_Match {
                 $subject .= ' - ' . __( 'Confirmation required', 'racketmanager' );
             }
             $message_args['confirmation_required'] = $confirmation_required;
+            $message_args['confirmation_timeout']  = $confirmation_timeout;
             $message                               = captain_result_notification( $this->id, $message_args );
         } else {
             $email_to  = $admin_email;

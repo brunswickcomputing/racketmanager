@@ -10,103 +10,69 @@ namespace Racketmanager;
 /** @var object $match */
 /** @var string $time_period */
 /** @var bool   $confirmation_required */
+/** @var string $confirmation_timeout */
 /** @var string $contact */
 /** @var string $closing */
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
 $email_subject    = __( 'Match Result', 'racketmanager' ) . ' - ' . $competition_name;
-?>
-<?php require 'email-header.php'; ?>
-            <?php require 'components/match-heading.php'; ?>
-            <!-- introduction -->
-            <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
-                <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
-                    <tbody>
-                        <tr>
-                            <td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
-                                <table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
-                                    <tbody>
-                                        <tr>
-                                            <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
-                                                <table width="100%" style="height: 100%;" role="presentation" cellspacing="0" cellpadding="0">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
-                                                                <div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
-                                                                    <?php
-                                                                    if ( ! empty( $override ) ) {
-                                                                        $message_detail = 'The approval of this result was outstanding';
-                                                                        ?>
-                                                                        <?php
-                                                                        if ( $time_period ) {
-                                                                            $message_detail .= ' for more than ' . $time_period . ' hours after the result was entered';
-                                                                        }
-                                                                        $message_detail .= '.';
-                                                                        ?>
-                                                                        <p><?php echo esc_html( $message_detail ); ?></p>
-                                                                        <p>The entered result of this match has therefore been confirmed.</p>
-                                                                        <?php
-                                                                    } elseif ( ! empty( $outstanding ) ) {
-                                                                        $message_detail = 'The approval of this result is outstanding';
-                                                                        ?>
-                                                                        <?php
-                                                                        if ( $time_period ) {
-                                                                            $message_detail .= ' more than ' . $time_period . ' hours after the result was entered';
-                                                                        }
-                                                                        $message_detail .= '.';
-                                                                        ?>
-                                                                        <p><?php echo esc_html( $message_detail ); ?></p>
-                                                                        <p>Please either approval or challenge the result as soon as possible.</p>
-                                                                        <?php
-                                                                    } elseif ( isset( $errors ) && $errors ) {
-                                                                        ?>
-                                                                        <p>The result of this match has been confirmed and updated.</p>
-                                                                        <p>There are player checks that need actioning.</p>
-                                                                        <?php
-                                                                    } elseif ( isset( $complete ) && $complete ) {
-                                                                        ?>
-                                                                        <p>The result of this match has been confirmed and updated.</p>
-                                                                        <p>There is no further action required.</p>
-                                                                        <?php
-                                                                    } elseif ( isset( $challenge ) && $challenge ) {
-                                                                        $message_detail = 'The result of this match has been challenged.';
-                                                                        ?>
-                                                                        <p><?php echo esc_html( $message_detail ); ?></p>
-                                                                        <?php
-                                                                    } else {
-                                                                        $message_detail = 'The result of this match has been entered';
-                                                                        if ( $confirmation_required ) {
-                                                                            $message_detail .= ' and requires action';
-                                                                        }
-                                                                        $message_detail .= '.';
-                                                                        ?>
-                                                                        <p><?php echo esc_html( $message_detail ); ?></p>
-                                                                        <?php
-                                                                    }
-                                                                    ?>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <?php $action_link_text = __( 'View result', 'racketmanager' ); ?>
-            <?php require 'components/action-link.php'; ?>
-            <?php
-            if ( ! empty( $from_email ) ) {
-                $contact_email = $from_email;
-                require $contact;
-            }
-            ?>
-            <?php require $closing; ?>
-            <?php require 'components/link-text.php'; ?>
-<?php
+require 'email-header.php';
+require 'components/match-heading.php';
+if ( ! empty( $override ) ) {
+    $message_detail = __( 'The approval of this result was outstanding', 'racketmanager' );
+    if ( $time_period ) {
+        $message_detail .= sprintf( __(' for more than %s hours after the result was entered' , 'racketmanager'), $time_period );
+    }
+    $message_detail .= '.';
+    $paragraph_text  = $message_detail;
+    require 'components/paragraph.php';
+    $paragraph_text = __( 'The entered result of this match has therefore been confirmed.', 'racketmanager' );
+    require 'components/paragraph.php';
+} elseif ( ! empty( $outstanding ) ) {
+    $message_detail = __('The approval of this result is outstanding', 'racketmanager' );
+    if ( $time_period ) {
+        $message_detail .= sprinft( __(' more than %s hours after the result was entered', 'racketmanager' ), $time_period );
+    }
+    $message_detail .= '.';
+    $paragraph_text  = $message_detail;
+    require 'components/paragraph.php';
+    $paragraph_text = __( 'Please either approval or challenge the result as soon as possible.', 'racketmanager' );
+    require 'components/paragraph.php';
+} elseif ( isset( $errors ) && $errors ) {
+    $paragraph_text = __( 'The result of this match has been confirmed and updated.', 'racketmanager' );
+    require 'components/paragraph.php';
+    $paragraph_text = __( 'There are player checks that need actioning.', 'racketmanager' );
+    require 'components/paragraph.php';
+} elseif ( isset( $complete ) && $complete ) {
+    $paragraph_text = __( 'The result of this match has been confirmed and updated.', 'racketmanager' );
+    require 'components/paragraph.php';
+    $paragraph_text = __( 'There is no further action required.', 'racketmanager' );
+    require 'components/paragraph.php';
+} elseif ( isset( $challenge ) && $challenge ) {
+    $paragraph_text = __( 'The result of this match has been challenged.', 'racketmanager' );
+    require 'components/paragraph.php';
+} else {
+    $message_detail = __( 'The result of this match has been entered', 'racketmanager' );
+    if ( $confirmation_required ) {
+        $message_detail .= __( ' and requires action', 'racketmanager' );
+    }
+    if ( ! empty( $confirmation_timeout ) ) {
+        $message_detail .= sprintf( __( '; it will be automatically confirmed in %s hours', 'racketmanager' ), $confirmation_timeout );
+    }
+    $message_detail .= '.';
+    $paragraph_text  = $message_detail;
+    require 'components/paragraph.php';
+    if ( ! empty( $confirmation_timeout ) ) {
+        $paragraph_text = __( 'If you wish to confirm or challenge the result, please do so as soon as possible.', 'racketmanager' );
+    }
+    require 'components/paragraph.php';
+}
+$action_link_text = __( 'View result', 'racketmanager' );
+require 'components/action-link.php';
+if ( ! empty( $from_email ) ) {
+    $contact_email = $from_email;
+    require $contact;
+}
+require $closing;
+require 'components/link-text.php';
 require 'email-footer.php';

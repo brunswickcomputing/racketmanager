@@ -160,7 +160,7 @@ class Shortcodes_Email extends Shortcodes {
     }
 
     /**
-     * Function to show result notification
+     * Function to show result notification to administrator
      *
      *    [result-notification id=ID template=X]
      *
@@ -224,7 +224,7 @@ class Shortcodes_Email extends Shortcodes {
     }
 
     /**
-     * Function to show result notification
+     * Function to show result notification to a captain
      *
      *    [result-notification-captain id=ID template=X]
      *
@@ -244,6 +244,7 @@ class Shortcodes_Email extends Shortcodes {
 				'override'              => false,
 				'from_email'            => false,
 				'confirmation_required' => false,
+                'confirmation_timeout'  => false,
 			),
 			$atts
 		);
@@ -254,6 +255,7 @@ class Shortcodes_Email extends Shortcodes {
 		$override              = $args['override'];
 		$from_email            = $args['from_email'];
 		$confirmation_required = $args['confirmation_required'];
+        $confirmation_timeout  = $args['confirmation_timeout'];
 		$match                 = get_match( $match_id );
 		$action_url            = $racketmanager->site_url;
 		if ( $match->league->event->competition->is_championship ) {
@@ -278,6 +280,7 @@ class Shortcodes_Email extends Shortcodes {
 				'override'              => $override,
 				'from_email'            => $from_email,
 				'confirmation_required' => $confirmation_required,
+                'confirmation_timeout'  => $confirmation_timeout,
 			),
 			'email'
 		);

@@ -292,6 +292,10 @@ final class Tournament {
      * @var string|object|null
      */
     public string|null|object $information;
+    private ?string $notification_error;
+    private ?string $no_secretary_email;
+    private ?string $no_notification;
+
     /**
      * Retrieve tournament instance
      *
@@ -435,6 +439,9 @@ final class Tournament {
                 $this->charge = $charge;
             }
         }
+        $this->notification_error = __( 'Notification error', 'racketmanager' );
+        $this->no_secretary_email = __( 'No secretary email', 'racketmanager' );
+        $this->no_notification    = __( 'No notification', 'racketmanager' );
     }
 
     /**
@@ -1139,15 +1146,15 @@ final class Tournament {
                     $return->msg = __( 'Players notified', 'racketmanager' );
                 } else {
                     $return->error = true;
-                    $msg[]         = __( 'No notification', 'racketmanager' );
+                    $msg[]         = $this->no_notification;
                 }
             } else {
                 $return->error = true;
-                $msg[]         = __( 'No secretary email', 'racketmanager' );
+                $msg[]         = $this->no_secretary_email;
             }
         }
         if ( ! empty( $return->error ) ) {
-            $return->msg = __( 'Notification error', 'racketmanager' );
+            $return->msg = $this->notification_error;
             foreach ( $msg as $error ) {
                 $return->msg .= '<br>' . $error;
             }

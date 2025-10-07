@@ -47,6 +47,10 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.0 =
+* UPDATE: show timeout period on result notification
+* UPDATE: only chase match confirmation when needed
+
 = 9.6.0 =
 * BUGFIX: handle cancelled rubbers correctly
 * BUGFIX: fix tournament entry team creation

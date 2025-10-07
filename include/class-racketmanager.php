@@ -406,18 +406,23 @@ class RacketManager {
         foreach ( $matches as $match ) {
             $match->complete_result( $confirmation_timeout );
         }
-        $confirmation_pending           = $this->get_options( $competition )['confirmationPending'];
-        $match_args                     = array();
-        $match_args['confirmed']        = 'true';
-        $match_args['competition_type'] = $competition;
-        $match_args['orderby']          = array(
-            'updated' => 'ASC',
-            'id'      => 'ASC',
-        );
-        $match_args['timeOffset']       = $confirmation_pending;
-        $matches                        = $this->get_matches( $match_args );
-        foreach ( $matches as $match ) {
-            $match->chase_match_approval( $confirmation_pending );
+        $confirmation_required  = $this->get_options( $competition )['confirmationRequired'];
+        if ( $confirmation_required ) {
+            $confirmation_pending           = $this->get_options( $competition )['confirmationPending'];
+            $confirmation_penalty           = $this->get_options( $competition )['confirmationPenalty'];
+            $confirmation_timeout           = $this->get_options( $competition )['confirmationTimeout'];
+            $match_args                     = array();
+            $match_args['confirmed']        = 'true';
+            $match_args['competition_type'] = $competition;
+            $match_args['orderby']          = array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+            );
+            $match_args['timeOffset']       = $confirmation_pending;
+            $matches                        = $this->get_matches( $match_args );
+            foreach ( $matches as $match ) {
+                $match->chase_match_approval( $confirmation_pending, false, $confirmation_timeout, $confirmation_penalty );
+            }
         }
     }
     /**

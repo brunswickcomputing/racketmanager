@@ -14,6 +14,7 @@ namespace Racketmanager;
 /** @var object $match */
 /** @var string $contact */
 /** @var string $closing */
+/** @var string $paragraph */
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
 $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
@@ -25,17 +26,17 @@ if ( $time_period ) {
 }
 $message_detail .= '.';
 $paragraph_text  = $message_detail;
-require 'components/paragraph.php';
+require $paragraph;
 $paragraph_text = __( 'Please provide the result as soon as possible.', 'racketmanager' );
-require 'components/paragraph.php';
+require $paragraph;
 $action_link_text = __( 'Enter result', 'racketmanager' );
 require 'components/action-link.php';
 if ( $timeout ) {
     $paragraph_text = sprintf( __('The result must be entered within %s hours of the match start date.', 'racketmanager' ), $timeout );
-    require 'components/paragraph.php';
+    require $paragraph;
     if ( $penalty ) {
         $paragraph_text = sprintf( __('Failure to enter the result within this timeframe will result in a %s point penalty.', 'racketmanager' ), $penalty );
-        require 'components/paragraph.php';
+        require $paragraph;
     }
 }
 if ( ! empty( $from_email ) ) {

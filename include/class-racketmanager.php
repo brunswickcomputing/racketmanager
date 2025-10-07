@@ -370,6 +370,8 @@ class RacketManager {
      */
     public function chase_pending_results( string $competition = 'league' ): void {
         $result_pending                 = $this->get_options( $competition )['resultPending'];
+        $result_penalty                 = $this->get_options( $competition )['resultPenalty'];
+        $result_timeout                 = $this->get_options( $competition )['resultTimeout'];
         $match_args                     = array();
         $match_args['time']             = 'outstanding';
         $match_args['competition_type'] = $competition;
@@ -380,7 +382,7 @@ class RacketManager {
         $match_args['timeOffset']       = $result_pending;
         $matches                        = $this->get_matches( $match_args );
         foreach ( $matches as $match ) {
-            $match->chase_match_result( $result_pending );
+            $match->chase_match_result( $result_pending, $result_timeout, $result_penalty );
         }
     }
 

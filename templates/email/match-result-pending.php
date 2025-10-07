@@ -9,62 +9,39 @@ namespace Racketmanager;
 
 /** @var string $organisation */
 /** @var int    $time_period */
+/** @var string $timeout */
+/** @var string $penalty */
 /** @var object $match */
 /** @var string $contact */
 /** @var string $closing */
 $competition_name = $match->league->title;
 $match_date       = $match->match_date;
 $email_subject    = __( 'Match Result Pending', 'racketmanager' ) . ' - ' . $competition_name . ' - ' . $organisation;
-?>
-<?php require 'email-header.php'; ?>
-            <?php require 'components/match-heading.php'; ?>
-            <!-- introduction -->
-            <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">
-                <table align="center" style="display: block;" role="presentation" cellspacing="0" cellpadding="0">
-                    <tbody>
-                        <tr>
-                            <td role="presentation" cellspacing="0" cellpadding="0" bgcolor="#fff">
-                                <table style="width: 100%; border-collapse: collapse;" role="presentation" cellspacing="0" cellpadding="0">
-                                    <tbody>
-                                        <tr>
-                                            <td style="font-weight: 400; min-width: 5px; width: 600px; height: 0;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
-                                                <table width="100%" style="height: 100%;" role="presentation" cellspacing="0" cellpadding="0">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td style="min-width: 5px; font-weight: 400;" role="presentation" cellspacing="0" cellpadding="0" align="left" bgcolor="#fff" valign="top">
-                                                                <div style="font-size: 16px; color: #000; background-color: transparent; margin: 10px;">
-                                                                    <?php
-                                                                    $message_detail = 'The result of this match is outstanding';
-                                                                    if ( $time_period ) {
-                                                                        $message_detail .= ' more than ' . $time_period . ' hours after the match was due to be played';
-                                                                    }
-                                                                    $message_detail .= '.';
-                                                                    ?>
-                                                                    <p><?php echo esc_html( $message_detail ); ?></p>
-                                                                    <p>Please provide the result as soon as possible.</p>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <?php $action_link_text = __( 'Enter result', 'racketmanager' ); ?>
-            <?php require 'components/action-link.php'; ?>
-            <?php
-            if ( ! empty( $from_email ) ) {
-                $contact_email = $from_email;
-                require $contact;
-            }
-            ?>
-            <?php require $closing; ?>
-            <?php require 'components/link-text.php'; ?>
-<?php
+require 'email-header.php';
+require 'components/match-heading.php';
+$message_detail = __('The result of this match is outstanding', 'racketmanager' );
+if ( $time_period ) {
+    $message_detail .= sprintf( __(' more than %s hours after the match was due to be played', 'racketmanager' ), $time_period );
+}
+$message_detail .= '.';
+$paragraph_text  = $message_detail;
+require 'components/paragraph.php';
+$paragraph_text = __( 'Please provide the result as soon as possible.', 'racketmanager' );
+require 'components/paragraph.php';
+$action_link_text = __( 'Enter result', 'racketmanager' );
+require 'components/action-link.php';
+if ( $timeout ) {
+    $paragraph_text = sprintf( __('The result must be entered within %s hours of the match start date.', 'racketmanager' ), $timeout );
+    require 'components/paragraph.php';
+    if ( $penalty ) {
+        $paragraph_text = sprintf( __('Failure to enter the result within this timeframe will result in a %s point penalty.', 'racketmanager' ), $penalty );
+        require 'components/paragraph.php';
+    }
+}
+if ( ! empty( $from_email ) ) {
+    $contact_email = $from_email;
+    require $contact;
+}
+require $closing;
+require 'components/link-text.php';
 require 'email-footer.php';

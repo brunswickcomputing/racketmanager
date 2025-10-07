@@ -2718,10 +2718,12 @@ final class Racketmanager_Match {
      * Chase match results
      *
      * @param false|string $time_period time Period that result is overdue.
+     * @param string|null  $timeout     how long result must be entered within.
+     * @param string|null  $penalty     penalty if result overdue.
      *
      * @return boolean $message_sent Indicator to show if message was sent.
      */
-    public function chase_match_result( false|string $time_period = false ): bool {
+    public function chase_match_result( false|string $time_period = false, ?string $timeout = null, string $penalty = null ): bool {
         global $racketmanager;
         $message_sent                = false;
         $headers                     = array();
@@ -2730,6 +2732,8 @@ final class Racketmanager_Match {
         $headers[]                   = RACKETMANAGER_CC_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $from_email . '>';
         $message_args                = array();
         $message_args['time_period'] = $time_period;
+        $message_args['timeout']     = $timeout;
+        $message_args['penalty']     = $penalty;
         $message_args['from_email']  = $from_email;
 
         $email_subject = __( 'Match result pending', 'racketmanager' ) . ' - ' . $this->get_title() . ' - ' . $this->league->title;
@@ -2766,7 +2770,7 @@ final class Racketmanager_Match {
      *
      * @return boolean $message_sent Indicator to show if message was sent.
      */
-    public function chase_match_approval( false|string $time_period = false, bool $override = false ): bool {
+    public function chase_match_approval( false|string $time_period = false, bool $override = false, ?string $timeout = null, ?string $penalty = null ): bool {
         global $racketmanager;
         $rm_options                            = $racketmanager->get_options();
         $confirmation_required                 = $rm_options[ $this->league->event->competition->type ]['confirmationRequired'];
@@ -2777,6 +2781,8 @@ final class Racketmanager_Match {
         $message_args['override']              = $override;
         $message_args['from_email']            = $from_email;
         $message_args['confirmation_required'] = $confirmation_required;
+        $message_args['timeout']               = $timeout;
+        $message_args['penalty']               = $penalty;
         $email_message                         = captain_result_notification( $this->id, $message_args );
         $msg_end                               = 'approval pending';
         if ( $override ) {

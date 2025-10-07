@@ -11,6 +11,8 @@ namespace Racketmanager;
 /** @var string $time_period */
 /** @var bool   $confirmation_required */
 /** @var string $confirmation_timeout */
+/** @var string $timeout */
+/** @var string $penalty */
 /** @var string $contact */
 /** @var string $closing */
 $competition_name = $match->league->title;
@@ -27,7 +29,6 @@ if ( ! empty( $override ) ) {
     $paragraph_text  = $message_detail;
     require 'components/paragraph.php';
     $paragraph_text = __( 'The entered result of this match has therefore been confirmed.', 'racketmanager' );
-    require 'components/paragraph.php';
 } elseif ( ! empty( $outstanding ) ) {
     $message_detail = __('The approval of this result is outstanding', 'racketmanager' );
     if ( $time_period ) {
@@ -36,21 +37,25 @@ if ( ! empty( $override ) ) {
     $message_detail .= '.';
     $paragraph_text  = $message_detail;
     require 'components/paragraph.php';
+    if ( $confirmation_required && $timeout ) {
+        $paragraph_text = sprintf( __('The result must be confirmed or challenged within %s hours of the result being entered.', 'racketmanager' ), $timeout );
+        require 'components/paragraph.php';
+        if ( $penalty ) {
+            $paragraph_text = sprintf( __('Failure to do so within this timeframe will result in a %s point penalty.', 'racketmanager' ), $penalty );
+            require 'components/paragraph.php';
+        }
+    }
     $paragraph_text = __( 'Please either approval or challenge the result as soon as possible.', 'racketmanager' );
-    require 'components/paragraph.php';
 } elseif ( isset( $errors ) && $errors ) {
     $paragraph_text = __( 'The result of this match has been confirmed and updated.', 'racketmanager' );
     require 'components/paragraph.php';
     $paragraph_text = __( 'There are player checks that need actioning.', 'racketmanager' );
-    require 'components/paragraph.php';
 } elseif ( isset( $complete ) && $complete ) {
     $paragraph_text = __( 'The result of this match has been confirmed and updated.', 'racketmanager' );
     require 'components/paragraph.php';
     $paragraph_text = __( 'There is no further action required.', 'racketmanager' );
-    require 'components/paragraph.php';
 } elseif ( isset( $challenge ) && $challenge ) {
     $paragraph_text = __( 'The result of this match has been challenged.', 'racketmanager' );
-    require 'components/paragraph.php';
 } else {
     $message_detail = __( 'The result of this match has been entered', 'racketmanager' );
     if ( $confirmation_required ) {
@@ -65,8 +70,8 @@ if ( ! empty( $override ) ) {
     if ( ! empty( $confirmation_timeout ) ) {
         $paragraph_text = __( 'If you wish to confirm or challenge the result, please do so as soon as possible.', 'racketmanager' );
     }
-    require 'components/paragraph.php';
 }
+require 'components/paragraph.php';
 $action_link_text = __( 'View result', 'racketmanager' );
 require 'components/action-link.php';
 if ( ! empty( $from_email ) ) {

@@ -245,6 +245,8 @@ class Shortcodes_Email extends Shortcodes {
 				'from_email'            => false,
 				'confirmation_required' => false,
                 'confirmation_timeout'  => false,
+                'timeout'               => false,
+                'penalty'               => false,
 			),
 			$atts
 		);
@@ -256,6 +258,8 @@ class Shortcodes_Email extends Shortcodes {
 		$from_email            = $args['from_email'];
 		$confirmation_required = $args['confirmation_required'];
         $confirmation_timeout  = $args['confirmation_timeout'];
+        $timeout               = $args['timeout'];
+        $penalty               = $args['penalty'];
 		$match                 = get_match( $match_id );
 		$action_url            = $racketmanager->site_url;
 		if ( $match->league->event->competition->is_championship ) {
@@ -281,6 +285,8 @@ class Shortcodes_Email extends Shortcodes {
 				'from_email'            => $from_email,
 				'confirmation_required' => $confirmation_required,
                 'confirmation_timeout'  => $confirmation_timeout,
+                'timeout'               => $timeout,
+                'penalty'               => $penalty,
 			),
 			'email'
 		);
@@ -303,6 +309,8 @@ class Shortcodes_Email extends Shortcodes {
 				'match'       => '',
 				'template'    => '',
 				'time_period' => false,
+                'timeout'     => false,
+                'penalty'     => false,
 				'from_email'  => null,
 			),
 			$atts
@@ -310,6 +318,8 @@ class Shortcodes_Email extends Shortcodes {
 		$match       = $args['match'];
 		$template    = $args['template'];
 		$time_period = $args['time_period'];
+        $timeout     = $args['timeout'];
+        $penalty     = $args['penalty'];
 		$from_email  = $args['from_email'];
 		$match       = get_match( $match );
 
@@ -338,6 +348,8 @@ class Shortcodes_Email extends Shortcodes {
 				'organisation' => $racketmanager->site_name,
 				'action_url'   => $action_url,
 				'time_period'  => $time_period,
+                'timeout'      => $timeout,
+                'penalty'      => $penalty,
 				'from_email'   => $from_email,
 			),
 			'email'

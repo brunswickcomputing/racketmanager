@@ -79,7 +79,7 @@ jQuery(document).ready(function () {
 	TournamentDateChange();
 	CaptainLookup();
 
-	jQuery('#matchSecretary').autocomplete({
+	jQuery('#matchSecretaryName').autocomplete({
 		minLength: 2,
 		source: function (request, response) {
 			let club = jQuery("#club_id").val();
@@ -90,7 +90,7 @@ jQuery(document).ready(function () {
 			if (ui.item.value === 'null') {
 				ui.item.value = '';
 			}
-			let player = "#matchSecretary";
+			let player = "#matchSecretaryName";
 			let playerId = "#matchSecretaryId";
 			let contactno = "#matchSecretaryContactNo";
 			let contactemail = "#matchSecretaryEmail";
@@ -100,7 +100,7 @@ jQuery(document).ready(function () {
 			jQuery(contactemail).val(ui.item.user_email);
 		},
 		change: function (event, ui) {
-			let player = "#matchSecretary";
+			let player = "#matchSecretaryName";
 			let playerId = "#matchSecretaryId";
 			let contactno = "#matchSecretaryContactNo";
 			let contactemail = "#matchSecretaryEmail";

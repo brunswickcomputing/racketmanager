@@ -102,9 +102,9 @@ final class User {
     /**
      * Age.
      *
-     * @var string|int
+     * @var string|int|null
      */
-    public string|int $age;
+    public string|int|null $age;
     /**
      * Contact Number.
      *
@@ -207,6 +207,12 @@ final class User {
      * @var array
      */
     public mixed $opt_ins;
+    /**
+     * WTN.
+     *
+     * @var array|null
+     */
+    public ?array $wtn = array();
     public ?string $message;
     public string $update_result;
     public array $err_flds;
@@ -224,7 +230,17 @@ final class User {
             return false;
         }
         $user = wp_cache_get( $user_id, 'users' );
-        return new User( $user );
+        if ( ! $user ) {
+            $user =  get_userdata( $user_id );
+            if ( ! $user ) {
+                return false;
+            }
+            $user = new User( $user->data );
+            wp_cache_set( $user_id, $user, 'players' );
+        } else {
+            $user = new User( $user );
+        }
+        return $user;
     }
 
     /**

@@ -96,6 +96,7 @@ class RacketmanagerMain {
         $wpdb->racketmanager_team_players         = $wpdb->prefix . 'racketmanager_team_players';
         $wpdb->racketmanager_tournament_entries   = $wpdb->prefix . 'racketmanager_tournament_entries';
         $wpdb->racketmanager_player_errors        = $wpdb->prefix . 'racketmanager_player_errors';
+        $wpdb->racketmanager_club_roles           = $wpdb->prefix . 'racketmanager_club_roles';
     }
 }
 new RacketmanagerMain();

@@ -592,3 +592,15 @@ Racketmanager.setEventName = function () {
 		}
 	}
 };
+Racketmanager.setShortcode = function () {
+    let shortcodeField = "#shortcode";
+    let shortcode = jQuery(shortcodeField).val();
+    if (shortcode) {
+        return;
+    }
+    let nameField = "#club";
+    let name = jQuery(nameField).val();
+    if (name) {
+        jQuery(shortcodeField).val(name);
+    }
+};

@@ -799,6 +799,7 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
         require_once RACKETMANAGER_PATH . 'include/class-club.php';
         require_once RACKETMANAGER_PATH . 'include/class-club-player.php';
+        require_once RACKETMANAGER_PATH . 'include/class-club-role.php';
         require_once RACKETMANAGER_PATH . 'include/class-competition.php';
         require_once RACKETMANAGER_PATH . 'include/class-event.php';
         require_once RACKETMANAGER_PATH . 'include/class-league.php';
@@ -844,6 +845,7 @@ class RacketManager {
         require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-email.php';
         require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-tournament.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator.php';
+        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-club.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-entry-form.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-match.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-plan.php';

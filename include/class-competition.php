@@ -2052,7 +2052,7 @@ class Competition {
                     $messages_sent     = 0;
                     foreach ( $clubs as $club ) {
                         $email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
-                        $email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+                        $email_to      = $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                         $action_url    = $url . seo_url( $club->shortcode ) . '/';
                         $email_message = $racketmanager->shortcodes->load_template(
                             'competition-entry-open',
@@ -2063,7 +2063,7 @@ class Competition {
                                 'organisation'    => $organisation_name,
                                 'is_championship' => $is_championship,
                                 'competition'     => $competition_name,
-                                'addressee'       => $club->match_secretary_name,
+                                'addressee'       => $club->match_secretary->display_name,
                                 'season_dtls'     => $season_dtls,
                             ),
                             'email'
@@ -2154,7 +2154,7 @@ class Competition {
                     $organisation_name = $racketmanager->site_name;
                     foreach ( $clubs as $club ) {
                         $email_subject = $racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
-                        $email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+                        $email_to      = $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                         $action_url    = $url . seo_url( $club->shortcode ) . '/';
                         $email_message = $racketmanager->shortcodes->load_template(
                             'competition-entry-open',
@@ -2165,7 +2165,7 @@ class Competition {
                                 'organisation'    => $organisation_name,
                                 'is_championship' => $is_championship,
                                 'competition'     => $competition_name,
-                                'addressee'       => $club->match_secretary_name,
+                                'addressee'       => $club->match_secretary->display_name,
                                 'season_dtls'     => $season_dtls,
                                 'days_remaining'  => $days_remaining,
                             ),
@@ -2252,8 +2252,8 @@ class Competition {
                     if ( ! empty( $team_dtls->contactemail ) ) {
                         $headers[] = RACKETMANAGER_BCC_EMAIL . ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
                     }
-                    if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-                        $headers[] = RACKETMANAGER_BCC_EMAIL . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+                    if ( ! empty( $team_dtls->club->match_secretary->email ) ) {
+                        $headers[] = RACKETMANAGER_BCC_EMAIL . ucwords( $team_dtls->club->match_secretary->display_name ) . ' <' . $team_dtls->club->match_secretary->email . '>';
                     }
                 }
             }

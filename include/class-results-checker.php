@@ -314,8 +314,8 @@ final class Results_Checker {
             $captain  = null;
             $email_to = null;
         }
-        $headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary_name . ' <' . $match->teams['home']->club->match_secretary_email . '>';
-        $headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary_name . ' <' . $match->teams['away']->club->match_secretary_email . '>';
+        $headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary->display_name . ' <' . $match->teams['home']->club->match_secretary->email . '>';
+        $headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary->display_name . ' <' . $match->teams['away']->club->match_secretary->email . '>';
         $email_message = $racketmanager->shortcodes->load_template(
             'result-check-match',
             array(
@@ -430,8 +430,8 @@ final class Results_Checker {
             $email_to = null;
             $opponent = null;
         }
-        $headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary_name . ' <' . $match->teams['home']->club->match_secretary_email . '>';
-        $headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary_name . ' <' . $match->teams['away']->club->match_secretary_email . '>';
+        $headers[]     = 'cc: ' . $match->teams['home']->club->match_secretary->display_name . ' <' . $match->teams['home']->club->match_secretary->email . '>';
+        $headers[]     = 'cc: ' . $match->teams['away']->club->match_secretary->display_name . ' <' . $match->teams['away']->club->match_secretary->email . '>';
         $email_message = $racketmanager->shortcodes->load_template(
             'result-check-player',
             array(

@@ -202,6 +202,7 @@ function racketmanager_upgrade(): void {
             $club_role->role_id = 1;
             new Club_Role( $club_role );
         }
+        $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_clubs} DROP `matchsecretary`" );
     }
     /*
     * Update version and dbversion

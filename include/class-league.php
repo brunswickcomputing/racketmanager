@@ -933,8 +933,8 @@ class League {
                 $email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
                 $message_send = true;
             }
-            if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-                $headers[]    = RACKETMANAGER_CC_EMAIL . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+            if ( ! empty( $team_dtls->club->match_secretary->email ) ) {
+                $headers[]    = RACKETMANAGER_CC_EMAIL . ucwords( $team_dtls->club->match_secretary->display_name ) . ' <' . $team_dtls->club->match_secretary->email . '>';
                 $message_send = true;
             }
         }
@@ -3373,8 +3373,8 @@ class League {
                 $email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
                 $message_sent = true;
             }
-            if ( ! empty( $team_dtls->club->match_secretary_email ) ) {
-                $headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary_name ) . ' <' . $team_dtls->club->match_secretary_email . '>';
+            if ( ! empty( $team_dtls->club->match_secretary->email ) ) {
+                $headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary->display_name ) . ' <' . $team_dtls->club->match_secretary->email . '>';
                 $message_sent = true;
             }
         }

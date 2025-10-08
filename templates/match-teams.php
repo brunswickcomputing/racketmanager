@@ -97,21 +97,21 @@ $user_can_update = $is_update_allowed->user_can_update;
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-captain' ); ?>"></use>
                                         </svg>
                                         <span class="">
-                                            <?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_name ); ?>
+                                            <?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->display_name ); ?>
                                         </span>
                                     </li>
                                     <?php
                                     if ( is_user_logged_in() ) {
-                                        if ( ! empty( $match->teams[ $opponent ]->club->match_secretary_contact_no ) ) {
+                                        if ( ! empty( $match->teams[ $opponent ]->club->match_secretary->contactno ) ) {
                                             ?>
                                             <li class="list__item">
-                                                <a href="tel:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_contact_no ); ?>" class="nav--link" rel="nofollow">
+                                                <a href="tel:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->contactno ); ?>" class="nav--link" rel="nofollow">
                                                     <svg width="16" height="16" class="icon ">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill' ); ?>"></use>
                                                     </svg>
                                                     <span class="nav--link">
                                                         <span class="nav-link__value">
-                                                            <?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_contact_no ); ?>
+                                                            <?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->contactno ); ?>
                                                         </span>
                                                     </span>
                                                 </a>
@@ -120,16 +120,16 @@ $user_can_update = $is_update_allowed->user_can_update;
                                         }
                                         ?>
                                         <?php
-                                        if ( ! empty( $match->teams[ $opponent ]->club->match_secretary_email ) ) {
+                                        if ( ! empty( $match->teams[ $opponent ]->club->match_secretary->email ) ) {
                                             ?>
                                             <li class="list__item">
-                                                <a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_email ); ?>" class="nav--link">
+                                                <a href="mailto:<?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->email ); ?>" class="nav--link">
                                                     <svg width="16" height="16" class="icon ">
                                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill' ); ?>"></use>
                                                     </svg>
                                                     <span class="nav--link">
                                                         <span class="nav-link__value">
-                                                            <?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary_email ); ?>
+                                                            <?php echo esc_html( $match->teams[ $opponent ]->club->match_secretary->email ); ?>
                                                         </span>
                                                     </span>
                                                 </a>

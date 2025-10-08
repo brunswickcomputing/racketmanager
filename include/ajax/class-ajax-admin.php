@@ -377,8 +377,8 @@ class Ajax_Admin extends Ajax {
                     if ( isset( $team->contactemail ) ) {
                         $email_to = $team->captain . ' <' . $team->contactemail . '>';
                         $club     = get_club( $team->club_id );
-                        if ( isset( $club->match_secretary_email ) ) {
-                            $headers[] = 'cc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+                        if ( isset( $club->match_secretary->email ) ) {
+                            $headers[] = 'cc: ' . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                         }
                         $action_url    = $racketmanager->site_url . '/' . $event->competition->type . '/' . seo_url( $league->title ) . '/' . $team->season . '/' . __( 'team', 'racketmanager' ) . '/' . seo_url( $team->title );
                         $email_message = $racketmanager->shortcodes->load_template(

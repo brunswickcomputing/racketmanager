@@ -2333,10 +2333,10 @@ final class Racketmanager_Match {
                 } elseif ( empty( $home_team ) || empty( $away_team ) || empty( $home_team->club_id ) || empty( $away_team->club_id ) ) {
                     $message = 'notTeamSet';
                 } else {
-                    if ( isset( $home_team->club->matchsecretary ) && intval( $home_team->club->matchsecretary ) === $userid ) {
+                    if ( isset( $home_team->club->match_secretary->id ) && intval( $home_team->club->match_secretary->id ) === $userid ) {
                         $user_type = 'matchsecretary';
                         $user_team = 'home';
-                    } elseif ( isset( $away_team->club->matchsecretary ) && intval( $away_team->club->matchsecretary ) === $userid ) {
+                    } elseif ( isset( $away_team->club->match_secretary->id ) && intval( $away_team->club->match_secretary->id ) === $userid ) {
                         $user_type = 'matchsecretary';
                         $user_team = 'away';
                     } elseif ( isset( $home_team->captain_id ) && intval( $home_team->captain_id ) === $userid ) {
@@ -2703,13 +2703,13 @@ final class Racketmanager_Match {
                     $confirmation_email = $this->teams['away']->contactemail;
                 } elseif ( 'secretary' === $result_notification ) {
                     $club               = get_club( $this->teams['away']->club_id );
-                    $confirmation_email = $club->match_secretary_email ?? '';
+                    $confirmation_email = $club->match_secretary->email ?? '';
                 }
             } elseif ( 'captain' === $result_notification ) {
                 $confirmation_email = $this->teams['home']->contactemail;
             } elseif ( 'secretary' === $result_notification ) {
                 $club               = get_club( $this->teams['away']->club_id );
-                $confirmation_email = $club->match_secretary_email ?? '';
+                $confirmation_email = $club->match_secretary->email ?? '';
             }
         }
         return $confirmation_email;
@@ -2751,8 +2751,8 @@ final class Racketmanager_Match {
         } else {
             $email_to[] = $this->teams['home']->captain . ' <' . $this->teams['home']->contactemail . '>';
             $club       = get_club( $this->teams['home']->club_id );
-            if ( isset( $club->match_secretary_email ) ) {
-                $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+            if ( isset( $club->match_secretary->email ) ) {
+                $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
             }
         }
         if ( $email_to ) {
@@ -2798,16 +2798,16 @@ final class Racketmanager_Match {
             if ( isset( $this->teams['away']->contactemail ) ) {
                 $email_to = $this->teams['away']->captain . ' <' . $this->teams['away']->contactemail . '>';
                 $club     = get_club( $this->teams['away']->club_id );
-                if ( isset( $club->match_secretary_email ) ) {
-                    $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+                if ( isset( $club->match_secretary->email ) ) {
+                    $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                 }
             }
         } elseif ( isset( $this->away_captain ) ) {
             if ( isset( $this->teams['home']->contactemail ) ) {
                 $email_to = $this->teams['home']->captain . ' <' . $this->teams['home']->contactemail . '>';
                 $club     = get_club( $this->teams['home']->club_id );
-                if ( isset( $club->match_secretary_email ) ) {
-                    $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+                if ( isset( $club->match_secretary->email ) ) {
+                    $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                 }
             }
         }

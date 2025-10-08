@@ -1124,7 +1124,7 @@ final class Tournament {
                 $base_subject = $email_subject;
                 foreach ( $clubs as $club ) {
                     $email_subject = $base_subject . ' - ' . $club->name;
-                    $email_to      = $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+                    $email_to      = $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
                     $action_url    = $url . seo_url( $club->shortcode ) . '/';
                     $email_message = $racketmanager->shortcodes->load_template(
                         'tournament-entry-open',
@@ -1134,7 +1134,7 @@ final class Tournament {
                             'action_url'    => $action_url,
                             'organisation'  => $organisation_name,
                             'tournament'    => $this,
-                            'addressee'     => $club->match_secretary_name,
+                            'addressee'     => $club->match_secretary->display_name,
                             'type'          => 'club',
                         ),
                         'email'

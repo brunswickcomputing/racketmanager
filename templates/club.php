@@ -36,65 +36,71 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                 <form id="clubUpdateFrm" action="" method="post">
                     <?php wp_nonce_field( 'club-update', 'racketmanager_nonce' ); ?>
                     <input type="hidden" id="club_id" name="club_id" value="<?php echo esc_html( $club->id ); ?>" />
-                    <div class="form-control mb-3">
-                        <legend><?php esc_html_e( 'Match secretary details', 'racketmanager' ); ?></legend>
-                        <?php
-                        if ( $club->matchsecretary || $user_can_update_club ) {
-                            ?>
-                            <div class="row g-3">
-                                <div class="mb-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="matchSecretary" name="matchSecretary" value="<?php echo esc_html( $club->match_secretary_name ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
-                                        <label for="matchSecretary"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
-                                        <input type="hidden" id="matchSecretaryId" name="matchSecretaryId" value="<?php echo esc_html( $club->matchsecretary ); ?>" />
-                                        <div id="matchSecretaryFeedback" class="invalid-tooltip"></div>
+                    <?php
+                    if ( $club->match_secretary || $user_can_update_club ) {
+                        ?>
+                        <div class="form-control mb-3">
+                            <legend><?php esc_html_e( 'Match secretary details', 'racketmanager' ); ?></legend>
+                            <?php
+                            if ( $club->match_secretary || $user_can_update_club ) {
+                                ?>
+                                <div class="row g-3">
+                                    <div class="mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="matchSecretaryName" name="matchSecretaryName" value="<?php echo empty( $club->match_secretary->display_name ) ? null : esc_html( $club->match_secretary->display_name ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
+                                            <label for="matchSecretary"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
+                                            <input type="hidden" id="matchSecretaryId" name="matchSecretaryId" value="<?php echo empty( $club->match_secretary->id ) ? null : esc_html( $club->match_secretary->id ); ?>" />
+                                            <div id="matchSecretaryNameFeedback" class="invalid-tooltip"></div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row g-3">
+                                <div class="row g-3">
+                                    <?php
+                                    if ( is_user_logged_in() ) {
+                                        ?>
+                                        <?php
+                                        if ( ! empty( $club->match_secretary->email ) || $user_can_update_club ) {
+                                            ?>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="form-floating mb-1">
+                                                    <input type="email" class="form-control" id="matchSecretaryEmail" name="matchSecretaryEmail" value="<?php echo empty( $club->match_secretary->email ) ? null : esc_html( $club->match_secretary->email ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
+                                                    <label for="matchSecretaryEmail"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
+                                                    <div id="matchSecretaryEmailFeedback" class="invalid-tooltip"></div>
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                        ?>
+                                        <?php
+                                        if ( ! empty( $club->match_secretary->contactno ) || $user_can_update_club ) {
+                                            ?>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="form-floating mb-1">
+                                                    <input type="tel" class="form-control" id="matchSecretaryContactNo" name="matchSecretaryContactNo" value="<?php echo empty( $club->match_secretary->contactno ) ? null : esc_html( $club->match_secretary->contactno ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
+                                                    <label for="matchSecretaryContactNo"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
+                                                    <div id="matchSecretaryContactNoFeedback" class="invalid-tooltip"></div>
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                        ?>
+                                        <?php
+                                    } else {
+                                        ?>
+                                        <div class="form-floating mb-3">
+                                            <div class="contact-login-msg">You need to <a href="<?php echo esc_html( wp_login_url() ); ?>">login</a> to access match secretary contact details</div>
+                                        </div>
+                                        <?php
+                                    }
+                                    ?>
+                                </div>
                                 <?php
-                                if ( is_user_logged_in() ) {
-                                    ?>
-                                    <?php
-                                    if ( null !== $club->match_secretary_email || $user_can_update_club ) {
-                                        ?>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="form-floating mb-1">
-                                                <input type="email" class="form-control" id="matchSecretaryEmail" name="matchSecretaryEmail" value="<?php echo esc_html( $club->match_secretary_email ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
-                                                <label for="matchSecretaryEmail"><?php esc_html_e( 'Email', 'racketmanager' ); ?></label>
-                                                <div id="matchSecretaryEmailFeedback" class="invalid-tooltip"></div>
-                                            </div>
-                                        </div>
-                                        <?php
-                                    }
-                                    ?>
-                                    <?php
-                                    if ( null !== $club->match_secretary_contact_no || $user_can_update_club ) {
-                                        ?>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="form-floating mb-1">
-                                                <input type="tel" class="form-control" id="matchSecretaryContactNo" name="matchSecretaryContactNo" value="<?php echo esc_html( $club->match_secretary_contact_no ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
-                                                <label for="matchSecretaryContactNo"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
-                                                <div id="matchSecretaryContactNoFeedback" class="invalid-tooltip"></div>
-                                            </div>
-                                        </div>
-                                        <?php
-                                    }
-                                    ?>
-                                    <?php
-                                } else {
-                                    ?>
-                                    <div class="form-floating mb-3">
-                                        <div class="contact-login-msg">You need to <a href="<?php echo esc_html( wp_login_url() ); ?>">login</a> to access match secretary contact details</div>
-                                    </div>
-                                    <?php
-                                }
-                                ?>
-                            </div>
-                            <?php
-                        }
-                        ?>
-                    </div>
+                            }
+                            ?>
+                        </div>
+                        <?php
+                    }
+                    ?>
                     <fieldset class="form-control mb-3">
                         <legend><?php esc_html_e( 'Contact details', 'racketmanager' ); ?></legend>
                         <div class="row g-3">

@@ -24,7 +24,7 @@ if ( is_user_logged_in() ) {
     } else {
         $user   = wp_get_current_user();
         $userid = $user->ID;
-        if ( intval( $object->team->club->matchsecretary ) === $userid ) {
+        if ( intval( $object->team->club->match_secretary->id ) === $userid ) {
             $user_can_edit_team = true;
         }
     }
@@ -355,22 +355,22 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-captain' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
-                                            <?php echo esc_html( $object->team->club->match_secretary_name ); ?>
+                                            <?php echo esc_html( $object->team->club->match_secretary->display_name ); ?>
                                         </span>
                                     </span>
                                 </li>
                                 <?php
                                 if ( is_user_logged_in() ) {
-                                    if ( ! empty( $object->team->club->match_secretary_contact_no ) ) {
+                                    if ( ! empty( $object->team->club->match_secretary->contactno ) ) {
                                         ?>
                                         <li class="list__item">
-                                            <a href="tel:<?php echo esc_html( $object->team->club->match_secretary_contact_no ); ?>" class="nav--link" rel="nofollow">
+                                            <a href="tel:<?php echo esc_html( $object->team->club->match_secretary->contactno ); ?>" class="nav--link" rel="nofollow">
                                                 <svg width="16" height="16" class="">
                                                     <use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
                                                     <span class="nav-link__value">
-                                                        <?php echo esc_html( $object->team->club->match_secretary_contact_no ); ?>
+                                                        <?php echo esc_html( $object->team->club->match_secretary->contactno ); ?>
                                                     </span>
                                                 </span>
                                             </a>
@@ -379,16 +379,16 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                     }
                                     ?>
                                     <?php
-                                    if ( ! empty( $object->team->club->match_secretary_email ) ) {
+                                    if ( ! empty( $object->team->club->match_secretary->email ) ) {
                                         ?>
                                         <li class="list__item">
-                                            <a href="mailto:<?php echo esc_html( $object->team->club->match_secretary_email ); ?>" class="nav--link">
+                                            <a href="mailto:<?php echo esc_html( $object->team->club->match_secretary->email ); ?>" class="nav--link">
                                                 <svg width="16" height="16" class="">
                                                     <use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
                                                     <span class="nav-link__value">
-                                                        <?php echo esc_html( $object->team->club->match_secretary_email ); ?>
+                                                        <?php echo esc_html( $object->team->club->match_secretary->email ); ?>
                                                     </span>
                                                 </span>
                                             </a>

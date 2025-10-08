@@ -91,7 +91,7 @@ class Shortcodes_Club extends Shortcodes {
 		if ( is_user_logged_in() ) {
 			$user   = wp_get_current_user();
 			$userid = $user->ID;
-			if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
+			if ( current_user_can( 'manage_racketmanager' ) || ( ! empty( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) ) {
 				$user_can_update_club   = true;
 				$user_can_update_player = true;
 			} else {
@@ -479,7 +479,7 @@ class Shortcodes_Club extends Shortcodes {
             if ( is_user_logged_in() ) {
                 $user   = wp_get_current_user();
                 $userid = $user->ID;
-                if ( current_user_can( 'manage_racketmanager' ) || ( null !== $club->matchsecretary && intval( $club->matchsecretary ) === $userid ) ) {
+                if ( current_user_can( 'manage_racketmanager' ) || ( ! empty( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) ) {
                     $user_can_update->club   = true;
                 }
             }

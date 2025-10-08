@@ -357,7 +357,7 @@ final class Invoice {
             $email_to = $this->player->display_name . ' <' . $this->player->email . '>';
             $target   = $this->player->display_name;
         } else {
-            $email_to = $this->club->match_secretary_name . ' <' . $this->club->match_secretary_email . '>';
+            $email_to = $this->club->match_secretary->display_name . ' <' . $this->club->match_secretary->email . '>';
             $target   = $this->club->name;
         }
         $billing    = $racketmanager->get_options( 'billing' );

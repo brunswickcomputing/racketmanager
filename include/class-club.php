@@ -22,6 +22,12 @@ final class Club {
      */
     public int $id;
     /**
+     * Match secretary
+     *
+     * @var object|null
+     */
+    public ?object $match_secretary;
+    /**
      * Match secretary contact name
      *
      * @var string
@@ -39,12 +45,6 @@ final class Club {
      * @var string
      */
     public mixed $match_secretary_contact_no;
-    /**
-     * Match secretary ID
-     *
-     * @var int|null
-     */
-    public ?int $matchsecretary;
     /**
      * Description
      *
@@ -238,6 +238,13 @@ final class Club {
      */
     public int $club_player_id;
     /**
+     * Club roles
+     *
+     * @var array
+     */
+    public array $roles;
+
+    /**
      * Retrieve club instance
      *
      * @param int|string $club_id club id or name.
@@ -270,7 +277,7 @@ final class Club {
         if ( ! $club ) {
             $club = $wpdb->get_row(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`, `matchsecretary` FROM $wpdb->racketmanager_clubs WHERE " . $search . ' LIMIT 1'
+                "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode` FROM $wpdb->racketmanager_clubs WHERE " . $search . ' LIMIT 1'
             ); // db call ok.
 
             if ( ! $club ) {
@@ -299,17 +306,8 @@ final class Club {
             if ( ! isset( $this->id ) ) {
                 $this->add();
             }
-            $this->match_secretary_name       = '';
-            $this->match_secretary_email      = '';
-            $this->match_secretary_contact_no = '';
-            if ( ! empty( $this->matchsecretary ) ) {
-                $match_secretary_dtls = get_userdata( $this->matchsecretary );
-                if ( $match_secretary_dtls ) {
-                    $this->match_secretary_name       = $match_secretary_dtls->display_name;
-                    $this->match_secretary_email      = $match_secretary_dtls->user_email;
-                    $this->match_secretary_contact_no = get_user_meta( $this->matchsecretary, 'contactno', true );
-                }
-            }
+            $this->roles           = $this->get_club_roles();
+            $this->match_secretary = $this->roles['1'][0] ?? new \stdClass();
             $this->desc = '';
             $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
         }
@@ -433,6 +431,34 @@ final class Club {
         return $updates;
     }
 
+    /**
+     * Function to set club role
+     *
+     * @param int $role
+     * @param int $player_id
+     *
+     * @return void
+     */
+    private function set_club_role( int $role, int $player_id ): void {
+        global $wpdb;
+        $club_roles = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT `id` FROM $wpdb->racketmanager_club_roles WHERE `club_id` = %d AND `role_id` = %d",
+                $this->id,
+                intval( $role )
+            )
+        );
+        if ( $club_roles ) {
+            $club_role = get_club_role( $club_roles[0]->id );
+            $club_role?->update( $player_id );
+        } else {
+            $club_role          = new stdClass();
+            $club_role->club_id = $this->id;
+            $club_role->role_id = $role;
+            $club_role->user_id = $player_id;
+            new Club_Role( $club_role );
+        }
+    }
     /**
      * Delete Club
      */
@@ -661,8 +687,8 @@ final class Club {
                     if ( ! empty( $options['rosterConfirmationEmail'] ) ) {
                         $headers = array();
                         $user    = wp_get_current_user();
-                        if ( $this->matchsecretary !== $user->ID ) {
-                            $headers[] = RACKETMANAGER_CC_EMAIL . $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
+                        if ( ! empty( $this->match_secretary->id ) && $this->match_secretary->id !== $user->ID ) {
+                            $headers[] = RACKETMANAGER_CC_EMAIL . $this->match_secretary->display_name . ' <' . $this->match_secretary->email . '>';
                         }
                         $email_to                  = $user->display_name . ' <' . $user->user_email . '>';
                         $message_args              = array();
@@ -935,7 +961,7 @@ final class Club {
             } else {
                 $user   = wp_get_current_user();
                 $userid = $user->ID;
-                if ( $this->matchsecretary === $userid ) {
+                if ( intval( $this->match_secretary->id ) === $userid ) {
                     $user_can_update = true;
                 } elseif ( $this->is_player_captain( $userid ) ) {
                     $options = $racketmanager->get_options( 'rosters' );
@@ -959,7 +985,7 @@ final class Club {
             } else {
                 $user   = wp_get_current_user();
                 $userid = $user->ID;
-                if ( $this->matchsecretary === $userid || $this->is_player_captain( $userid ) ) {
+                if ( intval( $this->match_secretary->id ) === $userid || $this->is_player_captain( $userid ) ) {
                     $user_can_update = true;
                 }
             }
@@ -978,7 +1004,7 @@ final class Club {
             } else {
                 $user   = wp_get_current_user();
                 $userid = $user->ID;
-                if ( $this->matchsecretary === $userid ) {
+                if ( intval( $this->match_secretary->id ) === $userid ) {
                     $user_can_update = true;
                 }
             }
@@ -1143,5 +1169,45 @@ final class Club {
         $players['share']['male']      = $this->get_player( $player_options['share']['male'] );
         $players['share']['female']    = $this->get_player( $player_options['share']['female'] );
         return $players;
+    }
+    public function get_club_roles( array $args = array() ): array {
+        global $wpdb;
+        $defaults   = array(
+            'role' => false,
+            'user' => false,
+        );
+        $args = array_merge( $defaults, $args );
+        $role = $args['role'];
+        $user = $args['user'];
+
+        $search_terms = array();
+        if ( $role ) {
+            $search_terms[] = $wpdb->prepare( '`role_id` = %d', intval( $role ) );
+        }
+        if ( $user ) {
+            $search_terms[] = $wpdb->prepare( '`user_id` = %d', intval( $user ) );
+        }
+        $search     = Util::search_string( $search_terms );
+        $sql        = $wpdb->prepare(" FROM $wpdb->racketmanager_club_roles WHERE `club_id` = %d " . $search, $this->id );
+        $sql        = 'SELECT `id`' . $sql;
+        $club_roles = wp_cache_get( md5( $sql ), 'club-roles' );
+        if ( ! $club_roles ) {
+            $club_roles = array();
+            $roles      = $wpdb->get_results(
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                $sql
+            ); // db call ok.
+            foreach ( $roles as $i => $club_role_ref ) {
+                $club_role = get_club_role( $club_role_ref->id );
+                if ( $club_role ) {
+                    if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
+                        $club_roles[ $club_role->role_id ] = array();
+                    }
+                    $club_roles[ $club_role->role_id ][] = $club_role->user;
+                }
+            }
+            wp_cache_set( md5( $sql ), $club_roles, 'club-roles' );
+        }
+        return $club_roles;
     }
 }

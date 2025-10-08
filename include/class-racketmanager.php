@@ -1481,13 +1481,10 @@ class RacketManager {
         if ( $player ) {
             switch ( $player_type ) {
                 case 'secretary':
-                    $search_terms[] = $wpdb->prepare('`matchsecretary` = %d', $player );
+                    $search_terms[] = $wpdb->prepare( "`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_club_roles WHERE `role_id` = 1 AND `user_id` = %d)", $player );
                     break;
                 case 'captain':
-                    $search_terms[] = $wpdb->prepare("(`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_teams_events te, $wpdb->racketmanager_teams t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `matchsecretary` = %d)",
-                                                     $player,
-                                                     $player,
-                                                     );
+                    $search_terms[] = $wpdb->prepare("(`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_teams_events te, $wpdb->racketmanager_teams t WHERE `captain` = %d AND te.`team_id` = t.`id`) OR `id` IN (SELECT `club_id` FROM $wpdb->racketmanager_club_roles WHERE `role_id` = 1 AND `user_id` = %d))", $player, $player );
                     break;
                 case 'player':
                     $search_terms[] = $wpdb->prepare("`id` IN (SELECT `club_id` FROM $wpdb->racketmanager_club_players cp WHERE `player_id` = %d AND `removed_date` IS NULL)", $player );
@@ -1524,7 +1521,7 @@ class RacketManager {
 
         $sql = $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`, `matchsecretary` FROM $wpdb->racketmanager_clubs $search $order LIMIT %d, %d",
+            "SELECT `id` FROM $wpdb->racketmanager_clubs $search $order LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1538,7 +1535,7 @@ class RacketManager {
             wp_cache_set( md5( $sql ), $clubs, 'clubs' );
         }
         foreach ( $clubs as $i => $club ) {
-            $club = get_club( $club );
+            $club = get_club( $club->id );
 
             $clubs[ $i ] = $club;
         }

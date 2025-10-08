@@ -1896,8 +1896,8 @@ class Event {
         );
         $subject                       = $organisation . ' - ' . $this->name . ' ' . $season['name'] . ' - Constitution';
         foreach ( $clubs as $club ) {
-            if ( ! empty( $club->match_secretary_email ) ) {
-                $headers[] = 'bcc: ' . $club->match_secretary_name . ' <' . $club->match_secretary_email . '>';
+            if ( ! empty( $club->match_secretary->email ) ) {
+                $headers[] = 'bcc: ' . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
             }
         }
         wp_mail( $email_address, $subject, $email_message, $headers );

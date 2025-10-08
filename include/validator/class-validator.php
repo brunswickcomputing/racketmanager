@@ -201,12 +201,15 @@ class Validator {
      *
      * @param string|null $telephone telephone number.
      * @param string|null $field_ref field.
+     * @param bool        $field_ref_override field ref override.
      *
      * @return object $validation updated validation object.
      */
-    public function telephone( ?string $telephone, ?string $field_ref = null ): object {
+    public function telephone( ?string $telephone, ?string $field_ref = null, bool $field_ref_override = false ): object {
         $err_field = 'contactno';
-        if ( $field_ref ) {
+        if ( $field_ref_override ) {
+            $err_field = $field_ref;
+        } elseif ( $field_ref ) {
             $err_field .= '-' . $field_ref;
         }
         if ( empty( $telephone ) ) {
@@ -223,12 +226,15 @@ class Validator {
      * @param int|null    $player_id player id.
      * @param bool   $email_required is email address required.
      * @param string|null $field_ref field.
+     * @param bool $field_ref_override field ref override.
      *
      * @return object $validation updated validation object.
      */
-    public function email( ?string $email, ?int $player_id, bool $email_required = true, ?string $field_ref = null ): object {
+    public function email( ?string $email, ?int $player_id, bool $email_required = true, ?string $field_ref = null, bool $field_ref_override = false ): object {
         $err_field = 'contactemail';
-        if ( $field_ref ) {
+        if ( $field_ref_override ) {
+            $err_field = $field_ref;
+        } elseif ( $field_ref ) {
             $err_field .= '-' . $field_ref;
         }
         if ( empty( $email ) ) {
@@ -241,7 +247,7 @@ class Validator {
             $player = get_player( $email, 'email' );
             if ( $player && $player_id !== $player->ID ) {
                 $this->error      = true;
-                $this->err_flds[] = $field_ref;
+                $this->err_flds[] = $err_field;
                 $this->err_msgs[] = sprintf( __( 'Email address already used by %s', 'racketmanager' ), $player->display_name );
             }
         }

@@ -30,21 +30,6 @@ class Validator_Config extends Validator {
         return $this;
     }
     /**
-     * Validate type
-     *
-     * @param string|null $type type.
-     *
-     * @return object $validation updated validation object.
-     */
-    public function type( ?string $type ): object {
-        if ( ! $type ) {
-            $this->error      = true;
-            $this->err_flds[] = 'type';
-            $this->err_msgs[] = __( 'Type must be specified', 'racketmanager' );
-        }
-        return $this;
-    }
-    /**
      * Validate sport
      *
      * @param string|null $sport sport.

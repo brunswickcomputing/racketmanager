@@ -11,6 +11,7 @@ namespace Racketmanager\validator;
 
 use Racketmanager\Util;
 use stdClass;
+use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
@@ -310,15 +311,22 @@ class Validator {
     /**
      * Validate club
      *
-     * @param string|null $club club.
+     * @param string|null $club_id club.
      *
      * @return object $validation updated validation object.
      */
-    public function club( ?string $club ): object {
-        if ( empty( $club ) ) {
+    public function club( ?string $club_id ): object {
+        if ( empty( $club_id ) ) {
             $this->error      = true;
             $this->err_flds[] = 'club';
             $this->err_msgs[] = __( 'Club not found', 'racketmanager' );
+        } else {
+            $club = get_club( $club_id );
+            if ( ! $club ) {
+                $this->error      = true;
+                $this->err_flds[] = 'club';
+                $this->err_msgs[] = __( 'Club not found', 'racketmanager' );
+            }
         }
         return $this;
     }
@@ -631,6 +639,21 @@ class Validator {
             $this->error      = true;
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Modal name not supplied', 'racketmanager' );
+        }
+        return $this;
+    }
+    /**
+     * Validate type
+     *
+     * @param string|null $type type.
+     *
+     * @return object $validation updated validation object.
+     */
+    public function type( ?string $type ): object {
+        if ( ! $type ) {
+            $this->error      = true;
+            $this->err_flds[] = 'type';
+            $this->err_msgs[] = __( 'Type must be specified', 'racketmanager' );
         }
         return $this;
     }

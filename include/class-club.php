@@ -343,42 +343,94 @@ final class Club {
      * Update club
      *
      * @param object $club updated club information.
-     * @param false|string $prev_shortcode previous short code.
      */
-    public function update( object $club, false|string $prev_shortcode = false ): void {
+    public function update( object $club ): bool {
         global $wpdb;
-
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_clubs SET `name` = %s, `type` = %s, `shortcode` = %s,`matchsecretary` = %d, `contactno` = %s, `website` = %s, `founded`= %s, `facilities` = %s, `address` = %s, `latitude` = %s, `longitude` = %s WHERE `id` = %d",
-                $club->name,
-                $club->type,
-                $club->shortcode,
-                $club->matchsecretary,
-                $club->contactno,
-                $club->website,
-                $club->founded,
-                $club->facilities,
-                $club->address,
-                $club->latitude,
-                $club->longitude,
-                $this->id
-            )
-        );
-
-        if ( $prev_shortcode && $prev_shortcode !== $this->shortcode ) {
+        $updates = false;
+        if ( $this->name !== $club->name ) {
+            $this->name = $club->name;
+            $updates    = true;
+        }
+        if ( $this->shortcode !== $club->shortcode ) {
             $teams = $this->get_teams();
             foreach ( $teams as $team ) {
                 $team      = get_team( $team->id );
-                $team_ref  = substr( $team->title, strlen( $prev_shortcode ) + 1, strlen( $team->title ) );
+                $team_ref  = substr( $team->title, strlen( $this->shortcode ) + 1, strlen( $team->title ) );
                 $new_title = $club->shortcode . ' ' . $team_ref;
                 $team->update_title( $new_title );
             }
+            $this->shortcode = $club->shortcode;
+            $updates         = true;
         }
-        if ( '' !== $club->matchsecretary ) {
-            $player = get_player( $club->matchsecretary );
-            $player->update_contact( $club->match_secretary_contact_no, $club->match_secretary_email );
+        if ( $this->type !== $club->type ) {
+            $this->type = $club->type;
+            $updates    = true;
         }
+        if ( $this->contactno !== $club->contactno ) {
+            $this->contactno = $club->contactno;
+            $updates = true;
+        }
+        if ( $this->website !== $club->website ) {
+            $this->website = $club->website;
+            $updates = true;
+        }
+        if ( $this->founded !== $club->founded ) {
+            $this->founded = $club->founded;
+            $updates = true;
+        }
+        if ( $this->facilities !== $club->facilities ) {
+            $this->facilities = $club->facilities;
+            $updates = true;
+        }
+        if ( $this->address !== $club->address ) {
+            $this->address = $club->address;
+            $updates = true;
+        }
+        if ( $this->latitude !== $club->latitude ) {
+            $this->latitude = $club->latitude;
+            $updates = true;
+        }
+        if ( $this->longitude !== $club->longitude ) {
+            $this->longitude = $club->longitude;
+            $updates = true;
+        }
+        if ( $this->shortcode !== $club->shortcode ) {
+            $updates = true;
+        }
+        if ( $updates ) {
+            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    "UPDATE $wpdb->racketmanager_clubs SET `name` = %s, `type` = %s, `shortcode` = %s, `contactno` = %s, `website` = %s, `founded`= %s, `facilities` = %s, `address` = %s, `latitude` = %s, `longitude` = %s WHERE `id` = %d",
+                    $club->name,
+                    $club->type,
+                    $club->shortcode,
+                    $club->contactno,
+                    $club->website,
+                    $club->founded,
+                    $club->facilities,
+                    $club->address,
+                    $club->latitude,
+                    $club->longitude,
+                    $this->id
+                )
+            );
+        }
+        if ( empty( $this->match_secretary->id ) || $this->match_secretary->id !== $club->match_secretary->id ) {
+            $user = get_user( $club->match_secretary->id );
+            if ( $user ) {
+                $this->set_club_role( 1, $user->id );
+                $updates = true;
+            }
+        } else {
+            $user = get_user( $this->match_secretary->id );
+        }
+        if ( $user->contactno !== $club->match_secretary->contactno || $user->email !== $club->match_secretary->email ) {
+            $user->update_contact( $club->match_secretary->contactno, $club->match_secretary->email );
+            $updates = true;
+        }
+        $this->match_secretary = $user;
+        wp_cache_set( $this->id, $this, 'clubs' );
+        return $updates;
     }
 
     /**

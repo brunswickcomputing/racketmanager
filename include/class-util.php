@@ -817,6 +817,42 @@ class Util {
         return empty( $age_groups[ $age_group ] ) ? false : $age_groups[ $age_group ];
     }
     /**
+     * Get club roles function
+     *
+     * @return array
+     */
+    public static function get_club_roles(): array {
+        $club_roles      = array();
+        $club_roles['1'] = __( 'Match secretary', 'racketmanager' );
+        $club_roles['2'] = __( 'Coach', 'racketmanager' );
+        $club_roles['3'] = __( 'Treasurer', 'racketmanager' );
+        return $club_roles;
+    }
+    /**
+     * Get club role description function
+     *
+     * @param string|null $club_role role.
+     * @return string club_role text
+     */
+    public static function get_club_role( ?string $club_role ): string {
+        $club_roles = self::get_club_roles();
+        return empty( $club_roles[ $club_role ] ) ? false : $club_roles[ $club_role ];
+    }
+    /**
+     * Get club role reference
+     *
+     * @param string $club_role club role description.
+     * @return int club role id
+     */
+    public static function get_club_role_ref( string $club_role ): int {
+        $club_roles = self::get_club_roles();
+        $role_ref   = array_search( $club_role, $club_roles, true );
+        if ( false === $role_ref ) {
+            $role_ref = 0;
+        }
+        return intval( $role_ref );
+    }
+    /**
      * Amend date function
      *
      * @param string $date date.

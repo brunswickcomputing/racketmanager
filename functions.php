@@ -750,6 +750,30 @@ function get_club_player( object|int|null $club_player = null ): ?Club_Player {
     return $_club_player;
 }
 /**
+ * Get club role object
+ *
+ * @param object|int|null $club_role ID. Defaults to global $club_role.
+ *
+ * @return Club_Role|null
+ */
+function get_club_role( object|int|null $club_role = null ): ?Club_Role {
+    if ( empty( $club_role ) && isset( $GLOBALS['club_role'] ) ) {
+        $club_role = $GLOBALS['club_role'];
+    }
+    if ( $club_role instanceof Club_Role ) {
+        $_club_role = $club_role;
+    } elseif ( is_object( $club_role ) ) {
+        $_club_role = new Club_Role( $club_role );
+    } else {
+        $_club_role = Club_Role::get_instance( $club_role );
+    }
+
+    if ( ! $_club_role ) {
+        return null;
+    }
+    return $_club_role;
+}
+/**
  * Get season object
  *
  * @param int|null $season season ID or season object. Defaults to global $season.

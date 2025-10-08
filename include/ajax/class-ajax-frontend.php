@@ -11,6 +11,7 @@ namespace Racketmanager\ajax;
 use DateMalformedStringException;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\validator\Validator;
+use Racketmanager\validator\Validator_Club;
 use Racketmanager\validator\Validator_Entry_Form;
 use stdClass;
 use function Racketmanager\event_team_match_dropdown;
@@ -230,104 +231,45 @@ class Ajax_Frontend extends Ajax {
         $founded                    = null;
         $website                    = null;
         $msg                        = null;
-		$return                     = $this->check_security_token( 'racketmanager_nonce', 'club-update' );
-		if ( empty( $return->error ) ) {
-			if ( isset( $_POST['club_id'] ) ) {
-				$club_id = intval( $_POST['club_id'] );
-			} else {
-				$return->error      = true;
-				$return->status     = 404;
-				$return->err_flds[] = 'club';
-				$return->err_msgs[] = __( 'Club missing', 'racketmanager' );
-			}
-			$contactno  = isset( $_POST['clubContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['clubContactNo'] ) ) : null;
-			$facilities = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
-			$founded    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
-			if ( ! empty( $_POST['matchSecretaryId'] ) ) {
-				$match_secretary_id = intval( $_POST['matchSecretaryId'] );
-			} else {
-				$return->error      = true;
-				$return->status     = 401;
-				$return->err_flds[] = 'matchSecretary';
-				$return->err_msgs[] = __( 'Match secretary missing', 'racketmanager' );
-			}
-			if ( ! empty( $_POST['matchSecretaryContactNo'] ) ) {
-				$match_secretary_contact_no = sanitize_text_field( wp_unslash( $_POST['matchSecretaryContactNo'] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 401;
-				$return->err_flds[] = 'matchSecretaryContactNo';
-				$return->err_msgs[] = __( 'Contact number is required', 'racketmanager' );
-			}
-			if ( ! empty( $_POST['matchSecretaryEmail'] ) ) {
-				$match_secretary_email = sanitize_text_field( wp_unslash( $_POST['matchSecretaryEmail'] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 401;
-				$return->err_flds[] = 'matchSecretaryEmail';
-				$return->err_msgs[] = __( 'Email address is required', 'racketmanager' );
-			}
-			$website = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
-			if ( ! empty( $_POST['address'] ) ) {
-				$address = sanitize_text_field( wp_unslash( $_POST['address'] ) );
-			} else {
-				$return->error      = true;
-				$return->status     = 401;
-				$return->err_flds[] = 'address';
-				$return->err_msgs[] = __( 'Address is required', 'racketmanager' );
-			}
-		}
-		if ( empty( $return->error ) ) {
+        $validator = new Validator_Club();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'club-update' );
+        if ( empty( $validator->error ) ) {
+            $club_id = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
+            $contactno  = isset( $_POST['clubContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['clubContactNo'] ) ) : null;
+            $facilities = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
+            $founded    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
+            $match_secretary = new stdClass();
+            $match_secretary->id = isset( $_POST['matchSecretaryId'] ) ? intval( $_POST['matchSecretaryId'] ) : null;
+            $match_secretary->contactno = isset( $_POST['matchSecretaryContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['matchSecretaryContactNo'] ) ) : null;
+            $match_secretary->email = isset( $_POST['matchSecretaryEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['matchSecretaryEmail'] ) ) : null;
+            $website = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
+            $address = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
+            $validator = $validator->club( $club_id );
+            $validator = $validator->address( $address );
+            $validator = $validator->match_secretary( $match_secretary->id, 'matchSecretaryName' );
+            $validator = $validator->telephone( $match_secretary->contactno, 'matchSecretaryContactNo', true );
+            $validator = $validator->email( $match_secretary->email, $match_secretary->id, true, 'matchSecretaryEmail', true );
+        }
+		if ( empty( $validator->error ) ) {
             $club = get_club( $club_id );
             if ( $club ) {
-                if ( $club->contactno !== $contactno ) {
-	                $club->contactno = $contactno;
-	                $updates         = true;
-                }
-                if ( $club->facilities !== $facilities ) {
-	                $club->facilities = $facilities;
-	                $updates          = true;
-                }
-                if ( $club->founded !== $founded ) {
-	                $club->founded = $founded;
-	                $updates       = true;
-                }
-                if ( $club->matchsecretary !== $match_secretary_id ) {
-	                $club->matchsecretary = $match_secretary_id;
-	                $updates              = true;
-                }
-                if ( $club->website !== $website ) {
-	                $club->website = $website;
-	                $updates       = true;
-                }
-                if ( $club->match_secretary_contact_no !== $match_secretary_contact_no ) {
-	                $club->match_secretary_contact_no = $match_secretary_contact_no;
-	                $updates                          = true;
-                }
-                if ( $club->match_secretary_email !== $match_secretary_email ) {
-	                $club->match_secretary_email = $match_secretary_email;
-	                $updates                     = true;
-                }
-                if ( $club->address !== $address ) {
-                    $club->address = $address;
-	                $updates       = true;
-                }
+                $club_updated = clone $club;
+                $club_updated->contactno = $contactno;
+                $club_updated->facilities = $facilities;
+                $club_updated->founded = $founded;
+                $club_updated->website = $website;
+                $club_updated->address = $address;
+                $club_updated->match_secretary = $match_secretary;
+                $updates = $club->update( $club_updated );
                 if ( $updates ) {
-	                $club->update( $club );
 	                $msg = __( 'Club updated', 'racketmanager' );
                 } else {
 	                $msg = __( 'Nothing to update', 'racketmanager' );
                 }
-            } else {
-                $return->error      = true;
-                $return->status     = 404;
-                $return->err_flds[] = 'address';
-                $return->err_msgs[] = __( 'Address is required', 'racketmanager' );
+                wp_send_json_success( $msg );
             }
-        }
-		if ( empty( $return->error ) ) {
-			wp_send_json_success( $msg );
 		} else {
+            $return = $validator->get_details();
 			$return->msg = __( 'Error in club update', 'racketmanager' );
 			wp_send_json_error( $return, $return->status );
 		}

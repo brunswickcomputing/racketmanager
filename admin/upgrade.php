@@ -182,6 +182,27 @@ function racketmanager_upgrade(): void {
         $racketmanager_team_competition = $wpdb->prefix . 'racketmanager_team_competition';
         $wpdb->query( "DROP TABLE {$racketmanager_team_competition} " );
     }
+    if ( version_compare( $installed, '9.7.0', '<' ) ) {
+        echo esc_html__( 'starting 9.7.0 upgrade', 'racketmanager' ) . "<br />\n";
+        $charset_collate = '';
+        if ( $wpdb->has_cap( 'collation' ) ) {
+            if ( ! empty($wpdb->charset) ) {
+                $charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+            }
+            if ( ! empty($wpdb->collate) ) {
+                $charset_collate .= " COLLATE $wpdb->collate";
+            }
+        }
+        $wpdb->query( "CREATE TABLE {$wpdb->racketmanager_club_roles} ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `club_id` int( 11 ) NOT NULL, `role_id` int( 11 ) NOT NULL, `user_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+        $clubs = $wpdb->get_results( "SELECT `id`, `matchsecretary` FROM $wpdb->racketmanager_clubs");
+        foreach ( $clubs as $club ) {
+            $club_role = new stdClass();
+            $club_role->user_id = $club->matchsecretary;
+            $club_role->club_id = $club->id;
+            $club_role->role_id = 1;
+            new Club_Role( $club_role );
+        }
+    }
     /*
     * Update version and dbversion
     */

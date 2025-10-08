@@ -5,6 +5,8 @@
  * @package Racketmanager
  */
 
+use Racketmanager\Club_Role;
+
 /**
  * Racketmanager_upgrade() - update routine for older version
  */
@@ -172,6 +174,13 @@ function racketmanager_upgrade(): void {
     if ( version_compare( $installed, '9.6.0', '<' ) ) {
         echo esc_html__( 'starting 9.6.0 upgrade', 'racketmanager' ) . "<br />\n";
         $wpdb->query( "ALTER TABLE {$wpdb->racketmanager_tournaments} ADD `information` longtext NULL AFTER `orderofplay`" );
+    }
+    if ( version_compare( $installed, '9.6.1', '<' ) ) {
+        echo esc_html__( 'starting 9.6.1 upgrade', 'racketmanager' ) . "<br />\n";
+        $racketmanager_club_player_requests = $wpdb->prefix . 'racketmanager_club_player_requests';
+        $wpdb->query( "DROP TABLE {$racketmanager_club_player_requests} " );
+        $racketmanager_team_competition = $wpdb->prefix . 'racketmanager_team_competition';
+        $wpdb->query( "DROP TABLE {$racketmanager_team_competition} " );
     }
     /*
     * Update version and dbversion

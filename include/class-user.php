@@ -615,4 +615,35 @@ final class User {
         }
         return $favourites;
     }
+    /**
+     * Update user contact details
+     *
+     * @param string $contact_no telephone number.
+     * @param string $contact_email email address.
+     * @return boolean
+     */
+    public function update_contact( string $contact_no, string $contact_email ): bool {
+        $current_contact_no    = get_user_meta( $this->ID, 'contactno', true );
+        $current_contact_email = $this->user_email;
+        if ( $current_contact_no !== $contact_no ) {
+            update_user_meta( $this->ID, 'contactno', $contact_no );
+            $this->contactno = $contact_no;
+        }
+        if ( $current_contact_email !== $contact_email ) {
+            $userdata               = array();
+            $userdata['ID']         = $this->ID;
+            $userdata['user_email'] = $contact_email;
+            $user_id                = wp_update_user( $userdata );
+            if ( is_wp_error( $user_id ) ) {
+                $error_msg = $user_id->get_error_message();
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log( 'Unable to update user email ' . $this->ID . ' - ' . $contact_email . ' - ' . $error_msg );
+                return false;
+            }
+            $this->user_email = $contact_email;
+            $this->email      = $this->user_email;
+        }
+        wp_cache_set( $this->id, $this, 'users' );
+        return true;
+    }
 }

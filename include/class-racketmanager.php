@@ -351,6 +351,25 @@ class RacketManager {
             }
             $title .= ' - ' . $site_name;
         }
+        if ( 'invoices' === $slug ) {
+            $invoice = isset( $wp->query_vars['invoice'] ) ? ucwords( un_seo_url( $wp->query_vars['invoice'] ) ) : null;
+            if ( $invoice ) {
+                $title = __( 'Invoice', 'racketmanager' ) . ' - ' . $invoice;
+            } else {
+                $title = __( 'Invoices', 'racketmanager' );
+            }
+            if ( $club ) {
+                $title .= ' - ' . $club;
+            }
+            $title .= ' - ' . $site_name;
+        }
+        if ( 'roles' === $slug ) {
+            $title = __( 'Roles', 'racketmanager' );
+            if ( $club ) {
+                $title .= ' - ' . $club;
+            }
+            $title .= ' - ' . $site_name;
+        }
         if ( 'players' === $slug ) {
             if ( $player ) {
                 $title = $player;

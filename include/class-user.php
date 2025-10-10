@@ -639,11 +639,13 @@ final class User {
      * @return boolean
      */
     public function update_contact( string $contact_no, string $contact_email ): bool {
+        $updates               = false;
         $current_contact_no    = get_user_meta( $this->ID, 'contactno', true );
         $current_contact_email = $this->user_email;
         if ( $current_contact_no !== $contact_no ) {
             update_user_meta( $this->ID, 'contactno', $contact_no );
             $this->contactno = $contact_no;
+            $updates         = true;
         }
         if ( $current_contact_email !== $contact_email ) {
             $userdata               = array();
@@ -658,8 +660,9 @@ final class User {
             }
             $this->user_email = $contact_email;
             $this->email      = $this->user_email;
+            $updates          = true;
         }
         wp_cache_set( $this->id, $this, 'users' );
-        return true;
+        return $updates;
     }
 }

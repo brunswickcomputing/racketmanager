@@ -506,6 +506,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
         </div>
     </div>
     <div class="modal" id="teamModal"></div>
+    <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
     <script type="text/javascript">
         document.getElementById('teamEditLink').addEventListener('click', function (e) {
             let teamId = this.dataset.teamId;

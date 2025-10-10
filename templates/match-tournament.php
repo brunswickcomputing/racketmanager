@@ -178,6 +178,13 @@ if ( $match ) {
                 </div>
             </div>
         </div>
+        <div id="headerResponse" class="alert_rm alert--danger" style="display: none;">
+            <div class="alert__body">
+                <div class="alert__body-inner">
+                    <span id="headerResponseText"></span>
+                </div>
+            </div>
+        </div>
         <div class="match-info-meta wrapper--padding-medium">
             <div class="row">
                 <div class="col-6 col-sm-4">
@@ -312,7 +319,7 @@ if ( $match ) {
                 ?>
                 <div class="alert_rm <?php echo empty( $message ) ? null : 'alert--success'; ?>" id="matchAlert" <?php echo empty( $message ) ? 'style="display:none;"' : null; ?>>
                     <div class="alert__body">
-                        <div class="alert__body-inner" id="alertResponse">
+                        <div class="alert__body-inner" id="matchAlertResponse">
                             <span><?php echo empty( $message ) ? null : esc_html( $message ); ?></span>
                         </div>
                     </div>
@@ -572,6 +579,7 @@ if ( $match ) {
             </form>
         </div>
     </div>
+    <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
     <script>
         <?php require_once RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
         const optionLinks = document.querySelectorAll('.matchOptionLink');

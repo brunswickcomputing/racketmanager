@@ -120,7 +120,7 @@ if ( $match->is_walkover ) {
                                         <input type="hidden" name="new_match_status" id="match_status" value="<?php echo esc_html( $match_status ); ?>" />
                                         <div class="alert_rm" id="matchAlert" style="display:none;">
                                             <div class="alert__body">
-                                                <div class="alert__body-inner" id="alertResponse">
+                                                <div class="alert__body-inner" id="matchAlertResponse">
                                                 </div>
                                             </div>
                                         </div>

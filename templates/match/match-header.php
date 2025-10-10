@@ -345,6 +345,14 @@ if ( $match->is_pending ) {
         <span class="module__footer-item-value"><?php echo esc_html( $match_stat ); ?></span>
     </span>
 </div>
+<div id="headerResponse" class="alert_rm alert--danger" style="display: none;">
+    <div class="alert__body">
+        <div class="alert__body-inner">
+            <span id="headerResponseText"></span>
+        </div>
+    </div>
+</div>
+<?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
 <script type="text/javascript">
     jQuery(document).ready(function () {
         matchHeaderListener();

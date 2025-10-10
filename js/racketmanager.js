@@ -1,28 +1,20 @@
-jQuery(document).ready(function () {
+jQuery(function () {
 	jQuery('[data-bs-toggle="tooltip"]').tooltip();
 	jQuery("#acceptance").prop("checked", false)
 	jQuery("#entrySubmit").hide();
-	jQuery('#acceptance').change(function () {
+	jQuery('#acceptance').on( "change",function () {
 		if (this.checked) {
 			jQuery("#entrySubmit").show();
 		} else {
 			jQuery("#entrySubmit").hide();
 		}
 	});
-
-	jQuery("tr.match-rubber-row").slideToggle('fast', 'linear');
-	jQuery("i", "td.angle-dir", "tr.match-row").toggleClass("angle-right angle-down");
-
-	jQuery("tr.match-row").click(function () {
-		jQuery(this).next("tr.match-rubber-row").slideToggle('0', 'linear');
-		jQuery(this).find("i.angledir").toggleClass("angle-right angle-down");
-	});
 	/* Friendly URL rewrite */
 	jQuery('#racketmanager_archive').on('change', function () {
 		let league = jQuery('#league_id').val(); //
 		let season = jQuery('#season').val();
 
-		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/league/' + league.toLowerCase() + '/' + season + '/';
+		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/league/' + league.toLowerCase() + '/' + season + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -32,7 +24,7 @@ jQuery(document).ready(function () {
 		let pagename = jQuery('#pagename').val();
 		let season = jQuery('#season').val();
 
-		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + pagename.toLowerCase() + '/' + season + '/';
+		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/' + pagename.toLowerCase() + '/' + season + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -46,7 +38,7 @@ jQuery(document).ready(function () {
 		let competitionSeason = jQuery(`#competitionSeason`).val();
 		let competitionType = jQuery(`#competitionType`).val();
 
-		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
+		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -57,7 +49,7 @@ jQuery(document).ready(function () {
 		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
 		let season = jQuery(`#season`).val();
 
-		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/';
+		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -66,13 +58,13 @@ jQuery(document).ready(function () {
 		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
 		tournament = tournament.replaceAll("-", "_"); // Replace space with a '_' symbol */
 		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '_' symbol */
-		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/tournament/' + tournament.toLowerCase() + '/';
+		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/tournament/' + tournament.toLowerCase() + '/';
 
 		return false;  // Prevent default button behaviour
 	});
 	jQuery('#racketmanager_daily_matches #match_date').on('change', function () {
 		let matchDate = jQuery(`#match_date`).val();
-		window.location = encodeURI(window.location.protocol) + '//' + encodeURIComponent(window.location.host) + '/leagues/daily-matches/' + encodeURIComponent(matchDate) + '/';
+		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/leagues/daily-matches/' + encodeURIComponent(matchDate) + '/';
 
 		return false;  // Prevent default button behaviour
 	});
@@ -218,7 +210,38 @@ jQuery(document).ajaxComplete(function () {
 	PopstateHandler();
 	MatchDayChange();
 	CaptainLookup();
+    UserLookup();
 });
+function UserLookup() {
+   jQuery('#userName').autocomplete({
+        minLength: 2,
+        source: function (request, response) {
+            let club = jQuery("#clubId").val();
+            let notifyField = '#user-feedback';
+            response(get_player_details('name', request.term, club, notifyField));
+        },
+        select: function (event, ui) {
+            if (ui.item.value === 'null') {
+                ui.item.value = '';
+            }
+            let player = "#userName";
+            let playerId = "#userId";
+            let contactno = "#contactno";
+            let contactemail = "#contactemail";
+            jQuery(player).val(ui.item.value);
+            jQuery(playerId).val(ui.item.playerId);
+            jQuery(contactno).val(ui.item.contactno);
+            jQuery(contactemail).val(ui.item.user_email);
+        },
+        change: function (event, ui) {
+            let player = "#userName";
+            let playerId = "#userId";
+            let contactno = "#contactno";
+            let contactemail = "#contactemail";
+            setPlayerDetails(ui,player,playerId,contactno,contactemail);
+        }
+    });
+}
 function CaptainLookup() {
 	jQuery('.teamcaptain').autocomplete({
 		minLength: 2,
@@ -257,7 +280,7 @@ function CaptainLookup() {
 }
 function PopstateHandler() {
 	// Handle forward/back buttons
-	window.addEventListener("popstate", (event) => {
+	globalThis.addEventListener("popstate", (event) => {
 		// If a state has been provided, we have a "simulated" page,
 		// and we update the current page.
 		if (event.state) {
@@ -444,7 +467,9 @@ function TournamentDateChange() {
 		return false;  // Prevent default button behaviour
 	});
 }
-let Racketmanager = {};
+let Racketmanager = {
+    loadingModal: '#loadingModal',
+};
 
 Racketmanager.printScoreCard = function (e, matchId) {
 	e.preventDefault();
@@ -460,7 +485,7 @@ Racketmanager.printScoreCard = function (e, matchId) {
 	head += '</head>';
 	let foot = '</body></html>';
 
-	jQuery.ajax({
+    jQuery.ajax({
 		url: ajax_var.url,
 		type: "POST",
 		data: {
@@ -469,14 +494,14 @@ Racketmanager.printScoreCard = function (e, matchId) {
 			"security": ajax_var.ajax_nonce,
 		},
 		success: function (response) {
-			matchCardWindow = window.open("about:blank", "match_card", "popup, width=800,height=775");
-			if (!matchCardWindow) {
-				jQuery(notifyField).text("Match Card not available - turn off pop blocker and retry");
-				jQuery(notifyField).show();
-				jQuery(notifyField).addClass('message-error');
+			matchCardWindow = globalThis.open("about:blank", "match_card", "popup, width=800,height=775");
+			if (matchCardWindow) {
+                matchCardWindow.document.head.innerHTML = head;
+                matchCardWindow.document.body.innerHTML = response.data + foot;
 			} else {
-			matchCardWindow.document.head.innerHTML = head;
-			matchCardWindow.document.body.innerHTML = response.data + foot;
+                jQuery(notifyField).text("Match Card not available - turn off pop blocker and retry");
+                jQuery(notifyField).show();
+                jQuery(notifyField).addClass('message-error');
 			}
 		},
 		error: function (response) {
@@ -495,9 +520,9 @@ Racketmanager.updateMatchResults = function (link) {
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_update_match";
 	let notifyField = '#updateResponse';
-	let alert_response = '#alertResponse';
 	let splash = '#splash';
 	let alert_id = jQuery('#matchAlert');
+    let alert_response = '#matchAlertResponse';
 	let use_alert = false;
 	use_alert = alert_id.length !== 0;
 	if (use_alert) {
@@ -613,10 +638,9 @@ Racketmanager.updateResults = function (link) {
 	let match_edit = false;
 	match_edit = match_status_link_id.length !== 0;
 	let alert_id = jQuery('#matchAlert');
-	let alert_response = '';
+	let alert_response = '#matchAlertResponse';
 	jQuery(alert_id).hide();
 	jQuery(alert_id).removeClass('alert--success alert--warning alert--danger');
-	alert_response = '#alertResponse';
 	jQuery(".is-invalid").removeClass("is-invalid");
 	let splash = jQuery("#splash");
 	splash.css('opacity', 1);
@@ -967,7 +991,7 @@ Racketmanager.entryRequest = function (event, type) {
 				if (response.data[2]) {
 					let link = response.data[3];
 					if (link) {
-						window.location = link;
+						globalThis.location = link;
 					}
 				}
 			} else {
@@ -1064,7 +1088,7 @@ Racketmanager.viewMatch = function (e) {
 	let link = jQuery(e.currentTarget).find("a.score-row__anchor").attr('href');
 	if (link) {
 		e.preventDefault();
-		window.location = link;
+		globalThis.location = link;
 	}
 };
 Racketmanager.setMatchStatus = function (link) {
@@ -1132,6 +1156,11 @@ Racketmanager.setMatchStatus = function (link) {
 }
 Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
 	event.preventDefault();
+    let loadingModal = this.loadingModal;
+    jQuery(loadingModal).modal('show');
+    let errorField = "#matchAlert";
+    let errorResponseField = errorField + 'Response';
+    jQuery(errorField).hide();
 	let notifyField = "#scoreStatusModal";
 	let modal = 'scoreStatusModal';
 	let scoreStatus = jQuery('#match_status_' + rubber_number).val();
@@ -1145,10 +1174,17 @@ Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
 			"action": "racketmanager_match_rubber_status",
 			"security": ajax_var.ajax_nonce,
 		},
-		function () {
-			jQuery(notifyField).show();
-			jQuery(notifyField).modal('show');
-		}
+        function (response, status) {
+            jQuery(loadingModal).modal('hide');
+            if ( 'error' === status ) {
+                let data = JSON.parse(response);
+                jQuery(errorResponseField).html(data.message);
+                jQuery(errorField).show();
+            } else {
+                jQuery(notifyField).show();
+                jQuery(notifyField).modal('show');
+            }
+        }
 	);
 };
 Racketmanager.setMatchRubberStatus = function (link) {
@@ -1191,6 +1227,11 @@ Racketmanager.setMatchRubberStatus = function (link) {
 }
 Racketmanager.statusModal = function (event, match_id) {
 	event.preventDefault();
+    let loadingModal = this.loadingModal;
+    jQuery(loadingModal).modal('show');
+    let errorField = "#headerResponse";
+    let errorResponseField = errorField + 'Response';
+    jQuery(errorField).hide();
 	let notifyField = "#scoreStatusModal";
 	let matchStatus = jQuery('#match_status').val();
 	let modal = 'scoreStatusModal';
@@ -1204,14 +1245,26 @@ Racketmanager.statusModal = function (event, match_id) {
 			"action": "racketmanager_match_status",
 			"security": ajax_var.ajax_nonce,
 		},
-		function () {
-			jQuery(notifyField).show();
-			jQuery(notifyField).modal('show');
-		}
+        function (response, status) {
+            jQuery(loadingModal).modal('hide');
+            if ( 'error' === status ) {
+                let data = JSON.parse(response);
+                jQuery(errorResponseField).html(data.message);
+                jQuery(errorField).show();
+            } else {
+                jQuery(notifyField).show();
+                jQuery(notifyField).modal('show');
+            }
+        }
 	);
 };
 Racketmanager.matchOptions = function (event, match_id, option) {
 	event.preventDefault();
+    let loadingModal = this.loadingModal;
+    jQuery(loadingModal).modal('show');
+    let errorField = "#headerResponse";
+    let errorResponseField = errorField + 'Response';
+    jQuery(errorField).hide();
 	let notifyField = "#matchModal";
 	let modal = 'matchModal';
 	jQuery(notifyField).val("");
@@ -1224,10 +1277,17 @@ Racketmanager.matchOptions = function (event, match_id, option) {
 			"action": 'racketmanager_match_option',
 			"security": ajax_var.ajax_nonce,
 		},
-		function () {
-			jQuery(notifyField).show();
-			jQuery(notifyField).modal('show');
-		}
+        function (response, status) {
+            jQuery(loadingModal).modal('hide');
+            if ( 'error' === status ) {
+                let data = JSON.parse(response);
+                jQuery(errorResponseField).html(data.message);
+                jQuery(errorField).show();
+            } else {
+                jQuery(notifyField).show();
+                jQuery(notifyField).modal('show');
+            }
+        }
 	);
 };
 Racketmanager.setMatchDate = function (e, link, is_tournament) {
@@ -1239,7 +1299,7 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 	let alert_response_1 = '';
 	if (is_tournament) {
 		alert_id_1 = '#matchAlert';
-		alert_response_1 = '#alertResponse';
+		alert_response_1 = '#matchAlertResponse';
 	} else {
 		alert_id_1 = '#matchOptionsAlert';
 		alert_response_1 = '#alertMatchOptionsResponse';
@@ -1292,7 +1352,7 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 	let alert_id_1;
 	let alert_response_1 = '';
 	alert_id_1 = jQuery('#matchAlert');
-	alert_response_1 = '#alertResponse';
+	alert_response_1 = '#matchAlertResponse';
 	jQuery(alert_id_1).hide();
 	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
 	let alert_id_2 = jQuery('#resetMatchAlert');
@@ -1362,7 +1422,7 @@ Racketmanager.switchHomeAway = function (e, link) {
 			jQuery(modal).modal('hide')
 			Racketmanager.matchHeader(match_id);
 			let newPath = data.link;
-			let url = new URL(window.location.href);
+			let url = new URL(globalThis.location.href);
 			let newURL = url.protocol + '//' + url.hostname + newPath;
 			if (newPath !== "") {
 				if (history.replaceState) {
@@ -1586,7 +1646,7 @@ Racketmanager.playerSearch = function (event) {
 	event.preventDefault();
 	let notifyBlock = "#searchResultsContainer";
 	jQuery(notifyBlock).empty();
-	let url = new URL(window.location.href);
+	let url = new URL(globalThis.location.href);
 	let newURL = url.protocol + '//' + url.hostname + url.pathname;
 	let search_string = jQuery('#search_string').val();
 	if (search_string !== "") {
@@ -1732,27 +1792,27 @@ Racketmanager.tabData = function (e, target, id, season, name, competitionType) 
 	}
 	if (newPath !== "") {
 		let tabDataRef = '#' + tab;
-		let url = new URL(window.location.href);
+		let url = new URL(globalThis.location.href);
 		let newURL = url.protocol + '//' + url.hostname + newPath + tab + '/';
-		if (newURL !== url.toString()) {
-			jQuery(tabDataRef).html('');
-			jQuery(tabDataRef).load(
-				ajax_var.url,
-				{
-					"action": 'racketmanager_get_tab_data',
-					"tab": tab,
-					"id": id,
-					"season": season,
-					"security": ajax_var.ajax_nonce,
-					"target": target,
-				},
-				function () {
-					jQuery(tabContent).removeClass('is-loading');
-					history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
-				}
-			);
+		if (newURL === url.toString()) {
+            jQuery(tabContent).removeClass('is-loading');
 		} else {
-			jQuery(tabContent).removeClass('is-loading');
+            jQuery(tabDataRef).html('');
+            jQuery(tabDataRef).load(
+                ajax_var.url,
+                {
+                    "action": 'racketmanager_get_tab_data',
+                    "tab": tab,
+                    "id": id,
+                    "season": season,
+                    "security": ajax_var.ajax_nonce,
+                    "target": target,
+                },
+                function () {
+                    jQuery(tabContent).removeClass('is-loading');
+                    history.pushState(jQuery('#pageContentTab').html(), '', newURL.toString());
+                }
+            );
 		}
 	}
 };
@@ -1771,7 +1831,7 @@ Racketmanager.tabDataLink = function (e, target, id, season = null, link = null,
 		jQuery(".tab-pane").removeClass("active show").addClass("fade");
 		jQuery(tabDataRef).removeClass("fade").addClass("active").show();
 	}
-	let url = new URL(window.location.href);
+	let url = new URL(globalThis.location.href);
 	let newURL = url.protocol + '//' + url.hostname + link;
 	jQuery(tabDataRef).html('');
 	jQuery(tabDataRef).load(
@@ -2084,8 +2144,13 @@ Racketmanager.get_event_team_match_dropdown = function (teamId) {
 }
 Racketmanager.teamEditModal = function (event, teamId, eventId) {
 	event.preventDefault();
-	let notifyField = "#teamModal";
-	let modal = 'teamModal';
+    let loadingModal = this.loadingModal;
+    jQuery(loadingModal).modal('show');
+    let modal = 'teamModal';
+    let notifyField = "#" + modal;
+    let errorField = "#rolesResponse";
+    let errorResponseField = errorField + 'Text';
+    jQuery(errorField).hide();
 	jQuery(notifyField).val("");
 	jQuery(notifyField).load(
 		ajax_var.url,
@@ -2096,10 +2161,17 @@ Racketmanager.teamEditModal = function (event, teamId, eventId) {
 			"action": "racketmanager_team_edit_modal",
 			"security": ajax_var.ajax_nonce,
 		},
-		function () {
-			jQuery(notifyField).show();
-			jQuery(notifyField).modal('show');
-		}
+        function (response, status) {
+            jQuery(loadingModal).modal('hide');
+            if ( 'error' === status ) {
+                let data = JSON.parse(response);
+                jQuery(errorResponseField).html(data.message);
+                jQuery(errorField).show();
+            } else {
+                jQuery(notifyField).show();
+                jQuery(notifyField).modal('show');
+            }
+        }
 	);
 };
 Racketmanager.show_set_team_button = function () {
@@ -2282,9 +2354,9 @@ Racketmanager.POModal = function (e, invoiceId) {
     let errorResponseField = errorField + 'Text';
     jQuery(errorField).hide();
 	let modal = 'POModal';
-	let notifyField = "#" + modal;
-	jQuery(notifyField).val("");
-	jQuery(notifyField).load(
+    let notifyField = "#" + modal;
+    jQuery(notifyField).val("");
+    jQuery(notifyField).load(
 		ajax_var.url,
 		{
 			"invoiceId": invoiceId,
@@ -2292,10 +2364,17 @@ Racketmanager.POModal = function (e, invoiceId) {
 			"action": "racketmanager_purchase_order_modal",
 			"security": ajax_var.ajax_nonce,
 		},
-		function () {
-			jQuery(notifyField).show();
-			jQuery(notifyField).modal('show');
-		}
+        function (response, status) {
+            jQuery(loadingModal).modal('hide');
+            if ( 'error' === status ) {
+                let data = JSON.parse(response);
+                jQuery(errorResponseField).html(data.message);
+                jQuery(errorField).show();
+            } else {
+                jQuery(notifyField).show();
+                jQuery(notifyField).modal('show');
+            }
+        }
 	);
 };
 Racketmanager.setPurchaseOrder = function (e, link) {

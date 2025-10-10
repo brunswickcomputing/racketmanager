@@ -912,6 +912,8 @@ class RacketManager {
         add_shortcode( 'clubs', array( $this->shortcodes_club, 'show_clubs' ) );
         add_shortcode( 'club', array( $this->shortcodes_club, 'show_club' ) );
         add_shortcode( 'club-players', array( $this->shortcodes_club, 'show_club_players' ) );
+        add_shortcode( 'club-roles', array( $this->shortcodes_club, 'show_club_roles' ) );
+        add_shortcode( 'club-role-modal', array( $this->shortcodes_club, 'show_club_role_modal' ) );
         add_shortcode( 'club-competitions', array( $this->shortcodes_club, 'show_club_competitions' ) );
         add_shortcode( 'club-event', array( $this->shortcodes_club, 'show_club_event' ) );
         add_shortcode( 'club-team', array( $this->shortcodes_club, 'show_club_team' ) );

@@ -235,6 +235,15 @@ if ( $standalone ) {
     <div class="module module--card">
         <div class="module__content">
             <div class="module-container">
+                <a href="/clubs/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/roles/">
+                    <h3 class="module__title"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></h3>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="module module--card">
+        <div class="module__content">
+            <div class="module-container">
                 <a href="/clubs/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/competitions/">
                     <h3 class="module__title"><?php esc_html_e( 'Competitions', 'racketmanager' ); ?></h3>
                 </a>

@@ -2212,8 +2212,75 @@ Racketmanager.getMessageFromResponse = function(response) {
 	}
 	return message;
 }
-Racketmanager.POModal = function (event, invoiceId) {
-	event.preventDefault();
+Racketmanager.clubRoleModal = function (e, clubRoleId) {
+    e.preventDefault();
+    let loadingModal = this.loadingModal;
+    jQuery(loadingModal).modal('show');
+    let modal = 'clubRoleModal';
+    let notifyField = "#" + modal;
+    let errorField = "#rolesResponse";
+    let errorResponseField = errorField + 'Text';
+    jQuery(errorField).hide();
+    jQuery(notifyField).val("");
+    jQuery(notifyField).load(
+        ajax_var.url,
+        {
+            "clubRoleId": clubRoleId,
+            "modal": modal,
+            "action": "racketmanager_club_role_modal",
+            "security": ajax_var.ajax_nonce,
+        },
+        function (response, status) {
+            jQuery(loadingModal).modal('hide');
+            if ( 'error' === status ) {
+                let data = JSON.parse(response);
+                jQuery(errorResponseField).html(data.message);
+                jQuery(errorField).show();
+            } else {
+                jQuery(notifyField).show();
+                jQuery(notifyField).modal('show');
+            }
+        }
+    );
+};
+Racketmanager.setClubRole = function (e, link) {
+    let formId = '#'.concat(link.form.id);
+    let $form = jQuery(formId).serialize();
+    $form += "&action=racketmanager_set_club_role";
+    let clubRoleAlert = '#clubRoleResponse';
+    let clubRoleResponse = '#clubRoleResponseText';
+    jQuery(clubRoleAlert).hide();
+    jQuery(clubRoleResponse).removeClass('alert--success alert--warning alert--danger');
+    jQuery(".is-invalid").removeClass("is-invalid");
+
+    jQuery.ajax({
+        url: ajax_var.url,
+        type: "POST",
+        data: $form,
+        success: function (response) {
+            let data = response.data;
+            let message = data.msg;
+            let msgStatus = data.status;
+            let alertClass = 'alert--' + msgStatus;
+            jQuery(clubRoleAlert).show();
+            jQuery(clubRoleAlert).addClass(alertClass);
+            jQuery(clubRoleResponse).html(message);
+        },
+        error: function (response) {
+            Racketmanager.handleAjaxError(response, clubRoleResponse, clubRoleAlert);
+            jQuery(clubRoleAlert).show();
+        },
+        complete: function () {
+        }
+    });
+}
+Racketmanager.POModal = function (e, invoiceId) {
+	e.preventDefault();
+    let loadingModal = this.loadingModal;
+    jQuery(loadingModal).modal('show');
+    let errorField = "#POUpdateResponse";
+    let errorResponseField = errorField + 'Text';
+    jQuery(errorField).hide();
 	let modal = 'POModal';
 	let notifyField = "#" + modal;
 	jQuery(notifyField).val("");

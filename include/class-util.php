@@ -832,9 +832,9 @@ class Util {
      * Get club role description function
      *
      * @param string|null $club_role role.
-     * @return object club_role info.
+     * @return object|bool club_role info.
      */
-    public static function get_club_role( ?string $club_role ): object {
+    public static function get_club_role( ?string $club_role ): object|bool {
         $club_roles = self::get_club_roles();
         return empty( $club_roles[ $club_role ] ) ? false : $club_roles[ $club_role ];
     }
@@ -849,7 +849,6 @@ class Util {
         $role       = 0;
         foreach ( $club_roles as $role => $details ) {
             if ( $club_role === $details->desc ) {
-                $found = true;
                 break;
             }
         }

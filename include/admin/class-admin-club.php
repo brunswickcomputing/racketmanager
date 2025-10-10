@@ -320,6 +320,7 @@ class Admin_Club extends Admin_Display {
      * Display teams page
      */
     public function display_teams_page(): void {
+        $club_id   = null;
         $validator = new Validator();
         $validator = $validator->capability( 'edit_teams' );
         if ( empty( $validator->error ) ) {
@@ -440,6 +441,7 @@ class Admin_Club extends Admin_Display {
      * Display roles page
      */
     public function display_roles_page(): void {
+        $club_id   = null;
         $validator = new Validator();
         $validator = $validator->capability( 'edit_teams' );
         if ( empty( $validator->error ) ) {

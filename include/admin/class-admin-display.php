@@ -317,18 +317,20 @@ class Admin_Display {
      * @param object $league league object.
      */
     private function delete_teams_from_league( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_teams-bulk' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'del_teams' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
             return;
         }
         if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-            if ( ! current_user_can( 'del_teams' ) ) {
-                $this->set_message( $this->no_permission, true );
-                return;
-            }
-            $league        = get_league( $league );
-            $season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-            $messages      = array();
+            $league   = get_league( $league );
+            $season   = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+            $messages = array();
             if ( isset( $_POST['team'] ) ) {
                 foreach ( $_POST['team'] as $team_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     $league->delete_team( intval( $team_id ), $season );
@@ -345,18 +347,20 @@ class Admin_Display {
      * @param object $league league object.
      */
     private function withdraw_teams_from_league( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_teams-bulk' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'del_teams' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
             return;
         }
         if ( isset( $_POST['action'] ) && 'withdraw' === $_POST['action'] ) {
-            if ( current_user_can( 'del_teams' ) ) {
-                $this->set_message( $this->no_permission, true );
-                return;
-            }
-            $league        = get_league( $league );
-            $season        = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-            $messages      = array();
+            $league   = get_league( $league );
+            $season   = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+            $messages = array();
             if ( isset( $_POST['team'] ) ) {
                 foreach ( $_POST['team'] as $team_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     $team = get_team( $team_id );
@@ -550,21 +554,25 @@ class Admin_Display {
      * @param object $league league object.
      */
     protected function league_add_teams( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-teams-bulk' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
-        } elseif ( current_user_can( 'edit_teams' ) ) {
-            if ( isset( $_POST['team'] ) && isset( $_POST['event_id'] ) && isset( $_POST['season'] ) ) {
-                $league = get_league( $league );
-                foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    $league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
-                    if ( is_numeric( $team_id ) ) {
-                        $team = get_team( $team_id );
-                        $team->set_event( intval( $_POST['event_id'] ) );
-                    }
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-teams-bulk' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'edit_teams' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['team'] ) && isset( $_POST['event_id'] ) && isset( $_POST['season'] ) ) {
+            $league = get_league( $league );
+            foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
+                if ( is_numeric( $team_id ) ) {
+                    $team = get_team( $team_id );
+                    $team->set_event( intval( $_POST['event_id'] ) );
                 }
             }
-        } else {
-            $this->set_message( $this->no_permission, true );
         }
     }
     public function rank_teams( object $league, $type ): void {
@@ -658,16 +666,20 @@ class Admin_Display {
      * @param object $league league object.
      */
     protected function manage_matches_in_league( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
-        } elseif ( current_user_can( 'edit_matches' ) ) {
-            if ( ! empty( $_POST['mode'] ) && 'add' === sanitize_text_field( wp_unslash( $_POST['mode'] ) ) ) {
-                $this->add_matches_to_league( $league );
-            } else {
-                $this->edit_matches_in_league( $league );
-            }
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-matches' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'edit_matches' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        if ( ! empty( $_POST['mode'] ) && 'add' === sanitize_text_field( wp_unslash( $_POST['mode'] ) ) ) {
+            $this->add_matches_to_league( $league );
         } else {
-            $this->set_message( $this->no_permission, true );
+            $this->edit_matches_in_league( $league );
         }
     }
 
@@ -678,9 +690,17 @@ class Admin_Display {
      * @param string|null $group group details.
      */
     protected function add_matches_to_league( object $league, string $group = null ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
-        } elseif ( isset( $_POST['match'] ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-matches' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'edit_matches' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['match'] ) ) {
             $league = get_league( $league );
             $season = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
             $final  = isset( $_POST['final'] ) ? sanitize_text_field( wp_unslash( $_POST['final'] ) ) : null;
@@ -742,9 +762,17 @@ class Admin_Display {
      * @param object $league league object.
      */
     protected function edit_matches_in_league( object $league ): void {
-        if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
-        } elseif ( isset( $_POST['match'] ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-matches' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'edit_matches' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['match'] ) ) {
             $num_matches = count( $_POST['match'] );
             $post_match  = wp_unslash( $_POST['match'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             foreach ( $post_match as $i => $match_id ) {
@@ -788,11 +816,17 @@ class Admin_Display {
      * @param object $competition competition object.
      */
     protected function delete_seasons_from_competition( object $competition ): void {
-        if ( ! current_user_can( 'del_seasons' ) ) {
-            $this->set_message( $this->no_permission, true );
-        } elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'seasons-bulk' ) ) {
-            $this->set_message( $this->invalid_security_token, true );
-        } elseif ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'seasons-bulk' );
+        if ( empty( $validator->error ) ) {
+            $validator = $validator->capability( 'del_matches' );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
+            $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) ) {
             $msg = array();
             foreach ( $_POST['del_season'] as $season ) {  //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 $update          = $competition->delete_season( $season );

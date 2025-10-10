@@ -79,7 +79,8 @@ class Ajax_Match extends Ajax {
     /**
      * Build screen to allow match status to be captured
      */
-    #[NoReturn] public function match_status_options(): void {
+    #[NoReturn]
+    public function match_status_options(): void {
         $output = null;
         $validator = new Validator_Match();
         $validator = $validator->check_security_token();
@@ -135,7 +136,8 @@ class Ajax_Match extends Ajax {
     /**
      * Build screen to match rubber status to be captured
      */
-    #[NoReturn] public function match_rubber_status_options(): void {
+    #[NoReturn]
+    public function match_rubber_status_options(): void {
         $output      = null;
         $error_field = 'score_status';
         $validator   = new Validator_Match();
@@ -286,7 +288,8 @@ class Ajax_Match extends Ajax {
     /**
      * Build screen to show selected match option
      */
-    #[NoReturn] public function show_match_option(): void {
+    #[NoReturn]
+    public function show_match_option(): void {
         $output  = null;
         $return  = $this->check_security_token();
         if ( empty( $return->error ) ) {

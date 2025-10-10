@@ -246,7 +246,8 @@ class Ajax_Tournament extends Ajax {
      *
      * @return void
      */
-    #[NoReturn] public function tournament_withdrawal(): void {
+    #[NoReturn]
+    public function tournament_withdrawal(): void {
         $output = null;
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {

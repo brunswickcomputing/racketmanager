@@ -670,7 +670,8 @@ class Shortcodes_Tournament extends Shortcodes {
      * @param array $atts function attributes.
      * @return string
      */
-    #[NoReturn] public function show_latest_tournament( array $atts ): string {
+    #[NoReturn]
+    public function show_latest_tournament( array $atts ): string {
 		global $racketmanager, $wp;
 		$args      = shortcode_atts(
 			array(

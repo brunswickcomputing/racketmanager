@@ -35,7 +35,8 @@ class Ajax_Finance extends Ajax {
     /**
      * Build screen to purchase order edit
      */
-    #[NoReturn] public function show_purchase_order_modal(): void {
+    #[NoReturn]
+    public function show_purchase_order_modal(): void {
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {
             $invoice_id = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;

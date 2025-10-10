@@ -164,7 +164,8 @@ class Ajax_Club extends Ajax {
     /**
      * Build screen to edit club role edit
      */
-    #[NoReturn] public function show_club_role_modal(): void {
+    #[NoReturn]
+    public function show_club_role_modal(): void {
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {
             $club_role_id = isset( $_POST['clubRoleId'] ) ? intval( $_POST['clubRoleId'] ) : null;

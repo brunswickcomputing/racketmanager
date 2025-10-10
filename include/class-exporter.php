@@ -71,7 +71,8 @@ class Exporter {
      *  days - defaults to 7
      *  competition
      */
-    #[NoReturn] public function results(): void {
+    #[NoReturn]
+    public function results(): void {
         global $racketmanager;
         // phpcs:disable WordPress.Security.NonceVerification.Recommended
         if ( isset( $_GET['club'] ) ) {
@@ -121,7 +122,8 @@ class Exporter {
      *  club
      *  days - defaults to 7
      */
-    #[NoReturn] public function fixtures(): void {
+    #[NoReturn]
+    public function fixtures(): void {
         global $racketmanager;
         $validator   = new Validator();
         $competition = null;
@@ -182,7 +184,8 @@ class Exporter {
      *  club
      *  days - defaults to 7
      */
-    #[NoReturn] public function standings(): void {
+    #[NoReturn]
+    public function standings(): void {
         $validator = new Validator();
         $event     = null;
         $season    = null;
@@ -283,7 +286,8 @@ class Exporter {
      * @param array $matches array of matches to download.
      * @param string $filename filename to be created.
      */
-    #[NoReturn] private function output_calendar(array $matches, string $filename ): void {
+    #[NoReturn]
+    private function output_calendar(array $matches, string $filename ): void {
         $contents  = "BEGIN:VCALENDAR\n";
         $contents .= "VERSION:2.0\n";
         $contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
@@ -312,7 +316,8 @@ class Exporter {
      * @param object $club club object.
      * @param array $matches array of matches to download.
      */
-    #[NoReturn] private function match_output( object $club, array $matches ): void {
+    #[NoReturn]
+    private function match_output( object $club, array $matches ): void {
         $contents = '[';
         $i        = 0;
         foreach ( $matches as $match ) {
@@ -375,7 +380,8 @@ class Exporter {
     /**
      * Report results
      */
-    #[NoReturn] public function report_results(): void {
+    #[NoReturn]
+    public function report_results(): void {
         global $racketmanager, $wpdb;
         $contents  = 'Tournament';
         $contents .= ',"Code"';

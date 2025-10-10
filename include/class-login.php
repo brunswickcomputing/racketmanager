@@ -248,7 +248,8 @@ class Login {
     /**
      * Redirect to custom login page after the user has been logged out.
      */
-    #[NoReturn] public function redirect_after_logout(): void {
+    #[NoReturn]
+    public function redirect_after_logout(): void {
         $redirect_url = home_url();
         wp_safe_redirect( $redirect_url );
         exit;
@@ -351,7 +352,8 @@ class Login {
      * Used through the action hook "login_form_register" activated on wp-login.php
      * when accessed through the registration action.
      */
-    #[NoReturn] public function do_register_user(): void {
+    #[NoReturn]
+    public function do_register_user(): void {
         $redirect_url = home_url( $this->register_link );
         if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' !== $_SERVER['REQUEST_METHOD'] ) {
             wp_safe_redirect( $redirect_url );

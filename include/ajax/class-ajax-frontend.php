@@ -556,7 +556,8 @@ class Ajax_Frontend extends Ajax {
 	 *
 	 * @return void
 	 */
-	#[NoReturn] public function search_players(): void {
+	#[NoReturn]
+    public function search_players(): void {
         $output = null;
 		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
@@ -579,7 +580,8 @@ class Ajax_Frontend extends Ajax {
 	 *
 	 * @return void
 	 */
-	#[NoReturn] public function tab_data(): void {
+	#[NoReturn]
+    public function tab_data(): void {
         $target = null;
         $output = null;
 		$return = $this->check_security_token();
@@ -661,7 +663,8 @@ class Ajax_Frontend extends Ajax {
 	 *
 	 * @return void
 	 */
-	#[NoReturn] public function show_team_order_players(): void {
+	#[NoReturn]
+    public function show_team_order_players(): void {
 		$return = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$club_id  = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : null;
@@ -847,7 +850,8 @@ class Ajax_Frontend extends Ajax {
 	/**
 	 * Build screen to show team edit
 	 */
-	#[NoReturn] public function show_team_edit_modal(): void {
+	#[NoReturn]
+    public function show_team_edit_modal(): void {
 		$return  = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
@@ -868,7 +872,8 @@ class Ajax_Frontend extends Ajax {
 	 *
 	 * @return void
 	 */
-	#[NoReturn] public function get_event_team_match_dropdown(): void {
+	#[NoReturn]
+    public function get_event_team_match_dropdown(): void {
 		$return  = $this->check_security_token();
 		if ( empty( $return->error ) ) {
 			$team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;

@@ -605,9 +605,7 @@ class RacketManager {
     public function notify_tournament_finalists( int $tournament_id ): void {
         if ( $tournament_id ) {
             $tournament = get_tournament( $tournament_id );
-            if ( $tournament ) {
-                $tournament->notify_finalists();
-            }
+            $tournament?->notify_finalists();
         }
     }
     /**

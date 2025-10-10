@@ -10,6 +10,7 @@ namespace Racketmanager;
 
 use NumberFormatter;
 use Racketmanager\ajax\Ajax_Account;
+use Racketmanager\ajax\Ajax_Club;
 use Racketmanager\ajax\Ajax_Finance;
 use Racketmanager\ajax\Ajax_Frontend;
 use Racketmanager\ajax\Ajax_Match;
@@ -106,6 +107,7 @@ class RacketManager {
     public ?NumberFormatter $currency_fmt;
     public object $ajax;
     public object $ajax_account;
+    public object $ajax_club;
     public object $ajax_finance;
     public object $ajax_frontend;
     public object $ajax_match;
@@ -122,6 +124,7 @@ class RacketManager {
     public object $shortcodes_message;
     public object $shortcodes_tournament;
     public object $rewrites;
+
     /**
      * Constructor
      *
@@ -830,6 +833,7 @@ class RacketManager {
         // Global libraries.
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-account.php';
+        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-club.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-frontend.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-finance.php';
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-match.php';
@@ -871,6 +875,7 @@ class RacketManager {
      */
     public function init_components(): void {
         $this->ajax_account             = new Ajax_Account();
+        $this->ajax_club                = new Ajax_Club();
         $this->ajax_finance             = new Ajax_Finance();
         $this->ajax_frontend            = new Ajax_Frontend();
         $this->ajax_match               = new Ajax_Match();

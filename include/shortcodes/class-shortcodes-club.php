@@ -12,6 +12,7 @@ namespace Racketmanager\shortcodes;
 use Racketmanager\Util;
 use stdClass;
 use function Racketmanager\get_club;
+use function Racketmanager\get_club_role;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_invoice;
@@ -577,6 +578,83 @@ class Shortcodes_Club extends Shortcodes {
             );
         } else {
             $msg = __( 'Event team not found', 'racketmanager' );
+        }
+        return $this->return_error( $msg, 'modal' );
+    }
+    /**
+     * Function to display Club Roles
+     *
+     *  [club-roles template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_roles( array $atts ): string {
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
+        $filename = ( ! empty( $template ) ) ? 'roles-' . $template : 'roles';
+        // Get Club by Name.
+        $club_name = get_query_var( 'club_name' );
+        $club_name = un_seo_url( $club_name );
+        $club      = get_club( $club_name, 'shortcode' );
+        if ( $club ) {
+            return $this->load_template(
+                $filename,
+                array(
+                    'club' => $club,
+                ),
+                'club'
+            );
+        } else {
+            $msg = $this->club_not_found;
+        }
+        return $this->return_error( $msg );
+    }
+    /**
+     * Function to display Club Invoices
+     *
+     *  [team-edit id=team_ID template=X]
+     *
+     * @param array $atts shortcode attributes.
+     *
+     * @return string - the content
+     */
+    public function show_club_role_modal( array $atts ): string {
+        $args          = shortcode_atts(
+            array(
+                'id'       => 0,
+                'modal'    => null,
+                'template' => '',
+            ),
+            $atts
+        );
+        $club_role_id  = $args['id'];
+        $modal         = $args['modal'];
+        $template      = $args['template'];
+        $filename      = ( ! empty( $template ) ) ? 'club-role-modal-' . $template : 'club-role-modal';
+        $club_role     = null;
+        if ( $club_role_id ) {
+            $club_role = get_club_role( $club_role_id );
+        } else {
+            $msg = __( 'Club role not found', 'racketmanager' );
+        }
+        if ( empty( $msg ) ) {
+            $club_roles = Util::get_club_roles();
+            return $this->load_template(
+                $filename,
+                array(
+                    'club_role'  => $club_role,
+                    'modal'      => $modal,
+                    'club_roles' => $club_roles,
+                ),
+                'club'
+            );
         }
         return $this->return_error( $msg, 'modal' );
     }

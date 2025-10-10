@@ -28,24 +28,6 @@ final class Club {
      */
     public ?object $match_secretary;
     /**
-     * Match secretary contact name
-     *
-     * @var string
-     */
-    public string $match_secretary_name;
-    /**
-     * Match secretary contact email
-     *
-     * @var string
-     */
-    public string $match_secretary_email;
-    /**
-     * Match secretary contact number
-     *
-     * @var string
-     */
-    public mixed $match_secretary_contact_no;
-    /**
      * Description
      *
      * @var string
@@ -307,7 +289,7 @@ final class Club {
                 $this->add();
             }
             $this->roles           = $this->get_club_roles();
-            $this->match_secretary = $this->roles['1'][0] ?? new \stdClass();
+            $this->match_secretary = $this->roles['1'][0]->user ?? new stdClass();
             $this->desc = '';
             $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
         }
@@ -439,25 +421,45 @@ final class Club {
      *
      * @return void
      */
-    private function set_club_role( int $role, int $player_id ): void {
+    public function set_club_role( int $role, int $player_id ): void {
         global $wpdb;
-        $club_roles = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT `id` FROM $wpdb->racketmanager_club_roles WHERE `club_id` = %d AND `role_id` = %d",
-                $this->id,
-                intval( $role )
-            )
-        );
-        if ( $club_roles ) {
-            $club_role = get_club_role( $club_roles[0]->id );
-            $club_role?->update( $player_id );
-        } else {
-            $club_role          = new stdClass();
-            $club_role->club_id = $this->id;
-            $club_role->role_id = $role;
-            $club_role->user_id = $player_id;
-            new Club_Role( $club_role );
+        $role_details = Util::get_club_role( $role );
+        if ( $role_details ) {
+            if ( 1 === $role_details->limit ) {
+                $club_roles = $wpdb->get_results(
+                    $wpdb->prepare(
+                        "SELECT `id` FROM $wpdb->racketmanager_club_roles WHERE `club_id` = %d AND `role_id` = %d",
+                        $this->id,
+                        $role
+                    )
+                );
+                if ( $club_roles ) {
+                    $club_role = get_club_role( $club_roles[0]->id );
+                    $club_role?->update( $player_id );
+                } else {
+                    $this->add_club_role( $role, $player_id );
+                }
+            } else {
+                $this->add_club_role( $role, $player_id );
+            }
         }
+        wp_cache_flush_group( 'club-roles' );
+    }
+
+    /**
+     * Function to add club role
+     *
+     * @param int $role
+     * @param int $player_id
+     *
+     * @return void
+     */
+    private function add_club_role( int $role, int $player_id ): void {
+        $club_role          = new stdClass();
+        $club_role->club_id = $this->id;
+        $club_role->role_id = $role;
+        $club_role->user_id = $player_id;
+        new Club_Role( $club_role );
     }
     /**
      * Delete Club
@@ -740,7 +742,7 @@ final class Club {
      * @param array $args query arguments.
      * @return array|int
      */
-    public function get_players( array $args ): array|int {
+    public function get_players( array $args = array() ): array|int {
         global $wpdb;
         $defaults   = array(
             'count'      => false,
@@ -1046,7 +1048,7 @@ final class Club {
             $cup_entry['matchtime']    = $event_entry->match_time;
             $cup_entries[]             = $cup_entry;
         }
-        $email_to        = $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
+        $email_to        = $this->match_secretary->display_name . ' <' . $this->match_secretary->email . '>';
         $email_from      = $racketmanager->get_confirmation_email( 'cup' );
         $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __('Entry', 'racketmanager' ) . ' - ' . $this->shortcode;
         $headers         = array();
@@ -1119,7 +1121,7 @@ final class Club {
         }
         $competition->settings['num_courts_available'][ $this->id ] = $club_entry->num_courts_available;
         $competition->set_settings( $competition->settings );
-        $email_to        = $this->match_secretary_name . ' <' . $this->match_secretary_email . '>';
+        $email_to        = $this->match_secretary->display_name . ' <' . $this->match_secretary->email . '>';
         $email_from      = $racketmanager->get_confirmation_email( 'league' );
         $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $this->shortcode;
         $headers         = array();
@@ -1197,13 +1199,13 @@ final class Club {
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $sql
             ); // db call ok.
-            foreach ( $roles as $i => $club_role_ref ) {
+            foreach ( $roles as $club_role_ref ) {
                 $club_role = get_club_role( $club_role_ref->id );
                 if ( $club_role ) {
                     if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
                         $club_roles[ $club_role->role_id ] = array();
                     }
-                    $club_roles[ $club_role->role_id ][] = $club_role->user;
+                    $club_roles[ $club_role->role_id ][] = $club_role;
                 }
             }
             wp_cache_set( md5( $sql ), $club_roles, 'club-roles' );

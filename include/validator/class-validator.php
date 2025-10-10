@@ -318,19 +318,20 @@ class Validator {
      * Validate club
      *
      * @param string|null $club_id club.
+     * @param string $error_field error field.
      *
      * @return object $validation updated validation object.
      */
-    public function club( ?string $club_id ): object {
+    public function club( ?string $club_id, string $error_field = 'club' ): object {
         if ( empty( $club_id ) ) {
             $this->error      = true;
-            $this->err_flds[] = 'club';
+            $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Club not found', 'racketmanager' );
         } else {
             $club = get_club( $club_id );
             if ( ! $club ) {
                 $this->error      = true;
-                $this->err_flds[] = 'club';
+                $this->err_flds[] = $error_field;
                 $this->err_msgs[] = __( 'Club not found', 'racketmanager' );
             }
         }

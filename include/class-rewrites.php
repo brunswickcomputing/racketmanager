@@ -255,10 +255,10 @@ class Rewrites {
             'index.php?pagename=clubs%2Fclub%2Fcompetitions&club_name=$matches[1]',
             'top'
         );
-        // club player.
+        // club - roles.
         add_rewrite_rule(
-            'clubs/(.+?)/(.+?)/?$',
-            'index.php?pagename=clubs%2Fclub%2Fplayer&club_name=$matches[1]&player_id=$matches[2]',
+            'clubs/(.+?)/roles/?$',
+            'index.php?pagename=clubs%2Fclub%2Froles&club_name=$matches[1]',
             'top'
         );
         // club.

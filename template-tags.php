@@ -1180,3 +1180,20 @@ function withdrawn_team_email( array $args = array() ): string {
         $shortcode .= ']';
         return do_shortcode( $shortcode );
     }
+    /**
+     * Display club role modal
+     *
+     * @param int $club_role_id club role.
+     * @param array $args additional arguments as associative array (optional).
+     *
+     * @category template-tags
+     */
+    function show_club_role_modal( int $club_role_id, array $args = array() ): string {
+        $args['id'] = $club_role_id;
+        $shortcode  = '[club-role-modal';
+        foreach ( $args as $key => $value ) {
+            $shortcode .= ' ' . $key . "='" . $value . "'";
+        }
+        $shortcode .= ']';
+        return do_shortcode( $shortcode );
+    }

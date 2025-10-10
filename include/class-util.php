@@ -823,18 +823,18 @@ class Util {
      */
     public static function get_club_roles(): array {
         $club_roles      = array();
-        $club_roles['1'] = __( 'Match secretary', 'racketmanager' );
-        $club_roles['2'] = __( 'Coach', 'racketmanager' );
-        $club_roles['3'] = __( 'Treasurer', 'racketmanager' );
+        $club_roles['1'] = (object) [ 'desc' => __( 'Match secretary', 'racketmanager' ), 'limit' => 1 ];
+        $club_roles['2'] = (object) [ 'desc' => __( 'Coach', 'racketmanager' ), 'limit' => null ];
+        $club_roles['3'] = (object) [ 'desc' => __( 'Treasurer', 'racketmanager' ), 'limit' => 1 ];
         return $club_roles;
     }
     /**
      * Get club role description function
      *
      * @param string|null $club_role role.
-     * @return string club_role text
+     * @return object club_role info.
      */
-    public static function get_club_role( ?string $club_role ): string {
+    public static function get_club_role( ?string $club_role ): object {
         $club_roles = self::get_club_roles();
         return empty( $club_roles[ $club_role ] ) ? false : $club_roles[ $club_role ];
     }
@@ -846,11 +846,14 @@ class Util {
      */
     public static function get_club_role_ref( string $club_role ): int {
         $club_roles = self::get_club_roles();
-        $role_ref   = array_search( $club_role, $club_roles, true );
-        if ( false === $role_ref ) {
-            $role_ref = 0;
+        $role       = 0;
+        foreach ( $club_roles as $role => $details ) {
+            if ( $club_role === $details->desc ) {
+                $found = true;
+                break;
+            }
         }
-        return intval( $role_ref );
+        return intval( $role );
     }
     /**
      * Amend date function

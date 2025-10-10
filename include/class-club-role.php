@@ -40,9 +40,9 @@ final class Club_Role {
     /**
      * Role
      *
-     * @var string
+     * @var object
      */
-    public string $role;
+    public object $role;
     /**
      * Club
      *
@@ -65,7 +65,7 @@ final class Club_Role {
         if ( ! $club_role_id ) {
             return false;
         }
-        $club_role = wp_cache_get( $club_role_id, 'club_roles' );
+        $club_role = wp_cache_get( $club_role_id, 'club-roles' );
         if ( ! $club_role ) {
             $club_role = $wpdb->get_row(
                 $wpdb->prepare(
@@ -77,7 +77,7 @@ final class Club_Role {
                 return false;
             }
             $club_role = new Club_Role( $club_role );
-            wp_cache_set( $club_role_id, $club_role, 'club_roles' );
+            wp_cache_set( $club_role_id, $club_role, 'club-roles' );
         }
         return $club_role;
     }
@@ -123,20 +123,32 @@ final class Club_Role {
         );
         $this->id = $wpdb->insert_id;
     }
+
     /**
      * Update Club Role
+     *
+     * @param int $user_id userid.
+     *
+     * @return bool
      */
-    public function update( int $user_id ): void {
+    public function update( int $user_id ): bool {
         global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_club_roles SET `user_id` = %d WHERE `id` = %d",
-                $user_id,
-                $this->id
-            )
-        );
-        $this->user_id = $user_id;
-        wp_cache_set( $this->id, 'club_roles' );
+        if ( $user_id !== $this->user_id ) {
+            $this->user_id = $user_id;
+            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    "UPDATE $wpdb->racketmanager_club_roles SET `user_id` = %d WHERE `id` = %d",
+                    $user_id,
+                    $this->id
+                )
+            );
+            wp_cache_set( $this->id, 'club-roles' );
+            wp_cache_flush_group( 'club-roles' );
+            $updates = true;
+        } else {
+            $updates = false;
+        }
+        return $updates;
     }
     /**
      * Delete Club Role
@@ -149,6 +161,7 @@ final class Club_Role {
                 $this->id
             )
         );
-        wp_cache_delete( $this->id, 'club_roles' );
+        wp_cache_delete( $this->id, 'club-roles' );
+        wp_cache_flush_group( 'club-roles' );
     }
 }

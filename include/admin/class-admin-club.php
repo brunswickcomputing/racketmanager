@@ -9,12 +9,14 @@
 
 namespace Racketmanager\admin;
 
+use Racketmanager\validator\Validator;
 use Racketmanager\validator\Validator_Club;
 use Racketmanager\Club;
 use Racketmanager\Util;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;
+use function Racketmanager\get_club_role;
 use function Racketmanager\get_league;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
@@ -47,6 +49,8 @@ class Admin_Club extends Admin_Display {
             $this->display_club_players_page();
         } elseif ( 'player' === $view ) {
             $this->admin_players->display_player_page();
+        } elseif ( 'roles' === $view ) {
+            $this->display_roles_page();
         } else {
             $this->display_clubs_page();
         }
@@ -316,57 +320,60 @@ class Admin_Club extends Admin_Display {
      * Display teams page
      */
     public function display_teams_page(): void {
-        $club_id = null;
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
-            $this->show_message();
-        } else {
-            if ( isset( $_POST['addTeam'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-team' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                } elseif ( isset( $_POST['club'] ) && isset( $_POST['team_type'] ) ) {
-                    $club = get_club( intval( $_POST['club'] ) );
-                    $club->add_team( sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
-                    $this->set_message( __( 'Team added', 'racketmanager' ) );
-                }
-            } elseif ( isset( $_POST['editTeam'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                } elseif ( isset( $_POST['team_id'] ) ) {
-                    $team = get_team( intval( $_POST['team_id'] ) );
-                    if ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
-                        $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
-                        $this->set_message( __( 'Team updated', 'racketmanager' ) );
-                    }
-                }
-            } elseif ( isset( $_POST['doTeamDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-                if ( ! current_user_can( 'del_teams' ) ) {
-                    $this->set_message( $this->no_permission, true );
-                } elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                } elseif ( isset( $_POST['team'] ) ) {
-                    $messages = array();
-                    foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $team = get_team( $team_id );
-                        $team->delete();
-                        $messages[] = $team->title . ' ' . __( 'deleted', 'racketmanager' );
-                    }
-                    $message = implode( '<br>', $messages );
-                    $this->set_message( $message );
-                }
-            }
-            $this->show_message();
-            if ( isset( $_GET['club_id'] ) ) {
-                $club_id = intval( $_GET['club_id'] );
-            }
-            $club = get_club( $club_id );
-            if ( $club ) {
-                $teams = $club->get_teams();
-                require_once RACKETMANAGER_PATH . '/admin/club/show-teams.php';
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_teams' );
+        if ( empty( $validator->error ) ) {
+            $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
+            $validator = $validator->club( $club_id );
+        }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $msg = $validator->err_msgs[0];
             } else {
-                $this->set_message( __( 'Club not found', 'racketmanager' ), true );
+                $msg = $validator->msg;
+            }
+            $this->set_message( $msg, true );
+            $this->show_message();
+            return;
+        }
+        $club = get_club( $club_id );
+        if ( isset( $_POST['addTeam'] ) ) {
+            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-team' ) ) {
+                $this->set_message( $this->invalid_security_token, true );
+            } elseif ( isset( $_POST['club'] ) && isset( $_POST['team_type'] ) ) {
+                $club = get_club( intval( $_POST['club'] ) );
+                $club->add_team( sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
+                $this->set_message( __( 'Team added', 'racketmanager' ) );
+            }
+        } elseif ( isset( $_POST['editTeam'] ) ) {
+            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {
+                $this->set_message( $this->invalid_security_token, true );
+            } elseif ( isset( $_POST['team_id'] ) ) {
+                $team = get_team( intval( $_POST['team_id'] ) );
+                if ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
+                    $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
+                    $this->set_message( __( 'Team updated', 'racketmanager' ) );
+                }
+            }
+        } elseif ( isset( $_POST['doTeamDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+            if ( ! current_user_can( 'del_teams' ) ) {
+                $this->set_message( $this->no_permission, true );
+            } elseif ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_teams-bulk' ) ) {
+                $this->set_message( $this->invalid_security_token, true );
+            } elseif ( isset( $_POST['team'] ) ) {
+                $messages = array();
+                foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                    $team = get_team( $team_id );
+                    $team->delete();
+                    $messages[] = $team->title . ' ' . __( 'deleted', 'racketmanager' );
+                }
+                $message = implode( '<br>', $messages );
+                $this->set_message( $message );
             }
         }
+        $this->show_message();
+        $teams = $club->get_teams();
+        require_once RACKETMANAGER_PATH . '/admin/club/show-teams.php';
     }
 
     /**
@@ -428,5 +435,63 @@ class Admin_Club extends Admin_Display {
                 $this->show_message();
             }
         }
+    }
+    /**
+     * Display roles page
+     */
+    public function display_roles_page(): void {
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_teams' );
+        if ( empty( $validator->error ) ) {
+            $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
+            $validator = $validator->club( $club_id );
+        }
+        if ( ! empty( $validator->error ) ) {
+            if ( empty( $validator->msg ) ) {
+                $msg = $validator->err_msgs[0];
+            } else {
+                $msg = $validator->msg;
+            }
+            $this->set_message( $msg, true );
+            $this->show_message();
+            return;
+        }
+        $club = get_club( $club_id );
+        if ( isset( $_POST['addRole'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-club-role' );
+            if ( empty( $validator->error ) ) {
+                $club_id_passed = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
+                $role_id        = isset( $_POST['role_id'] ) ? intval( $_POST['role_id'] ) : null;
+                $user_id        = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : null;
+                if ( $club_id_passed && $role_id && $user_id ) {
+                    $club->set_club_role( $role_id, $user_id );
+                }
+                $this->set_message( __( 'Role added', 'racketmanager' ) );
+            } else {
+                $this->set_message( $validator->msg, true );
+            }
+        } elseif ( isset( $_POST['delRole'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+            $validator = $validator->capability( 'del_teams' );
+            if ( empty( $validator->error ) ) {
+                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_roles-bulk' );
+            }
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } else {
+                if ( isset( $_POST['role'] ) ) {
+                    $messages = array();
+                    foreach ( $_POST['role'] as $role_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                        $role = get_club_role( $role_id );
+                        $role->delete();
+                        $messages[] = $role->role . ' ' . __( 'deleted', 'racketmanager' );
+                    }
+                    $message = implode( '<br>', $messages );
+                    $this->set_message( $message );
+                }
+            }
+        }
+        $this->show_message();
+        $roles = $club->get_club_roles();
+        require_once RACKETMANAGER_PATH . '/admin/club/show-roles.php';
     }
 }

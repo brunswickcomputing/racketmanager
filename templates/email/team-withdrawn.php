@@ -12,7 +12,7 @@ namespace Racketmanager;
 /** @var string $paragraph */
 /** @var string $contact */
 /** @var string $closing */
-require_once 'email-header.php';
+require 'email-header.php';
 $paragraph_text = __( 'Dear Captain', 'racketmanager' );
 require $paragraph;
 /* translators: %1$s: team name %2$s: league name */
@@ -29,4 +29,4 @@ if ( ! empty( $email_from ) ) {
     require $contact;
 }
 require $closing;
-require_once 'email-footer.php';
+require 'email-footer.php';

@@ -90,7 +90,7 @@ class Ajax_Tournament extends Ajax {
                 $validator     = $validator->email( $contactemail, $player_id );
                 $validator     = $validator->btm( $btm, $player_id );
                 $club_id       = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
-                $validator     = $validator->club( $club_id );
+                $validator     = $validator->club_membership( $club_id );
                 // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 $events            = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
                 $partners          = isset( $_POST['partnerId'] ) ? wp_unslash( $_POST['partnerId'] ) : array();

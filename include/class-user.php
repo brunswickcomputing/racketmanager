@@ -220,6 +220,10 @@ final class User {
     public array $err_msgs;
     public string $password;
     public string $re_password;
+    public string $status;
+    public int $entry_id;
+    public ?object $club;
+    public string $index;
 
     /**
      * Retrieve user instance

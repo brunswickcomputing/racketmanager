@@ -9,10 +9,9 @@
 
 namespace Racketmanager\admin;
 
+use Racketmanager\Club;
 use Racketmanager\validator\Validator;
 use Racketmanager\validator\Validator_Club;
-use Racketmanager\Club;
-use Racketmanager\Util;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;
@@ -394,7 +393,7 @@ class Admin_Club extends Admin_Display {
                 $league_id  = intval( $_GET['league_id'] );
                 $league     = get_league( $league_id );
                 $season     = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
-                $match_days = Util::get_match_days();
+                $match_days = Util_Lookup::get_match_days();
                 if ( $league->event->competition->is_player_entry ) {
                     $file = 'player-team.php';
                 }

@@ -13,6 +13,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $object */
 global $racketmanager;
 $envelope           = RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill';
@@ -42,7 +44,7 @@ $display_opt = $racketmanager->get_options( 'display' );
 if ( ! empty( $display_opt['wtn'] ) ) {
     $help_text   = __( 'World Tennis Number', 'racketmanager');
     $format      = substr( $object_event->type, 1, 1 );
-    $format_type = Util::get_match_type( $format );
+    $format_type = Util_Lookup::get_match_type( $format );
     if ( $format_type ) {
         $help_text = $format_type . ' ' . $help_text;
     }
@@ -94,7 +96,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     <div class="module__banner">
                         <h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
-                            <button href="<?php echo esc_attr( $standings_link ); ?>" class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
+                            <button class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
                                 <i class="racketmanager-svg-icon">
                                     <?php racketmanager_the_svg( 'icon-table' ); ?>
                                 </i>
@@ -190,7 +192,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     if ( $user_can_edit_team ) {
                         ?>
                         <div class="module__aside">
-                            <button class="btn btn--link" href="" id="teamEditLink" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
+                            <button class="btn btn--link" id="teamEditLink" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
                                 <svg width="16" height="16" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>

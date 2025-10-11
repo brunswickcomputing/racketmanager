@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 
 /**
@@ -535,7 +537,7 @@ final class Team {
         if ( is_null( $matchday) ) {
             $match_day = '';
         } else {
-            $match_day = Util::get_match_day( $matchday );
+            $match_day = Util_Lookup::get_match_day( $matchday );
         }
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
@@ -573,7 +575,7 @@ final class Team {
         if ( is_null( $matchday) ) {
             $match_day = '';
         } else {
-            $match_day = Util::get_match_day( $matchday );
+            $match_day = Util_Lookup::get_match_day( $matchday );
         }
         $event   = get_event( $event_id );
         $current = $event->get_team_info( $this->id );

@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+
 defined( 'ABSPATH' ) || die( 'Access denied !' );
 /**
  * Class for tasks to do during plugin activation and deactivation phases

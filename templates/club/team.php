@@ -8,9 +8,11 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $club */
 /** @var bool   $user_can_update */
-$match_days   = Util::get_match_days();
+$match_days   = Util_Lookup::get_match_days();
 $header_level = 1;
 require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 $team  = $club->team;

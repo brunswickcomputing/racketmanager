@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $player */
 /** @var array $error_fields */
 /** @var string $page_referrer */
@@ -125,7 +127,7 @@ $is_invalid = false;
                         $msg        = $error_messages[$msg_id] ?? null;
                     }
                     ?>
-                    <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="year_of_birth" id="year_of_birth" placeholder="<?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?>">
+                    <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="year_of_birth" id="year_of_birth">
                         <option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
                         <?php
                         $current_year = gmdate( 'Y' );
@@ -154,7 +156,7 @@ $is_invalid = false;
     </fieldset>
     <?php
     if ( isset( $player->wtn ) ) {
-        $match_types = Util::get_match_types();
+        $match_types = Util_Lookup::get_match_types();
         ?>
         <fieldset class="form-control mb-3">
             <legend><?php esc_html_e( 'Ratings', 'racketmanager' ); ?></legend>

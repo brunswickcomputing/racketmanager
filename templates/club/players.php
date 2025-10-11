@@ -13,6 +13,9 @@
 namespace Racketmanager;
 
 global $racketmanager;
+
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $club */
 /** @var bool   $user_can_update */
 $display_opt = $racketmanager->get_options( 'display' );
@@ -174,7 +177,7 @@ if ( empty( $club->player ) ) {
                                                     } else {
                                                         $rating = $club_player->wtn;
                                                     }
-                                                    $match_types    = Util::get_match_types();
+                                                    $match_types    = Util_Lookup::get_match_types();
                                                     $rating_display = '';
                                                     foreach ( $match_types as $match_type => $description ) {
                                                         if ( ! empty( $rating_display ) ) {

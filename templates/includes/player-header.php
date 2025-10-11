@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 global $racketmanager;
+
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $player */
 if ( empty( $is_page_header ) ) {
     $is_page_header = false;
@@ -97,7 +100,7 @@ if ( empty( $is_page_header ) ) {
                             <?php
                             $rating      = $player->wtn;
                             $help_text   = __( 'World Tennis Number for', 'racketmanager');
-                            $match_types = Util::get_match_types();
+                            $match_types = Util_Lookup::get_match_types();
                             foreach ( $match_types as $match_type => $description ) {
                                 ?>
                                 <li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php printf( esc_html( $help_text . ' ' . $description ) ); ?>">

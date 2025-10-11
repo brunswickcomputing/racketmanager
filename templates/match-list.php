@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 global $racketmanager;
+
+use Racketmanager\util\Util;
+
 /** @var object $league */
 /** @var string $season */
 /** @var string $home_team */

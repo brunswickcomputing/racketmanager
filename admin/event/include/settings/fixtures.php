@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var bool   $is_invalid */
 /** @var string $msg */
 /** @var object $competition */
@@ -20,7 +22,7 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <?php
                 $is_invalid = false;
-                $match_days = Util::get_match_days();
+                $match_days = Util_Lookup::get_match_days();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'fixed_match_dates', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;

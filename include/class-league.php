@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function get_query_var;
 
@@ -869,7 +871,7 @@ class League {
         foreach ( $matches as $match ) {
             $match = get_match( $match );
             if ( $match ) {
-                $status = empty( $match->status ) ? null : Util::get_match_status( $match->status );
+                $status = empty( $match->status ) ? null : Util_Lookup::get_match_status( $match->status );
                 if ( 'Withdrawn' !== $status ) {
                     if ( $this->is_championship ) {
                         if ( intval( $match->home_team ) === $team_id ) {
@@ -885,7 +887,7 @@ class League {
                         $match_confirmed = 'Y';
                         $home_team_score = 0;
                         $away_team_score = 0;
-                        $status          = Util::get_match_status_code( 'cancelled' );
+                        $status          = Util_Lookup::get_match_status_code( 'cancelled' );
                         $match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
                         $match->update_league_with_result();
                     }
@@ -1885,7 +1887,7 @@ class League {
             $status_code = $status['status_code'] ?? null;
             $compare     = $status['compare'] ?? null;
             if ( $status_code ) {
-                $status_value = Util::get_match_status_code( $status_code );
+                $status_value = Util_Lookup::get_match_status_code( $status_code );
                 if ( $status_value ) {
                     if ( 'not' === $compare ) {
                         $sql   .= ' AND m.`status` != %d';
@@ -2944,7 +2946,6 @@ class League {
      * Schedule matches
      */
     public function schedule_matches(): void {
-        global $racketmanager;
         $season         = $this->get_season();
         $schedule_teams = $this->get_league_teams(
             array(
@@ -3074,7 +3075,7 @@ class League {
                     } else {
                         $match_day        = $home_team_dtls->match_day;
                         $match_time       = $home_team_dtls->match_time;
-                        $day              = Util::get_match_day_number( $match_day );
+                        $day              = Util_Lookup::get_match_day_number( $match_day );
                         $match_date       = Util::amend_date( $start_date, $day );
                         $match->date      = $match_date . ' ' . $match_time;
                         $match->match_day = $round_number;

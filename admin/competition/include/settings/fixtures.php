@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var bool   $is_invalid */
 /** @var string $msg */
 /** @var object $competition */
@@ -16,6 +18,8 @@ $tab_name = 'fixtures';
     <div class="row gx-3 mb-3">
         <div class="col-md-3 mb-3 mb-md-0">
             <?php
+            $is_invalid = false;
+            $msg        = null;
             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'fixed_match_dates', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
@@ -37,8 +41,6 @@ $tab_name = 'fixtures';
                 ?>
                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                 <?php
-                $is_invalid = false;
-                $msg        = null;
             }
             ?>
         </div>
@@ -51,6 +53,8 @@ $tab_name = 'fixtures';
                 $home_away_desc_true  = __( 'Two legs', 'racketmanager' );
                 $home_away_desc_false = __( 'Single leg', 'racketmanager' );
             }
+            $is_invalid = false;
+            $msg        = null;
             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'home_away', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
@@ -72,8 +76,6 @@ $tab_name = 'fixtures';
                 ?>
                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                 <?php
-                $is_invalid = false;
-                $msg        = null;
             }
             ?>
         </div>
@@ -83,6 +85,8 @@ $tab_name = 'fixtures';
             <legend class=""><?php esc_html_e( 'Round', 'racketmanager' ); ?></legend>
             <div class="form-floating">
                 <?php
+                $is_invalid = false;
+                $msg        = null;
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'round_length', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -97,8 +101,6 @@ $tab_name = 'fixtures';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -110,6 +112,8 @@ $tab_name = 'fixtures';
                 <legend class=""><?php esc_html_e( 'Reverse fixture gap', 'racketmanager' ); ?></legend>
                 <div class="form-floating mb-3">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'home_away_diff', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'home_away_diff', $validator->err_flds, true );
@@ -123,8 +127,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -139,6 +141,8 @@ $tab_name = 'fixtures';
                 <legend class=""><?php esc_html_e( 'Filler', 'racketmanager' ); ?></legend>
                 <div class="form-floating mb-3">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'filler_weeks', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'filler_weeks', $validator->err_flds, true );
@@ -152,8 +156,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -169,6 +171,8 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <legend class=""><?php esc_html_e( 'Match days', 'racketmanager' ); ?></legend>
                 <?php
+                $is_invalid = false;
+                $msg        = null;
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'match_day_restriction', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -184,12 +188,12 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
                 <?php
+                $is_invalid = false;
+                $msg        = null;
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'match_day_weekends', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -205,15 +209,15 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
             </div>
             <div class="col-md-3 mb-3 mb-md-0">
                 <?php
-                $match_days = Util::get_match_days();
+                $is_invalid = false;
+                $msg        = null;
+                $match_days = Util_Lookup::get_match_days();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'fixed_match_dates', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -237,8 +241,6 @@ $tab_name = 'fixtures';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -254,6 +256,8 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( isset( $competition->config->default_match_start_time ) ) {
                         if ( is_array( $competition->config->default_match_start_time ) ) {
                             $default_start_time = $competition->config->default_match_start_time['hour'] . ':' . $competition->config->default_match_start_time['minutes'];
@@ -277,8 +281,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -288,6 +290,8 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'min_start_time_weekday', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -302,8 +306,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -311,6 +313,8 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'max_start_time_weekday', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -325,8 +329,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -336,6 +338,8 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'min_start_time_weekend', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -350,8 +354,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -359,6 +361,8 @@ $tab_name = 'fixtures';
             <div class="col-md-3 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'max_start_time_weekend', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -373,8 +377,6 @@ $tab_name = 'fixtures';
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>

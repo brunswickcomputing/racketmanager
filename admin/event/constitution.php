@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var int $event_id */
 if ( empty( $event->is_box ) && empty( $seasons ) ) {
     ?>
@@ -54,7 +56,7 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
         $constitution_exists = false;
     }
     $leagues         = $event->get_leagues();
-    $standing_status = Util::get_standing_statuses();
+    $standing_status = Util_Lookup::get_standing_statuses();
     ?>
     <h2 class="header"><?php esc_html_e( 'Constitution', 'racketmanager' ); ?> - <?php echo esc_html( $latest_season ); ?></h2>
     <form id="teams-filter" method="post" action="">

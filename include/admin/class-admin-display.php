@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use Racketmanager\validator\Validator;
 use stdClass;
 use function Racketmanager\get_club;

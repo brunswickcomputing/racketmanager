@@ -11,7 +11,7 @@
 namespace Racketmanager\shortcodes;
 
 use Racketmanager\Stripe_Settings;
-use Racketmanager\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_club;
@@ -489,7 +489,7 @@ class Shortcodes_Competition extends Shortcodes {
 			}
 		} else {
 			$players              = $competition->get_players( array( 'season' => $competition->current_season['name'] ) );
-			$competition->players = Util::get_players_list( $players );
+			$competition->players = Util_Lookup::get_players_list( $players );
 		}
 		$filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
 		return $this->load_template(
@@ -921,7 +921,7 @@ class Shortcodes_Competition extends Shortcodes {
             $ladies_teams = $club->get_teams( array( 'type' => 'WD' ) );
             $mens_teams   = $club->get_teams( array( 'type' => 'MD' ) );
             $mixed_teams  = $club->get_teams( array( 'type' => 'XD' ) );
-            $match_days   = Util::get_match_days();
+            $match_days   = Util_Lookup::get_match_days();
 
             $filename = ( ! empty( $template ) ) ? 'entry-cup-' . $template : 'entry-cup';
             return $this->load_template(

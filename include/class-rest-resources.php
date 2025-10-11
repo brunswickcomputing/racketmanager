@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator;
 use stdClass;
 use Stripe\Event;
@@ -348,7 +349,7 @@ class Rest_Resources extends WP_REST_Controller {
         if ( $match->winner_id ) {
             $json_result->score  = str_replace( '"', '', $match->score );
             if ( ! is_null( $match->status ) ) {
-                $json_result->status = Util::get_match_status( $match->status );
+                $json_result->status = Util_Lookup::get_match_status( $match->status );
             } else {
                 $json_result->status = $match->status;
             }

@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $competition */
 /** @var string $season */
 ?>
@@ -48,8 +50,8 @@ namespace Racketmanager;
                         ?>
                         <tr>
                             <td><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&view=event&competition_id=<?php echo esc_attr( $competition->id ); ?>&event_id=<?php echo esc_attr( $event->id ); ?>&season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $event->name ); ?></a></td>
-                            <td><?php echo esc_html( Util::get_event_type( $event->type ) ); ?></td>
-                            <td><?php echo esc_html( Util::get_age_limit( $age_limit ) ) . esc_html( $age_offset ); ?></td>
+                            <td><?php echo esc_html( Util_Lookup::get_event_type( $event->type ) ); ?></td>
+                            <td><?php echo esc_html( Util_Lookup::get_age_limit( $age_limit ) ) . esc_html( $age_offset ); ?></td>
                             <td><?php echo esc_html( $num_entries ); ?></td>
                             <td><?php echo esc_html( $num_leagues ); ?></td>
                             <td><?php echo esc_html( $num_teams ); ?></td>

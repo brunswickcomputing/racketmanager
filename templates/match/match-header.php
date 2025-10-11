@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $match */
 global $racketmanager;
 if ( $match->is_pending ) {
@@ -60,7 +63,7 @@ if ( $match->is_pending ) {
     <div class="module-container">
         <?php
         if ( ! empty( $match->status ) ) {
-            $match_status = Util::get_match_status( $match->status );
+            $match_status = Util_Lookup::get_match_status( $match->status );
             $info_msg     = $match_status;
             switch ( $match->status ) {
                 case 1:
@@ -354,7 +357,7 @@ if ( $match->is_pending ) {
 </div>
 <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
 <script type="text/javascript">
-    jQuery(document).ready(function () {
+    jQuery(function () {
         matchHeaderListener();
     });
     jQuery(document).ajaxComplete(function () {

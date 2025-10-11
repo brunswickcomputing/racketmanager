@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+    use Racketmanager\util\Util;
+
     /**
      * Get specific template
      *

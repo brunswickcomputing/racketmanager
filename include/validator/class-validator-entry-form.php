@@ -11,7 +11,7 @@ namespace Racketmanager\validator;
 
 use DateMalformedStringException;
 use DateTime;
-use Racketmanager\Util;
+use Racketmanager\util\Util_Lookup;
 use function Racketmanager\get_player;
 
 /**
@@ -110,9 +110,9 @@ final class Validator_Entry_Form extends Validator {
      * @return object $validation updated validation object.
      */
     public function court_needs( int $num_courts_available, array $court_data, string $match_day, string $match_time ): object {
-        $court_needs = $court_data['courts'] / $court_data['teams'];
+        $court_needs        = $court_data['courts'] / $court_data['teams'];
         $court_needs_by_day = $court_needs * ceil( $court_data['teams'] / 2 );
-        $match_day_name = Util::get_match_day( $match_day );
+        $match_day_name     = Util_Lookup::get_match_day( $match_day );
         if ( $court_needs_by_day > $num_courts_available ) {
             $this->error      = true;
             $this->err_flds[] = 'numCourtsAvailable';

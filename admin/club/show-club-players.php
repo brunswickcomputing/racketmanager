@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $club */
 /** @var string $active */
 /** @var string $gender */
@@ -102,7 +104,7 @@ namespace Racketmanager;
                             </td>
                             <td class="col-4 col-md-2">
                                 <?php
-                                $match_types    = Util::get_match_types();
+                                $match_types    = Util_Lookup::get_match_types();
                                 $wtn            = $player->wtn;
                                 $wtn_display = '';
                                 foreach ( $match_types as $match_type => $description ) {

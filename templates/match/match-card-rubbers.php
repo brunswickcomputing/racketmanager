@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+
 /** @var object $match */
 /** @var string $sponsor_html */
 $points_span = 2 + intval( $match->league->num_sets );

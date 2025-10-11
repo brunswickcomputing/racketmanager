@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+
 /**
 * Implement Championship mode
 *

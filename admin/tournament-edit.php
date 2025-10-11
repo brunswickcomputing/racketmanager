@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var string  $form_title */
 /** @var boolean $edit */
 /** @var array   $competitions */
@@ -184,7 +186,7 @@ namespace Racketmanager;
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        $grades     = Util::get_event_grades();
+                        $grades     = Util_Lookup::get_event_grades();
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'grade', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'grade', $validator->err_flds, true );

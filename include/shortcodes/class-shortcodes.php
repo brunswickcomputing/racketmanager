@@ -9,7 +9,6 @@
 
 namespace Racketmanager\shortcodes;
 
-use Racketmanager\Util;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
@@ -504,9 +503,9 @@ class Shortcodes {
 		if ( ! $events ) {
 			return $this->return_error( __( 'No events found', 'racketmanager' ) );
 		}
-		$event_types   = Util::get_event_types();
-		$age_groups   = Util::get_age_groups();
-		$filename     = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';
+		$event_types = Util_Lookup::get_event_types();
+		$age_groups  = Util_Lookup::get_age_groups();
+		$filename    = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';
 
 		return $this->load_template( $filename, array(
 													  'clubs'  => $clubs,

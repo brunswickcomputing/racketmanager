@@ -7,6 +7,9 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $competition */
 /** @var bool   $is_invalid */
 /** @var string $msg */
@@ -16,6 +19,8 @@ $tab_name = 'general';
     <div class="row gx-3 mb-3">
         <div class="form-floating">
             <?php
+            $is_invalid = false;
+            $msg        = null;
             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'name', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
@@ -30,8 +35,6 @@ $tab_name = 'general';
                 ?>
                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                 <?php
-                $is_invalid = false;
-                $msg        = null;
             }
             ?>
         </div>
@@ -40,7 +43,9 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $sports = Util::get_sports();
+                $is_invalid = false;
+                $msg        = null;
+                $sports     = Util::get_sports();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'sport', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -64,8 +69,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -73,7 +76,9 @@ $tab_name = 'general';
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $types = Util::get_competition_types();
+                $is_invalid = false;
+                $msg        = null;
+                $types      = Util_Lookup::get_competition_types();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'type', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -97,8 +102,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -106,7 +109,9 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                $entry_types = Util::get_entry_types();
+                $is_invalid  = false;
+                $msg        = null;
+                $entry_types = Util_Lookup::get_entry_types();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'entry_type', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -130,8 +135,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -141,7 +144,9 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                $age_groups = Util::get_age_groups();
+                $is_invalid = false;
+                $msg        = null;
+                $age_groups = Util_Lookup::get_age_groups();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'age_group', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -165,8 +170,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -174,6 +177,8 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
+                $is_invalid = false;
+                $msg        = null;
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'competition_code', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -188,8 +193,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -197,7 +200,9 @@ $tab_name = 'general';
         <div class="col-md-4">
             <div class="form-floating">
                 <?php
-                $grades = Util::get_event_grades();
+                $is_invalid = false;
+                $msg        = null;
+                $grades     = Util_Lookup::get_event_grades();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'grade', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -221,8 +226,6 @@ $tab_name = 'general';
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>

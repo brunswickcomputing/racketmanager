@@ -7,7 +7,8 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Util as util;
+use Racketmanager\util\Util_Lookup;
+
 /** @var bool   $is_invalid */
 /** @var string $msg */
 ?>
@@ -65,7 +66,7 @@ use Racketmanager\Util as util;
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type">
                             <option disabled selected><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
                             <?php
-                            foreach ( Util::get_competition_types() as $competition_type => $competition_type_desc ) {
+                            foreach ( Util_Lookup::get_competition_types() as $competition_type => $competition_type_desc ) {
                                 ?>
                                 <option value="<?php echo esc_html( $competition_type ); ?>"><?php echo esc_html( ucfirst( $competition_type_desc ) ); ?></option>
                                 <?php
@@ -96,7 +97,7 @@ use Racketmanager\Util as util;
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_group" id="age_group">
                             <option disabled selected><?php esc_html_e( 'Select age group', 'racketmanager' ); ?></option>
                             <?php
-                            foreach ( Util::get_age_groups() as $age_group => $age_group_desc ) {
+                            foreach ( Util_Lookup::get_age_groups() as $age_group => $age_group_desc ) {
                                 ?>
                                 <option value="<?php echo esc_html( $age_group ); ?>"><?php echo esc_html( $age_group_desc ); ?></option>
                                 <?php

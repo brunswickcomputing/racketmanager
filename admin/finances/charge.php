@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $charges */
 /** @var string $form_title */
 /** @var string $edit */
@@ -235,7 +237,7 @@ $msg        = null;
                             foreach ( $club_charge->events as $event ) {
                                 ?>
                                 <div class="col-2"></div>
-                                <div class="col-3"><?php echo esc_html( Util::get_event_type( $event->type ) ); ?></div>
+                                <div class="col-3"><?php echo esc_html( Util_Lookup::get_event_type( $event->type ) ); ?></div>
                                 <div class="col-2"><?php echo esc_html( $event->count ); ?></div>
                                 <div class="col-2"><?php the_currency_amount( $club_charge->fee ); ?></div>
                                 <div class="col-3"></div>

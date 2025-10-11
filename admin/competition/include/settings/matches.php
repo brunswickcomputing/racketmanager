@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $competition */
 $tab_name   = 'matches';
 $is_invalid = false;
@@ -17,7 +19,7 @@ $msg        = null;
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $scoring_types = Util::get_scoring_types();
+                $scoring_types = Util_Lookup::get_scoring_types();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'scoring', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -41,8 +43,6 @@ $msg        = null;
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -52,6 +52,8 @@ $msg        = null;
         <div class="col-md-4 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
+                $is_invalid = false;
+                $msg        = null;
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_sets', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -66,8 +68,6 @@ $msg        = null;
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -82,6 +82,8 @@ $msg        = null;
             <div class="col-md-4 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_rubbers', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -96,8 +98,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -105,6 +105,8 @@ $msg        = null;
             <div class="col-md-4">
                 <div class="form-check">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'reverse_rubbers', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -119,8 +121,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>

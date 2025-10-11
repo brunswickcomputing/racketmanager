@@ -10,7 +10,7 @@
 namespace Racketmanager\admin;
 
 use Racketmanager\Charges;
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use Racketmanager\validator\Validator_Finance;
 use stdClass;
 use function Racketmanager\get_charge;

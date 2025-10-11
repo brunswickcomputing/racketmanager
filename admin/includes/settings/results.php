@@ -12,7 +12,9 @@ namespace Racketmanager;
     <!-- Nav tabs -->
     <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="competitions-cup-tab" data-bs-toggle="tab" data-bs-target="#competitions-cup" type="button" role="tab" aria-controls="competitions-cup" aria-selected="true"><?php esc_html_e( 'Cups', 'racketmanager' ); ?></button>
+            <button class="nav-link active" id="competitions-cup-tab" data-bs-toggle="tab" data-bs-target="#competitions-cup" type="button" role="tab" aria-controls="competitions-cup" aria-selected="true"><?php use Racketmanager\util\Util_Lookup;
+
+                esc_html_e( 'Cups', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="competitions-league-tab" data-bs-toggle="tab" data-bs-target="#competitions-league" type="button" role="tab" aria-controls="competitions-league" aria-selected="false"><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></button>
@@ -24,7 +26,7 @@ namespace Racketmanager;
     <!-- Tab panes -->
     <div class="tab-content">
         <?php
-        $competition_types = Util::get_competition_types();
+        $competition_types = Util_Lookup::get_competition_types();
         $i                 = 0;
         foreach ( $competition_types as $competition_type ) {
             $i ++;

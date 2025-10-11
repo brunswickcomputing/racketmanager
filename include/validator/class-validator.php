@@ -9,7 +9,7 @@
 
 namespace Racketmanager\validator;
 
-use Racketmanager\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
@@ -461,7 +461,7 @@ class Validator {
             $this->err_flds[] = 'type';
             $this->err_msgs[] = __( 'Competition type not specified', 'racketmanager' );
         } else {
-            $valid = Util::get_competition_type( $type );
+            $valid = Util_Lookup::get_competition_type( $type );
             if ( ! $valid ) {
                 $this->error      = true;
                 $this->err_flds[] = 'type';
@@ -483,7 +483,7 @@ class Validator {
             $this->err_flds[] = 'age_group';
             $this->err_msgs[] = __( 'Age group not specified', 'racketmanager' );
         } else {
-            $valid = Util::get_age_group( $age_group );
+            $valid = Util_Lookup::get_age_group( $age_group );
             if ( ! $valid ) {
                 $this->error      = true;
                 $this->err_flds[] = 'age_group';

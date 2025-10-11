@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 
 /**
@@ -796,7 +798,7 @@ class Competition {
      */
     public function set_settings( array $settings ): void {
         global $wpdb;
-        foreach ( Util::get_standings_display_options() as $key => $value ) {
+        foreach ( Util_Lookup::get_standings_display_options() as $key => $value ) {
             $settings['standings'][ $key ] = isset( $settings['standings'][ $key ] ) ? 1 : 0;
         }
         $type = $settings['type'];
@@ -1884,7 +1886,7 @@ class Competition {
             $settings->filler_weeks = $config->filler_weeks;
         }
         if ( 'tournament' !== $config->type ) {
-            $match_days = Util::get_match_days();
+            $match_days = Util_Lookup::get_match_days();
             foreach ( $match_days as $match_day => $value ) {
                 $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
                 if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
@@ -1940,7 +1942,7 @@ class Competition {
             $updates = true;
         }
         $settings->num_matches_per_page = $config->num_matches_per_page;
-        $standing_display_options       = Util::get_standings_display_options();
+        $standing_display_options       = Util_Lookup::get_standings_display_options();
         foreach ( $standing_display_options as $display_option => $value ) {
             $config->standings[ $display_option ] = isset( $config->standings[ $display_option ] ) ? 1 : 0;
             if ( $this->standings[ $display_option ] !== $config->standings[ $display_option ] ) {

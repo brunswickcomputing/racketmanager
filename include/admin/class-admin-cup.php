@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use Racketmanager\validator\Validator_Plan;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;

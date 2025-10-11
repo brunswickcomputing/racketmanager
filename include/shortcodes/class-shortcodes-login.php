@@ -9,7 +9,7 @@
 
 namespace Racketmanager\shortcodes;
 
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use function Racketmanager\get_user;
 
 /**

@@ -9,7 +9,7 @@
 
 namespace Racketmanager\shortcodes;
 
-use Racketmanager\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_role;
@@ -564,7 +564,7 @@ class Shortcodes_Club extends Shortcodes {
             $msg = $this->event_not_found;
         }
         if ( empty( $msg ) ) {
-            $match_days = Util::get_match_days();
+            $match_days = Util_Lookup::get_match_days();
             return $this->load_template(
                 $filename,
                 array(
@@ -645,7 +645,7 @@ class Shortcodes_Club extends Shortcodes {
             $msg = __( 'Club role not found', 'racketmanager' );
         }
         if ( empty( $msg ) ) {
-            $club_roles = Util::get_club_roles();
+            $club_roles = Util_Lookup::get_club_roles();
             return $this->load_template(
                 $filename,
                 array(

@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 global $racketmanager;
+
+use Racketmanager\util\Util_Lookup;
+
 $age_group_select               = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
 $competition_query['age_group'] = $age_group_select ?? null;
 $orderby['age_group']           = 'ASC';
@@ -15,7 +18,7 @@ $orderby['type']                = 'ASC';
 $orderby['name']                = 'ASC';
 $competition_query['orderby']   = $orderby;
 $competitions                   = $racketmanager->get_competitions( $competition_query );
-$age_groups                     = Util::get_age_groups();
+$age_groups                     = Util_Lookup::get_age_groups();
 $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
 ?>
 <div class="container">

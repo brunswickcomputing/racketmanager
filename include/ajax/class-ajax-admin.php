@@ -8,7 +8,7 @@
 
 namespace Racketmanager\ajax;
 
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use function Racketmanager\event_dropdown;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;

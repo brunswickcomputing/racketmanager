@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $competition */
 /** @var bool   $is_invalid */
 /** @var string $msg */
@@ -40,7 +42,7 @@ $tab_name = 'general';
             <div class="form-floating">
                 <?php
                 $is_invalid = false;
-                $types      = Util::get_event_types();
+                $types      = Util_Lookup::get_event_types();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'type', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -72,7 +74,7 @@ $tab_name = 'general';
             <div class="form-floating">
                 <?php
                 $is_invalid = false;
-                $age_limits = Util::get_age_limits( $competition->age_group );
+                $age_limits = Util_Lookup::get_age_limits( $competition->age_group );
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'age_limit', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -131,7 +133,7 @@ $tab_name = 'general';
             <div class="form-floating">
                 <?php
                 $is_invalid    = false;
-                $scoring_types = Util::get_scoring_types();
+                $scoring_types = Util_Lookup::get_scoring_types();
                 $scoring       = empty( $event->config->scoring ) ? null : $event->config->scoring;
                 if ( empty( $scoring ) ) {
                     $scoring = $competition->scoring ?? null;

@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator_Match;
 use stdClass;
 
@@ -1820,7 +1822,7 @@ final class Racketmanager_Match {
             $start_date = substr( $start_date, 0, 10 );
         }
         if ( ! empty( $match_day ) ) {
-            $day        = Util::get_match_day_number( $match_day );
+            $day        = Util_Lookup::get_match_day_number( $match_day );
             $match_date = Util::amend_date( $start_date, $day );
         } else {
             $match_date = $start_date;
@@ -3185,7 +3187,7 @@ final class Racketmanager_Match {
         }
         $this->check_result_timeout();
         $match_custom['stats'] = $match_stats;
-        $status                = Util::get_match_status_code( $match_status );
+        $status                = Util_Lookup::get_match_status_code( $match_status );
         $updated               = $this->update_result( $home_team_score, $away_team_score, $match_custom, $match_confirmed, $status, $user_team );
         if ( $updated && $send_notification ) {
             $this->result_notification( $match_confirmed, $msg, $user_team );

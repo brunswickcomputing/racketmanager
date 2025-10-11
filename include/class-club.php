@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 
 /**
@@ -423,7 +425,7 @@ final class Club {
      */
     public function set_club_role( int $role, int $player_id ): void {
         global $wpdb;
-        $role_details = Util::get_club_role( $role );
+        $role_details = Util_Lookup::get_club_role( $role );
         if ( $role_details ) {
             if ( 1 === $role_details->limit ) {
                 $club_roles = $wpdb->get_results(
@@ -1032,7 +1034,7 @@ final class Club {
             $team_id   = $event_entry->team_id;
             $team      = get_team( $team_id );
             $team_info = $event->get_team_info( $team_id );
-            $match_day = Util::get_match_day( $event_entry->match_day );
+            $match_day = Util_Lookup::get_match_day( $event_entry->match_day );
             if ( ! $team_info ) {
                 $team->add_event( $event->id, $event_entry->captain_id, $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
             } else {
@@ -1075,7 +1077,7 @@ final class Club {
             $league_event_entry['event'] = $event_entry->name;
             $league_entries              = array();
             foreach ( $event_entry->team as $team_entry ) {
-                $match_day = Util::get_match_day( $team_entry->match_day );
+                $match_day = Util_Lookup::get_match_day( $team_entry->match_day );
                 if ( empty( $team_entry->id ) ) {
                     $team = $this->add_team( $event->type );
                 } else {

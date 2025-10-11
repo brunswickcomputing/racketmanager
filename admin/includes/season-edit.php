@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $competition */
 /** @var string $season */
 /** @var array  $clubs */
@@ -98,7 +100,7 @@ $msg         = null;
                         } else {
                             $current_grade = $current_season->grade;
                         }
-                        $grades = Util::get_event_grades();
+                        $grades = Util_Lookup::get_event_grades();
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'grade', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'grade', $validator->err_flds, true );

@@ -11,7 +11,7 @@
 namespace Racketmanager\shortcodes;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;

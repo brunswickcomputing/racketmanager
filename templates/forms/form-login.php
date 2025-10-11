@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+
 /** @var array $vars */
 global $wp_query;
 // phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited

@@ -10,7 +10,7 @@
 namespace Racketmanager\admin;
 
 use Racketmanager\Charges;
-use Racketmanager\Util;
+use Racketmanager\util\Util;
 use Racketmanager\validator\Validator;
 use Racketmanager\validator\Validator_Config;
 use stdClass;

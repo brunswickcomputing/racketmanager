@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /**
  * Class to implement the Club_Role object
  */
@@ -101,7 +103,7 @@ final class Club_Role {
                 }
             }
             if ( $this->role_id ) {
-                $this->role = Util::get_club_role( $this->role_id );
+                $this->role = Util_Lookup::get_club_role( $this->role_id );
             }
         }
     }
@@ -111,7 +113,7 @@ final class Club_Role {
     private function add(): void {
         global $wpdb;
         if ( empty( $this->role_id ) ) {
-            $this->role_id = Util::get_club_role_ref( $this->role );
+            $this->role_id = Util_Lookup::get_club_role_ref( $this->role );
         }
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(

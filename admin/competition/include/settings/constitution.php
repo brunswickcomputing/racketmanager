@@ -7,6 +7,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $competition */
 $tab_name   = 'constitution';
 $is_invalid = false;
@@ -35,8 +37,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -44,6 +44,8 @@ $msg        = null;
             <div class="col-md-6">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'teams_per_club', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -58,8 +60,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -87,8 +87,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -105,6 +103,8 @@ $msg        = null;
             <div class="col-md-6 mb-3 mb-md-0">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'teams_prom_relg', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -119,8 +119,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -128,6 +126,8 @@ $msg        = null;
             <div class="col-md-6">
                 <div class="form-floating">
                     <?php
+                    $is_invalid = false;
+                    $msg        = null;
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'lowest_promotion', $validator->err_flds, true ) ) ) {
                         $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                         $is_invalid = true;
@@ -142,8 +142,6 @@ $msg        = null;
                         ?>
                         <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
                     }
                     ?>
                 </div>
@@ -157,7 +155,9 @@ $msg        = null;
         <div class="col-md-6 mb-3 mb-md-0">
             <div class="form-floating">
                 <?php
-                $ranking_types = Util::get_ranking_types();
+                $is_invalid    = false;
+                $msg           = null;
+                $ranking_types = Util_lookup::get_ranking_types();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'team_ranking', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -181,8 +181,6 @@ $msg        = null;
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>
@@ -193,7 +191,9 @@ $msg        = null;
         <div class="col-md-6">
             <div class="form-floating">
                 <?php
-                $point_rules = Util::get_point_rules();
+                $is_invalid  = false;
+                $msg         = null;
+                $point_rules = Util_lookup::get_point_rules();
                 if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'point_rule', $validator->err_flds, true ) ) ) {
                     $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                     $is_invalid = true;
@@ -217,8 +217,6 @@ $msg        = null;
                     ?>
                     <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                     <?php
-                    $is_invalid = false;
-                    $msg        = null;
                 }
                 ?>
             </div>

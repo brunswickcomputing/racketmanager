@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use stdClass;
 
 /**
@@ -2195,7 +2197,7 @@ class Event {
             $settings->primary_league = $config->primary_league;
         }
         if ( $this->competition->is_league ) {
-            $match_days = Util::get_match_days();
+            $match_days = Util_Lookup::get_match_days();
             foreach ( $match_days as $match_day => $value ) {
                 $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
                 if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {

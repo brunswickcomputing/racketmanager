@@ -10,7 +10,8 @@
 namespace Racketmanager\admin;
 
 use Racketmanager\Tournament;
-use Racketmanager\Util;
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator_Plan;
 use Racketmanager\validator\Validator_Tournament;
 use stdClass;
@@ -119,7 +120,7 @@ final class Admin_Tournament extends Admin_Championship {
         );
         $seasons      = $racketmanager->get_seasons( 'DESC' );
         $competitions = $racketmanager->get_competitions( array( 'type' => 'tournament' ) );
-        $age_groups   = Util::get_age_groups();
+        $age_groups   = Util_Lookup::get_age_groups();
         require_once RACKETMANAGER_PATH . '/admin/show-tournaments.php';
     }
 
@@ -858,7 +859,6 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament information page
      */
     public function display_information_page(): void {
-        global $racketmanager;
         $validator = new Validator_Tournament();
         $validator = $validator->capability( 'edit_teams' );
         if ( ! empty( $validator->error ) ) {

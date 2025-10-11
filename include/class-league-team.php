@@ -9,6 +9,9 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
+
 /**
  * Class to implement the League_Team object
  */
@@ -482,7 +485,7 @@ final class League_Team {
             if ( empty( $this->status ) ) {
                 $this->status_text = '';
             } else {
-                $this->status_text = Util::get_standing_status( $this->status );
+                $this->status_text = Util_Lookup::get_standing_status( $this->status );
             }
             if ( ! empty( $this->club_id ) ) {
                 $this->club = get_club( $this->club_id );
@@ -702,7 +705,6 @@ final class League_Team {
      * @param object $event event object.
      */
     public function set_player_rating( object $team, object $event ): void {
-        global $racketmanager;
         if ( ! empty( $team->players ) ) {
             $type        = substr( $event->type, 1, 1 );
             $team_rating = 0;

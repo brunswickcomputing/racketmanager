@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 global $racketmanager;
+
+use Racketmanager\util\Util;
+
 /** @var object $match */
 if ( ! empty( $match_display ) ) {
     $match_display = 'match--list';

@@ -7,6 +7,9 @@
 
 namespace RacketManager;
 
+use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
+
 /** @var object $match */
 /** @var string $match_status_class */
 /** @var string $match_status_text */
@@ -70,7 +73,7 @@ if ( empty( $match->winner_id ) ) {
         </span>
         <?php
         if ( $match->status ) {
-            $match_message = Util::get_match_status( $match->status );
+            $match_message = Util_Lookup::get_match_status( $match->status );
             ?>
             <span class="match__message match-warning"><?php echo esc_html( $match_message ); ?></span>
             <?php

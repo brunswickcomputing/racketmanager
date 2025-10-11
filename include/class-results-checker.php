@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\util\Util;
+
 /**
  * Class to implement the results checker object
  */

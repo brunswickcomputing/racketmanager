@@ -1,8 +1,8 @@
 const matches = document.querySelectorAll('.finals-match');
-matches.forEach(match => {
+for (const match of matches) {
     match.addEventListener('dragstart', dragStart);
     match.addEventListener('dragend', dragEnd);
-});
+}
 
 function dragStart(ev) {
     ev.dataTransfer.setData("text/plain", ev.target.id);
@@ -12,13 +12,12 @@ function dragStart(ev) {
 }
 
 const boxes = document.querySelectorAll('.tournament-match');
-
-boxes.forEach(box => {
+for (const box of boxes) {
     box.addEventListener('dragenter', dragEnter);
     box.addEventListener('dragover', dragOver);
     box.addEventListener('dragleave', dragLeave);
     box.addEventListener('drop', drop);
-});
+}
 function dragEnd(ev) {
     ev.target.classList.remove('hide');
 }
@@ -57,7 +56,7 @@ function drop(ev) {
     }
 }
 const inputs = document.querySelectorAll('.matchId');
-inputs.forEach(input => {
+for (const input of inputs) {
     if (input.value !== '') {
         let match='match-' + input.value;
         let matchSchedule=document.getElementById(input.parentElement.id);
@@ -66,4 +65,4 @@ inputs.forEach(input => {
             matchSchedule.appendChild(draggable);
         }
     }
-});
+}

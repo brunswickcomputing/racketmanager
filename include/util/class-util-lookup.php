@@ -473,5 +473,4 @@ class Util_Lookup {
             'games'      => __( 'Games', 'racketmanager' ),
         );
     }
-
 }

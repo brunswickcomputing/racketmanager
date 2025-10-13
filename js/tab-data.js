@@ -9,10 +9,10 @@ jQuery(document).ajaxComplete(function () {
 function tabData () {
 //* Add event listener for tab data links
     const tabData = document.querySelectorAll('.tabData');
-    tabData.forEach(function(el) {
-           el.removeEventListener('click', tabDataClick);
-           el.addEventListener('click', tabDataClick);
-    });
+    for (const tab of tabData) {
+        tab.removeEventListener('click', tabDataClick);
+        tab.addEventListener('click', tabDataClick);
+    }
 }
 function tabDataClick (e) {
     let type = this.dataset.type;
@@ -25,10 +25,10 @@ function tabDataClick (e) {
 function tabDataLinks () {
 //* Add event listener for tab data links
     const tabDataLinks = document.querySelectorAll('.tabDataLink');
-    tabDataLinks.forEach(function(el) {
-            el.removeEventListener('click', tabDataLinkClick);
-            el.addEventListener('click', tabDataLinkClick);
-    });
+    for (const tabDataLink of tabDataLinks) {
+        tabDataLink.removeEventListener('click', tabDataLinkClick);
+        tabDataLink.addEventListener('click', tabDataLinkClick);
+    }
 }
 function tabDataLinkClick (e) {
     let type = this.dataset.type;

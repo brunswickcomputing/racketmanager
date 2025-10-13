@@ -37,7 +37,7 @@ checkStatus();
 
 // Fetches the payment intent status after payment submission
 async function checkStatus() {
-	const clientSecret = new URLSearchParams(window.location.search).get("payment_intent_client_secret");
+	const clientSecret = new URLSearchParams(globalThis.location.search).get("payment_intent_client_secret");
 	if (!clientSecret) {
 		setErrorState();
 		return;

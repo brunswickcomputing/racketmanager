@@ -70,11 +70,11 @@ jQuery(document).ready(function ($) {
 				let $team1 = $("#teamPlayer1").val();
 				let $team;
 				let teamPlayer2 = $("#teamPlayer2");
-				if (teamPlayer2.val() !== '') {
-					let $team2 = teamPlayer2.val();
-					$team = $team1 + ' / ' + $team2;
+				if (teamPlayer2.val() === '') {
+                    $team = $team1;
 				} else {
-					$team = $team1;
+                    let $team2 = teamPlayer2.val();
+                    $team = $team1 + ' / ' + $team2;
 				}
 				$("#team").val($team);
 			}

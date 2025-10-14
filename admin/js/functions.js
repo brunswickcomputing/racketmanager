@@ -13,7 +13,7 @@ jQuery(document).ready(function ($) {
 		jQuery('.racketmanager-colorpicker').iris();
 	});
 
-	$(window).scroll(function () {
+	$(globalThis).scroll(function () {
 		if ($(this).scrollTop() > 800) {
 			$('.go-top').addClass('show');
 		} else {

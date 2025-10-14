@@ -21,25 +21,25 @@ function SetCalculator(inputdata) {
 		teamRefAlt = "1";
 	}
 	let teamScore;
-	if (inputdata.value !== '') {
-		teamScore = parseInt(inputdata.value);
+	if (inputdata.value === '') {
+        teamScore = null;
 	} else {
-		teamScore = null;
+        teamScore = Number.parseInt(inputdata.value);
 	}
 	let teamAlt = "#" + setRef + "_player" + teamRefAlt;
 	let teamDataAlt = jQuery(teamAlt)[0];
 	let teamScoreAlt;
-	if (teamDataAlt.value !== '') {
-		teamScoreAlt = parseInt(teamDataAlt.value);
+	if (teamDataAlt.value === '') {
+        teamScoreAlt = null;
 	} else {
-		teamScoreAlt = null;
+        teamScoreAlt = Number.parseInt(teamDataAlt.value);
 	}
 	let tieBreak = "#" + setRef + "_tiebreak";
 	let tieBreakWrapper = tieBreak + '_wrapper';
 	let tieBreakData = jQuery(tieBreak)[0];
 	let tieBreakScore;
 	if (tieBreakData.value !== '') {
-		tieBreakScore = parseInt(tieBreakData.value);
+		tieBreakScore = Number.parseInt(tieBreakData.value);
 	}
 	let setGroup = '#' + setRef;
 	let maxWin = jQuery(setGroup).data('maxwin');
@@ -71,18 +71,18 @@ function SetCalculator(inputdata) {
 	} else if (teamScore < teamScoreAlt) {
 		SetValidator(teamAlt, team, teamScoreAlt, teamScore, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin);
 	} else if (teamScore === teamScoreAlt) {
-		if (!isNaN(teamScore)) {
+		if (!Number.isNaN(teamScore)) {
 			jQuery(team).addClass(classes.inputError);
 			jQuery(teamAlt).addClass(classes.inputError)
 		}
 	}
-	if (!isNaN(teamScore)) {
+	if (!Number.isNaN(teamScore)) {
 		jQuery(team).val(teamScore);
 	}
-	if (!isNaN(teamScoreAlt)) {
+	if (!Number.isNaN(teamScoreAlt)) {
 		jQuery(teamAlt).val(teamScoreAlt);
 	}
-	if (!isNaN(tieBreakScore)) {
+	if (!Number.isNaN(tieBreakScore)) {
 		jQuery(tieBreak).val(tieBreakScore);
 	}
 }
@@ -141,8 +141,8 @@ function SetCalculatorTieBreak(inputdata) {
 	}
 	let fieldRef = inputdata.id;
 	let tieBreak = "#" + fieldRef;
-	let tieBreakScore = parseInt(inputdata.value);
-	if (isNaN(tieBreakScore)) {
+	let tieBreakScore = Number.parseInt(inputdata.value);
+	if (Number.isNaN(tieBreakScore)) {
 		jQuery(tieBreak).addClass(classes.inputError);
 	} else {
 		jQuery(tieBreak).removeClass(classes.inputError);

@@ -149,15 +149,6 @@ Racketmanager.saveAddPoints = function(points, table_id) {
 	})
 };
 
-Racketmanager.isLoading = function(id) {
-  document.getElementById(id).style.display = 'inline';
-  document.getElementById(id).innerHTML="<img alt=\"loading\" src='"+RacketManagerAjaxL10n.pluginUrl+"/images/loading.gif' />";
-};
-
-Racketmanager.doneLoading = function(id) {
-  document.getElementById(id).style.display = 'none';
-};
-
 Racketmanager.setMatchDayPopUp = function (match_day, i, max_matches, mode) {
 	if (i === 0 && mode === 'add') {
 		for (let xx = 1; xx < max_matches; xx++) {
@@ -377,35 +368,6 @@ Racketmanager.checkAll = function(form) {
 		}
 	}
 };
-//Racketmanager.checkPointRule = function( forwin, forwin_overtime, fordraw, forloss, forloss_overtime ) {
-Racketmanager.checkPointRule = function (rule) {
-
-	// manual rule selected
-	if ( rule === 'user' ) {
-		let new_element_contents = "";
-		new_element_contents += "<input type='text' name='forwin' id='forwin' value=" + forwin + " size='2' />";
-		new_element_contents += "<input type='text' name='forwin_overtime' id='forwin_overtime' value=" + forwin_overtime + " size='2' />";
-		new_element_contents += "<input type='text' name='fordraw' id='fordraw' value=" + fordraw + " size='2' />";
-		new_element_contents += "<input type='text' name='forloss' id='forloss' value=" + forloss + " size='2' />";
-		new_element_contents += "<input type='text' name='forloss_overtime' id='forloss_overtime' value=" + forloss_overtime + " size='2' />";
-		new_element_contents += "&#160;<span class='setting-description'>" + RacketManagerAjaxL10n.manualPointRuleDescription + "</span>";
-		let new_element_id = "point_rule_manual_content";
-		let new_element = document.createElement('div');
-		new_element.id = new_element_id;
-
-		document.getElementById("point_rule_manual").appendChild(new_element);
-		document.getElementById(new_element_id).innerHTML = new_element_contents;
-	} else {
-		let element_count = document.getElementById("point_rule_manual").childNodes.length;
-		if(element_count > 0) {
-			let target_element = document.getElementById("point_rule_manual_content");
-			document.getElementById("point_rule_manual").removeChild(target_element);
-		}
-
-	}
-
-	return false;
-}
 
 Racketmanager.insertPlayer = function(id, target) {
 	tb_remove();

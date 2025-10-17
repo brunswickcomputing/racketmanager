@@ -1,15 +1,13 @@
+import { showMessage, setLoading } from './stripe-helpers.js';
 // This is your test publishable API key.
 const api_publishable_key = jQuery('#api_publishable_key').val();
 const stripe = Stripe(api_publishable_key);
 let elements;
 initialize();
-
-document
-  .querySelector("#payment-form")
-  .addEventListener("submit", handleSubmit);
+document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
 
 // Fetches a payment intent and captures the client secret
-async function initialize() {
+function initialize() {
 	let tournamentEntry = jQuery('#tournamentEntryId').val();
 	let invoiceId = jQuery('#invoiceId').val();
 	createPaymentRequest(tournamentEntry, invoiceId, createPaymentBlock);
@@ -58,27 +56,4 @@ async function handleSubmit(e) {
 		showMessage("An unexpected error occurred.");
 	}
 	setLoading(false);
-}
-
-// ------- UI helpers -------
-
-function showMessage(messageText) {
-	const messageContainer = document.querySelector("#payment-message");
-
-	messageContainer.classList.remove("hidden");
-	messageContainer.textContent = messageText;
-	setTimeout(function () {
-		messageContainer.classList.add("hidden");
-		messageContainer.textContent = "";
-	}, 4000);
-}
-
-// Show a spinner on payment submission
-function setLoading(isLoading) {
-	let paymentBlock = jQuery('#payment-block');
-	if (isLoading) {
-		jQuery(paymentBlock).addClass("is-loading");
-	} else {
-		jQuery(paymentBlock).removeClass("is-loading");
-	}
 }

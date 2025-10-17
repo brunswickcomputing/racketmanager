@@ -45,7 +45,7 @@ if ( $payment_required ) {
     <input type="hidden" name="tournamentEntryId" id="tournamentEntryId" value="<?php echo esc_attr( $tournament_entry->id ); ?>" />
     <input type="hidden" name="api_publishable_key" id="api_publishable_key" value="<?php echo esc_attr( $stripe->api_publishable_key ); ?>" />
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="<?php echo esc_url( RACKETMANAGER_URL );  ?>js/stripe-complete.js" defer></script>
+    <script type="module" src="<?php echo esc_url( RACKETMANAGER_URL );  ?>js/stripe-complete.js" defer></script>
     <?php
 }
 ?>

@@ -48,7 +48,7 @@ if ( $payment_required ) {
     <input type="hidden" name="invoiceId" id="invoiceId" value="<?php echo esc_attr( $invoice_id ); ?>" />
     <input type="hidden" name="api_publishable_key" id="api_publishable_key" value="<?php echo esc_attr( $stripe->api_publishable_key ); ?>" />
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="<?php echo esc_url( RACKETMANAGER_URL );  ?>js/stripe-checkout.js" defer></script>
+    <script type="module" src="<?php echo esc_url( RACKETMANAGER_URL );  ?>js/stripe-checkout.js" defer></script>
     <?php
 }
 ?>

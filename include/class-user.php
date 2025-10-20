@@ -241,7 +241,7 @@ final class User {
                 return false;
             }
             $user = new User( $user->data );
-            wp_cache_set( $user_id, $user, 'players' );
+            wp_cache_set( $user_id, $user, 'users' );
         } else {
             $user = new User( $user );
         }

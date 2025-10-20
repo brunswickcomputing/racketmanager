@@ -248,6 +248,3 @@ $image = match ($league->event->competition->type) {
     }
     ?>
 </div>
-<script type="text/javascript">
-    <?php require RACKETMANAGER_PATH . 'js/tab-data.js'; ?>
-</script>

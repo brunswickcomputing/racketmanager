@@ -126,7 +126,3 @@ $menu_options['winners']  = array(
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    <?php require RACKETMANAGER_PATH . 'js/tab-data.js'; ?>
-</script>
-

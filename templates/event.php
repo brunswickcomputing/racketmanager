@@ -149,6 +149,3 @@ if ( ! $event->is_box ) {
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    <?php require RACKETMANAGER_PATH . 'js/tab-data.js'; ?>
-</script>

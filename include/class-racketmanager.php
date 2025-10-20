@@ -1078,30 +1078,79 @@ class RacketManager {
      */
     public function load_scripts(): void {
         $javascript_locale = str_replace( '_', '-', get_locale() );
-        wp_register_script( 'racketmanager', RACKETMANAGER_URL . 'js/racketmanager.js', array( 'jquery', 'jquery-ui-core', 'jquery-ui-autocomplete', 'jquery-effects-core', 'jquery-effects-slide', 'thickbox' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
-        wp_enqueue_script( 'racketmanager' );
+        $module_handle     = 'racketmanager-module';
+        $module_src        = RACKETMANAGER_URL . 'src/js/index.js';
+
+        // Enqueue jQuery UI dependencies FIRST
+        wp_enqueue_script('jquery');
+        wp_enqueue_script('jquery-ui-core');
+        wp_enqueue_script('jquery-ui-autocomplete');
+        wp_enqueue_script('jquery-ui-datepicker');
+        wp_enqueue_script('jquery-ui-sortable');
+        wp_enqueue_script('jquery-ui-tooltip');
+        wp_enqueue_script('jquery-effects-core');
+        wp_enqueue_script('jquery-effects-slide');
+
+        // Register a regular script JUST for the inline config
+        wp_register_script(
+                'racketmanager-config',
+                false, // No source file
+                [],
+                RACKETMANAGER_VERSION,
+                false // Load in header, BEFORE module
+        );
+        wp_enqueue_script('racketmanager-config');
+
+        // Add ajax_var to the config script
         wp_add_inline_script(
-            'racketmanager',
-            'const ajax_var = ' . wp_json_encode(
-                array(
-                    'url'        => admin_url( 'admin-ajax.php' ),
-                    'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
-                )
-            ),
-            'before',
+                'racketmanager-config',
+                'window.ajax_var = ' . wp_json_encode( array(
+                        'url'        => admin_url( 'admin-ajax.php' ),
+                        'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
+                ) ) . ';'
+        );
+
+        // Now register and enqueue your module AFTER the config
+        wp_register_script_module( $module_handle, $module_src, ['jquery-ui-autocomplete'], RACKETMANAGER_VERSION );
+        wp_enqueue_script_module( $module_handle );
+
+        // Add locale config
+        $config = [
+                'currency' => $this->currency_code,
+                'locale'   => $javascript_locale,
+        ];
+        wp_add_inline_script( 'racketmanager-config', 'window.locale_var = ' . wp_json_encode($config) . ';' );
+
+        // include legacy racketmanager
+        wp_enqueue_script(
+                'racketmanager-legacy',
+                plugins_url('/js/racketmanager.js', dirname(__FILE__)),
+                array('jquery'),
+                RACKETMANAGER_VERSION,
+                true
         );
         wp_add_inline_script(
-            'racketmanager',
-            'const locale_var = ' . wp_json_encode(
-                array(
-                    'currency' => $this->currency_code,
-                    'locale'   => $javascript_locale,
-                )
-            ),
-            'before',
+                'racketmanager-legacy',
+                'const ajax_var = ' . wp_json_encode(
+                        array(
+                                'url'        => admin_url( 'admin-ajax.php' ),
+                                'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
+                        )
+                ),
+                'before',
         );
-        wp_enqueue_script( 'password-strength-meter' );
-        wp_localize_script( 'password-strength-meter', 'pwsL10n', array(
+        wp_add_inline_script(
+                'racketmanager-legacy',
+                'const locale_var = ' . wp_json_encode(
+                        array(
+                                'currency' => $this->currency_code,
+                                'locale'   => $javascript_locale,
+                        )
+                ),
+                'before',
+        );
+
+        wp_enqueue_script( 'password-strength-meter' );        wp_localize_script( 'password-strength-meter', 'pwsL10n', array(
             'empty'    => __( 'But... it\'s empty!', 'theme-domain' ),
             'short'    => __( 'Too short!', 'theme-domain' ),
             'bad'      => __( 'Not even close!', 'theme-domain' ),

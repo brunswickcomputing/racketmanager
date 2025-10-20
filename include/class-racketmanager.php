@@ -2320,7 +2320,7 @@ class RacketManager {
         $user_id         = get_current_user_id();
         $meta_key        = 'favourite-' . $type;
         $favourites      = get_user_meta( $user_id, $meta_key );
-        $favourite_found = ( array_search( $id, $favourites, true ) );
+        $favourite_found = array_search( strval( $id ), $favourites, true );
         if ( is_numeric( $favourite_found ) ) {
             return true;
         }

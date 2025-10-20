@@ -1,0 +1,69 @@
+/**
+ * RacketManager - Main Entry Point
+ * Orchestrates all feature modules
+ */
+
+import { isjQueryUIAvailable } from './utils/jquery-helpers.js';
+import { initializeTooltips } from './features/ui/tooltips.js';
+import { initializeAcceptanceCheckbox } from './features/forms/acceptance-checkbox.js';
+import { initializePasswordToggle } from './features/forms/password-toggle.js';
+import { initializeCheckboxConditionals } from './features/forms/checkbox-conditionals.js';
+import { initializeNavigation } from './features/navigation/index.js';
+import { initializeAutocomplete } from './features/autocomplete/index.js';
+import { initializeTeamSelection } from './features/teams/team-selection.js';
+import { initializeFavourites } from './features/favourites/favourites.js';
+import { initializeModals } from './features/modals/index.js';
+import { initializeTournamentDate } from './features/tournaments/tournament-date.js';
+import { initializePopstateHandler } from './features/navigation/popstate-handler.js';
+import { initializePrinting } from './features/printing/index.js';
+import { initializeTabDataFeature, tabData, tabDataLink } from './features/tabdata/index.js';
+
+// Initialize on document ready
+jQuery(function () {
+    // Check jQuery UI availability
+    if (!isjQueryUIAvailable()) {
+        console.warn('jQuery UI not loaded - some features may not work');
+    }
+
+    // UI Components
+    initializeTooltips();
+
+    // Forms
+    initializeAcceptanceCheckbox();
+    initializePasswordToggle();
+    initializeCheckboxConditionals();
+
+    // Navigation
+    initializeNavigation();
+    initializePopstateHandler();
+
+    // Tab Data (AJAX content loading)
+    initializeTabDataFeature();
+
+    // Autocomplete
+    initializeAutocomplete();
+
+    // Teams
+    initializeTeamSelection();
+
+    // Modals
+    initializeModals();
+
+    // Tournaments
+    initializeTournamentDate();
+
+    // Favourites
+    initializeFavourites();
+
+    // Printing
+    initializePrinting();
+});
+
+// Re-initialize after AJAX
+jQuery(document).ajaxComplete(function () {
+    initializeAutocomplete();
+    initializeFavourites();
+    initializeNavigation();
+    initializePopstateHandler();
+    initializeTournamentDate();
+});

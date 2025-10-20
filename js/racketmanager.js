@@ -1,283 +1,29 @@
 jQuery(function () {
-	jQuery('[data-bs-toggle="tooltip"]').tooltip();
-	jQuery("#acceptance").prop("checked", false)
-	jQuery("#entrySubmit").hide();
-	jQuery('#acceptance').on( "change",function () {
-		if (this.checked) {
-			jQuery("#entrySubmit").show();
-		} else {
-			jQuery("#entrySubmit").hide();
-		}
-	});
-	/* Friendly URL rewrite */
-	jQuery('#racketmanager_archive').on('change', function () {
-		let league = jQuery('#league_id').val(); //
-		let season = jQuery('#season').val();
+    jQuery(".noModal:checkbox").click(function (event) {
+        let $target = event.target;
 
-		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/league/' + league.toLowerCase() + '/' + season + '/';
-
-		return false;  // Prevent default button behaviour
-	});
-
-	/* Friendly URL rewrite */
-	jQuery('#racketmanager_competition_archive #season').on('change', function () {
-		let pagename = jQuery('#pagename').val();
-		let season = jQuery('#season').val();
-
-		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/' + pagename.toLowerCase() + '/' + season + '/';
-
-		return false;  // Prevent default button behaviour
-	});
-	MatchDayChange();
-	/* Friendly URL rewrite */
-	jQuery('#racketmanager_winners #selection').on('change', function () {
-		let selection = jQuery(`#selection`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		selection = selection.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		selection = selection.replaceAll("-", "_"); // Replace '-' with a '-' symbol */
-		selection = selection.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
-		let competitionSeason = jQuery(`#competitionSeason`).val();
-		let competitionType = jQuery(`#competitionType`).val();
-
-		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/' + competitionType + 's/' + competitionSeason + '/winners/' + selection.toLowerCase() + '/';
-
-		return false;  // Prevent default button behaviour
-	});
-	jQuery('#racketmanager_orderofplay #tournament_id').on('change', function () {
-		let tournament = jQuery(`#tournament_id`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replaceAll("-", "_"); // Replace '-' with a '_' symbol */
-		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
-		let season = jQuery(`#season`).val();
-
-		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/tournaments/' + season + '/order-of-play/' + tournament.toLowerCase() + '/';
-
-		return false;  // Prevent default button behaviour
-	});
-	jQuery('#racketmanager_tournament #tournament_id').on('change', function () {
-		let tournament = jQuery(`#tournament_id`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replaceAll("-", "_"); // Replace space with a '_' symbol */
-		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '_' symbol */
-		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/tournament/' + tournament.toLowerCase() + '/';
-
-		return false;  // Prevent default button behaviour
-	});
-	jQuery('#racketmanager_daily_matches #match_date').on('change', function () {
-		let matchDate = jQuery(`#match_date`).val();
-		globalThis.location = encodeURI(globalThis.location.protocol) + '//' + encodeURIComponent(globalThis.location.host) + '/leagues/daily-matches/' + encodeURIComponent(matchDate) + '/';
-
-		return false;  // Prevent default button behaviour
-	});
-	TournamentDateChange();
-	CaptainLookup();
-
-	jQuery('#matchSecretaryName').autocomplete({
-		minLength: 2,
-		source: function (request, response) {
-			let club = jQuery("#club_id").val();
-			let notifyField = '#match-secretary-feedback';
-			response(get_player_details('name', request.term, club, notifyField));
-		},
-		select: function (event, ui) {
-			if (ui.item.value === 'null') {
-				ui.item.value = '';
-			}
-			let player = "#matchSecretaryName";
-			let playerId = "#matchSecretaryId";
-			let contactno = "#matchSecretaryContactNo";
-			let contactemail = "#matchSecretaryEmail";
-			jQuery(player).val(ui.item.value);
-			jQuery(playerId).val(ui.item.playerId);
-			jQuery(contactno).val(ui.item.contactno);
-			jQuery(contactemail).val(ui.item.user_email);
-		},
-		change: function (event, ui) {
-			let player = "#matchSecretaryName";
-			let playerId = "#matchSecretaryId";
-			let contactno = "#matchSecretaryContactNo";
-			let contactemail = "#matchSecretaryEmail";
-			setPlayerDetails(ui,player,playerId,contactno,contactemail);
-		}
-	});
-
-	jQuery('.passwordShow').hover(function () {
-		let input = jQuery(this).parent().find('.password');
-		input.attr('type', 'text');
-	}, function () {
-		jQuery('.password').attr('type', 'password');
-		let input = jQuery(this).parent().find('.password');
-		input.attr('type', 'password');
-	});
-
-	jQuery(".noModal:checkbox").click(function (event) {
-		let $target = event.target;
-
-		// If a checkbox with aria-controls, handle click
-		let isCheckbox = $target.getAttribute('type') === 'checkbox';
-		let hasAriaControls = $target.getAttribute('aria-controls');
-		if (isCheckbox && hasAriaControls) {
-			let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
-			if ($target2?.classList.contains('form-checkboxes__conditional')) {
-				let inputIsChecked = $target.checked;
-				$target2.setAttribute('aria-expanded', inputIsChecked);
-				$target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
-			}
-		}
-	});
-	jQuery(".hasModal:checkbox").click(function (event) {
-		jQuery('#liEventDetails').addClass('is-loading');
-		let target = event.target;
-		checkToggle(target, event);
-	});
-
-	jQuery('select.cupteam').on('change', function () {
-		let team = this.value;
-		let event = this.name;
-		event = event.substring(5, event.length - 1);
-		let notifyField = "#team-" + event;
-		jQuery(notifyField).removeClass('is-invalid');
-		let responseField = "#team-dtls-" + event;
-		let splash = '#splash-' + event;
-		jQuery(splash).removeClass("d-none");
-		jQuery(splash).css('opacity', 1);
-		jQuery(splash).show();
-		jQuery(responseField).hide();
-
-		jQuery.ajax({
-			type: 'POST',
-			datatype: 'json',
-			url: ajax_var.url,
-			data: {
-				"team": team,
-				"event": event,
-				"action": "racketmanager_get_team_info",
-				"security": ajax_var.ajax_nonce,
-			},
-			success: function (response) {
-				let team_info = response.data;
-				let captainInput = "captain-".concat(event);
-				let ref = captainInput.substring(7);
-				let captain = "#".concat(captainInput);
-				let captainId = "#captainId".concat(ref);
-				let contactno = "#contactno".concat(ref);
-				let contactemail = "#contactemail".concat(ref);
-				let matchday = "#matchday".concat(ref);
-				let matchtime = "#matchtime".concat(ref);
-				jQuery(captain).val(team_info.captain);
-				jQuery(captainId).val(team_info.captainid);
-				jQuery(contactno).val(team_info.contactno);
-				jQuery(contactemail).val(team_info.user_email);
-				jQuery(matchday).val(team_info.match_day);
-				jQuery(matchtime).val(team_info.match_time);
-			},
-			error: function (response) {
-				let feedback = notifyField + 'Feedback';
-				if (response.responseJSON) {
-					jQuery(feedback).text(response.responseJSON.data);
-				} else {
-					jQuery(feedback).text(response.statusText);
-				}
-				jQuery(notifyField).addClass('is-invalid');
-				jQuery(notifyField).show();
-			},
-			complete: function () {
-				jQuery(splash).css('opacity', 0);
-				jQuery(splash).hide();
-				jQuery(responseField).show();
-			}
-		});
-	});
-	FavouriteInit();
-});
-function setPlayerDetails(ui,player,playerId,contactno,contactemail) {
-	if (ui.item === null) {
-		jQuery(this).val('');
-		jQuery(player).val('');
-		jQuery(playerId).val('');
-		jQuery(contactno).val('');
-		jQuery(contactemail).val('');
-	} else {
-		jQuery(player).val(ui.item.value);
-		jQuery(playerId).val(ui.item.playerId);
-		jQuery(contactno).val(ui.item.contactno);
-		jQuery(contactemail).val(ui.item.user_email);
-	}
-}
-jQuery(document).ajaxComplete(function () {
-	FavouriteInit();
-	PartnerLookup();
-	TournamentDateChange();
-	PopstateHandler();
-	MatchDayChange();
-	CaptainLookup();
-    UserLookup();
-});
-function UserLookup() {
-   jQuery('#userName').autocomplete({
-        minLength: 2,
-        source: function (request, response) {
-            let club = jQuery("#clubId").val();
-            let notifyField = '#user-feedback';
-            response(get_player_details('name', request.term, club, notifyField));
-        },
-        select: function (event, ui) {
-            if (ui.item.value === 'null') {
-                ui.item.value = '';
+        // If a checkbox with aria-controls, handle click
+        let isCheckbox = $target.getAttribute('type') === 'checkbox';
+        let hasAriaControls = $target.getAttribute('aria-controls');
+        if (isCheckbox && hasAriaControls) {
+            let $target2 = $target.parentNode.parentNode.querySelector('#' + $target.getAttribute('aria-controls'));
+            if ($target2?.classList.contains('form-checkboxes__conditional')) {
+                let inputIsChecked = $target.checked;
+                $target2.setAttribute('aria-expanded', inputIsChecked);
+                $target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
             }
-            let player = "#userName";
-            let playerId = "#userId";
-            let contactno = "#contactno";
-            let contactemail = "#contactemail";
-            jQuery(player).val(ui.item.value);
-            jQuery(playerId).val(ui.item.playerId);
-            jQuery(contactno).val(ui.item.contactno);
-            jQuery(contactemail).val(ui.item.user_email);
-        },
-        change: function (event, ui) {
-            let player = "#userName";
-            let playerId = "#userId";
-            let contactno = "#contactno";
-            let contactemail = "#contactemail";
-            setPlayerDetails(ui,player,playerId,contactno,contactemail);
         }
     });
-}
-function CaptainLookup() {
-	jQuery('.teamcaptain').autocomplete({
-		minLength: 2,
-		source: function (request, response) {
-			let club = jQuery("#clubId").val();
-			let fieldRef = this.element[0].id;
-			let ref = fieldRef.substr(7);
-			let notifyField = '#updateTeamResponse'.concat(ref);
-			response(get_player_details('name', request.term, club, notifyField));
-		},
-		select: function (event, ui) {
-			if (ui.item.value === 'null') {
-				ui.item.value = '';
-			}
-			let captainInput = this.id;
-			let ref = captainInput.substr(7);
-			let player = "#".concat(captainInput);
-			let playerId = "#captainId".concat(ref);
-			let contactno = "#contactno".concat(ref);
-			let contactemail = "#contactemail".concat(ref);
-			jQuery(player).val(ui.item.value);
-			jQuery(playerId).val(ui.item.playerId);
-			jQuery(contactno).val(ui.item.contactno);
-			jQuery(contactemail).val(ui.item.user_email);
-		},
-		change: function (event, ui) {
-			let captainInput = this.id;
-			let ref = captainInput.substr(7);
-			let player = "#".concat(captainInput);
-			let playerId = "#captainId".concat(ref);
-			let contactno = "#contactno".concat(ref);
-			let contactemail = "#contactemail".concat(ref);
-			setPlayerDetails(ui,player,playerId,contactno,contactemail);
-		}
-	});
-}
+    jQuery(".hasModal:checkbox").click(function (event) {
+        jQuery('#liEventDetails').addClass('is-loading');
+        let target = event.target;
+        checkToggle(target, event);
+    });
+})
+jQuery(document).ajaxComplete(function () {
+	PartnerLookup();
+	PopstateHandler();
+});
 function PopstateHandler() {
 	// Handle forward/back buttons
 	globalThis.addEventListener("popstate", (event) => {
@@ -393,36 +139,6 @@ function changePartnerName(ui) {
 		jQuery(playerId).val(ui.item.playerId);
 		jQuery(playerBTM).val(ui.item.btm);
 	}
-}
-function MatchDayChange() {
-	/* Friendly URL rewrite */
-	jQuery('#racketmanager_match_day_selection').on('change', function (e) {
-		let league = jQuery('#league_id').val();
-		league = league.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		league = league.replaceAll(/\s/g, "-"); // Replace space with a '-' symbol */
-		let season = jQuery('#season').val();
-		let matchday = jQuery('#match_day').val();
-		if (matchday === -1) matchday = 0;
-		let leagueLink = '/league/' + league.toLowerCase() + '/' + season + '/matches/day' + matchday + '/'
-		let leagueId = jQuery('#leagueId').val();
-		Racketmanager.tabDataLink(e, 'league', leagueId, season, leagueLink, matchday, 'matches');
-		return false;  // Prevent default button behaviour
-	});
-}
-function TournamentDateChange() {
-	jQuery('#tournament-match-date-form #match_date').on('change', function (e) {
-		let match_date = jQuery(`#match_date`).val().replaceAll(/[^A-Za-z0-9 -]/g, ''); // Remove unwanted characters, only accept alphanumeric, '-' and space */
-		let tournament = jQuery(`#tournament_id`).val();
-		tournament = tournament.replaceAll(/\s{2,}/g, ' '); // Replace multi spaces with a single space */
-		tournament = tournament.replaceAll("-", "_"); // Replace space with a '_' symbol */
-		tournament = tournament.replaceAll(/\s/g, "-"); // Replace space with a '_' symbol */
-		let tournamentLink = '/tournament/' + tournament.toLowerCase() + '/matches/' + match_date + '/';
-		let linkId = match_date;
-		let linkType = 'matches';
-		let tournamentId = jQuery('#tournamentId').val();
-		Racketmanager.tabDataLink(e, 'tournament', tournamentId, null, tournamentLink, linkId, linkType)
-		return false;  // Prevent default button behaviour
-	});
 }
 let Racketmanager = {
     loadingModal: '#loadingModal',

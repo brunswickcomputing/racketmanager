@@ -199,34 +199,67 @@ class Ajax_Frontend extends Ajax {
             }
         }
         if ( empty( $return->error ) ) {
-            $event = get_event( $event_id );
-            if ( ! $event ) {
-                $return->msg    = __( 'Event not found', 'racketmanager' );
-                $return->error  = true;
-                $return->status = 404;
-            }
+    /**
+     * Ajax Response to get captain information
+     */
+    public function get_team_event_info(): void {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+
+        // Prepare defaults
+        $team_info = new stdClass();
+        $team_info->captain    = '';
+        $team_info->captain_id = 0; // snake_case original
+        $team_info->captainid  = 0; // camel-less alias expected by legacy JS
+        $team_info->user_email = '';
+        $team_info->contactno  = '';
+        $team_info->match_day  = '';
+        $team_info->match_time = '';
+        $team_info->message    = '';
+
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            wp_send_json_error( $return, $return->status );
         }
-        if ( empty( $return->error ) ) {
-            $team  = $event->get_team_info( $team_id );
+
+        // Validate inputs
+        $team_id  = isset( $_POST['team'] ) ? intval( $_POST['team'] ) : null;
+        $event_id = isset( $_POST['event'] ) ? intval( $_POST['event'] ) : null;
+
+        $validator = $validator->event( $event_id );
+        $validator = $validator->team( $team_id );
+        if ( empty( $validator->error) ) {
+            $event = get_event( $event_id );
+            // Fetch team info for the event
+            $team = $event->get_team_info( $team_id );
             if ( $team ) {
-                $team_info->captain    = $team->captain;
-                $team_info->captain_id = $team->captain_id;
-                $team_info->user_email = $team->contactemail;
-                $team_info->contactno  = $team->contactno;
-                $team_info->match_day  = $team->match_day;
-                $team_info->match_time = $team->match_time;
-                $team_info->message    = __( 'Team information updated', 'racketmanager' );
+                $team_info->captain       = $team->captain ?? '';
+                $team_info->captain_id    = $team->captain_id ?? 0;
+                $team_info->captainid     = $team->captain_id ?? 0; // alias for frontend compatibility
+                $team_info->user_email    = $team->contactemail ?? '';
+                $team_info->contactno     = $team->contactno ?? '';
+                $team_info->match_day     = $team->match_day ?? '';
+                $team_info->match_day_num = $team->match_day_num ?? '';
+                $team_info->match_time    = $team->match_time ?? '';
+                $team_info->message       = __( 'Team information updated', 'racketmanager' );
+            } else {
+                $team_info->message = __( 'Team not found for this event', 'racketmanager' );
             }
             wp_send_json_success( $team_info );
+        } else {
+            $return = $validator->get_details();
+            if ( empty( $return->msg ) ) {
+                $return->msg = $return->err_msgs[0];
+            }
+            wp_send_json_error( $return, $return->status );
         }
-		wp_send_json_error( $return->msg, $return->status );
-	}
-	/**
-	 * Cup entry request
-	 *
-	 * @see templates/cup_entry.php
-	 */
-	public function cup_entry_request(): void {
+    }
+    /**
+     * Cup entry request
+     *
+     * @see templates/cup_entry.php
+     */
+    public function cup_entry_request(): void {
         $start_times = array();
         $club_id     = null;
         $club_entry  = null;

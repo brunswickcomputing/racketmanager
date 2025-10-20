@@ -1052,6 +1052,11 @@ class Event {
         }
 
         if ( $team ) {
+            if ( $team->match_day ) {
+                $team->match_day_num = Util_Lookup::get_match_day_number( $team->match_day );
+            } else {
+                $team->match_day_num = null;
+            }
             $captain = get_userdata( $team->captain );
             if ( $captain ) {
                 $team->captain      = $captain->display_name;

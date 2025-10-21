@@ -667,69 +667,6 @@ Racketmanager.viewMatch = function (e) {
 		globalThis.location = link;
 	}
 };
-Racketmanager.setMatchStatus = function (link) {
-	let formId = '#'.concat(link.form.id);
-	let $form = jQuery(formId).serialize();
-	let splashBock = '#splashBlockMatch';
-	jQuery(splashBock).addClass('is-loading');
-	$form += "&action=racketmanager_set_match_status";
-	let notifyField = '#matchStatusResponse';
-	jQuery(notifyField).hide();
-	let alertTextField = '#matchStatusResponseText';
-	jQuery(alertTextField).html("");
-	jQuery(".is-invalid").removeClass("is-invalid");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: $form,
-		success: function (response) {
-			let data = response.data;
-			let scoreStatus = data.match_status;
-			let statusMessages = Object.entries(data.status_message);
-			let statusClasses = Object.entries(data.status_class);
-			let numRubbers = data.num_rubbers;
-			if (numRubbers) {
-				for (let x = 1; x <= numRubbers; x++) {
-					let rubberNumber = x;
-					Racketmanager.setRubberStatusMessages(rubberNumber,statusMessages);
-					Racketmanager.setRubberStatusClasses(rubberNumber,statusClasses);
-					let matchStatusRef = '#match_status_' + rubberNumber;
-					jQuery(matchStatusRef).attr('value', scoreStatus);
-				}
-			} else {
-				for (let i in statusMessages) {
-					let statusMessage = statusMessages[i];
-					let teamRef = statusMessage[0];
-					let teamMessage = statusMessage[1];
-					let messageRef = '#match-message-' + teamRef;
-					Racketmanager.setTeamMessage(messageRef, teamMessage);
-				}
-				for (let i in statusClasses) {
-					let statusClass = statusClasses[i];
-					let teamRef = statusClass[0];
-					let teamClass = statusClass[1];
-					let statusRef = '#match-status-' + teamRef;
-					jQuery(statusRef).removeClass('winner loser tie');
-					if (teamClass) {
-						jQuery(statusRef).addClass(teamClass);
-					}
-				}
-			}
-			let matchStatusRef = '#match_status';
-			jQuery(matchStatusRef).attr('value', scoreStatus);
-			let modal = '#' + data.modal;
-			jQuery(modal).modal('hide')
-		},
-		error: function (response) {
-			Racketmanager.handleAjaxError(response, alertTextField, notifyField);
-			jQuery(notifyField).show();
-		},
-		complete: function () {
-			jQuery(splashBock).removeClass('is-loading');
-		}
-	});
-}
 Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
 	event.preventDefault();
     let loadingModal = this.loadingModal;

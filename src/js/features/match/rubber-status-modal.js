@@ -5,6 +5,7 @@
 
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 import { LOADING_MODAL } from '../../config/constants.js';
+import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 
 const SCORE_STATUS_MODAL = '#scoreStatusModal';
 const ERROR_ALERT = '#scoreStatusResponse';
@@ -98,9 +99,8 @@ export function setRubberStatus(link) {
             jQuery(matchStatusRef).val(scoreStatus);
             try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
         },
-        error: function () {
-            // If we have centralized ajax error handler, we could call it, but keep minimal here
-            jQuery(ERROR_TEXT).html('An error occurred');
+        error: function (response) {
+            handleAjaxError(response, ERROR_TEXT, ERROR_ALERT);
             jQuery(ERROR_ALERT).show();
         },
         complete: function () {

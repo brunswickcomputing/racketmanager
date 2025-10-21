@@ -32,25 +32,25 @@ class Shortcodes_Event extends Shortcodes {
      * @return string
      */
     public function show_event( array $atts ): string {
-		$args   = shortcode_atts(
-			array(
-				'id'     => 0,
-				'season' => false,
-			),
-			$atts
-		);
-		$id     = $args['id'];
-		$season = $args['season'];
+        $args   = shortcode_atts(
+            array(
+                'id'     => 0,
+                'season' => false,
+            ),
+            $atts
+        );
+        $id     = $args['id'];
+        $season = $args['season'];
         $event  = null;
-		if ( $id ) {
-			$event = get_event( $id );
-		} else {
-			$event_id = get_query_var( 'event' );
-			if ( $event_id ) {
-				$event_id = str_replace( '-', ' ', $event_id );
-				$event = get_event( $event_id, 'name' );
-			}
-		}
+        if ( $id ) {
+            $event = get_event( $id );
+        } else {
+            $event_id = get_query_var( 'event' );
+            if ( $event_id ) {
+                $event_id = str_replace( '-', ' ', $event_id );
+                $event = get_event( $event_id, 'name' );
+            }
+        }
         if ( $event ) {
             $event->set_season( $season );
             if ( empty( $event->current_season ) ) {
@@ -73,7 +73,7 @@ class Shortcodes_Event extends Shortcodes {
         } else {
             $msg = $this->event_not_found;
         }
-		return $this->return_error( $msg );
+        return $this->return_error( $msg );
     }
     /**
      * Function to display event standings
@@ -83,32 +83,32 @@ class Shortcodes_Event extends Shortcodes {
      * @return string - the content
      */
     public function show_event_standings( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'id'       => 0,
-				'template' => '',
-				'season'   => false,
-			),
-			$atts
-		);
-		$event_id = $args['id'];
-		$template = $args['template'];
-		$season   = $args['season'];
-		$event    = get_event( $event_id );
-		if ( ! $event ) {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-		}
-		$event->leagues = $event->get_leagues();
-		$event->set_season( $season );
-		$filename = ( ! empty( $template ) ) ? 'standings-' . $template : 'standings';
-		return $this->load_template(
-			$filename,
-			array(
-				'event' => $event,
-			),
-			'event'
-		);
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'template' => '',
+                'season'   => false,
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $template = $args['template'];
+        $season   = $args['season'];
+        $event    = get_event( $event_id );
+        if ( ! $event ) {
+            $msg = $this->event_not_found;
+            return $this->return_error( $msg );
+        }
+        $event->leagues = $event->get_leagues();
+        $event->set_season( $season );
+        $filename = ( ! empty( $template ) ) ? 'standings-' . $template : 'standings';
+        return $this->load_template(
+            $filename,
+            array(
+                'event' => $event,
+            ),
+            'event'
+        );
     }
     /**
      * Function to display event draw
@@ -118,36 +118,36 @@ class Shortcodes_Event extends Shortcodes {
      * @return string - the content
      */
     public function show_event_draw( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'id'       => 0,
-				'template' => '',
-				'season'   => false,
-			),
-			$atts
-		);
-		$event_id = $args['id'];
-		$template = $args['template'];
-		$season   = $args['season'];
-		$event    = get_event( $event_id );
-		if ( ! $event ) {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-		}
-		$event->set_season( $season );
-		if ( $event->competition->is_championship ) {
-			$event->leagues = $this->get_draw( $event, $season );
-		} else {
-			$event->leagues = $event->get_leagues();
-		}
-		$filename = ( ! empty( $template ) ) ? 'draw-' . $template : 'draw';
-		return $this->load_template(
-			$filename,
-			array(
-				'event' => $event,
-			),
-			'event'
-		);
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'template' => '',
+                'season'   => false,
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $template = $args['template'];
+        $season   = $args['season'];
+        $event    = get_event( $event_id );
+        if ( ! $event ) {
+            $msg = $this->event_not_found;
+            return $this->return_error( $msg );
+        }
+        $event->set_season( $season );
+        if ( $event->competition->is_championship ) {
+            $event->leagues = $this->get_draw( $event, $season );
+        } else {
+            $event->leagues = $event->get_leagues();
+        }
+        $filename = ( ! empty( $template ) ) ? 'draw-' . $template : 'draw';
+        return $this->load_template(
+            $filename,
+            array(
+                'event' => $event,
+            ),
+            'event'
+        );
     }
     /**
      * Function to display event matches
@@ -157,36 +157,36 @@ class Shortcodes_Event extends Shortcodes {
      * @return string - the content
      */
     public function show_event_matches( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'id'       => 0,
-				'template' => '',
-				'season'   => false,
-			),
-			$atts
-		);
-		$event_id = $args['id'];
-		$template = $args['template'];
-		$season   = $args['season'];
-		$event    = get_event( $event_id );
-		if ( ! $event ) {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-		}
-		$event->set_season( $season );
-		if ( $event->competition->is_championship ) {
-			$event->leagues = $this->get_draw( $event, $season );
-		} else {
-			$event->leagues = $event->get_leagues();
-		}
-		$filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches';
-		return $this->load_template(
-			$filename,
-			array(
-				'event' => $event,
-			),
-			'event'
-		);
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'template' => '',
+                'season'   => false,
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $template = $args['template'];
+        $season   = $args['season'];
+        $event    = get_event( $event_id );
+        if ( ! $event ) {
+            $msg = $this->event_not_found;
+            return $this->return_error( $msg );
+        }
+        $event->set_season( $season );
+        if ( $event->competition->is_championship ) {
+            $event->leagues = $this->get_draw( $event, $season );
+        } else {
+            $event->leagues = $event->get_leagues();
+        }
+        $filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches';
+        return $this->load_template(
+            $filename,
+            array(
+                'event' => $event,
+            ),
+            'event'
+        );
     }
     /**
      * Function to display event Clubs
@@ -196,54 +196,54 @@ class Shortcodes_Event extends Shortcodes {
      * @return string - the content
      */
     public function show_event_clubs( array $atts ): string {
-		global $wp;
-		$args     = shortcode_atts(
-			array(
-				'id'       => 0,
-				'clubs'    => null,
-				'template' => '',
-				'season'   => false,
-			),
-			$atts
-		);
-		$event_id = $args['id'];
-		$club_id  = $args['clubs'];
-		$template = $args['template'];
-		$season   = $args['season'];
-		$event    = get_event( $event_id );
-		if ( ! $event ) {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-		}
-		$event_club = null;
-		$event->set_season( $season );
-		if ( ! $club_id && isset( $wp->query_vars['club_name'] ) ) {
+        global $wp;
+        $args     = shortcode_atts(
+            array(
+                'id'       => 0,
+                'clubs'    => null,
+                'template' => '',
+                'season'   => false,
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $club_id  = $args['clubs'];
+        $template = $args['template'];
+        $season   = $args['season'];
+        $event    = get_event( $event_id );
+        if ( ! $event ) {
+            $msg = $this->event_not_found;
+            return $this->return_error( $msg );
+        }
+        $event_club = null;
+        $event->set_season( $season );
+        if ( ! $club_id && isset( $wp->query_vars['club_name'] ) ) {
             $club_id = get_query_var( 'club_name' );
             $club_id = str_replace( '-', ' ', $club_id );
         }
-		if ( $club_id ) {
-			if ( is_numeric( $club_id ) ) {
-				$club = get_club( $club_id );
-			} else {
-				$club = get_club( $club_id, 'shortcode' );
-			}
-			if ( $club ) {
+        if ( $club_id ) {
+            if ( is_numeric( $club_id ) ) {
+                $club = get_club( $club_id );
+            } else {
+                $club = get_club( $club_id, 'shortcode' );
+            }
+            if ( $club ) {
                 $event_club = $event->get_club( $club );
-			} else {
-				$msg = $this->club_not_found;
-				return $this->return_error( $msg );
-			}
-		}
-		$event->clubs = $event->get_clubs( array( 'status' => 1 ) );
-		$filename     = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
-		return $this->load_template(
-			$filename,
-			array(
-				'event'      => $event,
-				'event_club' => $event_club,
-			),
-			'event'
-		);
+            } else {
+                $msg = $this->club_not_found;
+                return $this->return_error( $msg );
+            }
+        }
+        $event->clubs = $event->get_clubs( array( 'status' => 1 ) );
+        $filename     = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
+        return $this->load_template(
+            $filename,
+            array(
+                'event'      => $event,
+                'event_club' => $event_club,
+            ),
+            'event'
+        );
     }
     /**
      * Function to display event teams
@@ -253,75 +253,75 @@ class Shortcodes_Event extends Shortcodes {
      * @return string - the content
      */
     public function show_event_teams( array $atts ): string {
-		global $wp;
-		$args     = shortcode_atts(
-			array(
-				'id'       => false,
-				'season'   => false,
-				'template' => '',
-			),
-			$atts
-		);
-		$event_id = $args['id'];
-		$season   = $args['season'];
-		$template = $args['template'];
-		$event    = get_event( $event_id );
-		if ( ! $event ) {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-		}
-		$event->set_season( $season );
-		$event->teams = $event->get_teams(
-			array(
-				'season'  => $event->current_season['name'],
-				'orderby' => array( 'name' => 'ASC' ),
-			)
-		);
-		$team         = null;
-		if ( isset( $wp->query_vars['team'] ) ) {
-			$team = get_query_var( 'team' );
-			$team = str_replace( '-', ' ', $team );
-		}
-		if ( $team ) {
-			$team = get_team( $team );
-			if ( $team ) {
-				$team->info    = $event->get_team_info( $team->id );
-				$team->matches = $event->get_matches(
-					array(
-						'team_id'          => $team->id,
-						'match_day'        => false,
-						'limit'            => 'false',
-						'reset_query_args' => true,
-						'season'           => $event->current_season['name'],
-						'orderby'          => array( 'date' => 'ASC' ),
-					)
-				);
-				$players       = $event->get_players(
-					array(
-						'team'  => $team->id,
-						'stats' => true,
-					)
-				);
-				$team->players = $players;
-				$event->team   = $team;
-			}
-		} elseif ( $event->competition->is_championship ) {
-			if ( empty( $template ) ) {
-				$template = 'list';
-			}
-		}
-		$tab      = 'teams';
-		$filename = ( empty( $template ) ) ? 'teams' : 'teams-' . $template;
+        global $wp;
+        $args     = shortcode_atts(
+            array(
+                'id'       => false,
+                'season'   => false,
+                'template' => '',
+            ),
+            $atts
+        );
+        $event_id = $args['id'];
+        $season   = $args['season'];
+        $template = $args['template'];
+        $event    = get_event( $event_id );
+        if ( ! $event ) {
+            $msg = $this->event_not_found;
+            return $this->return_error( $msg );
+        }
+        $event->set_season( $season );
+        $event->teams = $event->get_teams(
+            array(
+                'season'  => $event->current_season['name'],
+                'orderby' => array( 'name' => 'ASC' ),
+            )
+        );
+        $team         = null;
+        if ( isset( $wp->query_vars['team'] ) ) {
+            $team = get_query_var( 'team' );
+            $team = str_replace( '-', ' ', $team );
+        }
+        if ( $team ) {
+            $team = get_team( $team );
+            if ( $team ) {
+                $team->info    = $event->get_team_info( $team->id );
+                $team->matches = $event->get_matches(
+                    array(
+                        'team_id'          => $team->id,
+                        'match_day'        => false,
+                        'limit'            => 'false',
+                        'reset_query_args' => true,
+                        'season'           => $event->current_season['name'],
+                        'orderby'          => array( 'date' => 'ASC' ),
+                    )
+                );
+                $players       = $event->get_players(
+                    array(
+                        'team'  => $team->id,
+                        'stats' => true,
+                    )
+                );
+                $team->players = $players;
+                $event->team   = $team;
+            }
+        } elseif ( $event->competition->is_championship ) {
+            if ( empty( $template ) ) {
+                $template = 'list';
+            }
+        }
+        $tab      = 'teams';
+        $filename = ( empty( $template ) ) ? 'teams' : 'teams-' . $template;
 
-		return $this->load_template(
-			$filename,
-			array(
-				'event'       => $event,
-				'tab'         => $tab,
-				'curr_season' => $event->current_season['name'],
-			),
-			'event'
-		);
+        return $this->load_template(
+            $filename,
+            array(
+                'event'       => $event,
+                'tab'         => $tab,
+                'curr_season' => $event->current_season['name'],
+            ),
+            'event'
+        );
     }
     /**
      * Function to display event Players
@@ -331,26 +331,26 @@ class Shortcodes_Event extends Shortcodes {
      * @return string - the content
      */
     public function show_event_players( array $atts ): string {
-		global $wp;
-		$args      = shortcode_atts(
-			array(
-				'id'      => 0,
-				'season'  => null,
-				'players' => null,
-			),
-			$atts
-		);
-		$event_id  = $args['id'];
-		$season    = $args['season'];
-		$player_id = $args['players'];
-		$event     = get_event( $event_id );
-		if ( $event ) {
-			$event->set_season( $season );
-			$event->players = array();
-			if ( ! $player_id && isset( $wp->query_vars['player_id'] ) ) {
+        global $wp;
+        $args      = shortcode_atts(
+            array(
+                'id'      => 0,
+                'season'  => null,
+                'players' => null,
+            ),
+            $atts
+        );
+        $event_id  = $args['id'];
+        $season    = $args['season'];
+        $player_id = $args['players'];
+        $event     = get_event( $event_id );
+        if ( $event ) {
+            $event->set_season( $season );
+            $event->players = array();
+            if ( ! $player_id && isset( $wp->query_vars['player_id'] ) ) {
                 $player_id = un_seo_url( get_query_var( 'player_id' ) );
             }
-			if ( $player_id ) {
+            if ( $player_id ) {
                 $player = $this->get_player_info( $event, $player_id );
                 if ( is_object( $player ) ) {
                     $event->player = $player;
@@ -358,22 +358,22 @@ class Shortcodes_Event extends Shortcodes {
                     $msg = $this->player_not_found;
                     return $this->return_error( $msg );
                 }
-			} else {
-				$players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
-				$event->players = Util::get_players_list( $players );
-			}
-			$filename = 'players';
-			return $this->load_template(
-				$filename,
-				array(
-					'event' => $event,
-				),
-				'event'
-			);
-		} else {
-			$msg = $this->event_not_found;
-			return $this->return_error( $msg );
-		}
+            } else {
+                $players        = $event->get_players( array( 'season' => $event->current_season['name'] ) );
+                $event->players = Util::get_players_list( $players );
+            }
+            $filename = 'players';
+            return $this->load_template(
+                $filename,
+                array(
+                    'event' => $event,
+                ),
+                'event'
+            );
+        } else {
+            $msg = $this->event_not_found;
+            return $this->return_error( $msg );
+        }
     }
     /**
      * Function to get player information for event

@@ -68,13 +68,4 @@ export function initializePlayerUpdate() {
         .on('click.racketmanager.player', '#updatePlayerSubmit', function (e) {
             return updatePlayer(e, this);
         });
-
-    // Backwards compatibility: expose the function on global Racketmanager
-    // so existing onclick handlers (onclick="Racketmanager.updatePlayer(this)") still work.
-    if (!window.Racketmanager) window.Racketmanager = {};
-    window.Racketmanager.updatePlayer = function (link) {
-        // Create a synthetic event that mirrors a click to preserve preventDefault behavior
-        const evt = window.event || new Event('click');
-        return updatePlayer(evt, link);
-    };
 }

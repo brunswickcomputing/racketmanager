@@ -21,6 +21,7 @@ import { initializeAccountUpdate } from './features/account/account-update.js';
 import { initializeClubUpdate } from './features/club/club-update.js';
 import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
 import { initializePlayerUpdate } from './features/player/player-update.js';
+import { initializeSetMatchStatus } from './features/match/set-match-status.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -71,6 +72,9 @@ jQuery(function () {
     initializeClubUpdate();
     // Player Update
     initializePlayerUpdate();
+
+    // Match Status (delegated data-action handler)
+    initializeSetMatchStatus();
 });
 
 // Re-initialize after AJAX
@@ -87,4 +91,5 @@ jQuery(document).ajaxComplete(function () {
     initializeAccountUpdate();
     initializeClubUpdate();
     initializePlayerUpdate();
+    // No need to re-initialize set-match-status; delegated handler on document covers dynamic content
 });

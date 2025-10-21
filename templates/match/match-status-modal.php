@@ -108,7 +108,7 @@ namespace Racketmanager;
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-                <button type="button" class="btn btn-primary" onclick="Racketmanager.setMatchStatus(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+                <button type="button" class="btn btn-primary" data-action="set-match-status"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
             </div>
         </form>
     </div>

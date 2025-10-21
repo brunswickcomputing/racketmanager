@@ -17,6 +17,7 @@ import { initializeTournamentDate } from './features/tournaments/tournament-date
 import { initializePopstateHandler } from './features/navigation/popstate-handler.js';
 import { initializePrinting } from './features/printing/index.js';
 import { initializeTabDataFeature } from './features/tabdata/index.js';
+import { initializeAccountUpdate } from './features/account/account-update.js';
 import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
 
 // Initialize on document ready
@@ -61,6 +62,9 @@ jQuery(function () {
 
     // Printing
     initializePrinting();
+
+    // Account Update (expose global handler)
+    initializeAccountUpdate();
 });
 
 // Re-initialize after AJAX
@@ -73,4 +77,6 @@ jQuery(document).ajaxComplete(function () {
     initializeNavigation();
     initializePopstateHandler();
     initializeTournamentDate();
+    // Ensure global is still present after dynamic content loads
+    initializeAccountUpdate();
 });

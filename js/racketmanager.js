@@ -1749,66 +1749,6 @@ Racketmanager.teamEditModal = function (event, teamId, eventId) {
 Racketmanager.show_set_team_button = function () {
 	jQuery("#setTeamButton").show();
 };
-Racketmanager.accountUpdate = function (e, link) {
-	e.preventDefault();
-	let alertField = "#userAlert";
-	let alertResponseField = "#userAlertResponse";
-	jQuery(alertField).hide();
-	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(alertResponseField).val("");
-	jQuery(".is-invalid").removeClass("is-invalid");
-	let loadingField = '#accountUpdateModule';
-	jQuery(loadingField).addClass('is-loading');
-	let notifyField = '#memberAccountForm';
-	jQuery(notifyField).hide();
-	let formId = '#'.concat(link.form.id);
-	let form = jQuery(formId).serialize();
-	form += "&action=racketmanager_update_account";
-	jQuery.ajax({
-		type: 'POST',
-		datatype: 'json',
-		url: ajax_var.url,
-		async: false,
-		data: form,
-		success: function (response) {
-			let data = response.data;
-			let msg = data.msg;
-			jQuery(alertResponseField).html(msg);
-			let alertClass = 'alert--' + data.class;
-			jQuery(alertField).addClass(alertClass);
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				if (response.status === 401) {
-					let data = response.responseJSON.data;
-					let message = data.msg;
-					if (data.error) {
-						let errorMsgs = data.err_msgs;
-						let errorFields = data.err_flds;
-						for (let $i = 0; $i < errorFields.length; $i++) {
-							let formField = "#" + errorFields[$i];
-							jQuery(formField).addClass('is-invalid');
-							formField = formField + 'Feedback';
-							jQuery(formField).html(errorMsgs[$i]);
-						}
-					}
-					jQuery(alertResponseField).html(message);
-				} else {
-					let message = response.responseJSON.data;
-					jQuery(alertResponseField).html(message);
-				}
-			} else {
-				jQuery(alertResponseField).text(response.statusText);
-			}
-			jQuery(alertField).addClass('alert--danger');
-		},
-		complete: function () {
-			jQuery(alertField).show();
-			jQuery(notifyField).show();
-			jQuery(loadingField).removeClass('is-loading');
-		}
-	});
-};
 Racketmanager.setRubberStatusMessages = function(rubberNumber,statusMessages) {
 	for (let i in statusMessages) {
 		let statusMessage = statusMessages[i];

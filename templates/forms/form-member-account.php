@@ -237,8 +237,3 @@ $is_invalid = false;
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    document.getElementById('memberAccountButton').addEventListener('click', function (e) {
-        Racketmanager.accountUpdate(e, this);
-    });
-</script>

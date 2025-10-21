@@ -56,7 +56,7 @@ namespace Racketmanager;
             </a>
         </div>
         <div class="col-6">
-            <button id="loginButton" type="submit" class="float-end">
+            <button id="loginButton" type="submit" class="float-end" data-action="login-submit">
                 <?php esc_html_e( 'Login', 'racketmanager' ); ?>
             </button>
             <?php
@@ -103,17 +103,9 @@ namespace Racketmanager;
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-                    <button type="button" id="resetPasswordButton" class="btn btn-primary"><?php esc_html_e( 'Send', 'racketmanager' ); ?></button>
+                    <button type="button" id="resetPasswordButton" class="btn btn-primary" data-action="reset-password"><?php esc_html_e( 'Send', 'racketmanager' ); ?></button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-<script>
-    document.getElementById('loginButton').addEventListener('click', function (e) {
-        Racketmanager.login(e)
-    })
-    document.getElementById('resetPasswordButton').addEventListener('click', function () {
-        Racketmanager.resetPassword(this)
-    })
-</script>

@@ -1000,57 +1000,6 @@ Racketmanager.deleteMessages = function (event, link) {
 		}
 	});
 };
-Racketmanager.resetPassword = function (link) {
-	let formId = '#'.concat(link.form.id);
-	let $form = jQuery(formId).serialize();
-	$form += "&action=racketmanager_reset_password";
-	let alert_id_1;
-	let alert_response_1 = '';
-	alert_id_1 = jQuery('#loginAlert');
-	alert_response_1 = '#loginAlertResponse';
-	jQuery(alert_id_1).hide();
-	jQuery(alert_id_1).removeClass('alert--success alert--warning alert--danger');
-	let alert_id_2 = jQuery('#resetAlert');
-	jQuery(alert_id_2).hide();
-	jQuery(alert_id_2).removeClass('alert--success alert--warning alert--danger');
-	let alert_response_2 = '#resetAlertResponse';
-	jQuery(".is-invalid").removeClass("is-invalid");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: $form,
-		success: function (response) {
-			let message = response.data[0];
-			let modal = '#resetPasswordModal';
-			jQuery(alert_id_1).show();
-			jQuery(alert_id_1).addClass('alert--success');
-			jQuery(alert_response_1).html(message);
-			jQuery(modal).modal('hide')
-		},
-		error: function (response) {
-			if (response.responseJSON) {
-				let data = response.responseJSON.data;
-				let message = '';
-				for (let errorMsg of data[1]) {
-					message += errorMsg + '<br />';
-				}
-				let errorFields = data[2];
-				for (let errorField of errorFields) {
-					let id = '#'.concat(errorField);
-					jQuery(id).addClass("is-invalid");
-				}
-				jQuery(alert_response_2).html(message);
-			} else {
-				jQuery(alert_response_2).text(response.statusText);
-			}
-			jQuery(alert_id_2).show();
-			jQuery(alert_id_2).addClass('alert--danger');
-		},
-		complete: function () {
-		}
-	});
-};
 Racketmanager.playerSearch = function (event) {
 	event.preventDefault();
 	let notifyBlock = "#searchResultsContainer";
@@ -1267,40 +1216,6 @@ Racketmanager.withdrawTournament = function (e) {
 								 }
 							 }
 							 );
-};
-Racketmanager.login = function (e) {
-	e.preventDefault();
-	let	notifyField = "#login";
-	jQuery(notifyField).css('opacity', 0.25);
-	let alertTextField = '#loginAlertResponse';
-	let alertField = '#loginAlert';
-	jQuery(alertField).hide();
-	jQuery(alertTextField).html();
-	let userLogin = jQuery('#user_login').val();
-	let userPass = jQuery('#user_pass').val();
-	let redirectURL = jQuery('#redirect_to').val();
-	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: {
-			"action": "racketmanager_login",
-			"security": ajax_var.ajax_nonce,
-			"log": userLogin,
-			"pwd": userPass,
-			"redirect_to": redirectURL,
-		},
-		success: function (response) {
-			document.location.href = response.data;
-		},
-		error: function (response) {
-			Racketmanager.handleAjaxError(response, alertTextField, alertField);
-			jQuery(alertField).show();
-		},
-		complete: function () {
-			jQuery(notifyField).css('opacity', 1);
-		}
-	});
 };
 Racketmanager.confirmTournamentWithdraw = function () {
 	let modal = '#partnerModal';

@@ -22,6 +22,8 @@ import { initializeClubUpdate } from './features/club/club-update.js';
 import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
 import { initializePlayerUpdate } from './features/player/player-update.js';
 import { initializeSetMatchStatus } from './features/match/set-match-status.js';
+import { initializeLogin } from './features/auth/login.js';
+import { initializeResetPassword } from './features/auth/reset-password.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -75,6 +77,10 @@ jQuery(function () {
 
     // Match Status (delegated data-action handler)
     initializeSetMatchStatus();
+
+    // Auth
+    initializeLogin();
+    initializeResetPassword();
 });
 
 // Re-initialize after AJAX

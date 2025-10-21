@@ -113,6 +113,8 @@ jQuery(document).ajaxComplete(function () {
     initializeAccountUpdate();
     initializeClubUpdate();
     initializePlayerUpdate();
+    // Modals (some bind direct events, e.g., has-modal checkboxes)
+    initializeModals();
     // Teams (ensure delegated handlers are bound after dynamic injections)
     initializeTeamsAdmin();
     // No need to re-initialize set-match-status; delegated handler on document covers dynamic content

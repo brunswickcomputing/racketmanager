@@ -2,6 +2,8 @@
  * Checkboxes that trigger modals
  */
 
+import { openPartnerModal } from './partner-modal.js';
+
 export function initializeHasModalCheckboxes() {
     jQuery(".hasModal:checkbox").click(function (event) {
         jQuery('#liEventDetails').addClass('is-loading');
@@ -24,18 +26,27 @@ function checkToggle($target, event) {
         if ($target2.classList.contains('is-doubles')) {
             $target2.classList.toggle('form-checkboxes__conditional--hidden', !inputIsChecked);
             if (inputIsChecked) {
-                Racketmanager.partnerModal(event, eventId);
+                // Open Partner modal using modular function (no globals)
+                openPartnerModal(event, eventId);
             } else {
                 jQuery("#partnerId-" + eventId).val('');
                 jQuery("#partnerName-" + eventId).html('');
-                Racketmanager.clearPrice(eventId);
+                // Pricing remains legacy for Phase 5; keep BC for now
+                if (globalThis.Racketmanager && typeof globalThis.Racketmanager.clearPrice === 'function') {
+                    Racketmanager.clearPrice(eventId);
+                }
                 liEventDetails.removeClass('is-loading');
             }
         } else {
+            // Singles – update pricing if legacy function available (Phase 5 will modularize)
             if (inputIsChecked) {
-                Racketmanager.setEventPrice(eventId);
+                if (globalThis.Racketmanager && typeof globalThis.Racketmanager.setEventPrice === 'function') {
+                    Racketmanager.setEventPrice(eventId);
+                }
             } else {
-                Racketmanager.clearPrice(eventId);
+                if (globalThis.Racketmanager && typeof globalThis.Racketmanager.clearPrice === 'function') {
+                    Racketmanager.clearPrice(eventId);
+                }
             }
             liEventDetails.removeClass('is-loading');
         }

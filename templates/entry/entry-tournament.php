@@ -355,7 +355,7 @@ if ( ! empty( $player->entry ) ) {
                                                                     <?php
                                                                     if ( $changes_allowed ) {
                                                                         ?>
-                                                                        <a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" class="tournamentEventEntry" data-event-id="<?php echo esc_attr( $event->id ); ?>">
+                                                                        <a href="/<?php echo esc_attr( seo_url( $event->name ) ); ?>-<?php echo esc_html( seo_url( __( 'set partner', 'racketmanager' ) ) ); ?>" class="tournamentEventEntry" data-event-id="<?php echo esc_attr( $event->id ); ?>" data-action="open-partner-modal">
                                                                         <?php
                                                                     }
                                                                     ?>
@@ -477,11 +477,6 @@ if ( ! empty( $player->entry ) ) {
     </form>
 </div>
 <script type="text/javascript">
-    const eventLinks = document.querySelectorAll('.tournamentEventEntry');
-    eventLinks.forEach(el => el.addEventListener('click', function (e) {
-        let eventId = this.dataset.eventId;
-        Racketmanager.partnerModal(e, eventId);
-    }));
     <?php require_once RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
     document.getElementById('tournamentWithdraw').addEventListener('click', function (e) {
         Racketmanager.withdrawTournament(e);

@@ -21,10 +21,8 @@ export function initializePartnerLookup(context = document) {
             minLength: 2,
             source: function (request, response) {
                 const partnerGender = jQuery("#partnerGender").val();
-                const club = jQuery("#clubId").val();
                 const notifyField = '#partnerFeedback';
-
-                const results = getPlayerDetails('name', request.term, club, notifyField, partnerGender);
+                const results = getPlayerDetails('name', request.term, null, notifyField, partnerGender);
                 response(results);
             },
             select: function (event, ui) {
@@ -36,6 +34,7 @@ export function initializePartnerLookup(context = document) {
                 jQuery('#partnerId').val(ui.item.playerId);
                 jQuery('#partnerContactno').val(ui.item.contactno);
                 jQuery('#partnerContactemail').val(ui.item.user_email);
+                jQuery('#partnerBTM').val(ui.item.btm);
             },
             change: function (event, ui) {
                 setPlayerDetails(
@@ -43,7 +42,8 @@ export function initializePartnerLookup(context = document) {
                     '#partnerName',
                     '#partnerId',
                     '#partnerContactno',
-                    '#partnerContactemail'
+                    '#partnerContactemail',
+                    '#partnerBTM'
                 );
             }
         });
@@ -57,7 +57,6 @@ export function initializePartnerLookup(context = document) {
             minLength: 2,
             source: function (request, response) {
                 const notifyField = '#partnerFeedback';
-
                 const results = getPlayerDetails('btm', request.term, null, notifyField);
                 response(results);
             },

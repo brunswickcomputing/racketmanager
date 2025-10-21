@@ -70,18 +70,21 @@ export function getPlayerDetails(type, name, club = null, notifyField = null, pa
  * @param {string} playerId - Player ID field selector
  * @param {string} contactno - Contact number field selector
  * @param {string} contactemail - Contact email field selector
+ * @param {string} btm - LTA tennis number field selector
  */
-export function setPlayerDetails(ui, player, playerId, contactno, contactemail) {
+export function setPlayerDetails(ui, player, playerId, contactno, contactemail, btm) {
     if (ui.item === null) {
         jQuery(player).val('');
         jQuery(playerId).val('');
         jQuery(contactno).val('');
         jQuery(contactemail).val('');
+        jQuery(btm).val('');
     } else {
         jQuery(player).val(ui.item.value);
         jQuery(playerId).val(ui.item.playerId);
         jQuery(contactno).val(ui.item.contactno);
         jQuery(contactemail).val(ui.item.user_email);
+        jQuery(btm).val(ui.item.btm);
     }
 }
 

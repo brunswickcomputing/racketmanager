@@ -667,39 +667,6 @@ Racketmanager.viewMatch = function (e) {
 		globalThis.location = link;
 	}
 };
-Racketmanager.scoreStatusModal = function (event, rubber_id, rubber_number) {
-	event.preventDefault();
-    let loadingModal = this.loadingModal;
-    jQuery(loadingModal).modal('show');
-    let errorField = "#matchAlert";
-    let errorResponseField = errorField + 'Response';
-    jQuery(errorField).hide();
-	let notifyField = "#scoreStatusModal";
-	let modal = 'scoreStatusModal';
-	let scoreStatus = jQuery('#match_status_' + rubber_number).val();
-	jQuery(notifyField).val("");
-	jQuery(notifyField).load(
-		ajax_var.url,
-		{
-			"rubber_id": rubber_id,
-			"score_status": scoreStatus,
-			"modal": modal,
-			"action": "racketmanager_match_rubber_status",
-			"security": ajax_var.ajax_nonce,
-		},
-        function (response, status) {
-            jQuery(loadingModal).modal('hide');
-            if ( 'error' === status ) {
-                let data = JSON.parse(response);
-                jQuery(errorResponseField).html(data.message);
-                jQuery(errorField).show();
-            } else {
-                jQuery(notifyField).show();
-                jQuery(notifyField).modal('show');
-            }
-        }
-	);
-};
 Racketmanager.setMatchRubberStatus = function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();

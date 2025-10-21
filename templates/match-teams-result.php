@@ -325,7 +325,7 @@ if ( $match->is_walkover ) {
                                                                 ?>
                                                                 <div class="match__header-aside text-uppercase">
                                                                     <div class="match__header-aside-block">
-                                                                        <a href="" class="nav__link scoreStatusLink" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>" data-rubber-number="<?php echo esc_attr( $rubber->rubber_number ); ?>">
+                                                                        <a class="nav__link" role="button" data-action="open-rubber-status-modal" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>" data-rubber-number="<?php echo esc_attr( $rubber->rubber_number ); ?>">
                                                                             <svg width="16" height="16" class="icon-plus nav-link__prefix">
                                                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                                                             </svg>
@@ -628,26 +628,6 @@ if ( $match->is_walkover ) {
     </div>
     <script>
         <?php require_once RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
-        const scoreStatusLinks = document.querySelectorAll('.scoreStatusLink');
-        scoreStatusLinks.forEach(function(el) {
-            el.removeEventListener('click', scoreStatusClick);
-            el.addEventListener('click', scoreStatusClick);
-        });
-        function scoreStatusClick (e) {
-            let rubberId = this.dataset.rubberId;
-            let rubberNumber = this.dataset.rubberNumber;
-            Racketmanager.scoreStatusModal(e, rubberId, rubberNumber);
-        }
-        const scoreResetLinks = document.querySelectorAll('.scoreResetLink');
-        scoreResetLinks.forEach(function(el) {
-            el.removeEventListener('click', resetMatchClick);
-            el.addEventListener('click', resetMatchClick);
-        });
-        function resetMatchClick (e) {
-            let rubberId = this.dataset.rubberId;
-            let matchRef = 'rubber-' + rubberId;
-            Racketmanager.resetMatchScores(e, matchRef);
-        }
     </script>
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
     <?php require_once 'includes/match-modal.php'; ?>

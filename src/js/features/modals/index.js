@@ -8,6 +8,7 @@ import { initializeHasModalCheckboxes } from './has-modal-checkboxes.js';
 import { initializePOModal } from './po-modal.js';
 import { initializeSetPurchaseOrder } from './po-set-purchase-order.js';
 import { initializeMatchStatusModal } from './match-status-modal.js';
+import { initializeRubberStatusModal } from '../match/rubber-status-modal.js';
 
 export function initializeModals() {
     initializeNoModalCheckboxes();
@@ -15,6 +16,7 @@ export function initializeModals() {
     initializePOModal();
     initializeSetPurchaseOrder();
     initializeMatchStatusModal();
+    initializeRubberStatusModal();
 }
 
 // Re-export utilities for direct use

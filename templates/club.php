@@ -183,7 +183,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                     <?php
                     if ( $user_can_update_club ) {
                         ?>
-                        <button class="btn mb-3" type="button" id="updateClubSubmit" name="updateClubSubmit" onclick="Racketmanager.updateClub(this)"><?php esc_html_e( 'Update details', 'racketmanager' ); ?></button>
+                        <button class="btn mb-3" type="button" id="updateClubSubmit" name="updateClubSubmit"><?php esc_html_e( 'Update details', 'racketmanager' ); ?></button>
                         <div class="updateResponse" id="updateClub"></div>
                         <div id="clubUpdateResponse" class="alert_rm" style="display: none;">
                             <div class="alert__body">

@@ -190,9 +190,10 @@ class RacketManager {
      */
     public function set_page_title( string $title ): string {
         global $wp;
+        debug_to_console( $wp->query_vars);
         $slug        = get_post_field( 'post_name' );
         $site_name   = $this->site_name;
-        $event       = isset( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
+        $event       = isset( $wp->query_vars['event'] ) && is_string( $wp->query_vars['event'] ) ? ucwords( un_seo_url( $wp->query_vars['event'] ) ) : '';
         $season      = isset( $wp->query_vars['season'] ) ? ucwords( un_seo_url( $wp->query_vars['season'] ) ) : '';
         $club        = isset( $wp->query_vars['club_name'] ) ? ucwords( un_seo_url( $wp->query_vars['club_name'] ) ) : '';
         $player      = isset( $wp->query_vars['player_id'] ) ? ucwords( un_seo_url( $wp->query_vars['player_id'] ) ) : '';

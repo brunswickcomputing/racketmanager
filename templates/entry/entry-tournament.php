@@ -456,7 +456,7 @@ if ( ! empty( $player->entry ) ) {
                             if ( $changes_allowed || $withdrawal_allowed ) {
                                 ?>
                                 <div class="individual-entry__submit">
-                                    <button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="tournament"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
+                                    <button type="submit" class="btn btn-primary" id="entrySubmit" name="entrySubmit" data-type="tournament" data-action="entry-submit"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></button>
                                 </div>
                                 <?php
                             }
@@ -465,7 +465,7 @@ if ( ! empty( $player->entry ) ) {
                             <?php
                             if ( $withdrawal_allowed ) {
                                 ?>
-                                <a class="btn btn--withdraw" id="tournamentWithdraw"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></a>
+                                <a class="btn btn--withdraw" id="tournamentWithdraw" data-action="withdraw-tournament"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></a>
                                 <?php
                             }
                             ?>
@@ -476,10 +476,4 @@ if ( ! empty( $player->entry ) ) {
         </div>
     </form>
 </div>
-<script type="text/javascript">
-    <?php require_once RACKETMANAGER_PATH . 'js/entry-link.js'; ?>
-    document.getElementById('tournamentWithdraw').addEventListener('click', function (e) {
-        Racketmanager.withdrawTournament(e);
-    });
-</script>
 <div class="modal" id="partnerModal" tabindex="-1"></div>

@@ -30,6 +30,9 @@ import { initializeMessages } from './features/messages/messages.js';
 import { initializeTelemetry } from './features/telemetry/index.js';
 import { initializePlayerSearch } from './features/player/player-search.js';
 import { initializePricing } from './features/pricing/pricing.js';
+import { initializeTournamentWithdrawal } from './features/withdrawals/tournament-withdrawal.js';
+import { initializePaymentStatus } from './features/payments/payment-status.js';
+import { initializeEntryRequest } from './features/entry/entry-request.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -101,6 +104,13 @@ jQuery(function () {
 
     // Pricing & Totals
     initializePricing();
+
+    // Payments & Withdrawals (Phase 6)
+    initializeTournamentWithdrawal();
+    initializePaymentStatus();
+
+    // Entry Requests (modularized legacy entryRequest)
+    initializeEntryRequest();
 });
 
 // Re-initialize after AJAX

@@ -85,13 +85,3 @@ namespace Racketmanager;
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    const messages = document.querySelectorAll('.message-summary');
-    messages.forEach(el => el.addEventListener('click', function (e) {
-        let messageId = this.dataset.messageId;
-        Racketmanager.getMessage(e, messageId)
-    }));
-    document.getElementById('deleteMessages').addEventListener('click', function (e) {
-        Racketmanager.deleteMessages(e, this);
-    });
-</script>

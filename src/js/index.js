@@ -24,6 +24,7 @@ import { initializePlayerUpdate } from './features/player/player-update.js';
 import { initializeSetMatchStatus } from './features/match/set-match-status.js';
 import { initializeLogin } from './features/auth/login.js';
 import { initializeResetPassword } from './features/auth/reset-password.js';
+import { initializeMessages } from './features/messages/messages.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -81,6 +82,9 @@ jQuery(function () {
     // Auth
     initializeLogin();
     initializeResetPassword();
+
+    // Messages feature (delegated handlers)
+    initializeMessages();
 });
 
 // Re-initialize after AJAX

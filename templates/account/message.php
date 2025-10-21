@@ -40,10 +40,4 @@ namespace Racketmanager;
     <?php $frame_source = $message_dtl->message_object; ?>
     <iframe title="<?php esc_html_e( 'Message details', 'racketmanager' ); ?>" srcdoc='<?php echo $frame_source; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>'></iframe>
 </div>
-<script type="text/javascript">
-    document.getElementById('deleteMessage').addEventListener('click', function (e) {
-        let msgId = this.dataset.msgId;
-        Racketmanager.deleteMessage(e, msgId);
-    });
-</script>
 

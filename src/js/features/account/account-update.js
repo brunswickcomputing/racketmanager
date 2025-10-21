@@ -1,3 +1,4 @@
+import { getAjaxUrl } from '../../config/ajax-config.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 
 /**
@@ -38,7 +39,7 @@ export function accountUpdate(e, link) {
     jQuery.ajax({
         type: 'POST',
         datatype: 'json',
-        url: ajax_var.url,
+        url: getAjaxUrl(),
         async: false,
         data: form,
         success: function (response) {

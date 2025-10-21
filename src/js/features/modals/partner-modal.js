@@ -8,6 +8,7 @@
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 import { LOADING_MODAL } from '../../config/constants.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
+import { setEventPrice } from '../pricing/pricing.js';
 
 const PARTNER_MODAL = '#partnerModal';
 const LIST_CONTAINER = '#liEventDetails';
@@ -35,7 +36,8 @@ export function openPartnerModal(event, eventId) {
   const eventRef = `#event-${eventId}`;
   try { jQuery(eventRef).prop('checked', true); } catch (_) { /* no-op */ }
 
-  // Read ancillary fields (gender/season/dateEnd) if present on page
+  // Read ancillary fields (playerId/gender/season/dateEnd) if present on page
+  const playerId = jQuery('#playerId').val();
   const gender = jQuery('#playerGender').val();
   const season = jQuery('#season').val();
   const dateEnd = jQuery('#tournamentDateEnd').val();
@@ -44,15 +46,13 @@ export function openPartnerModal(event, eventId) {
   jQuery(ALERT_ID).hide();
   jQuery(PARTNER_MODAL).val('');
 
-  // Optional loading modal
-  try { jQuery(LOADING_MODAL).modal('show'); } catch (_) { /* no-op */ }
-
   // Load modal contents
   jQuery(PARTNER_MODAL).load(
     getAjaxUrl(),
     {
       eventId: eventId,
       modal: 'partnerModal',
+      playerId: playerId,
       gender: gender,
       season: season,
       partnerId: jQuery(`#partnerId-${eventId}`).val(),
@@ -61,17 +61,16 @@ export function openPartnerModal(event, eventId) {
       security: getAjaxNonce(),
     },
     function (response, status, xhr) {
-      try { jQuery(LOADING_MODAL).modal('hide'); } catch (_) { /* no-op */ }
       jQuery(LIST_CONTAINER).removeClass('is-loading');
       if (status === 'error') {
         // Render error inside modal area using legacy-like formatting
         handleAjaxError(xhr, ALERT_TEXT, ALERT_ID);
         jQuery(ALERT_ID).show();
       } else {
-        jQuery(PARTNER_MODAL).show();
-        try { jQuery(PARTNER_MODAL).modal('show'); } catch (_) { /* no-op */ }
         // Attach event id to modal for convenience
         jQuery(PARTNER_MODAL).attr('data-event', eventId);
+        jQuery(PARTNER_MODAL).show();
+        try { jQuery(PARTNER_MODAL).modal('show'); } catch (_) { /* no-op */ }
       }
     }
   );
@@ -115,10 +114,8 @@ export function savePartner(link) {
       // Hide modal
       try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
 
-      // Update pricing for the event if pricing module is present
-      if (globalThis.Racketmanager && typeof globalThis.Racketmanager.setEventPrice === 'function') {
-        try { globalThis.Racketmanager.setEventPrice(eventId); } catch (_) { /* no-op */ }
-      }
+      // Update pricing for the event using modular pricing
+      try { setEventPrice(eventId); } catch (_) { /* no-op */ }
     },
     error: function (response) {
       // Server may return [message, errorMsgs[], errorFlds[]]

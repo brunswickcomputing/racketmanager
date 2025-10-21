@@ -3,6 +3,7 @@
  */
 
 import { openPartnerModal } from './partner-modal.js';
+import { setEventPrice, clearEventPrice } from '../pricing/pricing.js';
 
 export function initializeHasModalCheckboxes() {
     jQuery(".hasModal:checkbox").click(function (event) {
@@ -31,22 +32,16 @@ function checkToggle($target, event) {
             } else {
                 jQuery("#partnerId-" + eventId).val('');
                 jQuery("#partnerName-" + eventId).html('');
-                // Pricing remains legacy for Phase 5; keep BC for now
-                if (globalThis.Racketmanager && typeof globalThis.Racketmanager.clearPrice === 'function') {
-                    Racketmanager.clearPrice(eventId);
-                }
+                // Update pricing using modular pricing
+                clearEventPrice(eventId);
                 liEventDetails.removeClass('is-loading');
             }
         } else {
-            // Singles – update pricing if legacy function available (Phase 5 will modularize)
+            // Singles – update pricing using modular helpers
             if (inputIsChecked) {
-                if (globalThis.Racketmanager && typeof globalThis.Racketmanager.setEventPrice === 'function') {
-                    Racketmanager.setEventPrice(eventId);
-                }
+                setEventPrice(eventId);
             } else {
-                if (globalThis.Racketmanager && typeof globalThis.Racketmanager.clearPrice === 'function') {
-                    Racketmanager.clearPrice(eventId);
-                }
+                clearEventPrice(eventId);
             }
             liEventDetails.removeClass('is-loading');
         }

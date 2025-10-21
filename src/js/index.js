@@ -29,6 +29,7 @@ import { initializeResetPassword } from './features/auth/reset-password.js';
 import { initializeMessages } from './features/messages/messages.js';
 import { initializeTelemetry } from './features/telemetry/index.js';
 import { initializePlayerSearch } from './features/player/player-search.js';
+import { initializePricing } from './features/pricing/pricing.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -97,6 +98,9 @@ jQuery(function () {
 
     // Player Search (delegated form submit)
     initializePlayerSearch();
+
+    // Pricing & Totals
+    initializePricing();
 });
 
 // Re-initialize after AJAX

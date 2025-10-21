@@ -359,7 +359,7 @@ if ( $match ) {
                             ?>
                             <div class="match__header-aside text-uppercase">
                                 <div class="match__header-aside-block">
-                                    <a href="" class="nav__link statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>">
+                                    <a href="" class="nav__link statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-action="open-match-status-modal">
                                         <svg width="16" height="16" class="icon-plus nav-link__prefix">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                         </svg>
@@ -589,11 +589,6 @@ if ( $match ) {
             let matchId = this.dataset.matchId;
             let matchOption = this.dataset.matchOption;
             Racketmanager.matchOptions(e, matchId, matchOption);
-        }));
-        const statusLinks = document.querySelectorAll('.statusLink');
-        statusLinks.forEach(el => el.addEventListener('click', function (e) {
-            let matchId = this.dataset.matchId;
-            Racketmanager.statusModal(e, matchId);
         }));
         const scoreResetLinks = document.querySelectorAll('.scoreResetLink');
         scoreResetLinks.forEach(el => el.addEventListener('click', function (e) {

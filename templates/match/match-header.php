@@ -300,7 +300,7 @@ if ( $match->is_pending ) {
         if ( $edit_mode && $user_can_update && ! $match_approval_mode ) {
             ?>
             <div class="text-center mt-2">
-                <a href="/status" class="nav__link btn btn-outline statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>" id="matchStatusButton">
+                <a href="/status" class="nav__link btn btn-outline statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>" id="matchStatusButton" data-action="open-match-status-modal">
                     <svg width="16" height="16" class="icon-plus nav-link__prefix">
                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                     </svg>
@@ -373,15 +373,6 @@ if ( $match->is_pending ) {
             let matchId = this.dataset.matchId;
             let matchOption = this.dataset.matchOption;
             Racketmanager.matchOptions(e, matchId, matchOption);
-        }
-        const statusLinks = document.querySelectorAll('.statusLink');
-        statusLinks.forEach(function(el) {
-            el.removeEventListener('click', statusModalClick);
-            el.addEventListener('click', statusModalClick);
-        });
-        function statusModalClick (e) {
-            let matchId = this.dataset.matchId;
-            Racketmanager.statusModal(e, matchId);
         }
     }
 </script>

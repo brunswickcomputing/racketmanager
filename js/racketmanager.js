@@ -801,39 +801,6 @@ Racketmanager.setMatchRubberStatus = function (link) {
 		}
 	});
 }
-Racketmanager.statusModal = function (event, match_id) {
-	event.preventDefault();
-    let loadingModal = this.loadingModal;
-    jQuery(loadingModal).modal('show');
-    let errorField = "#headerResponse";
-    let errorResponseField = errorField + 'Response';
-    jQuery(errorField).hide();
-	let notifyField = "#scoreStatusModal";
-	let matchStatus = jQuery('#match_status').val();
-	let modal = 'scoreStatusModal';
-	jQuery(notifyField).val("");
-	jQuery(notifyField).load(
-		ajax_var.url,
-		{
-			"match_id": match_id,
-			"modal": modal,
-			"match_status": matchStatus,
-			"action": "racketmanager_match_status",
-			"security": ajax_var.ajax_nonce,
-		},
-        function (response, status) {
-            jQuery(loadingModal).modal('hide');
-            if ( 'error' === status ) {
-                let data = JSON.parse(response);
-                jQuery(errorResponseField).html(data.message);
-                jQuery(errorField).show();
-            } else {
-                jQuery(notifyField).show();
-                jQuery(notifyField).modal('show');
-            }
-        }
-	);
-};
 Racketmanager.matchOptions = function (event, match_id, option) {
 	event.preventDefault();
     let loadingModal = this.loadingModal;

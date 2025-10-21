@@ -3,6 +3,8 @@
  * Provides a centralized error handling function compatible with legacy usage.
  */
 
+import { logger, recordEvent } from '../../utils/logger.js';
+
 /**
  * Safely extract a message from a jQuery AJAX error response.
  * Prefers server-provided JSON payloads, falls back to statusText.
@@ -62,6 +64,18 @@ export function handleAjaxError(response, alertTextField, alertField) {
             }
         }
     }
+
+    // Log centrally (no PII)
+    try {
+        logger.error('AJAX error', {
+            status: response && response.status,
+            statusText: response && response.statusText,
+            url: response && response.responseURL,
+        });
+        recordEvent('ajax_error', {
+            status: response && response.status,
+        });
+    } catch (_e) { /* no-op */ }
 
     jQuery(alertTextField).html(message);
     jQuery(alertField).addClass('alert--danger');

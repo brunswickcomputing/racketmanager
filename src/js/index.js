@@ -25,6 +25,8 @@ import { initializeSetMatchStatus } from './features/match/set-match-status.js';
 import { initializeLogin } from './features/auth/login.js';
 import { initializeResetPassword } from './features/auth/reset-password.js';
 import { initializeMessages } from './features/messages/messages.js';
+import { initializeTelemetry } from './features/telemetry/index.js';
+import { initializePlayerSearch } from './features/player/player-search.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -35,6 +37,9 @@ jQuery(function () {
 
     // Global AJAX error handler
     initializeAjaxError();
+
+    // Telemetry (opt-in, off in production by default)
+    initializeTelemetry();
 
     // UI Components
     initializeTooltips();
@@ -85,6 +90,9 @@ jQuery(function () {
 
     // Messages feature (delegated handlers)
     initializeMessages();
+
+    // Player Search (delegated form submit)
+    initializePlayerSearch();
 });
 
 // Re-initialize after AJAX

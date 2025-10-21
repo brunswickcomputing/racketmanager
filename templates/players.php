@@ -59,8 +59,3 @@ namespace Racketmanager;
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    document.getElementById('playerSearch').addEventListener('submit', function (e) {
-        Racketmanager.playerSearch(e);
-    });
-</script>

@@ -54,9 +54,3 @@ $invoice = $club->invoice;
     </div>
 </div>
 <div class="modal" id="POModal"></div>
-<script type="text/javascript">
-    document.getElementById('POModalLink').addEventListener('click', function (e) {
-        let invoiceId = this.dataset.invoiceId;
-        Racketmanager.POModal(e,invoiceId);
-    })
-</script>

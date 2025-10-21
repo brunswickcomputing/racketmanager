@@ -37,15 +37,10 @@ namespace Racketmanager;
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-                    <button class="btn btn-primary" type="button" id="POUpdateSubmit" name="POUpdateSubmit">
+                    <button class="btn btn-primary" type="button" id="POUpdateSubmit" name="POUpdateSubmit" data-action="set-purchase-order">
                         <?php esc_html_e( 'Update', 'racketmanager' ); ?>
                     </button>
                 </div>
         </form>
     </div>
 </div>
-<script type="text/javascript">
-    document.getElementById('POUpdateSubmit').addEventListener('click', function (e) {
-        Racketmanager.setPurchaseOrder(e, this);
-    });
-</script>

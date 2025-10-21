@@ -667,44 +667,6 @@ Racketmanager.viewMatch = function (e) {
 		globalThis.location = link;
 	}
 };
-Racketmanager.setMatchRubberStatus = function (link) {
-	let formId = '#'.concat(link.form.id);
-	let $form = jQuery(formId).serialize();
-	let splashBock = '#splashBlockRubber';
-	jQuery(splashBock).addClass('is-loading');
-	$form += "&action=racketmanager_set_match_rubber_status";
-	let notifyField = '#scoreStatusResponse';
-	jQuery(notifyField).hide();
-	let alertTextField = '#scoreStatusResponseText';
-	jQuery(alertTextField).html("");
-	jQuery(".is-invalid").removeClass("is-invalid");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: $form,
-		success: function (response) {
-			let data = response.data;
-			let rubberNumber = data.rubber_number;
-			let scoreStatus = data.score_status;
-			let statusMessages = Object.entries(data.status_message);
-			let statusClasses = Object.entries(data.status_class);
-			Racketmanager.setRubberStatusMessages(rubberNumber,statusMessages);
-			Racketmanager.setRubberStatusClasses(rubberNumber,statusClasses);
-			let modal = '#' + data.modal;
-			let matchStatusRef = '#' + 'match_status_' + rubberNumber;
-			jQuery(matchStatusRef).val(scoreStatus);
-			jQuery(modal).modal('hide')
-		},
-		error: function (response) {
-			Racketmanager.handleAjaxError(response, alertTextField, notifyField);
-			jQuery(notifyField).show();
-		},
-		complete: function () {
-			jQuery(splashBock).removeClass('is-loading');
-		}
-	});
-}
 Racketmanager.matchOptions = function (event, match_id, option) {
 	event.preventDefault();
     let loadingModal = this.loadingModal;

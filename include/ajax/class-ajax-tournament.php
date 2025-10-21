@@ -11,6 +11,7 @@ namespace Racketmanager\ajax;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Stripe_Settings;
 use Racketmanager\validator\Validator_Entry_Form;
+use Racketmanager\validator\Validator_Tournament;
 use stdClass;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
@@ -21,6 +22,7 @@ use function Racketmanager\get_player;
 use function Racketmanager\get_tournament;
 use function Racketmanager\get_tournament_entry;
 use function Racketmanager\seo_url;
+use function Racketmanager\show_alert;
 use function Racketmanager\tournament_withdrawal_modal;
 
 /**
@@ -308,27 +310,35 @@ class Ajax_Tournament extends Ajax {
     /**
      * Build screen to show team partner
      */
+    #[NoReturn]
     public function team_partner(): void {
-        $return = $this->check_security_token();
-        if ( ! empty( $return->error ) ) {
-            wp_send_json_error( $return->msg, $return->status );
+        $validator = new Validator_Tournament();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+            $player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+            $modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+            $season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+            $date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
+            $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
+            $args               = array();
+            $args['player']     = $player_id;
+            $args['gender']     = $gender;
+            $args['season']     = $season;
+            $args['date_end']   = $date_end;
+            $args['modal']      = $modal;
+            $args['partner_id'] = $partner_id;
+            $output             = event_partner_modal( $event_id, $args );
+        } else {
+            $return = $validator->get_details();
+            $output = show_alert( $return->msg, 'danger', 'modal' );
+            if ( ! empty( $return->status ) ) {
+                status_header( $return->status );
+            }
         }
-        $event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
-        $player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-        $modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-        $gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-        $season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-        $date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
-        $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
-        $args               = array();
-        $args['player']     = $player_id;
-        $args['gender']     = $gender;
-        $args['season']     = $season;
-        $args['date_end']   = $date_end;
-        $args['modal']      = $modal;
-        $args['partner_id'] = $partner_id;
-        $output             = event_partner_modal( $event_id, $args );
-        wp_send_json_success( $output );
+        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        wp_die();
     }
     /**
      * Validate tournament partner function

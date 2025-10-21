@@ -5,6 +5,7 @@
 
 import { getAjaxUrl } from '../../config/ajax-config.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
+import { setRubberStatusMessages, setRubberStatusClasses, setTeamMessage } from './rubber-status-ui.js';
 
 /**
  * Core implementation for setting match status.
@@ -43,12 +44,8 @@ export function setMatchStatus(link) {
             if (numRubbers) {
                 for (let x = 1; x <= numRubbers; x++) {
                     const rubberNumber = x;
-                    if (globalThis.Racketmanager?.setRubberStatusMessages) {
-                        globalThis.Racketmanager.setRubberStatusMessages(rubberNumber, statusMessages);
-                    }
-                    if (globalThis.Racketmanager?.setRubberStatusClasses) {
-                        globalThis.Racketmanager.setRubberStatusClasses(rubberNumber, statusClasses);
-                    }
+                    setRubberStatusMessages(rubberNumber, statusMessages);
+                    setRubberStatusClasses(rubberNumber, statusClasses);
                     const matchStatusRef = `#match_status_${rubberNumber}`;
                     jQuery(matchStatusRef).attr('value', scoreStatus);
                 }
@@ -59,16 +56,7 @@ export function setMatchStatus(link) {
                     const teamRef = statusMessage[0];
                     const teamMessage = statusMessage[1];
                     const messageRef = `#match-message-${teamRef}`;
-                    if (globalThis.Racketmanager?.setTeamMessage) {
-                        globalThis.Racketmanager.setTeamMessage(messageRef, teamMessage);
-                    } else {
-                        // Minimal fallback
-                        if (teamMessage) {
-                            jQuery(messageRef).html(teamMessage).removeClass('d-none').addClass('match-warning');
-                        } else {
-                            jQuery(messageRef).addClass('d-none').removeClass('match-warning').html('');
-                        }
-                    }
+                    setTeamMessage(messageRef, teamMessage);
                 }
                 for (let i in statusClasses) {
                     const statusClass = statusClasses[i];

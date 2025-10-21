@@ -1509,39 +1509,6 @@ Racketmanager.teamEditModal = function (event, teamId, eventId) {
 Racketmanager.show_set_team_button = function () {
 	jQuery("#setTeamButton").show();
 };
-Racketmanager.setRubberStatusMessages = function(rubberNumber,statusMessages) {
-	for (let i in statusMessages) {
-		let statusMessage = statusMessages[i];
-		let teamRef = statusMessage[0];
-		let teamMessage = statusMessage[1];
-		let messageRef = '#match-message-' + rubberNumber + '-' + teamRef;
-		Racketmanager.setTeamMessage(messageRef, teamMessage);
-	}
-}
-Racketmanager.setRubberStatusClasses = function(rubberNumber,statusClasses) {
-	for (let i in statusClasses) {
-		let statusClass = statusClasses[i];
-		let teamRef = statusClass[0];
-		let teamClass = statusClass[1];
-		let statusRef = '#match-status-' + rubberNumber + '-' + teamRef;
-		jQuery(statusRef).removeClass('winner loser tie');
-		if (teamClass) {
-			jQuery(statusRef).addClass(teamClass);
-		}
-	}
-}
-Racketmanager.setTeamMessage = function(messageRef, teamMessage) {
-	if (teamMessage) {
-		jQuery(messageRef).html(teamMessage);
-		jQuery(messageRef).removeClass('d-none');
-		jQuery(messageRef).addClass('match-warning');
-	} else {
-		jQuery(messageRef).addClass('d-none');
-		jQuery(messageRef).removeClass('match-warning');
-		jQuery(messageRef).html('');
-	}
-
-}
 Racketmanager.getMessageFromResponse = function(response) {
 	let message;
 	let data;

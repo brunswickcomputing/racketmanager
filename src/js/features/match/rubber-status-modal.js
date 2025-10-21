@@ -6,6 +6,7 @@
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 import { LOADING_MODAL } from '../../config/constants.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
+import { setRubberStatusMessages, setRubberStatusClasses } from './rubber-status-ui.js';
 
 const SCORE_STATUS_MODAL = '#scoreStatusModal';
 const ERROR_ALERT = '#scoreStatusResponse';
@@ -88,12 +89,8 @@ export function setRubberStatus(link) {
             const scoreStatus = data.score_status;
             const statusMessages = Object.entries(data.status_message || {});
             const statusClasses = Object.entries(data.status_class || {});
-            if (globalThis.Racketmanager?.setRubberStatusMessages) {
-                globalThis.Racketmanager.setRubberStatusMessages(rubberNumber, statusMessages);
-            }
-            if (globalThis.Racketmanager?.setRubberStatusClasses) {
-                globalThis.Racketmanager.setRubberStatusClasses(rubberNumber, statusClasses);
-            }
+            setRubberStatusMessages(rubberNumber, statusMessages);
+            setRubberStatusClasses(rubberNumber, statusClasses);
             const modal = `#${data.modal}`;
             const matchStatusRef = `#match_status_${rubberNumber}`;
             jQuery(matchStatusRef).val(scoreStatus);

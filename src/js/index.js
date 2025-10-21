@@ -17,6 +17,7 @@ import { initializeTournamentDate } from './features/tournaments/tournament-date
 import { initializePopstateHandler } from './features/navigation/popstate-handler.js';
 import { initializePrinting } from './features/printing/index.js';
 import { initializeTabDataFeature } from './features/tabdata/index.js';
+import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -24,6 +25,9 @@ jQuery(function () {
     if (!isjQueryUIAvailable()) {
         console.warn('jQuery UI not loaded - some features may not work');
     }
+
+    // Global AJAX error handler
+    initializeAjaxError();
 
     // UI Components
     initializeTooltips();
@@ -61,6 +65,9 @@ jQuery(function () {
 
 // Re-initialize after AJAX
 jQuery(document).ajaxComplete(function () {
+    // Ensure global error handler remains available
+    initializeAjaxError();
+
     initializeAutocomplete();
     initializeFavourites();
     initializeNavigation();

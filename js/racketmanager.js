@@ -140,9 +140,8 @@ function changePartnerName(ui) {
 		jQuery(playerBTM).val(ui.item.btm);
 	}
 }
-let Racketmanager = {
-    loadingModal: '#loadingModal',
-};
+var Racketmanager = (window.Racketmanager = window.Racketmanager || {});
+Racketmanager.loadingModal = Racketmanager.loadingModal || '#loadingModal';
 
 Racketmanager.printScoreCard = function (e, matchId) {
 	e.preventDefault();
@@ -537,29 +536,6 @@ Racketmanager.updateTeam = function (link) {
 	});
 	jQuery(submitButton).show();
 };
-Racketmanager.handleAjaxError = function(response, alertTextField, alertField) {
-	let message;
-	let data;
-	if (response.status === 500) {
-		message = Racketmanager.getMessageFromResponse(response);
-	} else if ( response.responseJSON) {
-		data = response.responseJSON.data;
-		message = data.msg;
-		if (data.err_msgs) {
-			for (let i = 0; i < data.err_flds.length; i++) {
-				let formField = "#" + data.err_flds[i];
-				jQuery(formField).addClass('is-invalid');
-				formField = formField + 'Feedback';
-				jQuery(formField).html(data.err_msgs[i]);
-			}
-		}
-	} else {
-		message = response.statusText;
-	}
-	jQuery(alertTextField).html(message);
-	jQuery(alertField).addClass('alert--danger');
-
-}
 Racketmanager.updateClub = function (link) {
 
 	let formId = '#'.concat(link.form.id);

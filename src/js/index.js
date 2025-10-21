@@ -16,7 +16,7 @@ import { initializeModals } from './features/modals/index.js';
 import { initializeTournamentDate } from './features/tournaments/tournament-date.js';
 import { initializePopstateHandler } from './features/navigation/popstate-handler.js';
 import { initializePrinting } from './features/printing/index.js';
-import { initializeTabDataFeature, tabData, tabDataLink } from './features/tabdata/index.js';
+import { initializeTabDataFeature } from './features/tabdata/index.js';
 
 // Initialize on document ready
 jQuery(function () {

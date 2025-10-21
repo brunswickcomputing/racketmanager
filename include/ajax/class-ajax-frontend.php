@@ -886,7 +886,7 @@ class Ajax_Frontend extends Ajax {
         if ( empty( $return->error ) ) {
             $team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
             $event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
-            $output = event_team_match_dropdown( $event_id, array( 'team_id' => $team_id ) );
+            $output   = event_team_match_dropdown( $event_id, array( 'team_id' => $team_id ) );
         } else {
             $output = show_alert( $return->msg, 'danger' );
         }

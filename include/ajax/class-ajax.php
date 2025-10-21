@@ -119,7 +119,6 @@ class Ajax {
         if ( empty( $results ) ) {
             return array(
                 'label' => __( 'No results found', 'racketmanager' ),
-                'value' => 'null',
             );
         }
         foreach ( $results as $r ) {

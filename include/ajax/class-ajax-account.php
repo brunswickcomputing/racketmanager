@@ -99,15 +99,15 @@ class Ajax_Account extends Ajax {
         }
     }
     /**
-     * Build screen to show message
+     * Build screen to show a message
      */
     public function get_user_message(): void {
         $return      = $this->check_security_token();
         if ( empty( $return->error ) ) {
-            $message_id  = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
-            $output      = show_message(  $message_id );
-            $message_dtl = get_message( $message_id );
+            $message_id     = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+            $message_dtl    = get_message( $message_id );
             $return->status = $message_dtl?->status;
+            $output         = show_message(  $message_id );
             $return->output = $output;
             wp_send_json_success( $return );
         } else {
@@ -115,7 +115,7 @@ class Ajax_Account extends Ajax {
         }
     }
     /**
-     * Delete message
+     * Delete a message
      */
     public function delete_message(): void {
         $return = $this->check_security_token();
@@ -273,7 +273,7 @@ class Ajax_Account extends Ajax {
     }
 
     /**
-     * Get updated user details from request
+     * Get updated user details from the request
      *
      * @param object $original_user
      *

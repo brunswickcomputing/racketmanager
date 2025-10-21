@@ -11,6 +11,8 @@ import { initializeCheckboxConditionals } from './features/forms/checkbox-condit
 import { initializeNavigation } from './features/navigation/index.js';
 import { initializeAutocomplete } from './features/autocomplete/index.js';
 import { initializeTeamSelection } from './features/teams/team-selection.js';
+import { initializeTeamOrder } from './features/teams/team-order.js';
+import { initializeTeamsAdmin } from './features/teams/team-admin.js';
 import { initializeFavourites } from './features/favourites/favourites.js';
 import { initializeModals } from './features/modals/index.js';
 import { initializeTournamentDate } from './features/tournaments/tournament-date.js';
@@ -61,6 +63,8 @@ jQuery(function () {
 
     // Teams
     initializeTeamSelection();
+    initializeTeamOrder();
+    initializeTeamsAdmin();
 
     // Modals
     initializeModals();
@@ -109,5 +113,7 @@ jQuery(document).ajaxComplete(function () {
     initializeAccountUpdate();
     initializeClubUpdate();
     initializePlayerUpdate();
+    // Teams (ensure delegated handlers are bound after dynamic injections)
+    initializeTeamsAdmin();
     // No need to re-initialize set-match-status; delegated handler on document covers dynamic content
 });

@@ -62,19 +62,3 @@ namespace Racketmanager;
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    jQuery(document).ready(function () {
-        showTeamPlayers();
-    });
-    jQuery(document).ajaxComplete(function () {
-        showTeamPlayers();
-    });
-    function showTeamPlayers () {
-        document.getElementById('club_id').addEventListener('change', function (e) {
-            Racketmanager.showTeamOrderPlayers(e);
-        });
-        document.getElementById('event_id').addEventListener('change', function (e) {
-            Racketmanager.showTeamOrderPlayers(e);
-        });
-    }
-</script>

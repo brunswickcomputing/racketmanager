@@ -26,7 +26,7 @@ namespace Racketmanager;
         ?>
         <div class="row gx-3 mb-3 align-items-center">
             <div class="form-floating col-auto">
-                <select class="form-select" size="1" name="teamId" id="teamId" onChange="Racketmanager.get_event_team_match_dropdown(this.value)">
+                <select class="form-select" size="1" name="teamId" id="teamId">
                     <option value="" disabled selected><?php esc_html_e( 'Select team', 'racketmanager' ); ?></option>
                     <?php
                     foreach ( $teams as $team ) {

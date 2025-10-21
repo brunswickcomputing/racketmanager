@@ -51,7 +51,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                         <div class="row mb-2 row-list">
                             <div class="col-2 col-md-2"><?php echo esc_html( $role->role->desc ); ?></div>
                             <div class="col-6 col-md-3">
-                                <a href="user-modal"><span class="club-role" data-club-role-id="<?php echo esc_attr( $role->id ); ?>"><?php echo esc_html( $role->user->display_name ); ?></span></a>
+                                <a href="#" class="club-role" data-action="open-club-role-modal" data-club-role-id="<?php echo esc_attr( $role->id ); ?>"><span><?php echo esc_html( $role->user->display_name ); ?></span></a>
                             </div>
                             <?php
                             if ( is_user_logged_in() ) {
@@ -76,10 +76,3 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 </div>
 <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
 <div class="modal" id="clubRoleModal"></div>
-<script type="text/javascript">
-    const eventLinks = document.querySelectorAll('.club-role');
-    eventLinks.forEach(el => el.addEventListener('click', function (e) {
-        let clubRoleId = this.dataset.clubRoleId;
-        Racketmanager.clubRoleModal(e, clubRoleId);
-    }));
-</script>

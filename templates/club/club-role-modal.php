@@ -62,15 +62,10 @@ namespace Racketmanager;
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-plain" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></button>
-                    <button class="btn btn-primary" type="button" id="clubRoleUpdateSubmit" name="clubRoleUpdateSubmit">
+                    <button class="btn btn-primary" type="button" id="clubRoleUpdateSubmit" name="clubRoleUpdateSubmit" data-action="set-club-role">
                         <?php esc_html_e( 'Update', 'racketmanager' ); ?>
                     </button>
                 </div>
         </form>
     </div>
 </div>
-<script type="text/javascript">
-    document.getElementById('clubRoleUpdateSubmit').addEventListener('click', function (e) {
-        Racketmanager.setClubRole(e, this);
-    });
-</script>

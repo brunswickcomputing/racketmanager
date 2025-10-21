@@ -33,6 +33,7 @@ import { initializePricing } from './features/pricing/pricing.js';
 import { initializeTournamentWithdrawal } from './features/withdrawals/tournament-withdrawal.js';
 import { initializePaymentStatus } from './features/payments/payment-status.js';
 import { initializeEntryRequest } from './features/entry/entry-request.js';
+import { initializeClubAdmin } from './features/club/admin/club-roles.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -111,6 +112,9 @@ jQuery(function () {
 
     // Entry Requests (modularized legacy entryRequest)
     initializeEntryRequest();
+
+    // Club Admin (Phase 8)
+    initializeClubAdmin();
 });
 
 // Re-initialize after AJAX
@@ -131,5 +135,7 @@ jQuery(document).ajaxComplete(function () {
     initializeModals();
     // Teams (ensure delegated handlers are bound after dynamic injections)
     initializeTeamsAdmin();
+    // Club Admin delegated handlers
+    initializeClubAdmin();
     // No need to re-initialize set-match-status; delegated handler on document covers dynamic content
 });

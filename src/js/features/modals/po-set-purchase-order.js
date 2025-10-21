@@ -4,6 +4,7 @@
  */
 
 import { getAjaxUrl } from '../../config/ajax-config.js';
+import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 
 const INVOICE_ALERT_ID = '#invoiceAlert';
 const INVOICE_RESPONSE_ID = '#invoiceResponse';
@@ -63,7 +64,7 @@ export function setPurchaseOrder(e, link) {
             }
         },
         error: function (response) {
-            handleAjaxErrorCompat(response, PO_RESPONSE_TEXT_ID, PO_ALERT_ID);
+            handleAjaxError(response, PO_RESPONSE_TEXT_ID, PO_ALERT_ID);
             jQuery(PO_ALERT_ID).show();
         },
         complete: function () {}
@@ -72,20 +73,6 @@ export function setPurchaseOrder(e, link) {
     return false;
 }
 
-/**
- * Compatibility error handler using legacy global if present
- */
-function handleAjaxErrorCompat(response, responseSelector, alertSelector) {
-    if (window.Racketmanager && typeof window.Racketmanager.handleAjaxError === 'function') {
-        return window.Racketmanager.handleAjaxError(response, responseSelector, alertSelector);
-    }
-    // Fallback: try to display a generic message
-    const msg = (response && response.responseJSON && response.responseJSON.data && response.responseJSON.data.msg)
-        || (response && response.statusText)
-        || 'An unexpected error occurred';
-    jQuery(alertSelector).addClass('alert--danger');
-    jQuery(responseSelector).html(msg);
-}
 
 /**
  * Initialize delegated handler for setting purchase order (no legacy globals)

@@ -536,45 +536,6 @@ Racketmanager.updateTeam = function (link) {
 	});
 	jQuery(submitButton).show();
 };
-Racketmanager.updatePlayer = function (link) {
-
-	let formId = '#'.concat(link.form.id);
-	let $form = jQuery(formId).serialize();
-	$form += "&action=racketmanager_update_player";
-	let submitButton = "#updatePlayerSubmit";
-	jQuery(submitButton).hide();
-	let alertField = '#playerUpdateResponse';
-	jQuery(alertField).removeClass('alert--success alert--warning alert--danger');
-	jQuery(alertField).hide();
-	let alertTextField = '#playerUpdateResponseText';
-	jQuery(alertTextField).html("");
-	jQuery(".is-invalid").removeClass("is-invalid");
-	jQuery(".invalid-feedback").val("");
-
-	jQuery.ajax({
-		url: ajax_var.url,
-		type: "POST",
-		data: $form,
-		async: false,
-		success: function (response) {
-			let data = response.data;
-			let alertClass;
-			if (data.state) {
-				alertClass = 'alert--' + data.state;
-			} else {
-				alertClass = 'alert--success';}
-			jQuery(alertField).addClass(alertClass);
-			jQuery(alertTextField).html(data.msg);
-		},
-		error: function (response) {
-			Racketmanager.handleAjaxError(response, alertTextField, alertField);
-		},
-		complete: function () {
-			jQuery(alertField).show();
-		}
-	});
-	jQuery(submitButton).show();
-};
 Racketmanager.entryRequest = function (event, type) {
 	event.preventDefault();
 	let entryDetails = jQuery('#entry-details');

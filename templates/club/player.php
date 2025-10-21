@@ -189,11 +189,11 @@ if ( ! $page_referrer ) {
                     ?>
                     <div class="row mb-3">
                         <div class="match__buttons">
-                            <a href="<?php echo esc_attr( $page_referrer ); ?>" class="btn btn-secondary text-uppercase" type="button" id="updatePlayerSubmit"><?php esc_html_e( 'Return', 'racketmanager' ); ?></a>
+                            <a href="<?php echo esc_attr( $page_referrer ); ?>" class="btn btn-secondary text-uppercase" type="button"><?php esc_html_e( 'Return', 'racketmanager' ); ?></a>
                             <?php
                             if ( $user_can_update ) {
                                 ?>
-                                <button class="btn btn-primary" type="button" id="updatePlayerSubmit" name="updatePlayerSubmit" onclick="Racketmanager.updatePlayer(this)"><?php esc_html_e( 'Update details', 'racketmanager' ); ?></button>
+                                <button class="btn btn-primary" type="button" id="updatePlayerSubmit" name="updatePlayerSubmit"><?php esc_html_e( 'Update details', 'racketmanager' ); ?></button>
                                 <?php
                             }
                             ?>

@@ -20,6 +20,7 @@ import { initializeTabDataFeature } from './features/tabdata/index.js';
 import { initializeAccountUpdate } from './features/account/account-update.js';
 import { initializeClubUpdate } from './features/club/club-update.js';
 import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
+import { initializePlayerUpdate } from './features/player/player-update.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -68,6 +69,8 @@ jQuery(function () {
     initializeAccountUpdate();
     // Club Update
     initializeClubUpdate();
+    // Player Update
+    initializePlayerUpdate();
 });
 
 // Re-initialize after AJAX
@@ -83,4 +86,5 @@ jQuery(document).ajaxComplete(function () {
     // Ensure feature handlers are present after dynamic content loads
     initializeAccountUpdate();
     initializeClubUpdate();
+    initializePlayerUpdate();
 });

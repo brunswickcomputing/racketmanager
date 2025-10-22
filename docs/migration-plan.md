@@ -140,10 +140,11 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
 - Phase 3 (Player Search): Completed — delegated submit handler; inline script removed from templates/players.php; URL pushState preserved.
 - Phase 4 (Partner Workflow): Completed — partner modal modularized; templates updated; no globals.
 - Phase 5 (Pricing & Totals): Completed — modular pricing utilities; has-modal and partner flows updated; initializer wired.
-- Phase 7 (Teams & Ordering): Completed — team order/admin modularized; delegated handlers.
 - Phase 6 (Payments & Withdrawals): Completed — withdrawals and payments modularized; templates updated; initializers wired.
+- Phase 7 (Teams & Ordering): Completed — team order/admin modularized; delegated handlers.
 - Phase 8 (Club Admin): Completed — club roles modal open/save modularized; templates updated; initializer wired.
-- Next focus: Phase 9 (Printing Helpers) planning/implementation.
+- Phase 9 (Printing Helpers): Completed — printing helpers modularized; templates updated; initializer wired.
+- Phase 10 (Cleanup & Removal): In Progress — public inline handlers removed; multiple legacy functions guarded; match options/results/date/reset flows modularized; next stages focus on fully guarding/removing remaining legacy functions and decommissioning the legacy enqueue.
 
 ---
 

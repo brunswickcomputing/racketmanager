@@ -39,18 +39,7 @@ function extractMessage(response) {
  * @param {string} alertField - selector for alert container
  */
 export function handleAjaxError(response, alertTextField, alertField) {
-    let message;
-
-    // Prefer legacy helper if present to preserve exact behavior for 500s
-    if (globalThis.Racketmanager && typeof globalThis.Racketmanager.getMessageFromResponse === 'function' && response?.status === 500) {
-        try {
-            message = globalThis.Racketmanager.getMessageFromResponse(response);
-        } catch (_) {
-            message = extractMessage(response);
-        }
-    } else {
-        message = extractMessage(response);
-    }
+    const message = extractMessage(response);
 
     // Field-level validation support (err_flds/err_msgs)
     if (response && response.responseJSON && response.responseJSON.data) {

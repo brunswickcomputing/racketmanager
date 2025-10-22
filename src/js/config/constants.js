@@ -2,30 +2,11 @@
  * Global constants and configuration
  */
 
-// Initialize Racketmanager global object if it doesn't exist
+// Ensure Racketmanager global exists and provides loadingModal only (no legacy placeholders)
 if (!window.Racketmanager) {
-    window.Racketmanager = {
-        loadingModal: '#loadingModal',
-        // Placeholder functions that will be replaced by modules
-        tabData: function() {
-            console.warn('Racketmanager.tabData not yet initialized');
-        },
-        tabDataLink: function() {
-            console.warn('Racketmanager.tabDataLink not yet initialized');
-        },
-        partnerModal: function() {
-            console.warn('Racketmanager.partnerModal not yet initialized');
-        },
-        setEventPrice: function() {
-            console.warn('Racketmanager.setEventPrice not yet initialized');
-        },
-        clearPrice: function() {
-            console.warn('Racketmanager.clearPrice not yet initialized');
-        },
-        printScoreCard: function() {
-            console.warn('Racketmanager.printScoreCard not yet initialized');
-        }
-    };
+    window.Racketmanager = { loadingModal: '#loadingModal' };
+} else if (!window.Racketmanager.loadingModal) {
+    window.Racketmanager.loadingModal = '#loadingModal';
 }
 
 export const LOADING_MODAL = '#loadingModal';

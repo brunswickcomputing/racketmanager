@@ -136,13 +136,7 @@ export function initializeTeamOrder() {
     .off('click.racketmanager.teamOrder', '#resetMatchScore')
     .on('click.racketmanager.teamOrder', '#resetMatchScore', function (e) {
       e.preventDefault();
-      // Prefer modular reset; fall back to legacy if needed
-      if (typeof resetMatchScoresByFormId === 'function') {
-        return resetMatchScoresByFormId('match');
-      }
-      if (globalThis.Racketmanager && typeof globalThis.Racketmanager.resetMatchScores === 'function') {
-        return globalThis.Racketmanager.resetMatchScores(e, 'match');
-      }
+      return resetMatchScoresByFormId('match');
     });
 
   jQuery(document)

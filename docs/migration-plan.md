@@ -99,12 +99,13 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Added new module src/js/features/match/switch-home-away.js with delegated handler [data-action="switch-home-away"].
       - Wired initializeSwitchHomeAway() in src/js/index.js.
     - Next stages:
-      - Guard or remove legacy Racketmanager.updateMatchResults, setMatchDate, resetMatchResult, resetMatchScores, matchHeader; add thin shims delegating to modular implementations if needed.
+      - Stage C: Stub/neutralize legacy functions in js/racketmanager.js with a global disable flag; keep only thin shims when strictly necessary.
       - Identify and remove any remaining dead code blocks in js/racketmanager.js once verified unused across templates.
       - Final removal of legacy file once all features are confirmed migrated.
     - Cleanup progress:
       - Removed legacy fallback in src/js/features/match/reset-match-result.js for resetting visible match scores; now relies solely on modular resetMatchScoresByFormId for known form candidates.
       - Guarded legacy functions in js/racketmanager.js to avoid overwriting modular implementations: updateMatchResults, setMatchDate, resetMatchResult, resetMatchScores, matchHeader, matchOptions, switchHomeAway.
+      - Stage C started: Added global flag `RACKETMANAGER_DISABLE_LEGACY` (default true) and a neutralizer block at end of legacy file to no‑op migrated legacy functions with console warnings. Updated constants to set the flag by default.
 
 ---
 

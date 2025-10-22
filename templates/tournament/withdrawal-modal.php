@@ -51,7 +51,7 @@ namespace Racketmanager;
                 <?php
                 if ( $events_entered ) {
                     ?>
-                    <button type="button" class="btn btn-primary" onclick="Racketmanager.confirmTournamentWithdraw(this)"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></button>
+                    <button type="button" class="btn btn-primary" data-action="confirm-tournament-withdrawal"><?php esc_html_e( 'Withdraw', 'racketmanager' ); ?></button>
                     <?php
                 }
                 ?>

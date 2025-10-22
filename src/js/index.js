@@ -13,6 +13,7 @@ import { initializeAutocomplete } from './features/autocomplete/index.js';
 import { initializeTeamSelection } from './features/teams/team-selection.js';
 import { initializeTeamOrder } from './features/teams/team-order.js';
 import { initializeTeamsAdmin } from './features/teams/team-admin.js';
+import { initializeTeamUpdate } from './features/teams/team-update.js';
 import { initializeFavourites } from './features/favourites/favourites.js';
 import { initializeModals } from './features/modals/index.js';
 import { initializeTournamentDate } from './features/tournaments/tournament-date.js';
@@ -78,6 +79,7 @@ jQuery(function () {
     initializeTeamSelection();
     initializeTeamOrder();
     initializeTeamsAdmin();
+    initializeTeamUpdate();
 
     // Modals
     initializeModals();
@@ -157,6 +159,7 @@ jQuery(document).ajaxComplete(function () {
     initializeModals();
     // Teams (ensure delegated handlers are bound after dynamic injections)
     initializeTeamsAdmin();
+    initializeTeamUpdate();
     // Club Admin delegated handlers
     initializeClubAdmin();
     // No need to re-initialize set-match-status; delegated handler on document covers dynamic content

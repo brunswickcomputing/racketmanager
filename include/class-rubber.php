@@ -792,6 +792,15 @@ final class Rubber {
      */
     public function reset_result(): void {
         global $wpdb;
+        // Delete rubber players
+        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "DELETE FROM $wpdb->racketmanager_rubber_players WHERE `rubber_id` = %d",
+                $this->id,
+            )
+        );
+        // Reset rubber result by initialising points/winner/loser/status/custom
+        $this->players = array();
         $this->home_points = null;
         $this->away_points = null;
         $this->winner_id   = 0;
@@ -806,13 +815,6 @@ final class Rubber {
                 $this->id,
             )
         );
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_rubber_players WHERE `rubber_id` = %d",
-                $this->id,
-            )
-        );
-        $this->players = array();
         wp_cache_set( $this->id, $this, 'rubbers' );
     }
 }

@@ -187,7 +187,7 @@ Racketmanager.printScoreCard = Racketmanager.printScoreCard || function (e, matc
 		}
 	});
 };
-Racketmanager.updateMatchResults = function (link) {
+Racketmanager.updateMatchResults = Racketmanager.updateMatchResults || function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_update_match";
@@ -588,7 +588,7 @@ Racketmanager.entryRequest = Racketmanager.entryRequest || function (event, type
 		}
 	});
 };
-Racketmanager.resetMatchScores = function (e, formRef) {
+Racketmanager.resetMatchScores = Racketmanager.resetMatchScores || function (e, formRef) {
 	e.preventDefault();
 	let formId = '#'.concat(formRef);
 	jQuery(formId).find(':input').each(function () {
@@ -626,7 +626,7 @@ Racketmanager.resetMatchScores = function (e, formRef) {
 	jQuery(selector)
 		.removeClass('tie');
 };
-Racketmanager.matchHeader = function (match_id, edit_mode = false) {
+Racketmanager.matchHeader = Racketmanager.matchHeader || function (match_id, edit_mode = false) {
 	let notifyField = "#match-header";
 	jQuery(notifyField).val("");
 
@@ -667,7 +667,7 @@ Racketmanager.viewMatch = function (e) {
 		globalThis.location = link;
 	}
 };
-Racketmanager.matchOptions = function (event, match_id, option) {
+Racketmanager.matchOptions = Racketmanager.matchOptions || function (event, match_id, option) {
 	event.preventDefault();
     let loadingModal = this.loadingModal;
     jQuery(loadingModal).modal('show');
@@ -699,7 +699,7 @@ Racketmanager.matchOptions = function (event, match_id, option) {
         }
 	);
 };
-Racketmanager.setMatchDate = function (e, link, is_tournament) {
+Racketmanager.setMatchDate = Racketmanager.setMatchDate || function (e, link, is_tournament) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_set_match_date";
@@ -753,7 +753,7 @@ Racketmanager.setMatchDate = function (e, link, is_tournament) {
 		}
 	});
 }
-Racketmanager.resetMatchResult = function (e, link, is_tournament) {
+Racketmanager.resetMatchResult = Racketmanager.resetMatchResult || function (e, link, is_tournament) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_reset_match_result";
@@ -799,7 +799,7 @@ Racketmanager.resetMatchResult = function (e, link, is_tournament) {
 		}
 	});
 }
-Racketmanager.switchHomeAway = function (e, link) {
+Racketmanager.switchHomeAway = Racketmanager.switchHomeAway || function (e, link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_switch_home_away";

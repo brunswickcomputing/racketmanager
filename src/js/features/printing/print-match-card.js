@@ -1,71 +1,24 @@
 /**
- * Match card printing functionality
+ * Match card printing functionality (delegated handlers)
  */
 
-import {
-    openPrintWindow,
-    autoPrint,
-    buildPrintUrl,
-    handlePopupBlocker,
-    showPrintLoading,
-    hidePrintLoading
-} from './print-utils.js';
-
-/**
- * Print a match card
- *
- * @param {Event} e - Click event
- * @param {number} matchId - Match ID
- */
-export function printMatchCard(e, matchId) {
-    e.preventDefault();
-
-    const loadingSelector = '#printing-loading';
-    const errorSelector = '#print-error-' + matchId;
-
-    // Show loading state
-    showPrintLoading(loadingSelector);
-
-    // Build print URL
-    const printUrl = buildPrintUrl(
-        window.location.origin,
-        `/match/${matchId}/card/print/`
-    );
-
-    // Open print window
-    const printWindow = openPrintWindow(printUrl, 'matchCard');
-
-    // Handle popup blocker
-    if (handlePopupBlocker(printWindow, errorSelector)) {
-        hidePrintLoading(loadingSelector);
-        return;
-    }
-
-    // Auto-print when loaded
-    autoPrint(printWindow, () => {
-        hidePrintLoading(loadingSelector);
-    });
-}
-
-/**
- * Print multiple match cards
- *
- * @param {Array<number>} matchIds - Array of match IDs
- */
-export function printMultipleMatchCards(matchIds) {
-    const urls = matchIds.map(id =>
-        buildPrintUrl(window.location.origin, `/match/${id}/card/print/`)
-    );
-
-    printSequence(urls, 2000); // 2 second delay between prints
-}
+import { printScoreCard } from './print-scorecard.js';
 
 /**
  * Initialize match card print buttons
  */
 export function initializeMatchCardPrint() {
-    jQuery(document).on('click', '[data-print-match-card]', function(e) {
-        const matchId = jQuery(this).data('print-match-card');
-        printMatchCard(e, matchId);
-    });
+    // Delegated handlers with namespace to avoid duplicates
+    jQuery(document)
+        .off('click.racketmanager.print', '[data-print-match-card]')
+        .on('click.racketmanager.print', '[data-print-match-card]', function(e) {
+            const matchId = jQuery(this).data('print-match-card');
+            return printScoreCard(e, matchId);
+        })
+        // Backward-compatible hook: element with id #printMatchCard and data-match-id
+        .off('click.racketmanager.print', '#printMatchCard')
+        .on('click.racketmanager.print', '#printMatchCard', function(e) {
+            const matchId = jQuery(this).data('match-id');
+            return printScoreCard(e, matchId);
+        });
 }

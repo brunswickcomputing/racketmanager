@@ -6,6 +6,7 @@
 
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
+import { resetMatchScoresByFormId } from '../match/reset-match-scores.js';
 
 const SELECT_CLUB = '#club_id';
 const SELECT_EVENT = '#event_id';
@@ -134,9 +135,12 @@ export function initializeTeamOrder() {
   jQuery(document)
     .off('click.racketmanager.teamOrder', '#resetMatchScore')
     .on('click.racketmanager.teamOrder', '#resetMatchScore', function (e) {
-      // Preserve legacy behavior if present; no modular reset implemented here
+      e.preventDefault();
+      // Prefer modular reset; fall back to legacy if needed
+      if (typeof resetMatchScoresByFormId === 'function') {
+        return resetMatchScoresByFormId('match');
+      }
       if (globalThis.Racketmanager && typeof globalThis.Racketmanager.resetMatchScores === 'function') {
-        e.preventDefault();
         return globalThis.Racketmanager.resetMatchScores(e, 'match');
       }
     });

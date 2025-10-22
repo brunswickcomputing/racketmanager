@@ -34,6 +34,12 @@ import { initializeTournamentWithdrawal } from './features/withdrawals/tournamen
 import { initializePaymentStatus } from './features/payments/payment-status.js';
 import { initializeEntryRequest } from './features/entry/entry-request.js';
 import { initializeClubAdmin } from './features/club/admin/club-roles.js';
+import { initializeMatchOptions } from './features/match/match-options.js';
+import { initializeUpdateMatchResults } from './features/match/update-match-results.js';
+import { initializeSetMatchDate } from './features/match/set-match-date.js';
+import { initializeResetMatchResult } from './features/match/reset-match-result.js';
+import { initializeResetMatchScores } from './features/match/reset-match-scores.js';
+import { initializeSwitchHomeAway } from './features/match/switch-home-away.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -115,6 +121,20 @@ jQuery(function () {
 
     // Club Admin (Phase 8)
     initializeClubAdmin();
+
+    // Match Options (Phase 10 - Stage 2)
+    initializeMatchOptions();
+
+    // Update Match Results (Phase 10 - Stage 3)
+    initializeUpdateMatchResults();
+
+    // Match Date, Reset Result, Reset Scores (Phase 10)
+    initializeSetMatchDate();
+    initializeResetMatchResult();
+    initializeResetMatchScores();
+
+    // Switch Home/Away (from Match Options modal)
+    initializeSwitchHomeAway();
 });
 
 // Re-initialize after AJAX

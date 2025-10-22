@@ -143,7 +143,7 @@ function changePartnerName(ui) {
 var Racketmanager = (window.Racketmanager = window.Racketmanager || {});
 Racketmanager.loadingModal = Racketmanager.loadingModal || '#loadingModal';
 
-Racketmanager.printScoreCard = function (e, matchId) {
+Racketmanager.printScoreCard = Racketmanager.printScoreCard || function (e, matchId) {
 	e.preventDefault();
 	let matchCardWindow;
 	let notifyField = '#feedback-' + matchId;
@@ -536,7 +536,7 @@ Racketmanager.updateTeam = function (link) {
 	});
 	jQuery(submitButton).show();
 };
-Racketmanager.entryRequest = function (event, type) {
+Racketmanager.entryRequest = Racketmanager.entryRequest || function (event, type) {
 	event.preventDefault();
 	let entryDetails = jQuery('#entry-details');
 	entryDetails.addClass('is-loading');
@@ -870,7 +870,7 @@ Racketmanager.switchTab = function (elem) {
 			break;
 	}
 };
-Racketmanager.playerSearch = function (event) {
+Racketmanager.playerSearch = Racketmanager.playerSearch || function (event) {
 	event.preventDefault();
 	let notifyBlock = "#searchResultsContainer";
 	jQuery(notifyBlock).empty();
@@ -893,7 +893,7 @@ Racketmanager.playerSearch = function (event) {
 		);
 	}
 };
-Racketmanager.partnerModal = function (event, event_id) {
+Racketmanager.partnerModal = Racketmanager.partnerModal || function (event, event_id) {
 	jQuery('#liEventDetails').addClass('is-loading');
 	event.preventDefault();
 	let partnerRef = '#partnerId-' + event_id;
@@ -951,7 +951,7 @@ Racketmanager.partnerModal = function (event, event_id) {
 		}
 	});
 };
-Racketmanager.partnerSave = function (link) {
+Racketmanager.partnerSave = Racketmanager.partnerSave || function (link) {
 	let formId = '#'.concat(link.form.id);
 	let $form = jQuery(formId).serialize();
 	$form += "&action=racketmanager_validate_partner";
@@ -1002,7 +1002,7 @@ Racketmanager.partnerSave = function (link) {
 		}
 	});
 };
-Racketmanager.setEventPrice = function (eventId) {
+Racketmanager.setEventPrice = Racketmanager.setEventPrice || function (eventId) {
 	let eventFeeFld = '#eventFee-' + eventId;
 	let eventPrice = jQuery(eventFeeFld).val();
 	if (eventPrice > 0) {
@@ -1014,7 +1014,7 @@ Racketmanager.setEventPrice = function (eventId) {
 	}
 	Racketmanager.setTotalPrice();
 };
-Racketmanager.clearPrice = function (eventId) {
+Racketmanager.clearPrice = Racketmanager.clearPrice || function (eventId) {
 	let eventPrice = '';
 	let eventPriceId = '#event-price-' + eventId;
 	jQuery(eventPriceId).val(eventPrice);
@@ -1022,7 +1022,7 @@ Racketmanager.clearPrice = function (eventId) {
 	jQuery(eventPriceIdFmt).html(eventPrice);
 	Racketmanager.setTotalPrice();
 };
-Racketmanager.setTotalPrice = function () {
+Racketmanager.setTotalPrice = Racketmanager.setTotalPrice || function () {
 	let competitionFeeFld = '#competitionFee';
 	let competitionFee = jQuery(competitionFeeFld).val();
 	let eventPriceFld = '.event-price-amt';
@@ -1042,7 +1042,7 @@ Racketmanager.setTotalPrice = function () {
 	let totalPriceId = '#priceCostTotal';
 	jQuery(totalPriceId).val(totalPrice);
 };
-Racketmanager.setPaymentStatus = function (payRef) {
+Racketmanager.setPaymentStatus = Racketmanager.setPaymentStatus || function (payRef) {
 	let action = 'racketmanager_update_payment';
 	jQuery.ajax({
 		url: ajax_var.url,
@@ -1054,7 +1054,7 @@ Racketmanager.setPaymentStatus = function (payRef) {
 		}
 	});
 };
-Racketmanager.withdrawTournament = function (e) {
+Racketmanager.withdrawTournament = Racketmanager.withdrawTournament || function (e) {
 	e.preventDefault();
 	jQuery('#liEventDetails').addClass('is-loading');
 	let eventsEnteredRef = '#eventsEntered';
@@ -1087,7 +1087,7 @@ Racketmanager.withdrawTournament = function (e) {
 							 }
 							 );
 };
-Racketmanager.confirmTournamentWithdraw = function () {
+Racketmanager.confirmTournamentWithdraw = Racketmanager.confirmTournamentWithdraw || function () {
 	let modal = '#partnerModal';
 	let tournamentRef = '#tournamentId';
 	let tournamentId = jQuery(tournamentRef).val();
@@ -1135,7 +1135,7 @@ Racketmanager.confirmTournamentWithdraw = function () {
 		}
 	});
 };
-Racketmanager.showTeamOrderPlayers = function (e) {
+Racketmanager.showTeamOrderPlayers = Racketmanager.showTeamOrderPlayers || function (e) {
 	e.preventDefault();
 	let alertField = "#teamOrderAlert";
 	jQuery(alertField).hide();
@@ -1173,7 +1173,7 @@ Racketmanager.showTeamOrderPlayers = function (e) {
 			);
 	}
 }
-Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
+Racketmanager.validateTeamOrder = Racketmanager.validateTeamOrder || function( e, link, setTeam='' ) {
 	e.preventDefault();
 	let loadingField = '#team-order-details';
 	jQuery(loadingField).addClass('is-loading');
@@ -1237,7 +1237,7 @@ Racketmanager.validateTeamOrder = function( e, link, setTeam='' ) {
 		}
 	});
 }
-Racketmanager.get_event_team_match_dropdown = function (teamId) {
+Racketmanager.get_event_team_match_dropdown = Racketmanager.get_event_team_match_dropdown || function (teamId) {
 	let eventId = jQuery('#event_id').val();
 	if (eventId) {
 		let notifyField = '#matches';
@@ -1259,7 +1259,7 @@ Racketmanager.get_event_team_match_dropdown = function (teamId) {
 		);
 	}
 }
-Racketmanager.teamEditModal = function (event, teamId, eventId) {
+Racketmanager.teamEditModal = Racketmanager.teamEditModal || function (event, teamId, eventId) {
 	event.preventDefault();
     let loadingModal = this.loadingModal;
     jQuery(loadingModal).modal('show');
@@ -1291,7 +1291,7 @@ Racketmanager.teamEditModal = function (event, teamId, eventId) {
         }
 	);
 };
-Racketmanager.show_set_team_button = function () {
+Racketmanager.show_set_team_button = Racketmanager.show_set_team_button || function () {
 	jQuery("#setTeamButton").show();
 };
 Racketmanager.getMessageFromResponse = function(response) {
@@ -1308,7 +1308,7 @@ Racketmanager.getMessageFromResponse = function(response) {
 	}
 	return message;
 }
-Racketmanager.clubRoleModal = function (e, clubRoleId) {
+Racketmanager.clubRoleModal = Racketmanager.clubRoleModal || function (e, clubRoleId) {
     e.preventDefault();
     let loadingModal = this.loadingModal;
     jQuery(loadingModal).modal('show');
@@ -1339,7 +1339,7 @@ Racketmanager.clubRoleModal = function (e, clubRoleId) {
         }
     );
 };
-Racketmanager.setClubRole = function (e, link) {
+Racketmanager.setClubRole = Racketmanager.setClubRole || function (e, link) {
     let formId = '#'.concat(link.form.id);
     let $form = jQuery(formId).serialize();
     $form += "&action=racketmanager_set_club_role";

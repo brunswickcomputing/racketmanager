@@ -333,7 +333,7 @@ if ( $match ) {
                     <?php
                     if ( $user_can_update ) {
                         ?>
-                        <button class="btn btn-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
+                        <button class="btn btn-primary" type="button" id="updateMatchResults" data-action="update-match-results"><?php esc_html_e( 'Save', 'racketmanager' ); ?></button>
                         <?php
                     }
                     ?>
@@ -569,7 +569,7 @@ if ( $match ) {
                         if ( $match_editable ) {
                             ?>
                             <div class="match__footer-aside text-uppercase">
-                                <a href="" class="scoreResetLink" data-form-id="<?php echo esc_attr( $form_id ); ?>">
+                                <a href="" class="scoreResetLink" data-form-id="<?php echo esc_attr( $form_id ); ?>" data-action="reset-match-scores">
                                     <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
                                 </a>
                             </div>
@@ -584,17 +584,6 @@ if ( $match ) {
     <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
     <script>
         <?php require_once RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
-        const optionLinks = document.querySelectorAll('.matchOptionLink');
-        optionLinks.forEach(el => el.addEventListener('click', function (e) {
-            let matchId = this.dataset.matchId;
-            let matchOption = this.dataset.matchOption;
-            Racketmanager.matchOptions(e, matchId, matchOption);
-        }));
-        const scoreResetLinks = document.querySelectorAll('.scoreResetLink');
-        scoreResetLinks.forEach(el => el.addEventListener('click', function (e) {
-            let formId = this.dataset.formId;
-            Racketmanager.resetMatchScores(e, formId);
-        }));
     </script>
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>

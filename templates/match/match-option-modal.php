@@ -84,7 +84,18 @@ namespace Racketmanager;
                 <?php
                 if ( ! empty( $button ) ) {
                     ?>
-                    <button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $action ); ?>" data-is-tournament="<?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>"><?php echo esc_html( $button ); ?></button>
+                    <?php
+                        // Map legacy action identifiers to modular data-action values
+                        $data_action = '';
+                        if ( 'setMatchDate' === $action ) {
+                            $data_action = 'set-match-date';
+                        } elseif ( 'switchHomeAway' === $action ) {
+                            $data_action = 'switch-home-away';
+                        } elseif ( 'resetMatchResult' === $action ) {
+                            $data_action = 'reset-match-result';
+                        }
+                    ?>
+                    <button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $data_action ); ?>" data-is-tournament="<?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>"><?php echo esc_html( $button ); ?></button>
                     <?php
                 }
                 ?>
@@ -92,17 +103,4 @@ namespace Racketmanager;
         </form>
     </div>
 </div>
-<script type="text/javascript">
-    document.getElementById('actionButton').addEventListener('click', function (e) {
-        let action = this.dataset.action;
-        let isTournament = this.dataset.isTournament;
-        if (action === 'setMatchDate') {
-            Racketmanager.setMatchDate(e, this, isTournament);
-        } else if (action === 'switchHomeAway' ) {
-            Racketmanager.switchHomeAway(e, this, isTournament);
-        } else if (action === 'resetMatchResult' ) {
-            Racketmanager.resetMatchResult(e, this, isTournament);
-        }
-    });
-</script>
 

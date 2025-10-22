@@ -356,23 +356,3 @@ if ( $match->is_pending ) {
     </div>
 </div>
 <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
-<script type="text/javascript">
-    jQuery(function () {
-        matchHeaderListener();
-    });
-    jQuery(document).ajaxComplete(function () {
-        matchHeaderListener();
-    });
-    function matchHeaderListener () {
-        const optionLinks = document.querySelectorAll('.matchOptionLink');
-        optionLinks.forEach(function(el) {
-            el.removeEventListener('click', matchOptionClick);
-            el.addEventListener('click', matchOptionClick);
-        });
-        function matchOptionClick (e) {
-            let matchId = this.dataset.matchId;
-            let matchOption = this.dataset.matchOption;
-            Racketmanager.matchOptions(e, matchId, matchOption);
-        }
-    }
-</script>

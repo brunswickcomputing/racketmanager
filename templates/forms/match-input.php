@@ -131,7 +131,7 @@ $tab_base        = 0;
                     <div class="row mb-3">
                         <div class="col-12">
                             <input type="hidden" name="updateMatch" id="updateMatch" value="results" />
-                            <button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" onclick="Racketmanager.updateMatchResults(this)">Update Result</button>
+                            <button tabindex="500" class="button button-primary" type="button" id="updateMatchResults" data-action="update-match-results">Update Result</button>
                         </div>
                     </div>
                     <div class="row mb-3">

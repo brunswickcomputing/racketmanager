@@ -88,7 +88,7 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Modularized Update Match Results under src/js/features/match/update-match-results.js with delegated handlers.
       - Updated templates/forms/match-input.php and templates/match-tournament.php to remove inline onclick and use data-action="update-match-results".
       - Wired initializeUpdateMatchResults() in src/js/index.js.
-    - Stage 4 completed:
+    - Stage 4 — Completed (2025-10-22):
       - Modularized Set Match Date under src/js/features/match/set-match-date.js with delegated handler [data-action="set-match-date"].
       - Modularized Reset Match Result under src/js/features/match/reset-match-result.js with delegated handler [data-action="reset-match-result"].
       - Modularized Reset Match Scores under src/js/features/match/reset-match-scores.js with delegated handler [data-action="reset-match-scores"].
@@ -98,14 +98,16 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Removed inline JS from templates/match/match-option-modal.php and mapped action button to modular data-action values.
       - Added new module src/js/features/match/switch-home-away.js with delegated handler [data-action="switch-home-away"].
       - Wired initializeSwitchHomeAway() in src/js/index.js.
+    - Stage C — Completed:
+      - Added global flag `RACKETMANAGER_DISABLE_LEGACY` (default true) and a neutralizer block at end of legacy file to no‑op migrated legacy functions with console warnings. Updated constants to set the flag by default.
+      - Guarded remaining legacy functions to avoid overwriting modular implementations.
+    - Stage D — Completed (2025-10-22):
+      - Decommissioned legacy enqueue by default. The legacy script js/racketmanager.js is no longer enqueued unless explicitly enabled via a PHP filter.
+      - New filter: `racketmanager_enqueue_legacy` (default false). To temporarily roll back to legacy, add in theme/plugin: `add_filter('racketmanager_enqueue_legacy', '__return_true');`.
+      - When legacy is explicitly enabled, we set `window.RACKETMANAGER_DISABLE_LEGACY = false` before loading the legacy file to re-enable legacy behavior.
     - Next stages:
-      - Stage C: Stub/neutralize legacy functions in js/racketmanager.js with a global disable flag; keep only thin shims when strictly necessary.
       - Identify and remove any remaining dead code blocks in js/racketmanager.js once verified unused across templates.
       - Final removal of legacy file once all features are confirmed migrated.
-    - Cleanup progress:
-      - Removed legacy fallback in src/js/features/match/reset-match-result.js for resetting visible match scores; now relies solely on modular resetMatchScoresByFormId for known form candidates.
-      - Guarded legacy functions in js/racketmanager.js to avoid overwriting modular implementations: updateMatchResults, setMatchDate, resetMatchResult, resetMatchScores, matchHeader, matchOptions, switchHomeAway.
-      - Stage C started: Added global flag `RACKETMANAGER_DISABLE_LEGACY` (default true) and a neutralizer block at end of legacy file to no‑op migrated legacy functions with console warnings. Updated constants to set the flag by default.
 
 ---
 

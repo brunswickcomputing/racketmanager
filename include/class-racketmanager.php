@@ -1121,15 +1121,23 @@ class RacketManager {
         ];
         wp_add_inline_script( 'racketmanager-config', 'window.locale_var = ' . wp_json_encode($config) . ';' );
 
-        // include legacy racketmanager
-        wp_enqueue_script(
+        // include legacy racketmanager behind a rollback flag (Stage D)
+        $enqueue_legacy = apply_filters('racketmanager_enqueue_legacy', false);
+        if ( $enqueue_legacy ) {
+            wp_enqueue_script(
                 'racketmanager-legacy',
                 plugins_url('/js/racketmanager.js', dirname(__FILE__)),
                 array('jquery'),
                 RACKETMANAGER_VERSION,
                 true
-        );
-        wp_add_inline_script(
+            );
+            // If legacy is explicitly enqueued, also explicitly enable legacy behavior in JS (override Stage C neutralizer)
+            wp_add_inline_script(
+                'racketmanager-legacy',
+                'window.RACKETMANAGER_DISABLE_LEGACY = true;',
+                'before'
+            );
+            wp_add_inline_script(
                 'racketmanager-legacy',
                 'const ajax_var = ' . wp_json_encode(
                         array(
@@ -1137,9 +1145,9 @@ class RacketManager {
                                 'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
                         )
                 ),
-                'before',
-        );
-        wp_add_inline_script(
+                'before'
+            );
+            wp_add_inline_script(
                 'racketmanager-legacy',
                 'const locale_var = ' . wp_json_encode(
                         array(
@@ -1147,8 +1155,9 @@ class RacketManager {
                                 'locale'   => $javascript_locale,
                         )
                 ),
-                'before',
-        );
+                'before'
+            );
+        }
 
         wp_enqueue_script( 'password-strength-meter' );        wp_localize_script( 'password-strength-meter', 'pwsL10n', array(
             'empty'    => __( 'But... it\'s empty!', 'theme-domain' ),

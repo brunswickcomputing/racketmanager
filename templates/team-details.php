@@ -192,7 +192,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     if ( $user_can_edit_team ) {
                         ?>
                         <div class="module__aside">
-                            <button class="btn btn--link" id="teamEditLink" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
+                            <button class="btn btn--link" id="teamEditLink" data-action="open-team-edit-modal" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
                                 <svg width="16" height="16" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>
@@ -509,12 +509,5 @@ if ( ! empty( $display_opt['wtn'] ) ) {
     </div>
     <div class="modal" id="teamModal"></div>
     <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
-    <script type="text/javascript">
-        document.getElementById('teamEditLink').addEventListener('click', function (e) {
-            let teamId = this.dataset.teamId;
-            let eventId = this.dataset.eventId;
-            Racketmanager.teamEditModal(e,teamId,eventId);
-        })
-    </script>
     <?php
 

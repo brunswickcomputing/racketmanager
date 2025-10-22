@@ -2507,13 +2507,13 @@ final class Racketmanager_Match {
      */
     public function reset_result(): void {
         global $wpdb;
-        if ( ! empty( $this->num_rubbers ) ) {
+        if ( empty( $this->num_rubbers ) ) {
+            $this->sets = null;
+        } else {
             $rubbers = $this->get_rubbers();
             foreach ( $rubbers as $rubber ) {
                 $rubber->reset_result();
             }
-        } else {
-            $this->sets = null;
         }
         $this->home_points  = null;
         $this->away_points  = null;

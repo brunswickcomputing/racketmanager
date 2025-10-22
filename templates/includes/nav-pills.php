@@ -11,7 +11,7 @@ namespace Racketmanager;
                     <div class="d-none d-md-block module mt-3">
                         <ul class="nav nav-pills justify-content-center">
                             <li class="nav-item">
-                                <button class="nav-link active" onclick="Racketmanager.switchTab(this)" id="tab-list" data-tabid="tab-list">
+                                <button class="nav-link active" id="tab-list" data-tabid="tab-list" data-action="switch-tab">
                                     <svg width="16" height="16" class="icon icon-list">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#list' ); ?>"></use>
                                     </svg>
@@ -19,7 +19,7 @@ namespace Racketmanager;
                                 </button>
                             </li>
                             <li class="nav-item">
-                                <button class="nav-link" onclick="Racketmanager.switchTab(this)" id="tab-grid" data-tabid="tab-grid">
+                                <button class="nav-link" id="tab-grid" data-tabid="tab-grid" data-action="switch-tab">
                                     <svg width="16" height="16" class="icon icon-grid">
                                         <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#grid' ); ?>"></use>
                                     </svg>

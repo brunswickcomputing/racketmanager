@@ -71,6 +71,12 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
     - Template updates: templates/match-teams.php now uses data-print-match-card and removed inline JS listener.
 
 11. Phase 10 — Cleanup & Removal (In Progress)
+    - Stage A completed:
+      - Removed inline onclick handlers in public templates and replaced with modular delegated handlers:
+        - templates/includes/nav-pills.php → data-action="switch-tab" (new module navigation/switch-tab.js).
+        - templates/includes/team.php → removed inline JS; now uses data-action="open-team-edit-modal" and tabDataLink data-* attributes.
+      - Added new JS module src/js/features/navigation/switch-tab.js and wired initializeSwitchTab() in src/js/index.js.
+      - Verified tab data links use existing tabdata module.
     - Stage 1 completed:
       - Guarded legacy functions in js/racketmanager.js to avoid overwriting modular implementations (printScoreCard, playerSearch, partner modal/save, pricing, payments, withdrawals, team order/admin, club roles, entryRequest).
       - Deprecated legacy js/entry-link.js (file retained with no-op comment to avoid 404s if enqueued by older templates).

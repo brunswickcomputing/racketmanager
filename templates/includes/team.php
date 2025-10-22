@@ -29,11 +29,12 @@ if ( isset( $league ) ) {
     $event_id        = null;
 }
 if ( empty( $item_link ) ) {
-    $team_link = null;
-    $onclick   = 'onclick=Racketmanager.teamEditModal(event,' . $team->id . ',' . $event_id . ')';
+    $team_link = '#';
+    $data_attrs = 'data-action="open-team-edit-modal" data-team-id="' . esc_attr( $team->id ) . '" data-event-id="' . esc_attr( $event_id ) . '"';
 } else {
     $team_link = $item_link . '/team/' . esc_attr( seo_url( $team->title ) ) . '/';
-    $onclick   = 'onclick=Racketmanager.' . $object_type . 'TabDataLink(event,' . $object->id . ',' . $object->current_season['name'] . ",'" . $team_link . "'," . $team->id . ",'teams')";
+    $season = isset( $object->current_season['name'] ) ? $object->current_season['name'] : '';
+    $data_attrs = 'class="nav--link tabDataLink" data-type="' . esc_attr( $object_type ) . '" data-type-id="' . esc_attr( $object->id ) . '" data-season="' . esc_attr( $season ) . '" data-link="' . esc_attr( $team_link ) . '" data-link-id="' . esc_attr( $team->id ) . '" data-link-type="teams"';
 }
 if ( isset( $team->info ) ) {
     $team->contactno    = $team->info->contactno ?? null;
@@ -67,7 +68,7 @@ if ( empty( $event_id ) ) {
             </div>
             <div class="media__content">
                 <h4 class="media__title">
-                    <a class="nav--link" href="<?php echo esc_attr( $team_link ); ?>" <?php echo esc_attr( $onclick ); ?>>
+                    <a href="<?php echo esc_attr( $team_link ); ?>" <?php echo $data_attrs; ?>>
                         <span><?php echo esc_html( $team->title ); ?></span>
                     </a>
                 </h4>

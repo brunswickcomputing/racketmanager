@@ -19,6 +19,7 @@ import { initializeTournamentDate } from './features/tournaments/tournament-date
 import { initializePopstateHandler } from './features/navigation/popstate-handler.js';
 import { initializePrinting } from './features/printing/index.js';
 import { initializeTabDataFeature } from './features/tabdata/index.js';
+import { initializeSwitchTab } from './features/navigation/switch-tab.js';
 import { initializeAccountUpdate } from './features/account/account-update.js';
 import { initializeClubUpdate } from './features/club/club-update.js';
 import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
@@ -65,6 +66,7 @@ jQuery(function () {
     // Navigation
     initializeNavigation();
     initializePopstateHandler();
+    initializeSwitchTab();
 
     // Tab Data (AJAX content loading)
     initializeTabDataFeature();

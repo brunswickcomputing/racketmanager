@@ -8,7 +8,6 @@
 namespace Racketmanager;
 
 use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
 
 /**
  * Tennis league class
@@ -207,7 +206,7 @@ class League_Tennis extends League {
                                 }
                             }
                             for ( $j = 1; $j <= $league->num_sets; $j++ ) {
-                                $set_type = Util_Lookup::get_set_type( $league->scoring, null, $league->num_sets, $j );
+                                $set_type = Util::get_set_type( $league->scoring, null, $league->num_sets, $j );
                                 if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
                                     $set        = $rubber->sets[ $j ];
                                     $set_winner = null;

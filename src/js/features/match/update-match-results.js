@@ -2,7 +2,7 @@
  * Update Match Results - Modularized (tidied)
  * Replaces legacy Racketmanager.updateMatchResults used on match input pages.
  * - Maintains legacy-parity UI updates
- * - Adds re-entrancy guard (busy flag) to prevent duplicate submissions
+ * - Adds reentrancy guard (busy flag) to prevent duplicate submissions
  */
 
 import { getAjaxUrl } from '../../config/ajax-config.js';
@@ -11,12 +11,11 @@ import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 // Common selectors used across templates
 const ALERT_ID_DEFAULT = '#matchAlert';
 const ALERT_TEXT_DEFAULT = '#matchAlertResponse';
-const INLINE_NOTIFY = '#updateResponse';
 const SPLASH_DEFAULT = '#splash';
 
 function parsePayload(payload) {
   // Supports legacy array and object responses
-  let message = '';
+  let message;
   let homePoints = null;
   let awayPoints = null;
   let winner = null;
@@ -44,7 +43,7 @@ function renderSuccessUI({ message, homePoints, awayPoints, winner, sets }) {
   const $alert = jQuery(ALERT_ID_DEFAULT);
   const $alertText = jQuery(ALERT_TEXT_DEFAULT);
 
-  // Use alert container if present (tournament/match pages)
+  // Use an alert container if present (tournament/match pages)
   $alert.attr('role', $alert.attr('role') || 'alert');
   $alert.removeClass('alert--warning alert--danger').addClass('alert--success').show();
   $alertText.html(message);
@@ -89,14 +88,14 @@ function renderSuccessUI({ message, homePoints, awayPoints, winner, sets }) {
 
 /**
  * Perform the update match results request
- * Accepts the clicked element inside a form (button), where link.form is the form element
+ * Accepts the clicked element inside a form (button), where "link.form" is the form element
  * @param {HTMLElement} link
  */
 export function updateMatchResults(link) {
   if (!link || !link.form || !link.form.id) return;
 
   const $btn = jQuery(link);
-  if ($btn.data('busy') === true) return; // re-entrancy guard
+  if ($btn.data('busy') === true) return; // reentrancy guard
   $btn.data('busy', true).prop('disabled', true).addClass('disabled').attr('aria-busy', 'true');
 
   const formId = `#${link.form.id}`;
@@ -107,7 +106,7 @@ export function updateMatchResults(link) {
   const alertTextField = ALERT_TEXT_DEFAULT;
   const splash = SPLASH_DEFAULT;
 
-  // Pre-request cleanup (parity with legacy)
+  // Pre-request clean-up (parity with legacy)
   jQuery(alertField).hide().removeClass('alert--success alert--warning alert--danger');
   jQuery('.is-invalid').removeClass('is-invalid');
   // Clear any existing winner indicators

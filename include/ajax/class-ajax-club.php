@@ -111,8 +111,13 @@ class Ajax_Club extends Ajax {
                 $club_id    = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
                 $validator  = $validator->club( $club_id, 'surname' );
                 if ( empty( $validator->error ) ) {
-                    $club      = get_club( intval( $_POST['club'] ) );
-                    $validator = $club->register_player( $new_player );
+                    $club     = get_club( intval( $_POST['club'] ) );
+                    $register = $club->register_player( $new_player );
+                    if ( ! empty( $register->error ) ) {
+                        $validator->error  = true;
+                        $validator->status = 401;
+                    }
+                    $validator->msg = $register->msg;
                 }
             } else {
                 $validator->error    = true;

@@ -26,6 +26,7 @@ use Racketmanager\shortcodes\Shortcodes_Match;
 use Racketmanager\shortcodes\Shortcodes_Message;
 use Racketmanager\shortcodes\Shortcodes_Tournament;
 use Racketmanager\util\Util;
+use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator;
 use stdClass;
 
@@ -2877,7 +2878,7 @@ class RacketManager {
                                                 $type_start += 16;
                                                 $type_len    = $type_end - $type_start;
                                                 $type        = substr( $wtn_block, $type_start, $type_len );
-                                                $wtn_key     = Util::get_match_type_key( $type );
+                                                $wtn_key     = Util_Lookup::get_match_type_key( $type );
                                                 $wtn_start   = strpos( $wtn_block, '</svg>', $type_start );
                                                 $wtn_end     = strpos( $wtn_block, '</span>', $wtn_start );
                                                 $wtn_start  += 6;

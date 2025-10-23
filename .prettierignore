@@ -1,0 +1,11 @@
+# Ignore third-party and generated files
+node_modules/
+vendor/
+dist/
+build/
+*.min.js
+wp-admin/
+wp-includes/
+wp-content/themes/
+wp-content/plugins/*
+!wp-content/plugins/racketmanager/**

@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<ruleset name="Foobar">
+   <config name="minimum_supported_wp_version" value="4.9"/>
+   <config name="text_domain" value="racketmanager" />
+
+
+   <rule ref="WordPress">
+       <exclude name="WordPress.WP.DeprecatedFunctions.sanitize_urlFound"/>
+       <!-- If a conscious choice has been made for a non-strict comparison, that's ok.
+            I.e. when `strict` has been explicitely set to `false` in an array comparison,
+            it will be allowed. -->
+       <exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
+       <exclude name="WordPress.PHP.StrictInArray.FoundNonStrictFalse"/>
+       <exclude name="WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound"/>
+       <exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames.matchFound" />
+   </rule>
+   <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+       <properties>
+           <property name="prefixes" type="array">
+               <element value="racketmanager"/>
+           </property>
+       </properties>
+   </rule>
+   <rule ref="WordPress.WP.Capabilities">
+       <properties>
+           <property name="custom_capabilities" type="array">
+               <element value="racket_manager"/>
+               <element value="manage_racketmanager"/>
+               <element value="racketmanager_settings"/>
+               <element value="update_results"/>
+               <element value="del_teams"/>
+               <element value="edit_teams"/>
+               <element value="del_leagues"/>
+               <element value="edit_leagues"/>
+               <element value="edit_league_settings"/>
+               <element value="view_leagues"/>
+               <element value="import_leagues"/>
+               <element value="del_seasons"/>
+               <element value="edit_seasons"/>
+               <element value="del_matches"/>
+               <element value="edit_matches"/>
+           </property>
+       </properties>
+   </rule>
+</ruleset>

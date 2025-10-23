@@ -43,6 +43,8 @@ import { initializeResetMatchResult } from './features/match/reset-match-result.
 import { initializeResetMatchScores } from './features/match/reset-match-scores.js';
 import { initializeSwitchHomeAway } from './features/match/switch-home-away.js';
 import { initializeTeamMatchResult } from './features/match/update-team-result.js';
+import { initializeClubPlayerRequest } from './features/club/club-player-request.js';
+import { initializeClubPlayerRemove } from './features/club/club-player-remove.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -127,6 +129,10 @@ jQuery(function () {
     // Club Admin (Phase 8)
     initializeClubAdmin();
 
+    // Club Players (Remove/Request)
+    initializeClubPlayerRequest();
+    initializeClubPlayerRemove();
+
     // Match Options (Phase 10 - Stage 2)
     initializeMatchOptions();
 
@@ -166,5 +172,8 @@ jQuery(document).ajaxComplete(function () {
     initializeTeamUpdate();
     // Club Admin delegated handlers
     initializeClubAdmin();
+    // Club Players delegated handlers
+    initializeClubPlayerRequest();
+    initializeClubPlayerRemove();
     // No need to re-initialize set-match-status; delegated handler on document covers dynamic content
 });

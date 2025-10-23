@@ -87,7 +87,7 @@ if ( empty( $club->player ) ) {
                             <label for="email"><?php esc_html_e( 'Email address', 'racketmanager' ); ?></label>
                             <div id="emailFeedback" class="invalid-feedback"></div>
                         </div>
-                        <button class="btn mb-3" type="button" id="clubPlayerUpdateSubmit" onclick="Racketmanager.club_player_request()"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></button>
+                        <button class="btn mb-3" type="button" id="clubPlayerUpdateSubmit" data-action="club-player-request"><?php esc_html_e( 'Add player', 'racketmanager' ); ?></button>
                         <div id="playerAddResponse" class="alert_rm" style="display: none;">
                             <div class="alert__body">
                                 <div class="alert__body-inner">
@@ -130,7 +130,7 @@ if ( empty( $club->player ) ) {
                                             <?php
                                             if ( $user_can_update ) {
                                                 ?>
-                                                <button class="btn" type="button" id="clubPlayerRemoveSubmit" onclick="Racketmanager.clubPlayerRemove('#club-player-<?php echo esc_html( $gender ); ?>-remove','<?php echo esc_html( $gender ); ?>')">
+                                                <button class="btn" type="button" id="clubPlayerRemoveSubmit" data-action="club-player-remove" data-form-id="club-player-<?php echo esc_html( $gender ); ?>-remove" data-gender="<?php echo esc_html( $gender ); ?>">
                                                     <?php esc_html_e( 'Remove', 'racketmanager' ); ?>
                                                 </button>
                                                 <?php

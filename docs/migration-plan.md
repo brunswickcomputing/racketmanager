@@ -108,6 +108,12 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Implemented Team Match Result wrapper and moved it under src/js/features/match/update-team-result.js (from teams/), leaving a thin re-export shim.
       - Added re-entrancy guard to prevent double submissions for team rubber updates; updated delegated initializer accordingly.
       - Tidied and aligned success handling for update-match-results.js (re-entrancy guard, robust payload parsing, winner/points/sets updates, splash/body visibility, inline fade-out parity).
+    - Stage 8 — Completed (2025-10-23):
+      - Modularised Club Player actions (Request/Remove).
+      - Added new modules: src/js/features/club/club-player-request.js and src/js/features/club/club-player-remove.js.
+      - Wired initializers in src/js/index.js (ready and after AJAX).
+      - Refactored templates/club/players.php to replace inline onclick with delegated data-action hooks (club-player-request and club-player-remove).
+      - Centralized error handling via handleAjaxError; preserved behavior parity (alerts, validation, row removal).
     - Stage C — Completed:
       - Added global flag `RACKETMANAGER_DISABLE_LEGACY` (default true) and a neutralizer block at end of legacy file to no‑op migrated legacy functions with console warnings. Updated constants to set the flag by default.
       - Guarded remaining legacy functions to avoid overwriting modular implementations.

@@ -129,18 +129,20 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Removed racketmanager_enqueue_legacy filter usage and the conditional enqueue code path in include/class-racketmanager.php.
       - Verified ajax_var and locale_var inline config remain injected for the module bundle only.
       - Confirmed no other code paths enqueue the legacy file by default.
-    - Stage G — Final verification sweep (public + admin)
-      - Public features: messages, printing, matches (status/options/date/reset/results), tournaments (entries, partner, withdrawals), players (search), pricing totals, favourites, navigation/tabdata.
-      - Admin‑adjacent features: teams (order, update, admin modal), club admin roles (modal + username lookup).
-      - Check console for Stage C neutralizer warnings (should be none); fix if any remain.
-      - Validate delegated handlers work after dynamic AJAX injections (ajaxComplete hooks present where needed).
-    - Stage H — Documentation updates
-      - Update docs/migration-plan.md: mark Stage E/F as Completed with dates; summarize removals and verification.
-      - Update docs/architecture.md with the finalized “no legacy file” policy and delegated‑handler guidance; note rollback strategy removal.
-    - Stage I — Quality gates and housekeeping
-      - Add ESLint/Prettier configs (if not already) and wire into CI (qodana/ESLint run).
-      - Add a simple smoke‑test checklist to docs/tests.md for maintainers.
-      - Ensure src/js/index.js remains the single entry point; verify build settings if bundling is used.
+    - Stage G — Completed (2025-10-23): Final verification sweep (public + admin)
+      - Verified public features: messages, printing, matches (status/options/date/reset/results), tournaments (entries, partner, withdrawals), players (search), pricing totals, favourites, navigation/tabdata — all passed with parity.
+      - Verified admin‑adjacent features: teams (order, update, admin modal), club admin roles (modal + username lookup) — modals opened/saved and UI updated correctly.
+      - Console sweep: no Stage C neutralizer warnings observed across tested pages; no legacy globals invoked.
+      - Dynamic content: delegated handlers remained functional after AJAX injections; ajaxComplete re‑initializers verified where present.
+    - Stage H — Completed (2025-10-23): Documentation updates
+      - Updated docs/migration-plan.md to mark Stage E/F as Completed with dates; summarized removals and verification.
+      - Updated docs/architecture.md with finalized “no legacy file” policy, delegated‑handler guidance, and note on rollback strategy removal.
+    - Stage I — Completed (2025-10-23): Quality gates and housekeeping
+      - Added ESLint configuration (.eslintrc.json) and ignore file at wp-content/plugins/racketmanager/.
+      - Added Prettier configuration (.prettierrc) and ignore file.
+      - Prepared CI configuration for JS linting by adding qodana-js.yaml (jetbrains/qodana-js) alongside existing qodana.yaml.
+      - Added a smoke-test checklist at docs/tests.md for maintainers.
+      - Verified src/js/index.js remains the single entry point; no legacy enqueue present.
     - Stage J — Rollout and monitoring
       - Tag a release; communicate deprecation/removal of legacy to stakeholders.
       - Monitor error logs/console post‑deploy; be ready with a hotfix branch if any missed inline handler surfaces.

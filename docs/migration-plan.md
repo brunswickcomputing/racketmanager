@@ -119,10 +119,10 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Removed remaining dead legacy frontend code from js/racketmanager.js, keeping only Racketmanager.loadingModal and the Stage C neutralizer block.
       - Legacy file is gated by Stage D and not enqueued by default; if explicitly enabled, neutralizer prevents collisions.
       - Performed a quick sanity check; modular features unaffected.
-    - Stage F — Fully decommission legacy enqueue in PHP (final removal path)
-      - Remove racketmanager_enqueue_legacy filter usage and the conditional enqueue code path in include/class-racketmanager.php (with a short, documented rollback patch kept locally).
-      - Ensure ajax_var and locale_var inline config remain injected for the module bundle only.
-      - Verify no other code paths enqueue the legacy file.
+    - Stage F — Completed (2025-10-23): Fully decommission legacy enqueue in PHP
+      - Removed racketmanager_enqueue_legacy filter usage and the conditional enqueue code path in include/class-racketmanager.php.
+      - Verified ajax_var and locale_var inline config remain injected for the module bundle only.
+      - Confirmed no other code paths enqueue the legacy file by default.
     - Stage G — Final verification sweep (public + admin)
       - Public features: messages, printing, matches (status/options/date/reset/results), tournaments (entries, partner, withdrawals), players (search), pricing totals, favourites, navigation/tabdata.
       - Admin‑adjacent features: teams (order, update, admin modal), club admin roles (modal + username lookup).

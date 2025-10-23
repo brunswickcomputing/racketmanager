@@ -83,7 +83,10 @@ jobs:
           tools: composer
 
       - name: Install PHPCS and WPCS
+        env:
+          COMPOSER_NO_INTERACTION: 1
         run: |
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require "squizlabs/php_codesniffer=*" "wp-coding-standards/wpcs=*"
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
           "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs

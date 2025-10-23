@@ -177,12 +177,6 @@ function get_player_details(type, name, club = null, notifyField = null, partner
 	});
 	return response;
 }
-function currencyFormat(amount) {
-	return new Intl.NumberFormat(locale_var.locale, {
-		style: 'currency',
-		currency: locale_var.currency
-	}).format(amount);
-}
 function createPaymentRequest(tournamentEntry,invoiceId, callback) {
 	let output;
 	jQuery.ajax({

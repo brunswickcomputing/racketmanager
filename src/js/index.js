@@ -42,6 +42,7 @@ import { initializeSetMatchDate } from './features/match/set-match-date.js';
 import { initializeResetMatchResult } from './features/match/reset-match-result.js';
 import { initializeResetMatchScores } from './features/match/reset-match-scores.js';
 import { initializeSwitchHomeAway } from './features/match/switch-home-away.js';
+import { initializeTeamMatchResult } from './features/match/update-team-result.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -139,6 +140,9 @@ jQuery(function () {
 
     // Switch Home/Away (from Match Options modal)
     initializeSwitchHomeAway();
+
+    // Teams: Update Team Result (wrapper for rubbers)
+    initializeTeamMatchResult();
 });
 
 // Re-initialize after AJAX

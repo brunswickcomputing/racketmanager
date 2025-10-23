@@ -86,7 +86,7 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Wired initializeMatchOptions() in src/js/index.js.
     - Stage 3 completed:
       - Modularized Update Match Results under src/js/features/match/update-match-results.js with delegated handlers.
-      - Updated templates/forms/match-input.php and templates/match-tournament.php to remove inline onclick and use data-action="update-match-results".
+      - Updated templates/forms/match-input.php, templates/match-tournament.php, and templates/match-teams-result.php to remove inline onclick and use data-action="update-match-results".
       - Wired initializeUpdateMatchResults() in src/js/index.js.
     - Stage 4 — Completed (2025-10-22):
       - Modularized Set Match Date under src/js/features/match/set-match-date.js with delegated handler [data-action="set-match-date"].
@@ -157,3 +157,10 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
 - Legacy js/racketmanager.js no longer directly called by templates for migrated features.
 - Centralized error handling used across features.
 - Production telemetry disabled by default.
+
+
+
+#### Housekeeping (2025-10-23)
+- Moved module update-team-result from src/js/features/teams/ to src/js/features/match/ to keep all match-related flows co-located.
+- Left a thin re-export shim at src/js/features/teams/update-team-result.js to preserve any older import paths.
+- Updated src/js/index.js import to the new location.

@@ -150,7 +150,7 @@ if ( $match->is_walkover ) {
                                                 <div class="col-12 match__buttons">
                                                     <input type="hidden" name="updateRubber" id="updateRubber" value="<?php echo esc_html( $update_rubber ); ?>" />
                                                     <a tabindex="999" class="btn btn-plain" type="button" id="cancelResults" href="<?php echo esc_html( $page_referrer ); ?>"><?php esc_html_e( 'Cancel', 'racketmanager' ); ?></a>
-                                                    <button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" onclick="Racketmanager.updateResults(this)"><?php echo esc_html( $action_text ); ?></button>
+                                                    <button tabindex="500" class="btn btn-primary" type="button" id="updateRubberResults" data-action="update-team-result"><?php echo esc_html( $action_text ); ?></button>
                                                 </div>
                                             </div>
                                             <?php

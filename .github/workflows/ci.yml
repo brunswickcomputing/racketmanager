@@ -94,4 +94,4 @@ jobs:
       - name: Run PHPCS (non-blocking)
         run: |
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
-          "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=wp-content/plugins/racketmanager/phpcs.xml.dist wp-content/plugins/racketmanager
+          "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=racketmanager/phpcs.xml.dist racketmanager

@@ -88,6 +88,7 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Modularized Update Match Results under src/js/features/match/update-match-results.js with delegated handlers.
       - Updated templates/forms/match-input.php, templates/match-tournament.php, and templates/match-teams-result.php to remove inline onclick and use data-action="update-match-results".
       - Wired initializeUpdateMatchResults() in src/js/index.js.
+      - Parity update (2025-10-23): aligned success handling with legacy — pre-request cleanup, splash/body visibility, inline success fade-out, and updates to #home_points/#away_points and winner highlighting.
     - Stage 4 — Completed (2025-10-22):
       - Modularized Set Match Date under src/js/features/match/set-match-date.js with delegated handler [data-action="set-match-date"].
       - Modularized Reset Match Result under src/js/features/match/reset-match-result.js with delegated handler [data-action="reset-match-result"].
@@ -98,6 +99,15 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Removed inline JS from templates/match/match-option-modal.php and mapped action button to modular data-action values.
       - Added new module src/js/features/match/switch-home-away.js with delegated handler [data-action="switch-home-away"].
       - Wired initializeSwitchHomeAway() in src/js/index.js.
+    - Stage 6 — Completed (2025-10-23):
+      - Removed inline onclick from templates/tournament/withdrawal-modal.php and replaced with data-action="confirm-tournament-withdrawal" handled by the modular withdrawal feature.
+      - Replaced inline JS in templates/team-details.php with data-action="open-team-edit-modal"; relies on Teams Admin module.
+      - Replaced onclick="Racketmanager.updateTeam(...)" in templates/club/team-edit-modal.php and templates/club/team.php with data-action="update-team"; added new module src/js/features/teams/team-update.js and wired initializer in src/js/index.js (on ready and after AJAX).
+      - Replaced onclick="Racketmanager.updateResults(...)" in templates/match-teams-result.php with data-action="update-match-results"; added wrapper support for data-action="update-team-result".
+    - Stage 7 — Completed (2025-10-23):
+      - Implemented Team Match Result wrapper and moved it under src/js/features/match/update-team-result.js (from teams/), leaving a thin re-export shim.
+      - Added re-entrancy guard to prevent double submissions for team rubber updates; updated delegated initializer accordingly.
+      - Tidied and aligned success handling for update-match-results.js (re-entrancy guard, robust payload parsing, winner/points/sets updates, splash/body visibility, inline fade-out parity).
     - Stage C — Completed:
       - Added global flag `RACKETMANAGER_DISABLE_LEGACY` (default true) and a neutralizer block at end of legacy file to no‑op migrated legacy functions with console warnings. Updated constants to set the flag by default.
       - Guarded remaining legacy functions to avoid overwriting modular implementations.
@@ -105,6 +115,31 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
       - Decommissioned legacy enqueue by default. The legacy script js/racketmanager.js is no longer enqueued unless explicitly enabled via a PHP filter.
       - New filter: `racketmanager_enqueue_legacy` (default false). To temporarily roll back to legacy, add in theme/plugin: `add_filter('racketmanager_enqueue_legacy', '__return_true');`.
       - When legacy is explicitly enabled, we set `window.RACKETMANAGER_DISABLE_LEGACY = false` before loading the legacy file to re-enable legacy behavior.
+    - Stage E — Completed (2025-10-23):
+      - Removed remaining dead legacy frontend code from js/racketmanager.js, keeping only Racketmanager.loadingModal and the Stage C neutralizer block.
+      - Legacy file is gated by Stage D and not enqueued by default; if explicitly enabled, neutralizer prevents collisions.
+      - Performed a quick sanity check; modular features unaffected.
+    - Stage F — Fully decommission legacy enqueue in PHP (final removal path)
+      - Remove racketmanager_enqueue_legacy filter usage and the conditional enqueue code path in include/class-racketmanager.php (with a short, documented rollback patch kept locally).
+      - Ensure ajax_var and locale_var inline config remain injected for the module bundle only.
+      - Verify no other code paths enqueue the legacy file.
+    - Stage G — Final verification sweep (public + admin)
+      - Public features: messages, printing, matches (status/options/date/reset/results), tournaments (entries, partner, withdrawals), players (search), pricing totals, favourites, navigation/tabdata.
+      - Admin‑adjacent features: teams (order, update, admin modal), club admin roles (modal + username lookup).
+      - Check console for Stage C neutralizer warnings (should be none); fix if any remain.
+      - Validate delegated handlers work after dynamic AJAX injections (ajaxComplete hooks present where needed).
+    - Stage H — Documentation updates
+      - Update docs/migration-plan.md: mark Stage E/F as Completed with dates; summarize removals and verification.
+      - Update docs/architecture.md with the finalized “no legacy file” policy and delegated‑handler guidance; note rollback strategy removal.
+    - Stage I — Quality gates and housekeeping
+      - Add ESLint/Prettier configs (if not already) and wire into CI (qodana/ESLint run).
+      - Add a simple smoke‑test checklist to docs/tests.md for maintainers.
+      - Ensure src/js/index.js remains the single entry point; verify build settings if bundling is used.
+    - Stage J — Rollout and monitoring
+      - Tag a release; communicate deprecation/removal of legacy to stakeholders.
+      - Monitor error logs/console post‑deploy; be ready with a hotfix branch if any missed inline handler surfaces.
+    - Submission of changes for this issue
+      - Implement Stage E edits (dead code deletions) and submit PR for review (✓ when done).
     - Next stages:
       - Identify and remove any remaining dead code blocks in js/racketmanager.js once verified unused across templates.
       - Final removal of legacy file once all features are confirmed migrated.

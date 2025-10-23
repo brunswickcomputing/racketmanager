@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop, feature/** ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+permissions:
+  contents: read
+  security-events: write # for SARIF upload
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qodana-php:
+    name: Qodana PHP (Static Analysis)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Qodana PHP
+        uses: JetBrains/qodana-action@v2024.2
+        with:
+          linter: jetbrains/qodana-php:2024.3
+          pr-mode: true
+          args: |
+            --project-dir=.
+            --results-dir=qodana-results-php
+          
+      - name: Upload Qodana PHP Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qodana-php-report
+          path: qodana-results-php
+
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: qodana-results-php/qodana.sarif.json
+
+  qodana-js:
+    name: Qodana JS (ESLint-backed)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Qodana JS
+        uses: JetBrains/qodana-action@v2024.2
+        with:
+          linter: jetbrains/qodana-js:2024.3
+          pr-mode: true
+          args: |
+            --project-dir=.
+            --results-dir=qodana-results-js
+            --save-report
+
+      - name: Upload Qodana JS Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qodana-js-report
+          path: qodana-results-js
+
+  phpcs:
+    name: PHPCS (WordPress Standards)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install PHPCS and WPCS
+        run: |
+          composer global require "squizlabs/php_codesniffer=*" "wp-coding-standards/wpcs=*"
+          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
+          "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs
+
+      - name: Run PHPCS (non-blocking)
+        run: |
+          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
+          "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=wp-content/plugins/racketmanager/phpcs.xml.dist wp-content/plugins/racketmanager

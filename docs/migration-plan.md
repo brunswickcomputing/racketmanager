@@ -146,6 +146,10 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
     - Stage J — Rollout and monitoring
       - Tag a release; communicate deprecation/removal of legacy to stakeholders.
       - Monitor error logs/console post‑deploy; be ready with a hotfix branch if any missed inline handler surfaces.
+    - Stage K — Completed (2025-10-23): CI/CD hardening
+      - Consolidated CodeQL workflows: modernized codeql-analysis.yml to v3 and deprecated duplicate codeql.yml (manual/no-op only).
+      - Added PHPCS ruleset (phpcs.xml.dist) using WordPress Coding Standards.
+      - Wired a non-blocking PHPCS job into CI (GitHub Actions) to lint PHP against WordPressCS.
     - Submission of changes for this issue
       - Implement Stage E edits (dead code deletions) and submit PR for review (✓ when done).
     - Next stages:

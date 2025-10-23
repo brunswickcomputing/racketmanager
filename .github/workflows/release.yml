@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-zip:
+    name: Build plugin zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set variables
+        id: vars
+        run: |
+          echo "tag=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+          echo "plugin=racketmanager" >> $GITHUB_OUTPUT
+
+      - name: Create plugin archive
+        run: |
+          mkdir -p build
+          ZIP_NAME="${{ steps.vars.outputs.plugin }}-${{ steps.vars.outputs.version }}.zip"
+          # Create staging directory matching WordPress plugin layout
+          STAGE_DIR="build/${{ steps.vars.outputs.plugin }}"
+          mkdir -p "$STAGE_DIR"
+          rsync -av --exclude='.git' \
+                    --exclude='.github' \
+                    --exclude='node_modules' \
+                    --exclude='**/.DS_Store' \
+                    --exclude='**/*.map' \
+                    --exclude='**/*.log' \
+                    --exclude='qodana*.yaml' \
+                    --exclude='.eslintrc*' \
+                    --exclude='.eslintignore' \
+                    --exclude='.prettierrc*' \
+                    --exclude='.prettierignore' \
+                    --exclude='docs' \
+                    ./wp-content/plugins/racketmanager/ "$STAGE_DIR"/
+          cd build
+          zip -r "$ZIP_NAME" "${{ steps.vars.outputs.plugin }}" >/dev/null
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: Generate checksum
+        run: |
+          cd build
+          sha256sum "$ZIP_NAME" > "$ZIP_NAME.sha256"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-build
+          path: |
+            build/${{ env.ZIP_NAME }}
+            build/${{ env.ZIP_NAME }}.sha256
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-zip
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-build
+          path: build
+
+      - name: Extract version from tag
+        id: vars
+        run: |
+          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.version }}
+          name: RacketManager ${{ steps.vars.outputs.version }}
+          draft: false
+          prerelease: ${{ contains(steps.vars.outputs.version, 'rc') || contains(steps.vars.outputs.version, 'beta') || contains(steps.vars.outputs.version, 'alpha') }}
+          files: |
+            build/*.zip
+            build/*.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

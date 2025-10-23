@@ -21,6 +21,9 @@ Jobs:
   - Linter: jetbrains/qodana-js:2024.3
   - Config: qodana-js.yaml
   - Artifacts: full HTML report
+- PHPCS (WordPress Standards)
+  - Non-blocking style/lint check with WordPressCS via phpcs.xml.dist
+  - Runs on plugin path: wp-content/plugins/racketmanager
 
 Notes:
 - SARIF output is uploaded for code scanning alerts where supported.

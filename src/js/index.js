@@ -21,6 +21,7 @@ import { initializePopstateHandler } from './features/navigation/popstate-handle
 import { initializePrinting } from './features/printing/index.js';
 import { initializeTabDataFeature } from './features/tabdata/index.js';
 import { initializeSwitchTab } from './features/navigation/switch-tab.js';
+import { initializeActivateTab } from './features/navigation/activate-tab.js';
 import { initializeAccountUpdate } from './features/account/account-update.js';
 import { initializeClubUpdate } from './features/club/club-update.js';
 import { initializeAjaxError } from './features/ajax/handle-ajax-error.js';
@@ -71,6 +72,8 @@ jQuery(function () {
     initializeNavigation();
     initializePopstateHandler();
     initializeSwitchTab();
+    // Activate specific tab panels declared in markup
+    initializeActivateTab();
 
     // Tab Data (AJAX content loading)
     initializeTabDataFeature();
@@ -167,6 +170,9 @@ jQuery(document).ajaxComplete(function () {
     initializePlayerUpdate();
     // Modals (some bind direct events, e.g., has-modal checkboxes)
     initializeModals();
+    // Navigation-related initializers that may depend on injected markup
+    initializeSwitchTab();
+    initializeActivateTab();
     // Teams (ensure delegated handlers are bound after dynamic injections)
     initializeTeamsAdmin();
     initializeTeamUpdate();

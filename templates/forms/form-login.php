@@ -20,12 +20,7 @@ if ( isset( $action ) && 'register' === $action ) {
 }
 // phpcs:enable WordPress.WP.GlobalVariablesOverride.Prohibited
 ?>
-<script type='text/javascript'>
-jQuery(document).ready(function(){
-    activaTab('<?php echo esc_html( $tab ); ?>');
-});
-</script>
-<div class="row justify-content-center">
+<div class="row justify-content-center" data-action="activate-tab" data-tabid="<?php echo esc_attr( $tab ); ?>">
     <div id="tabs-login" class="col-12">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs frontend" id="loginTabs" role="tablist">

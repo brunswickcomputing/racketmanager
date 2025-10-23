@@ -143,10 +143,6 @@ function changePartnerName(ui) {
 var Racketmanager = (window.Racketmanager = window.Racketmanager || {});
 Racketmanager.loadingModal = Racketmanager.loadingModal || '#loadingModal';
 
-function activaTab(tab) {
-	jQuery('.nav-tabs button[data-bs-target="#' + tab + '"]').tab('show');
-	jQuery('.nav-pills button[data-bs-target="#' + tab + '"]').tab('show');
-}
 function get_player_details(type, name, club = null, notifyField = null, partnerGender = null) {
 	let response = '';
 	jQuery.ajax({

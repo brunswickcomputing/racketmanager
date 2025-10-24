@@ -97,8 +97,13 @@ jobs:
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
           "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs
 
-      - name: Run PHPCS (non-blocking)
-        working-directory: wp-content/plugins/racketmanager
+      - name: Run PHPCS (non-blocking; auto-detect path)
         run: |
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
-          "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml .
+          if [ -f "wp-content/plugins/racketmanager/phpcs.xml" ]; then
+            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=wp-content/plugins/racketmanager/phpcs.xml wp-content/plugins/racketmanager
+          elif [ -f "phpcs.xml" ]; then
+            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml .
+          else
+            echo "PHPCS ruleset not found; skipping."
+          fi

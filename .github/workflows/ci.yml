@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop, feature/** ]
+    branches: [ "main", "master", "develop", "feature/**" ]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ "main", "master", "develop" ]
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Qodana PHP
-        uses: JetBrains/qodana-action@v2024.2
+        uses: JetBrains/qodana-action@v2024.3
         with:
           linter: jetbrains/qodana-php:2024.3
           pr-mode: true
@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Qodana JS
-        uses: JetBrains/qodana-action@v2024.2
+        uses: JetBrains/qodana-action@v2024.3
         with:
           linter: jetbrains/qodana-js:2024.3
           pr-mode: true
@@ -67,6 +67,12 @@ jobs:
         with:
           name: qodana-js-report
           path: qodana-results-js
+
+      - name: Upload JS SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: qodana-results-js/qodana.sarif.json
 
   phpcs:
     name: PHPCS (WordPress Standards)
@@ -92,6 +98,7 @@ jobs:
           "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs
 
       - name: Run PHPCS (non-blocking)
+        working-directory: wp-content/plugins/racketmanager
         run: |
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
-          "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=wp-content/plugins/racketmanager/phpcs.xml.dist wp-content/plugins/racketmanager
+          "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml .

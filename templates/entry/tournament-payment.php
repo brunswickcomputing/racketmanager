@@ -81,7 +81,7 @@ if ( $payment_required ) {
                         ?>
                         <div class="col-md-4">
                             <div class="price-row">
-                                <div class="price-cost" id="priceCostTotalFmt"><?php echo empty( $total_due ) ? null : esc_html__( 'Total:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $total_due ); ?></div>
+                                <div class="price-cost"><?php echo empty( $total_due ) ? null : esc_html__( 'Total:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $total_due ); ?></div>
                                 <input type="hidden" name="priceCostTotal" id="priceCostTotal" value=<?php echo esc_attr( $total_due ); ?> />
                             </div>
                         </div>

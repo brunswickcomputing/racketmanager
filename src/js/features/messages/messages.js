@@ -4,6 +4,7 @@
  */
 
 import { handleAjaxError, initializeAjaxError } from '../ajax/handle-ajax-error.js';
+import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 
 /**
  * Fetch and display a single message
@@ -29,12 +30,12 @@ export function getMessage(event, messageId) {
   jQuery(errorField).hide();
 
   jQuery.ajax({
-    url: ajax_var.url,
+    url: getAjaxUrl(),
     type: 'POST',
     data: {
       message_id: messageId,
       action: 'racketmanager_get_message',
-      security: ajax_var.ajax_nonce,
+      security: getAjaxNonce(),
     },
     success: function (response) {
       const data = response.data;
@@ -86,12 +87,12 @@ export function deleteMessage(event, messageId) {
   jQuery(errorField).hide();
 
   jQuery.ajax({
-    url: ajax_var.url,
+    url: getAjaxUrl(),
     type: 'POST',
     data: {
       message_id: messageId,
       action: 'racketmanager_delete_message',
-      security: ajax_var.ajax_nonce,
+      security: getAjaxNonce(),
     },
     success: function (response) {
       jQuery(notifyField).empty();
@@ -133,7 +134,7 @@ export function deleteMessages(event, link) {
   jQuery(notifyField).hide();
 
   jQuery.ajax({
-    url: ajax_var.url,
+    url: getAjaxUrl(),
     type: 'POST',
     data: form,
     success: function (response) {

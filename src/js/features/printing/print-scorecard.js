@@ -1,6 +1,7 @@
 /**
  * Score card printing functionality (modularized legacy Racketmanager.printScoreCard)
  */
+import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 
 /**
  * Initialize print score card handlers (delegated bindings are handled in print-match-card.js)
@@ -38,12 +39,12 @@ export function printScoreCard(e, matchId) {
 
     // Fetch printable HTML via WP AJAX
     jQuery.ajax({
-        url: ajax_var.url,
+        url: getAjaxUrl(),
         type: 'POST',
         data: {
             matchId: matchId,
             action: 'racketmanager_match_card',
-            security: ajax_var.ajax_nonce,
+            security: getAjaxNonce(),
         },
         success: function (response) {
             // Open popup and write content

@@ -1,6 +1,7 @@
 // stripe-api.js (moved to src/js/features/payments)
 // Modular Stripe-related API requests for Racketmanager
 // Exports createPaymentRequest with backward-compatible signature.
+import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 
 /**
  * Create a PaymentIntent for the given tournament entry and invoice.
@@ -23,19 +24,19 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, callback)
   // If using legacy-style callback, mirror racketmanager.legacy.js behavior closely.
   if (hasCallback) {
     // Ensure minimum globals exist; if not, fail fast through the callback.
-    if (typeof jQuery === 'undefined' || !jQuery.ajax || typeof ajax_var === 'undefined' || !ajax_var?.url) {
+    if (typeof jQuery === 'undefined' || !jQuery.ajax || !getAjaxUrl()) {
       try { callback('Ajax configuration is missing.'); } catch (_) {}
       return;
     }
     let output;
     jQuery.ajax({
-      url: ajax_var.url,
+      url: getAjaxUrl(),
       type: 'POST',
       data: {
         tournament_entry: tournamentEntry,
         invoiceId: invoiceId,
         action: 'racketmanager_tournament_payment_create',
-        security: ajax_var.ajax_nonce,
+        security: getAjaxNonce(),
       },
       success: function (response) {
         // Legacy placed response.data into output regardless of type
@@ -56,8 +57,10 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, callback)
   }
 
   // Modern Promise-based usage (module consumers)
-  // Ensure ajax_var is available (localized by WordPress)
-  if (typeof ajax_var === 'undefined' || !ajax_var?.url || !ajax_var?.ajax_nonce) {
+  // Use centralized config getters instead of touching ajax_var directly
+  const ajaxUrl = getAjaxUrl();
+  const ajaxNonce = getAjaxNonce();
+  if (!ajaxUrl) {
     throw new Error('Ajax configuration is missing. Please reload the page.');
   }
 
@@ -65,10 +68,10 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, callback)
   formData.set('tournament_entry', tournamentEntry);
   formData.set('invoiceId', invoiceId);
   formData.set('action', 'racketmanager_tournament_payment_create');
-  formData.set('security', ajax_var.ajax_nonce);
+  formData.set('security', ajaxNonce || '');
 
   try {
-    const res = await fetch(ajax_var.url, {
+    const res = await fetch(ajaxUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
       body: formData.toString(),
@@ -90,13 +93,13 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, callback)
     if (typeof jQuery !== 'undefined' && jQuery?.ajax) {
       const jqResult = await new Promise((resolve, reject) => {
         jQuery.ajax({
-          url: ajax_var.url,
+          url: getAjaxUrl(),
           type: 'POST',
           data: {
             tournament_entry: tournamentEntry,
             invoiceId: invoiceId,
             action: 'racketmanager_tournament_payment_create',
-            security: ajax_var.ajax_nonce,
+            security: getAjaxNonce(),
           },
           success: function (response) {
             if (response && response.success) {

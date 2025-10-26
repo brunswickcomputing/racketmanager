@@ -4,6 +4,7 @@
  */
 
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
+import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
 
 const FORM_SELECTOR = '#playerSearch';
 const INPUT_SELECTOR = '#search_string';
@@ -50,7 +51,8 @@ export function executePlayerSearch(event) {
   }
 
   const encoded = encodeURI(searchVal);
-  const ajaxURL = `${ajax_var.url}?search_string=${encoded}&action=racketmanager_search_players&security=${ajax_var.ajax_nonce}`;
+  const baseUrl = getAjaxUrl();
+  const ajaxURL = `${baseUrl}?search_string=${encoded}&action=racketmanager_search_players&security=${getAjaxNonce()}`;
 
   jQuery(CONTENT_CONTAINER).addClass('is-loading');
 

@@ -1,3 +1,10 @@
+// set-calculator.js (moved into main src/js module bundle)
+// Provides set score validation and auto-calculation helpers.
+// Exposes global functions SetCalculator and SetCalculatorTieBreak for inline handlers
+// used in templates (onblur attributes), while keeping the code within the module system.
+
+let globalsAttached = false;
+
 function SetCalculator(inputdata) {
 	let classes = {
 		inputError: 'input-validation-error',
@@ -86,6 +93,7 @@ function SetCalculator(inputdata) {
 		jQuery(tieBreak).val(tieBreakScore);
 	}
 }
+
 function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
 	let teamScoreAlt = '';
 	if (teamScore === minWin) {
@@ -105,6 +113,7 @@ function CalculateAltScore(teamScore, maxWin, maxLoss, minWin) {
 	}
 	return teamScoreAlt
 }
+
 function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakScore, maxLoss, maxWin, minLoss, minWin) {
 	let classes = {
 		inputError: 'input-validation-error',
@@ -135,6 +144,7 @@ function SetValidator(team1, team2, team1Score, team2Score, tieBreak, tieBreakSc
 		jQuery(team1).addClass(classes.won);
 	}
 }
+
 function SetCalculatorTieBreak(inputdata) {
 	let classes = {
 		inputError: 'input-validation-error'
@@ -148,4 +158,18 @@ function SetCalculatorTieBreak(inputdata) {
 		jQuery(tieBreak).removeClass(classes.inputError);
 		jQuery(tieBreak).removeClass('is-invalid');
 	}
+}
+
+export function initializeSetCalculator() {
+  if (globalsAttached) return;
+  // Attach globals so inline onblur handlers keep working
+  try {
+    // eslint-disable-next-line no-undef
+    globalThis.SetCalculator = SetCalculator;
+    // eslint-disable-next-line no-undef
+    globalThis.SetCalculatorTieBreak = SetCalculatorTieBreak;
+    globalsAttached = true;
+  } catch (_) {
+    // no-op
+  }
 }

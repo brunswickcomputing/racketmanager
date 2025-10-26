@@ -45,7 +45,6 @@ if ( $payment_required ) {
     <input type="hidden" name="tournamentEntryId" id="tournamentEntryId" value="<?php echo esc_attr( $tournament_entry->id ); ?>" />
     <input type="hidden" name="api_publishable_key" id="api_publishable_key" value="<?php echo esc_attr( $stripe->api_publishable_key ); ?>" />
     <script src="https://js.stripe.com/v3/"></script>
-    <script type="module" src="<?php echo esc_url( RACKETMANAGER_URL );  ?>js/stripe-complete.js" defer></script>
     <?php
 }
 ?>
@@ -78,7 +77,7 @@ if ( $payment_required ) {
                         ?>
                         <div class="col-md-4">
                             <div class="price-row">
-                                <div class="price-cost"<?php echo empty( $total_due ) ? null : esc_html__( 'Total:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $total_due ); ?></div>
+                                <div class="price-cost"><?php echo esc_html__( 'Total:', 'racketmanager' ) . ' ' . get_currency_amount( $total_due ); ?></div>
                                 <input type="hidden" name="priceCostTotal" id="priceCostTotal" value=<?php echo esc_attr( $total_due ); ?> />
                             </div>
                         </div>

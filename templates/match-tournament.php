@@ -582,9 +582,6 @@ if ( $match ) {
         </div>
     </div>
     <?php require RACKETMANAGER_PATH . 'templates/includes/modal-loading.php'; ?>
-    <script>
-        <?php require_once RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
-    </script>
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/match-modal.php'; ?>
     <?php

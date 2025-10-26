@@ -214,6 +214,7 @@ class Ajax_Tournament extends Ajax {
         $args['currency']                    = $racketmanager->currency_code;
         $args['payment_method_types']        = array('card');
         $args['statement_descriptor_suffix'] = $tournament->name;
+        $args['receipt_email']               = $player?->email;
         $stripe_details                      = new Stripe_Settings();
         $stripe                              = new StripeClient( $stripe_details->api_secret_key );
         try {

@@ -1,7 +1,13 @@
-// ------- UI helpers -------
+// ------- UI helpers (moved to src/js/features/payments) -------
 
 export function showMessage(messageText) {
     const messageContainer = document.querySelector("#payment-message");
+
+    if (!messageContainer) {
+        // Fallback: console log if container is missing
+        try { console.warn('payment-message container not found'); } catch(_) {}
+        return;
+    }
 
     messageContainer.classList.remove("hidden");
     messageContainer.textContent = messageText;

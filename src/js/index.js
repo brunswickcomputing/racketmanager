@@ -8,6 +8,7 @@ import { initializeTooltips } from './features/ui/tooltips.js';
 import { initializeAcceptanceCheckbox } from './features/forms/acceptance-checkbox.js';
 import { initializePasswordToggle } from './features/forms/password-toggle.js';
 import { initializeCheckboxConditionals } from './features/forms/checkbox-conditionals.js';
+import { initializePasswordStrength } from './features/forms/password-strength.js';
 import { initializeNavigation } from './features/navigation/index.js';
 import { initializeAutocomplete } from './features/autocomplete/index.js';
 import { initializeTeamSelection } from './features/teams/team-selection.js';
@@ -35,6 +36,8 @@ import { initializePlayerSearch } from './features/player/player-search.js';
 import { initializePricing } from './features/pricing/pricing.js';
 import { initializeTournamentWithdrawal } from './features/withdrawals/tournament-withdrawal.js';
 import { initializePaymentStatus } from './features/payments/payment-status.js';
+import { initializeTournamentCheckout } from './features/payments/payment-checkout.js';
+import { initializeStripePaymentComplete } from './features/payments/payment-complete.js';
 import { initializeEntryRequest } from './features/entry/entry-request.js';
 import { initializeClubAdmin } from './features/club/admin/club-roles.js';
 import { initializeMatchOptions } from './features/match/match-options.js';
@@ -46,6 +49,8 @@ import { initializeSwitchHomeAway } from './features/match/switch-home-away.js';
 import { initializeTeamMatchResult } from './features/match/update-team-result.js';
 import { initializeClubPlayerRequest } from './features/club/club-player-request.js';
 import { initializeClubPlayerRemove } from './features/club/club-player-remove.js';
+import { initializeWidgetCarousel } from './features/widgets/widget-carousel.js';
+import { initializeSetCalculator } from './features/match/set-calculator.js';
 
 // Initialize on document ready
 jQuery(function () {
@@ -67,6 +72,8 @@ jQuery(function () {
     initializeAcceptanceCheckbox();
     initializePasswordToggle();
     initializeCheckboxConditionals();
+    // Password strength meter (uses WP core password-strength-meter)
+    initializePasswordStrength();
 
     // Navigation
     initializeNavigation();
@@ -86,6 +93,9 @@ jQuery(function () {
     initializeTeamOrder();
     initializeTeamsAdmin();
     initializeTeamUpdate();
+
+    // Match Set Calculator (exposes globals for inline onblur handlers)
+    initializeSetCalculator();
 
     // Modals
     initializeModals();
@@ -125,6 +135,11 @@ jQuery(function () {
     // Payments & Withdrawals (Phase 6)
     initializeTournamentWithdrawal();
     initializePaymentStatus();
+    // Stripe Checkout (Payment Element)
+    initializeTournamentCheckout();
+
+    // Stripe Payment Complete (handle return status)
+    initializeStripePaymentComplete();
 
     // Entry Requests (modularized legacy entryRequest)
     initializeEntryRequest();
@@ -152,6 +167,9 @@ jQuery(function () {
 
     // Teams: Update Team Result (wrapper for rubbers)
     initializeTeamMatchResult();
+
+    // Widgets
+    initializeWidgetCarousel();
 });
 
 // Re-initialize after AJAX
@@ -182,4 +200,10 @@ jQuery(document).ajaxComplete(function () {
     initializeClubPlayerRequest();
     initializeClubPlayerRemove();
     // No need to re-initialize set-match-status; delegated handler on document covers dynamic content
+
+    // Widgets (in case a widget is injected via AJAX)
+    initializeWidgetCarousel();
+
+    // Ensure SetCalculator globals are available after dynamic injections
+    initializeSetCalculator();
 });

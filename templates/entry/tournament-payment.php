@@ -48,7 +48,6 @@ if ( $payment_required ) {
     <input type="hidden" name="invoiceId" id="invoiceId" value="<?php echo esc_attr( $invoice_id ); ?>" />
     <input type="hidden" name="api_publishable_key" id="api_publishable_key" value="<?php echo esc_attr( $stripe->api_publishable_key ); ?>" />
     <script src="https://js.stripe.com/v3/"></script>
-    <script type="module" src="<?php echo esc_url( RACKETMANAGER_URL );  ?>js/stripe-checkout.js" defer></script>
     <?php
 }
 ?>
@@ -81,7 +80,7 @@ if ( $payment_required ) {
                         ?>
                         <div class="col-md-4">
                             <div class="price-row">
-                                <div class="price-cost"><?php echo empty( $total_due ) ? null : esc_html__( 'Total:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $total_due ); ?></div>
+                                <div class="price-cost"><?php echo esc_html__( 'Total:', 'racketmanager' ) . ' ' . get_currency_amount( $total_due ); ?></div>
                                 <input type="hidden" name="priceCostTotal" id="priceCostTotal" value=<?php echo esc_attr( $total_due ); ?> />
                             </div>
                         </div>
@@ -92,6 +91,11 @@ if ( $payment_required ) {
                 <?php
                 if ( $payment_required ) {
                     ?>
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <button class="btn btn-primary btn-lg" id="checkout-cc-button"><?php esc_html_e( 'Pay by card', 'racketmanager' ); ?></button>
+                        </div>
+                    </div>
                     <div class="row justify-content-center">
                         <div class="col-md-6">
                             <form id="payment-form" style="display:none;">

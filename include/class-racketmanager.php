@@ -1131,7 +1131,6 @@ class RacketManager {
             'strong'   => __( 'Now, that\'s a password!', 'theme-domain' ),
             'mismatch' => __( 'They are completely different, come on!', 'theme-domain' )
         ) );
-        wp_enqueue_script( 'password-strength-meter-mediator', RACKETMANAGER_URL . 'js/password-strength-meter-mediator.js', array( 'password-strength-meter' ), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
         ?>
     <script type="text/javascript">
     //<![CDATA[

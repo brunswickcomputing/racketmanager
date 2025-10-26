@@ -102,7 +102,6 @@ class Widget extends WP_Widget {
         $after_title   = $data->after_title;
         $after_widget  = $data->after_widget;
         ob_start();
-        wp_enqueue_script( 'racketmanager_widget_js', plugins_url( '/js/widget.js', __DIR__ ), array(), RACKETMANAGER_VERSION, array( 'in_footer' => true ) );
         echo esc_html( $before_widget );
         if ( $clubs ) {
             ?>

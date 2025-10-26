@@ -626,8 +626,5 @@ if ( $match->is_walkover ) {
             </div>
         </div>
     </div>
-    <script>
-        <?php require_once RACKETMANAGER_PATH . 'js/set-calculator.js'; ?>
-    </script>
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/modal-score.php'; ?>
     <?php require_once 'includes/match-modal.php'; ?>

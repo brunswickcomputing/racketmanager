@@ -53,20 +53,32 @@ function the_match_time( $start_time ): void {
         echo $start_time;
     }
 }
+
+    /**
+     * Get formatted currency function
+     *
+     * @param string|null $amount amount to be formatted.
+     *
+     * @return string
+     */
+    function get_currency_amount( ?string $amount ): string {
+        if ( is_null( $amount ) ) {
+            $amount = 0;
+        }
+        $currency_fmt  = Util::get_currency_format();
+        $currency_code = Util::get_currency_code();
+        return numfmt_format_currency( $currency_fmt, $amount, $currency_code );
+    }
+
 /**
- * Get formatted currency function
+ * Show formatted currency function
  *
  * @param string|null $amount amount to be formatted.
  *
  * @return void
  */
 function the_currency_amount( ?string $amount ): void {
-    if ( is_null( $amount ) ) {
-        $amount = 0;
-    }
-    $currency_fmt  = Util::get_currency_format();
-    $currency_code = Util::get_currency_code();
-    echo esc_html( numfmt_format_currency( $currency_fmt, $amount, $currency_code ) );
+    echo get_currency_amount( $amount);
 }
     /**
      * Wrapper tags

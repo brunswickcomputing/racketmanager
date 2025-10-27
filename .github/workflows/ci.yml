@@ -96,6 +96,15 @@ jobs:
           composer global require "squizlabs/php_codesniffer=*" "wp-coding-standards/wpcs=*"
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
           "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs
+          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
+php -v
+composer --version
+"$PHPCS_HOME"/vendor/bin/phpcs --version
+"$PHPCS_HOME"/vendor/bin/phpcs -i || true
+# If ruleset exists, list referenced sniffs to aid debugging
+if [ -f "wp-content/plugins/racketmanager/phpcs.xml" ]; then
+  "$PHPCS_HOME"/vendor/bin/phpcs -e --standard=wp-content/plugins/racketmanager/phpcs.xml || true
+fi
 
       - name: Run PHPCS (non-blocking; auto-detect path)
         run: |

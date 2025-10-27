@@ -1,7 +1,16 @@
 <?php
+/**
+ * Legacy shim for Racketmanager\Player (PSR-4 relocation)
+ * Delegates to src/php/Player.php and returns early to avoid redeclaration.
+ */
 namespace Racketmanager;
 
-if (class_exists('Racketmanager\\Player', false)) { return; }
+if (\class_exists('Racketmanager\\Player', false)) {
+    return;
+}
+$pluginRoot = \dirname(__DIR__) . '/';
+require_once $pluginRoot . 'src/php/Player.php';
+return;
 
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;

@@ -1,19 +1,6 @@
 <?php
 namespace Racketmanager;
 
-// Bridge guard: if PSR-4 loads this file but the class already exists, stop immediately.
-if (class_exists('Racketmanager\\Player', false)) { return; }
-
-// Deterministic bridge to legacy implementation to avoid partial class during transition.
-if (!\defined('RACKETMANAGER_PATH')) {
-    $pluginRoot = \dirname(__DIR__) . '/';
-    if (!\defined('RACKETMANAGER_PATH')) {
-        \define('RACKETMANAGER_PATH', $pluginRoot);
-    }
-}
-require_once RACKETMANAGER_PATH . 'include/class-player.php';
-return;
-
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

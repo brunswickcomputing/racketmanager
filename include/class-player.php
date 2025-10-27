@@ -1,13 +1,7 @@
 <?php
-/**
- * Player API: player class
- *
- * @author Paul Moffat
- * @package RacketManager
- * @subpackage Player
- */
-
 namespace Racketmanager;
+
+if (class_exists('Racketmanager\\Player', false)) { return; }
 
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;

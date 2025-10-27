@@ -9,6 +9,8 @@
 
 namespace Racketmanager;
 
+if (class_exists('Racketmanager\\Club', false)) { return; }
+
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

@@ -49,20 +49,39 @@ class RacketmanagerMain {
         global $racketmanager;
         $this->define_tables();
 
-        require_once RACKETMANAGER_PATH . 'include/util/class-util.php';
-        require_once RACKETMANAGER_PATH . 'include/util/class-util-lookup.php';
-        require_once RACKETMANAGER_PATH . 'include/class-racketmanager.php';
-        require_once RACKETMANAGER_PATH . 'include/class-activator.php';
+        // Prefer Composer autoloader if available (PSR-4); fall back to manual requires for BC.
+        $has_autoloader = false;
+        $autoload_path  = RACKETMANAGER_PATH . 'vendor/autoload.php';
+        if ( file_exists( $autoload_path ) ) {
+            require_once $autoload_path;
+            $has_autoloader = true;
+        }
+
+        // Ensure critical classes are available even if Composer autoloader exists but is not yet configured.
+        if ( ! class_exists( 'Racketmanager\\Util\\Util' ) ) {
+            require_once RACKETMANAGER_PATH . 'include/util/class-util.php';
+        }
+        if ( ! class_exists( 'Racketmanager\\Util\\Util_Lookup' ) ) {
+            require_once RACKETMANAGER_PATH . 'include/util/class-util-lookup.php';
+        }
+        if ( ! class_exists( 'Racketmanager\\RacketManager' ) ) {
+            require_once RACKETMANAGER_PATH . 'include/class-racketmanager.php';
+        }
+        if ( ! class_exists( 'Racketmanager\\Activator' ) ) {
+            require_once RACKETMANAGER_PATH . 'include/class-activator.php';
+        }
 
         load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 
-        register_activation_hook( __FILE__, array( 'RacketManager\Activator', 'activate' ) );
-        register_deactivation_hook( __FILE__, array( 'RacketManager\Activator', 'deactivate' ) );
-        add_action( 'plugins_loaded', array( 'RacketManager\RacketManager', 'get_instance' ) );
+        register_activation_hook( __FILE__, array( 'Racketmanager\\Activator', 'activate' ) );
+        register_deactivation_hook( __FILE__, array( 'Racketmanager\\Activator', 'deactivate' ) );
+        add_action( 'plugins_loaded', array( 'Racketmanager\\RacketManager', 'get_instance' ) );
 
         if ( is_admin() ) {
-            require_once RACKETMANAGER_PATH . 'include/class-admin.php';
-            add_action( 'plugins_loaded', array( 'Racketmanager\Admin', 'get_instance' ) );
+            if ( ! class_exists( 'Racketmanager\\Admin' ) ) {
+                require_once RACKETMANAGER_PATH . 'include/class-admin.php';
+            }
+            add_action( 'plugins_loaded', array( 'Racketmanager\\Admin', 'get_instance' ) );
             $racketmanager = new Admin();
         } else {
             $racketmanager = new RacketManager();

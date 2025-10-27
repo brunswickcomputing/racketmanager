@@ -1,21 +1,21 @@
 {
-  "name": "brunswickcomputing/racketmanager",
-  "description": "Racket sports administration and viewing for leagues/cups/tournaments",
+  "name": "racketmanager/racketmanager",
+  "description": "RacketManager WordPress plugin",
   "type": "wordpress-plugin",
-  "authors": [
-    {
-      "name": "Paul Moffat",
-      "homepage": "https://brunswickcomputing.co.uk/"
-    }
-  ],
+  "license": "GPL-2.0-or-later",
   "require": {
-      "stripe/stripe-php": "^16.4",
-    "ext-intl": "*",
-    "ext-mysqli": "*"
+    "php": ">=8.0"
   },
   "autoload": {
+    "psr-4": {
+      "Racketmanager\\": "src/php/"
+    },
     "classmap": [
-      "include"
+      "include/"
     ]
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
   }
 }

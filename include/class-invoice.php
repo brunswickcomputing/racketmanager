@@ -1,18 +1,16 @@
 <?php
 /**
- * Invoice API: invoice class
- *
- * @author Paul Moffat
- * @package RacketManager
- * @subpackage Invoice
+ * Legacy shim for Racketmanager\Invoice (PSR-4 relocation)
+ * Delegates to src/php/Invoice.php and returns early to avoid redeclaration.
  */
-
 namespace Racketmanager;
 
-use DateInterval;
-use DateMalformedIntervalStringException;
-use DateMalformedStringException;
-use DateTime;
+if (\class_exists('Racketmanager\\Invoice', false)) {
+    return;
+}
+$pluginRoot = \dirname(__DIR__) . '/';
+require_once $pluginRoot . 'src/php/Invoice.php';
+return;
 
 /**
  * Class to implement the invoice object

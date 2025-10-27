@@ -122,10 +122,10 @@ jobs:
           tools: composer
 
       - name: Install Composer deps (optimize)
-        working-directory: wp-content/plugins/racketmanager
+        working-directory: racketmanager
         run: composer install --no-dev --prefer-dist -o
 
       - name: Bootstrap plugin and instantiate core class
-        working-directory: wp-content/plugins/racketmanager
+        working-directory: racketmanager
         run: |
           php -r "require 'racketmanager.php'; \\Racketmanager\\RacketManager::get_instance(); if (!class_exists('Racketmanager\\\\Player')) { throw new Exception('Player class missing'); } if (!method_exists('Racketmanager\\\\Player','get_instance')) { throw new Exception('Player::get_instance missing'); } if (!class_exists('Racketmanager\\\\Club')) { throw new Exception('Club class missing'); } if (!method_exists('Racketmanager\\\\Club','get_instance')) { throw new Exception('Club::get_instance missing'); } echo 'OK';"

@@ -45,7 +45,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\League_Team' => __DIR__ . '/../..' . '/include/class-league-team.php',
         'Racketmanager\\Login' => __DIR__ . '/../..' . '/include/class-login.php',
         'Racketmanager\\Message' => __DIR__ . '/../..' . '/src/php/Message.php',
-        'Racketmanager\\Player' => __DIR__ . '/../..' . '/include/class-player.php',
+        'Racketmanager\\Player' => __DIR__ . '/../..' . '/src/php/Player.php',
         'Racketmanager\\Player_Error' => __DIR__ . '/../..' . '/include/class-player-error.php',
         'Racketmanager\\Privacy_Exporters' => __DIR__ . '/../..' . '/include/class-privacy-exporters.php',
         'Racketmanager\\RacketManager' => __DIR__ . '/../..' . '/include/class-racketmanager.php',

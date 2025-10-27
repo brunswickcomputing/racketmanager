@@ -22,7 +22,7 @@ return array(
     'Racketmanager\\League_Team' => $baseDir . '/include/class-league-team.php',
     'Racketmanager\\Login' => $baseDir . '/include/class-login.php',
     'Racketmanager\\Message' => $baseDir . '/src/php/Message.php',
-    'Racketmanager\\Player' => $baseDir . '/include/class-player.php',
+    'Racketmanager\\Player' => $baseDir . '/src/php/Player.php',
     'Racketmanager\\Player_Error' => $baseDir . '/include/class-player-error.php',
     'Racketmanager\\Privacy_Exporters' => $baseDir . '/include/class-privacy-exporters.php',
     'Racketmanager\\RacketManager' => $baseDir . '/include/class-racketmanager.php',

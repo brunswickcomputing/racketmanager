@@ -122,10 +122,29 @@ jobs:
           tools: composer
 
       - name: Install Composer deps (optimize)
-        working-directory: racketmanager
-        run: composer install --no-dev --prefer-dist -o
+        run: |
+          set -euo pipefail
+          if [ -f "racketmanager.php" ]; then
+            PLUGIN_DIR="."
+          elif [ -f "wp-content/plugins/racketmanager/racketmanager.php" ]; then
+            PLUGIN_DIR="wp-content/plugins/racketmanager"
+          else
+            echo "Could not locate plugin root (racketmanager.php)."
+            pwd; ls -la
+            exit 1
+          fi
+          composer install --no-dev --prefer-dist -o --working-dir="$PLUGIN_DIR"
 
       - name: Bootstrap plugin and instantiate core class
-        working-directory: racketmanager
         run: |
-          php -r "require 'racketmanager.php'; \\Racketmanager\\RacketManager::get_instance(); if (!class_exists('Racketmanager\\\\Player')) { throw new Exception('Player class missing'); } if (!method_exists('Racketmanager\\\\Player','get_instance')) { throw new Exception('Player::get_instance missing'); } if (!class_exists('Racketmanager\\\\Club')) { throw new Exception('Club class missing'); } if (!method_exists('Racketmanager\\\\Club','get_instance')) { throw new Exception('Club::get_instance missing'); } echo 'OK';"
+          set -euo pipefail
+          if [ -f "racketmanager.php" ]; then
+            PLUGIN_DIR="."
+          elif [ -f "wp-content/plugins/racketmanager/racketmanager.php" ]; then
+            PLUGIN_DIR="wp-content/plugins/racketmanager"
+          else
+            echo "Could not locate plugin root (racketmanager.php)."
+            pwd; ls -la
+            exit 1
+          fi
+          php -r "chdir(getenv('PLUGIN_DIR') ?: '$PLUGIN_DIR'); require 'racketmanager.php'; \\Racketmanager\\RacketManager::get_instance(); if (!class_exists('Racketmanager\\\\Player')) { throw new Exception('Player class missing'); } if (!method_exists('Racketmanager\\\\Player','get_instance')) { throw new Exception('Player::get_instance missing'); } if (!class_exists('Racketmanager\\\\Club')) { throw new Exception('Club class missing'); } if (!method_exists('Racketmanager\\\\Club','get_instance')) { throw new Exception('Club::get_instance missing'); } echo 'OK';"

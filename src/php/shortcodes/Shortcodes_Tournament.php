@@ -10,11 +10,6 @@
 
 namespace Racketmanager\shortcodes;
 
-if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Tournament', false) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Tournament.php';
-    return;
-}
-
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\util\Util;
 use function Racketmanager\get_event;

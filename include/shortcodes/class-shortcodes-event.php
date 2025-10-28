@@ -9,6 +9,12 @@
 
 namespace Racketmanager\shortcodes;
 
+// PSR-4 shim for relocated class. Prefer PSR-4 copy during transition.
+if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Event', false) ) {
+    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Event.php';
+    return;
+}
+
 use Racketmanager\Player;
 use Racketmanager\util\Util;
 use function Racketmanager\get_club;

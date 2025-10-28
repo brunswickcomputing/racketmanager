@@ -9,11 +9,6 @@
 
 namespace Racketmanager\shortcodes;
 
-if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Message', false) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Message.php';
-    return;
-}
-
 use function Racketmanager\get_message;
 use function Racketmanager\get_user;
 

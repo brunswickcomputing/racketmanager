@@ -9,6 +9,11 @@
 
 namespace Racketmanager\shortcodes;
 
+if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Login', false) ) {
+    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Login.php';
+    return;
+}
+
 use Racketmanager\util\Util;
 use function Racketmanager\get_user;
 

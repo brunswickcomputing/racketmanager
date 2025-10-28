@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Shortcodes API: RacketManagerShortcodes class
  *
@@ -9,12 +8,6 @@
  */
 
 namespace Racketmanager\shortcodes;
-
-// PSR-4 shim for relocated class during transition.
-if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes', false) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes.php';
-    return;
-}
 
 use Racketmanager\util\Util_Lookup;
 use stdClass;

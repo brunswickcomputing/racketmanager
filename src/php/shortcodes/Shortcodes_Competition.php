@@ -10,11 +10,6 @@
 
 namespace Racketmanager\shortcodes;
 
-if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Competition', false) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Competition.php';
-    return;
-}
-
 use Racketmanager\Stripe_Settings;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

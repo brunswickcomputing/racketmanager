@@ -9,11 +9,6 @@
 
 namespace Racketmanager\shortcodes;
 
-if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_League', false) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_League.php';
-    return;
-}
-
 use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;

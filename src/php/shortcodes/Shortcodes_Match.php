@@ -9,11 +9,6 @@
 
 namespace Racketmanager\shortcodes;
 
-if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Match', false) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Match.php';
-    return;
-}
-
 use stdClass;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;

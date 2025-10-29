@@ -11,7 +11,6 @@ namespace Racketmanager\models;
 
 use Racketmanager\Club_Player;
 use Racketmanager\Club_Role;
-use Racketmanager\Player;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

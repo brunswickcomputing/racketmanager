@@ -7,12 +7,18 @@
  * @subpackage Player
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;
 use WP_User;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_tournament;
+use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Player object

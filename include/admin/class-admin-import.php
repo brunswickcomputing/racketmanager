@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\Player;
+use Racketmanager\models\Player;
 use Racketmanager\Racketmanager_Match;
 use Racketmanager\util\Util;
 use stdClass;

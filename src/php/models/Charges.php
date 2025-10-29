@@ -1,7 +1,6 @@
 <?php
 namespace Racketmanager\models;
 
-use Racketmanager\Competition;
 use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
@@ -31,9 +30,9 @@ final class Charges {
     /**
      * Competition
      *
-     * @var Competition|null
+     * @var object|null
      */
-    public null|Competition $competition;
+    public null|object $competition;
     /**
      * Status
      *

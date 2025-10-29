@@ -6,10 +6,10 @@
 
 namespace Racketmanager;
 
-if (class_exists('Racketmanager\\Season', false)) {
+if (class_exists( 'Racketmanager\\models\\Season', false)) {
     return;
 }
 
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/Season.php';
+require_once $pluginRoot . 'src/php/models/Season.php';
 return;

@@ -7,7 +7,7 @@
  * @subpackage Season
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
 /**
  * Class to implement the season object

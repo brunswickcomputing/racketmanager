@@ -2,7 +2,6 @@
 namespace Racketmanager\models;
 
 use Racketmanager\Competition;
-use Racketmanager\Invoice;
 use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;

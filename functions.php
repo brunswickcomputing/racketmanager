@@ -10,6 +10,7 @@ namespace Racketmanager;
 
 use Racketmanager\models\Charges;
 use Racketmanager\models\Club;
+use Racketmanager\models\Invoice;
 
 /**
  * Send debug code to the Javascript console

@@ -7,10 +7,16 @@
  * @subpackage Invoice
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
 use DateInterval;
 use DateTime;
+use Racketmanager\DateMalformedIntervalStringException;
+use Racketmanager\DateMalformedStringException;
+use Racketmanager\RacketManager;
+use function Racketmanager\get_charge;
+use function Racketmanager\get_club;
+use function Racketmanager\get_player;
 
 /**
  * Class to implement the invoice object

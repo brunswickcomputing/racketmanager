@@ -10,6 +10,7 @@
 namespace Racketmanager;
 
 use Racketmanager\models\Charges;
+use Racketmanager\models\Invoice;
 use Racketmanager\util\Util;
 use stdClass;
 

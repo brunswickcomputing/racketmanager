@@ -10,7 +10,6 @@
 namespace Racketmanager\models;
 
 use Racketmanager\Team;
-use Racketmanager\Tournament_Entry;
 use Racketmanager\util\Util;
 use stdClass;
 use function Racketmanager\get_charge;

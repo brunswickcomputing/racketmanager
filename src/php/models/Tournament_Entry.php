@@ -1,5 +1,7 @@
 <?php
-namespace Racketmanager;
+namespace Racketmanager\models;
+
+use function Racketmanager\get_club;
 
 /**
  * Class to implement the Tournament Entry object (moved to PSR-4)

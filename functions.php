@@ -15,6 +15,7 @@ use Racketmanager\models\League;
 use Racketmanager\models\League_Team;
 use Racketmanager\models\Message;
 use Racketmanager\models\Tournament;
+use Racketmanager\models\Tournament_Entry;
 
 /**
  * Send debug code to the Javascript console

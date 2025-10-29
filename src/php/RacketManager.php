@@ -15,6 +15,7 @@ use Racketmanager\ajax\Ajax_Finance;
 use Racketmanager\ajax\Ajax_Frontend;
 use Racketmanager\ajax\Ajax_Match;
 use Racketmanager\ajax\Ajax_Tournament;
+use Racketmanager\models\Message;
 use Racketmanager\shortcodes\Shortcodes;
 use Racketmanager\shortcodes\Shortcodes_Club;
 use Racketmanager\shortcodes\Shortcodes_Competition;

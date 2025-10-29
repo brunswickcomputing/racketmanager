@@ -6,10 +6,10 @@
 
 namespace Racketmanager;
 
-if (class_exists('Racketmanager\\Message', false)) {
+if (class_exists( 'Racketmanager\\models\\Message', false)) {
     return;
 }
 
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/Message.php';
+require_once $pluginRoot . 'src/php/models/Message.php';
 return;

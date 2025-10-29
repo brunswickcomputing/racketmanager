@@ -13,6 +13,7 @@ use Racketmanager\models\Club;
 use Racketmanager\models\Invoice;
 use Racketmanager\models\League;
 use Racketmanager\models\League_Team;
+use Racketmanager\models\Message;
 
 /**
  * Send debug code to the Javascript console

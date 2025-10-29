@@ -13,7 +13,6 @@ use Racketmanager\Championship;
 use Racketmanager\Event;
 use Racketmanager\Racketmanager_Match;
 use Racketmanager\Schedule_Round_Robin;
-use Racketmanager\Team;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

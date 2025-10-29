@@ -9,7 +9,6 @@
 
 namespace Racketmanager\models;
 
-use Racketmanager\Team;
 use Racketmanager\util\Util;
 use stdClass;
 use function Racketmanager\get_charge;

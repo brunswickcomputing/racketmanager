@@ -882,17 +882,13 @@ class RacketManager {
             require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
             require_once RACKETMANAGER_PATH . 'include/class-svg-icons.php';
             require_once RACKETMANAGER_PATH . 'include/class-widget.php';
-        }
 
-        /*
-        * load sports libraries
-        */
-        // First read files in racketmanager sports directory, then overwrite with sports files in user stylesheet directory.
-        $files = array_merge( $this->read_directory( RACKETMANAGER_PATH . 'sports' ), $this->read_directory( get_stylesheet_directory() . '/sports' ) );
-
-        // load files.
-        foreach ( $files as $file ) {
-            require_once $file;
+            // Legacy installs (no Composer): load sports libraries procedurally.
+            // First read files in racketmanager sports directory, then overwrite with sports files in user stylesheet directory.
+            $files = array_merge( $this->read_directory( RACKETMANAGER_PATH . 'sports' ), $this->read_directory( get_stylesheet_directory() . '/sports' ) );
+            foreach ( $files as $file ) {
+                require_once $file;
+            }
         }
 
         // template tags & functions.

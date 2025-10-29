@@ -174,8 +174,8 @@ class Shortcodes_Competition extends Shortcodes {
                     );
                 }
             }
-       }
-       return $this->return_error( $msg );
+        }
+        return $this->return_error( $msg );
     }
     /**
      * Show competition overview function

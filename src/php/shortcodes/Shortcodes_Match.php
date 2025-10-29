@@ -355,7 +355,7 @@ class Shortcodes_Match extends Shortcodes {
         }
         return $this->return_error( $msg );
     }
-     /**
+    /**
      * Function to display match status modal
      *
      *  [show-score match_id=ID team=x opponent=x home_away=x template=X]

@@ -824,12 +824,6 @@ class RacketManager {
             // classes will be autoloaded on demand. No manual requires needed here.
             // Safety: ensure critical legacy classes exist when the Composer autoloader is present
             // but the classmap hasn't been dumped on the target environment.
-            if ( ! class_exists( 'Racketmanager\\League' ) ) {
-                require_once RACKETMANAGER_PATH . 'include/class-league.php';
-            }
-            if ( ! class_exists( 'Racketmanager\\League_Team' ) ) {
-                require_once RACKETMANAGER_PATH . 'include/class-league-team.php';
-            }
         } else {
             // Legacy fallback: manually include class files as before.
             // Objects.

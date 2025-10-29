@@ -9,26 +9,26 @@
 namespace Racketmanager;
 
 use NumberFormatter;
-use Racketmanager\ajax\Ajax_Account;
-use Racketmanager\ajax\Ajax_Club;
-use Racketmanager\ajax\Ajax_Finance;
-use Racketmanager\ajax\Ajax_Frontend;
-use Racketmanager\ajax\Ajax_Match;
-use Racketmanager\ajax\Ajax_Tournament;
-use Racketmanager\models\Message;
-use Racketmanager\shortcodes\Shortcodes;
-use Racketmanager\shortcodes\Shortcodes_Club;
-use Racketmanager\shortcodes\Shortcodes_Competition;
-use Racketmanager\shortcodes\Shortcodes_Email;
-use Racketmanager\shortcodes\Shortcodes_Event;
-use Racketmanager\shortcodes\Shortcodes_League;
-use Racketmanager\shortcodes\Shortcodes_Login;
-use Racketmanager\shortcodes\Shortcodes_Match;
-use Racketmanager\shortcodes\Shortcodes_Message;
-use Racketmanager\shortcodes\Shortcodes_Tournament;
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
-use Racketmanager\validator\Validator;
+use ajax\Ajax_Account;
+use ajax\Ajax_Club;
+use ajax\Ajax_Finance;
+use ajax\Ajax_Frontend;
+use ajax\Ajax_Match;
+use ajax\Ajax_Tournament;
+use models\Message;
+use shortcodes\Shortcodes;
+use shortcodes\Shortcodes_Club;
+use shortcodes\Shortcodes_Competition;
+use shortcodes\Shortcodes_Email;
+use shortcodes\Shortcodes_Event;
+use shortcodes\Shortcodes_League;
+use shortcodes\Shortcodes_Login;
+use shortcodes\Shortcodes_Match;
+use shortcodes\Shortcodes_Message;
+use shortcodes\Shortcodes_Tournament;
+use util\Util;
+use util\Util_Lookup;
+use validator\Validator;
 use stdClass;
 
 /**

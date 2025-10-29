@@ -393,7 +393,7 @@ class Admin extends RacketManager {
     public function load_scripts(): void {
         wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-bootstrap' );
-        wp_register_script( 'racketmanager-functions', plugins_url( '/admin/js/functions.js', __DIR__ ), array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
+        wp_register_script( 'racketmanager-functions', RACKETMANAGER_URL . '/admin/js/functions.js', array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-functions' );
         wp_localize_script(
             'racketmanager-functions',
@@ -404,7 +404,7 @@ class Admin extends RacketManager {
             )
         );
 
-        wp_register_script( 'racketmanager-ajax', plugins_url( '/admin/js/ajax.js', __DIR__ ), array(), RACKETMANAGER_VERSION, false );
+        wp_register_script( 'racketmanager-ajax', RACKETMANAGER_URL . '/admin/js/ajax.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-ajax' );
         wp_localize_script(
             'racketmanager-ajax',
@@ -443,13 +443,13 @@ class Admin extends RacketManager {
      */
     public function load_styles(): void {
         wp_enqueue_style( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager', plugins_url( '/css/admin.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager-modal', plugins_url( '/css/modal.css', __DIR__ ), false, RACKETMANAGER_VERSION, 'screen' );
+        wp_enqueue_style( 'racketmanager', RACKETMANAGER_URL . '/css/admin.css', false, RACKETMANAGER_VERSION, 'screen' );
+        wp_enqueue_style( 'racketmanager-modal', RACKETMANAGER_URL . '/css/modal.css', false, RACKETMANAGER_VERSION, 'screen' );
 
         $jquery_ui_version = '1.13.2';
-        wp_register_style( 'jquery-ui', plugins_url( '/css/jquery/jquery-ui.min.css', __DIR__ ), false, $jquery_ui_version );
-        wp_register_style( 'jquery-ui-structure', plugins_url( '/css/jquery/jquery-ui.structure.min.css', __DIR__ ), array( 'jquery-ui' ), $jquery_ui_version );
-        wp_register_style( 'jquery-ui-theme', plugins_url( '/css/jquery/jquery-ui.theme.min.css', __DIR__ ), array( 'jquery-ui', 'jquery-ui-structure' ), $jquery_ui_version );
+        wp_register_style( 'jquery-ui', RACKETMANAGER_URL . '/css/jquery/jquery-ui.min.css', false, $jquery_ui_version );
+        wp_register_style( 'jquery-ui-structure', RACKETMANAGER_URL . '/css/jquery/jquery-ui.structure.min.css', array( 'jquery-ui' ), $jquery_ui_version );
+        wp_register_style( 'jquery-ui-theme', RACKETMANAGER_URL . '/css/jquery/jquery-ui.theme.min.css', array( 'jquery-ui', 'jquery-ui-structure' ), $jquery_ui_version );
 
         wp_enqueue_style( 'jquery-ui-structure' );
         wp_enqueue_style( 'jquery-ui-theme' );

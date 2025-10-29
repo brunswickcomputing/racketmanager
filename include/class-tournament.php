@@ -10,7 +10,7 @@
 namespace Racketmanager;
 
 // If the class is already loaded (e.g., via Composer PSR-4), do nothing.
-if (class_exists('Racketmanager\\Tournament', false)) {
+if (class_exists( 'Racketmanager\\models\\Tournament', false)) {
     return;
 }
 
@@ -18,6 +18,6 @@ if (class_exists('Racketmanager\\Tournament', false)) {
 $pluginRoot = \dirname(__DIR__) . '/';
 
 // Load the PSR-4 implementation
-require_once $pluginRoot . 'src/php/Tournament.php';
+require_once $pluginRoot . 'src/php/models/Tournament.php';
 
 return;

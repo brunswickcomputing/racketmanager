@@ -7,12 +7,24 @@
  * @subpackage Tournament
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
-use Racketmanager\models\Charges;
-use Racketmanager\models\Invoice;
+use Racketmanager\Team;
+use Racketmanager\Tournament_Entry;
 use Racketmanager\util\Util;
 use stdClass;
+use function Racketmanager\get_charge;
+use function Racketmanager\get_club;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_league_team;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\get_tournament_entry;
+use function Racketmanager\seo_url;
+use function Racketmanager\sort;
 
 
 /**

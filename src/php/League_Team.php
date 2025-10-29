@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\Club;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 

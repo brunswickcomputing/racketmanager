@@ -7,11 +7,24 @@
  * @subpackage Club
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
+use Racketmanager\Club_Player;
+use Racketmanager\Club_Role;
+use Racketmanager\Player;
+use Racketmanager\Team;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;
+use function Racketmanager\club_players_notification;
+use function Racketmanager\get_club_role;
+use function Racketmanager\get_competition;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\get_user;
+use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Club object

@@ -6,10 +6,10 @@
 
 namespace Racketmanager;
 
-if (class_exists('Racketmanager\\Club', false)) {
+if (class_exists( 'Racketmanager\\models\\Club', false)) {
     return;
 }
 
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/Club.php';
+require_once $pluginRoot . 'src/php/models/Club.php';
 return;

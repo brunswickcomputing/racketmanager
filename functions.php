@@ -8,6 +8,8 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\Club;
+
 /**
  * Send debug code to the Javascript console
  *
@@ -218,6 +220,19 @@ function wp_get_current_url(): ?string {
  *
  * @return Club|null club|null
  */
+// Ensure the Club class is available even if Composer autoload hasn't been loaded yet.
+if ( !\class_exists('Racketmanager\\models\\Club', false) ) {
+    $autoload = \defined('RACKETMANAGER_PATH') ? RACKETMANAGER_PATH . 'vendor/autoload.php' : null;
+    if ( $autoload && \file_exists( $autoload ) ) {
+        require_once $autoload;
+    }
+}
+if ( !\class_exists('Racketmanager\\models\\Club', false) ) {
+    // Load PSR-4 bridge which will pull in the implementation and alias legacy name.
+    if ( \defined('RACKETMANAGER_PATH') ) {
+        require_once RACKETMANAGER_PATH . 'src/php/models/Club.php';
+    }
+}
 function get_club( object|int|string|null $club = null, string $search_term = 'id' ): Club|null {
     if ( empty( $club ) && isset( $GLOBALS['club'] ) ) {
         $club = $GLOBALS['club'];

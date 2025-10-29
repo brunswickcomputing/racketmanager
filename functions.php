@@ -8,6 +8,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\Charges;
 use Racketmanager\models\Club;
 
 /**

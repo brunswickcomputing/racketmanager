@@ -834,7 +834,7 @@ class RacketManager {
             if ( ! class_exists( 'Racketmanager\\models\\League' ) ) {
                 require_once RACKETMANAGER_PATH . 'include/class-league.php';
             }
-            if ( ! class_exists( 'Racketmanager\\League_Team' ) ) {
+            if ( ! class_exists( 'Racketmanager\\models\\League_Team' ) ) {
                 require_once RACKETMANAGER_PATH . 'include/class-league-team.php';
             }
         } else {

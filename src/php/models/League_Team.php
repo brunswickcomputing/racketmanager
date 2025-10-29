@@ -7,11 +7,13 @@
  * @subpackage League_Team
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
-use Racketmanager\models\Club;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
+use function Racketmanager\get_club;
+use function Racketmanager\get_league;
+use function Racketmanager\get_team;
 
 /**
  * Class to implement the League_Team object

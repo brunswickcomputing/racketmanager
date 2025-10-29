@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\League;
 use Racketmanager\util\Util;
 
 /**

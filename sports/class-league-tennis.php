@@ -13,6 +13,7 @@ if ( ! class_exists( 'Racketmanager\\League_Tennis', false ) ) {
     return;
 }
 
+use Racketmanager\models\League;
 use Racketmanager\util\Util;
 
 /**

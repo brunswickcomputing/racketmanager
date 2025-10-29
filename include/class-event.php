@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\League;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

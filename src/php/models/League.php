@@ -7,12 +7,26 @@
  * @subpackage League
  */
 
-namespace Racketmanager;
+namespace Racketmanager\models;
 
+use Racketmanager\Championship;
+use Racketmanager\Event;
+use Racketmanager\Racketmanager_Match;
+use Racketmanager\Schedule_Round_Robin;
+use Racketmanager\Team;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function get_query_var;
+use function Racketmanager\get_club;
+use function Racketmanager\get_event;
+use function Racketmanager\get_league_team;
+use function Racketmanager\get_match;
+use function Racketmanager\get_player;
+use function Racketmanager\get_team;
+use function Racketmanager\show_score;
+use function Racketmanager\show_standings;
+use function Racketmanager\withdrawn_team_email;
 
 /**
  * Class to implement the League object

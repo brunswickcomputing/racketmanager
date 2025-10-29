@@ -11,6 +11,7 @@ namespace Racketmanager;
 use Racketmanager\models\Charges;
 use Racketmanager\models\Club;
 use Racketmanager\models\Invoice;
+use Racketmanager\models\League;
 
 /**
  * Send debug code to the Javascript console

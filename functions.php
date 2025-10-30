@@ -18,6 +18,7 @@ use Racketmanager\models\League;
 use Racketmanager\models\League_Team;
 use Racketmanager\models\Message;
 use Racketmanager\models\Player;
+use Racketmanager\models\Racketmanager_Match;
 use Racketmanager\models\Rubber;
 use Racketmanager\models\Season;
 use Racketmanager\models\Team;

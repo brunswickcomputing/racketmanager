@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\Racketmanager_Match;
 use Racketmanager\util\Util;
 
 /**

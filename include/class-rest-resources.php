@@ -610,7 +610,6 @@ class Rest_Resources extends WP_REST_Controller {
         // Handle the event
         switch ($event->type) {
             case 'payment_intent.succeeded':
-                debug_to_console( 'updating payment');
                 $payment_intent = $event->data->object; // contains a \Stripe_Settings\PaymentIntent
                 $stripe_details->update_payment( $payment_intent->id);
             // Then define and call a method to handle the successful payment intent.

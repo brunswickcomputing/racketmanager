@@ -26,6 +26,7 @@ use Racketmanager\models\Season;
 use Racketmanager\models\Team;
 use Racketmanager\models\Tournament;
 use Racketmanager\models\Tournament_Entry;
+use Racketmanager\models\User;
 
 /**
  * Send debug code to the Javascript console

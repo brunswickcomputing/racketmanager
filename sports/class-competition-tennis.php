@@ -8,6 +8,8 @@
 namespace Racketmanager;
 
 // PSR-4 shim: prefer the new location under src/php/sports/.
+use Racketmanager\models\Competition;
+
 if ( ! class_exists( 'Racketmanager\\Competition_Tennis', false ) ) {
     require_once RACKETMANAGER_PATH . 'src/php/sports/Competition_Tennis.php';
     return;

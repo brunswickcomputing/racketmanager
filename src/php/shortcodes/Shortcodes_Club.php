@@ -35,29 +35,29 @@ class Shortcodes_Club extends Shortcodes {
      * @return string - the content
      */
     public function show_clubs( array $atts ): string {
-		global $racketmanager;
-		$args     = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template = $args['template'];
-		$clubs    = $racketmanager->get_clubs(
-			array(
-				'type' => 'current',
-			)
-		);
-		$filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
-		return $this->load_template(
-			$filename,
-			array(
-				'clubs'                  => $clubs,
-				'user_can_update_club'   => false,
-				'user_can_update_player' => false,
-				'standalone'             => false,
-			)
-		);
+        global $racketmanager;
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
+        $clubs    = $racketmanager->get_clubs(
+            array(
+                'type' => 'current',
+            )
+        );
+        $filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
+        return $this->load_template(
+            $filename,
+            array(
+                'clubs'                  => $clubs,
+                'user_can_update_club'   => false,
+                'user_can_update_player' => false,
+                'standalone'             => false,
+            )
+        );
     }
 
     /**
@@ -70,69 +70,69 @@ class Shortcodes_Club extends Shortcodes {
      * @return false|string - the content
      */
     public function show_club( array $atts ): false|string {
-		global $racketmanager;
-		$args     = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template = $args['template'];
-		// Get League by Name.
-		$club_name = get_query_var( 'club_name' );
-		$club_name = str_replace( '-', ' ', $club_name );
+        global $racketmanager;
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
+        // Get League by Name.
+        $club_name = get_query_var( 'club_name' );
+        $club_name = str_replace( '-', ' ', $club_name );
 
-		$club = get_club( $club_name, 'shortcode' );
+        $club = get_club( $club_name, 'shortcode' );
 
-		if ( ! $club ) {
-			return false;
-		}
-		$user_can_update_club   = false;
-		$user_can_update_player = false;
-		if ( is_user_logged_in() ) {
-			$user   = wp_get_current_user();
-			$userid = $user->ID;
-			if ( current_user_can( 'manage_racketmanager' ) || ( ! empty( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) ) {
-				$user_can_update_club   = true;
-				$user_can_update_player = true;
-			} else {
-				$options = $racketmanager->get_options( 'rosters' );
-				if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
-					$user_can_update_player = true;
-				}
-			}
-		}
-		$club_players    = $club->get_players(
-			array(
-				'active' => true,
-				'type'   => 'real',
-				'cache'  => false,
-			)
-		);
-		$player_requests = $club->get_players(
-			array(
-				'club'   => $club->id,
-				'status' => 'outstanding',
-			)
-		);
-		$keys            = $racketmanager->get_options( 'keys' );
-		$google_maps_key = $keys['googleMapsKey'] ?? '';
+        if ( ! $club ) {
+            return false;
+        }
+        $user_can_update_club   = false;
+        $user_can_update_player = false;
+        if ( is_user_logged_in() ) {
+            $user   = wp_get_current_user();
+            $userid = $user->ID;
+            if ( current_user_can( 'manage_racketmanager' ) || ( ! empty( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) ) {
+                $user_can_update_club   = true;
+                $user_can_update_player = true;
+            } else {
+                $options = $racketmanager->get_options( 'rosters' );
+                if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
+                    $user_can_update_player = true;
+                }
+            }
+        }
+        $club_players    = $club->get_players(
+            array(
+                'active' => true,
+                'type'   => 'real',
+                'cache'  => false,
+            )
+        );
+        $player_requests = $club->get_players(
+            array(
+                'club'   => $club->id,
+                'status' => 'outstanding',
+            )
+        );
+        $keys            = $racketmanager->get_options( 'keys' );
+        $google_maps_key = $keys['googleMapsKey'] ?? '';
 
-		$club->single = true;
+        $club->single = true;
 
-		$filename = ( ! empty( $template ) ) ? 'club-' . $template : 'club';
-		return $this->load_template(
-			$filename,
-			array(
-				'club'                   => $club,
-				'club_players'           => $club_players,
-				'player_requests'        => $player_requests,
-				'google_maps_key'        => $google_maps_key,
-				'user_can_update_club'   => $user_can_update_club,
-				'user_can_update_player' => $user_can_update_player,
-				'standalone'             => true,
-			)
-		);
+        $filename = ( ! empty( $template ) ) ? 'club-' . $template : 'club';
+        return $this->load_template(
+            $filename,
+            array(
+                'club'                   => $club,
+                'club_players'           => $club_players,
+                'player_requests'        => $player_requests,
+                'google_maps_key'        => $google_maps_key,
+                'user_can_update_club'   => $user_can_update_club,
+                'user_can_update_player' => $user_can_update_player,
+                'standalone'             => true,
+            )
+        );
     }
     /**
      * Function to display Club Players
@@ -144,19 +144,19 @@ class Shortcodes_Club extends Shortcodes {
      * @return string - the content
      */
     public function show_club_players( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template = $args['template'];
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
         $filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
-		// Get Club by Name.
-		$club_name = get_query_var( 'club_name' );
-		$club_name = un_seo_url( $club_name );
-		$club      = get_club( $club_name, 'shortcode' );
-		if ( $club ) {
+        // Get Club by Name.
+        $club_name = get_query_var( 'club_name' );
+        $club_name = un_seo_url( $club_name );
+        $club      = get_club( $club_name, 'shortcode' );
+        if ( $club ) {
             // Get Player by Name.
             $player_name = get_query_var( 'player_id' );
             if ( $player_name ) {
@@ -187,7 +187,7 @@ class Shortcodes_Club extends Shortcodes {
             }
         } else {
             $msg = $this->club_not_found;
-		}
+        }
         return $this->return_error( $msg );
     }
 
@@ -227,19 +227,19 @@ class Shortcodes_Club extends Shortcodes {
      * @return string - the content
      */
     public function show_club_competitions( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template = $args['template'];
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
         $filename = ( ! empty( $template ) ) ? 'competitions-' . $template : 'competitions';
-		// Get Club by Name.
-		$club_name = get_query_var( 'club_name' );
-		$club_name = un_seo_url( $club_name );
-		$club      = get_club( $club_name, 'shortcode' );
-		if ( $club ) {
+        // Get Club by Name.
+        $club_name = get_query_var( 'club_name' );
+        $club_name = un_seo_url( $club_name );
+        $club      = get_club( $club_name, 'shortcode' );
+        if ( $club ) {
             $club_competitions = array();
             // Get competition by Name.
             $competition_name = get_query_var( 'competition_name' );
@@ -269,8 +269,8 @@ class Shortcodes_Club extends Shortcodes {
                 );
             }
         } else {
-			$msg = $this->club_not_found;
-		}
+            $msg = $this->club_not_found;
+        }
         return $this->return_error( $msg );
     }
 
@@ -332,23 +332,23 @@ class Shortcodes_Club extends Shortcodes {
      * @return string - the content
      */
     public function show_club_team( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template = $args['template'];
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
         $filename = ( ! empty( $template ) ) ? 'team-' . $template : 'team';
         $event    = null;
         $team     = null;
-		// Get Club by Name.
-		$club_name = get_query_var( 'club_name' );
-		$club_name = un_seo_url( $club_name );
-		$club      = get_club( $club_name, 'shortcode' );
-		if ( ! $club ) {
-			$msg = $this->club_not_found;
-		}
+        // Get Club by Name.
+        $club_name = get_query_var( 'club_name' );
+        $club_name = un_seo_url( $club_name );
+        $club      = get_club( $club_name, 'shortcode' );
+        if ( ! $club ) {
+            $msg = $this->club_not_found;
+        }
         // Get team by Name.
         $team_name = get_query_var( 'team' );
         if ( $team_name ) {
@@ -361,15 +361,15 @@ class Shortcodes_Club extends Shortcodes {
             $msg = __( 'Team not supplied', 'racketmanager' );
         }
         $event_name = get_query_var( 'event' );
-		if ( $event_name ) {
-			$event_name = un_seo_url( $event_name );
-			$event      = get_event( $event_name, 'name' );
-			if ( ! $event ) {
-				$msg = $this->event_not_found;
-			}
-		} else {
-			$msg = $this->no_event_id;
-		}
+        if ( $event_name ) {
+            $event_name = un_seo_url( $event_name );
+            $event      = get_event( $event_name, 'name' );
+            if ( ! $event ) {
+                $msg = $this->event_not_found;
+            }
+        } else {
+            $msg = $this->no_event_id;
+        }
         if ( empty( $msg ) ) {
             $team_info   = $event->get_team_info( $team->id );
             $team        = (object) array_merge( (array) $team, (array) $team_info );
@@ -396,34 +396,34 @@ class Shortcodes_Club extends Shortcodes {
      * @return string - the content
      */
     public function show_club_event( array $atts ): string {
-		$args     = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template = $args['template'];
+        $args     = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template = $args['template'];
         $filename = ( ! empty( $template ) ) ? 'event-' . $template : 'event';
         $event    = null;
         // Get Club by Name.
-		$club_name = get_query_var( 'club_name' );
-		$club_name = un_seo_url( $club_name );
-		$club      = get_club( $club_name, 'shortcode' );
-		if ( ! $club ) {
-			$msg = $this->club_not_found;
-		}
-		$event_name = get_query_var( 'event' );
-		if ( $event_name ) {
-			$event_name = un_seo_url( $event_name );
-			$event      = get_event( $event_name, 'name' );
-			if ( ! $event ) {
-				$msg = $this->event_not_found;
-			}
-		} else {
-			$msg = $this->no_event_id;
-		}
-		$season = get_query_var( 'season' );
-		if ( ! $season && ! isset( $event->current_season['name'] ) ) {
+        $club_name = get_query_var( 'club_name' );
+        $club_name = un_seo_url( $club_name );
+        $club      = get_club( $club_name, 'shortcode' );
+        if ( ! $club ) {
+            $msg = $this->club_not_found;
+        }
+        $event_name = get_query_var( 'event' );
+        if ( $event_name ) {
+            $event_name = un_seo_url( $event_name );
+            $event      = get_event( $event_name, 'name' );
+            if ( ! $event ) {
+                $msg = $this->event_not_found;
+            }
+        } else {
+            $msg = $this->no_event_id;
+        }
+        $season = get_query_var( 'season' );
+        if ( ! $season && ! isset( $event->current_season['name'] ) ) {
             $msg = __( 'No seasons for event', 'racketmanager' );
         }
         if ( empty( $msg ) ) {
@@ -457,21 +457,21 @@ class Shortcodes_Club extends Shortcodes {
      */
     public function show_club_invoices( array $atts ): string {
         global $racketmanager;
-		$args            = shortcode_atts(
-			array(
-				'template' => '',
-			),
-			$atts
-		);
-		$template        = $args['template'];
+        $args            = shortcode_atts(
+            array(
+                'template' => '',
+            ),
+            $atts
+        );
+        $template        = $args['template'];
         $msg             = null;
         $template_ref    = null;
         $user_can_update = null;
-		// Get Club by Name.
-		$club_name = get_query_var( 'club_name' );
-		$club_name = un_seo_url( $club_name );
-		$club      = get_club( $club_name, 'shortcode' );
-		if ( ! $club ) {
+        // Get Club by Name.
+        $club_name = get_query_var( 'club_name' );
+        $club_name = un_seo_url( $club_name );
+        $club      = get_club( $club_name, 'shortcode' );
+        if ( ! $club ) {
             $msg = $this->club_not_found;
         }
         if ( empty( $msg ) ) {
@@ -503,7 +503,7 @@ class Shortcodes_Club extends Shortcodes {
                 $club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
                 $template_ref   = 'invoices';
             }
-		}
+        }
         if ( empty( $msg ) ) {
             $filename = ( ! empty( $template ) ) ? $template_ref . '-' . $template : $template_ref;
 

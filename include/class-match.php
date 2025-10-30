@@ -9,6 +9,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\models\Rubber;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator_Match;

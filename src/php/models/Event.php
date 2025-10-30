@@ -9,7 +9,6 @@
 
 namespace Racketmanager\models;
 
-use Racketmanager\Rubber;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

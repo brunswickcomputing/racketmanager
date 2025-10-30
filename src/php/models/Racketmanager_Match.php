@@ -10,7 +10,6 @@
 namespace Racketmanager\models;
 
 use Racketmanager\Championship;
-use Racketmanager\Results_Checker;
 use Racketmanager\Results_Report;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;

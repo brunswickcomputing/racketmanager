@@ -10,7 +10,6 @@
 namespace Racketmanager\models;
 
 use Racketmanager\Championship;
-use Racketmanager\Event;
 use Racketmanager\Racketmanager_Match;
 use Racketmanager\Schedule_Round_Robin;
 use Racketmanager\util\Util;

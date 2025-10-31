@@ -921,6 +921,7 @@ class RacketManager {
         $this->shortcodes_tournament    = new Shortcodes_Tournament();
         $this->rewrites                 = new Rewrites();
         $this->login                    = new Login();
+        Rest_Routes::single();
     }
     /**
      * Load shortcodes

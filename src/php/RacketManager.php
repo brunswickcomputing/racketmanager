@@ -806,7 +806,7 @@ class RacketManager {
     public function racketmanager_register_exporter( array $exporters_array ): array {
         $exporters_array['racketmanager_exporter'] = array(
             'exporter_friendly_name' => 'Racketmanager exporter',
-            'callback'               => array( 'Racketmanager\Privacy_Exporters', 'user_data_exporter' ),
+            'callback'               => array( 'Racketmanager\Services\Privacy_Exporters', 'user_data_exporter' ),
         );
         return $exporters_array;
     }

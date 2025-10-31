@@ -2879,7 +2879,7 @@ ul.match-points {
 	align-self: center;
 }
 
-.match__btn svg.icon {
+.match__btn svg.icon, svg.icon,icin-white {
 	fill: white;
 }
 

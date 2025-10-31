@@ -75,9 +75,9 @@ namespace Racketmanager;
                         <div class="col-4 col-md-2"><a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_html( $player->id ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
                         <div class="col-2 col-md-1">
                             <button type="button" class="btn btn-secondary player-clubs" id="linkedClubs_<?php echo esc_html( $player->id ); ?>" data-bs-toggle="popover" data-bs-placement="left" data-bs-html="true">
-                                <i class="passwordShow racketmanager-svg-icon">
-                                            <?php racketmanager_the_svg( 'icon-link' ); ?>
-                                </i>
+                                <svg width="16" height="16" class="icon icon-white">
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#link-45deg' ); ?>"></use>
+                                </svg>
                             </button>
                         </div>
                         <div class="col-1"><?php echo esc_html( $player->gender ); ?></div>

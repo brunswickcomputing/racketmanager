@@ -37,8 +37,10 @@ namespace Racketmanager;
         <div class="form-floating mb-3">
             <input type="password" class="form-control password <?php echo empty( $password_error ) ? null : 'is-invalid'; ?>" name="pwd" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" id="user_pass" aria-describedby="passwordFeedback"/>
             <label class="" for="user_pass"><?php esc_html_e( 'Password', 'racketmanager' ); ?></label>
-            <i class="passwordShow racketmanager-svg-icon">
-                <?php racketmanager_the_svg( 'icon-eye' ); ?>
+            <i class="passwordShow">
+                <svg width="16" height="16" class="icon ">
+                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#eye-fill' ); ?>"></use>
+                </svg>
             </i>
             <div id="user_passFeedback" class="invalid-feedback">
                 <?php

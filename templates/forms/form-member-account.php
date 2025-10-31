@@ -210,16 +210,20 @@ $is_invalid = false;
                                 }
                                 ?>
                                 <input type="password" placeholder="<?php esc_html_e( 'Password', 'racketmanager' ); ?>" name="password" id="password" class="form-control password <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="20" value="" autocomplete="off" />
-                                <i class="passwordShow racketmanager-svg-icon">
-                                <?php racketmanager_the_svg( 'icon-eye' ); ?>
+                                <i class="passwordShow">
+                                    <svg width="16" height="16" class="icon ">
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#eye-fill' ); ?>"></use>
+                                    </svg>
                                 </i>
                                 <label for="password"><?php esc_html_e( 'Password', 'racketmanager' ); ?></label>
                                 <div id="passwordFeedback" class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                             </div>
                             <div class="form-floating col-md-6 mb-3">
                                 <input type="password" placeholder="<?php esc_html_e( 'Re-enter password', 'racketmanager' ); ?>" name="rePassword" id="rePassword" class="form-control password <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="" autocomplete="off" />
-                                <i class="passwordShow racketmanager-svg-icon">
-                                <?php racketmanager_the_svg( 'icon-eye' ); ?>
+                                <i class="passwordShow">
+                                    <svg width="16" height="16" class="icon ">
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#eye-fill' ); ?>"></use>
+                                    </svg>
                                 </i>
                                 <label for="rePassword"><?php esc_html_e( 'Confirm password', 'racketmanager' ); ?></label>
                             </div>

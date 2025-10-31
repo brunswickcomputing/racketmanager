@@ -875,8 +875,9 @@ summary>* {
 }
 
 /*noinspection CssUnresolvedCustomProperty*/
-.passwordShow svg {
+.passwordShow svg[class*=icon] {
 	fill: var(--e-global-color-global_color_1);
+	bottom: 0;
 }
 
 .passwordShow:hover svg {
@@ -986,9 +987,9 @@ label.hidden {
 
 .passwordShow {
 	position: absolute;
-		right: 2.5em;
-		top: 1.05em;
-		cursor: pointer;
+	right: 1em;
+	top: 1em;
+	cursor: pointer;
 }
 
 #password-strength.short {

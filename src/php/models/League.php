@@ -634,7 +634,7 @@ class League {
             if ( ! isset( $event->competition->sport ) ) {
                 $league->sport = '';
             }
-            $instance = 'Racketmanager\League_' . ucfirst( $event->competition->sport );
+            $instance = 'Racketmanager\sports\League_' . ucfirst( $event->competition->sport );
 
             if ( class_exists( $instance ) ) {
                 $league = new $instance( $league );

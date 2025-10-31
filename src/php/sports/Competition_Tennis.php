@@ -5,7 +5,7 @@
  * @package Racketmanager/Classes/Sports/Tennis
  */
 
-namespace Racketmanager;
+namespace Racketmanager\sports;
 
 use Racketmanager\models\Competition;
 

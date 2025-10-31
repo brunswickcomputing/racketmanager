@@ -10,6 +10,7 @@ namespace Racketmanager;
 
 use Racketmanager\models\Charges;
 use Racketmanager\models\Club;
+use Racketmanager\models\Club_Player;
 use Racketmanager\models\Club_Role;
 use Racketmanager\models\Competition;
 use Racketmanager\models\Event;

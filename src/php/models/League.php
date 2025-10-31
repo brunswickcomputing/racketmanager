@@ -9,8 +9,8 @@
 
 namespace Racketmanager\models;
 
-use Racketmanager\Championship;
 use Racketmanager\Schedule_Round_Robin;
+use Racketmanager\Services\Championship;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;

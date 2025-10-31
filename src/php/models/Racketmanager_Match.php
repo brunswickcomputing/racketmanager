@@ -9,7 +9,7 @@
 
 namespace Racketmanager\models;
 
-use Racketmanager\Championship;
+use Racketmanager\Services\Championship;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator_Match;

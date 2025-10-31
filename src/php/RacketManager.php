@@ -16,6 +16,8 @@ use Racketmanager\ajax\Ajax_Frontend;
 use Racketmanager\ajax\Ajax_Match;
 use Racketmanager\ajax\Ajax_Tournament;
 use Racketmanager\models\Message;
+use Racketmanager\models\Player_Error;
+use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\shortcodes\Shortcodes;
 use Racketmanager\shortcodes\Shortcodes_Club;
 use Racketmanager\shortcodes\Shortcodes_Competition;

@@ -42,7 +42,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Services\\Exporter' => __DIR__ . '/../..' . '/src/php/Services/Exporter.php',
         'Racketmanager\\Services\\Rewrites' => __DIR__ . '/../..' . '/src/php/Services/Rewrites.php',
         'Racketmanager\\Services\\Schedule_Round_Robin' => __DIR__ . '/../..' . '/src/php/Services/Schedule_Round_Robin.php',
-        'Racketmanager\\Stripe_Settings' => __DIR__ . '/../..' . '/include/class-stripe-settings.php',
+        'Racketmanager\\Services\\Stripe_Settings' => __DIR__ . '/../..' . '/src/php/Services/Stripe_Settings.php',
         'Racketmanager\\Widget' => __DIR__ . '/../..' . '/src/php/Widget.php',
         'Racketmanager\\admin\\Admin_Championship' => __DIR__ . '/../..' . '/src/php/admin/Admin_Championship.php',
         'Racketmanager\\admin\\Admin_Club' => __DIR__ . '/../..' . '/src/php/admin/Admin_Club.php',

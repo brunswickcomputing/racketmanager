@@ -19,7 +19,7 @@ return array(
     'Racketmanager\\Services\\Exporter' => $baseDir . '/src/php/Services/Exporter.php',
     'Racketmanager\\Services\\Rewrites' => $baseDir . '/src/php/Services/Rewrites.php',
     'Racketmanager\\Services\\Schedule_Round_Robin' => $baseDir . '/src/php/Services/Schedule_Round_Robin.php',
-    'Racketmanager\\Stripe_Settings' => $baseDir . '/include/class-stripe-settings.php',
+    'Racketmanager\\Services\\Stripe_Settings' => $baseDir . '/src/php/Services/Stripe_Settings.php',
     'Racketmanager\\Widget' => $baseDir . '/src/php/Widget.php',
     'Racketmanager\\admin\\Admin_Championship' => $baseDir . '/src/php/admin/Admin_Championship.php',
     'Racketmanager\\admin\\Admin_Club' => $baseDir . '/src/php/admin/Admin_Club.php',

@@ -10,7 +10,7 @@
 
 namespace Racketmanager\shortcodes;
 
-use Racketmanager\Stripe_Settings;
+use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_charge;

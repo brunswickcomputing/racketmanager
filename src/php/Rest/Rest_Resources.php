@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Rest;
 
-use Racketmanager\Stripe_Settings;
+use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator;
 use stdClass;

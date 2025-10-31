@@ -145,9 +145,9 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                         <h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
                             <a href="/index.php?league_id=<?php echo esc_html( $object->id ); ?>&team_id=<?php echo esc_html( $object->team->id ); ?>&team=<?php echo esc_html( seo_url( $object->team->title ) ); ?>&season=<?php echo esc_html( $object->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
-                                <i class="racketmanager-svg-icon">
-                                    <?php racketmanager_the_svg( 'icon-calendar' ); ?>
-                                </i>
+                                <svg width="32" height="32" class="icon ">
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
+                                </svg>
                                 <span class="nav-link__value text-uppercase">
                                     <?php esc_html_e( 'Calendar', 'racketmanager' ); ?>
                                 </span>

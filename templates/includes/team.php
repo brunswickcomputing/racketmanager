@@ -78,9 +78,9 @@ if ( empty( $event_id ) ) {
                 if ( ! empty( $league ) && ! $object->is_championship ) {
                     ?>
                     <a href="/index.php?league_id=<?php echo esc_html( $league->id ); ?>&team_id=<?php echo esc_html( $team->id ); ?>&team=<?php echo esc_html( $team->title ); ?>&season=<?php echo esc_html( $league->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
-                        <i class="racketmanager-svg-icon">
-                            <?php racketmanager_the_svg( 'icon-calendar' ); ?>
-                        </i>
+                        <svg width="32" height="32" class="icon ">
+                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
+                        </svg>
                         <span class="nav-link__value text-uppercase">
                             <?php esc_html_e( 'Calendar', 'racketmanager' ); ?>
                         </span>

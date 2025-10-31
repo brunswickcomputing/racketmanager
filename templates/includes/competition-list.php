@@ -66,7 +66,9 @@ foreach ($competition_list as $competition ) {
                         <small class="media__subheading">
                             <span class="nav--link">
                                 <span class="nav-link__value">
-                                    <?php racketmanager_the_svg( 'icon-calendar' ); ?>
+                                    <svg width="16" height="16" class="icon ">
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-range' ); ?>"></use>
+                                    </svg>
                                     <?php echo esc_html( mysql2date( 'j M Y', $competition->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M Y', $competition->date_end ) ); ?>
                                 </span>
                             </span>

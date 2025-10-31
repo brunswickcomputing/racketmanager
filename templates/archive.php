@@ -132,7 +132,9 @@ $image = match ($league->event->competition->type) {
                         <small class="media__subheading">
                             <span class="nav--link">
                                 <span class="nav-link__value">
-                                    <?php racketmanager_the_svg( 'icon-calendar' ); ?>
+                                    <svg width="32" height="32" class="icon ">
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
+                                    </svg>
                                     <?php echo esc_html( mysql2date( 'j M Y', $league->event->competition->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M Y', $league->event->competition->date_end ) ); ?>
                                 </span>
                             </span>

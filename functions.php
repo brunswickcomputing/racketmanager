@@ -28,6 +28,7 @@ use Racketmanager\models\Team;
 use Racketmanager\models\Tournament;
 use Racketmanager\models\Tournament_Entry;
 use Racketmanager\models\User;
+use Racketmanager\Services\Exporter;
 
 /**
  * Send debug code to the Javascript console

@@ -97,9 +97,9 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                         <h3 class="module__title"><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
                             <button class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
-                                <i class="racketmanager-svg-icon">
-                                    <?php racketmanager_the_svg( 'icon-table' ); ?>
-                                </i>
+                                <svg width="32" height="32" class="icon ">
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#table' ); ?>"></use>
+                                </svg>
                             </button>
                         </div>
                     </div>
@@ -148,9 +148,6 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 <svg width="32" height="32" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
                                 </svg>
-                                <span class="nav-link__value text-uppercase">
-                                    <?php esc_html_e( 'Calendar', 'racketmanager' ); ?>
-                                </span>
                             </a>
                         </div>
                     </div>

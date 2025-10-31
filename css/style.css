@@ -2879,7 +2879,7 @@ ul.match-points {
 	align-self: center;
 }
 
-.match__btn svg {
+.match__btn svg.icon {
 	fill: white;
 }
 
@@ -4909,6 +4909,9 @@ svg[class*=icon] {
 }
 .media__aside svg.icon {
     bottom: 0;
+}
+.page-subhead .reverse svg.icon {
+    fill: var(--e-global-color-global_color_1);
 }
 .alert_rm {
     background-color: #fff;

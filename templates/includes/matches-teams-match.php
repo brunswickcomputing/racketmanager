@@ -164,9 +164,9 @@ if ( empty( $match->winner_id ) ) {
         ?>
         <div class="match__button">
             <a href="<?php echo esc_url( $match_link_result ); ?>" class="btn match__btn">
-                <i class="racketmanager-svg-icon">
-                    <?php racketmanager_the_svg( 'icon-pencil' ); ?>
-                </i>
+                <svg width="16" height="16" class="icon ">
+                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil' ); ?>"></use>
+                </svg>
             </a>
         </div>
         <?php

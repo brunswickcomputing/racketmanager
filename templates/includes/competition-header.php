@@ -67,9 +67,9 @@ $image = match ($competition->type) {
                 if ( ! empty( $competition->entry_link ) ) {
                     ?>
                     <a href="<?php echo esc_url( $competition->entry_link ); ?>" class="btn btn-primary reverse">
-                        <i class="racketmanager-svg-icon">
-                            <?php racketmanager_the_svg( 'icon-pencil' ); ?>
-                        </i>
+                        <svg width="16" height="16" class="icon ">
+                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil' ); ?>"></use>
+                        </svg>
                         <span><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>
                     </a>
                     <?php

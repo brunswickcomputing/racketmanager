@@ -22,8 +22,6 @@ use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament_entry;
 use function Racketmanager\seo_url;
-use function Racketmanager\sort;
-
 
 /**
  * Class to implement the Tournament object
@@ -1713,13 +1711,13 @@ final class Tournament {
         return $payments;
     }
     /**
-     * Function to set team ratings for tournament
+     * Function to set team ratings for the tournament
      */
     public function calculate_player_team_ratings(): void {
-        $events      = $this->get_events();
+        $events = $this->get_events();
         foreach( $events as $event ) {
             $type  = substr( $event->type, 1, 1 );
-            $teams = $event->get_teams();
+            $teams = $event->get_teams( array( 'season' => $this->season ) );
             foreach( $teams as $team ) {
                 $team_rating = 0;
                 if ( ! empty( $team->players ) ) {

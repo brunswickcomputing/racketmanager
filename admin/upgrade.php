@@ -5,7 +5,7 @@
  * @package Racketmanager
  */
 
-use Racketmanager\Club_Role;
+use Racketmanager\models\Club_Role;
 
 /**
  * Racketmanager_upgrade() - update routine for older version

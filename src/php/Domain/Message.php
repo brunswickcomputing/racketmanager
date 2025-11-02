@@ -7,7 +7,7 @@
  * @subpackage Message
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use mysqli_result;
 

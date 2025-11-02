@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Match
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\Services\Championship;
 use Racketmanager\util\Util;

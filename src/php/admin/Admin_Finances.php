@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\models\Charges;
+use Racketmanager\Domain\Charges;
 use Racketmanager\util\Util;
 use Racketmanager\validator\Validator_Finance;
 use stdClass;

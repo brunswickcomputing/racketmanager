@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\models\\Event', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/models/Event.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Domain/Event.php';
     return;
 }

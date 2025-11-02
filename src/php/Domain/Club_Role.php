@@ -7,7 +7,7 @@
  * @subpackage Club Role
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\util\Util_Lookup;
 use function Racketmanager\get_user;

@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\models\\User', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/models/User.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Domain/User.php';
     return;
 }

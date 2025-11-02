@@ -7,7 +7,7 @@
  * @subpackage Invoice
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use DateInterval;
 use DateTime;

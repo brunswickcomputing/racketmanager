@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\models\\Rubber', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/models/Rubber.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Domain/Rubber.php';
     return;
 }

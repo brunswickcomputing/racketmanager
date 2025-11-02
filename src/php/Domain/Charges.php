@@ -1,5 +1,5 @@
 <?php
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use stdClass;
 use function Racketmanager\get_competition;

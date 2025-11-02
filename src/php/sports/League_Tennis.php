@@ -7,7 +7,7 @@
 
 namespace Racketmanager\sports;
 
-use Racketmanager\models\League;
+use Racketmanager\Domain\League;
 use Racketmanager\util\Util;
 use function Racketmanager\get_league;
 

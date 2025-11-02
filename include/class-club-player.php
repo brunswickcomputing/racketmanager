@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\Club_Player', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/models/Club_Player.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Domain/Club_Player.php';
     return;
 }

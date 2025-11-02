@@ -7,7 +7,7 @@
  * @subpackage Club
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\Club_Player;
 use Racketmanager\Club_Role;

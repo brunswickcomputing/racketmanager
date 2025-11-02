@@ -7,7 +7,7 @@
 
 namespace Racketmanager\sports;
 
-use Racketmanager\models\Competition;
+use Racketmanager\Domain\Competition;
 
 /**
  * Tennis competition clas

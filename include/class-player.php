@@ -6,5 +6,5 @@ if (\class_exists( 'Racketmanager\\models\\Player', false)) {
     return;
 }
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/models/Player.php';
+require_once $pluginRoot . 'src/php/Domain/Player.php';
 return;

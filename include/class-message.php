@@ -11,5 +11,5 @@ if (class_exists( 'Racketmanager\\models\\Message', false)) {
 }
 
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/models/Message.php';
+require_once $pluginRoot . 'src/php/Domain/Message.php';
 return;

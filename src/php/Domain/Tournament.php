@@ -7,7 +7,7 @@
  * @subpackage Tournament
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\util\Util;
 use stdClass;

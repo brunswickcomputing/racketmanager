@@ -11,5 +11,5 @@ if (class_exists( 'Racketmanager\\models\\Club', false)) {
 }
 
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/models/Club.php';
+require_once $pluginRoot . 'src/php/Domain/Club.php';
 return;

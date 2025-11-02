@@ -7,7 +7,7 @@
  * @subpackage Results_Report
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 /**
  * Class to implement the results report object

@@ -7,7 +7,7 @@
  * @subpackage Event
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;

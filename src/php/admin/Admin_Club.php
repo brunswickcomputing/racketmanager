@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\models\Club;
+use Racketmanager\Domain\Club;
 use Racketmanager\util\Util_Lookup;
 use Racketmanager\validator\Validator;
 use Racketmanager\validator\Validator_Club;

@@ -7,7 +7,7 @@
  * @subpackage User
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\util\Util;
 use stdClass;

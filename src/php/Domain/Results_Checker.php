@@ -7,7 +7,7 @@
  * @subpackage Results_Checker
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\util\Util;
 use function Racketmanager\get_match;

@@ -7,7 +7,7 @@
  * @subpackage Player
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use function Racketmanager\get_player;
 

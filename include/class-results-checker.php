@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\models\\Results_Checker', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/models/Results_Checker.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Domain/Results_Checker.php';
     return;
 }

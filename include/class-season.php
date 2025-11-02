@@ -11,5 +11,5 @@ if (class_exists( 'Racketmanager\\models\\Season', false)) {
 }
 
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/models/Season.php';
+require_once $pluginRoot . 'src/php/Domain/Season.php';
 return;

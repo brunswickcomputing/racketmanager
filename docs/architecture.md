@@ -21,6 +21,7 @@ wp-content/plugins/racketmanager/
 - src/
   - php/                          (If using PSR‑4; otherwise use includes/)
     - Plugin.php                  (Main plugin class / service container)
+    - Activator.php               (Activation/deactivation hooks handler; PSR‑4 bridge allowed)
     - Admin/                      (Admin‑only screens, settings pages)
     - Public/                     (Frontend hooks, shortcodes/blocks)
     - Ajax/                       (AJAX controllers for wp‑ajax)

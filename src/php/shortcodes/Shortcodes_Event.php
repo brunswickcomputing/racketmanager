@@ -9,7 +9,7 @@
 
 namespace Racketmanager\shortcodes;
 
-use Racketmanager\models\Player;
+use Racketmanager\Domain\Player;
 use Racketmanager\util\Util;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;

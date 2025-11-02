@@ -7,7 +7,7 @@
  * @subpackage League
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use Racketmanager\Services\Championship;
 use Racketmanager\Services\Schedule_Round_Robin;

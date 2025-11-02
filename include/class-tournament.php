@@ -18,6 +18,6 @@ if (class_exists( 'Racketmanager\\models\\Tournament', false)) {
 $pluginRoot = \dirname(__DIR__) . '/';
 
 // Load the PSR-4 implementation
-require_once $pluginRoot . 'src/php/models/Tournament.php';
+require_once $pluginRoot . 'src/php/Domain/Tournament.php';
 
 return;

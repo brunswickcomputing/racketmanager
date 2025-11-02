@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Rubber
  */
 
-namespace Racketmanager\models;
+namespace Racketmanager\Domain;
 
 use DateMalformedStringException;
 use DateTime;

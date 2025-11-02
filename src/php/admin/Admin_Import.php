@@ -9,8 +9,8 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\models\Player;
-use Racketmanager\models\Racketmanager_Match;
+use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\util\Util;
 use stdClass;
 use function Racketmanager\get_club;

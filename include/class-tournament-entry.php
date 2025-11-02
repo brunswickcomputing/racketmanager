@@ -6,5 +6,5 @@ if (\class_exists( 'Racketmanager\\models\\Tournament_Entry', false)) {
     return;
 }
 $pluginRoot = \dirname(__DIR__) . '/';
-require_once $pluginRoot . 'src/php/models/Tournament_Entry.php';
+require_once $pluginRoot . 'src/php/Domain/Tournament_Entry.php';
 return;

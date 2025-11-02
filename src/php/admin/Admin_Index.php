@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\models\Competition;
+use Racketmanager\Domain\Competition;
 use Racketmanager\validator\Validator;
 use stdClass;
 use function Racketmanager\get_competition;

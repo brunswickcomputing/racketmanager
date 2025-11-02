@@ -8,27 +8,27 @@
 
 namespace Racketmanager;
 
-use Racketmanager\models\Charges;
-use Racketmanager\models\Club;
-use Racketmanager\models\Club_Player;
-use Racketmanager\models\Club_Role;
-use Racketmanager\models\Competition;
-use Racketmanager\models\Event;
-use Racketmanager\models\Invoice;
-use Racketmanager\models\League;
-use Racketmanager\models\League_Team;
-use Racketmanager\models\Message;
-use Racketmanager\models\Player;
-use Racketmanager\models\Player_Error;
-use Racketmanager\models\Racketmanager_Match;
-use Racketmanager\models\Results_Checker;
-use Racketmanager\models\Results_Report;
-use Racketmanager\models\Rubber;
-use Racketmanager\models\Season;
-use Racketmanager\models\Team;
-use Racketmanager\models\Tournament;
-use Racketmanager\models\Tournament_Entry;
-use Racketmanager\models\User;
+use Racketmanager\Domain\Charges;
+use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\League;
+use Racketmanager\Domain\League_Team;
+use Racketmanager\Domain\Message;
+use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player_Error;
+use Racketmanager\Domain\Racketmanager_Match;
+use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\Results_Report;
+use Racketmanager\Domain\Rubber;
+use Racketmanager\Domain\Season;
+use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Domain\User;
 use Racketmanager\Services\Exporter;
 
 /**
@@ -195,7 +195,7 @@ if ( !\class_exists('Racketmanager\\models\\Club', false) ) {
 if ( !\class_exists('Racketmanager\\models\\Club', false) ) {
     // Load PSR-4 bridge which will pull in the implementation and alias legacy name.
     if ( \defined('RACKETMANAGER_PATH') ) {
-        require_once RACKETMANAGER_PATH . 'src/php/models/Club.php';
+        require_once RACKETMANAGER_PATH . 'src/php/Domain/Club.php';
     }
 }
 function get_club( object|int|string|null $club = null, string $search_term = 'id' ): Club|null {

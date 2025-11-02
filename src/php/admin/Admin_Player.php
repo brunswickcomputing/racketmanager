@@ -9,7 +9,7 @@
 
 namespace Racketmanager\admin;
 
-use Racketmanager\models\Player;
+use Racketmanager\Domain\Player;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;

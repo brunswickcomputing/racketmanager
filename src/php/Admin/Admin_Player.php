@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Admin-Player
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Player;
 use stdClass;
@@ -286,7 +286,7 @@ final class Admin_Player extends Admin_Display {
                 }
             }
             $player = get_player( $player_id );
-            require_once RACKETMANAGER_PATH . '/admin/players/show-player.php';
+            require_once RACKETMANAGER_PATH . '/Admin/players/show-player.php';
         }
     }
     /**

@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\admin\\Admin_Competition', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/admin/Admin_Competition.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Admin/Admin_Competition.php';
     return;
 }

@@ -7,7 +7,7 @@
  * @subpackage Admin/Result
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use function Racketmanager\get_result_check;
 
@@ -80,7 +80,7 @@ class Admin_Result extends Admin_Display {
                     'status'      => $results_check_filter,
                 )
             );
-            include_once RACKETMANAGER_PATH . '/admin/show-results.php';
+            include_once RACKETMANAGER_PATH . '/Admin/show-results.php';
         }
     }
 }

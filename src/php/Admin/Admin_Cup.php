@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Admin-Cup
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\util\Util;
 use Racketmanager\validator\Validator_Plan;
@@ -81,7 +81,7 @@ final class Admin_Cup extends Admin_Championship {
             $standalone        = true;
             $competition_query = array( 'type' => $competition_type );
             $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-            include_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
+            include_once RACKETMANAGER_PATH . '/Admin/show-competitions.php';
         }
     }
     /**
@@ -534,7 +534,7 @@ final class Admin_Cup extends Admin_Championship {
             if ( empty( $tab ) ) {
                 $tab = 'matches';
             }
-            require_once RACKETMANAGER_PATH . '/admin/cup/plan.php';
+            require_once RACKETMANAGER_PATH . '/Admin/cup/plan.php';
         }
     }
     /**
@@ -588,7 +588,7 @@ final class Admin_Cup extends Admin_Championship {
                             $submit_title = $form_title;
                         }
                         //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                        require_once RACKETMANAGER_PATH . '/admin/includes/match.php';
+                        require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
                     }
                 }
             }
@@ -652,7 +652,7 @@ final class Admin_Cup extends Admin_Championship {
                                         $away_title = null;
                                     }
                                 }
-                                require_once RACKETMANAGER_PATH . '/admin/includes/match.php';
+                                require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
                             }
                         }
                     }

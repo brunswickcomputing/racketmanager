@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Admin-Tournament
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Tournament;
 use Racketmanager\util\Util;
@@ -121,7 +121,7 @@ final class Admin_Tournament extends Admin_Championship {
         $seasons      = $racketmanager->get_seasons( 'DESC' );
         $competitions = $racketmanager->get_competitions( array( 'type' => 'tournament' ) );
         $age_groups   = Util_Lookup::get_age_groups();
-        require_once RACKETMANAGER_PATH . '/admin/show-tournaments.php';
+        require_once RACKETMANAGER_PATH . '/Admin/show-tournaments.php';
     }
 
     /**
@@ -474,7 +474,7 @@ final class Admin_Tournament extends Admin_Championship {
         $competition_query = array( 'type' => 'tournament' );
         $competitions      = $racketmanager->get_competitions( $competition_query );
         $seasons           = $racketmanager->get_seasons( 'DESC' );
-        require_once RACKETMANAGER_PATH . '/admin/tournament-edit.php';
+        require_once RACKETMANAGER_PATH . '/Admin/tournament-edit.php';
     }
     private function get_input( ?object $tournament = null): object {
         if ( empty( $tournament ) ) {
@@ -598,7 +598,7 @@ final class Admin_Tournament extends Admin_Championship {
             if ( empty( $tab ) ) {
                 $tab = 'matches';
             }
-            require_once RACKETMANAGER_PATH . '/admin/tournament/plan.php';
+            require_once RACKETMANAGER_PATH . '/Admin/tournament/plan.php';
         }
     }
 
@@ -652,7 +652,7 @@ final class Admin_Tournament extends Admin_Championship {
                             $submit_title = $form_title;
                         }
                         //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                        require_once RACKETMANAGER_PATH . '/admin/includes/match.php';
+                        require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
                     }
                 }
             }
@@ -717,7 +717,7 @@ final class Admin_Tournament extends Admin_Championship {
                                         $away_title = null;
                                     }
                                 }
-                                require_once RACKETMANAGER_PATH . '/admin/includes/match.php';
+                                require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
                             }
                         }
                     }
@@ -903,7 +903,7 @@ final class Admin_Tournament extends Admin_Championship {
             }
         }
         $this->show_message();
-        require_once RACKETMANAGER_PATH . '/admin/tournament/information.php';
+        require_once RACKETMANAGER_PATH . '/Admin/tournament/information.php';
     }
     /**
      * Calculate team ratings function

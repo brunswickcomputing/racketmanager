@@ -7,7 +7,7 @@
  * @subpackage Admin/Championship
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\validator\Validator;
 use stdClass;

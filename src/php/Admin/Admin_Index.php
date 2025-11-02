@@ -7,7 +7,7 @@
  * @subpackage Admin/Index
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Competition;
 use Racketmanager\validator\Validator;
@@ -47,7 +47,7 @@ class Admin_Index extends Admin_Display {
             }
             $this->show_message();
         }
-        require_once RACKETMANAGER_PATH . '/admin/index.php';
+        require_once RACKETMANAGER_PATH . '/Admin/index.php';
     }
     /**
      * Function to handle adding a competition

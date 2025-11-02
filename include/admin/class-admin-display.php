@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\admin\\Admin_Event', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/admin/Admin_Event.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Admin/Admin_Event.php';
     return;
 }

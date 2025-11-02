@@ -9,7 +9,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\admin\Admin_Display;
+use Racketmanager\Admin\Admin_Display;
 use Racketmanager\ajax\Ajax_Admin;
 use WP_Error;
 
@@ -53,22 +53,22 @@ class Admin extends RacketManager {
 
         require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-admin.php';
         $this->ajax_admin = new Ajax_Admin();
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-display.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-display.php';
         $this->admin_display = new Admin_Display();
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-championship.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-finances.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-import.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-index.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-competition.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-event.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-tournament.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-club.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-cup.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-league.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-options.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-player.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-result.php';
-        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-season.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-championship.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-finances.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-import.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-index.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-competition.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-event.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-tournament.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-club.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-cup.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-league.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-options.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-player.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-result.php';
+        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-season.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-config.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-finance.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-tournament.php';
@@ -393,7 +393,7 @@ class Admin extends RacketManager {
     public function load_scripts(): void {
         wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-bootstrap' );
-        wp_register_script( 'racketmanager-functions', RACKETMANAGER_URL . '/admin/js/functions.js', array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
+        wp_register_script( 'racketmanager-functions', RACKETMANAGER_URL . '/Admin/js/functions.js', array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-functions' );
         wp_localize_script(
             'racketmanager-functions',
@@ -404,7 +404,7 @@ class Admin extends RacketManager {
             )
         );
 
-        wp_register_script( 'racketmanager-ajax', RACKETMANAGER_URL . '/admin/js/ajax.js', array(), RACKETMANAGER_VERSION, false );
+        wp_register_script( 'racketmanager-ajax', RACKETMANAGER_URL . '/Admin/js/ajax.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-ajax' );
         wp_localize_script(
             'racketmanager-ajax',

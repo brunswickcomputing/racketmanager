@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Admin-Event
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Event;
 use Racketmanager\validator\Validator_Config;

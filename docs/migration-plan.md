@@ -58,7 +58,7 @@ This plan documents the phased migration of the legacy `js/racketmanager.js` cod
    - Implemented team-order module with delegated handlers; removed inline JS from templates/team-order.php; wired initialization in src/js/index.js.
 
 9. Phase 8 — Club Admin (Completed)
-   - Modularized Club Admin (Roles) interactions under src/js/features/club/admin/club-roles.js with delegated handlers.
+   - Modularized Club Admin (Roles) interactions under src/js/features/club/Admin/club-roles.js with delegated handlers.
    - Updated templates/club/roles.php and templates/club/club-role-modal.php to remove inline JS and use data-action hooks.
    - Wired initializeClubAdmin() in src/js/index.js (on ready and after AJAX).
    - Enhancement: Added username autocomplete in Club Role modal (#userName) that looks up users by name (scoped by clubId) and auto-fills userId/contact fields.

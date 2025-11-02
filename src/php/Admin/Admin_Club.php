@@ -7,7 +7,7 @@
  * @subpackage Admin/Club
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Club;
 use Racketmanager\util\Util_Lookup;
@@ -114,7 +114,7 @@ class Admin_Club extends Admin_Display {
         }
         $this->show_message();
         $clubs = $racketmanager->get_clubs();
-        require_once RACKETMANAGER_PATH . '/admin/show-clubs.php';
+        require_once RACKETMANAGER_PATH . '/Admin/show-clubs.php';
     }
     /**
      * Display club page
@@ -210,7 +210,7 @@ class Admin_Club extends Admin_Display {
             $form_title  = __( 'Add Club', 'racketmanager' );
             $form_action = __( 'Add', 'racketmanager' );
         }
-        require_once RACKETMANAGER_PATH . '/admin/includes/club.php';
+        require_once RACKETMANAGER_PATH . '/Admin/includes/club.php';
     }
 
     /**
@@ -313,7 +313,7 @@ class Admin_Club extends Admin_Display {
                     'type'   => true,
                 )
             );
-            require_once RACKETMANAGER_PATH . '/admin/club/show-club-players.php';
+            require_once RACKETMANAGER_PATH . '/Admin/club/show-club-players.php';
         }
     }
     /**
@@ -374,7 +374,7 @@ class Admin_Club extends Admin_Display {
         }
         $this->show_message();
         $teams = $club->get_teams();
-        require_once RACKETMANAGER_PATH . '/admin/club/show-teams.php';
+        require_once RACKETMANAGER_PATH . '/Admin/club/show-teams.php';
     }
 
     /**
@@ -430,7 +430,7 @@ class Admin_Club extends Admin_Display {
                 $form_action = __( 'Update', 'racketmanager' );
                 $clubs = $racketmanager->get_clubs();
                 //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                require_once RACKETMANAGER_PATH . '/admin/includes/teams/' . $file;
+                require_once RACKETMANAGER_PATH . '/Admin/includes/teams/' . $file;
             } else {
                 $this->set_message( __( 'Team not specified', 'racketmanager' ), true );
                 $this->show_message();
@@ -494,6 +494,6 @@ class Admin_Club extends Admin_Display {
         }
         $this->show_message();
         $roles = $club->get_club_roles();
-        require_once RACKETMANAGER_PATH . '/admin/club/show-roles.php';
+        require_once RACKETMANAGER_PATH . '/Admin/club/show-roles.php';
     }
 }

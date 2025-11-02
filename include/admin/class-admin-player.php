@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\admin\\Admin_Player', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/admin/Admin_Player.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Admin/Admin_Player.php';
     return;
 }

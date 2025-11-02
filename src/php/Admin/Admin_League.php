@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Admin-League
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\util\Util;
 use Racketmanager\validator\Validator;
@@ -111,7 +111,7 @@ final class Admin_League extends Admin_Display {
         $standalone        = true;
         $competition_query = array( 'type' => $competition_type );
         $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-        require_once RACKETMANAGER_PATH . '/admin/show-competitions.php';
+        require_once RACKETMANAGER_PATH . '/Admin/show-competitions.php';
     }
     /**
      * Display season list
@@ -488,7 +488,7 @@ final class Admin_League extends Admin_Display {
                     if ( isset( $_GET['match_day'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
                         $tab = 'matches';
                     }
-                    require_once RACKETMANAGER_PATH . '/admin/show-league.php';
+                    require_once RACKETMANAGER_PATH . '/Admin/show-league.php';
                 } else {
                     $this->set_message( __( 'League not found', 'racketmanager' ), true );
                     $this->show_message();
@@ -1258,7 +1258,7 @@ final class Admin_League extends Admin_Display {
                 ),
             )
         );
-        require_once RACKETMANAGER_PATH . '/admin/event/show-matches.php';
+        require_once RACKETMANAGER_PATH . '/Admin/event/show-matches.php';
     }
     /**
      * Display match editing page
@@ -1501,7 +1501,7 @@ final class Admin_League extends Admin_Display {
                 );
             }
             //phpcs:enable WordPress.Security.NonceVerification.Recommended
-            include_once RACKETMANAGER_PATH . '/admin/includes/match.php';
+            include_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
         }
     }
     /**

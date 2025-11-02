@@ -7,7 +7,7 @@
  * @subpackage Admin/Season
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Season;
 use Racketmanager\validator\Validator;
@@ -74,7 +74,7 @@ class Admin_Season extends Admin_Display {
         }
         $this->show_message();
         $seasons = $racketmanager->get_seasons( 'DESC' );
-        require_once RACKETMANAGER_PATH . '/admin/show-seasons.php';
+        require_once RACKETMANAGER_PATH . '/Admin/show-seasons.php';
     }
 
     /**

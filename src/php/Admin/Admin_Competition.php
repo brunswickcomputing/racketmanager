@@ -7,7 +7,7 @@
  * @subpackage RacketManager-Admin-Competition
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Charges;
 use Racketmanager\util\Util;

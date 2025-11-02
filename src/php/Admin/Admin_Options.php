@@ -7,7 +7,7 @@
  * @subpackage Admin/Options
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
@@ -135,7 +135,7 @@ class Admin_Options extends Admin_Display {
                 $this->show_message();
             }
 
-            require_once RACKETMANAGER_PATH . '/admin/show-settings.php';
+            require_once RACKETMANAGER_PATH . '/Admin/show-settings.php';
         }
     }
 }

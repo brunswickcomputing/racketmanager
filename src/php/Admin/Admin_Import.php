@@ -7,7 +7,7 @@
  * @subpackage Import
  */
 
-namespace Racketmanager\admin;
+namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Racketmanager_Match;
@@ -61,7 +61,7 @@ class Admin_Import extends Admin_Display {
                 }
                 $this->show_message();
             }
-            require_once RACKETMANAGER_PATH . '/admin/tools/import.php';
+            require_once RACKETMANAGER_PATH . '/Admin/tools/import.php';
         }
     }
     /**

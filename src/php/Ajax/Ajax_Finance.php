@@ -6,7 +6,7 @@
  * @subpackage RacketManager_Ajax_Finance
  */
 
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\validator\Validator_Finance;

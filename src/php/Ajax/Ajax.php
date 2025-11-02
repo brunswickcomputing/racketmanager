@@ -6,7 +6,7 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 use stdClass;
 use function Racketmanager\get_player;

@@ -6,7 +6,7 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 use DateMalformedStringException;
 use JetBrains\PhpStorm\NoReturn;

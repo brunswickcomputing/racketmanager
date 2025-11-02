@@ -6,7 +6,7 @@
  * @subpackage RacketManager_Ajax_Frontend_Match
  */
 
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\validator\Validator_Match;

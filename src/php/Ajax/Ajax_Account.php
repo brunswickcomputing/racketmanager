@@ -6,7 +6,7 @@
  * @subpackage RacketManager_Ajax_Account
  */
 
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 use Racketmanager\util\Util;
 use function Racketmanager\get_message;

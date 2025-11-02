@@ -6,6 +6,6 @@
 namespace Racketmanager;
 
 if ( ! class_exists( 'Racketmanager\\ajax\\Ajax_Admin', false ) ) {
-    require_once RACKETMANAGER_PATH . 'src/php/ajax/Ajax_Admin.php';
+    require_once RACKETMANAGER_PATH . 'src/php/Ajax/Ajax_Admin.php';
     return;
 }

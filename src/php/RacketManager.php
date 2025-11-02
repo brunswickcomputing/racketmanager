@@ -9,12 +9,12 @@
 namespace Racketmanager;
 
 use NumberFormatter;
-use Racketmanager\ajax\Ajax_Account;
-use Racketmanager\ajax\Ajax_Club;
-use Racketmanager\ajax\Ajax_Finance;
-use Racketmanager\ajax\Ajax_Frontend;
-use Racketmanager\ajax\Ajax_Match;
-use Racketmanager\ajax\Ajax_Tournament;
+use Racketmanager\Ajax\Ajax_Account;
+use Racketmanager\Ajax\Ajax_Club;
+use Racketmanager\Ajax\Ajax_Finance;
+use Racketmanager\Ajax\Ajax_Frontend;
+use Racketmanager\Ajax\Ajax_Match;
+use Racketmanager\Ajax\Ajax_Tournament;
 use Racketmanager\Domain\Message;
 use Racketmanager\Domain\Player_Error;
 use Racketmanager\Rest\Rest_Routes;

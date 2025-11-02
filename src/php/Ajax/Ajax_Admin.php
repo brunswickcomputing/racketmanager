@@ -6,7 +6,7 @@
  * @subpackage RacketManager_AJAX
  */
 
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 use Racketmanager\util\Util;
 use function Racketmanager\event_dropdown;

@@ -1,5 +1,5 @@
 <?php
-namespace Racketmanager\ajax;
+namespace Racketmanager\Ajax;
 
 // Legacy shim for Racketmanager\ajax\Ajax_Match (PSR-4 relocation)
 if (\class_exists('Racketmanager\\ajax\\Ajax_Match', false)) {
@@ -7,5 +7,5 @@ if (\class_exists('Racketmanager\\ajax\\Ajax_Match', false)) {
 }
 
 $pluginRoot = \dirname(__DIR__, 2) . '/';
-require_once $pluginRoot . 'src/php/ajax/Ajax_Match.php';
+require_once $pluginRoot . 'src/php/Ajax/Ajax_Match.php';
 return;

@@ -10,7 +10,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\Admin_Display;
-use Racketmanager\ajax\Ajax_Admin;
+use Racketmanager\Ajax\Ajax_Admin;
 use WP_Error;
 
 /**

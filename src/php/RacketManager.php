@@ -885,7 +885,6 @@ class RacketManager {
             require_once RACKETMANAGER_PATH . 'include/class-rewrites.php';
             require_once RACKETMANAGER_PATH . 'include/class-schedule-round-robin.php';
             require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
-            require_once RACKETMANAGER_PATH . 'include/class-svg-icons.php';
             require_once RACKETMANAGER_PATH . 'include/class-widget.php';
 
             // Legacy installs (no Composer): load sports libraries procedurally.

@@ -507,11 +507,11 @@ final class League_Team {
             }
             $this->status_icon = '';
             if ( '+' === $this->status ) {
-                $this->status_icon = 'icon-arrow-up';
+                $this->status_icon = 'arrow-up';
             } elseif ( '-' === $this->status ) {
-                $this->status_icon = 'icon-arrow-down';
+                $this->status_icon = 'arrow-down';
             } elseif ( '=' === $this->status ) {
-                $this->status_icon = 'icon-dot';
+                $this->status_icon = 'dot';
             }
             if ( str_contains( $this->title, '_' ) ) {
                 $team_name = Util::generate_team_name( $this->title );

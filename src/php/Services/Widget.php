@@ -6,7 +6,7 @@
  * @subpackage RacketManagerWidget
  */
 
-namespace Racketmanager;
+namespace Racketmanager\Services;
 
 use stdClass;
 use WP_Widget;

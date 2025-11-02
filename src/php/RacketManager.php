@@ -814,7 +814,7 @@ class RacketManager {
      * Register Widget
      */
     public function register_widget(): void {
-        register_widget( 'Racketmanager\Widget' );
+        register_widget( 'Racketmanager\Services\Widget' );
     }
 
     /**

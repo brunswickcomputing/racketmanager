@@ -291,14 +291,14 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                         </ol>
                         <div id="entry-acceptance" class="col-12 col-md-8">
                             <div class="form-check form-switch form-check-reverse mb-3">
-                                <label class="form-check-label switch" for="acceptance">
+                                <input class="form-check-input" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+                                <label class="form-check-label" for="acceptance">
                                     <?php
                                     $rules_link = '<a href="/rules/' . seo_url( $competition->name ) . '-rules" target="_blank">' . __( 'the rules', 'racketmanager' ) . '</a>';
                                     /* Translators: %s: link to tournament rules */
                                     printf( __( 'I agree to abide by %s.', 'racketmanager' ), $rules_link ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
                                     ?>
                                 </label>
-                                <input class="form-check-input switch" id="acceptance" name="acceptance" type="checkbox" role="switch" aria-checked="false" <?php echo $changes_allowed ? null : 'disabled'; ?> />
                                 <div id="acceptanceFeedback" class="invalid-feedback"></div>
                             </div>
                         </div>

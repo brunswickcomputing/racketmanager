@@ -5,7 +5,7 @@
 
 namespace Racketmanager;
 
-if ( ! class_exists( 'Racketmanager\\models\\League', false ) ) {
+if ( ! class_exists( 'Racketmanager\\Domain\\League', false ) ) {
     require_once RACKETMANAGER_PATH . 'src/php/Domain/League.php';
     return;
 }

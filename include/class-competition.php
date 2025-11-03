@@ -5,7 +5,7 @@
 
 namespace Racketmanager;
 
-if ( ! class_exists( 'Racketmanager\\models\\Competition', false ) ) {
+if ( ! class_exists( 'Racketmanager\\Domain\\Competition', false ) ) {
     require_once RACKETMANAGER_PATH . 'src/php/Domain/Competition.php';
     return;
 }

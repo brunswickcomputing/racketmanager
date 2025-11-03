@@ -6,7 +6,7 @@
 
 namespace Racketmanager;
 
-if (class_exists( 'Racketmanager\\models\\Team', false)) {
+if (class_exists( 'Racketmanager\\Domain\\Team', false)) {
     return;
 }
 

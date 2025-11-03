@@ -186,13 +186,13 @@ function wp_get_current_url(): ?string {
  * @return Club|null club|null
  */
 // Ensure the Club class is available even if Composer autoload hasn't been loaded yet.
-if ( !\class_exists('Racketmanager\\models\\Club', false) ) {
+if ( !\class_exists('Racketmanager\\Domain\\Club', false) ) {
     $autoload = \defined('RACKETMANAGER_PATH') ? RACKETMANAGER_PATH . 'vendor/autoload.php' : null;
     if ( $autoload && \file_exists( $autoload ) ) {
         require_once $autoload;
     }
 }
-if ( !\class_exists('Racketmanager\\models\\Club', false) ) {
+if ( !\class_exists('Racketmanager\\Domain\\Club', false) ) {
     // Load PSR-4 bridge which will pull in the implementation and alias legacy name.
     if ( \defined('RACKETMANAGER_PATH') ) {
         require_once RACKETMANAGER_PATH . 'src/php/Domain/Club.php';

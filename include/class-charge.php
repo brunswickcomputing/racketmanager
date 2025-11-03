@@ -2,7 +2,7 @@
 namespace Racketmanager;
 
 // Legacy shim for Racketmanager\Charges (PSR-4 relocation)
-if (\class_exists( 'Racketmanager\\models\\Charges', false)) {
+if (\class_exists( 'Racketmanager\\Domain\\Charges', false)) {
     return;
 }
 $pluginRoot = \dirname(__DIR__) . '/';

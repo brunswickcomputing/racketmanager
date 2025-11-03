@@ -827,8 +827,13 @@ class RacketManager {
             require_once $autoload;
             // With Composer's classmap for include/ and PSR-4 for src/php,
             // classes will be autoloaded on demand. No manual requires needed here.
-            // Safety: ensure critical legacy classes exist when the Composer autoloader is present
-            // but the classmap hasn't been dumped on the target environment.
+            // Load PSR-4 sports registrars so filters (e.g., racketmanager_sports) are registered.
+            $sports_files = $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' );
+            // Allow theme overrides/augmentations to continue working.
+            $sports_files = array_merge( $sports_files, $this->read_directory( get_stylesheet_directory() . '/sports' ) );
+            foreach ( $sports_files as $file ) {
+                require_once $file;
+            }
         } else {
             // Legacy fallback: manually include class files as before.
             // Objects.

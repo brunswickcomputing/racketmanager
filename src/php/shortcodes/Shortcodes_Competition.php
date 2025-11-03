@@ -11,6 +11,7 @@
 namespace Racketmanager\shortcodes;
 
 use Racketmanager\Services\Stripe_Settings;
+use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_charge;
@@ -489,7 +490,7 @@ class Shortcodes_Competition extends Shortcodes {
             }
         } else {
             $players              = $competition->get_players( array( 'season' => $competition->current_season['name'] ) );
-            $competition->players = Util_Lookup::get_players_list( $players );
+            $competition->players = Util::get_players_list( $players );
         }
         $filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
         return $this->load_template(

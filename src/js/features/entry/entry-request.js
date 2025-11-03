@@ -85,15 +85,4 @@ export function initializeEntryRequest() {
       const type = this.getAttribute('data-type') || jQuery(this).data('type');
       return entryRequest(e, type);
     });
-
-  // Fallback: handle #entrySubmit if present with data-type (in case data-action attr missing in some templates)
-  jQuery(document)
-    .off('click.racketmanager.entryRequestFallback', '#entrySubmit')
-    .on('click.racketmanager.entryRequestFallback', '#entrySubmit', function (e) {
-      const type = this.getAttribute('data-type') || jQuery(this).data('type');
-      // Only trigger if type is available and element is not explicitly opted-out of delegated flow
-      if (type) {
-        return entryRequest(e, type);
-      }
-    });
 }

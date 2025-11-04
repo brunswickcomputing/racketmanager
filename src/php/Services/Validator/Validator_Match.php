@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\Validator;
+namespace Racketmanager\Services\Validator;
 
 use Racketmanager\util\Util;
 use function Racketmanager\get_club_player;

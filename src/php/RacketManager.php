@@ -20,6 +20,7 @@ use Racketmanager\Domain\Player_Error;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\Login;
 use Racketmanager\Services\Rewrites;
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\shortcodes\Shortcodes;
 use Racketmanager\shortcodes\Shortcodes_Club;
 use Racketmanager\shortcodes\Shortcodes_Competition;
@@ -32,7 +33,6 @@ use Racketmanager\shortcodes\Shortcodes_Message;
 use Racketmanager\shortcodes\Shortcodes_Tournament;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\Validator\Validator;
 use stdClass;
 
 /**

@@ -9,7 +9,7 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Validator\Validator_Match;
+use Racketmanager\Services\Validator\Validator_Match;
 use stdClass;
 use function Racketmanager\get_match;
 use function Racketmanager\match_header;

@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\Validator;
+namespace Racketmanager\Services\Validator;
 
 use function Racketmanager\get_player;
 

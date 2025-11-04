@@ -10,8 +10,8 @@
 namespace Racketmanager\Rest;
 
 use Racketmanager\Services\Stripe_Settings;
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\Validator\Validator;
 use stdClass;
 use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;

@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\Validator;
+namespace Racketmanager\Services\Validator;
 
 /**
  * Class to implement the Config Validator object

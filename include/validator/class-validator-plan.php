@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Validator;
 
-if ( ! class_exists('Racketmanager\\validator\\Validator_Plan', false) ) {
+if ( ! class_exists( 'Racketmanager\\Services\\Validator\\Validator_Plan', false) ) {
     require_once RACKETMANAGER_PATH . 'src/php/validator/Validator_Plan.php';
     return;
 }

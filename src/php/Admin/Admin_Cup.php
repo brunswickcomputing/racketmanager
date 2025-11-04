@@ -9,8 +9,8 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\util\Util;
-use Racketmanager\Validator\Validator_Plan;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_league;

@@ -10,10 +10,10 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Services\Validator\Validator_Plan;
+use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\Validator\Validator_Plan;
-use Racketmanager\Validator\Validator_Tournament;
 use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;

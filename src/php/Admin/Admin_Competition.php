@@ -10,9 +10,9 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Charges;
+use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\util\Util;
-use Racketmanager\Validator\Validator;
-use Racketmanager\Validator\Validator_Config;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_competition;

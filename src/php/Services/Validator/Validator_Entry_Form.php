@@ -7,12 +7,11 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\Validator;
+namespace Racketmanager\Services\Validator;
 
 use DateMalformedStringException;
 use DateTime;
 use Racketmanager\util\Util_Lookup;
-use function Racketmanager\get_player;
 
 /**
  * Class to implement the Entry form Validator object

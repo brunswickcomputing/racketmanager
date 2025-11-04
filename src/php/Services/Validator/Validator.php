@@ -7,7 +7,7 @@
  * @subpackage Validator
  */
 
-namespace Racketmanager\Validator;
+namespace Racketmanager\Services\Validator;
 
 use Racketmanager\util\Util_Lookup;
 use stdClass;

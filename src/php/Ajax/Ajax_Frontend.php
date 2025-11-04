@@ -8,10 +8,9 @@
 
 namespace Racketmanager\Ajax;
 
-use DateMalformedStringException;
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Validator\Validator;
-use Racketmanager\Validator\Validator_Entry_Form;
+use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Services\Validator\Validator_Entry_Form;
 use stdClass;
 use function Racketmanager\event_team_match_dropdown;
 use function Racketmanager\get_club;
@@ -20,7 +19,6 @@ use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
-use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
 use function Racketmanager\player_search;

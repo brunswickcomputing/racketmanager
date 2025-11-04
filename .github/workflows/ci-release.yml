@@ -33,12 +33,16 @@ jobs:
       - name: Install NPM dependencies
         run: npm install
 
-      - name: Build JavaScript (production)
+      - name: Build assets (production)
         run: npm run build:prod
 
       - name: Verify build outputs
         run: |
           test -f dist/js/racketmanager.js || (echo 'Missing dist/js/racketmanager.js' && exit 1)
+          test -f dist/css/style.css || (echo 'Missing dist/css/style.css' && exit 1)
+          test -f dist/css/admin.css || (echo 'Missing dist/css/admin.css' && exit 1)
+          test -f dist/css/modal.css || (echo 'Missing dist/css/modal.css' && exit 1)
+          test -f dist/css/print.css || (echo 'Missing dist/css/print.css' && exit 1)
 
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
@@ -59,6 +63,7 @@ jobs:
             src/**
             templates/**
             dist/**
+            assets/**
             !node_modules/**
             !.git/**
             !.github/**

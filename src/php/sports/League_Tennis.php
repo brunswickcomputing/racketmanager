@@ -10,6 +10,7 @@ namespace Racketmanager\sports;
 use Racketmanager\Domain\League;
 use Racketmanager\util\Util;
 use function Racketmanager\get_league;
+use function Racketmanager\get_match;
 
 /**
  * Tennis league class

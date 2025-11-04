@@ -39,7 +39,7 @@ import { initializePaymentStatus } from './features/payments/payment-status.js';
 import { initializeTournamentCheckout } from './features/payments/payment-checkout.js';
 import { initializeStripePaymentComplete } from './features/payments/payment-complete.js';
 import { initializeEntryRequest } from './features/entry/entry-request.js';
-import { initializeClubAdmin } from './features/club/Admin/club-roles.js';
+import { initializeClubAdmin } from './features/club/admin/club-roles.js';
 import { initializeMatchOptions } from './features/match/match-options.js';
 import { initializeUpdateMatchResults } from './features/match/update-match-results.js';
 import { initializeSetMatchDate } from './features/match/set-match-date.js';

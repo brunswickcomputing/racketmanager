@@ -343,13 +343,7 @@ final class Club {
             $updates    = true;
         }
         if ( $this->shortcode !== $club->shortcode ) {
-            $teams = $this->get_teams();
-            foreach ( $teams as $team ) {
-                $team      = get_team( $team->id );
-                $team_ref  = substr( $team->title, strlen( $this->shortcode ) + 1, strlen( $team->title ) );
-                $new_title = $club->shortcode . ' ' . $team_ref;
-                $team->update_title( $new_title );
-            }
+            $this->update_club_teams( $club->shortcode );
             $this->shortcode = $club->shortcode;
             $updates         = true;
         }
@@ -424,6 +418,23 @@ final class Club {
         return $updates;
     }
 
+    /**
+     * Function to update club team name where the club shortcode has changed
+     *
+     * @param string $shortcode
+     *
+     * @return void
+     */
+    private function update_club_teams( string $shortcode ): void {
+        $teams = $this->get_teams();
+        foreach ( $teams as $team ) {
+            $team      = get_team( $team->id );
+            $team_ref  = substr( $team->title, strlen( $this->shortcode ) + 1, strlen( $team->title ) );
+            $new_title = $shortcode . ' ' . $team_ref;
+            $team->update_title( $new_title );
+        }
+
+    }
     /**
      * Function to set club role
      *

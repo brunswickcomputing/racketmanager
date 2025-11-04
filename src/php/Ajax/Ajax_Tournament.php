@@ -214,7 +214,7 @@ class Ajax_Tournament extends Ajax {
                 show_alert( $msg, 'warning' );
                 wp_die();
             }
-            $output = tournament_withdrawal_modal( $tournament, $tournament_id, $player_id );
+            $output = tournament_withdrawal_modal( $tournament_id, $player_id );
             wp_send_json_success( $output );
         } else {
             wp_send_json_error( $return->msg, $return->status );

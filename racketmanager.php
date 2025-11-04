@@ -1,122 +1,119 @@
 <?php
 /**
  * Plugin Name: Racketmanager
- * Plugin URI: http://wordpress.org/extend/plugins/leaguemanager/
+ * Plugin URI: http://wordpress.org/extend/plugins/racketmanager/
  * Description: Manage and present racket sports league and tournament results.
- * Version: 9.7.0
+ * Version: 10.0.0
  * Author: Paul Moffat
  * Text Domain: racketmanager
  *
  * @package plugin Racketmanager
  *
- * Copyright 2025  Paul Moffat (email: paul@brunswickcomputing.co,uk)
+ * Copyright 2025 Paul Moffat (email: paul@brunswickcomputing.co.uk)
  * Based initially on racketmanager plugin.
  */
 
 namespace Racketmanager;
 
-/**
- * RacketManager is a feature-rich racket management plugin supporting various different sport types including
- * - tennis
- *
- * @author Paul Moffat
- * @package RacketManager
- * @version 9.7.0
- * @copyright 2025
- */
+// Abort if this file is called directly.
 if ( ! defined( 'ABSPATH' ) ) {
-    //Exit if this file is accessed directly.
     exit;
 }
+
+// -----------------------------------------------------------------------------
+// Constants
+// -----------------------------------------------------------------------------
 $site_url  = get_option( 'siteurl' );
-$site_url .=  '/';
+$site_url .= '/';
+
 define( 'RACKETMANAGER', 'racketmanager' );
-define( 'RACKETMANAGER_VERSION', '9.7.0' );
+define( 'RACKETMANAGER_VERSION', '10.0.0' );
 define( 'RACKETMANAGER_DBVERSION', '9.7.1' );
 define( 'RACKETMANAGER_SITE', $site_url );
 define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );
 define( 'RACKETMANAGER_PLUGIN_FILE', __FILE__ );
 define( 'RACKETMANAGER_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+
 define( 'RACKETMANAGER_CHECKED', 'checked' );
 define( 'RACKETMANAGER_IS_INVALID', 'is-invalid' );
 define( 'RACKETMANAGER_FROM_EMAIL', 'From: ' );
 define( 'RACKETMANAGER_CC_EMAIL', 'cc: ' );
 define( 'RACKETMANAGER_BCC_EMAIL', 'bcc: ' );
 
-class RacketmanagerMain {
-    public function __construct() {
-        global $racketmanager;
-        $this->define_tables();
+// -----------------------------------------------------------------------------
+// Autoloader (Composer PSR-4)
+// -----------------------------------------------------------------------------
+$autoload_path = RACKETMANAGER_PATH . 'vendor/autoload.php';
+if ( file_exists( $autoload_path ) ) {
+    require_once $autoload_path;
+}
 
-        // Prefer Composer autoloader if available (PSR-4); fall back to manual requires for BC.
-        $has_autoloader = false;
-        $autoload_path  = RACKETMANAGER_PATH . 'vendor/autoload.php';
-        if ( file_exists( $autoload_path ) ) {
-            require_once $autoload_path;
-            $has_autoloader = true;
-        }
+// -----------------------------------------------------------------------------
+// I18n
+// -----------------------------------------------------------------------------
+load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
 
-        // Ensure critical classes are available even if Composer autoloader exists but is not yet configured.
-        if ( ! class_exists( 'Racketmanager\\Util\\Util' ) ) {
-            require_once RACKETMANAGER_PATH . 'include/util/class-util.php';
-        }
-        if ( ! class_exists( 'Racketmanager\\Util\\Util_Lookup' ) ) {
-            require_once RACKETMANAGER_PATH . 'include/util/class-util-lookup.php';
-        }
-        if ( ! class_exists( 'Racketmanager\\RacketManager' ) ) {
-            require_once RACKETMANAGER_PATH . 'include/class-racketmanager.php';
-        }
-        if ( ! class_exists( 'Racketmanager\\Activator' ) ) {
-            require_once RACKETMANAGER_PATH . 'include/class-activator.php';
-        }
+// -----------------------------------------------------------------------------
+// Activation / Deactivation
+// -----------------------------------------------------------------------------
+register_activation_hook( __FILE__, array( 'Racketmanager\\Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Racketmanager\\Activator', 'deactivate' ) );
 
-        load_plugin_textdomain( 'racketmanager', false, 'racketmanager/languages' );
+// -----------------------------------------------------------------------------
+// DB table name globals (kept for BC with existing code that references $wpdb->racketmanager_*)
+// -----------------------------------------------------------------------------
+function define_tables(): void {
+    global $wpdb;
+    $wpdb->racketmanager                      = $wpdb->prefix . 'racketmanager_leagues';
+    $wpdb->racketmanager_table                = $wpdb->prefix . 'racketmanager_table';
+    $wpdb->racketmanager_teams                = $wpdb->prefix . 'racketmanager_teams';
+    $wpdb->racketmanager_matches              = $wpdb->prefix . 'racketmanager_matches';
+    $wpdb->racketmanager_rubbers              = $wpdb->prefix . 'racketmanager_rubbers';
+    $wpdb->racketmanager_club_players         = $wpdb->prefix . 'racketmanager_club_players';
+    $wpdb->racketmanager_competitions         = $wpdb->prefix . 'racketmanager_competitions';
+    $wpdb->racketmanager_team_events          = $wpdb->prefix . 'racketmanager_team_events';
+    $wpdb->racketmanager_clubs                = $wpdb->prefix . 'racketmanager_clubs';
+    $wpdb->racketmanager_seasons              = $wpdb->prefix . 'racketmanager_seasons';
+    $wpdb->racketmanager_competitions_seasons = $wpdb->prefix . 'racketmanager_competitions_seasons';
+    $wpdb->racketmanager_results_checker      = $wpdb->prefix . 'racketmanager_results_checker';
+    $wpdb->racketmanager_tournaments          = $wpdb->prefix . 'racketmanager_tournaments';
+    $wpdb->racketmanager_charges              = $wpdb->prefix . 'racketmanager_charges';
+    $wpdb->racketmanager_invoices             = $wpdb->prefix . 'racketmanager_invoices';
+    $wpdb->racketmanager_events               = $wpdb->prefix . 'racketmanager_events';
+    $wpdb->racketmanager_rubber_players       = $wpdb->prefix . 'racketmanager_rubber_players';
+    $wpdb->racketmanager_results_report       = $wpdb->prefix . 'racketmanager_results_report';
+    $wpdb->racketmanager_messages             = $wpdb->prefix . 'racketmanager_messages';
+    $wpdb->racketmanager_team_players         = $wpdb->prefix . 'racketmanager_team_players';
+    $wpdb->racketmanager_tournament_entries   = $wpdb->prefix . 'racketmanager_tournament_entries';
+    $wpdb->racketmanager_player_errors        = $wpdb->prefix . 'racketmanager_player_errors';
+    $wpdb->racketmanager_club_roles           = $wpdb->prefix . 'racketmanager_club_roles';
+}
+add_action( 'plugins_loaded', __NAMESPACE__ . '\\define_tables', 0 );
 
-        register_activation_hook( __FILE__, array( 'Racketmanager\\Activator', 'activate' ) );
-        register_deactivation_hook( __FILE__, array( 'Racketmanager\\Activator', 'deactivate' ) );
-        add_action( 'plugins_loaded', array( 'Racketmanager\\RacketManager', 'get_instance' ) );
-
-        if ( is_admin() ) {
-            if ( ! class_exists( 'Racketmanager\\Admin' ) ) {
-                require_once RACKETMANAGER_PATH . 'include/class-admin.php';
-            }
-            add_action( 'plugins_loaded', array( 'Racketmanager\\Admin', 'get_instance' ) );
-            $racketmanager = new Admin();
-        } else {
-            $racketmanager = new RacketManager();
-        }
-
-        // suppress output.
-        if ( isset( $_POST['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            ob_start();
-        }
-    }
-    private function define_tables(): void {
-        global $wpdb;
-        $wpdb->racketmanager                      = $wpdb->prefix . 'racketmanager_leagues';
-        $wpdb->racketmanager_table                = $wpdb->prefix . 'racketmanager_table';
-        $wpdb->racketmanager_teams                = $wpdb->prefix . 'racketmanager_teams';
-        $wpdb->racketmanager_matches              = $wpdb->prefix . 'racketmanager_matches';
-        $wpdb->racketmanager_rubbers              = $wpdb->prefix . 'racketmanager_rubbers';
-        $wpdb->racketmanager_club_players         = $wpdb->prefix . 'racketmanager_club_players';
-        $wpdb->racketmanager_competitions         = $wpdb->prefix . 'racketmanager_competitions';
-        $wpdb->racketmanager_team_events          = $wpdb->prefix . 'racketmanager_team_events';
-        $wpdb->racketmanager_clubs                = $wpdb->prefix . 'racketmanager_clubs';
-        $wpdb->racketmanager_seasons              = $wpdb->prefix . 'racketmanager_seasons';
-        $wpdb->racketmanager_competitions_seasons = $wpdb->prefix . 'racketmanager_competitions_seasons';
-        $wpdb->racketmanager_results_checker      = $wpdb->prefix . 'racketmanager_results_checker';
-        $wpdb->racketmanager_tournaments          = $wpdb->prefix . 'racketmanager_tournaments';
-        $wpdb->racketmanager_charges              = $wpdb->prefix . 'racketmanager_charges';
-        $wpdb->racketmanager_invoices             = $wpdb->prefix . 'racketmanager_invoices';
-        $wpdb->racketmanager_events               = $wpdb->prefix . 'racketmanager_events';
-        $wpdb->racketmanager_rubber_players       = $wpdb->prefix . 'racketmanager_rubber_players';
-        $wpdb->racketmanager_results_report       = $wpdb->prefix . 'racketmanager_results_report';
-        $wpdb->racketmanager_messages             = $wpdb->prefix . 'racketmanager_messages';
-        $wpdb->racketmanager_team_players         = $wpdb->prefix . 'racketmanager_team_players';
-        $wpdb->racketmanager_tournament_entries   = $wpdb->prefix . 'racketmanager_tournament_entries';
-        $wpdb->racketmanager_player_errors        = $wpdb->prefix . 'racketmanager_player_errors';
-        $wpdb->racketmanager_club_roles           = $wpdb->prefix . 'racketmanager_club_roles';
+// -----------------------------------------------------------------------------
+// Output buffering for exports (kept behavior)
+// -----------------------------------------------------------------------------
+function maybe_buffer_export(): void {
+    if ( isset( $_POST['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        ob_start();
     }
 }
-new RacketmanagerMain();
+add_action( 'init', __NAMESPACE__ . '\\maybe_buffer_export' );
+
+// -----------------------------------------------------------------------------
+// Bootstrap core on plugins_loaded
+// -----------------------------------------------------------------------------
+add_action( 'plugins_loaded', function () {
+    // Core singleton
+    $core = RacketManager::get_instance();
+
+    // Admin singleton when in dashboard
+    if ( is_admin() ) {
+        Admin::get_instance();
+    }
+
+    // Global for BC with legacy code that expects $racketmanager to be set.
+    global $racketmanager;
+    $racketmanager = $core;
+}, 5 );

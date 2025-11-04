@@ -30,7 +30,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Racketmanager\\Activator' => __DIR__ . '/../..' . '/include/class-activator.php',
+        'Racketmanager\\Activator' => __DIR__ . '/../..' . '/src/php/Activator.php',
         'Racketmanager\\Admin' => __DIR__ . '/../..' . '/src/php/Admin.php',
         'Racketmanager\\Admin\\Admin_Championship' => __DIR__ . '/../..' . '/src/php/Admin/Admin_Championship.php',
         'Racketmanager\\Admin\\Admin_Club' => __DIR__ . '/../..' . '/src/php/Admin/Admin_Club.php',

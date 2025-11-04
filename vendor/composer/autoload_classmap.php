@@ -7,7 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'Racketmanager\\Activator' => $baseDir . '/include/class-activator.php',
+    'Racketmanager\\Activator' => $baseDir . '/src/php/Activator.php',
     'Racketmanager\\Admin' => $baseDir . '/src/php/Admin.php',
     'Racketmanager\\Admin\\Admin_Championship' => $baseDir . '/src/php/Admin/Admin_Championship.php',
     'Racketmanager\\Admin\\Admin_Club' => $baseDir . '/src/php/Admin/Admin_Club.php',

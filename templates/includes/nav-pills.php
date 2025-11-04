@@ -13,7 +13,7 @@ namespace Racketmanager;
                             <li class="nav-item">
                                 <button class="nav-link active" id="tab-list" data-tabid="tab-list" data-action="switch-tab">
                                     <svg width="16" height="16" class="icon icon-list">
-                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#list' ); ?>"></use>
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#list' ); ?>"></use>
                                     </svg>
                                     <?php esc_html_e( 'List view', 'racketmanager' ); ?>
                                 </button>
@@ -21,7 +21,7 @@ namespace Racketmanager;
                             <li class="nav-item">
                                 <button class="nav-link" id="tab-grid" data-tabid="tab-grid" data-action="switch-tab">
                                     <svg width="16" height="16" class="icon icon-grid">
-                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#grid' ); ?>"></use>
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#grid' ); ?>"></use>
                                     </svg>
                                     <?php esc_html_e( 'Grid view', 'racketmanager' ); ?>
                                 </button>

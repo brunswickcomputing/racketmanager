@@ -26,9 +26,9 @@ if ( $event->is_box ) {
     $season_label = __( 'Season', 'racketmanager' );
 }
 $image = match ($event->competition->type) {
-    'league' => 'images/bootstrap-icons.svg#table',
-    'cup' => 'images/bootstrap-icons.svg#trophy-fill',
-    'tournament' => 'images/lta-icons.svg#icon-bracket',
+    'league' => 'assets/icons/bootstrap-icons.svg#table',
+    'cup' => 'assets/icons/bootstrap-icons.svg#trophy-fill',
+    'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
     default => null,
 };
 $seasons     = $event->seasons;
@@ -70,7 +70,7 @@ if ( empty( $header_level ) ) {
                             <span class="nav--link">
                                 <span class="nav-link__value">
                                     <svg width="32" height="32" class="icon ">
-                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                     </svg>
                                     <?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['date_start'] ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $event->competition->current_season['date_end'] ) ); ?>
                                 </span>

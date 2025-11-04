@@ -113,7 +113,7 @@ if ( count( $league->teams ) ) {
                             ?>
                             <td class="num d-none d-md-table-cell" title="<?php echo esc_html( $team->status_text ); ?>">
                                 <svg width="32" height="32" class="icon ">
-                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#' . $team->status_icon ); ?>"></use>
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#' . $team->status_icon ); ?>"></use>
                                 </svg>
                             </td>
                             <?php

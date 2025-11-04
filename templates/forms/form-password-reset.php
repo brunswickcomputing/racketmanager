@@ -64,7 +64,7 @@ if ( count( $vars['errors'] ) > 0 ) {
                 " type="password" placeholder="<?php esc_html_e( 'New password', 'racketmanager' ); ?>" name="password" id="password" size="20" value="" autocomplete="off" aria-describedby="passwordFeedback" />
                 <i class="passwordShow">
                     <svg width="16" height="16" class="icon ">
-                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#eye-fill' ); ?>"></use>
+                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                     </svg>
                 </i>
                 <label class="" for="password"><?php esc_html_e( 'New password', 'racketmanager' ); ?></label>
@@ -92,7 +92,7 @@ if ( count( $vars['errors'] ) > 0 ) {
                 " type="password" placeholder="<?php esc_html_e( 'Repeat new password', 'racketmanager' ); ?>" name="rePassword" id="rePassword" size="20" value="" autocomplete="off"  aria-describedby="password2Feedback"/>
                 <i class="passwordShow">
                     <svg width="16" height="16" class="icon ">
-                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#eye-fill' ); ?>"></use>
+                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                     </svg>
                 </i>
                 <label class="" for="rePassword"><?php esc_html_e( 'Repeat new password', 'racketmanager' ); ?></label>

@@ -254,7 +254,7 @@ if ( ! empty( $match->winner_id ) ) {
                     <div class="match__button">
                         <a href="<?php echo esc_url( $match_link ); ?>" class="btn match__btn">
                             <svg width="16" height="16" class="icon ">
-                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil' ); ?>"></use>
+                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil' ); ?>"></use>
                             </svg>
                         </a>
                     </div>

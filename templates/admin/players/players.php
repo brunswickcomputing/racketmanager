@@ -76,7 +76,7 @@ namespace Racketmanager;
                         <div class="col-2 col-md-1">
                             <button type="button" class="btn btn-secondary player-clubs" id="linkedClubs_<?php echo esc_html( $player->id ); ?>" data-bs-toggle="popover" data-bs-placement="left" data-bs-html="true">
                                 <svg width="16" height="16" class="icon icon-white">
-                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#link-45deg' ); ?>"></use>
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#link-45deg' ); ?>"></use>
                                 </svg>
                             </button>
                         </div>

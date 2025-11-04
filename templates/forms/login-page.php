@@ -39,7 +39,7 @@ namespace Racketmanager;
             <label class="" for="user_pass"><?php esc_html_e( 'Password', 'racketmanager' ); ?></label>
             <i class="passwordShow">
                 <svg width="16" height="16" class="icon ">
-                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#eye-fill' ); ?>"></use>
+                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#eye-fill' ); ?>"></use>
                 </svg>
             </i>
             <div id="user_passFeedback" class="invalid-feedback">

@@ -327,7 +327,7 @@ if ( $match->is_walkover ) {
                                                                     <div class="match__header-aside-block">
                                                                         <a class="nav__link" role="button" data-action="open-rubber-status-modal" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>" data-rubber-number="<?php echo esc_attr( $rubber->rubber_number ); ?>">
                                                                             <svg width="16" height="16" class="icon-plus nav-link__prefix">
-                                                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+                                                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                                                             </svg>
                                                                             <span class="nav-link__value"><?php esc_html_e( 'Score status', 'racketmanager' ); ?></span>
                                                                         </a>

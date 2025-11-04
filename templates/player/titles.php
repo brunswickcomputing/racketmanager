@@ -49,7 +49,7 @@ namespace Racketmanager;
                                                     <div class="media__wrapper">
                                                         <div class="media__img">
                                                             <svg width="16" height="16" class="media__img-element--icon <?php echo esc_attr( $class ); ?>">
-                                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#trophy-fill' ); ?>"></use>
+                                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#trophy-fill' ); ?>"></use>
                                                             </svg>
                                                         </div>
                                                         <div class="media__content">

@@ -23,7 +23,7 @@ global $racketmanager;
                     ?>
                     <ul class="list list--grid list--bordered">
                         <?php
-                        $image = 'images/lta-icons-extra.svg#icon-team';
+                        $image = 'assets/icons/lta-icons-extra.svg#icon-team';
                         foreach ( $player->clubs as $player_club ) {
                             $fav_link = '/clubs/' . seo_url( $player_club->shortcode ) . '/';
                             ?>
@@ -81,7 +81,7 @@ global $racketmanager;
                 <div class="module-container">
                     <ul class="list list--grid list--bordered">
                         <?php
-                        $image = 'images/lta-icons-extra.svg#icon-team';
+                        $image = 'assets/icons/lta-icons-extra.svg#icon-team';
                         foreach ( $player->clubs_archive as $player_club ) {
                             $fav_link = '/clubs/' . seo_url( $player_club->shortcode ) . '/';
                             ?>

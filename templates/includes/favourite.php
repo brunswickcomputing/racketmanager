@@ -28,7 +28,7 @@ if ( is_user_logged_in() ) {
             <i class="fav-icon-svg <?php echo esc_html( $visible ); ?> racketmanager-svg-icon <?php echo $is_favourite ? ' fav-icon-svg-selected' : ''; ?>
             ">
                 <svg width="16" height="16" class="">
-                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#star-fill' ); ?>"></use>
+                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#star-fill' ); ?>"></use>
                 </svg>
             </i>
         </a>

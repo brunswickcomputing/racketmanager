@@ -17,8 +17,8 @@ use Racketmanager\Util\Util_Lookup;
 
 /** @var object $object */
 global $racketmanager;
-$envelope           = RACKETMANAGER_URL . 'images/bootstrap-icons.svg#envelope-fill';
-$telephone          = RACKETMANAGER_URL . 'images/bootstrap-icons.svg#telephone-fill';
+$envelope           = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill';
+$telephone          = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill';
 $user_can_edit_team = false;
 if ( is_user_logged_in() ) {
     if ( current_user_can( 'manage_racketmanager' ) ) {
@@ -98,7 +98,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                         <div class="module__aside">
                             <button class="btn btn--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $standings_link ); ?>" data-link-id="" data-link-type="standings" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'View standings', 'racketmanager' ); ?>">
                                 <svg width="32" height="32" class="icon ">
-                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#table' ); ?>"></use>
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
                                 </svg>
                             </button>
                         </div>
@@ -146,7 +146,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                         <div class="module__aside">
                             <a href="/index.php?league_id=<?php echo esc_html( $object->id ); ?>&team_id=<?php echo esc_html( $object->team->id ); ?>&team=<?php echo esc_html( seo_url( $object->team->title ) ); ?>&season=<?php echo esc_html( $object->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
                                 <svg width="32" height="32" class="icon ">
-                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
                                 </svg>
                             </a>
                         </div>
@@ -191,7 +191,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                         <div class="module__aside">
                             <button class="btn btn--link" id="teamEditLink" data-action="open-team-edit-modal" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
                                 <svg width="16" height="16" class="icon ">
-                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+                                    <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>
                             </button>
                         </div>
@@ -297,7 +297,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 <li class="list__item">
                                     <span class="nav--link">
                                         <svg width="16" height="16" class="icon-team">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-day-fill' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-day-fill' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value" id="team-match-day-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
                                             <?php echo esc_html( $object->team->info->match_day ); ?>
@@ -307,7 +307,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 <li class="list__item">
                                     <span class="nav--link">
                                         <svg width="16" height="16" class="icon-team">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#clock-fill' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#clock-fill' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value" id="team-match-time-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
                                             <?php echo esc_html( mysql2date( $racketmanager->time_format, $object->team->info->match_time ) ); ?>
@@ -341,7 +341,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 <li class="list__item">
                                     <span class="nav--link">
                                         <svg width="16" height="16" class="icon-marker">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-marker' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-marker' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
                                             <?php echo esc_html( $object->team->club->address ); ?>
@@ -351,7 +351,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 <li class="list__item">
                                     <span class="nav--link">
                                         <svg width="16" height="16" class="icon-captain">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-captain' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-captain' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
                                             <?php echo esc_html( $object->team->club->match_secretary->display_name ); ?>
@@ -402,7 +402,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                     <li class="list__item">
                                         <a href="<?php echo esc_html( $object->team->club->website ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
                                             <svg width="16" height="16" class="icon-globe">
-                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#globe' ); ?>"></use>
+                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#globe' ); ?>"></use>
                                             </svg>
                                             <span class="nav--link">
                                                 <span class="nav-link__value">

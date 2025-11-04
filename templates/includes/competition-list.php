@@ -10,9 +10,9 @@ namespace Racketmanager;
 /** @var array $competition_list */
 foreach ($competition_list as $competition ) {
     $image = match ($competition->type) {
-        'league'     => 'images/bootstrap-icons.svg#table',
+        'league'     => 'assets/icons/bootstrap-icons.svg#table',
         'tournament',
-        'cup'        => 'images/lta-icons.svg#icon-bracket',
+        'cup'        => 'assets/icons/lta-icons.svg#icon-bracket',
         default      => null,
     };
     if ( 'tournament' === $competition->type ) {
@@ -67,7 +67,7 @@ foreach ($competition_list as $competition ) {
                             <span class="nav--link">
                                 <span class="nav-link__value">
                                     <svg width="16" height="16" class="icon ">
-                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-range' ); ?>"></use>
+                                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range' ); ?>"></use>
                                     </svg>
                                     <?php echo esc_html( mysql2date( 'j M Y', $competition->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( 'j M Y', $competition->date_end ) ); ?>
                                 </span>
@@ -88,7 +88,7 @@ foreach ($competition_list as $competition ) {
                         ?>
                         <a href="<?php echo esc_attr( $open_link ); ?>" class="btn btn-primary">
                             <svg width="16" height="16" class="icon ">
-                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil' ); ?>"></use>
+                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil' ); ?>"></use>
                             </svg>
                             <span class="btn__text"><?php esc_html_e( 'Enter', 'racketmanager' ); ?></span>
                         </a>

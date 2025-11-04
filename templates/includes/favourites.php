@@ -30,24 +30,24 @@ global$racketmanager;
             }
             switch ( $favourite_name ) {
                 case 'league':
-                    $image    = 'images/bootstrap-icons.svg#table';
+                    $image    = 'assets/icons/bootstrap-icons.svg#table';
                     $fav_link = '/league/' . seo_url( $favourite->detail->title ) . '/';
                     break;
                 case 'club':
                     $fav_link = '/clubs/' . seo_url( $favourite->detail->shortcode ) . '/';
-                    $image    = 'images/lta-icons-extra.svg#icon-team';
+                    $image    = 'assets/icons/lta-icons-extra.svg#icon-team';
                     break;
                 case 'team':
                     $fav_link = '/clubs/' . seo_url( $favourite->detail->club->shortcode ) . '/competitions/';
-                    $image    = 'images/lta-icons-extra.svg#icon-team';
+                    $image    = 'assets/icons/lta-icons-extra.svg#icon-team';
                     break;
                 case 'competition':
                     $fav_link = '/tournaments/' . seo_url( $favourite->detail->competition->name ) . '/' . seo_url( $favourite->detail->name ) . '/';
-                    $image    = 'images/lta-icons.svg#icon-bracket';
+                    $image    = 'assets/icons/lta-icons.svg#icon-bracket';
                     break;
                 case 'player':
                     $fav_link = '/player/' . seo_url( $favourite->detail->display_name ) . '/';
-                    $image    = 'images/bootstrap-icons.svg#person-fill';
+                    $image    = 'assets/icons/bootstrap-icons.svg#person-fill';
                     break;
                 default:
                     $image    = null;

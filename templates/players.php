@@ -22,7 +22,7 @@ namespace Racketmanager;
                                     <div class="input-group">
                                         <span class="input-group-text">
                                             <svg width="16" height="16" class="">
-                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#search' ); ?>"></use>
+                                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#search' ); ?>"></use>
                                             </svg>
                                         </span>
                                         <label for="search_string" class="visually-hidden"><?php esc_html_e( 'Search string', 'racketmanager' ); ?></label><input type="search" name="search_string" id="search_string" class="form-control search-box__field" value="<?php echo esc_attr( $search_string ); ?>" />

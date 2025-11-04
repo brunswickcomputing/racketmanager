@@ -35,9 +35,9 @@ $allow_schedule_match     = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
 $image = match ( $match->league->event->competition->type ) {
-    'league'     => 'images/bootstrap-icons.svg#table',
-    'cup'        => 'images/bootstrap-icons.svg#trophy-fill',
-    'tournament' => 'images/lta-icons.svg#icon-bracket',
+    'league'     => 'assets/icons/bootstrap-icons.svg#table',
+    'cup'        => 'assets/icons/bootstrap-icons.svg#trophy-fill',
+    'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
     default => null,
 };
 if ( $match ) {
@@ -127,7 +127,7 @@ if ( $match ) {
                                     <span class="nav--link">
                                         <span class="nav-link__value">
                                         <svg width="32" height="32" class="icon ">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-range-fill' ); ?>"></use>
                                         </svg>
                                             <?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->date_start ) ); ?> <?php esc_html_e( 'to', 'racketmanager' ); ?> <?php echo esc_html( mysql2date( $racketmanager->date_format, $tournament->date ) ); ?>
                                         </span>
@@ -146,7 +146,7 @@ if ( $match ) {
                                 <div class="dropdown">
                                     <a class="nav-link" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                                         <svg width="16" height="16" class="icon ">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                         </svg>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -199,7 +199,7 @@ if ( $match ) {
                             $svg_link          = $match->league->event->name;
                             $svg_link_location = $tournament_link . 'draw/' . seo_url( $match->league->event->name ) . '/';
                             ?>
-                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/lta-icons.svg#icon-bracket' ); ?>"></use>
+                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-bracket' ); ?>"></use>
                             <?php
                         } else {
                             if ( $match->league->event->is_box ) {
@@ -211,7 +211,7 @@ if ( $match ) {
                             $svg_link          = $match->league->title;
                             $svg_link_location = '/league/' . seo_url( $match->league->title ) . '/' . $season_text . '/';
                             ?>
-                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#table' ); ?>"></use>
+                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
                             <?php
                         }
                         ?>
@@ -234,7 +234,7 @@ if ( $match ) {
                     ?>
                     <div class="col-6 col-sm-4">
                         <svg width="20" height="20" class="match-info-meta__icon">
-                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#calendar' ); ?>"></use>
+                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar' ); ?>"></use>
                         </svg>
                         <div class="match-info-meta__content">
                             <span>
@@ -277,7 +277,7 @@ if ( $match ) {
                     ?>
                     <div class="d-none d-sm-block col-sm-4">
                         <svg width="20" height="20" class="match-info-meta__icon">
-                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#geo-alt-fill' ); ?>"></use>
+                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#geo-alt-fill' ); ?>"></use>
                         </svg>
                         <div class="match-info-meta__content">
                             <span>
@@ -363,7 +363,7 @@ if ( $match ) {
                                 <div class="match__header-aside-block">
                                     <a href="" class="nav__link statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>" data-action="open-match-status-modal">
                                         <svg width="16" height="16" class="icon-plus nav-link__prefix">
-                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+                                            <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
                                     </a>

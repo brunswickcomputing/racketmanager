@@ -140,7 +140,7 @@ if ( $match->is_pending ) {
                     <div class="dropdown">
                         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <svg width="16" height="16" class="icon ">
-                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
+                                <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                             </svg>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -302,7 +302,7 @@ if ( $match->is_pending ) {
             <div class="text-center mt-2">
                 <a href="/status" class="nav__link btn btn-outline statusLink" data-match-id="<?php echo esc_attr( $match->id ); ?>" id="matchStatusButton" data-action="open-match-status-modal">
                     <svg width="16" height="16" class="icon-plus nav-link__prefix">
-                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'images/bootstrap-icons.svg#plus-lg' ); ?>"></use>
+                        <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#plus-lg' ); ?>"></use>
                     </svg>
                     <span class="nav-link__value"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></span>
                 </a>

@@ -130,9 +130,17 @@ Legacy JS migration strategy
 
 ### Build & Distribution
 
-- Use a bundler (Vite, Rollup, or Webpack) to compile src/js/index.js to dist/js/racketmanager.js and scss to dist/css/racketmanager.css.
+- Use a bundler to compile src/js/index.js to dist/js/racketmanager.js and process CSS into dist/css/.
 - Produce source maps in development and minified assets in production.
 - Version assets with the plugin version via wp_enqueue_script/style (add a version argument) to bust caches.
+
+Current setup (2025-11-04)
+- JS build: esbuild bundles src/js/index.js → dist/js/racketmanager.js (package.json scripts: build, build:prod).
+- CSS build: esbuild copies/minifies css/style.css, css/admin.css, css/modal.css, css/print.css → dist/css/*.css.
+- Run locally:
+  - npm install
+  - npm run build (dev) or npm run build:prod (prod)
+- CI: .github/workflows/ci-release.yml runs npm run build:prod and verifies dist/js/racketmanager.js and dist/css/*.css exist; artifacts include dist/** and assets/**.
 
 Example enqueue (frontend)
 - In a Public\Assets class:

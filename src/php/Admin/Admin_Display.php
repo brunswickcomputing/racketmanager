@@ -89,7 +89,7 @@ class Admin_Display {
         }
         // Update database.
         if ( ! isset( $options['dbversion'] ) || RACKETMANAGER_DBVERSION !== $options['dbversion'] ) {
-            require_once RACKETMANAGER_PATH . '/Admin/upgrade.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/upgrade.php';
             racketmanager_upgrade_page();
             return;
         }
@@ -98,7 +98,7 @@ class Admin_Display {
         switch ( $page ) {
             case 'racketmanager-documentation':
             case 'racketmanager-doc':
-                require_once RACKETMANAGER_PATH . '/Admin/documentation.php';
+                require_once RACKETMANAGER_PATH . 'templates/admin/documentation.php';
                 break;
             case 'racketmanager-leagues':
                 $this->admin_league = new Admin_League();
@@ -190,7 +190,7 @@ class Admin_Display {
             $email_body    = array();
             $email_message = '';
             $tab           = 'compose';
-            require_once RACKETMANAGER_PATH . '/Admin/includes/contact.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/includes/contact.php';
         }
     }
 
@@ -253,7 +253,7 @@ class Admin_Display {
             ),
             'email'
         );
-        require_once RACKETMANAGER_PATH . '/Admin/includes/contact.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/contact.php';
     }
     /**
      * Contact teams in league in admin screen
@@ -413,7 +413,7 @@ class Admin_Display {
             $tournament = get_tournament( $tournament_id );
         }
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
-        require_once RACKETMANAGER_PATH . '/Admin/includes/teams-list.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams-list.php';
     }
 
     /**

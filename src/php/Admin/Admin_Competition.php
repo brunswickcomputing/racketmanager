@@ -86,7 +86,7 @@ final class Admin_Competition extends Admin_Display {
                 'type' => 'affiliated',
             )
         );
-        require_once RACKETMANAGER_PATH . 'admin/includes/competition-config.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/competition-config.php';
     }
     private function get_config_input(): object {
         $config                               = new stdClass();
@@ -350,7 +350,7 @@ final class Admin_Competition extends Admin_Display {
                 'type' => 'affiliated',
             )
         );
-        require_once RACKETMANAGER_PATH . 'admin/includes/season-edit.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/season-edit.php';
     }
 
     /**

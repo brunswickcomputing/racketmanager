@@ -135,7 +135,7 @@ class Admin_Options extends Admin_Display {
                 $this->show_message();
             }
 
-            require_once RACKETMANAGER_PATH . '/Admin/show-settings.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/show-settings.php';
         }
     }
 }

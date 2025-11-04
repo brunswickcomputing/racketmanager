@@ -81,7 +81,7 @@ final class Admin_Cup extends Admin_Championship {
             $standalone        = true;
             $competition_query = array( 'type' => $competition_type );
             $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-            include_once RACKETMANAGER_PATH . '/Admin/show-competitions.php';
+            include_once RACKETMANAGER_PATH . 'templates/admin/show-competitions.php';
         }
     }
     /**
@@ -108,7 +108,7 @@ final class Admin_Cup extends Admin_Championship {
         }
         $this->show_message();
         if ( $competition ) {
-            require_once RACKETMANAGER_PATH . 'admin/includes/show-seasons.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/includes/show-seasons.php';
         }
     }
     /**
@@ -147,7 +147,7 @@ final class Admin_Cup extends Admin_Championship {
                         }
                     }
                     $cup_season->entries = $competition->get_clubs( array( 'status' => 1 ) );
-                    require_once RACKETMANAGER_PATH . 'admin/cup/show-season.php';
+                    require_once RACKETMANAGER_PATH . 'templates/admin/cup/show-season.php';
 
                 }
             }
@@ -197,7 +197,7 @@ final class Admin_Cup extends Admin_Championship {
                         }
                     }
                     $this->show_message();
-                    require_once RACKETMANAGER_PATH . 'admin/cup/draw.php';
+                    require_once RACKETMANAGER_PATH . 'templates/admin/cup/draw.php';
                 }
             }
         }
@@ -310,7 +310,7 @@ final class Admin_Cup extends Admin_Championship {
                             ++$i;
                         }
                     }
-                    require_once RACKETMANAGER_PATH . 'admin/cup/setup.php';
+                    require_once RACKETMANAGER_PATH . 'templates/admin/cup/setup.php';
                 }
             }
         }
@@ -392,7 +392,7 @@ final class Admin_Cup extends Admin_Championship {
                                 $match_dates[] = $round->date;
                             }
                         }
-                        require_once RACKETMANAGER_PATH . 'admin/cup/setup.php';
+                        require_once RACKETMANAGER_PATH . 'templates/admin/cup/setup.php';
                     }
                 }
             }
@@ -534,7 +534,7 @@ final class Admin_Cup extends Admin_Championship {
             if ( empty( $tab ) ) {
                 $tab = 'matches';
             }
-            require_once RACKETMANAGER_PATH . '/Admin/cup/plan.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/cup/plan.php';
         }
     }
     /**
@@ -588,7 +588,7 @@ final class Admin_Cup extends Admin_Championship {
                             $submit_title = $form_title;
                         }
                         //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                        require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
+                        require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
                     }
                 }
             }
@@ -652,7 +652,7 @@ final class Admin_Cup extends Admin_Championship {
                                         $away_title = null;
                                     }
                                 }
-                                require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
+                                require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
                             }
                         }
                     }

@@ -78,7 +78,7 @@ final class Admin_Finances extends Admin_Display {
             $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
             $args['type']      = 'club';
             $finance_invoices  = $racketmanager->get_invoices( $args );
-            require_once RACKETMANAGER_PATH . '/Admin/finances/show-invoices.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
         }
     }
     /**
@@ -100,7 +100,7 @@ final class Admin_Finances extends Admin_Display {
             $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
             $args['type'] = 'player';
             $finance_invoices = $racketmanager->get_invoices( $args );
-            require_once RACKETMANAGER_PATH . '/Admin/finances/show-invoices.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
         }
     }
     /**
@@ -167,7 +167,7 @@ final class Admin_Finances extends Admin_Display {
             }
             $finance_charges = $racketmanager->get_charges( $args );
 
-            require_once RACKETMANAGER_PATH . '/Admin/finances/show-charges.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
         }
     }
     /**
@@ -261,7 +261,7 @@ final class Admin_Finances extends Admin_Display {
             $form_action = __( 'Add', 'racketmanager' );
         }
 
-        require_once RACKETMANAGER_PATH . '/Admin/finances/charge.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/finances/charge.php';
     }
 
     /**
@@ -334,7 +334,7 @@ final class Admin_Finances extends Admin_Display {
             }
             if ( isset( $invoice ) && $invoice ) {
                 $invoice_view = show_invoice( $invoice->id );
-                require_once RACKETMANAGER_PATH . '/Admin/finances/invoice.php';
+                require_once RACKETMANAGER_PATH . 'templates/admin/finances/invoice.php';
             } else {
                 $this->set_message( __( 'Invoice not found', 'racketmanager' ), true );
                 $this->show_message();

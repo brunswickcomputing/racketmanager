@@ -74,7 +74,7 @@ final class Admin_Player extends Admin_Display {
             $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
             $racketmanager_tab = 'errors';
             $player_errors     = $this->get_player_errors( $status );
-            require_once RACKETMANAGER_PATH . 'admin/players/show-errors.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/players/show-errors.php';
         }
     }
     /**
@@ -135,7 +135,7 @@ final class Admin_Player extends Admin_Display {
                     )
                 )
             );
-            require_once RACKETMANAGER_PATH . 'admin/players/show-requests.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/players/show-requests.php';
         }
     }
     /**
@@ -205,7 +205,7 @@ final class Admin_Player extends Admin_Display {
             if ( ! $players ) {
                 $players = $racketmanager->get_all_players( array() );
             }
-            require_once RACKETMANAGER_PATH . 'admin/players/show-players.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/players/show-players.php';
         }
     }
     /**
@@ -286,7 +286,7 @@ final class Admin_Player extends Admin_Display {
                 }
             }
             $player = get_player( $player_id );
-            require_once RACKETMANAGER_PATH . '/Admin/players/show-player.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/players/show-player.php';
         }
     }
     /**

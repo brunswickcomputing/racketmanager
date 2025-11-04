@@ -121,7 +121,7 @@ final class Admin_Tournament extends Admin_Championship {
         $seasons      = $racketmanager->get_seasons( 'DESC' );
         $competitions = $racketmanager->get_competitions( array( 'type' => 'tournament' ) );
         $age_groups   = Util_Lookup::get_age_groups();
-        require_once RACKETMANAGER_PATH . '/Admin/show-tournaments.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/show-tournaments.php';
     }
 
     /**
@@ -171,7 +171,7 @@ final class Admin_Tournament extends Admin_Championship {
                     )
                 );
                 $withdrawn_entries       = Util::get_players_list( $entries_withdrawn );
-                require_once RACKETMANAGER_PATH . 'admin/show-tournament.php';
+                require_once RACKETMANAGER_PATH . 'templates/admin/show-tournament.php';
             }
         }
     }
@@ -222,7 +222,7 @@ final class Admin_Tournament extends Admin_Championship {
                         }
                     }
                     $this->show_message();
-                    require_once RACKETMANAGER_PATH . 'admin/tournament/draw.php';
+                    require_once RACKETMANAGER_PATH . 'templates/admin/tournament/draw.php';
                 }
             }
         }
@@ -322,7 +322,7 @@ final class Admin_Tournament extends Admin_Championship {
                             ++ $i;
                         }
                     }
-                    require_once RACKETMANAGER_PATH . 'admin/tournament/setup.php';
+                    require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
                 }
             }
         }
@@ -369,7 +369,7 @@ final class Admin_Tournament extends Admin_Championship {
                         );
                         $tab         = 'matches';
                         $match_dates = empty( $league->event->seasons[ $season ]['match_dates'] ) ? $league->event->competition->seasons[ $season ]['match_dates'] : $league->event->seasons[ $season ]['match_dates'];
-                        require_once RACKETMANAGER_PATH . 'admin/tournament/setup.php';
+                        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
                     }
                 }
             }
@@ -474,7 +474,7 @@ final class Admin_Tournament extends Admin_Championship {
         $competition_query = array( 'type' => 'tournament' );
         $competitions      = $racketmanager->get_competitions( $competition_query );
         $seasons           = $racketmanager->get_seasons( 'DESC' );
-        require_once RACKETMANAGER_PATH . '/Admin/tournament-edit.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/tournament-edit.php';
     }
     private function get_input( ?object $tournament = null): object {
         if ( empty( $tournament ) ) {
@@ -598,7 +598,7 @@ final class Admin_Tournament extends Admin_Championship {
             if ( empty( $tab ) ) {
                 $tab = 'matches';
             }
-            require_once RACKETMANAGER_PATH . '/Admin/tournament/plan.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/tournament/plan.php';
         }
     }
 
@@ -652,7 +652,7 @@ final class Admin_Tournament extends Admin_Championship {
                             $submit_title = $form_title;
                         }
                         //phpcs:enable WordPress.Security.NonceVerification.Recommended
-                        require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
+                        require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
                     }
                 }
             }
@@ -717,7 +717,7 @@ final class Admin_Tournament extends Admin_Championship {
                                         $away_title = null;
                                     }
                                 }
-                                require_once RACKETMANAGER_PATH . '/Admin/includes/match.php';
+                                require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
                             }
                         }
                     }
@@ -903,7 +903,7 @@ final class Admin_Tournament extends Admin_Championship {
             }
         }
         $this->show_message();
-        require_once RACKETMANAGER_PATH . '/Admin/tournament/information.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
     }
     /**
      * Calculate team ratings function

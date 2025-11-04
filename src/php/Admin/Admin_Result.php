@@ -80,7 +80,7 @@ class Admin_Result extends Admin_Display {
                     'status'      => $results_check_filter,
                 )
             );
-            include_once RACKETMANAGER_PATH . '/Admin/show-results.php';
+            include_once RACKETMANAGER_PATH . 'templates/admin/show-results.php';
         }
     }
 }

@@ -47,7 +47,7 @@ class Admin_Index extends Admin_Display {
             }
             $this->show_message();
         }
-        require_once RACKETMANAGER_PATH . '/Admin/index.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/index.php';
     }
     /**
      * Function to handle adding a competition

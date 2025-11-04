@@ -163,7 +163,7 @@ final class Admin_Event extends Admin_Display {
         $this->show_message();
         $tab        = 'general';
         $is_invalid = false;
-        require_once RACKETMANAGER_PATH . 'admin/includes/event-config.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/event-config.php';
     }
 
     /**

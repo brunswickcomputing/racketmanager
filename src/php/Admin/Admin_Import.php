@@ -61,7 +61,7 @@ class Admin_Import extends Admin_Display {
                 }
                 $this->show_message();
             }
-            require_once RACKETMANAGER_PATH . '/Admin/tools/import.php';
+            require_once RACKETMANAGER_PATH . 'templates/admin/tools/import.php';
         }
     }
     /**

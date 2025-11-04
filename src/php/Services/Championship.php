@@ -7,7 +7,7 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;

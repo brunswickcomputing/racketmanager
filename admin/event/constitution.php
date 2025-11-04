@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 /** @var int $event_id */
 if ( empty( $event->is_box ) && empty( $seasons ) ) {

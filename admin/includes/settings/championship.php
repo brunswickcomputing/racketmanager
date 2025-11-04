@@ -4,7 +4,7 @@
  */
 namespace Racketmanager;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 $grades = Util_Lookup::get_event_grades();
 ?>

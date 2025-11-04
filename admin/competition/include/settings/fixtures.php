@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 /** @var bool   $is_invalid */
 /** @var string $msg */

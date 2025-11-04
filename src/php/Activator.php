@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 
 defined('ABSPATH') || die('Access denied !');
 

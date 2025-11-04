@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 use function Racketmanager\get_user;
 
 /**

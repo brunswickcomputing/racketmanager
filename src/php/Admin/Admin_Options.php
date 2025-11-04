@@ -9,8 +9,8 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 
 /**
  * RacketManager Season Options functions

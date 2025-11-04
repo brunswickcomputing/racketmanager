@@ -18,7 +18,7 @@ namespace Racketmanager;
 
 global $racketmanager;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 /** @var object $competition */
 /** @var string $season */

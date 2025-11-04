@@ -31,8 +31,8 @@ use Racketmanager\shortcodes\Shortcodes_Login;
 use Racketmanager\shortcodes\Shortcodes_Match;
 use Racketmanager\shortcodes\Shortcodes_Message;
 use Racketmanager\shortcodes\Shortcodes_Tournament;
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
 /**

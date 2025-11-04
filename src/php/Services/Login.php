@@ -10,7 +10,7 @@
 namespace Racketmanager\Services;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 use WP_Error;
 use WP_User;
 

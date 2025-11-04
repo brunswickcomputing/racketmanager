@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 
 /** @var array $vars */
 global $wp_query;

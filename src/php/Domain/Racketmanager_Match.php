@@ -11,8 +11,8 @@ namespace Racketmanager\Domain;
 
 use Racketmanager\Services\Championship;
 use Racketmanager\Services\Validator\Validator_Match;
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\captain_result_notification;
 use function Racketmanager\get_club;

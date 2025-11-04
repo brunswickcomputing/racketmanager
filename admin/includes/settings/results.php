@@ -12,7 +12,7 @@ namespace Racketmanager;
     <!-- Nav tabs -->
     <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="competitions-cup-tab" data-bs-toggle="tab" data-bs-target="#competitions-cup" type="button" role="tab" aria-controls="competitions-cup" aria-selected="true"><?php use Racketmanager\util\Util_Lookup;
+            <button class="nav-link active" id="competitions-cup-tab" data-bs-toggle="tab" data-bs-target="#competitions-cup" type="button" role="tab" aria-controls="competitions-cup" aria-selected="true"><?php use Racketmanager\Util\Util_Lookup;
 
                 esc_html_e( 'Cups', 'racketmanager' ); ?></button>
         </li>

@@ -11,7 +11,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 
 /** @var object $is_update_allowed */
 /** @var object $match */

@@ -7,7 +7,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 
 /** @var object $match */
 /** @var string $match_type */

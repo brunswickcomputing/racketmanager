@@ -11,7 +11,7 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Racketmanager_Match;
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_league;

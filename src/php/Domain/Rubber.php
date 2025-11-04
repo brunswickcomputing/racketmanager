@@ -11,7 +11,7 @@ namespace Racketmanager\Domain;
 
 use DateMalformedStringException;
 use DateTime;
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_club_player;
 use function Racketmanager\get_competition;

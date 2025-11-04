@@ -9,8 +9,8 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;

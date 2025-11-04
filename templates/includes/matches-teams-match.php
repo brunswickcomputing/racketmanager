@@ -7,8 +7,8 @@
 
 namespace RacketManager;
 
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 
 /** @var object $match */
 /** @var string $match_status_class */

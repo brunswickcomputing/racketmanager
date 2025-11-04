@@ -12,7 +12,7 @@ namespace Racketmanager\Admin;
 use Racketmanager\Domain\Club;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Club;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;

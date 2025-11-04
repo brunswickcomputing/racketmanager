@@ -11,8 +11,8 @@ namespace Racketmanager\Domain;
 
 use Racketmanager\Services\Championship;
 use Racketmanager\Services\Schedule_Round_Robin;
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function get_query_var;
 use function Racketmanager\get_club;

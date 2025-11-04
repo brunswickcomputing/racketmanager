@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\util\Util;
+use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_club;

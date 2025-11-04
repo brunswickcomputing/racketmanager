@@ -11,7 +11,7 @@ namespace Racketmanager\Services\Validator;
 
 use DateMalformedStringException;
 use DateTime;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 /**
  * Class to implement the Entry form Validator object

@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 global $racketmanager;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 $age_group_select               = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
 $competition_query['age_group'] = $age_group_select ?? null;

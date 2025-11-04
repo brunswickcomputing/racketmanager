@@ -9,7 +9,7 @@ namespace Racketmanager;
 
 global $racketmanager;
 
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util_Lookup;
 
 /** @var object $player */
 if ( empty( $is_page_header ) ) {

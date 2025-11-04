@@ -7,7 +7,7 @@
  * @subpackage Util
  */
 
-namespace Racketmanager\util;
+namespace Racketmanager\Util;
 
 use NumberFormatter;
 use stdClass;

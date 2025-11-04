@@ -11,8 +11,8 @@
 namespace Racketmanager\shortcodes;
 
 use Racketmanager\Services\Stripe_Settings;
-use Racketmanager\util\Util;
-use Racketmanager\util\Util_Lookup;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_club;

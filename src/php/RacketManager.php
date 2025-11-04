@@ -821,83 +821,13 @@ class RacketManager {
      * Load libraries
      */
     private function load_libraries(): void {
-        // Prefer Composer autoloader if available; fall back to manual requires for legacy installs.
-        $autoload = RACKETMANAGER_PATH . 'vendor/autoload.php';
-        if ( file_exists( $autoload ) ) {
-            require_once $autoload;
-            // With Composer's classmap for include/ and PSR-4 for src/php,
-            // classes will be autoloaded on demand. No manual requires needed here.
-            // Load PSR-4 sports registrars so filters (e.g., racketmanager_sports) are registered.
-            $sports_files = $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' );
-            // Allow theme overrides/augmentations to continue working.
-            $sports_files = array_merge( $sports_files, $this->read_directory( get_stylesheet_directory() . '/sports' ) );
-            foreach ( $sports_files as $file ) {
-                require_once $file;
-            }
-        } else {
-            // Legacy fallback: manually include class files as before.
-            // Objects.
-            require_once RACKETMANAGER_PATH . 'include/class-charge.php';
-            require_once RACKETMANAGER_PATH . 'include/class-invoice.php';
-            require_once RACKETMANAGER_PATH . 'include/class-club.php';
-            require_once RACKETMANAGER_PATH . 'include/class-club-player.php';
-            require_once RACKETMANAGER_PATH . 'include/class-club-role.php';
-            require_once RACKETMANAGER_PATH . 'include/class-competition.php';
-            require_once RACKETMANAGER_PATH . 'include/class-event.php';
-            require_once RACKETMANAGER_PATH . 'include/class-league.php';
-            require_once RACKETMANAGER_PATH . 'include/class-league-team.php';
-            require_once RACKETMANAGER_PATH . 'include/class-match.php';
-            require_once RACKETMANAGER_PATH . 'include/class-message.php';
-            require_once RACKETMANAGER_PATH . 'include/class-rubber.php';
-            require_once RACKETMANAGER_PATH . 'include/class-player.php';
-            require_once RACKETMANAGER_PATH . 'include/class-player-error.php';
-            require_once RACKETMANAGER_PATH . 'include/class-results-report.php';
-            require_once RACKETMANAGER_PATH . 'include/class-results-checker.php';
-            require_once RACKETMANAGER_PATH . 'include/class-team.php';
-            require_once RACKETMANAGER_PATH . 'include/class-season.php';
-            require_once RACKETMANAGER_PATH . 'include/class-tournament.php';
-            require_once RACKETMANAGER_PATH . 'include/class-tournament-entry.php';
-            require_once RACKETMANAGER_PATH . 'include/class-user.php';
-
-            // Global libraries.
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax.php';
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-account.php';
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-club.php';
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-frontend.php';
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-finance.php';
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-match.php';
-            require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-tournament.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-club.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-competition.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-event.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-league.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-match.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-message.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-login.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-email.php';
-            require_once RACKETMANAGER_PATH . 'include/shortcodes/class-shortcodes-tournament.php';
-            require_once RACKETMANAGER_PATH . 'include/validator/class-validator.php';
-            require_once RACKETMANAGER_PATH . 'include/validator/class-validator-club.php';
-            require_once RACKETMANAGER_PATH . 'include/validator/class-validator-entry-form.php';
-            require_once RACKETMANAGER_PATH . 'include/validator/class-validator-match.php';
-            require_once RACKETMANAGER_PATH . 'include/validator/class-validator-plan.php';
-            require_once RACKETMANAGER_PATH . 'include/class-championship.php';
-            require_once RACKETMANAGER_PATH . 'include/class-exporter.php';
-            require_once RACKETMANAGER_PATH . 'include/class-login.php';
-            require_once RACKETMANAGER_PATH . 'include/class-privacy-exporters.php';
-            require_once RACKETMANAGER_PATH . 'include/class-rest-routes.php';
-            require_once RACKETMANAGER_PATH . 'include/class-rewrites.php';
-            require_once RACKETMANAGER_PATH . 'include/class-schedule-round-robin.php';
-            require_once RACKETMANAGER_PATH . 'include/class-stripe-settings.php';
-            require_once RACKETMANAGER_PATH . 'include/class-widget.php';
-
-            // Legacy installs (no Composer): load sports libraries procedurally.
-            // First read files in racketmanager sports directory, then overwrite with sports files in user stylesheet directory.
-            $files = array_merge( $this->read_directory( RACKETMANAGER_PATH . 'sports' ), $this->read_directory( get_stylesheet_directory() . '/sports' ) );
-            foreach ( $files as $file ) {
-                require_once $file;
-            }
+        // PSR-4 autoloading is required from the main plugin bootstrap.
+        // Load sports registrars so filters (e.g., racketmanager_sports) are registered.
+        $sports_files = $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' );
+        // Allow theme overrides/augmentations to continue working.
+        $sports_files = array_merge( $sports_files, $this->read_directory( get_stylesheet_directory() . '/sports' ) );
+        foreach ( $sports_files as $file ) {
+            require_once $file;
         }
 
         // template tags & functions.

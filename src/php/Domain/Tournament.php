@@ -1388,7 +1388,7 @@ final class Tournament {
                         if ( $existing_entry ) {
                             $same_partner = false;
                             foreach ( $team->players as $team_player ) {
-                                if ( $team_player->id === $partner_id ) {
+                                if ( $team_player->id === intval( $partner_id ) ) {
                                     $same_partner = true;
                                     break;
                                 }

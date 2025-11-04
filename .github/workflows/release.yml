@@ -43,7 +43,8 @@ jobs:
                     --exclude='.prettierrc*' \
                     --exclude='.prettierignore' \
                     --exclude='docs' \
-                    ./wp-content/plugins/racketmanager/ "$STAGE_DIR"/
+                    --exclude='build' \
+                    ./ "$STAGE_DIR"/
           cd build
           zip -r "$ZIP_NAME" "${{ steps.vars.outputs.plugin }}" >/dev/null
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV

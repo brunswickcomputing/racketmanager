@@ -49,29 +49,14 @@ class Admin extends RacketManager {
 
         parent::__construct();
 
+        // Load WordPress admin meta box/template helpers (add_meta_box, do_meta_boxes, submit_meta_box(), etc.)
+        // These functions live in wp-admin/includes/template.php and are needed by Admin::metaboxes() and related UI.
+        // Safe here because Admin is only instantiated in the dashboard (see racketmanager.php -> is_admin()).
         require_once ABSPATH . 'wp-admin/includes/template.php';
 
-        require_once RACKETMANAGER_PATH . 'include/ajax/class-ajax-admin.php';
-        $this->ajax_admin = new Ajax_Admin();
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-display.php';
+        // PSR-4 autoloading handles class loading; no manual includes needed here.
+        $this->ajax_admin   = new Ajax_Admin();
         $this->admin_display = new Admin_Display();
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-championship.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-finances.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-import.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-index.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-competition.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-event.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-tournament.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-club.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-cup.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-league.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-options.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-player.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-result.php';
-        require_once RACKETMANAGER_PATH . 'include/Admin/class-admin-season.php';
-        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-config.php';
-        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-finance.php';
-        require_once RACKETMANAGER_PATH . 'include/validator/class-validator-tournament.php';
 
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_styles' ) );

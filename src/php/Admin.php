@@ -378,7 +378,7 @@ class Admin extends RacketManager {
     public function load_scripts(): void {
         wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-bootstrap' );
-        wp_register_script( 'racketmanager-functions', RACKETMANAGER_URL . '/Admin/js/functions.js', array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
+        wp_register_script( 'racketmanager-functions', RACKETMANAGER_URL . 'templates/admin/js/functions.js', array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-functions' );
         wp_localize_script(
             'racketmanager-functions',
@@ -389,7 +389,7 @@ class Admin extends RacketManager {
             )
         );
 
-        wp_register_script( 'racketmanager-ajax', RACKETMANAGER_URL . '/Admin/js/ajax.js', array(), RACKETMANAGER_VERSION, false );
+        wp_register_script( 'racketmanager-ajax', RACKETMANAGER_URL . 'templates/admin/js/ajax.js', array(), RACKETMANAGER_VERSION, false );
         wp_enqueue_script( 'racketmanager-ajax' );
         wp_localize_script(
             'racketmanager-ajax',

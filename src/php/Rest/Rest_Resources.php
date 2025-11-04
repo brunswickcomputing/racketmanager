@@ -11,7 +11,7 @@ namespace Racketmanager\Rest;
 
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\validator\Validator;
+use Racketmanager\Validator\Validator;
 use stdClass;
 use Stripe\Event;
 use Stripe\Exception\SignatureVerificationException;

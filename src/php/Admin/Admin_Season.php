@@ -10,7 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Season;
-use Racketmanager\validator\Validator;
+use Racketmanager\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_season;
 

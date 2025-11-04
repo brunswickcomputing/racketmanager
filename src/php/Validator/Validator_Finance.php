@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\validator;
+namespace Racketmanager\Validator;
 
 use function Racketmanager\get_charge;
 use function Racketmanager\get_invoice;

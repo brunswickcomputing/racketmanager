@@ -10,7 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\util\Util;
-use Racketmanager\validator\Validator;
+use Racketmanager\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;

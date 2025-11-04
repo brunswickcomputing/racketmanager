@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\validator;
+namespace Racketmanager\Validator;
 
 use DateMalformedStringException;
 use DateTime;

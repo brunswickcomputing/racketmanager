@@ -32,7 +32,7 @@ use Racketmanager\shortcodes\Shortcodes_Message;
 use Racketmanager\shortcodes\Shortcodes_Tournament;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\validator\Validator;
+use Racketmanager\Validator\Validator;
 use stdClass;
 
 /**

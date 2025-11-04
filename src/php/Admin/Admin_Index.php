@@ -10,7 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Competition;
-use Racketmanager\validator\Validator;
+use Racketmanager\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_competition;
 

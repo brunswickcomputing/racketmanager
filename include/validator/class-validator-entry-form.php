@@ -7,7 +7,7 @@
  * @subpackage Validate
  */
 
-namespace Racketmanager\validator;
+namespace Racketmanager\Validator;
 
 if ( ! class_exists('Racketmanager\\validator\\Validator_Entry_Form', false) ) {
     require_once RACKETMANAGER_PATH . 'src/php/validator/Validator_Entry_Form.php';

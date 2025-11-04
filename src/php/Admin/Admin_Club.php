@@ -11,8 +11,8 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Club;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\validator\Validator;
-use Racketmanager\validator\Validator_Club;
+use Racketmanager\Validator\Validator;
+use Racketmanager\Validator\Validator_Club;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;

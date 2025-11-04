@@ -9,7 +9,7 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\validator\Validator_Club;
+use Racketmanager\Validator\Validator_Club;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;

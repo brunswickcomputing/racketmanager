@@ -12,7 +12,7 @@ namespace Racketmanager\Domain;
 use Racketmanager\Services\Championship;
 use Racketmanager\util\Util;
 use Racketmanager\util\Util_Lookup;
-use Racketmanager\validator\Validator_Match;
+use Racketmanager\Validator\Validator_Match;
 use stdClass;
 use function Racketmanager\captain_result_notification;
 use function Racketmanager\get_club;

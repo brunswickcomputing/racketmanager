@@ -11,8 +11,8 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Charges;
 use Racketmanager\util\Util;
-use Racketmanager\validator\Validator;
-use Racketmanager\validator\Validator_Config;
+use Racketmanager\Validator\Validator;
+use Racketmanager\Validator\Validator_Config;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_competition;

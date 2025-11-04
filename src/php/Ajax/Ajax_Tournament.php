@@ -10,8 +10,8 @@ namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Services\Stripe_Settings;
-use Racketmanager\validator\Validator_Entry_Form;
-use Racketmanager\validator\Validator_Tournament;
+use Racketmanager\Validator\Validator_Entry_Form;
+use Racketmanager\Validator\Validator_Tournament;
 use stdClass;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;

@@ -10,7 +10,7 @@
 namespace Racketmanager\Services;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\validator\Validator;
+use Racketmanager\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;

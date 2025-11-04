@@ -1,0 +1,13 @@
+{
+  "name": "racketmanager-plugin",
+  "private": true,
+  "version": "10.0.0",
+  "description": "Build tools for the RacketManager WordPress plugin",
+  "scripts": {
+    "build": "esbuild src/js/index.js --bundle --outfile=dist/js/racketmanager.js --format=esm --sourcemap --target=es2020",
+    "build:prod": "esbuild src/js/index.js --bundle --outfile=dist/js/racketmanager.js --format=esm --minify --target=es2020"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12"
+  }
+}

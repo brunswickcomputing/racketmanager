@@ -1,0 +1,70 @@
+name: CI / Build Plugin Assets
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build JS and install Composer deps
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wp-content/plugins/racketmanager
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: wp-content/plugins/racketmanager/package-lock.json
+
+      - name: Install Composer dependencies (no-dev)
+        run: composer install --no-dev -o
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build JavaScript (production)
+        run: npm run build:prod
+
+      - name: Verify build outputs
+        run: |
+          test -f dist/js/racketmanager.js || (echo 'Missing dist/js/racketmanager.js' && exit 1)
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: racketmanager-dist-js
+          path: |
+            wp-content/plugins/racketmanager/dist/js/racketmanager.js
+          if-no-files-found: error
+
+      - name: Upload plugin (selected files) artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: racketmanager-plugin
+          path: |
+            wp-content/plugins/racketmanager/racketmanager.php
+            wp-content/plugins/racketmanager/composer.json
+            wp-content/plugins/racketmanager/vendor/**
+            wp-content/plugins/racketmanager/src/**
+            wp-content/plugins/racketmanager/templates/**
+            wp-content/plugins/racketmanager/dist/**
+            !wp-content/plugins/racketmanager/node_modules/**
+            !wp-content/plugins/racketmanager/.git/**
+            !wp-content/plugins/racketmanager/.github/**
+          if-no-files-found: warn

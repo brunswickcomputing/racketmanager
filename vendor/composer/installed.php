@@ -5,7 +5,7 @@
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'b7a00b8f1c05acdab31353c8147b0674921296ff',
+        'reference' => '5a742f6282869d13d622bc2bf534062477683725',
         'name' => 'racketmanager/racketmanager',
         'dev' => false,
     ),
@@ -16,7 +16,7 @@
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'b7a00b8f1c05acdab31353c8147b0674921296ff',
+            'reference' => '5a742f6282869d13d622bc2bf534062477683725',
             'dev_requirement' => false,
         ),
         'stripe/stripe-php' => array(

@@ -1041,7 +1041,8 @@ class RacketManager {
     public function load_scripts(): void {
         $javascript_locale = str_replace( '_', '-', get_locale() );
         $module_handle     = 'racketmanager-module';
-        $module_src        = RACKETMANAGER_URL . 'src/js/index.js';
+        // Use built bundle output by the JS build step (see package.json -> build)
+        $module_src        = RACKETMANAGER_URL . 'dist/js/racketmanager.js';
 
         // Enqueue jQuery UI dependencies FIRST
         wp_enqueue_script('jquery');

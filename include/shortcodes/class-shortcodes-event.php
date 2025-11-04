@@ -7,7 +7,7 @@
  * @subpackage Shortcodes/Event
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 // PSR-4 shim for relocated class. Prefer PSR-4 copy during transition.
 if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Event', false) ) {

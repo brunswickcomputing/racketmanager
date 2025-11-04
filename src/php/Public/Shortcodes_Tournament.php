@@ -8,7 +8,7 @@
  * @subpackage Shortcodes/Competition
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Util\Util;

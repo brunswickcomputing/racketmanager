@@ -7,7 +7,7 @@
  * @subpackage Shortcodes/Event
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use Racketmanager\Domain\Player;
 use Racketmanager\Util\Util;

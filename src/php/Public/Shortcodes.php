@@ -7,7 +7,7 @@
  * @subpackage RacketManagerShortcodes
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use Racketmanager\Util\Util_Lookup;
 use stdClass;

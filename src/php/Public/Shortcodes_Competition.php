@@ -8,7 +8,7 @@
  * @subpackage Shortcodes/Competition
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Util\Util;

@@ -7,7 +7,7 @@
  * @subpackage RacketManagerShortcodesLogin
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use Racketmanager\Util\Util;
 use function Racketmanager\get_user;

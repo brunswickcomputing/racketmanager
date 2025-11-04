@@ -7,7 +7,7 @@
  * @subpackage Shortcodes
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use stdClass;
 use function Racketmanager\get_match;

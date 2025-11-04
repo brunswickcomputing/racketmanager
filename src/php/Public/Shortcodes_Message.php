@@ -7,7 +7,7 @@
  * @subpackage Shortcodes
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 use function Racketmanager\get_message;
 use function Racketmanager\get_user;

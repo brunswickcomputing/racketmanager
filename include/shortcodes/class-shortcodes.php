@@ -8,7 +8,7 @@
  * @subpackage RacketManagerShortcodes
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 // PSR-4 shim for relocated class during transition.
 if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes', false) ) {

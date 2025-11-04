@@ -7,7 +7,7 @@
  * @subpackage RacketManagerShortcodesLogin
  */
 
-namespace Racketmanager\shortcodes;
+namespace Racketmanager\Public;
 
 if ( ! class_exists('Racketmanager\\shortcodes\\Shortcodes_Login', false) ) {
     require_once RACKETMANAGER_PATH . 'src/php/shortcodes/Shortcodes_Login.php';

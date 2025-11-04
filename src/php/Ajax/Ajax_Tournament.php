@@ -88,7 +88,9 @@ class Ajax_Tournament extends Ajax {
                 $btm           = isset( $_POST['btm'] ) ? intval( $_POST['btm'] ) : '';
                 $comments      = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
                 $validator     = $validator->player( $player_id );
-                $validator     = $validator->telephone( $contactno );
+                if ( !current_user_can( 'manage_racketmanager' ) ) {
+                    $validator     = $validator->telephone( $contactno );
+                }
                 $validator     = $validator->email( $contactemail, $player_id );
                 $validator     = $validator->btm( $btm, $player_id );
                 $club_id       = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';

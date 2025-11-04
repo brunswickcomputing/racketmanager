@@ -259,24 +259,24 @@ class Ajax_Tournament extends Ajax {
      */
     #[NoReturn]
     public function team_partner(): void {
-        $validator = new Validator_Tournament();
-        $validator = $validator->check_security_token();
+        $validator          = new Validator_Tournament();
+        $validator          = $validator->check_security_token();
+        $event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
+        $player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
+        $modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+        $gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
+        $season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+        $date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
+        $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
+        $args               = array();
+        $args['player']     = $player_id;
+        $args['gender']     = $gender;
+        $args['season']     = $season;
+        $args['date_end']   = $date_end;
+        $args['modal']      = $modal;
+        $args['partner_id'] = $partner_id;
         if ( empty( $validator->error ) ) {
-            $event_id           = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : 0;
-            $player_id          = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-            $modal              = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $gender             = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-            $season             = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-            $date_end           = isset( $_POST['dateEnd'] ) ? intval( $_POST['dateEnd'] ) : null;
-            $partner_id         = isset( $_POST['partnerId'] ) ? intval( $_POST['partnerId'] ) : null;
-            $args               = array();
-            $args['player']     = $player_id;
-            $args['gender']     = $gender;
-            $args['season']     = $season;
-            $args['date_end']   = $date_end;
-            $args['modal']      = $modal;
-            $args['partner_id'] = $partner_id;
-            $output             = event_partner_modal( $event_id, $args );
+            $output = event_partner_modal( $event_id, $args );
         } else {
             $return = $validator->get_details();
             $output = show_alert( $return->msg, 'danger', 'modal' );

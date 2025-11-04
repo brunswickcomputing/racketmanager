@@ -822,11 +822,25 @@ class RacketManager {
      */
     private function load_libraries(): void {
         // PSR-4 autoloading is required from the main plugin bootstrap.
-        // Load sports registrars so filters (e.g., racketmanager_sports) are registered.
-        $sports_files = $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' );
+        // Load only sports registrar scripts (non-class files) so filters (e.g., racketmanager_sports) are registered.
+        $plugin_sports = array_filter(
+            $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' ),
+            static function ( $file ): bool {
+                $base = basename( $file );
+                // Registrar scripts are lowercase like tennis.php; exclude class files like Competition_Tennis.php, League_Tennis.php
+                return (bool) preg_match( '/^[a-z0-9\-]+\.php$/', $base );
+            }
+        );
         // Allow theme overrides/augmentations to continue working.
-        $sports_files = array_merge( $sports_files, $this->read_directory( get_stylesheet_directory() . '/sports' ) );
-        foreach ( $sports_files as $file ) {
+        $theme_sports = array_filter(
+            $this->read_directory( get_stylesheet_directory() . '/sports' ),
+            static function ( $file ): bool {
+                $base = basename( $file );
+                return (bool) preg_match( '/^[a-z0-9\-]+\.php$/', $base );
+            }
+        );
+        $registrars = array_values( array_unique( array_merge( $plugin_sports, $theme_sports ) ) );
+        foreach ( $registrars as $file ) {
             require_once $file;
         }
 

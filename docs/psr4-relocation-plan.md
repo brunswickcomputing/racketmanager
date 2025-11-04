@@ -118,3 +118,41 @@ Deliverable: Pure PSR‑4 autoloading; minimal bootstrap; no duplicated loaders.
 - Classes resolve via PSR‑4 under `src/php/` with no fatal errors.
 - CI installs Composer autoloader and passes the smoke check.
 - After Phase E: `composer.json` has no `classmap` entry, and legacy shims are removed (or retained only with explicit justification).
+
+---
+
+### Status (2025-11-04)
+- Phase E complete.
+  - Composer autoload config contains only PSR‑4 for `Racketmanager\` and no `classmap` entry (see composer.json).
+  - Main plugin bootstrap (racketmanager.php) is minimal, loads Composer autoloader, registers hooks, and defers initialization; no runtime `class_exists` fallbacks remain there.
+  - Racketmanager\RacketManager::load_libraries() no longer requires class files; it only includes sports registrar scripts plus template-tags.php and functions.php.
+  - Legacy shims remain under `include/` strictly for backward compatibility with any external direct `require` calls; they will be removed after one stable release unless usage is detected.
+
+Verification reminder:
+- Run in plugin dir: `composer install --no-dev -o && composer dump-autoload -o`.
+- Activate the plugin; visit admin and front‑end pages; check for autoload/class errors.
+- Confirm sports list via Util::get_sports() and typical flows (payments/messages/player search/match entry) work without regressions.
+
+---
+
+### FAQ
+
+#### Why was the Stripe autoload removed?
+With Phase E complete, the plugin now relies on a single Composer autoloader (vendor/autoload.php). Previously there were scattered, package‑specific loaders (e.g., directly requiring Stripe's init.php). Keeping those would:
+- Duplicate autoloaders, increasing load order complexity and risk of conflicts.
+- Defeat Composer’s optimized class map and PSR‑4 resolution.
+- Make maintenance harder when packages update their own internal autoloading.
+
+What happens now:
+- racketmanager.php includes vendor/autoload.php once; this autoloader registers all packages, including stripe/stripe-php, so Stripe classes are available automatically (e.g., new \Stripe\StripeClient(...)).
+- No more manual require of vendor/stripe/stripe-php/init.php or similar paths.
+- The plugin now explicitly requires stripe/stripe-php in composer.json, ensuring the SDK is present and autoloaded in all supported deployments.
+
+Migration notes:
+- If you have custom code that previously did require_once RACKETMANAGER_PATH . 'vendor/stripe/stripe-php/init.php'; remove that line. Just ensure Composer’s autoloader is loaded and use Stripe’s namespaced classes.
+- After pulling this change, run Composer in the plugin directory so stripe/stripe-php is installed and registered by vendor/autoload.php.
+
+Verification:
+- Run: composer install --no-dev -o && composer dump-autoload -o within the plugin directory.
+- Exercise payment flows to confirm Stripe classes resolve without manual require calls.
+- If the SDK is missing at runtime, AJAX endpoints will return a clear JSON error instructing to install Composer dependencies, rather than hard-failing the request.

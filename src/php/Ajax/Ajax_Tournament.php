@@ -206,7 +206,6 @@ class Ajax_Tournament extends Ajax {
         if ( empty( $return->error ) ) {
             $tournament_id = $_POST['tournament'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $player_id     = $_POST['player'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $tournament    = get_tournament( intval( $tournament_id ) );
             $entry_key     = $tournament_id . '_' . $player_id;
             $entry         = get_tournament_entry( $entry_key, 'key' );
             if ( ! $entry ) {
@@ -359,6 +358,12 @@ class Ajax_Tournament extends Ajax {
         $args['statement_descriptor_suffix'] = $tournament->name;
         $args['receipt_email']               = $player?->email;
         $stripe_details                      = new Stripe_Settings();
+        // Ensure Stripe classes are available via Composer autoloading.
+        if ( ! class_exists( \Stripe\StripeClient::class ) ) {
+            wp_send_json_error( array(
+                'error' => 'Stripe SDK not available. Please run composer install in the Racketmanager plugin to install stripe/stripe-php.'
+            ), 500 );
+        }
         $stripe                              = new StripeClient( $stripe_details->api_secret_key );
         try {
             // Create a PaymentIntent with amount and currency

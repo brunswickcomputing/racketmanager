@@ -2,21 +2,21 @@
     'root' => array(
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'type' => 'library',
+        'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '3538a71283d5f7639177c2e96f230377e24b355d',
-        'name' => '__root__',
-        'dev' => true,
+        'reference' => 'b7a00b8f1c05acdab31353c8147b0674921296ff',
+        'name' => 'racketmanager/racketmanager',
+        'dev' => false,
     ),
     'versions' => array(
-        '__root__' => array(
+        'racketmanager/racketmanager' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'type' => 'library',
+            'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '3538a71283d5f7639177c2e96f230377e24b355d',
+            'reference' => 'b7a00b8f1c05acdab31353c8147b0674921296ff',
             'dev_requirement' => false,
         ),
         'stripe/stripe-php' => array(

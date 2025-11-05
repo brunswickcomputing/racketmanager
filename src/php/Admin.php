@@ -376,33 +376,82 @@ class Admin extends RacketManager {
      * Load Javascript
      */
     public function load_scripts(): void {
-        wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
-        wp_enqueue_script( 'racketmanager-bootstrap' );
-        wp_register_script( 'racketmanager-functions', RACKETMANAGER_URL . 'templates/admin/js/functions.js', array( 'thickbox', 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'jquery-ui-sortable', 'jquery-ui-tooltip', 'jquery-effects-core', 'jquery-effects-slide', 'jquery-effects-explode', 'jquery-ui-autocomplete', 'iris' ), RACKETMANAGER_VERSION, false );
-        wp_enqueue_script( 'racketmanager-functions' );
-        wp_localize_script(
-            'racketmanager-functions',
-            'ajax_var',
-            array(
-                'url'        => admin_url( 'admin-ajax.php' ),
-                'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
-            )
+        // Determine current admin screen/page to scope scripts
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        $page   = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+        $is_rm_page = ( $page && str_starts_with( $page, 'racketmanager' ) );
+        $is_post_edit = $screen && in_array($screen->base, array('post', 'post-new', 'post.php', 'post-new.php'), true);
+
+        // If not a RacketManager admin page or post editor (for our metabox), do nothing
+        if ( ! $is_rm_page && ! $is_post_edit ) {
+            return;
+        }
+
+        // Common localization data
+        $l10n = array(
+            'url'        => admin_url( 'admin-ajax.php' ),
+            'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
         );
 
-        wp_register_script( 'racketmanager-ajax', RACKETMANAGER_URL . 'templates/admin/js/ajax.js', array(), RACKETMANAGER_VERSION, false );
-        wp_enqueue_script( 'racketmanager-ajax' );
-        wp_localize_script(
-            'racketmanager-ajax',
-            'ajax_var',
-            array(
-                'url'        => admin_url( 'admin-ajax.php' ),
-                'ajax_nonce' => wp_create_nonce( 'ajax-nonce' ),
-            )
+        // Enqueue base deps used by our admin pages
+        wp_enqueue_script('jquery');
+        wp_enqueue_script('jquery-ui-core');
+        wp_enqueue_script('jquery-ui-datepicker');
+        wp_enqueue_script('jquery-ui-sortable');
+        wp_enqueue_script('jquery-ui-tooltip');
+        wp_enqueue_script('jquery-effects-core');
+        wp_enqueue_script('jquery-effects-slide');
+        wp_enqueue_script('jquery-effects-explode');
+        wp_enqueue_script('jquery-ui-autocomplete');
+        wp_enqueue_script('iris');
+
+        // Bootstrap only on our plugin pages
+        if ( $is_rm_page ) {
+            wp_register_script( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js', array(), RACKETMANAGER_VERSION, false );
+            wp_enqueue_script( 'racketmanager-bootstrap' );
+        }
+
+        // Admin AJAX helpers – required by metabox and many pages
+        wp_register_script(
+            'racketmanager-admin-ajax',
+            $this->get_asset_url('dist/js/admin/ajax.js'),
+            array(),
+            RACKETMANAGER_VERSION,
+            false
         );
+        wp_enqueue_script('racketmanager-admin-ajax');
+        wp_localize_script('racketmanager-admin-ajax', 'ajax_var', $l10n);
+
+        // Functions bundle – only needed on our plugin pages (UI widgets, handlers)
+        if ( $is_rm_page ) {
+            wp_register_script(
+                'racketmanager-admin-functions',
+                $this->get_asset_url('dist/js/admin/functions.js'),
+                array('thickbox','jquery','jquery-ui-core','jquery-ui-datepicker','jquery-ui-sortable','jquery-ui-tooltip','jquery-effects-core','jquery-effects-slide','jquery-effects-explode','jquery-ui-autocomplete','iris','racketmanager-admin-ajax'),
+                RACKETMANAGER_VERSION,
+                false
+            );
+            wp_enqueue_script('racketmanager-admin-functions');
+            wp_localize_script('racketmanager-admin-functions', 'ajax_var', $l10n);
+        }
+
+        // Draggable interactions – only on tournaments page
+        if ( $is_rm_page && $page === 'racketmanager-tournaments' ) {
+            wp_register_script(
+                'racketmanager-admin-draggable',
+                $this->get_asset_url('dist/js/admin/draggable.js'),
+                array('jquery'),
+                RACKETMANAGER_VERSION,
+                true
+            );
+            wp_enqueue_script('racketmanager-admin-draggable');
+        }
+
+        // Keep legacy inline i18n for specific strings
         ?>
         <script type='text/javascript'>
         //<!--<![CDATA[-->
-        RacketManagerAjaxL10n = {
+        window.RacketManagerAjaxL10n = {
             requestUrl: "<?php bloginfo( 'wpurl' ); ?>/wp-admin/admin-ajax.php",
             manualPointRuleDescription: "<?php esc_html_e( 'Order: win, win overtime, tie, loss, loss overtime', 'racketmanager' ); ?>",
             pluginUrl: "<?php plugins_url( '', __DIR__ ); ?>/wp-content/plugins/leaguemanager",

@@ -339,7 +339,3 @@ jQuery(document).ready(function(){
             ?>
         </div>
 </div>
-<?php
-wp_register_script( 'racketmanager-draggable', plugins_url( '/js/draggable.js', __DIR__ ), array(), RACKETMANAGER_VERSION, true );
-wp_enqueue_script( 'racketmanager-draggable' );
-?>

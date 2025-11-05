@@ -428,8 +428,8 @@ class Admin extends RacketManager {
      */
     public function load_styles(): void {
         wp_enqueue_style( 'racketmanager-bootstrap', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css', false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager', RACKETMANAGER_URL . '/dist/css/admin.css', false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager-modal', RACKETMANAGER_URL . '/dist/css/modal.css', false, RACKETMANAGER_VERSION, 'screen' );
+        wp_enqueue_style( 'racketmanager', $this->get_asset_url('dist/css/admin.css'), false, RACKETMANAGER_VERSION, 'screen' );
+        wp_enqueue_style( 'racketmanager-modal', $this->get_asset_url('dist/css/modal.css'), false, RACKETMANAGER_VERSION, 'screen' );
 
         $jquery_ui_version = '1.13.2';
         wp_register_style( 'jquery-ui', RACKETMANAGER_URL . '/css/jquery/jquery-ui.min.css', false, $jquery_ui_version );

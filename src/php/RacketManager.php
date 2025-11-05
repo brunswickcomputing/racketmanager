@@ -1035,6 +1035,29 @@ class RacketManager {
         $this->options[ $type ] = $options;
         update_option( 'racketmanager', $this->options );
     }
+
+    /**
+     * Resolve an asset URL, preferring a `.min` variant when not in debug and when it exists.
+     * Provide a plugin-relative path like `dist/js/racketmanager.js`.
+     */
+    protected function get_asset_url(string $relative_path, bool $prefer_min = true): string {
+        $is_debug = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) || ( defined('WP_DEBUG') && WP_DEBUG );
+        $base_path = RACKETMANAGER_PATH . ltrim($relative_path, '/');
+        $base_url  = RACKETMANAGER_URL . ltrim($relative_path, '/');
+
+        if ( $prefer_min && ! $is_debug ) {
+            // Insert .min before the extension
+            $dot_pos = strrpos($relative_path, '.');
+            if ( $dot_pos !== false ) {
+                $min_relative = substr($relative_path, 0, $dot_pos) . '.min' . substr($relative_path, $dot_pos);
+                $min_path = RACKETMANAGER_PATH . ltrim($min_relative, '/');
+                if ( file_exists( $min_path ) ) {
+                    return RACKETMANAGER_URL . ltrim($min_relative, '/');
+                }
+            }
+        }
+        return $base_url;
+    }
     /**
      * Load Javascript
      */
@@ -1042,7 +1065,7 @@ class RacketManager {
         $javascript_locale = str_replace( '_', '-', get_locale() );
         $module_handle     = 'racketmanager-module';
         // Use built bundle output by the JS build step (see package.json -> build)
-        $module_src        = RACKETMANAGER_URL . 'dist/js/racketmanager.js';
+        $module_src        = $this->get_asset_url('dist/js/racketmanager.js');
 
         // Enqueue jQuery UI dependencies FIRST
         wp_enqueue_script('jquery');
@@ -1119,9 +1142,9 @@ class RacketManager {
      * Load CSS styles
      */
     public function load_styles(): void {
-        wp_enqueue_style( 'racketmanager-print', RACKETMANAGER_URL . 'dist/css/print.css', false, RACKETMANAGER_VERSION, 'print' );
-        wp_enqueue_style( 'racketmanager-modal', RACKETMANAGER_URL . 'dist/css/modal.css', false, RACKETMANAGER_VERSION, 'screen' );
-        wp_enqueue_style( 'racketmanager', RACKETMANAGER_URL . 'dist/css/style.css', false, RACKETMANAGER_VERSION, 'screen' );
+        wp_enqueue_style( 'racketmanager-print', $this->get_asset_url('dist/css/print.css'), false, RACKETMANAGER_VERSION, 'print' );
+        wp_enqueue_style( 'racketmanager-modal', $this->get_asset_url('dist/css/modal.css'), false, RACKETMANAGER_VERSION, 'screen' );
+        wp_enqueue_style( 'racketmanager', $this->get_asset_url('dist/css/style.css'), false, RACKETMANAGER_VERSION, 'screen' );
 
         $jquery_ui_version = '1.13.2';
         wp_register_style( 'jquery-ui', RACKETMANAGER_URL . 'css/jquery/jquery-ui.min.css', false, $jquery_ui_version );

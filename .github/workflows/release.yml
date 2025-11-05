@@ -17,6 +17,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Composer dependencies (no-dev)
+        run: composer install --no-dev -o
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Build assets (production)
+        run: npm run build:prod
+
+      - name: Verify build outputs
+        run: |
+          test -f dist/js/racketmanager.js || (echo 'Missing dist/js/racketmanager.js' && exit 1)
+          test -f dist/css/style.css || (echo 'Missing dist/css/style.css' && exit 1)
+          test -f dist/css/admin.css || (echo 'Missing dist/css/admin.css' && exit 1)
+          test -f dist/css/modal.css || (echo 'Missing dist/css/modal.css' && exit 1)
+          test -f dist/css/print.css || (echo 'Missing dist/css/print.css' && exit 1)
+
       - name: Set variables
         id: vars
         run: |
@@ -31,20 +60,16 @@ jobs:
           # Create staging directory matching WordPress plugin layout
           STAGE_DIR="build/${{ steps.vars.outputs.plugin }}"
           mkdir -p "$STAGE_DIR"
-          rsync -av --exclude='.git' \
-                    --exclude='.github' \
-                    --exclude='node_modules' \
-                    --exclude='**/.DS_Store' \
-                    --exclude='**/*.map' \
-                    --exclude='**/*.log' \
-                    --exclude='qodana*.yaml' \
-                    --exclude='.eslintrc*' \
-                    --exclude='.eslintignore' \
-                    --exclude='.prettierrc*' \
-                    --exclude='.prettierignore' \
-                    --exclude='docs' \
-                    --exclude='build' \
-                    ./ "$STAGE_DIR"/
+          rsync -av \
+            --include='racketmanager.php' \
+            --include='composer.json' \
+            --include='vendor/***' \
+            --include='src/***' \
+            --include='templates/***' \
+            --include='dist/***' \
+            --include='assets/***' \
+            --exclude='*' \
+            ./ "$STAGE_DIR"/
           cd build
           zip -r "$ZIP_NAME" "${{ steps.vars.outputs.plugin }}" >/dev/null
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV

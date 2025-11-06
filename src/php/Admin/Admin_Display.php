@@ -61,6 +61,7 @@ class Admin_Display {
     public Admin_Index $admin_index;
     protected ?string $no_updates = 'No updates';
     protected ?string $errors_found = 'Errors found';
+    public Admin_Upgrade $admin_upgrade;
 
     /**
      * Constructor
@@ -89,8 +90,8 @@ class Admin_Display {
         }
         // Update database.
         if ( ! isset( $options['dbversion'] ) || RACKETMANAGER_DBVERSION !== $options['dbversion'] ) {
-            require_once RACKETMANAGER_PATH . 'templates/admin/upgrade.php';
-            racketmanager_upgrade_page();
+            $this->admin_upgrade = new Admin_Upgrade();
+            $this->admin_upgrade->handle_display();
             return;
         }
         $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended

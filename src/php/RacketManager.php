@@ -833,7 +833,7 @@ class RacketManager {
         );
         // Allow theme overrides/augmentations to continue working.
         $theme_sports = array_filter(
-            $this->read_directory( get_stylesheet_directory() . '/sports' ),
+            $this->read_directory( get_stylesheet_directory() . '/Sports' ),
             static function ( $file ): bool {
                 $base = basename( $file );
                 return (bool) preg_match( '/^[a-z0-9\-]+\.php$/', $base );

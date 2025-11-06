@@ -5,7 +5,7 @@
  * @package Racketmanager/Classes/Sports/Tennis
  */
 
-namespace Racketmanager\sports;
+namespace Racketmanager\Sports;
 
 use Racketmanager\Domain\League;
 use Racketmanager\Util\Util;

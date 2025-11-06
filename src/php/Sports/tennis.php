@@ -7,7 +7,7 @@
  * be autoloaded on demand by Composer.
  */
 
-namespace Racketmanager\sports;
+namespace Racketmanager\Sports;
 
 // Register the Tennis sport label for selection in admin/settings.
 \add_filter('racketmanager_sports', function(array $sports): array {

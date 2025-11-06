@@ -17,7 +17,7 @@ namespace Racketmanager;
 <div class="container league-block">
 	<div class="row justify-content-end">
 		<div class="col-auto racketmanager_breadcrumb">
-			<a href="/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
+			<a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
 		</div>
 	</div>
 	<h1><?php echo esc_html( $form_title ); ?></h1>

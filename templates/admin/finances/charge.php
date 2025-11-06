@@ -21,7 +21,7 @@ $msg        = null;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/admin.php?page=racketmanager-finances&amp;view=charges"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charges"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $form_title ); ?>
         </div>
     </div>
     <div class="row mb-3">
@@ -259,6 +259,6 @@ $msg        = null;
         ?>
     </div>
     <div class="mb-3">
-        <a href="/admin.php?page=racketmanager-finances&amp;view=charges" class="btn btn-secondary"><?php esc_html_e( 'Back to charges', 'racketmanager' ); ?></a>
+        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charges" class="btn btn-secondary"><?php esc_html_e( 'Back to charges', 'racketmanager' ); ?></a>
     </div>
 </div>

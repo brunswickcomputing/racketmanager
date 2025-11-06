@@ -19,7 +19,7 @@ jQuery(document).ready(function(){
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $event->competition->type ) ); ?>s</a> &raquo; <a href="/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $event->competition->id ); ?>"><?php echo esc_html( $event->competition->name ); ?></a> &raquo; <a href="/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $event->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_attr( $event->competition->id ); ?>"><?php echo esc_html( $event->competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php echo esc_html( $event->name ); ?>
         </div>
     </div>
     <div class="row justify-content-between">

@@ -79,7 +79,7 @@ $leagues = $event->get_leagues();
                                     <label for="league-<?php echo esc_html( $league->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $league->id ); ?>" name="league[<?php echo esc_html( $league->id ); ?>]" id="league-<?php echo esc_html( $league->id ); ?>" />
                                 </td>
                                 <td class="">
-                                    <a href="/admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>
+                                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>"><?php echo esc_html( $league->title ); ?></a>
                                 </td>
                                 <td class="">
                                     <?php echo esc_html( $league->num_teams_total ); ?>
@@ -95,7 +95,7 @@ $leagues = $event->get_leagues();
                                     ?>
                                 </td>
                                 <td class="">
-                                    <a href="/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;edit_league=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
+                                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $event->id ); ?>&amp;edit_league=<?php echo esc_html( $league->id ); ?>"><?php esc_html_e( 'Edit', 'racketmanager' ); ?></a>
                                 </td>
                             </tr>
                             <?php

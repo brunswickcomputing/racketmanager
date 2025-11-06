@@ -22,7 +22,7 @@ if ( empty( $invoice->player_id ) ) {
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>"><?php echo esc_html( $breadcrumb ); ?></a> &raquo; <?php esc_html_e( 'View Invoice', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row mb-3">
@@ -59,6 +59,6 @@ if ( empty( $invoice->player_id ) ) {
         <?php echo $invoice_view; // phpcs:ignore WordPress.Security.EscapeOutput ?>
     </div>
     <div class="mb-3">
-        <a href="/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
+        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=<?php echo esc_attr( $view ); ?>" class="btn btn-secondary"><?php esc_html_e( 'Back to finances', 'racketmanager' ); ?></a>
     </div>
 </div>

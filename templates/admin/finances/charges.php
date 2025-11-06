@@ -113,7 +113,7 @@ $charges         = $finance_charges;
                                     <label for="charge-<?php echo esc_html( $charge->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
                                     <input type="checkbox" value="<?php echo esc_html( $charge->id ); ?>" name="charge[<?php echo esc_html( $charge->id ); ?>]" id="charge-<?php echo esc_html( $charge->id ); ?>" />
                                 </td>
-                                <td class=""><a href="/admin.php?page=racketmanager-finances&amp;view=charge&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->season ) . ' charges.php' . esc_html( ucfirst( $charge->competition->name ) ); ?></a></td>
+                                <td class=""><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charge&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->season ) . ' charges.php' . esc_html( ucfirst( $charge->competition->name ) ); ?></a></td>
                                 <td class=""><?php echo esc_html( $charge->status ); ?></td>
                                 <td class="text-end">
                                     <?php
@@ -144,7 +144,7 @@ $charges         = $finance_charges;
     <div class="row gx-3 align-items-center mb-3">
         <div class="mb-3">
             <!-- Add New Charge -->
-            <a href="/admin.php?page=racketmanager-finances&amp;view=charge" class="btn btn-primary submit"><?php esc_html_e( 'Add Charge', 'racketmanager' ); ?></a>
+            <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charge" class="btn btn-primary submit"><?php esc_html_e( 'Add Charge', 'racketmanager' ); ?></a>
         </div>
     </div>
 </div>

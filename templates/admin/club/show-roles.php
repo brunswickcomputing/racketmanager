@@ -16,7 +16,7 @@ use Racketmanager\Util\Util_Lookup;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Roles', 'racketmanager' ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Roles', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php esc_html_e( 'Roles', 'racketmanager' ); ?> - <?php echo esc_html( $club->name ); ?></h1>
@@ -55,7 +55,6 @@ use Racketmanager\Util\Util_Lookup;
                         <?php
                         foreach ( $roles as $role_type ) {
                             foreach ( $role_type as $role ) {
-                                $role_desc = Util_Lookup::get_club_role_ref( $role->role->desc );
                                 ?>
                                 <tr>
                                     <td class="col-1 check-column">

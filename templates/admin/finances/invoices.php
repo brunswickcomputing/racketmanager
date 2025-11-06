@@ -129,7 +129,7 @@ $invoices = $finance_invoices;
                             ?>
                             <tr>
                                 <td class="check-column"><label for="invoice-<?php echo esc_html( $invoice->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $invoice->id ); ?>" name="invoice[<?php echo esc_html( $invoice->id ); ?>]" id="invoice-<?php echo esc_html( $invoice->id ); ?>" /></td>
-                                <td class="text-center"><a href="/admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
+                                <td class="text-center"><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
                                 <td class=""><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' invoices.php' . $invoice->charge->season ); ?></td>
                                 <td class="">
                                     <?php

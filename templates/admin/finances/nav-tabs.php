@@ -11,7 +11,7 @@ namespace Racketmanager;
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab ) ) ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-finances"><?php esc_html_e( 'RacketManager Finances', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab ) ) ); ?>
         </div>
     </div>
     <h1><?php echo esc_html( ucwords( un_seo_url( $racketmanager_tab )) ); ?></h1>
@@ -27,7 +27,7 @@ namespace Racketmanager;
                         <?php
                     } else {
                         ?>
-                        <a href="/admin.php?page=racketmanager-finances&amp;view=charges" class="nav-link" id="charges-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a>
+                        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charges" class="nav-link" id="charges-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Charges', 'racketmanager' ); ?></a>
                         <?php
                     }
                     ?>
@@ -40,7 +40,7 @@ namespace Racketmanager;
                         <?php
                     } else {
                         ?>
-                        <a href="/admin.php?page=racketmanager-finances&amp;view=club-invoices" class="nav-link" id="invoices-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Club Invoices', 'racketmanager' ); ?></a>
+                        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=club-invoices" class="nav-link" id="invoices-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Club Invoices', 'racketmanager' ); ?></a>
                         <?php
                     }
                     ?>
@@ -53,7 +53,7 @@ namespace Racketmanager;
                         <?php
                     } else {
                         ?>
-                        <a href="/admin.php?page=racketmanager-finances&amp;view=player-invoices" class="nav-link" id="payments-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Tournament Invoices', 'racketmanager' ); ?></a>
+                        <a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=player-invoices" class="nav-link" id="payments-tab" type="button" role="tab" aria-selected="false"><?php esc_html_e( 'Tournament Invoices', 'racketmanager' ); ?></a>
                         <?php
                     }
                     ?>

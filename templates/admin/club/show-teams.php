@@ -16,7 +16,7 @@ use Racketmanager\Util\Util_Lookup;
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Teams', 'racketmanager' ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-clubs"><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></a> &raquo; <?php echo esc_html( $club->shortcode ); ?>  &raquo; <?php esc_html_e( 'Teams', 'racketmanager' ); ?>
         </div>
     </div>
     <h1><?php esc_html_e( 'Teams', 'racketmanager' ); ?> - <?php echo esc_html( $club->name ); ?></h1>
@@ -61,7 +61,7 @@ use Racketmanager\Util\Util_Lookup;
                             </td>
                             <td class="col-1 column-num"><?php echo esc_html( $team->id ); ?></td>
                             <td class="col-3 team-name">
-                                <a href="/admin.php?page=racketmanager-clubs&amp;view=team&amp;edit=<?php echo esc_html( $team->id ); ?>&amp;club_id=<?php echo esc_html( $team->club_id ); ?>">
+                                <a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=team&amp;edit=<?php echo esc_html( $team->id ); ?>&amp;club_id=<?php echo esc_html( $team->club_id ); ?>">
                                     <?php echo esc_html( $team->title ); ?>
                                 </a>
                             </td>

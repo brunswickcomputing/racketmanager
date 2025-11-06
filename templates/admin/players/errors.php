@@ -58,7 +58,7 @@ namespace Racketmanager;
                     <tr>
                         <td><label for="playerRequest-<?php echo esc_html( $player_error->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player_error->id ); ?>" name="playerRequest[<?php echo esc_html( $player_error->id ); ?>]" id="playerRequest-<?php echo esc_html( $player_error->id ); ?>" /></td>
                         <td>
-                        <a href="/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_attr( $player_error->player_id ); ?>">
+                        <a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_attr( $player_error->player_id ); ?>">
                             <?php echo esc_html( $player_error->player->display_name ); ?>
                         </a>
                         </td>

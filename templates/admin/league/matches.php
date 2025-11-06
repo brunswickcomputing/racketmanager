@@ -188,7 +188,7 @@ global $racketmanager;
                             <?php
                         }
                         ?>
-                        <td class="match-title"><a href="/admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $match->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>
+                        <td class="match-title"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $match->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>
                             <?php
                             if ( isset( $group ) ) {
                                 echo esc_html( '&amp;group=' . $group );

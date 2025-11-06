@@ -79,7 +79,7 @@ namespace Racketmanager;
 
     <?php
     if ( 'championship' === $league_mode ) {
-        require_once RACKETMANAGER_PATH . 'admin/championship.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/championship.php';
     } else {
         ?>
         <div>
@@ -99,15 +99,15 @@ namespace Racketmanager;
             <div class="tab-content">
                 <div class="tab-pane fade" id="standings" role="tabpanel" aria-labelledby="standings-tab">
                     <h2><?php esc_html_e( 'Standings', 'racketmanager' ); ?></h2>
-                    <?php require_once RACKETMANAGER_PATH . 'admin/league/standings.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/league/standings.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="crosstable" role="tabpanel" aria-labelledby="crosstable-tab">
                     <h2><?php esc_html_e( 'Crosstable', 'racketmanager' ); ?></h2>
-                    <?php require_once RACKETMANAGER_PATH . 'admin/league/crosstable.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/league/crosstable.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
                     <h2><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h2>
-                    <?php require_once RACKETMANAGER_PATH . 'admin/league/matches.php'; ?>
+                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/league/matches.php'; ?>
                 </div>
             </div>
         </div>

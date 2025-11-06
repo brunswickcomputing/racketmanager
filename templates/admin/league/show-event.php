@@ -61,7 +61,7 @@ jQuery(document).ready(function(){
         <div class="tab-content">
             <div class="tab-pane" id="leagues" role="tabpanel" aria-labelledby="leagues-tab">
                 <h2><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></h2>
-                <?php require_once RACKETMANAGER_PATH . 'admin/event/leagues.php'; ?>
+                <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/leagues.php'; ?>
             </div>
         </div>
     </div>

@@ -43,14 +43,14 @@ use Racketmanager\Util\Util;
     <div class="tab-content">
         <div class="tab-pane fade" id="finalResults" role="tabpanel" aria-labelledby="finalResults-tab">
             <h2><?php esc_html_e( 'Final Results', 'racketmanager' ); ?></h2>
-            <?php require_once RACKETMANAGER_PATH . 'admin/championship/final-results.php'; ?>
+            <?php require_once RACKETMANAGER_PATH . 'templates/admin/championship/final-results.php'; ?>
         </div>
         <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
             <h2><?php echo esc_html( Util::get_final_name() ); ?></h2>
-            <?php require_once RACKETMANAGER_PATH . 'admin/championship/finals.php'; ?>
+            <?php require_once RACKETMANAGER_PATH . 'templates/admin/championship/finals.php'; ?>
         </div>
         <div class="tab-pane fade" id="preliminary" role="tabpanel" aria-labelledby="preliminary-tab">
             <h2><?php esc_html_e( 'Teams', 'racketmanager' ); ?></h2>
-            <?php require_once RACKETMANAGER_PATH . 'admin/championship/preliminary.php'; ?>
+            <?php require_once RACKETMANAGER_PATH . 'templates/admin/championship/preliminary.php'; ?>
         </div>
     </div>

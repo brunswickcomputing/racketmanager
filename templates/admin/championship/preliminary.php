@@ -43,6 +43,6 @@ namespace Racketmanager;
         <?php
     }
     $teams = $league->get_league_teams( array() );
-    require_once RACKETMANAGER_PATH . 'admin/league/standings.php';
+    require_once RACKETMANAGER_PATH . 'templates/admin/league/standings.php';
     ?>
 </div>

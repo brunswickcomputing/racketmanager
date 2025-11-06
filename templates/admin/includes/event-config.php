@@ -89,14 +89,14 @@ if ( empty( $tournament ) ) {
                 <div class="tab-content">
                     <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <h2><?php esc_html_e( 'General', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/event/include/settings/general.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/include/settings/general.php'; ?>
                     </div>
                     <?php
                     if ( ! $competition->is_tournament ) {
                         ?>
                         <div class="tab-pane fade" id="fixtures" role="tabpanel" aria-labelledby="fixtures-tab">
                             <h2><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></h2>
-                            <?php require_once RACKETMANAGER_PATH . 'admin/event/include/settings/fixtures.php'; ?>
+                            <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/include/settings/fixtures.php'; ?>
                         </div>
                         <?php
                     }
@@ -106,7 +106,7 @@ if ( empty( $tournament ) ) {
                         ?>
                         <div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
                             <h2><?php esc_html_e( 'Championship', 'racketmanager' ); ?></h2>
-                            <?php require_once RACKETMANAGER_PATH . 'admin/event/include/settings/championship.php'; ?>
+                            <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/include/settings/championship.php'; ?>
                         </div>
                         <?php
                     }

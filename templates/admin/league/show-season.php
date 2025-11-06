@@ -55,7 +55,7 @@ jQuery(document).ready(function(){
     <div class="tab-content">
         <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="overview-tab">
             <h2><?php esc_html_e( 'Overview', 'racketmanager' ); ?></h2>
-            <?php require_once RACKETMANAGER_PATH . 'admin/includes/overview.php'; ?>
+            <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/overview.php'; ?>
         </div>
         <div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
             <h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
@@ -63,6 +63,6 @@ jQuery(document).ready(function(){
         </div>
         <div class="tab-pane" id="entries" role="tabpanel" aria-labelledby="entries-tab">
             <h2><?php esc_html_e( 'Entries', 'racketmanager' ); ?></h2>
-            <?php require_once RACKETMANAGER_PATH . 'admin/includes/entries.php'; ?>
+            <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/entries.php'; ?>
         </div>
     </div>

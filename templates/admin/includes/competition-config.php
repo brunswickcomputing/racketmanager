@@ -87,38 +87,38 @@ if ( empty( $tournament ) ) {
                 <div class="tab-content">
                     <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <h2><?php esc_html_e( 'General', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/general.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/general.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
                         <h2><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/constitution.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/constitution.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
                         <h2><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/matches.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/matches.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="fixtures" role="tabpanel" aria-labelledby="fixtures-tab">
                         <h2><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/fixtures.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/fixtures.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="display" role="tabpanel" aria-labelledby="display-tab">
                         <h2><?php esc_html_e( 'Display', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/display.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/display.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
                         <h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/events.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/events.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="rules" role="tabpanel" aria-labelledby="rules-tab">
                         <h2><?php esc_html_e( 'Rules', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/rules.php'; ?>
+                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/rules.php'; ?>
                     </div>
                     <?php
                     if ( 'league' === $competition->type ) {
                         ?>
                         <div class="tab-pane fade" id="availability" role="tabpanel" aria-labelledby="availability-tab">
                             <h2><?php esc_html_e( 'Availability', 'racketmanager' ); ?></h2>
-                            <?php require_once RACKETMANAGER_PATH . 'admin/competition/include/settings/availability.php'; ?>
+                            <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/availability.php'; ?>
                         </div>
                         <?php
                     }

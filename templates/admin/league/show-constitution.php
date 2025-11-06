@@ -62,6 +62,6 @@ namespace Racketmanager;
         }
         ?>
         <?php
-        require_once RACKETMANAGER_PATH . 'admin/event/constitution.php';
+        require_once RACKETMANAGER_PATH . 'templates/admin/event/constitution.php';
         ?>
     </div>

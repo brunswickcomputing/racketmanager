@@ -24,5 +24,5 @@ jQuery(document).ready(function(){
         </div>
     </div>
     <h1><?php echo esc_html( $league->title ); ?> - <?php echo esc_html( $competition->name ); ?> - <?php echo esc_html( $season ); ?></h1>
-    <?php require_once RACKETMANAGER_PATH . 'admin/includes/championship-tabs.php'; ?>
+    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/championship-tabs.php'; ?>
 </div>

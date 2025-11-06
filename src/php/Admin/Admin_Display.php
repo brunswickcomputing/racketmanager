@@ -87,7 +87,7 @@ class Admin_Display {
         if ( RACKETMANAGER_VERSION !== $options['version'] ) {
             flush_rewrite_rules();
             $options['version'] = RACKETMANAGER_VERSION;
-            update_option( 'racketmanager', $options );
+            $racketmanager->update_plugin_options( $options );
         }
         // Update database.
         if ( ! isset( $options['dbversion'] ) || RACKETMANAGER_DBVERSION !== $options['dbversion'] ) {

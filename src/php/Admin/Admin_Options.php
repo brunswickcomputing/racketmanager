@@ -129,7 +129,8 @@ class Admin_Options extends Admin_Display {
                     $tab   = 'billing';
                 }
                 if ( $valid ) {
-                    update_option( 'racketmanager', $options );
+                    global $racketmanager;
+                    $racketmanager->update_plugin_options( $options );
                     $this->set_message( __( 'Settings saved', 'racketmanager' ) );
                 }
                 $this->show_message();

@@ -1033,6 +1033,21 @@ class RacketManager {
      */
     public function set_options( $type, array $options ): void {
         $this->options[ $type ] = $options;
+        $this->update_plugin_options($this->options);
+    }
+
+    /**
+     * Update and persist the plugin options array in a single, centralized place.
+     * Use this instead of calling update_option('racketmanager', ...) directly.
+     *
+     * Usage:
+     *   global $racketmanager;
+     *   $options = $racketmanager->get_options();
+     *   // mutate $options as needed...
+     *   $racketmanager->update_plugin_options($options);
+     */
+    public function update_plugin_options(array $options): void {
+        $this->options = $options;
         update_option( 'racketmanager', $this->options );
     }
 
@@ -1042,8 +1057,7 @@ class RacketManager {
      */
     protected function get_asset_url(string $relative_path, bool $prefer_min = true): string {
         $is_debug = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) || ( defined('WP_DEBUG') && WP_DEBUG );
-        $base_path = RACKETMANAGER_PATH . ltrim($relative_path, '/');
-        $base_url  = RACKETMANAGER_URL . ltrim($relative_path, '/');
+        $base_url = RACKETMANAGER_URL . ltrim($relative_path, '/');
 
         if ( $prefer_min && ! $is_debug ) {
             // Insert .min before the extension

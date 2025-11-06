@@ -376,7 +376,7 @@ class Admin extends RacketManager {
      * Load Javascript
      */
     public function load_scripts(): void {
-        // Determine current admin screen/page to scope scripts
+        // Determine the current admin screen / page to scope scripts
         $screen = function_exists('get_current_screen') ? get_current_screen() : null;
         $page   = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
         $is_rm_page = ( $page && str_starts_with( $page, 'racketmanager' ) );
@@ -433,9 +433,19 @@ class Admin extends RacketManager {
             );
             wp_enqueue_script('racketmanager-admin-functions');
             wp_localize_script('racketmanager-admin-functions', 'ajax_var', $l10n);
+
+            // Small utilities used by many admin templates (e.g. Racketmanager.checkAll)
+            wp_register_script(
+                'racketmanager-admin-utils',
+                $this->get_asset_url('dist/js/admin/utils.js'),
+                array(),
+                RACKETMANAGER_VERSION,
+                false
+            );
+            wp_enqueue_script('racketmanager-admin-utils');
         }
 
-        // Draggable interactions – only on tournaments page
+        // Draggable interactions – only on the tournaments page
         if ( $is_rm_page && $page === 'racketmanager-tournaments' ) {
             wp_register_script(
                 'racketmanager-admin-draggable',

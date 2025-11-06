@@ -13,7 +13,7 @@ namespace Racketmanager;
     <h1><?php esc_html_e( 'Clubs', 'racketmanager' ); ?></h1>
 
     <div class="form-control mb-3">
-        <form id="teams-filter" method="post" action="">
+        <form id="clubs-filter" method="post" action="">
             <?php wp_nonce_field( 'clubs-bulk', 'racketmanager_nonce' ); ?>
             <div class="row g-3 mb-3 align-items-center">
                 <!-- Bulk Actions -->
@@ -39,6 +39,7 @@ namespace Racketmanager;
                         <th class="d-none d-md-table-cell"><?php esc_html_e( 'Match Secretary', 'racketmanager' ); ?></th>
                         <th class="col-auto"></th>
                         <th class="col-auto"></th>
+                        <th class="col-auto"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,6 +58,7 @@ namespace Racketmanager;
                             <td class="d-none d-md-table-cell"><?php echo isset( $club->match_secretary->display_name ) ? esc_html( $club->match_secretary->display_name ) : null; ?></td>
                             <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Players', 'racketmanager' ); ?></a></td>
                             <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=teams&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></a></td>
+                            <td class="col-auto"><a href="/wp-admin/admin.php?page=racketmanager-clubs&amp;view=roles&amp;club_id=<?php echo esc_html( $club->id ); ?> " class="btn btn-secondary"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></a></td>
                         </tr>
                         <?php
                     }

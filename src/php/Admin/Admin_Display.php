@@ -85,6 +85,7 @@ class Admin_Display {
         $options = $racketmanager->options;
         // Update Plugin Version.
         if ( RACKETMANAGER_VERSION !== $options['version'] ) {
+            flush_rewrite_rules();
             $options['version'] = RACKETMANAGER_VERSION;
             update_option( 'racketmanager', $options );
         }

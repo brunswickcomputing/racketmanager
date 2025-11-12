@@ -29,6 +29,7 @@ use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Domain\User;
+use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Services\Exporter;
 
 /**
@@ -744,8 +745,11 @@ function get_club_role( object|int|null $club_role = null ): ?Club_Role {
         $_club_role = $club_role;
     } elseif ( is_object( $club_role ) ) {
         $_club_role = new Club_Role( $club_role );
+    } elseif( $club_role ) {
+        $club_role_repository = new Club_Role_Repository();
+        $_club_role           = $club_role_repository->find( $club_role );
     } else {
-        $_club_role = Club_Role::get_instance( $club_role );
+        $_club_role = null;
     }
 
     if ( ! $_club_role ) {

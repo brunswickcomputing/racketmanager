@@ -10,6 +10,8 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Club;
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Club;
 use Racketmanager\Util\Util_Lookup;
@@ -445,7 +447,7 @@ class Admin_Club extends Admin_Display {
         $validator = new Validator();
         $validator = $validator->capability( 'edit_teams' );
         if ( empty( $validator->error ) ) {
-            $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
+            $club_id   = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
             $validator = $validator->club( $club_id );
         }
         if ( ! empty( $validator->error ) ) {
@@ -458,17 +460,21 @@ class Admin_Club extends Admin_Display {
             $this->show_message();
             return;
         }
-        $club = get_club( $club_id );
+        $club_role_repository = new Club_Role_Repository();
+        $club_service         = new Club_Management_Service( $club_role_repository );
+        $club                 = get_club( $club_id );
         if ( isset( $_POST['addRole'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-club-role' );
             if ( empty( $validator->error ) ) {
                 $club_id_passed = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
                 $role_id        = isset( $_POST['role_id'] ) ? intval( $_POST['role_id'] ) : null;
                 $user_id        = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : null;
-                if ( $club_id_passed && $role_id && $user_id ) {
-                    $club->set_club_role( $role_id, $user_id );
+                $club_role      = $club_service->set_club_role( $club_id_passed, $role_id, $user_id );
+                if ( $club_role ) {
+                    $this->set_message( __( 'Role added', 'racketmanager' ) );
+                } else {
+                    $this->set_message( __( 'Unable to add role', 'racketmanager' ), true );
                 }
-                $this->set_message( __( 'Role added', 'racketmanager' ) );
             } else {
                 $this->set_message( $validator->msg, true );
             }
@@ -483,9 +489,8 @@ class Admin_Club extends Admin_Display {
                 if ( isset( $_POST['role'] ) ) {
                     $messages = array();
                     foreach ( $_POST['role'] as $role_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $role = get_club_role( $role_id );
-                        $role->delete();
-                        $messages[] = $role->role . ' ' . __( 'deleted', 'racketmanager' );
+                        $deleted = $club_service->remove_club_role( $role_id );
+                        $messages[] = __( 'Role deleted', 'racketmanager' );
                     }
                     $message = implode( '<br>', $messages );
                     $this->set_message( $message );
@@ -493,7 +498,7 @@ class Admin_Club extends Admin_Display {
             }
         }
         $this->show_message();
-        $roles = $club->get_club_roles();
+        $roles = $club->get_club_roles( array( 'group' => true ) );
         require_once RACKETMANAGER_PATH . 'templates/admin/club/show-roles.php';
     }
 }

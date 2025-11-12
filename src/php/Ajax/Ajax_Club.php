@@ -9,6 +9,8 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Services\Validator\Validator_Club;
 use stdClass;
 use function Racketmanager\get_club;
@@ -201,6 +203,7 @@ class Ajax_Club extends Ajax {
         $validator      = $validator->check_security_token( 'racketmanager_nonce', 'club-role-update' );
         if ( empty( $validator->error ) ) {
             $club_id      = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
+            $role_id      = isset( $_POST['roleId'] ) ? intval( $_POST['roleId'] ) : null;
             $user_id      = isset( $_POST['userId'] ) ? intval( $_POST['userId'] ) : null;
             $club_role_id = isset( $_POST['clubRoleId'] ) ? intval( $_POST['clubRoleId'] ) : null;
             $contact_no   = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
@@ -215,7 +218,10 @@ class Ajax_Club extends Ajax {
             $user      = get_user( $user_id );
             $club_role = get_club_role( $club_role_id );
             if ( $club_role->user->id !== $user_id ) {
-                $updates = $club_role->update( $user_id );
+                $club_role_repository = new Club_Role_Repository();
+                $club_service         = new Club_Management_Service( $club_role_repository );
+                $club_role            = $club_service->reassign_role_user( $club_role_id, $user_id );
+                $updates              = true;
             }
             $user_updates = $user->update_contact( $contact_no, $email );
             if ( $user_updates ) {

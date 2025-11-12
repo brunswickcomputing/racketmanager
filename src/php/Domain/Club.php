@@ -299,10 +299,12 @@ final class Club {
             if ( ! isset( $this->id ) ) {
                 $this->add();
             }
-            $this->roles           = $this->get_club_roles();
+            $this->roles           = $this->get_club_roles( array( 'group' => true ) );
             $this->match_secretary = $this->roles['1'][0]->user ?? new stdClass();
             $this->desc = '';
             $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
+
+            $this->club_role_repository = new Club_Role_Repository();
         }
     }
 
@@ -403,8 +405,12 @@ final class Club {
         if ( empty( $this->match_secretary->id ) || $this->match_secretary->id !== $club->match_secretary->id ) {
             $user = get_user( $club->match_secretary->id );
             if ( $user ) {
-                $this->set_club_role( 1, $user->id );
-                $updates = true;
+                $club_role_repository = new Club_Role_Repository();
+                $club_service         = new Club_Management_Service( $club_role_repository );
+                $club_role            = $club_service->set_club_role( $this->id, 1, $user->ID );
+                if ( $club_role ) {
+                    $updates = true;
+                }
             }
         } else {
             $user = get_user( $this->match_secretary->id );
@@ -436,58 +442,11 @@ final class Club {
 
     }
     /**
-     * Function to set club role
-     *
-     * @param int $role
-     * @param int $player_id
-     *
-     * @return void
-     */
-    public function set_club_role( int $role, int $player_id ): void {
-        global $wpdb;
-        $role_details = Util_Lookup::get_club_role( $role );
-        if ( $role_details ) {
-            if ( 1 === $role_details->limit ) {
-                $club_roles = $wpdb->get_results(
-                    $wpdb->prepare(
-                        "SELECT `id` FROM $wpdb->racketmanager_club_roles WHERE `club_id` = %d AND `role_id` = %d",
-                        $this->id,
-                        $role
-                    )
-                );
-                if ( $club_roles ) {
-                    $club_role = get_club_role( $club_roles[0]->id );
-                    $club_role?->update( $player_id );
-                } else {
-                    $this->add_club_role( $role, $player_id );
-                }
-            } else {
-                $this->add_club_role( $role, $player_id );
-            }
-        }
-        wp_cache_flush_group( 'club-roles' );
-    }
-
-    /**
-     * Function to add club role
-     *
-     * @param int $role
-     * @param int $player_id
-     *
-     * @return void
-     */
-    private function add_club_role( int $role, int $player_id ): void {
-        $club_role          = new stdClass();
-        $club_role->club_id = $this->id;
-        $club_role->role_id = $role;
-        $club_role->user_id = $player_id;
-        new Club_Role( $club_role );
-    }
-    /**
      * Delete Club
      */
     public function delete(): void {
         global $wpdb;
+        $this->club_role_repository->delete( array( 'club' => $this->id ) );
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "DELETE FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d",
@@ -1195,43 +1154,10 @@ final class Club {
         return $players;
     }
     public function get_club_roles( array $args = array() ): array {
-        global $wpdb;
-        $defaults   = array(
-            'role' => false,
-            'user' => false,
-        );
-        $args = array_merge( $defaults, $args );
-        $role = $args['role'];
-        $user = $args['user'];
-
-        $search_terms = array();
-        if ( $role ) {
-            $search_terms[] = $wpdb->prepare( '`role_id` = %d', intval( $role ) );
+        $args['club'] = $this->id;
+        if ( $this->club_role_repository === null ) {
+            $this->club_role_repository = new Club_Role_Repository();
         }
-        if ( $user ) {
-            $search_terms[] = $wpdb->prepare( '`user_id` = %d', intval( $user ) );
-        }
-        $search     = Util::search_string( $search_terms );
-        $sql        = $wpdb->prepare(" FROM $wpdb->racketmanager_club_roles WHERE `club_id` = %d " . $search, $this->id );
-        $sql        = 'SELECT `id`' . $sql;
-        $club_roles = wp_cache_get( md5( $sql ), 'club-roles' );
-        if ( ! $club_roles ) {
-            $club_roles = array();
-            $roles      = $wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call ok.
-            foreach ( $roles as $club_role_ref ) {
-                $club_role = get_club_role( $club_role_ref->id );
-                if ( $club_role ) {
-                    if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
-                        $club_roles[ $club_role->role_id ] = array();
-                    }
-                    $club_roles[ $club_role->role_id ][] = $club_role;
-                }
-            }
-            wp_cache_set( md5( $sql ), $club_roles, 'club-roles' );
-        }
-        return $club_roles;
+        return $this->club_role_repository->search( $args );
     }
 }

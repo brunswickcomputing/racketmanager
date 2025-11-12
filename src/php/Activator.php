@@ -104,7 +104,7 @@ class Activator {
                 'content'       => '[custom-password-reset-form]',
             ),
         );
-        Util::add_racketmanager_page($page_definitions);
+        Util::add_racketmanager_pages( $page_definitions );
     }
 
     /**
@@ -139,7 +139,7 @@ class Activator {
                 'content'       => '[clubs]'
             ),
         );
-        Util::add_racketmanager_page($pages);
+        Util::add_racketmanager_pages($pages);
     }
 
     /**

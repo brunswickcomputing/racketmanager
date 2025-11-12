@@ -45,34 +45,47 @@ class Util {
      *
      * @param array $page_definitions page definition array.
      */
-    public static function add_racketmanager_page( array $page_definitions ): void {
+    public static function add_racketmanager_pages( array $page_definitions ): void {
         foreach ( $page_definitions as $slug => $page ) {
-
-            // Check that the page doesn't exist already.
-            if ( ! is_page( $slug ) ) {
-                $page_template = $page['page_template'];
-                // Add the page using the data from the array above.
-                $page    = array(
-                    'post_content'   => $page['content'],
-                    'post_name'      => $slug,
-                    'post_title'     => $page['title'],
-                    'post_status'    => 'publish',
-                    'post_type'      => 'page',
-                    'ping_status'    => 'closed',
-                    'comment_status' => 'closed',
-                    'page_template'  => $page_template,
-                );
-                $page_id = wp_insert_post( $page );
-                if ( $page_id ) {
-                    $page_name = sanitize_title_with_dashes( $page['post_title'] );
-                    $option    = 'racketmanager_page_' . $page_name . '_id';
-                    // Only update this option if `wp_insert_post()` was successful.
-                    update_option( $option, $page_id );
-                }
-            }
+            $post_id = self::insert_racketmanager_page( $slug, $page );
         }
     }
 
+    /**
+     * Add page to database
+     *
+     * @param string $slug slug of page.
+     * @param array $page page definition array.
+     */
+    public static function add_racketmanager_page( string $slug, array $page ): int|null {
+        // Check that the page doesn't exist already.
+        if ( ! is_page( $slug ) ) {
+            $page_template = $page['page_template'] ?? 'template_no_title.php';
+            // Add the page using the data from the array above.
+            $post    = array(
+                'post_content'   => $page['content'],
+                'post_name'      => $slug,
+                'post_title'     => $page['title'],
+                'post_status'    => 'publish',
+                'post_type'      => 'page',
+                'ping_status'    => 'closed',
+                'comment_status' => 'closed',
+                'page_template'  => $page_template,
+            );
+            if ( ! empty( $page['parent'] ) ) {
+                $post['post_parent'] = $page['parent'];
+            }
+            $page_id = wp_insert_post( $post );
+            if ( $page_id ) {
+                $page_name = sanitize_title_with_dashes( $page['title'] );
+                $option    = 'racketmanager_page_' . $page_name . '_id';
+                // Only update this option if `wp_insert_post()` was successful.
+                update_option( $option, $page_id );
+                return $page_id;
+            }
+        }
+        return null;
+    }
     /**
      * Get list of players by initial function
      *

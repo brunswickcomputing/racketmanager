@@ -9,6 +9,7 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Services\Validator\Validator_Club;
@@ -218,10 +219,13 @@ class Ajax_Club extends Ajax {
             $user      = get_user( $user_id );
             $club_role = get_club_role( $club_role_id );
             if ( $club_role->user->id !== $user_id ) {
+                $club_repository      = new Club_Repository();
                 $club_role_repository = new Club_Role_Repository();
-                $club_service         = new Club_Management_Service( $club_role_repository );
+                $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
                 $club_role            = $club_service->reassign_role_user( $club_role_id, $user_id );
-                $updates              = true;
+                if ( $club_role ) {
+                    $updates = true;
+                }
             }
             $user_updates = $user->update_contact( $contact_no, $email );
             if ( $user_updates ) {

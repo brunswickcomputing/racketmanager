@@ -9,13 +9,13 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\club_players_notification;
-use function Racketmanager\get_club_role;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
@@ -31,9 +31,9 @@ final class Club {
     /**
      * Id
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Match secretary
      *
@@ -241,54 +241,6 @@ final class Club {
     private ?Club_Role_Repository $club_role_repository = null;
 
     /**
-     * Retrieve club instance
-     *
-     * @param int|string $club_id club id or name.
-     * @param string $search_term search.
-     */
-    public static function get_instance( int|string $club_id, string $search_term = 'id' ) {
-        global $wpdb;
-
-        $search = match ($search_term) {
-            'name'      => $wpdb->prepare(
-                '`name` = %s',
-                $club_id
-            ),
-            'shortcode' => $wpdb->prepare(
-                '`shortcode` = %s',
-                $club_id
-            ),
-            default     => $wpdb->prepare(
-                '`id` = %d',
-                $club_id
-            ),
-        };
-
-        if ( ! $club_id ) {
-            return false;
-        }
-
-        $club = wp_cache_get( $club_id, 'clubs' );
-
-        if ( ! $club ) {
-            $club = $wpdb->get_row(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode` FROM $wpdb->racketmanager_clubs WHERE " . $search . ' LIMIT 1'
-            ); // db call ok.
-
-            if ( ! $club ) {
-                return false;
-            }
-
-            $club = new Club( $club );
-
-            wp_cache_set( $club_id, $club, 'clubs' );
-        }
-
-        return $club;
-    }
-
-    /**
      * Constructor
      *
      * @param object|null $club Club object.
@@ -311,6 +263,104 @@ final class Club {
         }
     }
 
+    /**
+     * Get id
+     *
+     * @return int|null
+     */
+    public function get_id(): ?int{
+        return $this->id;
+    }
+    /**
+     * Get name
+     *
+     * @return string|null
+     */
+    public function get_name(): ?string{
+        return $this->name;
+    }
+    /**
+     * Get website
+     *
+     * @return string|null
+     */
+    public function get_website(): ?string{
+        return $this->website;
+    }
+    /**
+     * Get type
+     *
+     * @return string|null
+     */
+    public function get_type(): ?string{
+        return $this->type;
+    }
+    /**
+     * Get address
+     *
+     * @return string|null
+     */
+    public function get_address(): ?string{
+        return $this->address;
+    }
+    /**
+     * Get longitude
+     *
+     * @return string|null
+     */
+    public function get_longitude(): ?string{
+        return $this->longitude;
+    }
+    /**
+     * Get latitude
+     *
+     * @return string|null
+     */
+    public function get_latitude(): ?string{
+        return $this->latitude;
+    }
+    /**
+     * Get contact no
+     *
+     * @return string|null
+     */
+    public function get_contact_no(): ?string{
+        return $this->contactno;
+    }
+    /**
+     * Get founded
+     *
+     * @return string|null
+     */
+    public function get_founded(): ?string{
+        return $this->founded;
+    }
+    /**
+     * Get facilities
+     *
+     * @return string|null
+     */
+    public function get_facilities(): ?string{
+        return $this->facilities;
+    }
+    /**
+     * Get shortcode
+     *
+     * @return string|null
+     */
+    public function get_shortcode(): ?string{
+        return $this->shortcode;
+    }
+    /**
+     * Set id
+     *
+     * @param int $insert_id
+     *
+     * @return void
+     */
+    public function set_id( int $insert_id ): void {
+        $this->id = $insert_id;
+    }
     /**
      * Create new club
      */
@@ -408,8 +458,9 @@ final class Club {
         if ( empty( $this->match_secretary->id ) || $this->match_secretary->id !== $club->match_secretary->id ) {
             $user = get_user( $club->match_secretary->id );
             if ( $user ) {
+                $club_repository      = new Club_Repository();
                 $club_role_repository = new Club_Role_Repository();
-                $club_service         = new Club_Management_Service( $club_role_repository );
+                $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
                 $club_role            = $club_service->set_club_role( $this->id, 1, $user->ID );
                 if ( $club_role ) {
                     $updates = true;

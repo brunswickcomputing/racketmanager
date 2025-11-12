@@ -3,14 +3,17 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Club_Role;
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
 class Club_Management_Service {
     private Club_Role_Repository $club_role_repository;
+    private Club_Repository $club_repository;
 
-    public function __construct( Club_Role_Repository $club_role_repository ) {
+    public function __construct( Club_Repository $club_repository, Club_Role_Repository $club_role_repository ) {
+        $this->club_repository      = $club_repository;
         $this->club_role_repository = $club_role_repository;
     }
 
@@ -43,7 +46,7 @@ class Club_Management_Service {
     }
 
     /**
-     * Function to add role for a club
+     * Function to add a role for a club
      *
      * @param int $club_id
      * @param int $role_id

@@ -2,88 +2,120 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\Club;
 use Racketmanager\Util\Util;
 use wpdb;
 
-class Club_Role_Repository {
+class Club_Repository {
     private wpdb $wpdb;
     private string $table_name;
 
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
-        $this->table_name = $this->wpdb->prefix . 'racketmanager_club_roles';
+        $this->table_name = $this->wpdb->prefix . 'racketmanager_clubs';
     }
 
     /**
-     * Inserts a new club role into the database.
-     * The save action is explicit, not in the Club Role constructor.
-     * @param Club_Role $club_role The club role object to save.
+     * Inserts a new club into the database.
+     * The save action is explicit, not in the Club constructor.
+     * @param Club $club The club object to save.
      */
-    public function save( Club_Role $club_role ): void {
-        if ( $club_role->get_id() === null ) {
+    public function save( Club $club ): void {
+        //`id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`
+        if ( $club->get_id() === null ) {
             $this->wpdb->insert(
                 $this->table_name,
                 array(
-                    'club_id' => $club_role->get_club_id(),
-                    'role_id' => $club_role->get_role_id(),
-                    'user_id' => $club_role->get_user_id(),
+                    'name' => $club->get_name(),
+                    'website' => $club->get_website(),
+                    'type' => $club->get_type(),
+                    'address' => $club->get_address(),
+                    'longitude' => $club->get_longitude(),
+                    'latitude' => $club->get_latitude(),
+                    'contactno' => $club->get_contact_no(),
+                    'founded' => $club->get_founded(),
+                    'facilities' => $club->get_facilities(),
+                    'shortcode' => $club->get_shortcode(),
                 ),
                 array(
-                    '%d', // Format for club_id (integer)
-                    '%d', // Format for role_id (integer)
-                    '%d', // Format for user_id (integer)
+                    '%s', // Format for name (string)
+                    '%s', // Format for website (string)
+                    '%s', // Format for type (string)
+                    '%s', // Format for address (string)
+                    '%s', // Format for longitude (string)
+                    '%s', // Format for latitude (string)
+                    '%s', // Format for contactno (string)
+                    '%s', // Format for founded (string)
+                    '%s', // Format for facilities (string)
+                    '%s', // Format for shortcode (string)
                 )
             );
-            $club_role->set_id( $this->wpdb->insert_id );
+            $club->set_id( $this->wpdb->insert_id );
         } else {
             // UPDATE: Use wpdb->update with the prepare logic built-in
             $this->wpdb->update(
                 $this->table_name,
-                array('user_id' => $club_role->get_user_id() ), // Data to update
-                array('id' => $club_role->get_id() ),            // Where clause
-                array('%d'),                                  // Data format
+                array( 'name' => $club->get_name(),
+                       'website' => $club->get_website(),
+                       'type' => $club->get_type(),
+                       'address' => $club->get_address(),
+                       'longitude' => $club->get_longitude(),
+                       'latitude' => $club->get_latitude(),
+                       'contactno' => $club->get_contact_no(),
+                       'founded' => $club->get_founded(),
+                       'facilities' => $club->get_facilities(),
+                       'shortcode' => $club->get_shortcode()
+                    ), // Data to update
+                array('id' => $club->get_id() ),            // Where clause
+                array('%s'),                                  // Data format
                 array('%d')                                   // Where format
             );
         }
-        wp_cache_flush_group( 'club-roles' );
-
-        // Optional: Update the user object with the new ID
-        // if ($user->getId() === null && $this->wpdb->insert_id) {
-        //     // This requires the ID property to be mutable or passed back
-        // }
+        wp_cache_flush_group( 'clubs' );
     }
 
     /**
-     * Retrieves an existing club role from the database by ID.
+     * Retrieves an existing club from the database by ID.
      *
-     * @param int $id The user ID.
+     * @param int|string $id The user ID.
+     * @param string $search_term
      *
-     * @return Club_Role|null The user object or null if not found.
+     * @return Club|null The user object or null if not found.
      */
-    public function find( int $id ): ?Club_Role {
-        $club_role_data = wp_cache_get( $id, 'club-roles' );
-        if ( ! $club_role_data ) {
+    public function find( int|string $id, string $search_term = 'id' ): ?Club {
+        $search = match ($search_term) {
+            'name'      => $this->wpdb->prepare(
+                '`name` = %s',
+                $id
+            ),
+            'shortcode' => $this->wpdb->prepare(
+                '`shortcode` = %s',
+                $id
+            ),
+            default     => $this->wpdb->prepare(
+                '`id` = %d',
+                $id
+            ),
+        };
+        $club_data = wp_cache_get( $id, 'clubs' );
+        if ( ! $club_data ) {
 
             // Prepare the query safely using prepare() to prevent SQL injection
-            $query = $this->wpdb->prepare(
-                "SELECT `id`, `user_id`, `club_id`, `role_id` FROM $this->table_name WHERE `id` = %d LIMIT 1",
-                $id
-            );
+            $query = "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name WHERE " . $search . " LIMIT 1";
 
-            $club_role_data = $this->wpdb->get_row( $query ); // Get a single row as an object
-            if ( $club_role_data ) {
-                wp_cache_set( $id, $club_role_data, 'club-roles' );
+            $club_data = $this->wpdb->get_row( $query ); // Get a single row as an object
+            if ( $club_data ) {
+                wp_cache_set( $id, $club_data, 'clubs' );
             }
         }
 
-        if ( $club_role_data ) {
+        if ( $club_data ) {
             // Instantiate and return a new User object with the fetched data
-            return new Club_Role( $club_role_data );
+            return new Club( $club_data );
         }
 
-        return null; // Club role not found
+        return null; // Club not found
     }
 
     /**
@@ -93,6 +125,7 @@ class Club_Role_Repository {
      *
      * @return Club_Role|null The user object or null if not found.
      */
+    /**
     public function search( array $args = array() ): ?array {
         $defaults   = array(
             'role'  => false,
@@ -145,9 +178,9 @@ class Club_Role_Repository {
         }
         return $club_roles;
     }
-
+**/
     /**
-     * Delete club roless from the database.
+     * Delete club from the database.
      *
      * @param array $args
      *
@@ -155,29 +188,14 @@ class Club_Role_Repository {
      */
     public function delete( array $args = array() ): bool {
         $defaults   = array(
-            'role'    => false,
-            'user'    => false,
             'club'    => false,
-            'role_id' => false,
         );
         $args    = array_merge( $defaults, $args );
-        $role    = $args['role'];
-        $user    = $args['user'];
         $club    = $args['club'];
-        $role_id = $args['role_id'];
 
         $search_terms = array();
-        if ( $role ) {
-            $search_terms[] = $this->wpdb->prepare( '`role_id` = %d', intval( $role ) );
-        }
-        if ( $user ) {
-            $search_terms[] = $this->wpdb->prepare( '`user_id` = %d', intval( $user ) );
-        }
         if ( $club ) {
-            $search_terms[] = $this->wpdb->prepare( '`club_id` = %d', intval( $club ) );
-        }
-        if ( $role_id ) {
-            $search_terms[] = $this->wpdb->prepare( '`id` = %d', intval( $role_id ) );
+            $search_terms[] = $this->wpdb->prepare( '`id` = %d', intval( $club ) );
         }
         if ( ! empty( $search_terms ) ) {
             $search = Util::search_string( $search_terms, true );
@@ -186,7 +204,7 @@ class Club_Role_Repository {
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $sql
             ); // db call OK.
-            wp_cache_flush_group( 'club-roles' );
+            wp_cache_flush_group( 'clubs' );
             return $result !== false && $result > 0;
         } else {
             return false;

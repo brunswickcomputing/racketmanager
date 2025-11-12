@@ -10,6 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Club;
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Services\Validator\Validator;
@@ -460,8 +461,9 @@ class Admin_Club extends Admin_Display {
             $this->show_message();
             return;
         }
+        $club_repository      = new Club_Repository();
         $club_role_repository = new Club_Role_Repository();
-        $club_service         = new Club_Management_Service( $club_role_repository );
+        $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
         $club                 = get_club( $club_id );
         if ( isset( $_POST['addRole'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-club-role' );

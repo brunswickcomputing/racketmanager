@@ -88,6 +88,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Public\\Shortcodes_Message' => __DIR__ . '/../..' . '/src/php/Public/Shortcodes_Message.php',
         'Racketmanager\\Public\\Shortcodes_Tournament' => __DIR__ . '/../..' . '/src/php/Public/Shortcodes_Tournament.php',
         'Racketmanager\\RacketManager' => __DIR__ . '/../..' . '/src/php/RacketManager.php',
+        'Racketmanager\\Repositories\\Club_Repository' => __DIR__ . '/../..' . '/src/php/Repositories/Club_Repository.php',
         'Racketmanager\\Repositories\\Club_Role_Repository' => __DIR__ . '/../..' . '/src/php/Repositories/Club_Role_Repository.php',
         'Racketmanager\\Rest\\Rest_Resources' => __DIR__ . '/../..' . '/src/php/Rest/Rest_Resources.php',
         'Racketmanager\\Rest\\Rest_Routes' => __DIR__ . '/../..' . '/src/php/Rest/Rest_Routes.php',

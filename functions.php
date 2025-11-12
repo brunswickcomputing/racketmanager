@@ -29,6 +29,7 @@ use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Domain\User;
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Services\Exporter;
 
@@ -186,19 +187,6 @@ function wp_get_current_url(): ?string {
  *
  * @return Club|null club|null
  */
-// Ensure the Club class is available even if Composer autoload hasn't been loaded yet.
-if ( !\class_exists('Racketmanager\\Domain\\Club', false) ) {
-    $autoload = \defined('RACKETMANAGER_PATH') ? RACKETMANAGER_PATH . 'vendor/autoload.php' : null;
-    if ( $autoload && \file_exists( $autoload ) ) {
-        require_once $autoload;
-    }
-}
-if ( !\class_exists('Racketmanager\\Domain\\Club', false) ) {
-    // Load PSR-4 bridge which will pull in the implementation and alias legacy name.
-    if ( \defined('RACKETMANAGER_PATH') ) {
-        require_once RACKETMANAGER_PATH . 'src/php/Domain/Club.php';
-    }
-}
 function get_club( object|int|string|null $club = null, string $search_term = 'id' ): Club|null {
     if ( empty( $club ) && isset( $GLOBALS['club'] ) ) {
         $club = $GLOBALS['club'];
@@ -208,7 +196,8 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
     } elseif ( is_object( $club ) ) {
         $_club = new Club( $club );
     } else {
-        $_club = Club::get_instance( $club, $search_term );
+        $club_repository = new Club_Repository();
+        $_club           = $club_repository->find( $club, $search_term );
     }
     if ( ! $_club ) {
         return null;
@@ -761,7 +750,7 @@ function get_club_role( object|int|null $club_role = null ): ?Club_Role {
  * Get season object
  *
  * @param int|null $season season ID or season object. Defaults to global $season.
- * @return Racketmanager_Season|null season|null
+ * @return Season|null season|null
  */
 function get_season( ?int $season = null ): Season|null {
     if ( empty( $season ) && isset( $GLOBALS['season'] ) ) {

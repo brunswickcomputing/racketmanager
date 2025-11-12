@@ -13,12 +13,25 @@ namespace Racketmanager\Services;
  */
 class Rewrites {
     protected static ? Rewrites $instance = null;
+    private string $competition_event;
+    private string $competition_event_season;
+    private string $competition_event_season_player;
+    private string $competition_event_season_player_tab;
+    private string $competition_event_season_team;
+    private string $competition_event_season_team_tab;
+
     /**
      * Constructor
      *
      * @return void
      */
     public function __construct() {
+        $this->competition_event = 'index.php?pagename=competition%2Fevent&event=$matches[1]';
+        $this->competition_event_season = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]';
+        $this->competition_event_season_player = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]';
+        $this->competition_event_season_player_tab = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players';
+        $this->competition_event_season_team = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]';
+        $this->competition_event_season_team_tab = 'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams';
         $this->racketmanager_rewrites();
         self::$instance = $this;
     }
@@ -623,13 +636,13 @@ class Rewrites {
         // league event - season.
         add_rewrite_rule(
             'leagues/(.+?)/([0-9]{4})/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]',
+            $this->competition_event_season,
             'top'
         );
         // league event - round.
         add_rewrite_rule(
             'leagues/(.+?)/round-([0-9]{1,2,3})/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]',
+            $this->competition_event_season,
             'top'
         );
         // league event - season - club.
@@ -647,25 +660,25 @@ class Rewrites {
         // league event - season - team.
         add_rewrite_rule(
             'leagues/(.+?)/([0-9]{4})/team/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]',
+            $this->competition_event_season_team,
             'top'
         );
         // league event - season - teams.
         add_rewrite_rule(
             'leagues/(.+?)/([0-9]{4})/teams/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams',
+            $this->competition_event_season_team_tab,
             'top'
         );
         // league event - season - player.
         add_rewrite_rule(
             'leagues/(.+?)/([0-9]{4})/player/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]',
+            $this->competition_event_season_player,
             'top'
         );
         // league event - season - players.
         add_rewrite_rule(
             'leagues/(.+?)/([0-9]{4})/players/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+            $this->competition_event_season_player_tab,
             'top'
         );
         // league event - season - standings.
@@ -677,7 +690,7 @@ class Rewrites {
         // league event.
         add_rewrite_rule(
             'leagues/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]',
+            $this->competition_event,
             'top'
         );
     }
@@ -691,37 +704,37 @@ class Rewrites {
         // cup - season - teams.
         add_rewrite_rule(
             'cup/(.+?)/([0-9]{4})/teams/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams',
+            $this->competition_event_season_team_tab,
             'top'
         );
         // cup - season - team.
         add_rewrite_rule(
             'cup/(.+?)/([0-9]{4})/team/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]',
+            $this->competition_event_season_team,
             'top'
         );
         // cup - season - player.
         add_rewrite_rule(
             'cup/(.+?)/([0-9]{4})/player/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]',
+            $this->competition_event_season_player,
             'top'
         );
         // cup - season - players.
         add_rewrite_rule(
             'cup/(.+?)/([0-9]{4})/players/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+            $this->competition_event_season_player_tab,
             'top'
         );
         // cup - season.
         add_rewrite_rule(
             'cup/(.+?)/([0-9]{4})?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]',
+            $this->competition_event_season,
             'top'
         );
         // cup.
         add_rewrite_rule(
             'cup/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]',
+            $this->competition_event,
             'top'
         );
     }
@@ -734,13 +747,13 @@ class Rewrites {
         // cup event - season.
         add_rewrite_rule(
             'cups/(.+?)/([0-9]{4})/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]',
+            $this->competition_event_season,
             'top'
         );
         // cup event - round.
         add_rewrite_rule(
             'cups/(.+?)/round-([0-9]{1,2,3})/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]',
+            $this->competition_event_season,
             'top'
         );
         // cup event - season - club.
@@ -758,25 +771,25 @@ class Rewrites {
         // cup event - season - team.
         add_rewrite_rule(
             'cups/(.+?)/([0-9]{4})/team/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&team=$matches[3]',
+            $this->competition_event_season_team,
             'top'
         );
         // cup event - season - player.
         add_rewrite_rule(
             'cups/(.+?)/([0-9]{4})/player/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&player_id=$matches[3]',
+            $this->competition_event_season_player,
             'top'
         );
         // cup event - season - players.
         add_rewrite_rule(
             'cups/(.+?)/([0-9]{4})/players/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=players',
+            $this->competition_event_season_player_tab,
             'top'
         );
         // cup event - season - teams.
         add_rewrite_rule(
             'cups/(.+?)/([0-9]{4})/teams/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]&season=$matches[2]&tab=teams',
+            $this->competition_event_season_team_tab,
             'top'
         );
         // cup event - season - matches.
@@ -794,7 +807,7 @@ class Rewrites {
         // cup event.
         add_rewrite_rule(
             'cups/(.+?)/?$',
-            'index.php?pagename=competition%2Fevent&event=$matches[1]',
+            $this->competition_event,
             'top'
         );
     }

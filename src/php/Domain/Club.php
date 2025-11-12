@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -236,6 +238,7 @@ final class Club {
      * @var array
      */
     public array $roles;
+    private ?Club_Role_Repository $club_role_repository = null;
 
     /**
      * Retrieve club instance

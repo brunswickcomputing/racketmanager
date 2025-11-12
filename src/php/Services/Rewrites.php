@@ -55,90 +55,7 @@ class Rewrites {
             'index.php?pagename=competitions&type=tournament',
             'top'
         );
-        // tournament entry form - name - payment complete.
-        add_rewrite_rule(
-            'entry-form/(.+?)-tournament/payment-complete/?$',
-            'index.php?pagename=competition%2Fentry%2Fpayment-complete&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
-            'top'
-        );
-        // tournament entry form - name - payment.
-        add_rewrite_rule(
-            'entry-form/(.+?)-tournament/payment/?$',
-            'index.php?pagename=competition%2Fentry%2Fpayment&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
-            'top'
-        );
-        // tournament entry form - name - player.
-        add_rewrite_rule(
-            'entry-form/(.+?)-tournament/player/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&tournament=$matches[1]&player_id=$matches[2]&competition_type=tournament',
-            'top'
-        );
-        // tournament entry form - name - club.
-        add_rewrite_rule(
-            'entry-form/(.+?)-tournament/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
-            'top'
-        );
-        // tournament entry form - name.
-        add_rewrite_rule(
-            'entry-form/(.+?)-tournament/?$',
-            'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament',
-            'top'
-        );
-        // entry form - competition - season - club.
-        add_rewrite_rule(
-            'entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
-            'top'
-        );
-        // entry form - competition - season.
-        add_rewrite_rule(
-            'entry-form/(.+?)/([0-9]{4})/?$',
-            'index.php?pagename=competition%2Fentry&season=$matches[2]&competition_name=$matches[1]',
-            'top'
-        );
-        // entry form - competition - club.
-        add_rewrite_rule(
-            'entry-form/(.+?)/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&club_name=$matches[2]&competition_name=$matches[1]',
-            'top'
-        );
-        // cup entry form - type - season - club.
-        add_rewrite_rule(
-            'cup/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=cup',
-            'top'
-        );
-        // league entry form - competition - season - club.
-        add_rewrite_rule(
-            'league/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=league',
-            'top'
-        );
-        // tournament entry form - name - player.
-        add_rewrite_rule(
-            'tournament/entry-form/(.+?)/player/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&player_id=$matches[2]&competition_type=tournament',
-            'top'
-        );
-        // tournament entry form - name - club.
-        add_rewrite_rule(
-            'tournament/entry-form/(.+?)/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&club=$matches[2]&competition_type=tournament',
-            'top'
-        );
-        // tournament entry form - name.
-        add_rewrite_rule(
-            'tournaments/entry-form/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
-            'top'
-        );
-        // tournament entry form - name.
-        add_rewrite_rule(
-            'tournament/entry-form/(.+?)/?$',
-            'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
-            'top'
-        );
+        $this->entry_rewrites();
         // league news info.
         add_rewrite_rule(
             'league-news/?$',
@@ -287,6 +204,99 @@ class Rewrites {
             'top'
         );
     }
+
+    /**
+     * Rewrites for entry forms
+     *
+     * @return void
+     */
+    private function entry_rewrites(): void {
+        // tournament entry form - name - payment complete.
+        add_rewrite_rule(
+            'entry-form/(.+?)-tournament/payment-complete/?$',
+            'index.php?pagename=competition%2Fentry%2Fpayment-complete&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
+            'top'
+        );
+        // tournament entry form - name - payment.
+        add_rewrite_rule(
+            'entry-form/(.+?)-tournament/payment/?$',
+            'index.php?pagename=competition%2Fentry%2Fpayment&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
+            'top'
+        );
+        // tournament entry form - name - player.
+        add_rewrite_rule(
+            'entry-form/(.+?)-tournament/player/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&tournament=$matches[1]&player_id=$matches[2]&competition_type=tournament',
+            'top'
+        );
+        // tournament entry form - name - club.
+        add_rewrite_rule(
+            'entry-form/(.+?)-tournament/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament&club_name=$matches[2]',
+            'top'
+        );
+        // tournament entry form - name.
+        add_rewrite_rule(
+            'entry-form/(.+?)-tournament/?$',
+            'index.php?pagename=competition%2Fentry&tournament=$matches[1]&competition_type=tournament',
+            'top'
+        );
+        // entry form - competition - season - club.
+        add_rewrite_rule(
+            'entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]',
+            'top'
+        );
+        // entry form - competition - season.
+        add_rewrite_rule(
+            'entry-form/(.+?)/([0-9]{4})/?$',
+            'index.php?pagename=competition%2Fentry&season=$matches[2]&competition_name=$matches[1]',
+            'top'
+        );
+        // entry form - competition - club.
+        add_rewrite_rule(
+            'entry-form/(.+?)/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&club_name=$matches[2]&competition_name=$matches[1]',
+            'top'
+        );
+        // cup entry form - type - season - club.
+        add_rewrite_rule(
+            'cup/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=cup',
+            'top'
+        );
+        // league entry form - competition - season - club.
+        add_rewrite_rule(
+            'league/entry-form/(.+?)/([0-9]{4})/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&club_name=$matches[3]&season=$matches[2]&competition_name=$matches[1]&competition_type=league',
+            'top'
+        );
+        // tournament entry form - name - player.
+        add_rewrite_rule(
+            'tournament/entry-form/(.+?)/player/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&player_id=$matches[2]&competition_type=tournament',
+            'top'
+        );
+        // tournament entry form - name - club.
+        add_rewrite_rule(
+            'tournament/entry-form/(.+?)/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&competition_name=$matches[1]&club=$matches[2]&competition_type=tournament',
+            'top'
+        );
+        // tournament entry form - name.
+        add_rewrite_rule(
+            'tournaments/entry-form/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
+            'top'
+        );
+        // tournament entry form - name.
+        add_rewrite_rule(
+            'tournament/entry-form/(.+?)/?$',
+            'index.php?pagename=competition%2Fentry&&competition_name=$matches[1]&competition_type=tournament',
+            'top'
+        );
+
+    }
     /**
      * Rewrite competition urls function
      *
@@ -325,6 +335,67 @@ class Rewrites {
             'index.php?pagename=competition%2Flatest-results&competition_type=tournament',
             'top'
         );
+        $this->rewrite_cup_competitions();
+        // league - season - overview.
+        add_rewrite_rule(
+            '(.+?)-leagues/([0-9]{4})/overview/?$',
+            'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&tab=overview',
+            'top'
+        );
+        // leagues - season.
+        add_rewrite_rule(
+            '(.+?)-leagues/([0-9]{4})?$',
+            'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-leagues',
+            'top'
+        );
+        // leagues - season - events.
+        add_rewrite_rule(
+            '(.+?)-leagues/([0-9]{4})/events/?$',
+            'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&tab=events',
+            'top'
+        );
+        // competition - season - winners.
+        add_rewrite_rule(
+            '(.+?)-leagues/([0-9]{4})/winners?$',
+            'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-leagues&tab=winners',
+            'top'
+        );
+        add_rewrite_rule(
+            '(.+?)-cups/([0-9]{4})/winners?$',
+            'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-cups&tab=winners',
+            'top'
+        );
+        // competition - winners.
+        add_rewrite_rule(
+            '(.+?)-leagues/winners?$',
+            'index.php?pagename=competition&competition=$matches[1]-leagues&tab=winners',
+            'top'
+        );
+        add_rewrite_rule(
+            '(.+?)-cups/winners?$',
+            'index.php?pagename=competition&competition=$matches[1]-cups&tab=winners',
+            'top'
+        );
+        // competition.
+        add_rewrite_rule(
+            '(.+?)-leagues/?$',
+            'index.php?pagename=competition&competition=$matches[1]-leagues',
+            'top'
+        );
+        // cup - season (winners).
+        add_rewrite_rule(
+            'leagues/(.+?)/winners/([0-9]{4})?$',
+            'index.php?pagename=leagues%2F$matches[1]%2Fwinners&season=$matches[2]',
+            'top'
+        );
+    }
+
+    /**
+     * Rewrites for cup competitions
+     *
+     * @return void
+     */
+    private function rewrite_cup_competitions(): void  {
         // cup - season - player.
         add_rewrite_rule(
             '(.+?)-cups/([0-9]{4})/player/(.+?)/?$',
@@ -419,58 +490,6 @@ class Rewrites {
         add_rewrite_rule(
             '(.+?)-leagues/([0-9]{4})/club/(.+?)/?$',
             'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&club_name=$matches[3]',
-            'top'
-        );
-        // league - season - overview.
-        add_rewrite_rule(
-            '(.+?)-leagues/([0-9]{4})/overview/?$',
-            'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&tab=overview',
-            'top'
-        );
-        // leagues - season.
-        add_rewrite_rule(
-            '(.+?)-leagues/([0-9]{4})?$',
-            'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-leagues',
-            'top'
-        );
-        // leagues - season - events.
-        add_rewrite_rule(
-            '(.+?)-leagues/([0-9]{4})/events/?$',
-            'index.php?pagename=competition&competition=$matches[1]-leagues&season=$matches[2]&tab=events',
-            'top'
-        );
-        // competition - season - winners.
-        add_rewrite_rule(
-            '(.+?)-leagues/([0-9]{4})/winners?$',
-            'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-leagues&tab=winners',
-            'top'
-        );
-        add_rewrite_rule(
-            '(.+?)-cups/([0-9]{4})/winners?$',
-            'index.php?pagename=competition&season=$matches[2]&competition=$matches[1]-cups&tab=winners',
-            'top'
-        );
-        // competition - winners.
-        add_rewrite_rule(
-            '(.+?)-leagues/winners?$',
-            'index.php?pagename=competition&competition=$matches[1]-leagues&tab=winners',
-            'top'
-        );
-        add_rewrite_rule(
-            '(.+?)-cups/winners?$',
-            'index.php?pagename=competition&competition=$matches[1]-cups&tab=winners',
-            'top'
-        );
-        // competition.
-        add_rewrite_rule(
-            '(.+?)-leagues/?$',
-            'index.php?pagename=competition&competition=$matches[1]-leagues',
-            'top'
-        );
-        // cup - season (winners).
-        add_rewrite_rule(
-            'leagues/(.+?)/winners/([0-9]{4})?$',
-            'index.php?pagename=leagues%2F$matches[1]%2Fwinners&season=$matches[2]',
             'top'
         );
     }

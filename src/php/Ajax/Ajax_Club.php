@@ -85,8 +85,8 @@ class Ajax_Club extends Ajax {
             $club_updated->website         = $website;
             $club_updated->address         = $address;
             $club_updated->match_secretary = $match_secretary;
-            $updates                       = $club->update( $club_updated );
-            if ( $updates ) {
+            $club_updated                  = $this->club_service->update_club( $club->id, $club_updated );
+            if ( $club_updated ) {
                 $return['msg'] = __( 'Club updated', 'racketmanager' );
                 $return['status'] = 'success';
             } else {

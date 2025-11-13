@@ -331,157 +331,68 @@ final class Club {
         $this->id = $insert_id;
     }
     /**
-     * Create new club
-     */
-    private function add(): void {
-        global $wpdb;
-
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_clubs (`name`, `type`, `shortcode`, `contactno`, `website`, `founded`, `facilities`, `address`, `latitude`, `longitude`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s )",
-                $this->name,
-                $this->type,
-                $this->shortcode,
-                $this->contactno,
-                $this->website,
-                $this->founded,
-                $this->facilities,
-                $this->address,
-                $this->latitude,
-                $this->longitude
-            )
-        );
-        $this->id = $wpdb->insert_id;
-    }
-
-    /**
-     * Update club
+     * Set name
      *
-     * @param object $club updated club information.
+     * @param string $name
      */
-    public function update( object $club ): bool {
-        global $wpdb;
-        $updates = false;
-        if ( $this->name !== $club->name ) {
-            $this->name = $club->name;
-            $updates    = true;
-        }
-        if ( $this->shortcode !== $club->shortcode ) {
-            $this->update_club_teams( $club->shortcode );
-            $this->shortcode = $club->shortcode;
-            $updates         = true;
-        }
-        if ( $this->type !== $club->type ) {
-            $this->type = $club->type;
-            $updates    = true;
-        }
-        if ( $this->contactno !== $club->contactno ) {
-            $this->contactno = $club->contactno;
-            $updates = true;
-        }
-        if ( $this->website !== $club->website ) {
-            $this->website = $club->website;
-            $updates = true;
-        }
-        if ( $this->founded !== $club->founded ) {
-            $this->founded = $club->founded;
-            $updates = true;
-        }
-        if ( $this->facilities !== $club->facilities ) {
-            $this->facilities = $club->facilities;
-            $updates = true;
-        }
-        if ( $this->address !== $club->address ) {
-            $this->address = $club->address;
-            $updates = true;
-        }
-        if ( $this->latitude !== $club->latitude ) {
-            $this->latitude = $club->latitude;
-            $updates = true;
-        }
-        if ( $this->longitude !== $club->longitude ) {
-            $this->longitude = $club->longitude;
-            $updates = true;
-        }
-        if ( $this->shortcode !== $club->shortcode ) {
-            $updates = true;
-        }
-        if ( $updates ) {
-            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_clubs SET `name` = %s, `type` = %s, `shortcode` = %s, `contactno` = %s, `website` = %s, `founded`= %s, `facilities` = %s, `address` = %s, `latitude` = %s, `longitude` = %s WHERE `id` = %d",
-                    $club->name,
-                    $club->type,
-                    $club->shortcode,
-                    $club->contactno,
-                    $club->website,
-                    $club->founded,
-                    $club->facilities,
-                    $club->address,
-                    $club->latitude,
-                    $club->longitude,
-                    $this->id
-                )
-            );
-        }
-        if ( empty( $this->match_secretary->id ) || $this->match_secretary->id !== $club->match_secretary->id ) {
-            $user = get_user( $club->match_secretary->id );
-            if ( $user ) {
-                $club_repository      = new Club_Repository();
-                $club_role_repository = new Club_Role_Repository();
-                $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
-                $club_role            = $club_service->set_club_role( $this->id, 1, $user->ID );
-                if ( $club_role ) {
-                    $updates = true;
-                }
-            }
-        } else {
-            $user = get_user( $this->match_secretary->id );
-        }
-        if ( $user->contactno !== $club->match_secretary->contactno || $user->email !== $club->match_secretary->email ) {
-            $user->update_contact( $club->match_secretary->contactno, $club->match_secretary->email );
-            $updates = true;
-        }
-        $this->match_secretary = $user;
-        wp_cache_set( $this->id, $this, 'clubs' );
-        return $updates;
+    public function set_name( string $name ): void {
+        $this->name = $name;
     }
-
     /**
-     * Function to update club team name where the club shortcode has changed
+     * Set name website
+     *
+     * @param string $website
+     */
+    public function set_website( string $website ): void {
+        $this->website = $website;
+    }
+    /**
+     * Set type
+     *
+     * @param string $type
+     */
+    public function set_type( string $type ): void {
+        $this->type = $type;
+    }
+    /**
+     * Set address
+     *
+     * @param string $address
+     */
+    public function set_address( string $address ): void {
+        $this->address = $address;
+    }
+    /**
+     * Set contact no
+     *
+     * @param string $contactno
+     */
+    public function set_contact_no( string $contactno ): void {
+        $this->contactno = $contactno;
+    }
+    /**
+     * Set founded
+     *
+     * @param string $founded
+     */
+    public function set_founded( string $founded ): void {
+        $this->founded = $founded;
+    }
+    /**
+     * Set facilities
+     *
+     * @param string $facilities
+     */
+    public function set_facilities( string $facilities ): void {
+        $this->facilities = $facilities;
+    }
+    /**
+     * Set shortcode
      *
      * @param string $shortcode
-     *
-     * @return void
      */
-    private function update_club_teams( string $shortcode ): void {
-        $teams = $this->get_teams();
-        foreach ( $teams as $team ) {
-            $team      = get_team( $team->id );
-            $team_ref  = substr( $team->title, strlen( $this->shortcode ) + 1, strlen( $team->title ) );
-            $new_title = $shortcode . ' ' . $team_ref;
-            $team->update_title( $new_title );
-        }
-
-    }
-    /**
-     * Delete Club
-     */
-    public function delete(): void {
-        global $wpdb;
-        $this->club_role_repository->delete( array( 'club' => $this->id ) );
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d",
-                $this->id
-            )
-        );
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_clubs WHERE `id` = %d",
-                $this->id
-            )
-        );
+    public function set_shortcode( string $shortcode ): void {
+        $this->shortcode = $shortcode;
     }
 
     /**

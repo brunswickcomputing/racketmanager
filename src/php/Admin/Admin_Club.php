@@ -192,12 +192,12 @@ class Admin_Club extends Admin_Display {
                 $validator    = $validator->telephone( $club_updated->match_secretary->contactno );
                 $validator    = $validator->email( $club_updated->match_secretary->email, $club_updated->match_secretary->id );
                 if ( empty( $validator->error ) ) {
-                    $updates = $club->update( $club_updated );
-                    if ( $updates ) {
-                        $club = get_club( $club_id );
+                    $club_updated         = $this->club_service->update_club( $club->id, $club_updated );
+                    if ( $club_updated ) {
                         $this->set_message( __( 'Club updated', 'racketmanager' ) );
+                        $club = $club_updated;
                     } else {
-                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                        $this->set_message( __( 'Club details unchanged', 'racketmanager' ), 'warning' );
                     }
                 } else {
                     $club = $club_updated;

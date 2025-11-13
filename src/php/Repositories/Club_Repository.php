@@ -27,14 +27,14 @@ class Club_Repository {
             $this->wpdb->insert(
                 $this->table_name,
                 array(
-                    'name' => $club->get_name(),
-                    'website' => $club->get_website(),
-                    'type' => $club->get_type(),
-                    'address' => $club->get_address(),
-                    'contactno' => $club->get_contact_no(),
-                    'founded' => $club->get_founded(),
+                    'name'       => $club->get_name(),
+                    'website'    => $club->get_website(),
+                    'type'       => $club->get_type(),
+                    'address'    => $club->get_address(),
+                    'contactno'  => $club->get_contact_no(),
+                    'founded'    => $club->get_founded(),
                     'facilities' => $club->get_facilities(),
-                    'shortcode' => $club->get_shortcode(),
+                    'shortcode'  => $club->get_shortcode(),
                 ),
                 array(
                     '%s', // Format for name (string)
@@ -52,14 +52,14 @@ class Club_Repository {
             // UPDATE: Use wpdb->update with the prepare logic built-in
             $this->wpdb->update(
                 $this->table_name,
-                array( 'name' => $club->get_name(),
-                       'website' => $club->get_website(),
-                       'type' => $club->get_type(),
-                       'address' => $club->get_address(),
-                       'contactno' => $club->get_contact_no(),
-                       'founded' => $club->get_founded(),
+                array( 'name'       => $club->get_name(),
+                       'website'    => $club->get_website(),
+                       'type'       => $club->get_type(),
+                       'address'    => $club->get_address(),
+                       'contactno'  => $club->get_contact_no(),
+                       'founded'    => $club->get_founded(),
                        'facilities' => $club->get_facilities(),
-                       'shortcode' => $club->get_shortcode()
+                       'shortcode'  => $club->get_shortcode()
                     ), // Data to update
                 array('id' => $club->get_id() ),            // Where clause
                 array( '%s',

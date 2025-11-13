@@ -97,6 +97,53 @@ class Upgrade {
         $version = '10.0.0';
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
+            // Define the parent page details
+            $parent_page_slug    = 'clubs/club';
+            $parent_page_title   = 'Club';
+            $parent_page_content = '[club]';
+
+            // Check if the parent page already exists to prevent duplicates
+            $parent_page = get_page_by_path( $parent_page_slug );
+
+            if ( empty( $parent_page ) ) {
+                // Create the parent page
+                $parent_args = array(
+                    'title'    => __( $parent_page_title, 'racketmanager' ),
+                    'content'  => $parent_page_content,
+                    'status'   => 'publish',
+                    'type'     => 'page',
+                    'name'     => $parent_page_slug,
+                );
+
+                // Insert the parent page into the database and get its ID
+                $parent_page_id = Util::add_racketmanager_page( $parent_page_slug, $parent_args );
+            } else {
+                // Get the existing parent page ID
+                $parent_page_id = $parent_page->ID;
+            }
+
+            // Define and create child page if parent page exists
+            if ( $parent_page_id )  {
+                $child_page_slug = 'roles';
+
+                // Check if the child page already exists
+                $child_page = get_page_by_path($parent_page_slug . '/' . $child_page_slug );
+
+                if ( empty( $child_page ) ) {
+                    // Create the child page and set its parent
+                    $child_args = array(
+                        'title'    => __('Roles', 'racketmanager' ),
+                        'content'  => '[club-roles]',
+                        'status'   => 'publish',
+                        'type'     => 'page',
+                        'name'     => $child_page_slug,
+                        'parent'   => $parent_page_id, // Set the parent ID here
+                    );
+
+                    // Insert the child page
+                    Util::add_racketmanager_page( $child_page_slug, $child_args);
+                }
+            }
             $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `latitude`" );
             $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `longitude`" );
         }

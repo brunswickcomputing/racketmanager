@@ -9,7 +9,7 @@ export function initializeArchiveNavigation() {
 
         globalThis.location = encodeURI(globalThis.location.protocol) + '//' +
             encodeURIComponent(globalThis.location.host) + '/league/' +
-            league.toLowerCase() + '/' + season + '/';
+            encodeURIComponent(league.toLowerCase()) + '/' + encodeURIComponent(season) + '/';
 
         return false;
     });

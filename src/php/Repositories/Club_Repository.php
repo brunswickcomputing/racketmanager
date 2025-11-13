@@ -5,6 +5,7 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\Club;
 use Racketmanager\Util\Util;
 use wpdb;
+use function Racketmanager\get_team;
 
 class Club_Repository {
     private wpdb $wpdb;
@@ -120,6 +121,78 @@ class Club_Repository {
         return null; // Club not found
     }
 
+    /**
+     * Get teams for a club
+     *
+     * @param array $args query arguments.
+     *
+     * @return array|int
+     */
+    public function get_teams( array $args = array() ): array|int {
+        global $wpdb;
+
+        $defaults = array(
+            'club'    => false,
+            'count'   => false,
+            'players' => false,
+            'type'    => false,
+        );
+        $args     = array_merge( $defaults, $args );
+        $club     = $args['club'];
+        $count    = $args['count'];
+        $players  = $args['players'];
+        $type     = $args['type'];
+
+        $search_terms = array();
+        $sql    = " FROM $wpdb->racketmanager_teams WHERE `club_id` = '%d'";
+        $search_terms[] = $club;
+        if ( ! $players ) {
+            $sql .= " AND (`team_type` is null OR `team_type` != 'P')";
+        } else {
+            $sql .= " AND `team_type` = 'P'";
+        }
+        if ( $type ) {
+            if ( 'OS' === $type ) {
+                $sql   .= " AND `type` like '%%%s%%'";
+                $search_terms[] = 'S';
+            } else {
+                $sql   .= " AND `type` = '%s'";
+                $search_terms[] = $type;
+            }
+        }
+        if ( $count ) {
+            $sql = 'SELECT COUNT(*) ' . $sql;
+            return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    $sql,
+                    $search_terms
+                )
+            );
+        }
+        $sql  = 'SELECT `id` ' . $sql . ' ORDER BY `title`';
+        $sql  = $wpdb->prepare(
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $sql,
+            $search_terms
+        );
+
+        $teams = wp_cache_get( md5( $sql ), 'teams' );
+        if ( ! $teams ) {
+            $teams = $wpdb->get_results(
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                $sql
+            ); // db call ok.
+            wp_cache_set( md5( $sql ), $teams, 'teams' );
+        }
+
+        foreach ( $teams as $i => $team ) {
+            $team        = get_team( $team->id );
+            $teams[ $i ] = $team;
+        }
+
+        return $teams;
+    }
     /**
      * Retrieves existing club roles from the database by parameters.
      *

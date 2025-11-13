@@ -242,8 +242,6 @@ class Admin_Club extends Admin_Display {
         $club_updated->founded                       = empty( $_POST['founded'] ) ? null : intval($_POST['founded'] );
         $club_updated->facilities                    = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
         $club_updated->address                       = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
-        $club_updated->latitude                      = isset( $_POST['latitude'] ) ? sanitize_text_field( wp_unslash( $_POST['latitude'] ) ) : null;
-        $club_updated->longitude                     = isset( $_POST['longitude'] ) ? sanitize_text_field( wp_unslash( $_POST['longitude'] ) ) : null;
         return $club_updated;
     }
     /**

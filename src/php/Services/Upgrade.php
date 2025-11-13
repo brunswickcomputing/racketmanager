@@ -93,9 +93,12 @@ class Upgrade {
      * @return void
      */
     private function v10_0_0 ():void {
+        global $wpdb;
         $version = '10.0.0';
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
+            $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `latitude`" );
+            $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `longitude`" );
         }
     }
 

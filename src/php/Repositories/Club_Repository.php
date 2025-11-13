@@ -22,7 +22,7 @@ class Club_Repository {
      * @param Club $club The club object to save.
      */
     public function save( Club $club ): void {
-        //`id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode`
+        //`id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode`
         if ( $club->get_id() === null ) {
             $this->wpdb->insert(
                 $this->table_name,
@@ -31,8 +31,6 @@ class Club_Repository {
                     'website' => $club->get_website(),
                     'type' => $club->get_type(),
                     'address' => $club->get_address(),
-                    'longitude' => $club->get_longitude(),
-                    'latitude' => $club->get_latitude(),
                     'contactno' => $club->get_contact_no(),
                     'founded' => $club->get_founded(),
                     'facilities' => $club->get_facilities(),
@@ -43,8 +41,6 @@ class Club_Repository {
                     '%s', // Format for website (string)
                     '%s', // Format for type (string)
                     '%s', // Format for address (string)
-                    '%s', // Format for longitude (string)
-                    '%s', // Format for latitude (string)
                     '%s', // Format for contactno (string)
                     '%s', // Format for founded (string)
                     '%s', // Format for facilities (string)
@@ -60,16 +56,22 @@ class Club_Repository {
                        'website' => $club->get_website(),
                        'type' => $club->get_type(),
                        'address' => $club->get_address(),
-                       'longitude' => $club->get_longitude(),
-                       'latitude' => $club->get_latitude(),
                        'contactno' => $club->get_contact_no(),
                        'founded' => $club->get_founded(),
                        'facilities' => $club->get_facilities(),
                        'shortcode' => $club->get_shortcode()
                     ), // Data to update
                 array('id' => $club->get_id() ),            // Where clause
-                array('%s'),                                  // Data format
-                array('%d')                                   // Where format
+                array( '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s'
+                ),                                          // Data format
+                array('%d')                                 // Where format
             );
         }
         wp_cache_flush_group( 'clubs' );
@@ -102,7 +104,7 @@ class Club_Repository {
         if ( ! $club_data ) {
 
             // Prepare the query safely using prepare() to prevent SQL injection
-            $query = "SELECT `id`, `name`, `website`, `type`, `address`, `latitude`, `longitude`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name WHERE " . $search . " LIMIT 1";
+            $query = "SELECT `id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name WHERE " . $search . " LIMIT 1";
 
             $club_data = $this->wpdb->get_row( $query ); // Get a single row as an object
             if ( $club_data ) {

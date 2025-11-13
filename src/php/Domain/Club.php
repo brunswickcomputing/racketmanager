@@ -95,18 +95,6 @@ final class Club {
      */
     public string $address;
     /**
-     * Longitude
-     *
-     * @var string
-     */
-    public string $longitude;
-    /**
-     * Latitude
-     *
-     * @var string
-     */
-    public string $latitude;
-    /**
      * Number of players.
      *
      * @var int
@@ -302,22 +290,6 @@ final class Club {
      */
     public function get_address(): ?string{
         return $this->address;
-    }
-    /**
-     * Get longitude
-     *
-     * @return string|null
-     */
-    public function get_longitude(): ?string{
-        return $this->longitude;
-    }
-    /**
-     * Get latitude
-     *
-     * @return string|null
-     */
-    public function get_latitude(): ?string{
-        return $this->latitude;
     }
     /**
      * Get contact no

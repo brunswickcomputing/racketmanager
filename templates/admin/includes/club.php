@@ -210,8 +210,6 @@ namespace Racketmanager;
                         }
                         ?>
                         <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="address" id="address" autocomplete="off" value="<?php echo isset( $club->address ) ? esc_html( $club->address ) : null; ?>" />
-                        <input type="hidden" name="latitude" id="latitude"  value="<?php echo isset( $club->latitude ) ? esc_html( $club->latitude ) : null; ?>" />
-                        <input type="hidden" name="longitude" id="longitude"  value="<?php echo isset( $club->longitude ) ? esc_html( $club->longitude ) : null; ?>" />
                         <label for="address"><?php esc_html_e( 'Address', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {

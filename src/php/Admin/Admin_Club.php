@@ -156,7 +156,7 @@ class Admin_Club extends Admin_Display {
                 $validator = $validator->type( $club->type );
                 $validator = $validator->address( $club->address );
                 if ( empty( $validator->error ) ) {
-                    $club = new Club( $club );
+                    $club = $this->club_service->add_club( $club );
                     $edit = true;
                     ?>
                     <script>

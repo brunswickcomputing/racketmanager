@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
@@ -16,6 +17,12 @@ class Club_Management_Service {
         $this->club_repository      = $club_repository;
         $this->club_role_repository = $club_role_repository;
     }
+    public function add_club( object $club ): Club {
+        $club = new Club( $club );
+        $this->club_repository->save( $club );
+        return $club;
+    }
+
 
     public function reassign_role_user( $club_role_id, $user_id ): ?Club_Role {
         $club_role = $this->club_role_repository->find( $club_role_id );

@@ -239,9 +239,6 @@ final class Club {
                 $this->$key = $value;
             }
 
-            if ( ! isset( $this->id ) ) {
-                $this->add();
-            }
             $this->roles           = $this->get_club_roles( array( 'group' => true ) );
             $this->match_secretary = $this->roles['1'][0]->user ?? new stdClass();
             $this->desc = '';

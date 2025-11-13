@@ -77,6 +77,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Domain\\Tournament' => __DIR__ . '/../..' . '/src/php/Domain/Tournament.php',
         'Racketmanager\\Domain\\Tournament_Entry' => __DIR__ . '/../..' . '/src/php/Domain/Tournament_Entry.php',
         'Racketmanager\\Domain\\User' => __DIR__ . '/../..' . '/src/php/Domain/User.php',
+        'Racketmanager\\Exceptions\\PluginException' => __DIR__ . '/../..' . '/src/php/Exceptions/PluginException.php',
         'Racketmanager\\Public\\Shortcodes' => __DIR__ . '/../..' . '/src/php/Public/Shortcodes.php',
         'Racketmanager\\Public\\Shortcodes_Club' => __DIR__ . '/../..' . '/src/php/Public/Shortcodes_Club.php',
         'Racketmanager\\Public\\Shortcodes_Competition' => __DIR__ . '/../..' . '/src/php/Public/Shortcodes_Competition.php',

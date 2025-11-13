@@ -664,3 +664,17 @@ There is no automatic PHP-side build. The JavaScript bundle is produced on deman
   - It performs: composer install --no-dev -o, npm ci, npm run build:prod, verifies dist/js/racketmanager.js exists, and uploads build artifacts.
 - To trigger:
   - Push to main/master, open a pull request, tag a release like v10.0.0, or run manually via workflow_dispatch.
+
+
+---
+
+### Exceptions
+
+- Location: src/php/Exceptions/
+- Namespace: Racketmanager\\Exceptions\\ (PSR-4 is already configured in composer.json).
+- Base class: Create a minimal base exception, e.g., Racketmanager\\Exceptions\\PluginException extends \\RuntimeException. Use this as the parent for plugin-specific errors.
+- Sub-namespaces: For clarity you may organize exceptions by area, e.g., Exceptions\\Domain, Exceptions\\Services, Exceptions\\Repositories.
+- Usage guidance:
+  - Throw domain-/service-specific exceptions rather than generic Exception.
+  - Catch and translate exceptions at boundaries (AJAX/REST controllers) into appropriate wp_send_json_* responses.
+  - Keep exceptions thin (no heavy logic); include actionable messages and codes where appropriate.

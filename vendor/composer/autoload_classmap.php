@@ -54,6 +54,7 @@ return array(
     'Racketmanager\\Domain\\Tournament' => $baseDir . '/src/php/Domain/Tournament.php',
     'Racketmanager\\Domain\\Tournament_Entry' => $baseDir . '/src/php/Domain/Tournament_Entry.php',
     'Racketmanager\\Domain\\User' => $baseDir . '/src/php/Domain/User.php',
+    'Racketmanager\\Exceptions\\PluginException' => $baseDir . '/src/php/Exceptions/PluginException.php',
     'Racketmanager\\Public\\Shortcodes' => $baseDir . '/src/php/Public/Shortcodes.php',
     'Racketmanager\\Public\\Shortcodes_Club' => $baseDir . '/src/php/Public/Shortcodes_Club.php',
     'Racketmanager\\Public\\Shortcodes_Competition' => $baseDir . '/src/php/Public/Shortcodes_Competition.php',

@@ -53,13 +53,13 @@ export function updateTeam(link) {
       const captainContactNo = jQuery(captainContactNoField).val();
       if (captainContactNo) {
         const teamContactNoField = `#captain-contact-no-${event}-${team}`;
-        jQuery(teamContactNoField).html(captainContactNo);
+        jQuery(teamContactNoField).text(captainContactNo);
       }
       const captainContactEmailField = `#contactemail-${event}-${team}`;
       const captainContactEmail = jQuery(captainContactEmailField).val();
       if (captainContactEmail) {
         const teamContactEmailField = `#captain-contact-email-${event}-${team}`;
-        jQuery(teamContactEmailField).html(captainContactEmail);
+        jQuery(teamContactEmailField).text(captainContactEmail);
       }
 
       jQuery(alertField).addClass('alert--success');

@@ -9,7 +9,7 @@ export function initializeCompetitionNavigation() {
 
         globalThis.location = encodeURI(globalThis.location.protocol) + '//' +
             encodeURIComponent(globalThis.location.host) + '/' +
-            encodeURIComponent(pagename.toLowerCase()) + '/' + season + '/';
+            encodeURIComponent(pagename.toLowerCase()) + '/' + encodeURIComponent(season) + '/';
 
         return false;
     });

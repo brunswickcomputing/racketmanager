@@ -194,70 +194,68 @@ class Club_Repository {
         return $teams;
     }
     /**
-     * Retrieves existing club roles from the database by parameters.
+     * Retrieves existing clubs from the database by parameters
+     * replaces the $racketmanager->get_clubs function.
      *
      * @param array $args search arguments.
      *
-     * @return Club_Role|null The user object or null if not found.
+     * @return array array of clubs.
      */
-    /**
-    public function search( array $args = array() ): ?array {
-        $defaults   = array(
-            'role'  => false,
-            'user'  => false,
-            'club'  => false,
-            'group' => false
+    public function find_all( array $args = array() ): ?array {
+        $defaults = array(
+            'type'    => false,
+            'orderby' => 'asc',
         );
-        $args  = array_merge( $defaults, $args );
-        $role  = $args['role'];
-        $user  = $args['user'];
-        $club  = $args['club'];
-        $group = $args['group'];
+        $args     = array_merge( $defaults, $args );
+        $type     = $args['type'];
+        $orderby  = $args['orderby'];
 
         $search_terms = array();
-        if ( $role ) {
-            $search_terms[] = $this->wpdb->prepare( '`role_id` = %d', intval( $role ) );
+        if ( $type && 'all' !== $type ) {
+            if ( 'current' === $type ) {
+                $search_terms[] = "`type` != 'past'";
+            } else {
+                $search_terms[] = $this->wpdb->prepare( '`type` = %s', $type );
+            }
         }
-        if ( $user ) {
-            $search_terms[] = $this->wpdb->prepare( '`user_id` = %d', intval( $user ) );
+        $search = Util::search_string( $search_terms, true );
+        switch ( $orderby ) {
+            case 'asc':
+                $order = '`name` ASC';
+                break;
+            case 'desc':
+                $order = '`name` DESC';
+                break;
+            case 'rand':
+                $order = 'RAND()';
+                break;
+            case 'menu_order':
+                $order = '`id` ASC';
+                break;
+            default:
+                break;
         }
-        if ( $club ) {
-            $search_terms[] = $this->wpdb->prepare( '`club_id` = %d', intval( $club ) );
-        }
-        if ($group ) {
-            $search_terms[] = "'group' = 'group'";
-        }
-        $search     = Util::search_string( $search_terms, true );
-        $sql        = "SELECT `id` FROM $this->table_name " . $search;
-        $club_roles = wp_cache_get( md5( $sql ), 'club-roles' );
-        if ( ! $club_roles ) {
-            $club_roles = array();
-            $roles      = $this->wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call OK.
-            foreach ( $roles as $club_role_ref ) {
-                $club_role = $this->find( $club_role_ref->id );
-                if ( $club_role ) {
-                    if ( $group ) {
-                        if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
-                            $club_roles[ $club_role->role_id ] = array();
-                        }
-                        $club_roles[ $club_role->role_id ][] = $club_role;
-                    } else {
-                        $club_roles[] = $club_role;
-                    }
+        $order  = empty( $order ) ? null : 'ORDER BY ' . $order;
+        $sql    = "SELECT `id` FROM $this->table_name $search $order";
+        $clubs  = wp_cache_get( md5( $sql ), 'club-roles' );
+        if ( ! $clubs ) {
+            $clubs   = array();
+            $results = $this->wpdb->get_results( $sql );
+            foreach ( $results as $club_ref ) {
+                $club = $this->find( $club_ref->id );
+                if ( $club ) {
+                    $clubs[] = $club;
                 }
             }
-            wp_cache_set( md5( $sql ), $club_roles, 'club-roles' );
+            wp_cache_set( md5( $sql ), $clubs, 'clubs' );
         }
-        return $club_roles;
+        return $clubs;
     }
-**/
+
     /**
      * Delete club from the database.
      *
-     * @param array $args
+     * @param int $club_id
      *
      * @return bool
      */

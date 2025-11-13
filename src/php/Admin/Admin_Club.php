@@ -16,7 +16,6 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;
-use function Racketmanager\get_club_role;
 use function Racketmanager\get_league;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
@@ -456,9 +455,6 @@ class Admin_Club extends Admin_Display {
             $this->show_message();
             return;
         }
-        $club_repository      = new Club_Repository();
-        $club_role_repository = new Club_Role_Repository();
-        $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
         $club                 = get_club( $club_id );
         if ( isset( $_POST['addRole'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-club-role' );
@@ -466,7 +462,7 @@ class Admin_Club extends Admin_Display {
                 $club_id_passed = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
                 $role_id        = isset( $_POST['role_id'] ) ? intval( $_POST['role_id'] ) : null;
                 $user_id        = isset( $_POST['user_id'] ) ? intval( $_POST['user_id'] ) : null;
-                $club_role      = $club_service->set_club_role( $club_id_passed, $role_id, $user_id );
+                $club_role      = $this->club_service->set_club_role( $club_id_passed, $role_id, $user_id );
                 if ( $club_role ) {
                     $this->set_message( __( 'Role added', 'racketmanager' ) );
                 } else {
@@ -486,7 +482,7 @@ class Admin_Club extends Admin_Display {
                 if ( isset( $_POST['role'] ) ) {
                     $messages = array();
                     foreach ( $_POST['role'] as $role_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $deleted = $club_service->remove_club_role( $role_id );
+                        $this->club_service->remove_club_role( $role_id );
                         $messages[] = __( 'Role deleted', 'racketmanager' );
                     }
                     $message = implode( '<br>', $messages );

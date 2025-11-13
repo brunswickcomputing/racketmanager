@@ -466,7 +466,7 @@ final class Admin_Tournament extends Admin_Championship {
             $form_title  = __( 'Edit Tournament', 'racketmanager' );
             $form_action = __( 'Update', 'racketmanager' );
         }
-        $clubs             = $racketmanager->get_clubs(
+        $clubs             = $this->club_service->get_clubs(
             array(
                 'type' => 'affiliated',
             )

@@ -61,6 +61,11 @@ class Admin_Import extends Admin_Display {
                 }
                 $this->show_message();
             }
+            $clubs = $this->club_service->get_clubs(
+                array(
+                    'type' => 'affiliated',
+                )
+            );
             require_once RACKETMANAGER_PATH . 'templates/admin/tools/import.php';
         }
     }

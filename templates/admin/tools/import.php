@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 global $racketmanager;
+/** @var array $clubs */
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'RacketManager Import', 'racketmanager' ); ?></h1>

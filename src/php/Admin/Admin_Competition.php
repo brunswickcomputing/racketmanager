@@ -345,7 +345,7 @@ final class Admin_Competition extends Admin_Display {
         }
         $this->show_message();
         $seasons = $racketmanager->get_seasons( 'DESC' );
-        $clubs   = $racketmanager->get_clubs(
+        $clubs   = $this->club_service->get_clubs(
             array(
                 'type' => 'affiliated',
             )

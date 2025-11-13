@@ -188,29 +188,15 @@ class Club_Repository {
      *
      * @return bool
      */
-    public function delete( array $args = array() ): bool {
-        $defaults   = array(
-            'club'    => false,
+    public function delete( int $club_id ): bool {
+        $result = $this->wpdb->query(
+            $this->wpdb->prepare(
+                "DELETE FROM $this->table_name WHERE `id` = %d",
+                $club_id
+            )
         );
-        $args    = array_merge( $defaults, $args );
-        $club    = $args['club'];
-
-        $search_terms = array();
-        if ( $club ) {
-            $search_terms[] = $this->wpdb->prepare( '`id` = %d', intval( $club ) );
-        }
-        if ( ! empty( $search_terms ) ) {
-            $search = Util::search_string( $search_terms, true );
-            $sql    = "DELETE FROM $this->table_name " . $search;
-            $result = $this->wpdb->query(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call OK.
-            wp_cache_flush_group( 'clubs' );
-            return $result !== false && $result > 0;
-        } else {
-            return false;
-        }
+        wp_cache_flush_group( 'clubs' );
+        return $result !== false;
     }
     public function has_teams( int $club_id ): bool {
         $count = $this->wpdb->query(

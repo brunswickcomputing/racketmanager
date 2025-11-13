@@ -47,7 +47,7 @@ export function updateTeam(link) {
       const captainName = jQuery(captainNameField).val();
       if (captainName) {
         const teamCaptainNameField = `#captain-name-${event}-${team}`;
-        jQuery(teamCaptainNameField).html(captainName);
+        jQuery(teamCaptainNameField).text(captainName);
       }
       const captainContactNoField = `#contactno-${event}-${team}`;
       const captainContactNo = jQuery(captainContactNoField).val();

@@ -71,12 +71,7 @@ global $racketmanager;
 		</div>
 		<div id="clubs" class="form-floating mb-3" style="display:none">
 			<?php
-			$clubs = $racketmanager->get_clubs(
-				array(
-					'type' => 'affiliated',
-				)
-			);
-			if ( $clubs ) {
+            if ( $clubs ) {
 				?>
 				<select class="form-select" size="1" name="club" id="club">
 					<option><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>

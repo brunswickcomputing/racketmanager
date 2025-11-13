@@ -9,10 +9,7 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Club;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Club_Role_Repository;
-use Racketmanager\Services\Club_Management_Service;
+use Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Club;
 use Racketmanager\Util\Util_Lookup;
@@ -84,13 +81,13 @@ class Admin_Club extends Admin_Display {
                     $this->set_message( __( 'No clubs selected', 'racketmanager' ), true );
                 } else {
                     foreach ( $_POST['club'] as $club_id ) {
-                        $club = get_club( $club_id );
-                        if ( $club->get_teams( array( 'count' => true ) ) ) {
-                            $messages[]    = $club->name . ' ' . __( 'not deleted - still has teams attached', 'racketmanager' );
+                        try {
+                            $this->club_service->remove_club( $club_id );
+                            $messages[] = $club_id . ' ' . __( 'deleted', 'racketmanager' );
+                        }
+                        catch ( Exception $e ) {
+                            $messages[] = $e->getMessage();
                             $message_error = true;
-                        } else {
-                            $club->delete();
-                            $messages[] = $club->name . ' ' . __( 'deleted', 'racketmanager' );
                         }
                     }
                     $message = implode( '<br>', $messages );

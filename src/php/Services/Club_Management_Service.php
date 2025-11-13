@@ -71,6 +71,35 @@ class Club_Management_Service {
     }
 
     /**
+     * @param int $club_id
+     *
+     * @return void
+     * @throws Exception
+     */
+    public function remove_club( int $club_id ): void {
+        $club = $this->club_repository->find( $club_id );
+        if ( ! $club ) {
+            throw new Exception( sprintf( __( 'Club Id %d not found', 'racketmanager' ), $club_id ) );
+        }
+        if ($this->club_repository->has_teams( $club_id ) ) {
+            throw new Exception( sprintf( __( 'Unable to delete %s - still has teams', 'racketmanager' ), $club->get_name() ) );
+        }
+        // Replace this with a club player repository call
+        // $this->club_player_repository->delete( array( 'club' => $club_id ) );
+        global $wpdb;
+        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "DELETE FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d",
+                $club_id
+            )
+        );
+        $this->club_role_repository->delete( array( 'club' => $club_id ) );
+        $this->club_repository->delete( $club_id );
+    }
+    public function get_clubs( $args = array() ): array {
+        return $this->club_repository->find_all( $args );
+    }
+    /**
      * Function to update club team name where the club shortcode has changed
      *
      * @param int $club_id

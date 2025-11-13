@@ -87,11 +87,13 @@ class Ajax_Club extends Ajax {
             $club_updated->match_secretary = $match_secretary;
             $updates                       = $club->update( $club_updated );
             if ( $updates ) {
-                $msg = __( 'Club updated', 'racketmanager' );
+                $return['msg'] = __( 'Club updated', 'racketmanager' );
+                $return['status'] = 'success';
             } else {
-                $msg = __( 'Nothing to update', 'racketmanager' );
+                $return['msg']    = __( 'Nothing to update', 'racketmanager' );
+                $return['status'] = 'warning';
             }
-            wp_send_json_success( $msg );
+            wp_send_json_success( $return );
         } else {
             $return      = $validator->get_details();
             $return->msg = __( 'Error in club update', 'racketmanager' );

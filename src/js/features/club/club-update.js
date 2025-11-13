@@ -42,8 +42,9 @@ export function updateClub(e, link) {
         data: $form,
         async: false,
         success: function (response) {
-            jQuery(alertField).addClass('alert--success');
-            jQuery(alertTextField).html(response.data);
+            const alertClass = "alert--" + response.data.status;
+            jQuery(alertField).addClass(alertClass);
+            jQuery(alertTextField).html(response.data.msg);
         },
         error: function (response) {
             handleAjaxError(response, alertTextField, alertField);

@@ -8,21 +8,30 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Services\Club_Management_Service;
 use stdClass;
 use function Racketmanager\get_player;
+use function Racketmanager\show_alert;
 
 /**
- * Implement AJAX responses for calls from both front end and admin.
+ * Implement AJAX responses for calls from both frontend and admin.
  *
  * @author Paul Moffat
  */
 class Ajax {
     public string $event_not_found;
+    protected Club_Management_Service $club_service;
+
     /**
      * Register ajax actions.
      */
     public function __construct() {
         add_action( 'wp_ajax_racketmanager_get_player_details', array( &$this, 'get_player_details' ) );
+        $club_repository      = new Club_Repository();
+        $club_role_repository = new Club_Role_Repository();
+        $this->club_service   = new Club_Management_Service( $club_repository, $club_role_repository );
     }
     /**
      * Undocumented function

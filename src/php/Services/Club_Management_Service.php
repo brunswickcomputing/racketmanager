@@ -9,6 +9,7 @@ use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
+use function Racketmanager\get_team;
 
 class Club_Management_Service {
     private Club_Role_Repository $club_role_repository;
@@ -161,10 +162,10 @@ class Club_Management_Service {
         $club_role->role_id = $role_id;
         $club_role->user_id = $user_id;
         // Create the new entity locally
-        $newRole = new Club_Role( $club_role );
+        $new_role = new Club_Role( $club_role );
         // Persist it via repository
-        $this->club_role_repository->save( $newRole );
-        return $newRole;
+        $this->club_role_repository->save( $new_role );
+        return $new_role;
     }
     public function remove_club_role( mixed $role_id ): void {
         $club_role = $this->club_role_repository->find( $role_id );

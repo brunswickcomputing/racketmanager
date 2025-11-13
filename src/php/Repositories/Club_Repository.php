@@ -113,7 +113,7 @@ class Club_Repository {
         }
 
         if ( $club_data ) {
-            // Instantiate and return a new User object with the fetched data
+            // Instantiate and return a new Club object with the fetched data
             return new Club( $club_data );
         }
 

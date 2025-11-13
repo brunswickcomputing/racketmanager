@@ -8,8 +8,9 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Club_Role;
-use stdClass;
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Util\Util;
 
 /**
  * Class to implement the Upgrade
@@ -74,13 +75,18 @@ class Upgrade {
                 }
             }
             $wpdb->query( "CREATE TABLE $wpdb->racketmanager_club_roles ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `club_id` int( 11 ) NOT NULL, `role_id` int( 11 ) NOT NULL, `user_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
-            $clubs = $wpdb->get_results( "SELECT `id`, `matchsecretary` FROM $wpdb->racketmanager_clubs");
+            $clubs                = $wpdb->get_results( "SELECT `id`, `matchsecretary` FROM $wpdb->racketmanager_clubs");
+            $club_repository      = new Club_Repository();
+            $club_role_repository = new Club_Role_Repository();
+            $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
             foreach ( $clubs as $club ) {
-                $club_role = new stdClass();
-                $club_role->user_id = $club->matchsecretary;
-                $club_role->club_id = $club->id;
-                $club_role->role_id = 1;
-                new Club_Role( $club_role );
+                $club_role      = $club_service->set_club_role( $club->id, 1, $club->matchsecretary );
+                if ( $club_role ) {
+                    $msg = sprintf(esc_html__( 'Club %s match secretary role set to %s', 'racketmanager' ), $club->id, $club_role->user_id );
+                } else {
+                    $msg = sprintf(esc_html__( 'Club %s match secretary role not set', 'racketmanager' ), $club->id );
+                }
+                echo '<p>' . esc_html( $msg ) . '</p>';
             }
             $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `matchsecretary`" );
         }

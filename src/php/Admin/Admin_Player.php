@@ -121,7 +121,7 @@ final class Admin_Player extends Admin_Display {
                 }
             }
             $racketmanager_tab = 'requests';
-            $clubs             = $racketmanager->get_clubs();
+            $clubs             = $this->club_service->get_clubs();
             $player_requests   = $racketmanager->get_club_players(
                 array(
                     'club'   => $club_id,

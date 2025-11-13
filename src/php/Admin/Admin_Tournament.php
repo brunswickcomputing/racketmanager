@@ -106,7 +106,7 @@ final class Admin_Tournament extends Admin_Championship {
         }
         $club_id = 0;
         $this->show_message();
-        $clubs       = $racketmanager->get_clubs();
+        $clubs       = $this->club_service->get_clubs();
         $tournaments = $racketmanager->get_tournaments(
             array(
                 'season'         => $season_select,

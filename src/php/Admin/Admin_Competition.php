@@ -81,7 +81,7 @@ final class Admin_Competition extends Admin_Display {
         $forloss_overtime = 0;
         $is_invalid       = false;
         $rules_options    = $competition->get_rules_options();
-        $clubs            = $racketmanager->get_clubs(
+        $clubs            = $this->club_service->get_clubs(
             array(
                 'type' => 'affiliated',
             )

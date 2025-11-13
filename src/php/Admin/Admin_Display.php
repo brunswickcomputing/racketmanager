@@ -436,7 +436,11 @@ class Admin_Display {
     private function get_club_teams( string $entry_type, string $league_type ): array {
         global $racketmanager;
         $teams = array();
-        $clubs = $racketmanager->get_clubs();
+        $clubs = $this->club_service->get_clubs(
+            array(
+                'type' => 'affiliated',
+            )
+        );
         if ( $clubs ) {
             foreach ( $clubs as $club ) {
                 $club       = get_club( $club );

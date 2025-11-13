@@ -112,7 +112,7 @@ class Admin_Club extends Admin_Display {
             }
         }
         $this->show_message();
-        $clubs = $racketmanager->get_clubs();
+        $clubs = $this->club_service->get_clubs();
         require_once RACKETMANAGER_PATH . 'templates/admin/show-clubs.php';
     }
     /**
@@ -378,7 +378,6 @@ class Admin_Club extends Admin_Display {
      * Display team page
      */
     public function display_team_page(): void {
-        global $racketmanager;
         if ( ! current_user_can( 'edit_teams' ) ) {
             $this->set_message( $this->invalid_permissions, true );
             $this->show_message();
@@ -425,7 +424,7 @@ class Admin_Club extends Admin_Display {
                 }
                 $form_title  = __( 'Edit Team', 'racketmanager' );
                 $form_action = __( 'Update', 'racketmanager' );
-                $clubs = $racketmanager->get_clubs();
+                $clubs = $this->club_service->get_clubs();
                 //phpcs:enable WordPress.Security.NonceVerification.Recommended
                 require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams/' . $file;
             } else {

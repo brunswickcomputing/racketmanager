@@ -44,13 +44,13 @@ jQuery(document).ready(function(){
                     if ( $cup_season->is_active ) {
                         ?>
                         <li class="nav-item">
-                            <a class="nav-link" id="plan-tab" href="/admin.php?page=racketmanager-cups&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
+                            <a class="nav-link" id="plan-tab" href="/wp-admin/admin.php?page=racketmanager-cups&view=plan&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Plan', 'racketmanager' ); ?></a>
                         </li>
                         <?php
                     }
                     ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin.php?page=racketmanager-cups&view=setup&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
+                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-cups&view=setup&competition_id=<?php echo esc_attr( $competition->id ); ?>&season=<?php echo esc_attr( $season ); ?>" type="button" role="tab"><?php esc_html_e( 'Setup', 'racketmanager' ); ?></a>
                     </li>
                 </ul>
             </div>

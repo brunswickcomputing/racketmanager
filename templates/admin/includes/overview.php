@@ -70,7 +70,7 @@ $current_season = empty( $cup_season ) ? $current_season : $cup_season;
     </div>
     <div class="row mb-3">
         <div class="col-auto">
-            <a role="button" class="btn btn-primary" href="/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>"><?php esc_html_e( 'Edit season', 'racketmanager' ); ?></a>
+            <a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>"><?php esc_html_e( 'Edit season', 'racketmanager' ); ?></a>
             <?php
             if ( $current_season->is_open ) {
                 ?>

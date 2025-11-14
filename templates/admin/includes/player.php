@@ -128,7 +128,7 @@ $is_invalid = false;
                     }
                     ?>
                     <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="year_of_birth" id="year_of_birth">
-                        <option value=""><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
+                        <option disabled <?php selected( null, $player->year_of_birth ?? null ); ?>><?php esc_html_e( 'Enter year of birth', 'racketmanager' ); ?></option>
                         <?php
                         $current_year = gmdate( 'Y' );
                         $start_year   = $current_year - 5;

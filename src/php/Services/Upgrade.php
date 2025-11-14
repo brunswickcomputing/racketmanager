@@ -24,14 +24,18 @@ class Upgrade {
      * @var array racketmanager options
      */
     private array $options;
+    private Club_Management_Service $club_service;
 
     /**
      * Initialise the upgrade class
      */
     public function __construct() {
         global $racketmanager;
-        $this->options   = $racketmanager->options;
-        $this->installed = $this->options['dbversion'] ?? null;
+        $this->options          = $racketmanager->options;
+        $this->installed        = $this->options['dbversion'] ?? null;
+        $club_repository        = new Club_Repository();
+        $club_role_repository   = new Club_Role_Repository();
+        $this->club_service     = new Club_Management_Service( $club_repository, $club_role_repository );
     }
 
     /**
@@ -76,11 +80,8 @@ class Upgrade {
             }
             $wpdb->query( "CREATE TABLE $wpdb->racketmanager_club_roles ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `club_id` int( 11 ) NOT NULL, `role_id` int( 11 ) NOT NULL, `user_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
             $clubs                = $wpdb->get_results( "SELECT `id`, `matchsecretary` FROM $wpdb->racketmanager_clubs");
-            $club_repository      = new Club_Repository();
-            $club_role_repository = new Club_Role_Repository();
-            $club_service         = new Club_Management_Service( $club_repository, $club_role_repository );
             foreach ( $clubs as $club ) {
-                $club_role      = $club_service->set_club_role( $club->id, 1, $club->matchsecretary );
+                $club_role      = $this->club_service->set_club_role( $club->id, 1, $club->matchsecretary );
                 if ( $club_role ) {
                     $msg = sprintf(esc_html__( 'Club %s match secretary role set to %s', 'racketmanager' ), $club->id, $club_role->user_id );
                 } else {

@@ -11,7 +11,9 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Club_Management_Service;
+use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -66,6 +68,7 @@ class Admin_Display {
     protected ?string $errors_found = 'Errors found';
     public Admin_Upgrade $admin_upgrade;
     protected Club_Management_Service $club_service;
+    protected Player_Management_Service $player_service;
 
     /**
      * Constructor
@@ -75,6 +78,8 @@ class Admin_Display {
         $club_repository      = new Club_Repository();
         $club_role_repository = new Club_Role_Repository();
         $this->club_service   = new Club_Management_Service( $club_repository, $club_role_repository );
+        $player_repository      = new Player_Repository();
+        $this->player_service   = new Player_Management_Service( $player_repository );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );

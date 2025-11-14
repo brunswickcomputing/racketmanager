@@ -290,7 +290,7 @@ final class User {
             } else {
                 $this->locked_user_name = '';
             }
-            $this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
+            $this->system_record = get_user_meta( $this->ID, 'racketmanager_type', true );
             $this->opt_ins       = get_user_meta( $this->ID, 'racketmanager_opt_in' );
         }
     }

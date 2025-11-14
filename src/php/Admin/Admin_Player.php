@@ -10,6 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Player;
+use Racketmanager\Services\Player_Management_Service;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;
@@ -160,7 +161,7 @@ final class Admin_Player extends Admin_Display {
                         $new_player = $player_valid[1];
                         $player     = get_player( $new_player->user_login, 'login' );  // get player by login.
                         if ( ! $player ) {
-                            $player = new Player( $new_player );
+                            $player = $this->player_service->add_player( $new_player );
                             $this->set_message( __( 'Player added', 'racketmanager' ) );
                             $player = null;
                         } else {
@@ -195,7 +196,7 @@ final class Admin_Player extends Admin_Display {
                 $tab = 'players';
             } elseif ( isset( $_GET['doPlayerSearch'] ) ) {
                 if ( ! empty( $_GET['name'] ) ) {
-                    $players = $racketmanager->get_all_players( array( 'name' => sanitize_text_field( wp_unslash( $_GET['name'] ) ) ) );
+                    $players = $this->player_service->get_all_players( array( 'name' => sanitize_text_field( wp_unslash( $_GET['name'] ) ) ) );
                 } else {
                     $this->set_message( __( 'No search term specified', 'racketmanager' ), true );
                 }
@@ -203,13 +204,15 @@ final class Admin_Player extends Admin_Display {
             }
             $this->show_message();
             if ( ! $players ) {
-                $players = $racketmanager->get_all_players( array() );
+                $players = $this->player_service->get_all_players();
             }
             require_once RACKETMANAGER_PATH . 'templates/admin/players/show-players.php';
         }
     }
+
     /**
      * Display player page
+     * @throws \Exception
      */
     public function display_player_page(): void {
         global $racketmanager;
@@ -230,10 +233,15 @@ final class Admin_Player extends Admin_Display {
                         if ( isset( $_POST['playerId'] ) ) {
                             $player_valid = $racketmanager->validate_player();
                             if ( $player_valid[0] ) {
-                                $player     = get_player( intval( $_POST['playerId'] ) );
+                                $player_id  = intval( $_POST['playerId'] );
+                                $player     = get_player( $player_id );
                                 $new_player = $player_valid[1];
-                                $return     = $player->update( $new_player );
-                                $this->set_message( $return->msg, $return->state );
+                                $player     = $this->player_service->update_player( $player_id, $new_player );
+                                if ( $player ) {
+                                    $this->set_message( __( 'Player updated', 'racketmanager' ) );
+                                } else {
+                                    $this->set_message( __( 'Player details unchanged', 'racketmanager' ), 'warning' );
+                                }
                             } else {
                                 $form_valid     = false;
                                 $error_fields   = $player_valid[1];

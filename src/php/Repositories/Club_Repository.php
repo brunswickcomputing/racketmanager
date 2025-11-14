@@ -179,10 +179,7 @@ class Club_Repository {
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
         if ( ! $teams ) {
-            $teams = $wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call ok.
+            $teams = $wpdb->get_results( $sql );
             wp_cache_set( md5( $sql ), $teams, 'teams' );
         }
 
@@ -193,6 +190,7 @@ class Club_Repository {
 
         return $teams;
     }
+
     /**
      * Retrieves existing clubs from the database by parameters
      * replaces the $racketmanager->get_clubs function.
@@ -201,7 +199,7 @@ class Club_Repository {
      *
      * @return array array of clubs.
      */
-    public function find_all( array $args = array() ): ?array {
+    public function find_all( array $args = array() ): array {
         $defaults = array(
             'type'    => false,
             'orderby' => 'asc',
@@ -236,17 +234,16 @@ class Club_Repository {
                 break;
         }
         $order  = empty( $order ) ? null : 'ORDER BY ' . $order;
-        $sql    = "SELECT `id` FROM $this->table_name $search $order";
-        $clubs  = wp_cache_get( md5( $sql ), 'club-roles' );
+        $sql    = "SELECT `id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name $search $order";
+        $clubs  = wp_cache_get( md5( $sql ), 'clubs' );
         if ( ! $clubs ) {
-            $clubs   = array();
             $results = $this->wpdb->get_results( $sql );
-            foreach ( $results as $club_ref ) {
-                $club = $this->find( $club_ref->id );
-                if ( $club ) {
-                    $clubs[] = $club;
-                }
-            }
+            $clubs   = array_map(
+                function( $row ) {
+                    return new Club( $row );
+                    },
+                $results
+            );
             wp_cache_set( md5( $sql ), $clubs, 'clubs' );
         }
         return $clubs;

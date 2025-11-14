@@ -11,7 +11,9 @@ namespace Racketmanager\Domain;
 
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Club_Management_Service;
+use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -227,6 +229,7 @@ final class Club {
      */
     public array $roles;
     private ?Club_Role_Repository $club_role_repository = null;
+    private Player_Management_Service $player_service;
 
     /**
      * Constructor
@@ -245,6 +248,8 @@ final class Club {
             $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
 
             $this->club_role_repository = new Club_Role_Repository();
+            $player_repository         = new Player_Repository();
+            $this->player_service      = new Player_Management_Service( $player_repository );
         }
     }
 
@@ -498,11 +503,14 @@ final class Club {
 
         return $teams;
     }
+
     /**
      * Register player for Club
      *
      * @param object $new_player player details.
+     *
      * @return object
+     * @throws \Exception
      */
     public function register_player( object $new_player ): object {
         global $racketmanager;
@@ -542,7 +550,7 @@ final class Club {
                 }
             } elseif ( ! empty( $new_player->email ) && $player->email !== $new_player->email ) {
                 $return->error      = true;
-                $return->msg        = __( 'Email address is does not match current email', 'racketmanager' );
+                $return->msg        = __( 'Email address does not match current email', 'racketmanager' );
                 $return->status     = 401;
             }
             if ( empty( $player->btm ) ) {
@@ -578,7 +586,7 @@ final class Club {
         }
         if ( empty( $return->error ) ) {
             if ( $player_change ) {
-                $return = $player->update( $updated_player );
+                $this->player_service->update_player( $player->id, $updated_player );
             }
             $player_active = $this->player_status( $player->id, 'active' );
             if ( ! $player_active ) {

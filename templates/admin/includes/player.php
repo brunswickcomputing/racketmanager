@@ -245,8 +245,8 @@ $is_invalid = false;
                             $msg_id     = array_search( 'locked', $error_fields, true );
                             $msg        = $error_messages[$msg_id] ?? null;
                         }
-                        ?>
-                        <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="checkbox" name="locked" id="locked" value="Locked" <?php echo isset( $player->locked ) && $player->locked ? ' ' . esc_html( RACKETMANAGER_CHECKED ) : null; ?>>
+                       ?>
+                        <input class="form-check-input <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" type="checkbox" name="locked" id="locked" value="Locked" <?php echo empty( $player->locked ) ? null : esc_html( RACKETMANAGER_CHECKED ); ?>>
                         <label for="locked" class="form-check-label"><?php esc_html_e( 'Locked', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {

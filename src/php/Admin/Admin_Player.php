@@ -150,7 +150,6 @@ final class Admin_Player extends Admin_Display {
         } else {
             $players = null;
             $racketmanager_tab = 'players';
-            $player_errors     = $this->get_player_errors();
             if ( isset( $_POST['addPlayer'] ) ) {
                 if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
                     $this->set_message( $this->invalid_security_token, true );

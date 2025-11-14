@@ -31,7 +31,7 @@ namespace Racketmanager;
 
     <!-- Edit Player -->
     <div class="mb-3">
-        <?php require_once RACKETMANAGER_PATH . '/Admin/includes/player.php'; ?>
+        <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/player.php'; ?>
     </div>
     <?php
     if ( isset( $player_id ) ) {

@@ -27,7 +27,7 @@ use Racketmanager\Util\Util_Lookup;
     <div class="mb-3">
         <!-- Add Player -->
         <h2><?php esc_html_e( 'Add Player', 'racketmanager' ); ?></h2>
-        <?php require_once RACKETMANAGER_PATH . '/Admin/includes/player.php'; ?>
+        <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/player.php'; ?>
     </div>
 
     <div class="mb-3">

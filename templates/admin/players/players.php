@@ -11,7 +11,7 @@ namespace Racketmanager;
 ?>
 <!-- Add Player -->
 <div class="mb-3">
-    <?php require_once RACKETMANAGER_PATH . '/Admin/includes/player.php'; ?>
+    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/player.php'; ?>
 </div>
 <div class="mb-3">
     <form id="player-filter" method="get">

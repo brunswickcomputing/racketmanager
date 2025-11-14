@@ -97,7 +97,7 @@ class Club_Management_Service {
         $this->club_role_repository->delete( array( 'club' => $club_id ) );
         $this->club_repository->delete( $club_id );
     }
-    public function get_clubs( $args = array() ): array {
+    public function get_clubs( array $args = array() ): array {
         return $this->club_repository->find_all( $args );
     }
     /**

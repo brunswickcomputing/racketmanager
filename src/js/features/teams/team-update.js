@@ -85,11 +85,4 @@ export function initializeTeamUpdate() {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
       return updateTeam(this);
     })
-    // Safety fallback: handle explicit id without inline onclick
-    .off('click.racketmanager.teamUpdateFallback', '[id^="teamUpdateSubmit-"]')
-    .on('click.racketmanager.teamUpdateFallback', '[id^="teamUpdateSubmit-"]', function (e) {
-      if (this.getAttribute('onclick')) return; // legacy template still active
-      if (e && typeof e.preventDefault === 'function') e.preventDefault();
-      return updateTeam(this);
-    });
 }

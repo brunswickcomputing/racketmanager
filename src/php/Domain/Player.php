@@ -10,9 +10,7 @@
 namespace Racketmanager\Domain;
 
 use Racketmanager\Util\Util;
-use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use WP_User;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
@@ -400,32 +398,16 @@ final class Player {
             foreach ( $player as $key => $value ) {
                 $this->$key = $value;
             }
-            if ( ! isset( $this->ID ) ) {
-                $this->ID = $this->add();
-            }
-            $this->id            = $this->ID;
-            $this->email         = $this->user_email;
-            $this->fullname      = $this->display_name;
-            $this->created_date  = $this->user_registered;
-            $this->firstname     = get_user_meta( $this->ID, 'first_name', true );
-            $this->surname       = get_user_meta( $this->ID, 'last_name', true );
-            $this->gender        = get_user_meta( $this->ID, 'gender', true );
-            $this->type          = get_user_meta( $this->ID, 'racketmanager_type', true );
-            $this->btm           = get_user_meta( $this->ID, 'btm', true );
-            $this->year_of_birth = get_user_meta( $this->ID, 'year_of_birth', true );
+            $this->id            = &$this->ID;
+            $this->email         = &$this->user_email;
+            $this->fullname      = &$this->display_name;
+            $this->created_date  = &$this->user_registered;
             $this->calculate_age();
-            $this->contactno    = get_user_meta( $this->ID, 'contactno', true );
-            $this->removed_date = get_user_meta( $this->ID, 'remove_date', true );
-            $this->removed_user = get_user_meta( $this->ID, 'remove_user', true );
-            $this->locked       = get_user_meta( $this->ID, 'locked', true );
-            $this->locked_date  = get_user_meta( $this->ID, 'locked_date', true );
-            $this->locked_user  = get_user_meta( $this->ID, 'locked_user', true );
-            if ( $this->locked_user ) {
+            if ( ! empty( $this->locked_user ) ) {
                 $this->locked_user_name = get_userdata( $this->locked_user )->display_name;
             } else {
                 $this->locked_user_name = '';
             }
-            $this->system_record = get_user_meta( $this->ID, 'leaguemanager_type', true );
             $this->link          = '/player/' . seo_url( $this->display_name ) . '/';
             if ( ! empty( $this->btm ) ) {
                 $this->link .= $this->btm . '/';

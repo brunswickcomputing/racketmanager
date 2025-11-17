@@ -147,7 +147,12 @@ class Player_Repository {
                 $player->data->removed_user = null;
             } else {
                 $player->data->removed_date = $removed_date;
-                $player->data->removed_user = get_user_meta( $player->data->ID, 'remove_user', true );
+                $removed_user               = get_user_meta( $player->data->ID, 'remove_user', true );
+                if ( empty( $removed_user ) ) {
+                    $player->data->removed_user = null;
+                } else {
+                    $player->data->removed_user = $removed_user;
+                }
             }
             $locked               = get_user_meta( $player->data->ID, 'locked', true );
             $player->data->locked = ! empty( $locked );

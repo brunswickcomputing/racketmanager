@@ -61,9 +61,9 @@ final class Player {
     /**
      * Display name.
      *
-     * @var string
+     * @var ?string
      */
-    public string $display_name;
+    public ?string $display_name = null;
     /**
      * Name.
      *
@@ -79,9 +79,9 @@ final class Player {
     /**
      * Email address.
      *
-     * @var string
+     * @var ?string
      */
-    public string $user_registered;
+    public ?string $user_registered = null;
     /**
      * First name.
      *

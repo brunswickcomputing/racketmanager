@@ -511,48 +511,274 @@ final class Player {
             if ( ! empty( $this->btm ) ) {
                 $this->link .= $this->btm . '/';
             }
-            $match_types = Util_Lookup::get_match_types();
-            foreach ( $match_types as $match_type => $description ) {
-                $wtn_type                 = 'wtn_' . $match_type;
-                $this->wtn[ $match_type ] = get_user_meta( $this->ID, $wtn_type, true );
-            }
-            $this->opt_ins = get_user_meta( $this->ID, 'racketmanager_opt_in' );
         }
     }
+
     /**
-     * Add player
+     * Set ID
      *
-     * @return int $user_id id of inserted record.
+     * @param int $id
+     *
+     * @return void
      */
-    private function add(): int {
-        $this->display_name          = $this->firstname . ' ' . $this->surname;
-        $this->user_email            = $this->email;
-        $this->user_registered       = gmdate( 'Y-m-d H:i:s' );
-        $userdata                    = array();
-        $userdata['first_name']      = $this->firstname;
-        $userdata['last_name']       = $this->surname;
-        $userdata['display_name']    = $this->display_name;
-        $userdata['user_login']      = strtolower( $this->firstname ) . '.' . strtolower( $this->surname );
-        $userdata['user_pass']       = $userdata['user_login'] . '1';
-        $userdata['user_registered'] = $this->user_registered;
-        if ( $this->email ) {
-            $userdata['user_email'] = $this->email;
-        }
-        $user_id = wp_insert_user( $userdata );
-        if ( ! is_wp_error( $user_id ) ) {
-            update_user_meta( $user_id, 'show_admin_bar_front', false );
-            update_user_meta( $user_id, 'gender', $this->gender );
-            if ( isset( $this->btm ) && $this->btm > '' ) {
-                update_user_meta( $user_id, 'btm', $this->btm );
-            }
-            if ( isset( $this->contactno ) && $this->contactno > '' ) {
-                update_user_meta( $user_id, 'contactno', $this->contactno );
-            }
-            if ( isset( $this->year_of_birth ) && $this->year_of_birth > '' ) {
-                update_user_meta( $user_id, 'year_of_birth', $this->year_of_birth );
-            }
-        }
-        return $user_id;
+    public function set_id( int $id ): void {
+        $this->id = $id;
+        $this->ID = &$this->id;
+    }
+
+    /**
+     * Set email
+     *
+     * @param string $email
+     *
+     * @return void
+     */
+    public function set_email( string $email ): void {
+        $this->email = $email;
+    }
+
+    /**
+     * Set firstname
+     *
+     * @param string $firstname
+     *
+     * @return void
+     */
+    public function set_firstname( string $firstname ): void {
+        $this->firstname = $firstname;
+    }
+
+    /**
+     * Set surname
+     *
+     * @param string $surname
+     *
+     * @return void
+     */
+    public function set_surname( string $surname ): void {
+        $this->surname = $surname;
+    }
+
+    /**
+     * Set display name
+     *
+     * @param string $display_name
+     *
+     * @return void
+     */
+    public function set_display_name( string $display_name ): void {
+        $this->display_name = $display_name;
+    }
+
+    /**
+     * Set gender
+     *
+     * @param string $gender
+     *
+     * @return void
+     */
+    public function set_gender( string $gender ): void {
+        $this->gender = $gender;
+    }
+
+    /**
+     * Set LTA tennis number
+     *
+     * @param string $btm
+     *
+     * @return void
+     */
+    public function set_btm( string $btm ): void {
+        $this->btm = $btm;
+    }
+
+    /**
+     * Set year of birth
+     *
+     * @param string|null $year_of_birth
+     *
+     * @return void
+     */
+    public function set_year_of_birth( ?string $year_of_birth ): void {
+        $this->year_of_birth = $year_of_birth;
+    }
+
+    /**
+     * Set contact number
+     *
+     * @param string $contactno
+     *
+     * @return void
+     */
+    public function set_contactno( string $contactno ): void {
+        $this->contactno = $contactno;
+    }
+
+    /**
+     * Set locked
+     *
+     * @param bool $locked
+     *
+     * @return void
+     */
+    public function set_locked( bool $locked ): void {
+        $this->locked = $locked;
+    }
+
+    /**
+     * Set the locked date
+     *
+     * @param string $locked_date
+     *
+     * @return void
+     */
+    public function set_locked_date( string $locked_date ): void {
+        $this->locked_date = $locked_date;
+    }
+
+    /**
+     * Set locked user
+     *
+     * @param int $locked_user
+     *
+     * @return void
+     */
+    public function set_locked_user( int $locked_user ): void {
+        $this->locked_user = $locked_user;
+    }
+    /**
+     * Get player ID
+     *
+     * @return int|null
+     */
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+    /**
+     * Get firstname
+     *
+     * @return string
+     */
+    public function get_firstname(): string {
+        return $this->firstname;
+    }
+
+    /**
+     * Get surname
+     *
+     * @return string
+     */
+    public function get_surname(): string {
+        return $this->surname;
+    }
+
+    /**
+     * Get display name
+     *
+     * @return string
+     */
+    public function get_display_name(): string {
+        return $this->display_name;
+    }
+
+    /**
+     * Get email
+     *
+     * @return string|null
+     */
+    public function get_email(): ?string {
+        return $this->user_email;
+    }
+
+    /**
+     * Get user login
+     *
+     * @return string
+     */
+    public function get_login(): string {
+        return $this->user_login;
+    }
+
+    /**
+     * Get user password
+     *
+     * @return string
+     */
+    public function get_password(): string {
+        return $this->user_pass;
+    }
+
+    /**
+     * Get user registered date
+     *
+     * @return string
+     */
+    public function get_date_registered(): string {
+        return $this->user_registered;
+    }
+
+    /**
+     * Get gender
+     *
+     * @return string
+     */
+    public function get_gender(): string {
+        return $this->gender;
+    }
+
+    /**
+     * Get LTA tennis number
+     *
+     * @return string|null
+     */
+    public function get_btm(): ?string {
+        return $this->btm;
+    }
+
+    /**
+     * Get year of birth
+     *
+     * @return string|null
+     */
+    public function get_year_of_birth(): ?string {
+        return $this->year_of_birth;
+    }
+
+    /**
+     * Get the contact number
+     *
+     * @return string|null
+     */
+    public function get_contactno(): ?string {
+        return $this->contactno;
+    }
+
+    /**
+     * Get locked indicator
+     *
+     * @return string|null
+     */
+    public function get_locked(): ?string {
+        return $this->locked;
+    }
+
+    /**
+     * Get locked date
+     *
+     * @return string|null
+     */
+    public function get_locked_date(): ?string {
+        return $this->locked_date;
+    }
+
+    /**
+     * Get locked user ID
+     *
+     * @return string|null
+     */
+    public function get_locked_user(): ?string {
+        return $this->locked_user;
     }
     /**
      * Calculate player age function

@@ -449,19 +449,17 @@ function get_team( object|int|string|null $team = null ): ?object {
 /**
  * Get Player object
  *
- * @param object|int|string|null $player Player ID or player object. Defaults to global $player.
+ * @param int|string|null $player Player ID or player object. Defaults to global $player.
  * @param string $search_term search type term (defaults to id).
  *
  * @return object|null player|null
  */
-function get_player( object|int|string|null $player = null, string $search_term = 'id' ): ?object {
+function get_player( int|string|null $player = null, string $search_term = 'id' ): ?object {
     if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
         $player = $GLOBALS['player'];
     }
     if ( $player instanceof Player ) {
         $_player = $player;
-    } elseif ( is_object( $player ) ) {
-        $_player = new Player( $player );
     } else {
         $player_repository = new Player_Repository();
         $_player           = $player_repository->find( $player, $search_term );

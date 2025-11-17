@@ -31,6 +31,7 @@ use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Domain\User;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Exporter;
 
 /**
@@ -462,7 +463,8 @@ function get_player( object|int|string|null $player = null, string $search_term 
     } elseif ( is_object( $player ) ) {
         $_player = new Player( $player );
     } else {
-        $_player = Player::get_instance( $player, $search_term );
+        $player_repository = new Player_Repository();
+        $_player           = $player_repository->find( $player, $search_term );
     }
     if ( ! $_player ) {
         return null;

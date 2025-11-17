@@ -259,7 +259,7 @@ $is_invalid = false;
                 </div>
             </div>
         </fieldset>
-        <input type="hidden" name="page_referrer" value="<?php echo esc_attr( $page_referrer ); ?>" />
+        <input type="hidden" name="page_referrer" value="<?php echo isset( $page_referrer ) ? esc_attr( $page_referrer ) : null; ?>" />
         <?php
     }
     if ( isset( $club_id ) ) {
@@ -269,7 +269,7 @@ $is_invalid = false;
     }
     if ( isset( $player_id ) ) {
         ?>
-        <input type="hidden" name="playerId" id="playerId" value="<?php echo esc_html( $player->id ); ?>" />
+        <input type="hidden" name="playerId" id="playerId" value="<?php echo esc_html( $player_id ); ?>" />
         <input type="submit" name="updatePlayer" value="<?php esc_html_e( 'Update Player', 'racketmanager' ); ?>" class="btn btn-primary" />
         <input type="submit" name="setWTN" value="<?php esc_html_e( 'Set WTN', 'racketmanager' ); ?>" class="btn btn-secondary" />
         <?php

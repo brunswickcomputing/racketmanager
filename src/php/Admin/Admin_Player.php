@@ -181,9 +181,12 @@ final class Admin_Player extends Admin_Display {
                         $messages = array();
                         if ( isset( $_POST['player'] ) ) {
                             foreach ( $_POST['player'] as $player_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                                $player = get_player( $player_id );
-                                $player->delete();
-                                $messages[] = $player->fullname . ' ' . __( 'deleted', 'racketmanager' );
+                                $deleted = $this->player_service->delete_player( $player_id );
+                                if ( $deleted ) {
+                                    $messages[] = $player_id . ' ' . __( 'deleted', 'racketmanager' );
+                                } else {
+                                    $messages[] = sprintf( __( 'Unable to delete %d', 'racketmanager' ), $player_id );
+                                }
                             }
                             $message = implode( '<br>', $messages );
                             $this->set_message( $message );

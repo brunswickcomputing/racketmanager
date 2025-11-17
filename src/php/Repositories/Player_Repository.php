@@ -110,12 +110,12 @@ class Player_Repository {
     /**
      * Find a player by ID, login, name or email.
      *
-     * @param int $player_id
+     * @param int|string $player_id
      * @param string $search_type
      *
      * @return Player|null
      */
-    public function find( int $player_id, string $search_type = 'id' ): ?Player {
+    public function find( int|string $player_id, string $search_type = 'id' ): ?Player {
         $player = wp_cache_get( $player_id, 'players' );
 
         if ( ! $player ) {

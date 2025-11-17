@@ -27,13 +27,13 @@ final class Player {
     /**
      * Id.
      *
-     * @var int
+     * @var ?int
      */
-    public int $ID;
+    public ?int $ID = null;
     /**
      * ID.
      *
-     * @var int
+     * @var ?int
      */
     public int $id;
     /**
@@ -45,15 +45,15 @@ final class Player {
     /**
      * Email address.
      *
-     * @var string
+     * @var ?string
      */
-    public string $email;
+    public ?string $email = null;
     /**
      * User Email address.
      *
-     * @var string
+     * @var ?string
      */
-    public string $user_email;
+    public ?string $user_email = null;
     /**
      * Fullname - join of first name and surname.
      *
@@ -119,7 +119,7 @@ final class Player {
      *
      * @var int|null
      */
-    public mixed $year_of_birth;
+    public int|null $year_of_birth;
     /**
      * Age.
      *
@@ -167,19 +167,19 @@ final class Player {
      *
      * @var string|null
      */
-    public ?string $locked_date;
+    public ?string $locked_date = null;
     /**
      * Locked user.
      *
      * @var string|null
      */
-    public ?string $locked_user;
+    public ?string $locked_user = null;
     /**
      * Locked username.
      *
      * @var string|null
      */
-    public ?string $locked_user_name;
+    public ?string $locked_user_name = null;
     /**
      * System record.
      *

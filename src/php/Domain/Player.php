@@ -35,7 +35,7 @@ final class Player {
      *
      * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Club player id.
      *

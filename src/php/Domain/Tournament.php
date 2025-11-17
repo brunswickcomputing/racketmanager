@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_charge;
@@ -307,6 +309,7 @@ final class Tournament {
     private ?string $notification_error;
     private ?string $no_secretary_email;
     private ?string $no_notification;
+    private Player_Management_Service $player_service;
 
     /**
      * Retrieve tournament instance
@@ -454,6 +457,9 @@ final class Tournament {
         $this->notification_error = __( 'Notification error', 'racketmanager' );
         $this->no_secretary_email = __( 'No secretary email', 'racketmanager' );
         $this->no_notification    = __( 'No notification', 'racketmanager' );
+        
+        $player_repository    = new Player_Repository();
+        $this->player_service = new Player_Management_Service( $player_repository );
     }
 
     /**
@@ -1334,12 +1340,11 @@ final class Tournament {
      * @param object $entry entry details.
      * @return bool|int payment required indicator
      */
-    public function set_player_entry(object $entry ): bool|int {
+    public function set_player_entry( object $entry ): bool|int {
         global $racketmanager;
+        $this->player_service->handle_tournament_entry_personal_information( $entry->player_id, $entry->btm, $entry->contactno, $entry->contactemail );
         $updates = false;
         $player  = get_player( $entry->player_id );
-        $player->update_btm( $entry->btm );
-        $player->update_contact( $entry->contactno, $entry->contactemail );
         $club               = get_club( $entry->club_id );
         $fee_due            = 0;
         $tournament_entries = array();

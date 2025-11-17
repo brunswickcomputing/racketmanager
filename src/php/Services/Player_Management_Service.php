@@ -84,6 +84,10 @@ class Player_Management_Service {
             $updates['dob'] = true;
         }
         if ( $updated_player->locked !== $player->locked ) {
+            if ( $updated_player->locked ) {
+                $player->set_locked_date( gmdate( 'Y-m-d' ) );
+                $player->set_locked_user( get_current_user_id() );
+            }
             $player->set_locked( $updated_player->locked );
             $updates['locked'] = true;
         }
@@ -118,22 +122,25 @@ class Player_Management_Service {
      * @param string $contact_email
      *
      * @return Player|bool
+     * @throws Exception
      */
     public function update_contact_details( int $player_id, string $contact_no, string $contact_email ): Player|bool {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
             return false;
         }
+        $updates               = array();
         $current_contact_no    = $player->contactno;
         $current_contact_email = $player->email;
         if ( $current_contact_no !== $contact_no ) {
             $player->set_contactno( $contact_no );
-            $this->player_repository->save_contact_no( $player_id, $contact_no );
+            $updates['contactno'] = true;
         }
         if ( $current_contact_email !== $contact_email ) {
             $player->set_email( $contact_email );
-            $this->player_repository->save_email( $player_id, $contact_email );
+            $updates['core'] = true;
         }
+        $this->player_repository->update( $player, $updates );
         return true;
     }
 
@@ -146,6 +153,7 @@ class Player_Management_Service {
      * @param string|null $contactemail
      *
      * @return bool
+     * @throws Exception
      */
     public function handle_tournament_entry_personal_information( int $player_id, ?int $btm, ?string $contactno, ?string $contactemail ): bool {
         $player = $this->player_repository->find( $player_id );
@@ -165,6 +173,7 @@ class Player_Management_Service {
      * @param int $btm
      *
      * @return bool
+     * @throws Exception
      */
     public function update_btm( int $player_id, int $btm ): bool {
         $player = $this->player_repository->find( $player_id );
@@ -177,7 +186,8 @@ class Player_Management_Service {
             //     $this->check_results_warning( 'btm' );
             // }
             $player->set_btm( $btm );
-            $this->player_repository->save_btm( $player_id, $btm );
+            $updates['btm'] = true;
+            $this->player_repository->update( $player, $updates );
             return true;
         } else {
             return false;

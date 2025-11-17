@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -201,6 +203,8 @@ final class Team {
      * @var array
      */
     public array $matches;
+    private Player_Management_Service $player_service;
+
     /**
      * Retrieve team instance
      *
@@ -254,6 +258,9 @@ final class Team {
      * @param object|null $team Team object.
      */
     public function __construct( ?object $team = null ) {
+        $player_repository    = new Player_Repository();
+        $this->player_service = new Player_Management_Service( $player_repository );
+
         $this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
         $this->msg_team_added         = __( 'Team added', 'racketmanager' );
         $this->msg_team_update_error  = __( 'Team update error', 'racketmanager' );
@@ -555,8 +562,7 @@ final class Team {
         );
         $team_event_id = $wpdb->insert_id;
         if ( $captain ) {
-            $player = get_player( $captain );
-            $player->update_contact( $contactno, $contactemail );
+            $this->player_service->update_contact_details( $captain, $contactno, $contactemail );
         }
         return $team_event_id;
     }
@@ -625,7 +631,7 @@ final class Team {
     private function update_captain_details( $captain, $telephone, $email ): object {
         $player = get_player( $captain );
         if ( $player ) {
-            $updates = $player->update_contact( $telephone, $email );
+            $updates = $this->player_service->update_contact_details( $captain, $telephone, $email );
             if ( ! $updates ) {
                 $msg = $this->msg_team_contact_error;
             } else {

@@ -227,7 +227,7 @@ class Shortcodes {
     /**
      * Function to display Players
      *
-     *  [[players] template=X]
+     *  [players template=X]
      *
      * @param array $atts shortcode attributes.
      * @return string content
@@ -264,7 +264,7 @@ class Shortcodes {
     /**
      * Function to display Player
      *
-     *  [[player] template=X]
+     *  [player template=X]
      *
      * @param array $atts shortcode attributes.
      * @return string content

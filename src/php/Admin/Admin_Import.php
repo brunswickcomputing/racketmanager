@@ -267,7 +267,7 @@ class Admin_Import extends Admin_Display {
                     $new_player = $player_valid[1];
                     $player     = get_player( $new_player->user_login, 'login' );  // get player by login.
                     if ( ! $player ) {
-                        $player = new Player( $new_player );
+                        $player = $this->player_service->add_player( $new_player );
                         if ( ! empty( $player->id ) ) {
                             ++$x;
                         }

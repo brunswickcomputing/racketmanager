@@ -535,7 +535,7 @@ final class Club {
                     $return->msg        = sprintf( __( 'LTA Tennis Number already used by %s', 'racketmanager' ), $player->display_name );
                     $return->status     = 401;
                 } else {
-                    $player = new Player( $new_player );
+                    $player = $this->player_service->add_player( $new_player );
                 }
             }
         } else {

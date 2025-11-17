@@ -193,4 +193,31 @@ class Player_Management_Service {
             return false;
         }
     }
+
+    /**
+     * Delete player
+     *
+     * @param $player_id
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function delete_player( $player_id ): bool {
+        $player = $this->player_repository->find( $player_id );
+        if ( ! $player ) {
+            throw new Exception( sprintf("Player ID %s not found.", 'racketmanager' ), $player_id );
+        }
+        wp_cache_flush_group( 'players' );
+        if ( $this->player_repository->has_club_associations( $player_id ) ) {
+            $updates['removed'] = true;
+            $player->set_removed_date( gmdate( 'Y-m-d' ) );
+            $player->set_removed_user( get_current_user_id() );
+            $this->player_repository->update( $player, $updates );
+            return false;
+        } else {
+            $this->player_repository->delete( $player_id );
+            return true;
+        }
+
+    }
 }

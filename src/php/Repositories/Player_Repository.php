@@ -105,6 +105,10 @@ class Player_Repository {
                 delete_user_meta( $user_id, 'locked_user' );
             }
         }
+        if ( isset( $updates['removed'] ) ) {
+            update_user_meta( $user_id, 'remove', $player->get_removed_date() );
+            update_user_meta( $user_id, 'remove_user', $player->get_removed_user() );
+        }
     }
 
     /**
@@ -137,10 +141,16 @@ class Player_Repository {
             $year_of_birth               = get_user_meta( $player->data->ID, 'year_of_birth', true );
             $player->data->year_of_birth = empty( $year_of_birth ) ? null : $year_of_birth;
             $player->data->contactno     = get_user_meta( $player->data->ID, 'contactno', true );
-            $player->data->removed_date  = get_user_meta( $player->data->ID, 'remove_date', true );
-            $player->data->removed_user  = get_user_meta( $player->data->ID, 'remove_user', true );
-            $locked                      = get_user_meta( $player->data->ID, 'locked', true );
-            $player->data->locked        = ! empty( $locked );
+            $removed_date                = get_user_meta( $player->data->ID, 'remove_date', true );
+            if ( empty( $removed_date ) ) {
+                $player->data->removed_date = null;
+                $player->data->removed_user = null;
+            } else {
+                $player->data->removed_date = $removed_date;
+                $player->data->removed_user = get_user_meta( $player->data->ID, 'remove_user', true );
+            }
+            $locked               = get_user_meta( $player->data->ID, 'locked', true );
+            $player->data->locked = ! empty( $locked );
             if ( ! empty( $locked ) ) {
                 $player->data->locked_date = get_user_meta( $player->data->ID, 'locked_date', true );
                 $player->data->locked_user = get_user_meta( $player->data->ID, 'locked_user', true );
@@ -314,4 +324,31 @@ class Player_Repository {
     public function save_btm( int $player_id, int $btm ): void {
         update_user_meta( $player_id, 'btm', $btm );
     }
+
+    /**
+     * Check if a player has club associations function
+     *
+     * @param int $player_id
+     *
+     * @return bool
+     */
+    public function has_club_associations( int $player_id ): bool {
+        $roles_table        = $this->wpdb->prefix . 'racketmanager_club_roles';
+        $club_players_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $query = $this->wpdb->prepare("SELECT ((SELECT COUNT(id) FROM $roles_table WHERE user_id = %d) + (SELECT COUNT(id) FROM $club_players_table WHERE player_id = %d)) AS association_count", $player_id, $player_id);
+        $count = $this->wpdb->get_var($query);
+        return $count > 0;
+    }
+
+    /**
+     * Delete a player from the database.
+     *
+     * @param int $player_id
+     *
+     * @return void
+     */
+    public function delete( int $player_id ): void {
+        wp_delete_user( $player_id );
+    }
+
 }

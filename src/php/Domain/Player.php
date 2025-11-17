@@ -139,9 +139,9 @@ final class Player {
     /**
      * Removed user.
      *
-     * @var string|null
+     * @var int|null
      */
-    public ?string $removed_user;
+    public int|null $removed_user = null;
     /**
      * Created user.
      *
@@ -548,6 +548,26 @@ final class Player {
         $this->locked_user = $locked_user;
     }
     /**
+     * Set the removed date
+     *
+     * @param string $removed_date
+     *
+     * @return void
+     */
+    public function set_removed_date( string $removed_date ): void {
+        $this->removed_date = $removed_date;
+    }
+    /**
+     * Set removed user
+     *
+     * @param int $removed_user
+     *
+     * @return void
+     */
+    public function set_removed_user( int $removed_user ): void {
+        $this->removed_user = $removed_user;
+    }
+    /**
      * Get player ID
      *
      * @return int|null
@@ -676,10 +696,27 @@ final class Player {
     /**
      * Get locked user ID
      *
+     * @return int|null
+     */
+    public function get_locked_user(): ?int {
+        return $this->locked_user;
+    }
+    /**
+     * Get removed date
+     *
      * @return string|null
      */
-    public function get_locked_user(): ?string {
-        return $this->locked_user;
+    public function get_removed_date(): ?string {
+        return $this->removed_date;
+    }
+
+    /**
+     * Get removed user ID
+     *
+     * @return int|null
+     */
+    public function get_removed_user(): ?int {
+        return $this->removed_user;
     }
     /**
      * Calculate player age function
@@ -905,26 +942,6 @@ final class Player {
             }
         }
     }
-    /**
-     * Delete player
-     */
-    public function delete(): void {
-        global $wpdb;
-
-        $club_player = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT count(*) FROM $wpdb->racketmanager_club_players WHERE `player_id` = %d",
-                $this->id
-            )
-        );
-        if ( ! $club_player ) {
-            wp_delete_user( $this->id );
-        } else {
-            update_user_meta( $this->id, 'remove_date', gmdate( 'Y-m-d' ) );
-        }
-        wp_cache_flush_group( 'players' );
-    }
-
     /**
      * Get clubs for player
      *

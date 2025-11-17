@@ -34,9 +34,9 @@ class Player_Repository {
         $userdata['first_name']      = $player->get_firstname();
         $userdata['last_name']       = $player->get_surname();
         $userdata['display_name']    = $player->get_display_name();
-        $userdata['user_login']      = $player->get_user_login();
-        $userdata['user_pass']       = $player->get_user_password();
-        $userdata['user_registered'] = $player->get_user_registered();
+        $userdata['user_login']      = $player->get_login();
+        $userdata['user_pass']       = $player->get_password();
+        $userdata['user_registered'] = $player->get_date_registered();
         if ( $player->email ) {
             $userdata['user_email'] = $player->email;
         }
@@ -74,7 +74,7 @@ class Player_Repository {
             $user_data['last_name']     = $player->get_surname();
             $user_data['display_name']  = $player->get_display_name();
             $user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
-            $user_data['user_email']    = $player->get_user_email();
+            $user_data['user_email']    = $player->get_email();
             $user_data['ID']            = $player->get_id();
             $user_id                    = wp_update_user( $user_data );
             if ( is_wp_error( $user_id ) ) {
@@ -95,10 +95,10 @@ class Player_Repository {
             update_user_meta( $user_id, 'year_of_birth', $player->get_year_of_birth() );
         }
         if ( isset( $updates['locked'] ) ) {
-            if ( $player->locked ) {
-                update_user_meta( $user_id, 'locked', $player->locked );
-                update_user_meta( $user_id, 'locked_date', gmdate( 'Y-m-d' ) );
-                update_user_meta( $user_id, 'locked_user', get_current_user_id() );
+            if ( $player->get_locked() ) {
+                update_user_meta( $user_id, 'locked', $player->get_locked() );
+                update_user_meta( $user_id, 'locked_date', $player->get_locked_date() );
+                update_user_meta( $user_id, 'locked_user', $player->get_locked_user() );
             } else {
                 delete_user_meta( $user_id, 'locked' );
                 delete_user_meta( $user_id, 'locked_date' );
@@ -301,26 +301,6 @@ class Player_Repository {
      */
     public function save_contact_no( int $player_id, string $contact_no ): void {
         update_user_meta( $player_id, 'contactno', $contact_no );
-    }
-
-    /**
-     * Save email for player
-     *
-     * @param int $player_id
-     * @param string $email
-     *
-     * @return void
-     */
-    public function save_email( int $player_id, string $email ): void {
-        $userdata               = array();
-        $userdata['ID']         = $player_id;
-        $userdata['user_email'] = $email;
-        $user_id                = wp_update_user( $userdata );
-        if ( is_wp_error( $user_id ) ) {
-            $error_msg = $user_id->get_error_message();
-            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log( 'Unable to update user email ' . $player_id . ' - ' . $email . ' - ' . $error_msg );
-        }
     }
 
     /**

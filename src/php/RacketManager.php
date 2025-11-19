@@ -1839,38 +1839,24 @@ class RacketManager {
      *
      * @return array|int
      */
-    public function get_club_players( array $args ): array|int {
+    public function is_player_in_club( array $args ): bool {
         global $wpdb;
 
         $defaults = array(
-                'count'   => false,
                 'team'    => false,
-                'club'    => false,
                 'player'  => false,
-                'gender'  => false,
                 'active'  => false,
                 'type'    => false,
-                'status'  => false,
-                'orderby' => array( 'display_name' => 'ASC' ),
         );
         $args     = array_merge( $defaults, $args );
-        $count    = $args['count'];
         $team     = $args['team'];
         $type     = $args['type'];
-        $club     = $args['club'];
         $player   = $args['player'];
-        $gender   = $args['gender'];
         $active   = $args['active'];
-        $status   = $args['status'];
-        $orderby  = $args['orderby'];
 
         $search_terms = array();
         if ( $team ) {
             $search_terms[] = $wpdb->prepare( "`club_id` in (select `club_id` from $wpdb->racketmanager_teams where `id` = %d)", intval( $team ) );
-        }
-
-        if ( $club ) {
-            $search_terms[] = $wpdb->prepare( '`club_id` = %d', intval( $club ) );
         }
 
         if ( $player ) {
@@ -1884,53 +1870,13 @@ class RacketManager {
         if ( $active ) {
             $search_terms[] = '`removed_date` IS NULL';
         }
-        switch( $status ) {
-            case 'outstanding':
-                $search_terms[] = '`created_date` IS NULL';
-                break;
-            case 'all':
-            default:
-                break;
-        }
         $search = Util::search_string( $search_terms, true );
-        if ( $count ) {
-            $sql = "SELECT COUNT(ID) FROM $wpdb->racketmanager_club_players " . $search;
-            return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql
-            );
-        }
-        $order        = Util::order_by_string( $orderby );
-        $sql          = "SELECT A.`id` FROM $wpdb->racketmanager_club_players A INNER JOIN $wpdb->users B ON A.`player_id` = B.`ID` " . $search . $order;
-        $club_players = wp_cache_get( md5( $sql ), 'club_players' );
-        if ( ! $club_players ) {
-            $club_players = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql
-            );
-            wp_cache_set( md5( $sql ), $club_players, 'club_players' );
-        }
-
-        $i     = 0;
-        foreach ( $club_players as $club_player ) {
-            $club_player = get_club_player( $club_player->id );
-            if ( $club_player ) {
-                if ( $gender && $gender !== $club_player->player->gender ) {
-                    $include = false;
-                } else {
-                    $include = true;
-                }
-            } else {
-                $include = false;
-            }
-            if ( $include ) {
-                $club_players[ $i ] = $club_player;
-            } else {
-                unset( $club_players[ $i ] );
-            }
-            ++$i;
-        }
-        return $club_players;
+        $sql    = "SELECT COUNT(ID) FROM $wpdb->racketmanager_club_players " . $search;
+        $count = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                $sql
+        );
+        return $count > 0;
     }
     /**
      * Get list of players

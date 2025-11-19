@@ -64,16 +64,15 @@ foreach ( $matches as $match ) {
     }
     if ( ! $highlight_match && is_user_logged_in() ) {
         $player_args           = array();
-        $player_args['count']  = true;
         $player_args['player'] = get_current_user_id();
         $player_args['team']   = $match->home_team;
         $player_args['active'] = true;
-        $player_selected       = $racketmanager->get_club_players( $player_args );
+        $player_selected       = $racketmanager->is_player_in_club( $player_args );
         if ( $player_selected ) {
             $selected_match = true;
         } else {
             $player_args['team'] = $match->away_team;
-            $player_selected     = $racketmanager->get_club_players( $player_args );
+            $player_selected     = $racketmanager->is_player_in_club( $player_args );
             if ( $player_selected ) {
                 $selected_match = true;
             }

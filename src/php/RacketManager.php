@@ -2872,7 +2872,7 @@ class RacketManager {
         $btm           = isset( $_POST['btm'] ) ? sanitize_text_field( wp_unslash( $_POST['btm'] ) ) : null;
         $contactno     = empty( $_POST['contactno'] ) ? '' : sanitize_text_field( wp_unslash( $_POST['contactno'] ) );
         $email         = isset( $_POST['email'] ) ? sanitize_text_field( wp_unslash( $_POST['email'] ) ) : null;
-        $locked        = isset( $_POST['locked'] ) ? sanitize_text_field( wp_unslash( $_POST['locked'] ) ) : '';
+        $locked        = isset( $_POST['locked'] );
         $year_of_birth = empty( $_POST['year_of_birth'] ) ? null : intval( $_POST['year_of_birth'] );
         $validator     = new Validator();
         $validator     = $validator->first_name( $firstname );
@@ -2880,9 +2880,9 @@ class RacketManager {
         $validator     = $validator->gender( $gender );
         if ( empty( $validator->error ) && empty( $player_id ) ) {
             $name = $firstname . ' ' . $surname;
-            $player = get_player( $name, 'name' );
-            if ( $player ) {
-                $player_id = $player->ID;
+            $existing_player = get_player( $name, 'name' );
+            if ( $existing_player ) {
+                $player_id = $existing_player->ID;
             }
         }
         $validator     = $validator->btm( intval( $btm ), $player_id );

@@ -17,8 +17,10 @@ use Racketmanager\Ajax\Ajax_Match;
 use Racketmanager\Ajax\Ajax_Tournament;
 use Racketmanager\Domain\Message;
 use Racketmanager\Domain\Player_Error;
+use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\Login;
+use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Services\Rewrites;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Public\Shortcodes;
@@ -131,6 +133,7 @@ class RacketManager {
     public object $shortcodes_message;
     public object $shortcodes_tournament;
     public object $rewrites;
+    private Player_Management_Service $player_service;
 
     /**
      * Constructor
@@ -167,6 +170,8 @@ class RacketManager {
             add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
             add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ) );
+            $player_repository    = new Player_Repository();
+            $this->player_service = new Player_Management_Service( $player_repository );
         }
         self::$instance = $this;
     }
@@ -482,10 +487,9 @@ class RacketManager {
                 }
             }
         } else {
-            $players = $this->get_all_players( array( 'active' => true ) );
+            $players = $this->player_service->get_all_players( array( 'active' => true ) );
             if ( $players ) {
                 foreach ( $players as $player ) {
-                    $player = get_player( $player->ID );
                     if ( ! empty( $player->btm ) ) {
                         $wtn_list[] = $player;
                     }
@@ -1833,7 +1837,7 @@ class RacketManager {
     }
 
     /**
-     * Get club players from database
+     * Check to see if a player is in a club (based on team)
      *
      * @param array $args query arguments.
      *

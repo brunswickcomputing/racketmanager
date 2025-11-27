@@ -41,18 +41,18 @@ class Util {
     }
 
     /**
-     * Add pages to database
+     * Add pages to the database
      *
      * @param array $page_definitions page definition array.
      */
     public static function add_racketmanager_pages( array $page_definitions ): void {
         foreach ( $page_definitions as $slug => $page ) {
-            $post_id = self::insert_racketmanager_page( $slug, $page );
+            $post_id = self::add_racketmanager_page( $slug, $page );
         }
     }
 
     /**
-     * Add page to database
+     * Add page to the database
      *
      * @param string $slug slug of page.
      * @param array $page page definition array.

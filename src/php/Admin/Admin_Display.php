@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
@@ -69,11 +70,13 @@ class Admin_Display {
     public Admin_Upgrade $admin_upgrade;
     protected Club_Management_Service $club_service;
     protected Player_Management_Service $player_service;
+    protected RacketManager $racketmanager;
 
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct( $plugin_instance ) {
+        $this->racketmanager = $plugin_instance;
         add_action( 'init', array( &$this, 'load_translations' ) );
         $club_repository      = new Club_Repository();
         $club_role_repository = new Club_Role_Repository();
@@ -93,17 +96,16 @@ class Admin_Display {
      * ShowMenu() - show admin menu
      */
     public function display(): void {
-        global $racketmanager;
-        $options = $racketmanager->options;
+        $options = $this->racketmanager->options;
         // Update Plugin Version.
         if ( RACKETMANAGER_VERSION !== $options['version'] ) {
             flush_rewrite_rules();
             $options['version'] = RACKETMANAGER_VERSION;
-            $racketmanager->update_plugin_options( $options );
+            $this->racketmanager->update_plugin_options( $options );
         }
         // Update database.
         if ( ! isset( $options['dbversion'] ) || RACKETMANAGER_DBVERSION !== $options['dbversion'] ) {
-            $this->admin_upgrade = new Admin_Upgrade();
+            $this->admin_upgrade = new Admin_Upgrade( $this->racketmanager );
             $this->admin_upgrade->handle_display();
             return;
         }
@@ -214,7 +216,6 @@ class Admin_Display {
      * @return void
      */
     private function show_contact_preview(): void {
-        global $racketmanager;
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams' );
         if ( ! empty( $validator->error ) ) {
@@ -252,12 +253,12 @@ class Admin_Display {
         $email_intro   = isset( $_POST['contactIntro'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactIntro'] ) ) : null;
         $email_body    = isset( $_POST['contactBody'] ) ? wp_unslash( $_POST['contactBody'] ) : null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $email_close   = isset( $_POST['contactClose'] ) ? sanitize_textarea_field( wp_unslash( $_POST['contactClose'] ) ) : null;
-        $email_subject = $racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
-        $email_message = $racketmanager->shortcodes->load_template(
+        $email_subject = $this->racketmanager->site_name . ' - ' . $title . ' ' . $season . ' - Important Message';
+        $email_message = $this->racketmanager->shortcodes->load_template(
             'contact-teams',
             array(
                 $object_type    => $object,
-                'organisation'  => $racketmanager->site_name,
+                'organisation'  => $this->racketmanager->site_name,
                 'season'        => $season,
                 'title_text'    => $email_title,
                 'intro'         => $email_intro,
@@ -439,7 +440,6 @@ class Admin_Display {
      * @return array
      */
     private function get_club_teams( string $entry_type, string $league_type ): array {
-        global $racketmanager;
         $teams = array();
         $clubs = $this->club_service->get_clubs(
             array(

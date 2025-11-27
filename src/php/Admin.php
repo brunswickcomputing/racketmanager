@@ -56,7 +56,7 @@ class Admin extends RacketManager {
 
         // PSR-4 autoloading handles class loading; no manual includes needed here.
         $this->ajax_admin   = new Ajax_Admin();
-        $this->admin_display = new Admin_Display();
+        $this->admin_display = new Admin_Display( $this );
 
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_styles' ) );

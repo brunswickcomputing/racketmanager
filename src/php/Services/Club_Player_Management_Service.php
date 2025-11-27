@@ -1,26 +1,49 @@
 <?php
+/**
+ * Club_Player_Management_Service class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Services
+ */
 
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Club_Player;
+use Racketmanager\Domain\Club_Player_DTO;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
+use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Player_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use stdClass;
 use WP_Error;
-use function Racketmanager\debug_to_console;
+use function Racketmanager\club_players_notification;
 
+/**
+ * Class to implement the Club Player Management Service
+ */
 class Club_Player_Management_Service {
     private Club_Player_Repository $club_player_repository;
     private Player_Repository $player_repository;
     private Club_Repository $club_repository;
     private Player_Management_Service $player_service;
+    private ?RacketManager $racketmanager;
 
-    public function __construct( Club_Player_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Management_Service $player_service ) {
+    /**
+     * Constructor
+     *
+     * @param $plugin_instance
+     * @param Club_Player_Repository $club_player_repository
+     * @param Player_Repository $player_repository
+     * @param Club_Repository $club_repository
+     * @param Player_Management_Service $player_service
+     */
+    public function __construct( $plugin_instance, Club_Player_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Management_Service $player_service ) {
+        $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->club_repository        = $club_repository;
@@ -35,9 +58,7 @@ class Club_Player_Management_Service {
      *
      * @return Club_Player|WP_Error
      */
-    public function register_player_to_club( ?int $club_id, ?int $registered_by_userId = null ): Club_Player|WP_Error {
-        debug_to_console( 'in register_player_to_club');
-        debug_to_console( $club_id);
+    public function register_player_to_club( ?int $club_id, ?int $registered_by_userId = null ): string|WP_Error {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( __( 'Club not found', 'racketmanager' ) );
@@ -65,35 +86,88 @@ class Club_Player_Management_Service {
         $club_player->requested_user = $registered_by_userId;
         $registration                = new Club_Player( $club_player );
         $this->club_player_repository->save( $registration );
-        return $registration;
-    }
 
-    public function approve_registration($registrationId, $approvingUserId) {
-        $registration = $this->club_player_repository->find($registrationId);
-        if (!$registration) {
-            throw new Registration_Not_Found_Exception( "Registration not found." );
+        $options = $this->racketmanager->get_options( 'rosters' );
+        if ( 'auto' === $options['rosterConfirmation'] || current_user_can( 'edit_teams' ) ) {
+            $this->approve_registration( $registration->id, $registered_by_userId );
+            $action = 'add';
+            $msg    = __( 'Player added to club', 'racketmanager' );
+        } else {
+            $action = 'request';
+            $msg    = __( 'Player registration pending', 'racketmanager' );
         }
-
-        $registration->approve($approvingUserId);
-        $this->club_player_repository->save($registration);
-        return $registration;
-    }
-
-    public function get_clubs_for_player( $player_id ): array {
-        $player = $this->player_repository->find( $player_id );
-        if (!$player) {
-            throw new Player_Not_Found_Exception( sprintf( __( 'Player with ID %s not found or is inactive.', 'racketmanager' ), $player_id ) );
-        }
-
-        $registrations = $this->club_player_repository->find_by_player( $player_id );
-        $clubs = [];
-        foreach ($registrations as $registration) {
-            $club = $this->club_repository->find( $registration->getClubId() );
-            if ($club) {
-                $clubs[] = $club;
+        if ( ! empty( $options['rosterConfirmationEmail'] ) ) {
+            $headers = array();
+            $user    = $this->player_repository->find( $registered_by_userId );
+            if ( ! empty( $club->match_secretary->id ) && $club->match_secretary->id !== $user->ID ) {
+                $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
             }
+            $email_to                  = $user->display_name . ' <' . $user->user_email . '>';
+            $message_args              = array();
+            $message_args['requestor'] = $user->display_name;
+            $message_args['action']    = $action;
+            $message_args['club']      = $club->shortcode;
+            $message_args['player']    = $player->fullname;
+            $message_args['btm']       = empty( $player->btm ) ? null : $player->btm;
+            $headers[]                 = RACKETMANAGER_FROM_EMAIL . $this->racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
+            $headers[]                 = RACKETMANAGER_CC_EMAIL . $this->racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
+            $subject                   = $this->racketmanager->site_name . ' - ' . $msg . ' - ' . $club->shortcode;
+            $message                   = club_players_notification( $message_args );
+            wp_mail( $email_to, $subject, $message, $headers );
         }
-        return $clubs;
+        return $msg;
     }
 
+    /**
+     * Approve registration
+     *
+     * @param int $registration_id
+     * @param int $approving_user
+     *
+     * @return void
+     */
+    public function approve_registration( int $registration_id, int $approving_user ): void {
+        $registration = $this->club_player_repository->find( $registration_id );
+        if ( ! $registration ) {
+            throw new Registration_Not_Found_Exception( __('Registration not found', 'racketmanager' ) );
+        }
+
+        $registration->set_approval_date( current_time('mysql') );
+        $registration->set_approval_user( $approving_user );
+        $this->club_player_repository->save( $registration );
+    }
+
+    /**
+     * Remove registration from club
+     *
+     * @param int $registration_id
+     * @param int $removing_user
+     *
+     * @return void
+     */
+    public function remove_registration( int $registration_id, int $removing_user ): void {
+        $registration = $this->club_player_repository->find( $registration_id );
+        if ( ! $registration ) {
+            throw new Registration_Not_Found_Exception( __('Registration not found', 'racketmanager' ) );
+        }
+
+        $registration->set_removal_date( current_time('mysql') );
+        $registration->set_removal_user( $removing_user );
+        $this->club_player_repository->save( $registration );
+    }
+
+    /**
+     * Retrieves all active players registered for any club in the system, with full details and optional filtering.
+     *
+     * @param string|null $active Optional active filter.
+     * @param string|null $status Optional status filter.
+     * @param int|null $clubId Optional Club ID filter.
+     * @param string|null $gender Optional gender filter.
+     * @param bool $system Optional system filter.
+     *
+     * @return Club_Player_DTO[]
+     */
+    public function get_registered_players_list( string $active = null, string $status = null, int $clubId = null, string $gender = null, bool $system = false ): array {
+        return $this->player_repository->find_club_players_with_details( $clubId, $status, $gender, $active, $system );
+    }
 }

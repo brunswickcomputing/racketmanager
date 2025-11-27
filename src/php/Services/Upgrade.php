@@ -25,13 +25,17 @@ class Upgrade {
      */
     private array $options;
     private Club_Management_Service $club_service;
+    private wpdb $wpdb;
+    private RacketManager $racketmanager;
 
     /**
      * Initialise the upgrade class
      */
-    public function __construct() {
-        global $racketmanager;
-        $this->options          = $racketmanager->options;
+    public function __construct( $plugin_instance ) {
+        global $wpdb;
+        $this->wpdb             = $wpdb;
+        $this->racketmanager    = $plugin_instance;
+        $this->options          = $this->racketmanager->options;
         $this->installed        = $this->options['dbversion'] ?? null;
         $club_repository        = new Club_Repository();
         $club_role_repository   = new Club_Role_Repository();
@@ -44,8 +48,7 @@ class Upgrade {
      * @return void
      */
     public function run(): void {
-        global $wpdb;
-        $wpdb->show_errors();
+        $this->wpdb->show_errors();
         $this->v9_7_0();
         $this->v10_0_0();
         /*
@@ -65,21 +68,20 @@ class Upgrade {
      * @return void
      */
     private function v9_7_0 ():void {
-        global $wpdb;
         $version = '9.7.0';
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $charset_collate = '';
-            if ( $wpdb->has_cap( 'collation' ) ) {
-                if ( ! empty($wpdb->charset) ) {
-                    $charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+            if ( $this->wpdb->has_cap( 'collation' ) ) {
+                if ( ! empty( $this->wpdb->charset ) ) {
+                    $charset_collate = "DEFAULT CHARACTER SET {$this->wpdb}->charset";
                 }
-                if ( ! empty($wpdb->collate) ) {
-                    $charset_collate .= " COLLATE $wpdb->collate";
+                if ( ! empty( $this->wpdb->collate ) ) {
+                    $charset_collate .= " COLLATE {$this->wpdb}->collate";
                 }
             }
-            $wpdb->query( "CREATE TABLE $wpdb->racketmanager_club_roles ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `club_id` int( 11 ) NOT NULL, `role_id` int( 11 ) NOT NULL, `user_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
-            $clubs                = $wpdb->get_results( "SELECT `id`, `matchsecretary` FROM $wpdb->racketmanager_clubs");
+            $this->wpdb->query( "CREATE TABLE {$this->wpdb->prefix}racketmanager_club_roles ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `club_id` int( 11 ) NOT NULL, `role_id` int( 11 ) NOT NULL, `user_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );
+            $clubs                = $this->wpdb->get_results( "SELECT `id`, `matchsecretary` FROM {$this->wpdb->prefix}racketmanager_clubs");
             foreach ( $clubs as $club ) {
                 $club_role      = $this->club_service->set_club_role( $club->id, 1, $club->matchsecretary );
                 if ( $club_role ) {
@@ -89,7 +91,7 @@ class Upgrade {
                 }
                 echo '<p>' . esc_html( $msg ) . '</p>';
             }
-            $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `matchsecretary`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_clubs DROP `matchsecretary`" );
         }
     }
 
@@ -100,7 +102,6 @@ class Upgrade {
      * @return void
      */
     private function v10_0_0 ():void {
-        global $wpdb;
         $version = '10.0.0';
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
@@ -153,6 +154,8 @@ class Upgrade {
             }
             $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `latitude`" );
             $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `longitude`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_clubs DROP `latitude`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_clubs DROP `longitude`" );
         }
     }
 

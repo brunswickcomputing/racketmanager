@@ -9,9 +9,9 @@ use WP_User;
 use wpdb;
 
 class Player_Repository {
+    const META_KEY_GENDER = 'gender';
+    const META_KEY_BTM = 'btm';
     private wpdb $wpdb;
-    private string $table_name;
-
     /**
      * Create a new Player_Repository instance.
      *
@@ -19,7 +19,6 @@ class Player_Repository {
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
-        $this->table_name = $this->wpdb->prefix . 'users';
     }
 
     /**
@@ -44,7 +43,7 @@ class Player_Repository {
         if ( ! is_wp_error( $user_id ) ) {
             $player->set_id( $user_id );
             update_user_meta( $user_id, 'show_admin_bar_front', false );
-            update_user_meta( $user_id, 'gender', $player->get_gender() );
+            update_user_meta( $user_id, self::META_KEY_GENDER, $player->get_gender() );
             if ( isset( $player->btm ) && $player->btm > '' ) {
                 $this->save_btm( $user_id, $player->get_btm() );
             }
@@ -82,10 +81,10 @@ class Player_Repository {
             }
         }
         $user_id = $player->get_id();
-        if ( isset( $updates['gender'] ) ) {
-            update_user_meta( $user_id, 'gender', $player->get_gender() );
+        if ( isset( $updates[ self::META_KEY_GENDER ] ) ) {
+            update_user_meta( $user_id, self::META_KEY_GENDER, $player->get_gender() );
         }
-        if ( isset( $updates['btm'] ) ) {
+        if ( isset( $updates[ self::META_KEY_BTM ] ) ) {
             $this->save_btm( $user_id, $player->get_btm() );
         }
         if ( isset( $updates['contactno'] ) ) {
@@ -109,6 +108,13 @@ class Player_Repository {
             update_user_meta( $user_id, 'remove', $player->get_removed_date() );
             update_user_meta( $user_id, 'remove_user', $player->get_removed_user() );
         }
+        if ( isset( $updates['wtn'] ) ) {
+            foreach ( $player->get_wtn() as $match_type => $wtn ) {
+                $wtn_type = 'wtn_' . $match_type;
+                update_user_meta( $user_id, $wtn_type, $wtn );
+            }
+        }
+        wp_cache_delete( $player->get_id(), 'players' );
     }
 
     /**
@@ -124,10 +130,10 @@ class Player_Repository {
 
         if ( ! $player ) {
             $player = match ( $search_type ) {
-                'btm'   => self::get_player_by_btm( $player_id ),
-                'email' => get_user_by( 'email', $player_id ),
-                'login' => self::get_player_by_login( $player_id ),
-                'name'  => self::get_player_by_name( $player_id ),
+                'btm'   => $this->find_by_btm( $player_id ),
+                'email' => $this->find_by_email( $player_id ),
+                'login' => $this->find_by_login( $player_id ),
+                'name'  => $this->find_by_name( $player_id ),
                 default => get_userdata( $player_id ),
             };
             if ( ! $player ) {
@@ -135,12 +141,13 @@ class Player_Repository {
             }
             $player->data->firstname     = get_user_meta( $player->data->ID, 'first_name', true );
             $player->data->surname       = get_user_meta( $player->data->ID, 'last_name', true );
-            $player->data->gender        = get_user_meta( $player->data->ID, 'gender', true );
+            $player->data->gender        = get_user_meta( $player->data->ID, self::META_KEY_GENDER, true );
             $player->data->type          = get_user_meta( $player->data->ID, 'racketmanager_type', true );
-            $player->data->btm           = get_user_meta( $player->data->ID, 'btm', true );
+            $player->data->btm           = get_user_meta( $player->data->ID, self::META_KEY_BTM, true );
             $year_of_birth               = get_user_meta( $player->data->ID, 'year_of_birth', true );
             $player->data->year_of_birth = empty( $year_of_birth ) ? null : $year_of_birth;
-            $player->data->contactno     = get_user_meta( $player->data->ID, 'contactno', true );
+            $contact_no                  = get_user_meta( $player->data->ID, 'contactno', true );
+            $player->data->contactno     = empty( $contact_no ) ? null : $contact_no;
             $removed_date                = get_user_meta( $player->data->ID, 'remove_date', true );
             if ( empty( $removed_date ) ) {
                 $player->data->removed_date = null;
@@ -175,6 +182,9 @@ class Player_Repository {
 
         return $player;
     }
+    public function find_by_email( $player_id ): false|WP_User {
+        return get_user_by( 'email', $player_id );
+    }
     /**
      * Get player by LTA tennis number
      *
@@ -182,10 +192,10 @@ class Player_Repository {
      *
      * @return false|mixed
      */
-    private static function get_player_by_btm( $player_id ): mixed {
+    public function find_by_btm( $player_id ): mixed {
         $players = get_users(
             array(
-                'meta_key'     => 'btm', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_key'     => self::META_KEY_BTM, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
                 'meta_value'   => $player_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
                 'meta_compare' => '=',
             )
@@ -203,7 +213,7 @@ class Player_Repository {
      *
      * @return false|WP_User
      */
-    private static function get_player_by_login( $player_id ): false|WP_User {
+    public function find_by_login( $player_id ): false|WP_User {
         // the format of login is first.surname( can contain spaces ).
         if ( ! str_contains( $player_id, '.' ) ) {
             $pos = strpos( $player_id, ' ' );
@@ -220,7 +230,7 @@ class Player_Repository {
      *
      * @return false|WP_User
      */
-    private static function get_player_by_name( $player_id ): false|WP_User {
+    public function find_by_name( $player_id ): false|WP_User {
         // the format of nicename is first-surname (where surname spaces are converted to '-').
         if ( str_contains( $player_id, ' ' ) ) {
             $player_id = str_replace( ' ', '-', $player_id );
@@ -249,14 +259,14 @@ class Player_Repository {
             return $this->get_active_players();
         }
         $user_args                 = array();
-        $user_args['meta_key']     = 'gender'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+        $user_args['meta_key']     = self::META_KEY_GENDER; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
         $user_args['meta_value']   = 'M,F'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
         $user_args['meta_compare'] = 'IN';
         $user_args['orderby']      = $orderby_string;
         $user_args['order']        = $order;
         if ( $name ) {
             if ( is_numeric( $name ) ) {
-                $user_args['meta_key']   = 'btm'; //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                $user_args['meta_key']   = self::META_KEY_BTM; //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
                 $user_args['meta_value'] = $name; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
             } else {
                 $user_args['search']         = '*' . $name . '*';
@@ -327,7 +337,7 @@ class Player_Repository {
      * @return void
      */
     public function save_btm( int $player_id, int $btm ): void {
-        update_user_meta( $player_id, 'btm', $btm );
+        update_user_meta( $player_id, self::META_KEY_BTM, $btm );
     }
 
     /**

@@ -38,7 +38,6 @@ class Club_Role_Repository {
             );
             $club_role->set_id( $this->wpdb->insert_id );
         } else {
-            // UPDATE: Use wpdb->update with the prepare logic built-in
             $this->wpdb->update(
                 $this->table_name,
                 array('user_id' => $club_role->get_user_id() ), // Data to update
@@ -147,49 +146,34 @@ class Club_Role_Repository {
     }
 
     /**
-     * Delete club roless from the database.
+     * Delete a club role from the database.
      *
-     * @param array $args
+     * @param $id
      *
-     * @return bool
+     * @return void
      */
-    public function delete( array $args = array() ): bool {
-        $defaults   = array(
-            'role'    => false,
-            'user'    => false,
-            'club'    => false,
-            'role_id' => false,
+    public function delete_for_role( $id ): void {
+        $this->wpdb->delete(
+            $this->table_name,
+            array( 'id' => $id ),
+            array( '%d' )
         );
-        $args    = array_merge( $defaults, $args );
-        $role    = $args['role'];
-        $user    = $args['user'];
-        $club    = $args['club'];
-        $role_id = $args['role_id'];
+        wp_cache_flush_group( 'club-roles' );
+    }
 
-        $search_terms = array();
-        if ( $role ) {
-            $search_terms[] = $this->wpdb->prepare( '`role_id` = %d', intval( $role ) );
-        }
-        if ( $user ) {
-            $search_terms[] = $this->wpdb->prepare( '`user_id` = %d', intval( $user ) );
-        }
-        if ( $club ) {
-            $search_terms[] = $this->wpdb->prepare( '`club_id` = %d', intval( $club ) );
-        }
-        if ( $role_id ) {
-            $search_terms[] = $this->wpdb->prepare( '`id` = %d', intval( $role_id ) );
-        }
-        if ( ! empty( $search_terms ) ) {
-            $search = Util::search_string( $search_terms, true );
-            $sql    = "DELETE FROM $this->table_name " . $search;
-            $result = $this->wpdb->query(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call OK.
-            wp_cache_flush_group( 'club-roles' );
-            return $result !== false && $result > 0;
-        } else {
-            return false;
-        }
+    /**
+     * Delete all club roles for a club.
+     *
+     * @param int $club_id
+     *
+     * @return void
+     */
+    public function delete_for_club( int $club_id ): void {
+        $this->wpdb->delete(
+            $this->table_name,
+            array( 'club_id' => $club_id ),
+            array( '%d' )
+        );
+        wp_cache_flush_group( 'club-roles' );
     }
 }

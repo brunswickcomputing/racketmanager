@@ -11,6 +11,7 @@ namespace Racketmanager\Services;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Util\Util;
+use wpdb;
 
 /**
  * Class to implement the Upgrade
@@ -152,10 +153,38 @@ class Upgrade {
                     Util::add_racketmanager_page( $child_page_slug, $child_args);
                 }
             }
-            $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `latitude`" );
-            $wpdb->query( "ALTER TABLE $wpdb->racketmanager_clubs DROP `longitude`" );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_clubs DROP `latitude`" );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_clubs DROP `longitude`" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.1
+     * Change system `meta_key` to 'racketmanager_type'
+     *
+     * @return void
+     */
+    private function v10_0_1 ():void {
+        $version = '10.0.1';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "UPDATE {$this->wpdb->prefix}usermeta SET `meta_key` = 'racketmanager_type' WHERE `meta_key` = 'leaguemanager_type'" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.2
+     * Drop redundant columns
+     *
+     * @return void
+     */
+    private function v10_0_2 ():void {
+        $version = '10.0.2';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_player_errors DROP `status`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_player_errors DROP `updated_user`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_player_errors DROP `updated_date`" );
         }
     }
 

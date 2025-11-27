@@ -81,13 +81,16 @@ class Club_Repository {
     /**
      * Retrieves an existing club from the database by ID.
      *
-     * @param int|string $id The user ID.
+     * @param int|string|null $id The user ID.
      * @param string $search_term
      *
      * @return Club|null The user object or null if not found.
      */
-    public function find( int|string $id, string $search_term = 'id' ): ?Club {
-        $search = match ($search_term) {
+    public function find( null|int|string $id, string $search_term = 'id' ): ?Club {
+        if ( empty( $id ) ) {
+            return null;
+        }
+        $search = match ( $search_term ) {
             'name'      => $this->wpdb->prepare(
                 '`name` = %s',
                 $id

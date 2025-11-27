@@ -1,15 +1,25 @@
 <?php
+/**
+ * Player_Repository class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Repository
+ */
 
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club_Player_DTO;
 use Racketmanager\Domain\Player;
-use Exception;
+use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use WP_User;
 use wpdb;
 
+/**
+ * Class to implement the Player repository
+ */
 class Player_Repository {
     const META_KEY_GENDER = 'gender';
     const META_KEY_BTM = 'btm';
@@ -66,7 +76,7 @@ class Player_Repository {
      * @param array $updates
      *
      * @return void
-     * @throws Exception
+     * @throws Player_Update_Exception
      */
     public function update( Player $player, array $updates ): void {
         if ( isset( $updates['core'] ) ) {
@@ -79,7 +89,7 @@ class Player_Repository {
             $user_data['ID']            = $player->get_id();
             $user_id                    = wp_update_user( $user_data );
             if ( is_wp_error( $user_id ) ) {
-                throw new Exception( $user_id->get_error_message() );
+                throw new Player_Update_Exception( $user_id->get_error_message() );
             }
         }
         $user_id = $player->get_id();
@@ -129,59 +139,56 @@ class Player_Repository {
      */
     public function find( int|string $player_id, string $search_type = 'id' ): ?Player {
         $player = wp_cache_get( $player_id, 'players' );
-
-        if ( ! $player ) {
-            $player = match ( $search_type ) {
-                'btm'   => $this->find_by_btm( $player_id ),
-                'email' => $this->find_by_email( $player_id ),
-                'login' => $this->find_by_login( $player_id ),
-                'name'  => $this->find_by_name( $player_id ),
-                default => get_userdata( $player_id ),
-            };
-            if ( ! $player ) {
-                return null;
-            }
-            $player->data->firstname     = get_user_meta( $player->data->ID, 'first_name', true );
-            $player->data->surname       = get_user_meta( $player->data->ID, 'last_name', true );
-            $player->data->gender        = get_user_meta( $player->data->ID, self::META_KEY_GENDER, true );
-            $player->data->type          = get_user_meta( $player->data->ID, 'racketmanager_type', true );
-            $player->data->btm           = get_user_meta( $player->data->ID, self::META_KEY_BTM, true );
-            $year_of_birth               = get_user_meta( $player->data->ID, 'year_of_birth', true );
-            $player->data->year_of_birth = empty( $year_of_birth ) ? null : $year_of_birth;
-            $contact_no                  = get_user_meta( $player->data->ID, 'contactno', true );
-            $player->data->contactno     = empty( $contact_no ) ? null : $contact_no;
-            $removed_date                = get_user_meta( $player->data->ID, 'remove_date', true );
-            if ( empty( $removed_date ) ) {
-                $player->data->removed_date = null;
-                $player->data->removed_user = null;
-            } else {
-                $player->data->removed_date = $removed_date;
-                $removed_user               = get_user_meta( $player->data->ID, 'remove_user', true );
-                if ( empty( $removed_user ) ) {
-                    $player->data->removed_user = null;
-                } else {
-                    $player->data->removed_user = $removed_user;
-                }
-            }
-            $locked               = get_user_meta( $player->data->ID, 'locked', true );
-            $player->data->locked = ! empty( $locked );
-            if ( ! empty( $locked ) ) {
-                $player->data->locked_date = get_user_meta( $player->data->ID, 'locked_date', true );
-                $player->data->locked_user = get_user_meta( $player->data->ID, 'locked_user', true );
-            }
-            $player->data->system_record = get_user_meta( $player->data->ID, 'racketmanager_type', true );
-            $match_types = Util_Lookup::get_match_types();
-            foreach ( $match_types as $match_type => $description ) {
-                $wtn_type                         = 'wtn_' . $match_type;
-                $player->data->wtn[ $match_type ] = get_user_meta( $player->data->ID, $wtn_type, true );
-            }
-            $player->data->opt_ins = get_user_meta( $player->data->ID, 'racketmanager_opt_in' );
-
-            // Create a new Player object from the retrieved user data.
-            $player = new Player( $player->data );
-            wp_cache_set( $player_id, $player, 'players' );
+        if ( $player ) {
+            return $player;
         }
 
+        $player = match ( $search_type ) {
+            'btm'   => $this->find_by_btm( $player_id ),
+            'email' => $this->find_by_email( $player_id ),
+            'login' => $this->find_by_login( $player_id ),
+            'name'  => $this->find_by_name( $player_id ),
+            default => get_userdata( $player_id ),
+        };
+        if ( ! $player ) {
+            return null;
+        }
+        $player->data->firstname     = get_user_meta( $player->data->ID, 'first_name', true );
+        $player->data->surname       = get_user_meta( $player->data->ID, 'last_name', true );
+        $player->data->gender        = get_user_meta( $player->data->ID, self::META_KEY_GENDER, true );
+        $player->data->type          = get_user_meta( $player->data->ID, 'racketmanager_type', true );
+        $player->data->btm           = get_user_meta( $player->data->ID, self::META_KEY_BTM, true );
+        $year_of_birth               = get_user_meta( $player->data->ID, 'year_of_birth', true );
+        $player->data->year_of_birth = empty( $year_of_birth ) ? null : $year_of_birth;
+        $contact_no                  = get_user_meta( $player->data->ID, 'contactno', true );
+        $player->data->contactno     = empty( $contact_no ) ? null : $contact_no;
+        $removed_date                = get_user_meta( $player->data->ID, 'remove_date', true );
+        $player->data->removed_date  = null;
+        $player->data->removed_user  = null;
+        if ( ! empty( $removed_date ) ) {
+            $player->data->removed_date = $removed_date;
+            $removed_user               = get_user_meta( $player->data->ID, 'remove_user', true );
+            if ( ! empty( $removed_user ) ) {
+                $player->data->removed_user = $removed_user;
+            }
+        }
+        $locked               = get_user_meta( $player->data->ID, 'locked', true );
+        $player->data->locked = ! empty( $locked );
+        if ( ! empty( $locked ) ) {
+            $player->data->locked_date = get_user_meta( $player->data->ID, 'locked_date', true );
+            $player->data->locked_user = get_user_meta( $player->data->ID, 'locked_user', true );
+        }
+        $player->data->system_record = get_user_meta( $player->data->ID, 'racketmanager_type', true );
+        $match_types = Util_Lookup::get_match_types();
+        foreach ( $match_types as $match_type => $description ) {
+            $wtn_type                         = 'wtn_' . $match_type;
+            $player->data->wtn[ $match_type ] = get_user_meta( $player->data->ID, $wtn_type, true );
+        }
+        $player->data->opt_ins = get_user_meta( $player->data->ID, 'racketmanager_opt_in' );
+
+        // Create a new Player object from the retrieved user data.
+        $player = new Player( $player->data );
+        wp_cache_set( $player_id, $player, 'players' );
         return $player;
     }
     public function find_by_email( $player_id ): false|WP_User {
@@ -386,26 +393,7 @@ class Player_Repository {
         $user_meta_table = $this->wpdb->usermeta;
 
         // Base query: Join users, registrations, and clubs tables
-        $query = "
-            SELECT 
-                r.id as registration_id,
-                u.ID as user_id, u.display_name as display_name, u.user_email as email,
-                c.id as club_id, c.shortcode as club_name,
-                r.requested_date as registration_date, r.created_date as approval_date, r.removed_date as removal_date,
-                r.requested_user as registered_by_user_id, r.created_user as approved_by_user_id, r.removed_user as removed_by_user_id,
-                MAX(IF(um_gender.meta_key = %s, um_gender.meta_value, NULL)) as gender,
-                MAX(IF(um_btm.meta_key = %s, um_btm.meta_value, NULL)) as btm
-            FROM 
-                $user_table u
-            INNER JOIN 
-                $registration_table r ON u.ID = r.player_id
-            INNER JOIN
-                $club_table c ON r.club_id = c.id
-            LEFT JOIN
-                $user_meta_table um_gender ON u.ID = um_gender.user_id AND um_gender.meta_key = %s
-            LEFT JOIN
-                $user_meta_table um_btm ON u.ID = um_btm.user_id AND um_btm.meta_key = %s
-        ";
+        $query = "SELECT r.id as registration_id, u.ID as user_id, u.display_name as display_name, u.user_email as email, c.id as club_id, c.shortcode as club_name, r.requested_date as registration_date, r.created_date as approval_date, r.removed_date as removal_date, r.requested_user as registered_by_user_id, r.created_user as approved_by_user_id, r.removed_user as removed_by_user_id, MAX(IF(um_gender.meta_key = %s, um_gender.meta_value, NULL)) as gender, MAX(IF(um_btm.meta_key = %s, um_btm.meta_value, NULL)) as btm FROM $user_table u INNER JOIN $registration_table r ON u.ID = r.player_id INNER JOIN $club_table c ON r.club_id = c.id LEFT JOIN $user_meta_table um_gender ON u.ID = um_gender.user_id AND um_gender.meta_key = %s LEFT JOIN $user_meta_table um_btm ON u.ID = um_btm.user_id AND um_btm.meta_key = %s ";
 
         $params = [self::META_KEY_GENDER, self::META_KEY_BTM, self::META_KEY_GENDER, self::META_KEY_BTM];
         $search_terms = [];

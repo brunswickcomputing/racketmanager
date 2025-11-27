@@ -2,8 +2,10 @@
 
 namespace Racketmanager\Repositories;
 
+use Racketmanager\Domain\Club_Player_DTO;
 use Racketmanager\Domain\Player;
 use Exception;
+use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use WP_User;
 use wpdb;
@@ -364,6 +366,92 @@ class Player_Repository {
      */
     public function delete( int $player_id ): void {
         wp_delete_user( $player_id );
+    }
+
+    /**
+     * Finds players and their registration details based on various filters.
+     *
+     * @param int|null $club_id Optional Club ID filter.
+     * @param string|null $status Optional status filter ('pending', 'approved').
+     * @param string|null $gender Optional gender filter.
+     * @param string|null $active Optional active filter.
+     * @param bool $system Optional system filter.
+     *
+     * @return Club_Player_DTO[]
+     */
+    public function find_club_players_with_details( ?int $club_id = null, ?string $status = null, ?string $gender = null, ?string $active = null, bool $system = false ): array {
+        $registration_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $club_table = $this->wpdb->prefix . 'racketmanager_clubs';
+        $user_table = $this->wpdb->users;
+        $user_meta_table = $this->wpdb->usermeta;
+
+        // Base query: Join users, registrations, and clubs tables
+        $query = "
+            SELECT 
+                r.id as registration_id,
+                u.ID as user_id, u.display_name as display_name, u.user_email as email,
+                c.id as club_id, c.shortcode as club_name,
+                r.requested_date as registration_date, r.created_date as approval_date, r.removed_date as removal_date,
+                r.requested_user as registered_by_user_id, r.created_user as approved_by_user_id, r.removed_user as removed_by_user_id,
+                MAX(IF(um_gender.meta_key = %s, um_gender.meta_value, NULL)) as gender,
+                MAX(IF(um_btm.meta_key = %s, um_btm.meta_value, NULL)) as btm
+            FROM 
+                $user_table u
+            INNER JOIN 
+                $registration_table r ON u.ID = r.player_id
+            INNER JOIN
+                $club_table c ON r.club_id = c.id
+            LEFT JOIN
+                $user_meta_table um_gender ON u.ID = um_gender.user_id AND um_gender.meta_key = %s
+            LEFT JOIN
+                $user_meta_table um_btm ON u.ID = um_btm.user_id AND um_btm.meta_key = %s
+        ";
+
+        $params = [self::META_KEY_GENDER, self::META_KEY_BTM, self::META_KEY_GENDER, self::META_KEY_BTM];
+        $search_terms = [];
+        if ( $club_id ) {
+            $search_terms[] = $this->wpdb->prepare( "r.club_id = %d", $club_id );
+        }
+        if ( ! $system ) {
+            $search_terms[] = "r.system_record IS NULL";
+        }
+        if ( $active ) {
+            $search_terms[] = "r.removed_date IS NULL";
+        }
+        switch( $status ) {
+            case 'outstanding':
+                $search_terms[] = "r.created_date IS NULL";
+                break;
+            case 'all':
+            default:
+                break;
+        }
+        $search = Util::search_string( $search_terms, true );
+        $query .= " $search GROUP BY u.ID, c.id, r.id ";
+
+        if ( ! empty( $gender ) ) {
+            // Filter happens in the HAVING clause because gender is aggregated
+            // OR we use an INNER JOIN for meta-query optimisation if performance is key.
+            // Using HAVING for simplicity here:
+            $query .= " HAVING gender = %s";
+            $params[] = $gender;
+        }
+
+        $query  .= " ORDER BY u.display_name ASC";
+        $results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $params ) );
+
+        return array_map(
+            function( $row ) {
+                $match_types = Util_Lookup::get_match_types();
+                foreach ( $match_types as $match_type => $description ) {
+                    $wtn_type                = 'wtn_' . $match_type;
+                    $row->wtn[ $match_type ] = get_user_meta( $row->user_id, $wtn_type, true );
+                }
+
+                return new Club_Player_DTO( $row );
+            },
+            $results
+        );
     }
 
 }

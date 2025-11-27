@@ -52,6 +52,8 @@ class Upgrade {
         $this->wpdb->show_errors();
         $this->v9_7_0();
         $this->v10_0_0();
+        $this->v10_0_1();
+        $this->v10_0_2();
         /*
         * Update version and dbversion
         */

@@ -11,6 +11,7 @@ namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
+use WP_Error;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
@@ -54,6 +55,8 @@ class Validator {
      * @var string|null
      */
     public ?string $msg;
+    public WP_Error $err;
+
     /**
      * Constructor
      */
@@ -63,6 +66,7 @@ class Validator {
         $this->err_msgs = array();
         $this->status   = null;
         $this->msg      = null;
+        $this->err      = new WP_Error();
     }
     /**
      * Validate security token
@@ -163,6 +167,7 @@ class Validator {
             $this->error      = true;
             $this->err_flds[] = 'firstname';
             $this->err_msgs[] = __( 'First name is required', 'racketmanager' );
+            $this->err->add( 'firstname', __( 'First name is required', 'racketmanager' ) );
         }
         return $this;
     }
@@ -178,6 +183,7 @@ class Validator {
             $this->error      = true;
             $this->err_flds[] = 'surname';
             $this->err_msgs[] = __( 'Surname is required', 'racketmanager' );
+            $this->err->add( 'surname', __( 'Surname is required', 'racketmanager' ) );
         }
         return $this;
     }
@@ -193,6 +199,7 @@ class Validator {
             $this->error      = true;
             $this->err_flds[] = 'gender';
             $this->err_msgs[] = __( 'Gender is required', 'racketmanager' );
+            $this->err->add( 'gender', __( 'Gender is required', 'racketmanager' ) );
         }
         return $this;
     }
@@ -242,6 +249,7 @@ class Validator {
                 $this->error      = true;
                 $this->err_flds[] = $err_field;
                 $this->err_msgs[] = __( 'Email address is required', 'racketmanager' );
+                $this->err->add( $err_field, __( 'Email address is required', 'racketmanager' ) );
             }
         } else {
             $player = get_player( $email, 'email' );
@@ -249,6 +257,7 @@ class Validator {
                 $this->error      = true;
                 $this->err_flds[] = $err_field;
                 $this->err_msgs[] = sprintf( __( 'Email address already used by %s', 'racketmanager' ), $player->display_name );
+                $this->err->add( $err_field, sprintf( __( 'Email address already used by %s', 'racketmanager' ), $player->display_name ) );
             }
         }
         return $this;
@@ -268,6 +277,7 @@ class Validator {
                 $this->error      = true;
                 $this->err_flds[] = 'btm';
                 $this->err_msgs[] = __( 'LTA Tennis Number is required', 'racketmanager' );
+                $this->err->add( 'btm', __( 'LTA Tennis Number is required', 'racketmanager' ) );
             }
         } else {
             $player = get_player( $btm, 'btm' );
@@ -275,6 +285,7 @@ class Validator {
                 $this->error      = true;
                 $this->err_flds[] = 'btm';
                 $this->err_msgs[] = sprintf( __( 'LTA Tennis Number already used by %s', 'racketmanager' ), $player->display_name );
+                $this->err->add( 'btm', sprintf( __( 'LTA Tennis Number already used by %s', 'racketmanager' ), $player->display_name ) );
             }
         }
         return $this;

@@ -9,10 +9,12 @@
 namespace Racketmanager\Ajax;
 
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Club_Player_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Club_Management_Service;
+use Racketmanager\Services\Club_Player_Management_Service;
 use Racketmanager\Services\Player_Management_Service;
 use stdClass;
 use function Racketmanager\get_player;
@@ -27,6 +29,7 @@ class Ajax {
     public string $event_not_found;
     protected Club_Management_Service $club_service;
     private Player_Management_Service $player_service;
+    protected Club_Player_Management_Service $club_player_service;
     private RacketManager $racketmanager;
 
     /**
@@ -43,6 +46,7 @@ class Ajax {
         $this->player_service      = new Player_Management_Service( $this->racketmanager, $player_repository );
         $this->club_player_service = new Club_Player_Management_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
+
     /**
      * Undocumented function
      *
@@ -88,6 +92,7 @@ class Ajax {
             wp_send_json_error( $return->msg, $return->status );
         }
     }
+
     /**
      * Get players from lookup
      *
@@ -135,6 +140,7 @@ class Ajax {
 
         return $this->set_player_results( $results, $type, $gender );
     }
+
     /**
      * Return formatted results
      *

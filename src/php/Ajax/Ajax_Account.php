@@ -22,9 +22,11 @@ use function Racketmanager\show_message;
 class Ajax_Account extends Ajax {
     /**
      * Register ajax actions.
+     *
+     * @param $plugin_instance
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance) {
+        parent::__construct( $plugin_instance );
         add_action( 'wp_ajax_racketmanager_add_favourite', array( &$this, 'add_favourite' ) );
         add_action( 'wp_ajax_racketmanager_get_message', array( &$this, 'get_user_message' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_get_message', array( &$this, 'logged_out' ) );

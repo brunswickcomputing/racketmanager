@@ -29,11 +29,14 @@ class Ajax_Match extends Ajax {
     public string $no_modal;
     public string $not_played;
     public string $match_not_found;
+
     /**
      * Register ajax actions.
+     *
+     * @param $plugin_instance
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance ) {
+        parent::__construct( $plugin_instance );
         add_action( 'wp_ajax_racketmanager_match_card', array( &$this, 'print_match_card' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_match_card', array( &$this, 'print_match_card' ) );
         add_action( 'wp_ajax_racketmanager_match_rubber_status', array( &$this, 'match_rubber_status_options' ) );

@@ -25,16 +25,18 @@ use function Racketmanager\season_dropdown;
 use function Racketmanager\seo_url;
 
 /**
- * Implement AJAX responses for admin only functions.
+ * Implement AJAX responses for admin-only functions.
  *
  * @author Paul Moffat
  */
 class Ajax_Admin extends Ajax {
     /**
      * Register ajax actions.
+     *
+     * @param $plugin_instance
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance ) {
+        parent::__construct( $plugin_instance );
         add_action( 'wp_ajax_racketmanager_save_add_points', array( &$this, 'save_add_points' ) );
         add_action( 'wp_ajax_racketmanager_insert_home_stadium', array( &$this, 'insert_home_stadium' ) );
         add_action( 'wp_ajax_racketmanager_get_event_dropdown', array( &$this, 'get_event_dropdown' ) );

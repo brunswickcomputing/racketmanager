@@ -33,9 +33,11 @@ use function Racketmanager\tournament_withdrawal_modal;
 class Ajax_Tournament extends Ajax {
     /**
      * Register ajax actions.
+     *
+     * @param $plugin_instance
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance ) {
+        parent::__construct( $plugin_instance );
         add_action( 'wp_ajax_racketmanager_tournament_entry', array( &$this, 'tournament_entry_request' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_tournament_entry', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_tournament_payment_create', array( &$this, 'tournament_payment_create' ) );

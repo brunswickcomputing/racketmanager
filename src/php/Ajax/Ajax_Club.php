@@ -26,9 +26,11 @@ use function Racketmanager\show_club_role_modal;
 class Ajax_Club extends Ajax {
     /**
      * Register ajax actions.
+     *
+     * @param $plugin_instance
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance ) {
+        parent::__construct( $plugin_instance );
         add_action( 'wp_ajax_racketmanager_update_club', array( &$this, 'update_club' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_update_club', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_club_player_request', array( &$this, 'club_player_request' ) );

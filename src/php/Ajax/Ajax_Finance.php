@@ -24,9 +24,11 @@ use function Racketmanager\show_purchase_order_modal;
 class Ajax_Finance extends Ajax {
     /**
      * Register ajax actions.
+     *
+     * @param $plugin_instance
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance ) {
+        parent::__construct( $plugin_instance );
         add_action( 'wp_ajax_nopriv_racketmanager_purchase_order_modal', array( &$this, 'logged_out_modal' ) );
         add_action( 'wp_ajax_racketmanager_purchase_order_modal', array( &$this, 'show_purchase_order_modal' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_set_purchase_order', array( &$this, 'logged_out_modal' ) );

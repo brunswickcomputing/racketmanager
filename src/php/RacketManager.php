@@ -857,12 +857,12 @@ class RacketManager {
      * Initialise components
      */
     public function init_components(): void {
-        $this->ajax_account             = new Ajax_Account();
-        $this->ajax_club                = new Ajax_Club();
-        $this->ajax_finance             = new Ajax_Finance();
-        $this->ajax_frontend            = new Ajax_Frontend();
-        $this->ajax_match               = new Ajax_Match();
-        $this->ajax_tournament          = new Ajax_Tournament();
+        $this->ajax_account             = new Ajax_Account( $this );
+        $this->ajax_club                = new Ajax_Club( $this );
+        $this->ajax_finance             = new Ajax_Finance( $this );
+        $this->ajax_frontend            = new Ajax_Frontend( $this );
+        $this->ajax_match               = new Ajax_Match( $this );
+        $this->ajax_tournament          = new Ajax_Tournament( $this );
         $this->shortcodes               = new Shortcodes();
         $this->shortcodes_club          = new Shortcodes_Club();
         $this->shortcodes_competition   = new Shortcodes_Competition();

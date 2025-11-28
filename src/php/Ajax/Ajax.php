@@ -17,7 +17,6 @@ use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Services\Club_Player_Management_Service;
 use Racketmanager\Services\Player_Management_Service;
 use stdClass;
-use function Racketmanager\get_player;
 use function Racketmanager\show_alert;
 
 /**
@@ -106,9 +105,9 @@ class Ajax {
     private function get_players_lookup( string $type, string $name, ?string $gender, ?int $club_id ): array {
         $results = array();
         if ( 'btm' === $type ) {
-            $player  = get_player( $name, 'btm' );
+            $player = $this->player_service->find_player_by_btm( $name );
             if ( $player ) {
-                $result = new stdClass();
+                $result             = new stdClass();
                 $result->fullname   = $player->display_name;
                 $result->user_email = $player->user_email;
                 $result->club       = null;
@@ -118,21 +117,21 @@ class Ajax {
                 $results[]          = $result;
             }
         } elseif ( 'name' === $type ) {
-            $player_args = array();
+            $player_args         = array();
             $player_args['name'] = $name;
-            $players = $this->player_service->get_all_players( $player_args );
+            $players             = $this->player_service->get_all_players( $player_args );
             foreach ( $players as $player ) {
                 $player_clubs = $player->get_clubs();
                 foreach ( $player_clubs as $player_club ) {
                     if ( empty( $club_id ) || $club_id === $player_club->id ) {
-                        $result = new stdClass();
+                        $result             = new stdClass();
                         $result->fullname   = $player->display_name;
                         $result->user_email = $player->user_email;
                         $result->club_id    = $player_club->id;
                         $result->roster_id  = $player_club->club_player_id;
                         $result->club       = $player_club->shortcode;
                         $result->player_id  = $player->ID;
-                        $results[]          =  $result;
+                        $results[]          = $result;
                     }
                 }
             }

@@ -117,48 +117,48 @@ class Admin_Display {
                 require_once RACKETMANAGER_PATH . 'templates/admin/documentation.php';
                 break;
             case 'racketmanager-leagues':
-                $this->admin_league = new Admin_League();
+                $this->admin_league = new Admin_League( $this->racketmanager );
                 $this->admin_league->handle_display( $view );
                 break;
             case 'racketmanager-cups':
-                $this->admin_cup = new Admin_Cup();
+                $this->admin_cup = new Admin_Cup( $this->racketmanager );
                 $this->admin_cup->handle_display( $view );
                 break;
             case 'racketmanager-tournaments':
-                $this->admin_tournament = new Admin_Tournament();
+                $this->admin_tournament = new Admin_Tournament( $this->racketmanager );
                 $this->admin_tournament->handle_display( $view );
                 break;
             case 'racketmanager-clubs':
-                $this->admin_club = new Admin_Club();
+                $this->admin_club = new Admin_Club( $this->racketmanager );
                 $this->admin_club->handle_display( $view );
                 break;
             case 'racketmanager-results':
-                $this->admin_results = new Admin_Result();
+                $this->admin_results = new Admin_Result( $this->racketmanager );
                 $this->admin_results->handle_display( $view );
                 break;
             case 'racketmanager-seasons':
-                $this->admin_seasons = new Admin_Season();
+                $this->admin_seasons = new Admin_Season( $this->racketmanager );
                 $this->admin_seasons->handle_display( $view );
                 break;
             case 'racketmanager-players':
-                $this->admin_players = new Admin_Player();
+                $this->admin_players = new Admin_Player( $this->racketmanager );
                 $this->admin_players->handle_display( $view );
                 break;
             case 'racketmanager-finances':
-                $this->admin_finances = new Admin_Finances();
+                $this->admin_finances = new Admin_Finances( $this->racketmanager );
                 $this->admin_finances->handle_display( $view );
                 break;
             case 'racketmanager-settings':
-                $this->admin_options = new Admin_Options();
+                $this->admin_options = new Admin_Options( $this->racketmanager );
                 $this->admin_options->handle_display( $view );
                 break;
             case 'racketmanager-import':
-                $this->admin_import = new Admin_Import();
+                $this->admin_import = new Admin_Import( $this->racketmanager );
                 $this->admin_import->display_import_page();
                 break;
             case 'racketmanager':
             default:
-                $this->admin_index = new Admin_Index();
+                $this->admin_index = new Admin_Index( $this->racketmanager );
                 $this->admin_index->display_index_page();
                 break;
         }

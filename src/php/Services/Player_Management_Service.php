@@ -114,6 +114,9 @@ class Player_Management_Service {
         return $this->player_repository->find_all( $args );
     }
 
+    public function find_player_by_btm( string $btm ): Player|null {
+        return $this->player_repository->find( $btm, 'btm' );
+    }
     /**
      * Update player contact details
      *

@@ -14,7 +14,7 @@ export function initializeMatchSecretaryLookup(context = document) {
     const $context = jQuery(context);
 
     // Find match secretary input within the context
-    const selector = '.match-secretary';
+    const selector = '#matchSecretaryName';
 
     // Check if element exists in context
     if ($context.find(selector).length === 0) {
@@ -38,18 +38,18 @@ export function initializeMatchSecretaryLookup(context = document) {
                     ui.item.value = '';
                 }
 
-                jQuery('#matchsecretary').val(ui.item.value);
-                jQuery('#matchsecretaryId').val(ui.item.playerId);
-                jQuery('#matchsecretaryContactno').val(ui.item.contactno);
-                jQuery('#matchsecretaryContactemail').val(ui.item.user_email);
+                jQuery('#matchSecretary').val(ui.item.value);
+                jQuery('#matchSecretaryId').val(ui.item.playerId);
+                jQuery('#matchSecretaryContactNo').val(ui.item.contactno);
+                jQuery('#matchSecretaryEmail').val(ui.item.user_email);
             },
             change: function (event, ui) {
                 setPlayerDetails(
                     ui,
-                    '#matchsecretary',
-                    '#matchsecretaryId',
-                    '#matchsecretaryContactno',
-                    '#matchsecretaryContactemail'
+                    '#matchSecretary',
+                    '#matchSecretaryId',
+                    '#matchSecretaryContactNo',
+                    '#matchSecretaryEmail'
                 );
             }
         });

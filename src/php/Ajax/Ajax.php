@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
@@ -26,17 +27,21 @@ class Ajax {
     public string $event_not_found;
     protected Club_Management_Service $club_service;
     private Player_Management_Service $player_service;
+    private RacketManager $racketmanager;
 
     /**
      * Register ajax actions.
      */
-    public function __construct() {
+    public function __construct( $plugin_instance ) {
         add_action( 'wp_ajax_racketmanager_get_player_details', array( &$this, 'get_player_details' ) );
-        $club_repository      = new Club_Repository();
-        $club_role_repository = new Club_Role_Repository();
-        $this->club_service   = new Club_Management_Service( $club_repository, $club_role_repository );
-        $player_repository      = new Player_Repository();
-        $this->player_service   = new Player_Management_Service( $player_repository );
+        $this->racketmanager       = $plugin_instance;
+        $club_repository           = new Club_Repository();
+        $club_player_repository    = new Club_Player_Repository();
+        $club_role_repository      = new Club_Role_Repository();
+        $player_repository         = new Player_Repository();
+        $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository );
+        $this->player_service      = new Player_Management_Service( $this->racketmanager, $player_repository );
+        $this->club_player_service = new Club_Player_Management_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
     /**
      * Undocumented function

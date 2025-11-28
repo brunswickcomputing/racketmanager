@@ -9,6 +9,9 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Already_Registered_Exception;
+use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Club;
 use stdClass;
 use function Racketmanager\get_club;

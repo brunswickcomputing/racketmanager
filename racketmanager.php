@@ -105,15 +105,14 @@ add_action( 'init', __NAMESPACE__ . '\\maybe_buffer_export' );
 // Bootstrap core on plugins_loaded
 // -----------------------------------------------------------------------------
 add_action( 'plugins_loaded', function () {
-    // Core singleton
-    $core = RacketManager::get_instance();
-
-    // Admin singleton when in dashboard
+    // Core singleton - Admin singleton when in the dashboard
     if ( is_admin() ) {
-        Admin::get_instance();
+        $instance = Admin::get_instance();
+    } else {
+        $instance = RacketManager::get_instance();
     }
 
     // Global for BC with legacy code that expects $racketmanager to be set.
     global $racketmanager;
-    $racketmanager = $core;
+    $racketmanager = $instance;
 }, 5 );

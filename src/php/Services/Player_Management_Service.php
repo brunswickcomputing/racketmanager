@@ -25,7 +25,6 @@ use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
 use Racketmanager\Services\Validator\Validator;
-use Racketmanager\Util\Util;
 use stdClass;
 use WP_Error;
 use function Racketmanager\get_club;
@@ -158,6 +157,24 @@ class Player_Management_Service {
         return $this->player_repository->find_all( $args );
     }
 
+    /**
+     * Get player by ID
+     *
+     * @param int|null $id
+     *
+     * @return Player|null
+     */
+    public function get_player( ?int $id ): Player|null {
+        return $this->player_repository->find( $id );
+    }
+
+    /**
+     * Get player by LTA tennis number
+     *
+     * @param string $btm
+     *
+     * @return Player|null
+     */
     public function find_player_by_btm( string $btm ): Player|null {
         return $this->player_repository->find( $btm, 'btm' );
     }
@@ -211,11 +228,11 @@ class Player_Management_Service {
         try {
             return $this->update_player( $player->id, $player );
         } catch ( Player_Not_Found_Exception $e ) {
-            throw new Player_Not_Found_Exception( $e );
+            throw new Player_Not_Found_Exception( $e->getMessage() );
         } catch ( Player_Not_Updated_Exception $e ) {
-            throw new Player_Not_Updated_Exception( $e );
+            throw new Player_Not_Updated_Exception( $e->getMessage() );
         } catch ( Exception $e ) {
-            throw new Exception( $e );
+            throw new Exception( $e->getMessage() );
         }
     }
 
@@ -405,9 +422,9 @@ class Player_Management_Service {
         } else {
             // Sync all players who have a BTM number (our proxy for a "player" user)
             $player_ids = get_users( array(
-                    'meta_key' => Player_Repository::META_KEY_BTM,
-                    'fields'   => 'ID',
-                ) );
+                'meta_key' => Player_Repository::META_KEY_BTM,
+                'fields'   => 'ID',
+            ) );
         }
         if ( $player_ids ) {
             foreach ( $player_ids as $player ) {
@@ -466,7 +483,7 @@ class Player_Management_Service {
                 'player_count'  => count( $players ),
                 'email_subject' => $email_subject,
                 'organisation'  => $organisation_name,
-                ),
+            ),
             'email',
         );
         wp_mail( $email_to, $email_subject, $email_message, $headers );
@@ -486,10 +503,6 @@ class Player_Management_Service {
         }
         if ( empty( $player->get_btm() ) ) {
             throw new LTA_Tennis_Number_Not_Found_Exception( sprintf( __( 'LTA Tennis number not found for %s', 'racketmanager' ), $player->display_name ) );
-        }
-        $args = Util::get_wtn_env();
-        if ( empty( $args ) ) {
-            throw new LTA_System_Not_Available_Exception( __( 'Unable to access LTA system', 'racketmanager' ) );
         }
         try {
             $this->wtn_api_client->prepare_env();

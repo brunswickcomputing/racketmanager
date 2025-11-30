@@ -30,7 +30,7 @@ namespace Racketmanager;
         </div>
     </form>
     <form id="player-action" method="post" action="" class="form-control">
-        <?php wp_nonce_field( 'player-bulk' ); ?>
+        <?php wp_nonce_field( 'racketmanager_player-bulk', 'racketmanager_nonce' ); ?>
         <div class="row g-3 mb-3 align-items-center">
             <!-- Bulk Actions -->
             <div class="col-auto">

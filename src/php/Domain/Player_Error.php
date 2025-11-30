@@ -9,8 +9,6 @@
 
 namespace Racketmanager\Domain;
 
-use function Racketmanager\get_player;
-
 /**
  * Class to implement the Player Error object
  */
@@ -18,21 +16,15 @@ final class Player_Error {
     /**
      * Id
      *
-     * @var int|false
+     * @var ?int
      */
-    public int|false $id;
+    public ?int $id = null;
     /**
      * Player id
      *
      * @var int
      */
     public int $player_id;
-    /**
-     * Status
-     *
-     * @var int
-     */
-    public int $status;
     /**
      * Message
      *
@@ -45,52 +37,7 @@ final class Player_Error {
      * @var string
      */
     public string $created_date;
-    /**
-     * Updated date
-     *
-     * @var string|null
-     */
-    public ?string $updated_date;
-    /**
-     * Updated user
-     *
-     * @var string|null
-     */
-    public ?string $updated_user;
-    /**
-     * Player
-     *
-     * @var object|null
-     */
-    public null|object $player = null;
 
-    /**
-     * Retrieve player error instance
-     *
-     * @param int $player_error_id player error id.
-     * @return object|false
-     */
-    public static function get_instance( int $player_error_id ): object|false {
-        global $wpdb;
-        if ( ! $player_error_id ) {
-            return false;
-        }
-        $player_error = wp_cache_get( $player_error_id, 'player_errors' );
-        if ( ! $player_error ) {
-            $player_error = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT `id`, `player_id`, `status`, `created_date`, `updated_date`, `updated_user`, `message` FROM $wpdb->racketmanager_player_errors WHERE id = %d",
-                    $player_error_id,
-                )
-            );
-            if ( ! $player_error ) {
-                return false;
-            }
-            $player_error = new Player_Error( $player_error );
-            wp_cache_set( $player_error_id, $player_error, 'player_errors' );
-        }
-        return $player_error;
-    }
     /**
      * Constructor
      *
@@ -101,65 +48,53 @@ final class Player_Error {
             foreach ( $player_error as $key => $value ) {
                 $this->$key = $value;
             }
-            if ( ! isset( $this->id ) ) {
-                $this->id = $this->add();
-            }
-            if ( ! empty( $this->player_id ) ) {
-                $player = get_player( $this->player_id );
-                if ( $player ) {
-                    $this->player = $player;
-                }
-            }
         }
     }
+
     /**
-     * Add player error
+     * Get id
+     *
+     * @return int|null
      */
-    private function add(): false|int {
-        global $wpdb;
-        if ( empty( $this->status ) ) {
-            $this->status = 0;
-        }
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_player_errors (`player_id`, `message`, `status`, `created_date`) VALUES (%d, %s, %d, NOW())",
-                $this->player_id,
-                $this->message,
-                $this->status,
-            )
-        );
-        $this->id = $wpdb->insert_id;
+    public function get_id(): ?int {
         return $this->id;
     }
-    /**
-     * Set player error status
-     *
-     * @param int $status status.
-     */
-    public function set_status( int $status ): void {
-        global $wpdb;
-        $this->status = $status;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_player_errors SET `status` = %d WHERE `id` = %d",
-                $this->status,
-                $this->id
-            )
-        );
-    }
-    /**
-     * Delete player error
-     */
-    public function delete(): void {
-        global $wpdb, $racketmanager;
 
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_player_errors WHERE `id` = %d",
-                $this->id
-            )
-        );
-        $racketmanager->set_message( __( 'Player Error Deleted', 'racketmanager' ) );
-        wp_cache_flush_group( 'player_errors' );
+    /**
+     * Set id
+     *
+     * @param int $insert_id
+     *
+     * @return void
+     */
+    public function set_id( int $insert_id ): void {
+        $this->id = $insert_id;
+    }
+
+    /**
+     * Get player id
+     *
+     * @return int
+     */
+    public function get_player_id(): int {
+        return $this->player_id;
+    }
+
+    /**
+     * Get message
+     *
+     * @return string
+     */
+    public function get_message(): string {
+        return $this->message;
+    }
+
+    /**
+     * Get created date
+     *
+     * @return string
+     */
+    public function get_created_date(): string {
+        return $this->created_date;
     }
 }

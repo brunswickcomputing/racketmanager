@@ -29,6 +29,8 @@ wp-content/plugins/racketmanager/
     - Domain/                     (Entities/Models)
     - Repositories/               (Data access abstraction)
     - Services/                   (Business logic, helpers)
+      - Contracts/                (Service interfaces for external integrations; e.g., Wtn_Api_Client_Interface)
+      - External/                 (Concrete clients for external APIs; e.g., Wtn_Api_Client)
     - Util/                       (Utility classes)
   - js/
     - index.js                    (Single JS entry point)
@@ -80,6 +82,10 @@ Notes
 - Bootstrap flow (racketmanager.php):
   - Define constants: RACKETMANAGER_PATH, RACKETMANAGER_URL, RACKETMANAGER_VER.
   - Load autoloader (Composer) or requires.
+  - Instantiate exactly one core object to avoid duplicate hooks/actions:
+    - In wp‑admin: instantiate Admin (extends RacketManager)
+    - Otherwise: instantiate RacketManager
+    - Global $racketmanager is set to this single instance for BC
   - Instantiate a Plugin (service) class that:
     - Registers hooks for activation/deactivation.
     - Wires Admin and Public components.
@@ -91,8 +97,87 @@ Suggested responsibilities
 - Ajax\*: Each action (e.g. racketmanager_match_status) has a controller method that validates nonce/capabilities and returns wp_send_json_* responses.
 - Rest\*: For REST endpoints if/when needed.
 - Services\*: Reusable business logic.
+- Player and club responsibilities:
+  - Player_Management_Service owns calculate_player_ratings(int $club_id = null). RacketManager delegates to it.
+  - Player_Management_Service uses Club_Player_Management_Service::get_registered_players_list() to obtain active registered players (optionally scoped by club) before invoking the WTN update in core.
 - Repositories\*: Data access (WP_Query, custom tables, etc.).
 - Util\*: Pure helpers.
+
+External API clients
+- Location and contracts
+  - Interfaces live under Services/Contracts (e.g., Services/Contracts/Wtn_Api_Client_Interface.php)
+  - Concrete implementations live under Services/External (e.g., Services/External/Wtn_Api_Client.php)
+- Usage
+  - Domain services (e.g., Player_Management_Service) should type‑hint interfaces and receive clients via dependency injection.
+  - Default Wtn_Api_Client delegates to existing core helpers (set_wtn_env, get_player_wtn) to preserve behavior while isolating HTTP details.
+  - This separation makes external calls mockable and keeps transport concerns out of domain logic.
+
+---
+
+### Using Symfony components in the plugin
+
+You can use individual Symfony components inside this WordPress plugin without adopting the full Symfony framework. Components are installed via Composer and autoloaded through the existing vendor/autoload.php that the plugin already requires.
+
+General guidance
+- Prefer using focused components to solve concrete problems; avoid introducing a parallel framework that duplicates WordPress features.
+- Keep the integration at the Services layer so templates and controllers remain unaware of implementation details.
+- Wrap components behind our existing interfaces to keep them optional and replaceable.
+
+Recommended components and where they fit
+- symfony/http-client
+  - Purpose: Robust HTTP client for external API calls (timeouts, retries, middleware).
+  - Placement: Used inside Services/External clients (e.g., Wtn_Api_Client implementation) to replace wp_remote_* if desired.
+  - Mapping: Implement Wtn_Api_Client_Interface and use HttpClient under the hood. Keep the interface stable so the rest of the plugin is unaffected.
+- symfony/cache
+  - Purpose: Cache API responses or expensive computations (FilesystemAdapter, RedisAdapter, ArrayAdapter).
+  - Placement: Services/External (for API response caching) or Services/* where computation caching helps.
+  - Mapping: Optionally create a Cache interface in Services/Contracts and an adapter that uses Symfony Cache. Alternatively, back with WordPress object cache/transients where available.
+- symfony/serializer
+  - Purpose: Serialize/deserialize DTOs and arrays (e.g., Club_Player_DTO) when exchanging structured data.
+  - Placement: Services or Repositories that map between arrays and domain objects.
+  - Mapping: Optional; the project currently uses simple constructors. Adopt where complex mappings arise.
+- symfony/validator
+  - Purpose: Declarative validation rules for input data.
+  - Placement: Services/Validator or domain services that validate payloads.
+  - Mapping: The project already has Services/Validator/Validator. If Symfony Validator is introduced, wrap it behind our Validator to avoid a double system.
+- symfony/event-dispatcher
+  - Purpose: Internal domain events decoupling.
+  - Placement: Services layer to signal events like PlayerRegistered, WtnUpdated.
+  - Mapping: Use for internal decoupling. For WordPress-wide events, continue using do_action/apply_filters.
+- symfony/rate-limiter
+  - Purpose: Throttle calls to external services (e.g., WTN lookups) to respect rate limits.
+  - Placement: Services/External around API client calls.
+- symfony/filesystem and symfony/finder
+  - Purpose: Safer filesystem operations and file discovery (useful in Admin imports/exports).
+  - Placement: Admin services (e.g., Admin_Import) and any file‑heavy features.
+- symfony/options-resolver
+  - Purpose: Robust handling and validation of associative configuration arrays.
+  - Placement: Service constructors/configuration parsing.
+
+Less recommended (use WordPress-native first)
+- symfony/console: Prefer WP‑CLI for command‑line tasks in WordPress ecosystems.
+- symfony/dependency-injection: Possible, but heavy for a WP plugin. If used, keep the container encapsulated and do not leak DI types across the codebase. The current simple constructor‑based DI is adequate.
+
+Composer installation examples
+```
+composer require symfony/http-client:^7.0 symfony/cache:^7.0 symfony/rate-limiter:^7.0
+# Optional extras depending on needs
+composer require symfony/serializer:^7.0 symfony/validator:^7.0 symfony/filesystem:^7.0 symfony/finder:^7.0 symfony/options-resolver:^7.0
+```
+
+Example: Using HttpClient inside an alternate WTN client
+- Create Services/External/Wtn_Http_Api_Client.php implementing Wtn_Api_Client_Interface.
+- Inject Symfony HttpClientInterface.
+- Implement prepare_env() and fetch_player_wtn() using HttpClient. Register this implementation when constructing Player_Management_Service if you want to switch from the default.
+
+Operational notes
+- Error handling: Convert component exceptions to WP_Error or domain exceptions to preserve existing error flows.
+- Performance: Be mindful of autoloaded classes on every request. Only require components you use.
+- Caching: In shared hosting, FilesystemAdapter is usually safe. Prefer RedisAdapter or APCuAdapter where available.
+- Security: Follow WordPress nonces/cap checks for admin actions; Symfony components do not replace WP’s security model.
+
+Decision summary
+- Yes, Symfony can be used in this plugin selectively. Use individual components where they provide clear benefits (HTTP, caching, rate limiting, validation, filesystem). Keep them behind our Services/Contracts interfaces to avoid framework lock‑in and to preserve compatibility with WordPress conventions.
 
 ---
 
@@ -352,6 +437,11 @@ Notable differences or open items
 - Repositories layer
   - The architecture outlines a Repositories/ layer as optional. If data access abstractions are mixed into Services/ or Domain/ today, consider extracting to Repositories/ incrementally. TODO (as needed).
 
+Recent confirmations (2025‑11‑28)
+- Single‑instance bootstrap is implemented: Admin is the only instance in dashboard; RacketManager otherwise. This resolved duplicate hooks (e.g., racketmanager_mail) caused by double instantiation. ✓
+- calculate_player_ratings flow moved to Player_Management_Service with RacketManager delegating; it uses Club_Player_Management_Service::get_registered_players_list() to determine the player set. ✓
+- External API client architecture established: Wtn_Api_Client_Interface (Contracts) and Wtn_Api_Client (External) added; services can inject these clients. ✓
+
 Verification pointers
 - Composer autoload works end‑to‑end: vendor/autoload.php is loaded by racketmanager.php; classes resolve via PSR‑4; Stripe SDK is required via composer.json and used via \Stripe\StripeClient in Ajax_Tournament. ✓
 - Sports registrars load as per design (lowercase non‑class .php files), while sports classes autoload lazily via PSR‑4. ✓
@@ -416,6 +506,8 @@ wp-content/plugins/racketmanager/
     - Domain/                     (Entities/Models)
     - Repositories/               (Data access abstraction)
     - Services/                   (Business logic, helpers)
+      - Contracts/                (Service interfaces for external integrations; e.g., Wtn_Api_Client_Interface)
+      - External/                 (Concrete clients for external APIs; e.g., Wtn_Api_Client)
     - Util/                       (Utility classes)
   - js/
     - index.js                    (Single JS entry point)

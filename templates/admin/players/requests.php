@@ -40,7 +40,7 @@ $hint_title = 'title="';
 </form>
 
 <form id="club-player-request-filter" method="post" action="" class="form-control">
-    <?php wp_nonce_field( 'club-player-request-bulk' ); ?>
+    <?php wp_nonce_field( 'racketmanager_club-player-request-bulk', 'racketmanager_nonce' ); ?>
 
     <div class="mb-3">
         <!-- Bulk Actions -->
@@ -59,8 +59,7 @@ $hint_title = 'title="';
                 <th class="check-column"><label for="checkALL" class="visually-hidden"><?php esc_html_e( 'Check all', 'racketmanager' ); ?></label><input type="checkbox" name="checkAll" id="checkALL" onclick="Racketmanager.checkAll(document.getElementById('club-player-request-filter'));" /></th>
                 <th><?php esc_html_e( 'ID', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
-                <th><?php esc_html_e( 'First Name', 'racketmanager' ); ?></th>
-                <th><?php esc_html_e( 'Surname', 'racketmanager' ); ?></th>
+                <th><?php esc_html_e( 'Name', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Gender', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'LTA Tennis Number', 'racketmanager' ); ?></th>
                 <th><?php esc_html_e( 'Requested', 'racketmanager' ); ?></th>
@@ -73,16 +72,42 @@ $hint_title = 'title="';
             foreach ( $player_requests as $request ) {
                 ?>
                 <tr>
-                    <td class="check-column"><label for="playerRequest-<?php echo esc_html( $request->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $request->id ); ?>" name="playerRequest[<?php echo esc_html( $request->id ); ?>]" id="playerRequest-<?php echo esc_html( $request->id ); ?>" /></<td>
-                    <td><?php echo esc_html( $request->id ); ?></<td>
-                    <td><?php echo esc_html( $request->club->shortcode ); ?></<td>
-                    <td><?php echo esc_html( $request->player->firstname ); ?></<td>
-                    <td><?php echo esc_html( $request->player->surname ); ?></<td>
-                    <td><?php echo esc_html( $request->player->gender ); ?></<td>
-                    <td><?php echo esc_html( $request->player->btm ); ?></<td>
-                    <td <?php echo empty( $request->requested_user ) ? null : $hint_title . esc_html__( 'Requested by', 'racketmanager' ) . ' ' . esc_html( $request->requested_user_name ) . '"'; ?>><?php echo esc_html( $request->requested_date ); ?></<td>
-                    <td <?php echo empty( $request->created_user ) ? null : $hint_title . esc_html__( 'Created by', 'racketmanager' ) . ' ' . esc_html( $request->created_user_name ) . '"'; ?>><?php echo esc_html( $request->created_date ); ?></<td>
-                    <td <?php echo empty( $request->removed_user ) ? null : $hint_title . esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $request->removed_user_name ) . '"'; ?>><?php echo esc_html( $request->removed_date ); ?></<td>
+                    <td class="check-column"><label for="playerRequest-<?php echo esc_html( $request->registration_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $request->registration_id ); ?>" name="playerRequest[<?php echo esc_html( $request->registration_id ); ?>]" id="playerRequest-<?php echo esc_html( $request->registration_id ); ?>" /></td>
+                    <td><?php echo esc_html( $request->user_id ); ?></td>
+                    <td><?php echo esc_html( $request->club_name ); ?></td>
+                    <td><?php echo esc_html( $request->display_name ); ?></td>
+                    <td><?php echo esc_html( $request->gender ); ?></td>
+                    <td><?php echo esc_html( $request->btm ); ?></td>
+                    <?php
+                    $tooltip = null;
+                    if ( ! empty( $request->registered_by_user_id ) ) {
+                        $actioned_by_user = get_userdata( $request->approved_by_user_id );
+                        $actioned_by_name = $actioned_by_user ? $actioned_by_user->display_name : __('Unknown user', 'racketmanager' );
+                        $tooltip = esc_html__( 'Registered by', 'racketmanager' ) . ' ' . esc_html( $actioned_by_name );
+                        $tooltip = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="' . $tooltip . '"';
+                    }
+                    ?>
+                    <td <?php echo empty( $tooltip ) ? null : $tooltip; ?>><?php echo esc_html( $request->registration_date ); ?></td>
+                    <?php
+                    $tooltip = null;
+                    if ( ! empty( $request->approved_by_user_id ) ) {
+                        $actioned_by_user = get_userdata( $request->approved_by_user_id );
+                        $actioned_by_name = $actioned_by_user ? $actioned_by_user->display_name : __('Unknown user', 'racketmanager' );
+                        $tooltip = esc_html__( 'Approved by', 'racketmanager' ) . ' ' . esc_html( $actioned_by_name );
+                        $tooltip = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="' . $tooltip . '"';
+                    }
+                    ?>
+                    <td <?php echo empty( $tooltip ) ? null : $tooltip; ?>><?php echo esc_html( $request->approval_date ); ?></td>
+                    <?php
+                    $tooltip = null;
+                    if ( ! empty( $request->removed_by_user_id ) ) {
+                        $actioned_by_user = get_userdata( $request->removed_by_user_id );
+                        $actioned_by_name = $actioned_by_user ? $actioned_by_user->display_name : __('Unknown user', 'racketmanager' );
+                        $tooltip = esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $actioned_by_name );
+                        $tooltip = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="' . $tooltip . '"';
+                    }
+                    ?>
+                    <td <?php echo empty( $tooltip ) ? null : $tooltip; ?>><?php echo esc_html( $request->removal_date ); ?></td>
                 </tr>
                 <?php
             }

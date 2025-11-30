@@ -732,6 +732,15 @@ final class Player {
     }
 
     /**
+     * Get player wtn
+     *
+     * @return array
+     */
+    public function get_wtn(): array {
+        return $this->wtn;
+    }
+
+    /**
      * Handle outstanding results warnings function
      *
      * @param string $type type of check.
@@ -1367,11 +1376,10 @@ final class Player {
      * @param array $wtn world tennis number array.
      * @return void
      */
-    public function set_wtn(array $wtn ): void {
+    public function set_wtn( array $wtn ): void {
         foreach( $wtn as $match_type => $value ) {
             $this->set_wtn_type( $match_type, $value );
         }
-        wp_cache_delete( $this->id, 'players' );
     }
     /**
      * Set player wtn function
@@ -1380,10 +1388,8 @@ final class Player {
      * @param string $wtn world tennis number.
      * @return void
      */
-    public function set_wtn_type(string $match_type, string $wtn ): void {
-        $wtn_type = 'wtn_' . $match_type;
-        update_user_meta( $this->ID, $wtn_type, $wtn );
-        $this->wtn[ $wtn_type ] = $wtn;
+    public function set_wtn_type( string $match_type, string $wtn ): void {
+        $this->wtn[ $match_type ] = $wtn;
     }
     /**
      * Set opt in function

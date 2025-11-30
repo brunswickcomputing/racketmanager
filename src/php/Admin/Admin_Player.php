@@ -13,6 +13,7 @@ use Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
 use Racketmanager\Exceptions\LTA_Tennis_Number_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
@@ -254,7 +255,7 @@ final class Admin_Player extends Admin_Display {
                         $this->set_message( __( 'Player added', 'racketmanager' ) );
                         $player = null;
                     }
-                } catch ( Duplicate_Email_Exception|Duplicate_BTM_Exception $e ) {
+                } catch ( Player_Exists_Exception|Duplicate_Email_Exception|Duplicate_BTM_Exception $e ) {
                     $this->set_message( $e->getMessage(), true );
                 }
             }

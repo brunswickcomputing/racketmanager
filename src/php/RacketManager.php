@@ -19,6 +19,7 @@ use Racketmanager\Domain\Message;
 use Racketmanager\Domain\Player_Error;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Rest\Rest_Routes;
+use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Login;
 use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Services\Rewrites;
@@ -34,7 +35,6 @@ use Racketmanager\Public\Shortcodes_Match;
 use Racketmanager\Public\Shortcodes_Message;
 use Racketmanager\Public\Shortcodes_Tournament;
 use Racketmanager\Util\Util;
-use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
 /**
@@ -170,8 +170,10 @@ class RacketManager {
             add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
             add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ) );
-            $player_repository    = new Player_Repository();
-            $this->player_service = new Player_Management_Service( $player_repository );
+            $player_repository       = new Player_Repository();
+            $player_error_repository = new Player_Error_Repository();
+            $wtn_api_client          = new Wtn_Api_Client();
+            $this->player_service    = new Player_Management_Service( $this, $player_repository, $player_error_repository, $wtn_api_client );
         }
         self::$instance = $this;
     }

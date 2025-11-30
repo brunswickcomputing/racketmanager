@@ -55,7 +55,7 @@ class Admin extends RacketManager {
         require_once ABSPATH . 'wp-admin/includes/template.php';
 
         // PSR-4 autoloading handles class loading; no manual includes needed here.
-        $this->ajax_admin   = new Ajax_Admin();
+        $this->ajax_admin    = new Ajax_Admin( $this );
         $this->admin_display = new Admin_Display( $this );
 
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );

@@ -376,6 +376,20 @@ class Player_Repository {
     }
 
     /**
+     * Finds all Player Ids that are registered for a specific club.
+     * @param int $club_id
+     * @return int[] Array of user IDs.
+     */
+    public function find_player_ids_by_club( int $club_id ): array {
+        $registration_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $query = $this->wpdb->prepare(
+            "SELECT player_id FROM $registration_table WHERE club_id = %d AND `removed_date` IS NULL",
+            $club_id
+        );
+        return $this->wpdb->get_col( $query );
+    }
+
+    /**
      * Finds players and their registration details based on various filters.
      *
      * @param int|null $club_id Optional Club ID filter.

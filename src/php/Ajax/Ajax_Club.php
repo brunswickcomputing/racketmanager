@@ -108,30 +108,25 @@ class Ajax_Club extends Ajax {
      * @see templates/club.php
      */
     public function club_player_request(): void {
-        global $racketmanager;
         $validator = new Validator_Club();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'club-player-request' );
         if ( empty( $validator->error ) ) {
-            $player_valid = $racketmanager->validate_player();
-            if ( $player_valid[0] ) {
-                $new_player = $player_valid[1];
-                $club_id    = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
-                $validator  = $validator->club( $club_id, 'surname' );
-                if ( empty( $validator->error ) ) {
-                    $club     = get_club( intval( $_POST['club'] ) );
-                    $register = $club->register_player( $new_player );
-                    if ( ! empty( $register->error ) ) {
-                        $validator->error  = true;
-                        $validator->status = 401;
-                    }
-                    $validator->msg = $register->msg;
+            $club_id = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
+            try {
+                $response = $this->club_player_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
+                if ( is_wp_error( $response ) ) {
+                    $validator->error  = true;
+                    $validator->status = 401;
+                    $validator->err_flds = $response->get_error_codes();
+                    $validator->err_msgs = $response->get_error_messages();
+                    $validator->msg      = __( 'Error in player registration', 'racketmanager' );
+                } else {
+                    $validator->msg = $response;
                 }
-            } else {
-                $validator->error    = true;
-                $validator->status   = 401;
-                $validator->err_flds = $player_valid[1];
-                $validator->err_msgs = $player_valid[2];
-                $validator->msg      = __( 'Error in player registration', 'racketmanager' );
+            } catch ( Club_Not_Found_Exception|Player_Already_Registered_Exception|Registration_Not_Found_Exception $e ) {
+                $validator->error  = true;
+                $validator->status = 401;
+                $validator->msg    = $e->getMessage();
             }
         }
         if ( empty( $validator->error ) ) {
@@ -143,7 +138,7 @@ class Ajax_Club extends Ajax {
     }
 
     /**
-     * Remove player from roster
+     * Remove player from the club
      *
      * @see templates/club.php
      */
@@ -152,14 +147,10 @@ class Ajax_Club extends Ajax {
         $validator = new Validator_Club();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'club-player-remove' );
         if ( empty( $validator->error ) ) {
-            //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             $club_players = empty( $_POST['clubPlayer'] ) ? array() : $_POST['clubPlayer'];
             foreach ( $club_players as $club_player_id ) {
-                $club_player = get_club_player( $club_player_id );
-                if ( $club_player ) {
-                    $club_player->remove();
-                    ++$deleted;
-                }
+                $this->club_player_service->remove_registration( $club_player_id, wp_get_current_user()->ID );
+                ++$deleted;
             }
         }
         if ( empty( $validator->error ) ) {

@@ -17,6 +17,7 @@ use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
 use Racketmanager\Exceptions\LTA_System_Not_Available_Exception;
 use Racketmanager\Exceptions\LTA_Tennis_Number_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
@@ -64,11 +65,7 @@ class Player_Management_Service {
         if ( empty( $player->id ) ) {
             return $this->add_player( $player );
         }
-        $error = new WP_Error();
-        $error->add( 'firstname', __( 'This player already exists', 'racketmanager' ) );
-        $error->add_data( $player, 'player' );
-
-        return $error;
+        throw new Player_Exists_Exception( __( 'Player already exists', 'racketmanager' ) );
     }
 
     /**

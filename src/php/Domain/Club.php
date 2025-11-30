@@ -9,21 +9,15 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Services\Club_Management_Service;
-use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\club_players_notification;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_player;
 use function Racketmanager\get_team;
-use function Racketmanager\get_user;
 use function Racketmanager\seo_url;
 
 /**
@@ -229,7 +223,6 @@ final class Club {
      */
     public array $roles;
     private ?Club_Role_Repository $club_role_repository = null;
-    private Player_Management_Service $player_service;
 
     /**
      * Constructor
@@ -248,8 +241,6 @@ final class Club {
             $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
 
             $this->club_role_repository = new Club_Role_Repository();
-            $player_repository         = new Player_Repository();
-            $this->player_service      = new Player_Management_Service( $player_repository );
         }
     }
 
@@ -504,161 +495,6 @@ final class Club {
         return $teams;
     }
 
-    /**
-     * Register player for Club
-     *
-     * @param object $new_player player details.
-     *
-     * @return object
-     * @throws \Exception
-     */
-    public function register_player( object $new_player ): object {
-        global $racketmanager;
-        $return         = new stdClass();
-        $return->error  = false;
-        $old_player     = false;
-        $updated_player = null;
-        $player_change  = false;
-        $player         = get_player( $new_player->user_login, 'login' ); // get player by login.
-        if ( ! $player ) {
-            $player = get_player( $new_player->email, 'email' );
-            if ( $player ) {
-                $old_player = true;
-                $return->error      = true;
-                $return->msg        = sprintf( __( 'Email address already used by %s', 'racketmanager' ), $player->display_name );
-                $return->status     = 401;
-            } else {
-                $player = get_player( $new_player->btm, 'btm' );
-                if ( $player ) {
-                    $old_player = true;
-                    $return->error      = true;
-                    $return->msg        = sprintf( __( 'LTA Tennis Number already used by %s', 'racketmanager' ), $player->display_name );
-                    $return->status     = 401;
-                } else {
-                    $player = $this->player_service->add_player( $new_player );
-                }
-            }
-        } else {
-            $old_player = true;
-        }
-        if ( empty( $return->error ) && $old_player ) {
-            $updated_player = clone $player;
-            if ( empty( $player->email ) ) {
-                if ( ! empty( $new_player->email ) ) {
-                    $player_change         = true;
-                    $updated_player->email = $new_player->email;
-                }
-            } elseif ( ! empty( $new_player->email ) && $player->email !== $new_player->email ) {
-                $return->error      = true;
-                $return->msg        = __( 'Email address does not match current email', 'racketmanager' );
-                $return->status     = 401;
-            }
-            if ( empty( $player->btm ) ) {
-                if ( ! empty( $new_player->btm ) ) {
-                    $player_change       = true;
-                    $updated_player->btm = $new_player->btm;
-                }
-            } elseif ( ! empty( $new_player->btm ) && intval( $player->btm ) !== intval( $new_player->btm ) ) {
-                $return->error      = true;
-                $return->msg        = __( 'LTA Tennis Number does not match current number', 'racketmanager' );
-                $return->status     = 401;
-            }
-            if ( empty( $player->gender ) ) {
-                if ( ! empty( $new_player->gender ) ) {
-                    $player_change          = true;
-                    $updated_player->gender = $new_player->gender;
-                }
-            } elseif ( ! empty( $new_player->gender ) && $player->gender !== $new_player->gender ) {
-                $return->error      = true;
-                $return->msg        = __( 'Gender does not match current gender', 'racketmanager' );
-                $return->status     = 401;
-            }
-            if ( empty( $player->year_of_birth ) ) {
-                if ( ! empty( $new_player->year_of_birth ) ) {
-                    $player_change                 = true;
-                    $updated_player->year_of_birth = $new_player->year_of_birth;
-                }
-            } elseif ( ! empty( $new_player->year_of_birth ) && intval( $player->year_of_birth ) !== $new_player->year_of_birth ) {
-                $return->error      = true;
-                $return->msg        = __( 'Year of birth does not match current', 'racketmanager' );
-                $return->status     = 401;
-            }
-        }
-        if ( empty( $return->error ) ) {
-            if ( $player_change ) {
-                $this->player_service->update_player( $player->id, $updated_player );
-            }
-            $player_active = $this->player_status( $player->id, 'active' );
-            if ( ! $player_active ) {
-                $player_pending = $this->player_status( $player->id, 'pending' );
-                if ( $player_pending ) {
-                    $return->error      = true;
-                    $return->status     = 401;
-                    $return->msg        = __( 'Player registration already pending', 'racketmanager' );
-                } else {
-                    $club_player            = new stdClass();
-                    $club_player->club_id   = $this->id;
-                    $club_player->player_id = $player->id;
-                    $club_player            = new Club_Player( $club_player );
-                    $options                = $racketmanager->get_options( 'rosters' );
-                    if ( 'auto' === $options['rosterConfirmation'] || current_user_can( 'edit_teams' ) ) {
-                        $club_player->approve();
-                        $action = 'add';
-                        $msg    = __( 'Player added to club', 'racketmanager' );
-                    } else {
-                        $action = 'request';
-                        $msg    = __( 'Player registration pending', 'racketmanager' );
-                    }
-                    if ( ! empty( $options['rosterConfirmationEmail'] ) ) {
-                        $headers = array();
-                        $user    = wp_get_current_user();
-                        if ( ! empty( $this->match_secretary->id ) && $this->match_secretary->id !== $user->ID ) {
-                            $headers[] = RACKETMANAGER_CC_EMAIL . $this->match_secretary->display_name . ' <' . $this->match_secretary->email . '>';
-                        }
-                        $email_to                  = $user->display_name . ' <' . $user->user_email . '>';
-                        $message_args              = array();
-                        $message_args['requestor'] = $user->display_name;
-                        $message_args['action']    = $action;
-                        $message_args['club']      = $this->shortcode;
-                        $message_args['player']    = $player->fullname;
-                        $message_args['btm']       = empty( $player->btm ) ? null : $player->btm;
-                        $headers[]                 = RACKETMANAGER_FROM_EMAIL . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
-                        $headers[]                 = RACKETMANAGER_CC_EMAIL . $racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
-                        $subject                   = $racketmanager->site_name . ' - ' . $msg . ' - ' . $this->shortcode;
-                        $message                   = club_players_notification( $message_args );
-                        wp_mail( $email_to, $subject, $message, $headers );
-                    }
-                    $return->msg = $msg;
-                }
-            } else {
-                $return->error      = true;
-                $return->status     = 401;
-                $return->msg        = __( 'Player already registered', 'racketmanager' );
-            }
-        }
-        return $return;
-    }
-    /**
-     * Check for player status
-     *
-     * @param int $player player id.
-     * @return string count of players with status
-     */
-    private function player_status( int $player, string $status ): string {
-        global $wpdb;
-        $search = match ( $status ) {
-            'active'  => ' AND `removed_date` IS NULL',
-            'pending' => ' AND `created_date` IS NULL',
-            default   => null,
-        };
-        return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT count(*) FROM $wpdb->racketmanager_club_players WHERE `club_id` = %d AND `player_id` = %d $search",
-                $this->id,
-                $player
-            )
-        );
-    }
     /**
      * Gets club players from database
      *

@@ -10,12 +10,16 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Racketmanager_Match;
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Duplicate_BTM_Exception;
+use Racketmanager\Exceptions\Duplicate_Email_Exception;
+use Racketmanager\Exceptions\Player_Already_Registered_Exception;
+use Racketmanager\Exceptions\Player_Exists_Exception;
+use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_club;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_player;
 
 /**
  * RacketManager Import functions
@@ -147,7 +151,7 @@ class Admin_Import extends Admin_Display {
             // ignore header and empty lines.
             if ( $i > 0 && count( $line ) > 1 ) {
                 $team    = $line[0];
-                $team_id = $this->get_team_id( $team );
+                $team_id = $this->racketmanager->get_team_id( $team );
                 if ( ! empty( $team_id ) ) {
                     $table_id = $league->add_team( $team_id, $season );
                     if ( $table_id ) {
@@ -222,8 +226,8 @@ class Admin_Import extends Admin_Display {
                 $match->match_day = $line[1] ?? '';
                 $match->date      = trim( $date );
                 $match->season    = $season;
-                $match->home_team = $this->get_team_id( $line[2] );
-                $match->away_team = $this->get_team_id( $line[3] );
+                $match->home_team = $this->racketmanager->get_team_id( $line[2] );
+                $match->away_team = $this->racketmanager->get_team_id( $line[3] );
                 if ( ! empty( $match->home_team )  && ! empty( $match->away_team ) ) {
                     $match->location = $line[4] ?? '';
                     $match->group    = $line[5] ?? '';
@@ -246,7 +250,6 @@ class Admin_Import extends Admin_Display {
      * @param string $delimiter delimiter.
      */
     private function import_players( array $contents, string $delimiter ): void {
-        global $racketmanager;
         $error_messages = array();
         $i              = 0;
         $x              = 0;
@@ -254,31 +257,22 @@ class Admin_Import extends Admin_Display {
             $line = explode( $delimiter, $record );
             // ignore header and empty lines.
             if ( $i > 0 && count( $line ) > 1 ) {
-                $_POST['firstname']     = $line[0] ?? '';
-                $_POST['surname']       = $line[1] ?? '';
-                $_POST['gender']        = $line[2] ?? '';
-                $_POST['btm']           = $line[3] ?? '';
-                $_POST['email']         = $line[4] ?? '';
-                $_POST['contactno']     = $line[5] ?? '';
-                $_POST['year_of_birth'] = $line[6] ?? '';
-                $player_valid           = $racketmanager->validate_player();
-                if ( $player_valid[0] ) {
-                    $new_player = $player_valid[1];
-                    $player     = get_player( $new_player->user_login, 'login' );  // get player by login.
-                    if ( ! $player ) {
-                        $player = $this->player_service->add_player( $new_player );
-                        if ( ! empty( $player->id ) ) {
-                            ++$x;
+                $this->get_player_details( $line );
+                try {
+                    $player = $this->player_service->add_new_player();
+                    if ( is_wp_error( $player ) ) {
+                        $player_errors = $player->get_error_messages();
+                        /* translators: %d: player line with error */
+                        $message = sprintf( __( 'Error with player %d details', 'racketmanager' ), $i );
+                        foreach ( $player_errors as $error_message ) {
+                            $message .= '<br>' . $error_message;
                         }
+                        $error_messages[] = $message;
+                    } else {
+                        ++$x;
                     }
-                } else {
-                    $error_messages = $player_valid[2];
-                    /* translators: %d: player line with error */
-                    $message = sprintf( __( 'Error with player %d details', 'racketmanager' ), $i );
-                    foreach ( $error_messages as $error_message ) {
-                        $message .= '<br>' . $error_message;
-                    }
-                    $error_messages[] = $message;
+                } catch ( Player_Exists_Exception|Duplicate_Email_Exception|Duplicate_BTM_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
                 }
             }
             ++$i;
@@ -292,15 +286,13 @@ class Admin_Import extends Admin_Display {
     }
 
     /**
-     * Import club players from file
+     * Import club players from a file
      *
      * @param array $contents array of file contents.
      * @param string $delimiter delimiter.
-     * @param int $club club.
+     * @param int $club_id club id.
      */
-    private function import_club_players( array $contents, string $delimiter, int $club ): void {
-        global $racketmanager;
-        $club           = get_club( $club );
+    private function import_club_players( array $contents, string $delimiter, int $club_id ): void {
         $i              = 0;
         $x              = 0;
         $error_messages = array();
@@ -308,26 +300,22 @@ class Admin_Import extends Admin_Display {
             $line = explode( $delimiter, $record );
             // ignore header and empty lines.
             if ( $i > 0 && count( $line ) > 1 ) {
-                $_POST['firstname']     = $line[0] ?? '';
-                $_POST['surname']       = $line[1] ?? '';
-                $_POST['gender']        = $line[2] ?? '';
-                $_POST['btm']           = $line[3] ?? '';
-                $_POST['email']         = $line[4] ?? '';
-                $_POST['contactno']     = $line[5] ?? '';
-                $_POST['year_of_birth'] = $line[6] ?? '';
-                $player_valid           = $racketmanager->validate_player();
-                if ( $player_valid[0] ) {
-                    $new_player = $player_valid[1];
-                    $club->register_player( $new_player );
-                    ++$x;
-                } else {
-                    $error_messages = $player_valid[2];
-                    /* translators: %d: player id */
-                    $message = sprintf( __( 'Error with player %d details', 'racketmanager' ), $i );
-                    foreach ( $error_messages as $error_message ) {
-                        $message .= '<br>' . $error_message;
+                $this->get_player_details( $line );
+                try {
+                    $response = $this->club_player_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
+                    if ( is_wp_error( $response ) ) {
+                        $player_messages = $response->get_error_messages();
+                        /* translators: %d: player id */
+                        $message = sprintf( __( 'Error with player %d details', 'racketmanager' ), $i );
+                        foreach ( $player_messages as $error_message ) {
+                            $message .= '<br>' . $error_message;
+                        }
+                        $error_messages[] = $message;
+                    } else {
+                        ++$x;
                     }
-                    $error_messages[] = $message;
+                } catch ( Club_Not_Found_Exception|Player_Already_Registered_Exception|Registration_Not_Found_Exception $e ) {
+                    $error_messages[] = $e->getMessage();
                 }
             }
             ++$i;
@@ -338,5 +326,22 @@ class Admin_Import extends Admin_Display {
             $message .= '<br>' . $error_message;
         }
         $this->set_message( $message );
+    }
+
+    /**
+     * Get player details from line and store as $_POST variables.
+     *
+     * @param array $line
+     *
+     * @return void
+     */
+    private function get_player_details( array $line ): void {
+        $_POST['firstname']     = $line[0] ?? '';
+        $_POST['surname']       = $line[1] ?? '';
+        $_POST['gender']        = $line[2] ?? '';
+        $_POST['btm']           = $line[3] ?? '';
+        $_POST['email']         = $line[4] ?? '';
+        $_POST['contactno']     = $line[5] ?? '';
+        $_POST['year_of_birth'] = $line[6] ?? '';
     }
 }

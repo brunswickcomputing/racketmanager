@@ -27,18 +27,17 @@ namespace Racketmanager;
     </div>
 </form>
 <form id="player-error-filter" method="post" action="" class="form-control">
-    <?php wp_nonce_field( 'club-player-request-bulk' ); ?>
+    <?php wp_nonce_field( 'racketmanager_player-error-bulk', 'racketmanager_nonce' ); ?>
 
     <div class="mb-3">
         <!-- Bulk Actions -->
         <label>
             <select name="action" size="1">
                 <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
-                <option value="approve"><?php esc_html_e( 'Approve', 'racketmanager' ); ?></option>
                 <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
             </select>
         </label>
-        <input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doPlayerRequest" id="doPlayerRequest" class="btn btn-secondary action" />
+        <input type="submit" value="<?php esc_html_e( 'Apply', 'racketmanager' ); ?>" name="doPlayerErrorBulk" id="doPlayerErrorBulk" class="btn btn-secondary action" />
     </div>
 
     <div>
@@ -56,13 +55,13 @@ namespace Racketmanager;
                 foreach ( $player_errors as $player_error ) {
                     ?>
                     <tr>
-                        <td><label for="playerRequest-<?php echo esc_html( $player_error->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player_error->id ); ?>" name="playerRequest[<?php echo esc_html( $player_error->id ); ?>]" id="playerRequest-<?php echo esc_html( $player_error->id ); ?>" /></td>
+                        <td><label for="playerError-<?php echo esc_html( $player_error->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player_error->id ); ?>" name="playerError[<?php echo esc_html( $player_error->id ); ?>]" id="playerError-<?php echo esc_html( $player_error->id ); ?>" /></td>
                         <td>
                         <a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_attr( $player_error->player_id ); ?>">
-                            <?php echo esc_html( $player_error->player->display_name ); ?>
+                            <?php echo esc_html( $player_error->player_name ); ?>
                         </a>
                         </td>
-                        <td><?php echo esc_html( $player_error->player->btm ); ?></td>
+                        <td><?php echo esc_html( $player_error->btm ); ?></td>
                         <td><?php echo esc_html( $player_error->message ); ?></td>
                     </tr>
                     <?php

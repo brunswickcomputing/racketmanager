@@ -4,13 +4,10 @@
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Club Player
+ * @subpackage Domain
  */
 
 namespace Racketmanager\Domain;
-
-use function Racketmanager\get_club;
-use function Racketmanager\get_player;
 
 /**
  * Class to implement the Club_Player object
@@ -19,9 +16,9 @@ final class Club_Player {
     /**
      * Id
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Player id
      *
@@ -35,47 +32,29 @@ final class Club_Player {
      */
     public int $club_id;
     /**
-     * Club Player id
-     *
-     * @var int
-     */
-    public int $club_player_id;
-    /**
      * Removed date
      *
      * @var string|null
      */
-    public ?string $removed_date;
+    public ?string $removed_date = null;
     /**
      * Removed user
      *
      * @var int|null
      */
-    public ?int $removed_user;
-    /**
-     * Removed username
-     *
-     * @var string
-     */
-    public string $removed_user_name;
-    /**
-     * Removed user email
-     *
-     * @var string
-     */
-    public string $removed_user_email;
+    public ?int $removed_user = null;
     /**
      * Created date
      *
-     * @var string
+     * @var ?string
      */
-    public string $created_date;
+    public ?string $created_date = null;
     /**
      * Created user
      *
      * @var int|null
      */
-    public ?int $created_user;
+    public ?int $created_user = null;
     /**
      * Requested date
      *
@@ -83,41 +62,11 @@ final class Club_Player {
      */
     public ?string $requested_date;
     /**
-     * Created username
-     *
-     * @var string
-     */
-    public string $created_user_name;
-    /**
-     * Created user email
-     *
-     * @var string
-     */
-    public string $created_user_email;
-    /**
      * Requested user
      *
      * @var int|null
      */
     public ?int $requested_user;
-    /**
-     * Requested user name
-     *
-     * @var string
-     */
-    public string $requested_user_name;
-    /**
-     * Requested user email
-     *
-     * @var string
-     */
-    public string $requested_user_email;
-    /**
-     * Club
-     *
-     * @var object
-     */
-    public object $club;
     /**
      * Player
      *
@@ -129,33 +78,8 @@ final class Club_Player {
      *
      * @var boolean|null
      */
-    public bool|null $system_record;
-    /**
-     * Retrieve club_player instance
-     *
-     * @param int $club_player_id club player id or name.
-     */
-    public static function get_instance( int $club_player_id ) {
-        global $wpdb;
-        if ( ! $club_player_id ) {
-            return false;
-        }
-        $club_player = wp_cache_get( $club_player_id, 'club_players' );
-        if ( ! $club_player ) {
-            $club_player = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user` FROM $wpdb->racketmanager_club_players WHERE `id` = %d LIMIT 1",
-                    $club_player_id
-                )
-            ); // db call ok.
-            if ( ! $club_player ) {
-                return false;
-            }
-            $club_player = new Club_Player( $club_player );
-            wp_cache_set( $club_player_id, $club_player, 'club_players' );
-        }
-        return $club_player;
-    }
+    public bool|null $system_record = null;
+
     /**
      * Constructor
      *
@@ -166,99 +90,151 @@ final class Club_Player {
             foreach ( get_object_vars( $club_player ) as $key => $value ) {
                 $this->$key = $value;
             }
-            if ( ! isset( $this->id ) ) {
-                $this->add();
-            }
-            $this->club_player_id = $this->id;
-            if ( $this->club_id ) {
-                $club = get_club( $this->club_id );
-                if ( $club ) {
-                    $this->club = $club;
-                }
-            }
-            if ( $this->player_id ) {
-                $player = get_player( $this->player_id );
-                if ( $player ) {
-                    $this->player = $player;
-                }
-            }
-            if ( ! empty( $this->removed_user ) ) {
-                $removed_user_details = get_userdata( $this->removed_user );
-                if ( $removed_user_details ) {
-                    $this->removed_user_name  = $removed_user_details->display_name;
-                    $this->removed_user_email = $removed_user_details->user_email;
-                }
-            }
-            if ( ! empty( $this->created_user ) ) {
-                $created_user_details = get_userdata( $this->created_user );
-                if ( $created_user_details ) {
-                    $this->created_user_name  = $created_user_details->display_name;
-                    $this->created_user_email = $created_user_details->user_email;
-                }
-            }
-            if ( ! empty( $this->requested_user ) ) {
-                $requested_user_details = get_userdata( $this->requested_user );
-                if ( $requested_user_details ) {
-                    $this->requested_user_name  = $requested_user_details->display_name;
-                    $this->requested_user_email = $requested_user_details->user_email;
-                }
-            }
         }
     }
+
     /**
-     * Create new club player
+     * Get id
+     *
+     * @return int|null
      */
-    private function add(): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_club_players (`club_id`, `player_id`, `requested_date`, `requested_user` ) VALUES (%d, %d, now(), %d)",
-                $this->club_id,
-                $this->player_id,
-                get_current_user_id()
-            )
-        );
-        $this->id = $wpdb->insert_id;
+    public function get_id(): ?int {
+        return $this->id;
     }
+
     /**
-     * Approve Club Player
+     * Set the id
+     *
+     * @param int $insert_id
+     *
+     * @return void
      */
-    public function approve(): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_club_players SET `created_date` = NOW(), `created_user` = %d WHERE `id` = %d",
-                get_current_user_id(),
-                $this->id
-            )
-        );
-        wp_cache_set( $this->id, $this, 'club_players' );
+    public function set_id( int $insert_id ): void {
+        $this->id = $insert_id;
     }
+
     /**
-     * Remove Club Player
+     * Get player id
+     *
+     * @return int|null
      */
-    public function remove(): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_club_players SET `removed_date` = NOW(), `removed_user` = %d WHERE `id` = %d",
-                get_current_user_id(),
-                $this->id
-            )
-        );
-        wp_cache_set( $this->id, $this, 'club_players' );
+    public function get_player_id(): ?int {
+        return $this->player_id;
     }
+
     /**
-     * Delete Club Player
+     * Get club id
+     *
+     * @return int|null
      */
-    public function delete(): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_club_players WHERE `id` = %d",
-                $this->id
-            )
-        );
-        wp_cache_delete( $this->id, 'club_players' );
+    public function get_club_id(): ?int {
+        return $this->club_id;
+    }
+
+    /**
+     * Get the requested date
+     *
+     * @return string|null
+     */
+    public function get_requested_date(): ?string {
+        return $this->requested_date;
+    }
+
+    /**
+     * Get requested user id
+     *
+     * @return int|null
+     */
+    public function get_requested_user(): ?int {
+        return $this->requested_user;
+    }
+
+    /**
+     * Get the approval date
+     *
+     * @return string|null
+     */
+    public function get_created_date(): ?string {
+        return $this->created_date;
+    }
+
+    /**
+     * Get approval user id
+     *
+     * @return int|null
+     */
+    public function get_created_user(): ?int {
+        return $this->created_user;
+    }
+
+    /**
+     * Get the removed date
+     *
+     * @return string|null
+     */
+    public function get_removed_date(): ?string {
+        return $this->removed_date;
+    }
+
+    /**
+     * Get removed user id
+     *
+     * @return int|null
+     */
+    public function get_removed_user(): ?int {
+        return $this->removed_user;
+    }
+
+    /**
+     * Get system record indicator
+     *
+     * @return bool|null
+     */
+    public function get_system_record(): ?bool {
+        return $this->system_record;
+    }
+
+    /**
+     * Set the approval date
+     *
+     * @param string $date
+     *
+     * @return void
+     */
+    public function set_approval_date( string $date ): void {
+        $this->created_date = $date;
+    }
+
+    /**
+     * Set approval user id
+     *
+     * @param int $userid
+     *
+     * @return void
+     */
+    public function set_approval_user( int $userid ): void {
+        $this->created_user = $userid;
+    }
+
+    /**
+     * Set the removal date
+     *
+     * @param string $date
+     *
+     * @return void
+     */
+    public function set_removal_date( string $date ): void {
+        $this->removed_date = $date;
+    }
+
+    /**
+     * Set removal user id
+     *
+     * @param int $userid
+     *
+     * @return void
+     */
+    public function set_removal_user( int $userid ): void {
+        $this->removed_user = $userid;
     }
 }

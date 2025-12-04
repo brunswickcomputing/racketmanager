@@ -28,28 +28,59 @@ class Club_Player_DTO {
     public ?int $removed_by_user_id;
     public ?int $registration_id;
     public array $wtn;
+    public mixed $age;
+    /**
+     * @var mixed|string
+     */
+    public mixed $firstname;
+    /**
+     * @var mixed|string
+     */
+    public mixed $surname;
+    public string $link;
+    public ?int $year_of_birth;
+    /**
+     * @var mixed|string
+     */
+    public mixed $contactno;
+    public ?int $id;
+    public mixed $registered_by_user;
+    public mixed $approved_by_user;
+    public mixed $removed_by_user;
 
     /**
      * Club_Player_DTO constructor.
      *
-     * @param $data
+     * @param Player $player
+     * @param Club $club
+     * @param Club_Player $registration
      */
-    public function __construct( $data ) {
-        $this->registration_id       = $data->registration_id;
-        $this->user_id               = $data->user_id;
-        $this->display_name          = $data->display_name;
-        $this->email                 = $data->email;
-        $this->gender                = $data->gender;
-        $this->btm                   = $data->btm;
-        $this->club_id               = $data->club_id;
-        $this->club_name             = $data->club_name;
-        $this->registration_date     = $data->registration_date;
-        $this->approval_date         = $data->approval_date;
-        $this->removal_date          = $data->removal_date;
-        $this->registered_by_user_id = $data->registered_by_user_id;
-        $this->approved_by_user_id   = $data->approved_by_user_id;
-        $this->removed_by_user_id    = $data->removed_by_user_id;
-        $this->wtn                   = $data->wtn;
+    public function __construct( Player $player, Club $club, Club_Player $registration, $registered_by, $approved_by, $removed_by ) {
+        $this->registration_id       = $registration->id;
+        $this->user_id               = $registration->player_id;
+        $this->club_id               = $registration->club_id;
+        $this->registration_date     = $registration->requested_date;
+        $this->approval_date         = $registration->created_date;
+        $this->removal_date          = $registration->removed_date;
+        $this->registered_by_user_id = $registration->requested_user;
+        $this->registered_by_user    = $registered_by;
+        $this->approved_by_user      = $approved_by;
+        $this->removed_by_user       = $removed_by;
+        $this->approved_by_user_id   = $registration->created_user;
+        $this->removed_by_user_id    = $registration->removed_user;
+        $this->id                    = $player->id;
+        $this->display_name          = $player->display_name;
+        $this->firstname             = $player->firstname;
+        $this->surname               = $player->surname;
+        $this->link                  = $player->link;
+        $this->year_of_birth         = $player->year_of_birth;
+        $this->contactno             = $player->contactno;
+        $this->email                 = $player->email;
+        $this->gender                = $player->gender;
+        $this->btm                   = $player->btm;
+        $this->wtn                   = $player->wtn;
+        $this->age                   = $player->age;
+        $this->club_name             = $club->shortcode;
     }
 
 }

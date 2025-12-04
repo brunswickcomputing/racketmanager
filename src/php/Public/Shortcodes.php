@@ -21,7 +21,6 @@ use function Racketmanager\get_tournament;
 use function Racketmanager\get_user;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
-use function Racketmanager\sort;
 use function Racketmanager\un_seo_url;
 
 /**

@@ -23,6 +23,7 @@ use wpdb;
 class Player_Repository {
     const META_KEY_GENDER = 'gender';
     const META_KEY_BTM = 'btm';
+    const META_KEY_YOB = 'year_of_birth';
     private wpdb $wpdb;
 
     /**
@@ -128,7 +129,7 @@ class Player_Repository {
             $this->save_contact_no( $user_id, $player->get_contactno() );
         }
         if ( isset( $updates['dob'] ) ) {
-            update_user_meta( $user_id, 'year_of_birth', $player->get_year_of_birth() );
+            update_user_meta( $user_id, self::META_KEY_YOB, $player->get_year_of_birth() );
         }
         if ( isset( $updates['locked'] ) ) {
             if ( $player->get_locked() ) {
@@ -262,7 +263,7 @@ class Player_Repository {
         $player->data->gender        = get_user_meta( $player->data->ID, self::META_KEY_GENDER, true );
         $player->data->type          = get_user_meta( $player->data->ID, 'racketmanager_type', true );
         $player->data->btm           = get_user_meta( $player->data->ID, self::META_KEY_BTM, true );
-        $year_of_birth               = get_user_meta( $player->data->ID, 'year_of_birth', true );
+        $year_of_birth               = get_user_meta( $player->data->ID, self::META_KEY_YOB, true );
         $player->data->year_of_birth = empty( $year_of_birth ) ? null : $year_of_birth;
         $contact_no                  = get_user_meta( $player->data->ID, 'contactno', true );
         $player->data->contactno     = empty( $contact_no ) ? null : $contact_no;

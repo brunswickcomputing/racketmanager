@@ -32,7 +32,6 @@ class Admin_Upgrade extends Admin_Display {
      * Display upgrade page
      */
     private function display_upgrade_page(): void {
-        global $racketmanager;
         $validator = new Validator();
         $validator->capability( 'manage_racketmanager' );
         if (! empty( $validator->error )) {
@@ -40,7 +39,7 @@ class Admin_Upgrade extends Admin_Display {
             $this->show_message();
             return;
         }
-        $options   = $racketmanager->options;
+        $options   = $this->racketmanager->options;
         $installed = $options['dbversion'] ?? null;
         if ( isset($_POST['doUpgrade'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_upgrade' );

@@ -18,11 +18,11 @@ use Racketmanager\Util\Util_Lookup;
 
 /** @var object $club */
 /** @var bool   $user_can_update */
+/** @var array  $players */
 $display_opt = $racketmanager->get_options( 'display' );
-if ( empty( $club->player ) ) {
+if ( empty( $player ) ) {
     $header_level = 1;
     require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
-    $club_players = $club->players;
     if ( $user_can_update ) {
         ?>
         <div class="module module--card">
@@ -112,7 +112,7 @@ if ( empty( $club->player ) ) {
             <div class="module__content">
                 <div class="module-container">
                     <?php
-                    if ( $club_players ) {
+                    if ( $players ) {
                         ?>
                         <div id="playerDel<?php echo esc_attr( $gender ); ?>Response" class="alert_rm" style="display: none;">
                             <div class="alert__body">
@@ -153,22 +153,22 @@ if ( empty( $club->player ) ) {
                                 <tbody id="Club <?php echo esc_html( $key ); ?> Players">
                                     <?php $class = ''; ?>
                                     <?php
-                                    foreach ( $club_players as $club_player ) {
+                                    foreach ( $players as $club_player ) {
                                         if ( $club_player->gender === $gender ) {
                                             $class = ( 'alternate' === $class ) ? '' : 'alternate';
                                             ?>
-                                            <tr class="<?php echo esc_html( $class ); ?>" id="club_player-<?php echo esc_html( $club_player->roster_id ); ?>">
+                                            <tr class="<?php echo esc_html( $class ); ?>" id="club_player-<?php echo esc_html( $club_player->registration_id ); ?>">
                                                 <th scope="row" class="check-column">
                                                     <?php
                                                     if ( $user_can_update ) {
                                                         ?>
-                                                        <label for="clubPlayer-<?php echo esc_html( $club_player->roster_id ); ?>" class="visually-hidden"><?php ?><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
-                                                        <input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->roster_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->roster_id ); ?>]" id="clubPlayer-<?php echo esc_html( $club_player->roster_id ); ?>" />
+                                                        <label for="clubPlayer-<?php echo esc_html( $club_player->registration_id ); ?>" class="visually-hidden"><?php ?><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
+                                                        <input type="checkbox" class="checkbox" value="<?php echo esc_html( $club_player->registration_id ); ?>" name="clubPlayer[<?php echo esc_html( $club_player->registration_id ); ?>]" id="clubPlayer-<?php echo esc_html( $club_player->registration_id ); ?>" />
                                                         <?php
                                                     }
                                                     ?>
                                                 </th>
-                                                <td><a href="<?php echo esc_html( seo_url( $club_player->fullname ) ); ?>/"><?php echo esc_html( $club_player->fullname ); ?></a></td>
+                                                <td><a href="<?php echo esc_html( seo_url( $club_player->display_name ) ); ?>/"><?php echo esc_html( $club_player->display_name ); ?></a></td>
                                                 <td><?php echo esc_html( $club_player->btm ); ?></td>
                                                 <td>
                                                     <?php
@@ -205,6 +205,5 @@ if ( empty( $club->player ) ) {
         <?php
     }
 } else {
-    $player = $club->player;
     require_once RACKETMANAGER_PATH . 'templates/club/player.php';
 }

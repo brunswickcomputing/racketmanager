@@ -30,7 +30,7 @@ if ( ! $page_referrer ) {
             <div class="entry-content">
                 <form id="playerUpdateFrm" action="" method="post">
                     <?php wp_nonce_field( 'player-update', 'racketmanager_nonce' ); ?>
-                    <input type="hidden" id="playerId" name="playerId" value="<?php echo esc_html( $player->ID ); ?>" />
+                    <input type="hidden" id="playerId" name="playerId" value="<?php echo esc_html( $player->id ); ?>" />
                     <div class="form-control mb-3">
                         <legend><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>
                         <div class="row g-3">
@@ -157,26 +157,26 @@ if ( ! $page_referrer ) {
                     }
                     ?>
                     <?php
-                    if ( ! empty( $player->created_date ) || ! empty( $player_created_user_name ) ) {
+                    if ( ! empty( $player->registration_date ) || ! empty( $player->registered_by_user ) ) {
                         ?>
                         <fieldset class="form-control mb-3">
                             <legend><?php esc_html_e( 'System details', 'racketmanager' ); ?></legend>
                             <div class="row g-3">
                                 <?php
-                                if ( ! empty( $player->created_date ) ) {
+                                if ( ! empty( $player->registration_date ) ) {
                                     ?>
                                     <div class="form-floating col-md-6">
-                                        <input type="text" disabled class="form-control" id="dateCreated" name="dateCreated" value="<?php echo esc_html( $player->created_date ); ?>" />
+                                        <input type="text" disabled class="form-control" id="dateCreated" name="dateCreated" value="<?php echo esc_html( $player->registration_date ); ?>" />
                                         <label for="dateCreated"><?php esc_html_e( 'Added on', 'racketmanager' ); ?></label>
                                     </div>
                                     <?php
                                 }
                                 ?>
                                 <?php
-                                if ( ! empty( $player_created_user_name ) ) {
+                                if ( ! empty( $player->registered_by_user ) ) {
                                     ?>
                                     <div class="form-floating col-md-6">
-                                        <input type="text" disabled class="form-control" id="userCreated" name="userCreated" value="<?php echo esc_html( $player->created_user_name ); ?>" />
+                                        <input type="text" disabled class="form-control" id="userCreated" name="userCreated" value="<?php echo esc_html( $player->registered_by_user ); ?>" />
                                         <label for="userCreated"><?php esc_html_e( 'Added by', 'racketmanager' ); ?></label>
                                     </div>
                                     <?php

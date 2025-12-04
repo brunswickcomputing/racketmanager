@@ -172,4 +172,92 @@ class Club_Player_Management_Service {
             return $this->create_club_player_dto( $registration_id );
         }, $players );
     }
+
+    /**
+     * Create Club Player DTO from registration ID
+     *
+     * @param int $registration_id
+     *
+     * @return Club_Player_DTO
+     */
+    private function create_club_player_dto( int $registration_id ): Club_Player_DTO {
+        $registration       = $this->club_player_repository->find( $registration_id );
+        $player             = $this->player_repository->find( $registration->player_id );
+        $club               = $this->club_repository->find( $registration->club_id );
+        $registered_by_name = null;
+        $removed_by_name    = null;
+        $approved_by_name   = null;
+        if ( ! empty( $registration->get_requested_user() ) ) {
+            $registered_by      = $this->player_repository->find( $registration->get_requested_user() );
+            $registered_by_name = $registered_by?->display_name;
+        }
+        if ( ! empty( $registration->get_removed_user() ) ) {
+            $removed_by      = $this->player_repository->find( $registration->get_removed_user() );
+            $removed_by_name = $removed_by?->display_name;
+        }
+        if ( ! empty( $registration->get_requested_user() ) ) {
+            $approved_by      = $this->player_repository->find( $registration->get_requested_user() );
+            $approved_by_name = $approved_by?->display_name;
+        }
+
+        return new Club_Player_DTO( $player, $club, $registration, $registered_by_name, $removed_by_name, $approved_by_name );
+    }
+
+    /**
+     * Get player registration for a club
+     *
+     * @param int $club_id
+     * @param int $player_id
+     *
+     * @return Club_Player_DTO|null
+     */
+    public function get_player_for_club( int $club_id, int $player_id ): ?Club_Player_DTO {
+        $club = $this->club_repository->find( $club_id );
+        if ( ! $club ) {
+            throw new Club_Not_Found_Exception( __( 'Club not found', 'racketmanager' ) );
+        }
+        $player = $this->player_repository->find( $player_id );
+        if ( ! $player ) {
+            throw new Player_Not_Found_Exception( __( 'Player not found', 'racketmanager' ) );
+        }
+        $registration = $this->club_player_repository->find_by_club_and_player( $club_id, $player_id );
+
+        return $this->create_club_player_dto( $registration->id );
+    }
+
+    /**
+     * Check if player is active in club
+     *
+     * @param int $club_id
+     * @param int $player_id
+     *
+     * @return bool
+     */
+    public function is_player_active_in_club( int $club_id, int $player_id ): bool {
+        $registration = $this->club_player_repository->find_by_club_and_player( $club_id, $player_id );
+        if ( ! $registration ) {
+            return false;
+        }
+
+        return $registration->get_status() === 'approved';
+    }
+
+    /**
+     * Get fake players for a club
+     *
+     * @param int $club_id
+     *
+     * @return array
+     */
+    public function get_dummy_players( int $club_id ): array {
+        $player_options                = $this->racketmanager->get_options( 'player' );
+        $players['walkover']['male']   = $this->club_player_repository->find_by_club_and_player( $club_id, $player_options['walkover']['male'] );
+        $players['walkover']['female'] = $this->club_player_repository->find_by_club_and_player( $club_id, $player_options['walkover']['female'] );
+        $players['noplayer']['male']   = $this->club_player_repository->find_by_club_and_player( $club_id, $player_options['noplayer']['male'] );
+        $players['noplayer']['female'] = $this->club_player_repository->find_by_club_and_player( $club_id, $player_options['noplayer']['female'] );
+        $players['share']['male']      = $this->club_player_repository->find_by_club_and_player( $club_id, $player_options['share']['male'] );
+        $players['share']['female']    = $this->club_player_repository->find_by_club_and_player( $club_id, $player_options['share']['female'] );
+
+        return $players;
+    }
 }

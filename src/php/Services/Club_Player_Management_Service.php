@@ -72,17 +72,17 @@ class Club_Player_Management_Service {
         }
         $player = $this->player_repository->find( $player->id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( __('Player not found or inactive', 'racketmanager' ) );
+            throw new Player_Not_Found_Exception( __( 'Player not found or inactive', 'racketmanager' ) );
         }
 
         if ( $this->club_player_repository->find_by_club_and_player( $club_id, $player->id ) ) {
-            throw new Player_Already_Registered_Exception( __( 'Player already registered to this club','racketmanager' ) );
+            throw new Player_Already_Registered_Exception( __( 'Player already registered to this club', 'racketmanager' ) );
         }
 
         $club_player                 = new stdClass();
         $club_player->club_id        = $club_id;
         $club_player->player_id      = $player->id;
-        $club_player->requested_date = gmdate('Y-m-d');
+        $club_player->requested_date = gmdate( 'Y-m-d' );
         $club_player->requested_user = $registered_by_userId;
         $club_player->status         = 'pending';
         $registration                = new Club_Player( $club_player );
@@ -116,6 +116,7 @@ class Club_Player_Management_Service {
             $message                   = club_players_notification( $message_args );
             wp_mail( $email_to, $subject, $message, $headers );
         }
+
         return $msg;
     }
 
@@ -130,7 +131,7 @@ class Club_Player_Management_Service {
     public function approve_registration( int $registration_id, int $approving_user ): void {
         $registration = $this->club_player_repository->find( $registration_id );
         if ( ! $registration ) {
-            throw new Registration_Not_Found_Exception( __('Registration not found', 'racketmanager' ) );
+            throw new Registration_Not_Found_Exception( __( 'Registration not found', 'racketmanager' ) );
         }
         $registration->approve( $approving_user );
         $this->club_player_repository->save( $registration );
@@ -147,7 +148,7 @@ class Club_Player_Management_Service {
     public function remove_registration( int $registration_id, int $removing_user ): void {
         $registration = $this->club_player_repository->find( $registration_id );
         if ( ! $registration ) {
-            throw new Registration_Not_Found_Exception( __('Registration not found', 'racketmanager' ) );
+            throw new Registration_Not_Found_Exception( __( 'Registration not found', 'racketmanager' ) );
         }
         $registration->approve( $removing_user );
         $this->club_player_repository->save( $registration );
@@ -158,13 +159,17 @@ class Club_Player_Management_Service {
      *
      * @param string|null $active Optional active filter.
      * @param string|null $status Optional status filter.
-     * @param int|null $clubId Optional Club ID filter.
+     * @param int|null $club_id Optional Club ID filter.
      * @param string|null $gender Optional gender filter.
      * @param bool $system Optional system filter.
      *
      * @return Club_Player_DTO[]
      */
-    public function get_registered_players_list( string $active = null, string $status = null, int $clubId = null, string $gender = null, bool $system = false ): array {
-        return $this->player_repository->find_club_players_with_details( $clubId, $status, $gender, $active, $system );
+    public function get_registered_players_list( string $active = null, string $status = null, int $club_id = null, string $gender = null, bool $system = false, ?int $max_age = null, ?int $min_age = null ): array {
+        $players = $this->player_repository->find_club_players_with_details( $club_id, $status, $gender, $active, $system, $max_age, $min_age );
+
+        return array_map( function ( $registration_id ) {
+            return $this->create_club_player_dto( $registration_id );
+        }, $players );
     }
 }

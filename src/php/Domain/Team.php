@@ -258,8 +258,9 @@ final class Team {
      * @param object|null $team Team object.
      */
     public function __construct( ?object $team = null ) {
+        global $racketmanager;
         $player_repository    = new Player_Repository();
-        $this->player_service = new Player_Management_Service( $player_repository );
+        $this->player_service = new Player_Management_Service( $racketmanager, $player_repository );
 
         $this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
         $this->msg_team_added         = __( 'Team added', 'racketmanager' );

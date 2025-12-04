@@ -84,6 +84,7 @@ class Club_Player_Management_Service {
         $club_player->player_id      = $player->id;
         $club_player->requested_date = gmdate('Y-m-d');
         $club_player->requested_user = $registered_by_userId;
+        $club_player->status         = 'pending';
         $registration                = new Club_Player( $club_player );
         $this->club_player_repository->save( $registration );
 

@@ -12,7 +12,7 @@ namespace Racketmanager;
 /** @var int $club_id */
 /** @var string $status */
 /** @var array $player_requests */
-$hint_title = 'title="';
+$tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="';
 ?>
 <!-- Club Player Request Filter -->
 <form id="club-player-request-filter" method="get" action="" class="form-control mb-3">
@@ -80,31 +80,22 @@ $hint_title = 'title="';
                     <td><?php echo esc_html( $request->btm ); ?></td>
                     <?php
                     $tooltip = null;
-                    if ( ! empty( $request->registered_by_user_id ) ) {
-                        $actioned_by_user = get_userdata( $request->approved_by_user_id );
-                        $actioned_by_name = $actioned_by_user ? $actioned_by_user->display_name : __('Unknown user', 'racketmanager' );
-                        $tooltip = esc_html__( 'Registered by', 'racketmanager' ) . ' ' . esc_html( $actioned_by_name );
-                        $tooltip = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="' . $tooltip . '"';
+                    if ( ! empty( $request->registered_by_user ) ) {
+                        $tooltip = $tooltip_left . esc_html__( 'Registered by', 'racketmanager' ) . ' ' . esc_html( $request->registered_by_user ) . '"';
                     }
                     ?>
                     <td <?php echo empty( $tooltip ) ? null : $tooltip; ?>><?php echo esc_html( $request->registration_date ); ?></td>
                     <?php
                     $tooltip = null;
-                    if ( ! empty( $request->approved_by_user_id ) ) {
-                        $actioned_by_user = get_userdata( $request->approved_by_user_id );
-                        $actioned_by_name = $actioned_by_user ? $actioned_by_user->display_name : __('Unknown user', 'racketmanager' );
-                        $tooltip = esc_html__( 'Approved by', 'racketmanager' ) . ' ' . esc_html( $actioned_by_name );
-                        $tooltip = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="' . $tooltip . '"';
+                    if ( ! empty( $request->approved_by_user ) ) {
+                        $tooltip = $tooltip_left . esc_html__( 'Approved by', 'racketmanager' ) . ' ' . esc_html( $request->approved_by_user ) . '"';
                     }
                     ?>
                     <td <?php echo empty( $tooltip ) ? null : $tooltip; ?>><?php echo esc_html( $request->approval_date ); ?></td>
                     <?php
                     $tooltip = null;
-                    if ( ! empty( $request->removed_by_user_id ) ) {
-                        $actioned_by_user = get_userdata( $request->removed_by_user_id );
-                        $actioned_by_name = $actioned_by_user ? $actioned_by_user->display_name : __('Unknown user', 'racketmanager' );
-                        $tooltip = esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $actioned_by_name );
-                        $tooltip = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="' . $tooltip . '"';
+                    if ( ! empty( $request->removed_by_user ) ) {
+                        $tooltip = $tooltip_left . esc_html__( 'Removed by', 'racketmanager' ) . ' ' . esc_html( $request->removed_by_user ) . '"';
                     }
                     ?>
                     <td <?php echo empty( $tooltip ) ? null : $tooltip; ?>><?php echo esc_html( $request->removal_date ); ?></td>

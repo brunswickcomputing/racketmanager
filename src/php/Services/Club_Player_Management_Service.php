@@ -149,9 +149,7 @@ class Club_Player_Management_Service {
         if ( ! $registration ) {
             throw new Registration_Not_Found_Exception( __('Registration not found', 'racketmanager' ) );
         }
-
-        $registration->set_removal_date( current_time('mysql') );
-        $registration->set_removal_user( $removing_user );
+        $registration->approve( $removing_user );
         $this->club_player_repository->save( $registration );
     }
 

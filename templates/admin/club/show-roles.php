@@ -103,7 +103,7 @@ use Racketmanager\Util\Util_Lookup;
                             <?php
                             foreach ( $club_players as $player) {
                                 ?>
-                                <option value="<?php echo esc_attr( $player->player_id ); ?>"><?php echo esc_html( $player->display_name ); ?></option>
+                                <option value="<?php echo esc_attr( $player->user_id ); ?>"><?php echo esc_html( $player->display_name ); ?></option>
                                 <?php
                             }
                             ?>

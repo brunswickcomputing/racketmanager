@@ -410,19 +410,21 @@ class Player_Repository {
      * @param string|null $gender Optional gender filter.
      * @param string|null $active Optional active filter.
      * @param bool $system Optional system filter.
+     * @param int|null $max_age Optional maximum age filter.
+     * @param int|null $min_age Optional minimum age filter.
      *
      * @return Club_Player_DTO[]
      */
-    public function find_club_players_with_details( ?int $club_id = null, ?string $status = null, ?string $gender = null, ?string $active = null, bool $system = false ): array {
+    public function find_club_players_with_details( ?int $club_id = null, ?string $status = null, ?string $gender = null, ?string $active = null, bool $system = false, ?int $max_age = null, ?int $min_age = null ): array {
         $registration_table = $this->wpdb->prefix . 'racketmanager_club_players';
         $club_table         = $this->wpdb->prefix . 'racketmanager_clubs';
         $user_table         = $this->wpdb->users;
         $user_meta_table    = $this->wpdb->usermeta;
 
         // Base query: Join users, registrations, and clubs tables
-        $query = "SELECT r.id as registration_id, u.ID as user_id, u.display_name as display_name, u.user_email as email, c.id as club_id, c.shortcode as club_name, r.requested_date as registration_date, r.created_date as approval_date, r.removed_date as removal_date, r.requested_user as registered_by_user_id, r.created_user as approved_by_user_id, r.removed_user as removed_by_user_id, MAX(IF(um_gender.meta_key = %s, um_gender.meta_value, NULL)) as gender, MAX(IF(um_btm.meta_key = %s, um_btm.meta_value, NULL)) as btm FROM $user_table u INNER JOIN $registration_table r ON u.ID = r.player_id INNER JOIN $club_table c ON r.club_id = c.id LEFT JOIN $user_meta_table um_gender ON u.ID = um_gender.user_id AND um_gender.meta_key = %s LEFT JOIN $user_meta_table um_btm ON u.ID = um_btm.user_id AND um_btm.meta_key = %s ";
+        $query = "SELECT r.id as registration_id, u.ID as user_id, u.display_name as display_name, u.user_email as email, c.id as club_id, c.shortcode as club_name, r.requested_date as registration_date, r.created_date as approval_date, r.removed_date as removal_date, r.requested_user as registered_by_user_id, r.created_user as approved_by_user_id, r.removed_user as removed_by_user_id, MAX(IF(um_gender.meta_key = %s, um_gender.meta_value, NULL)) as gender, MAX(IF(um_yob.meta_key = %s, um_yob.meta_value, NULL)) as year_of_birth FROM $user_table u INNER JOIN $registration_table r ON u.ID = r.player_id INNER JOIN $club_table c ON r.club_id = c.id LEFT JOIN $user_meta_table um_gender ON u.ID = um_gender.user_id AND um_gender.meta_key = %s LEFT JOIN $user_meta_table um_yob ON u.ID = um_yob.user_id AND um_yob.meta_key = %s";
 
-        $params       = [ self::META_KEY_GENDER, self::META_KEY_BTM, self::META_KEY_GENDER, self::META_KEY_BTM ];
+        $params       = [ self::META_KEY_GENDER, self::META_KEY_YOB, self::META_KEY_GENDER, self::META_KEY_YOB ];
         $search_terms = [];
         if ( $club_id ) {
             $search_terms[] = $this->wpdb->prepare( "r.club_id = %d", $club_id );
@@ -440,6 +442,19 @@ class Player_Repository {
             case 'all':
             default:
                 break;
+        }
+        // Age filtering
+        $current_year = (int) date( 'Y' );
+        if ( is_numeric( $min_age ) ) {
+            // A player who is at least $minAge must have a YOB <= ($currentYear - $minAge)
+            $max_year_of_birth = $current_year - (int) $min_age;
+            // We need to add an explicit JOIN condition for the YOB meta key for the WHERE clause to work efficiently
+            $search_terms[] = $this->wpdb->prepare( "CAST(um_yob.meta_value AS UNSIGNED) <= %d", $max_year_of_birth );
+        }
+        if ( is_numeric( $max_age ) ) {
+            // A player who is at most $maxAge must have a YOB >= ($currentYear - $maxAge)
+            $min_year_of_birth = $current_year - (int) $max_age;
+            $search_terms[] = $this->wpdb->prepare( "CAST(um_yob.meta_value AS UNSIGNED) >= %d", $min_year_of_birth );
         }
         $search = Util::search_string( $search_terms, true );
         $query  .= " $search GROUP BY u.ID, c.id, r.id ";

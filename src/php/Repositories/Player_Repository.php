@@ -11,6 +11,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club_Player_DTO;
 use Racketmanager\Domain\Player;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -243,6 +244,9 @@ class Player_Repository {
      * @return Player|null
      */
     public function find( int|string $player_id, string $search_type = 'id' ): ?Player {
+        if ( empty( $player_id ) ) {
+            throw new Player_Not_Found_Exception( __( 'Player ID cannot be empty.', 'racketmanager' ) );
+        }
         $player = wp_cache_get( $player_id, 'players' );
         if ( $player ) {
             return $player;

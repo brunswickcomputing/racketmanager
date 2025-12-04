@@ -8,7 +8,6 @@
  * The following variables are usable:
  *
  *  $club: club object
- *  $club_players: club Players object
  *
  * You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
  */
@@ -48,7 +47,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                                     <div class="mb-3">
                                         <div class="form-floating">
                                             <input type="text" class="form-control" id="matchSecretaryName" name="matchSecretaryName" value="<?php echo empty( $club->match_secretary->display_name ) ? null : esc_html( $club->match_secretary->display_name ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
-                                            <label for="matchSecretary"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
+                                            <label for="matchSecretaryName"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
                                             <input type="hidden" id="matchSecretaryId" name="matchSecretaryId" value="<?php echo empty( $club->match_secretary->id ) ? null : esc_html( $club->match_secretary->id ); ?>" />
                                             <div id="matchSecretaryNameFeedback" class="invalid-tooltip"></div>
                                         </div>
@@ -106,10 +105,10 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                         <div class="row g-3">
                             <div class="col-md-6 mb-3">
                                 <?php
-                                if ( $club->contactno || $user_can_update_club ) {
+                                if ( $club->contact_no || $user_can_update_club ) {
                                     ?>
                                     <div class="form-floating mb-1">
-                                        <input type="tel" class="form-control" id="clubContactNo" name="clubContactNo" value="<?php echo esc_html( $club->contactno ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
+                                        <input type="tel" class="form-control" id="clubContactNo" name="clubContactNo" value="<?php echo esc_html( $club->contact_no ); ?>" <?php disabled( $user_can_update_club, false ); ?> />
                                         <label for="clubContactNo"><?php esc_html_e( 'Telephone', 'racketmanager' ); ?></label>
                                         <div id="clubContactNoFeedback" class="invalid-tooltip"></div>
                                     </div>

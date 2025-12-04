@@ -5,8 +5,10 @@ namespace Racketmanager\Services;
 use Exception;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Role;
+use Racketmanager\Repositories\Club_Player_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_team;
@@ -14,11 +16,31 @@ use function Racketmanager\get_team;
 class Club_Management_Service {
     private Club_Role_Repository $club_role_repository;
     private Club_Repository $club_repository;
+    private Club_Player_Repository $club_player_repository;
+    private Player_Repository $player_repository;
 
-    public function __construct( Club_Repository $club_repository, Club_Role_Repository $club_role_repository ) {
-        $this->club_repository      = $club_repository;
-        $this->club_role_repository = $club_role_repository;
+    /**
+     * Constructor
+     *
+     * @param Club_Repository $club_repository
+     * @param Club_Player_Repository $club_player_repository
+     * @param Club_Role_Repository $club_role_repository
+     * @param Player_Repository $player_repository
+     */
+    public function __construct( Club_Repository $club_repository, Club_Player_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository ) {
+        $this->club_repository        = $club_repository;
+        $this->club_role_repository   = $club_role_repository;
+        $this->club_player_repository = $club_player_repository;
+        $this->player_repository      = $player_repository;
     }
+
+    /**
+     * Add a new club
+     *
+     * @param object $club
+     *
+     * @return Club
+     */
     public function add_club( object $club ): Club {
         $club = new Club( $club );
         $this->club_repository->save( $club );

@@ -41,7 +41,7 @@ class Ajax {
         $club_player_repository    = new Club_Player_Repository();
         $club_role_repository      = new Club_Role_Repository();
         $player_repository         = new Player_Repository();
-        $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository );
+        $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
         $this->player_service      = new Player_Management_Service( $this->racketmanager, $player_repository );
         $this->club_player_service = new Club_Player_Management_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }

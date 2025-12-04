@@ -8,8 +8,11 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Club_Player_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Util\Util;
 use wpdb;
 
@@ -39,8 +42,10 @@ class Upgrade {
         $this->options          = $this->racketmanager->options;
         $this->installed        = $this->options['dbversion'] ?? null;
         $club_repository        = new Club_Repository();
+        $club_player_repository = new Club_Player_Repository();
         $club_role_repository   = new Club_Role_Repository();
-        $this->club_service     = new Club_Management_Service( $club_repository, $club_role_repository );
+        $player_repository      = new Player_Repository();
+        $this->club_service     = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
     }
 
     /**

@@ -89,7 +89,7 @@ class Admin_Display {
         $player_repository         = new Player_Repository();
         $player_error_repository   = new Player_Error_Repository();
         $wtn_api_client            = new Wtn_Api_Client();
-        $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository );
+        $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
         $this->player_service      = new Player_Management_Service( $this->racketmanager, $player_repository, $player_error_repository, $wtn_api_client );
         $this->club_player_service = new Club_Player_Management_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }

@@ -177,6 +177,17 @@ class Player_Management_Service {
     }
 
     /**
+     * Get a player by name
+     *
+     * @param string $name
+     *
+     * @return Player|null
+     */
+    public function get_player_by_name( string $name ): Player|null {
+        return $this->player_repository->find( $name, 'name' );
+    }
+
+    /**
      * Delete player
      *
      * @param $player_id

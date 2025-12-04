@@ -132,26 +132,39 @@ class Club_Role_Repository {
         $sql        = "SELECT `id` FROM $this->table_name " . $search;
         $club_roles = wp_cache_get( md5( $sql ), 'club-roles' );
         if ( ! $club_roles ) {
-            $club_roles = array();
-            $roles      = $this->wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call OK.
-            foreach ( $roles as $club_role_ref ) {
-                $club_role = $this->find( $club_role_ref->id );
-                if ( $club_role ) {
-                    if ( $group ) {
-                        if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
-                            $club_roles[ $club_role->role_id ] = array();
-                        }
-                        $club_roles[ $club_role->role_id ][] = $club_role;
-                    } else {
-                        $club_roles[] = $club_role;
+            $club_roles = $this->build_club_roles( $sql, $group );
+        }
+        return $club_roles;
+    }
+
+    /**
+     * Build club roles from the database query
+     *
+     * @param $sql
+     * @param $group
+     *
+     * @return array
+     */
+    private function build_club_roles( $sql, $group = null ): array {
+        $club_roles = array();
+        $roles      = $this->wpdb->get_results(
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $sql
+        ); // db call OK.
+        foreach ( $roles as $club_role_ref ) {
+            $club_role = $this->find( $club_role_ref->id );
+            if ( $club_role ) {
+                if ( $group ) {
+                    if ( ! isset( $club_roles[ $club_role->role_id ] ) ) {
+                        $club_roles[ $club_role->role_id ] = array();
                     }
+                    $club_roles[ $club_role->role_id ][] = $club_role;
+                } else {
+                    $club_roles[] = $club_role;
                 }
             }
-            wp_cache_set( md5( $sql ), $club_roles, 'club-roles' );
         }
+        wp_cache_set( md5( $sql ), $club_roles, 'club-roles' );
         return $club_roles;
     }
 

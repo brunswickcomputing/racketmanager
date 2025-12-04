@@ -35,12 +35,6 @@ final class Club {
      */
     public ?object $match_secretary;
     /**
-     * Description
-     *
-     * @var string
-     */
-    public string $desc;
-    /**
      * Name
      *
      * @var string
@@ -215,14 +209,6 @@ final class Club {
      */
     public int $club_player_id;
     /**
-     * Club roles
-     *
-     * @var array
-     */
-    public array $roles;
-    private ?Club_Role_Repository $club_role_repository = null;
-
-    /**
      * Constructor
      *
      * @param object|null $club Club object.
@@ -233,12 +219,7 @@ final class Club {
                 $this->$key = $value;
             }
 
-            $this->roles           = $this->get_club_roles( array( 'group' => true ) );
-            $this->match_secretary = $this->roles['1'][0]->user ?? new stdClass();
-            $this->desc = '';
             $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
-
-            $this->club_role_repository = new Club_Role_Repository();
         }
     }
 
@@ -713,29 +694,5 @@ final class Club {
         $template_args['contact_email']    = $email_from;
         $template_args['comments']         = $club_entry->comments;
         $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
-    }
-
-    /**
-     * Get dummy player details
-     *
-     * @return array
-     */
-    public function get_dummy_players(): array {
-        global $racketmanager;
-        $player_options                = $racketmanager->get_options( 'player' );
-        $players['walkover']['male']   = $this->get_player( $player_options['walkover']['male'] );
-        $players['walkover']['female'] = $this->get_player( $player_options['walkover']['female'] );
-        $players['noplayer']['male']   = $this->get_player( $player_options['noplayer']['male'] );
-        $players['noplayer']['female'] = $this->get_player( $player_options['noplayer']['female'] );
-        $players['share']['male']      = $this->get_player( $player_options['share']['male'] );
-        $players['share']['female']    = $this->get_player( $player_options['share']['female'] );
-        return $players;
-    }
-    public function get_club_roles( array $args = array() ): array {
-        $args['club'] = $this->id;
-        if ( $this->club_role_repository === null ) {
-            $this->club_role_repository = new Club_Role_Repository();
-        }
-        return $this->club_role_repository->search( $args );
     }
 }

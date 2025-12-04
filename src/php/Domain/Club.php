@@ -295,6 +295,15 @@ final class Club {
     public function get_shortcode(): ?string{
         return $this->shortcode;
     }
+
+    /**
+     * Get link
+     *
+     * @return string|null
+     */
+    public function get_link(): ?string{
+        return $this->link;
+    }
     /**
      * Set id
      *

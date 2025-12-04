@@ -132,9 +132,7 @@ class Club_Player_Management_Service {
         if ( ! $registration ) {
             throw new Registration_Not_Found_Exception( __('Registration not found', 'racketmanager' ) );
         }
-
-        $registration->set_approval_date( current_time('mysql') );
-        $registration->set_approval_user( $approving_user );
+        $registration->approve( $approving_user );
         $this->club_player_repository->save( $registration );
     }
 

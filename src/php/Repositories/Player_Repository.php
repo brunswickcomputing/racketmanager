@@ -413,7 +413,7 @@ class Player_Repository {
      * @param int|null $max_age Optional maximum age filter.
      * @param int|null $min_age Optional minimum age filter.
      *
-     * @return Club_Player_DTO[]
+     * @return array
      */
     public function find_club_players_with_details( ?int $club_id = null, ?string $status = null, ?string $gender = null, ?string $active = null, bool $system = false, ?int $max_age = null, ?int $min_age = null ): array {
         $registration_table = $this->wpdb->prefix . 'racketmanager_club_players';
@@ -471,13 +471,7 @@ class Player_Repository {
         $results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $params ) );
 
         return array_map( function ( $row ) {
-            $match_types = Util_Lookup::get_match_types();
-            foreach ( $match_types as $match_type => $description ) {
-                $wtn_type                = 'wtn_' . $match_type;
-                $row->wtn[ $match_type ] = get_user_meta( $row->user_id, $wtn_type, true );
-            }
-
-            return new Club_Player_DTO( $row );
+            return $row->registration_id;
         }, $results );
     }
 

@@ -54,19 +54,17 @@ use Racketmanager\Util\Util_Lookup;
                     ?>
                     <tbody>
                         <?php
-                        foreach ( $roles as $role_type ) {
-                            foreach ( $role_type as $role ) {
-                                ?>
-                                <tr>
-                                    <td class="col-1 check-column">
-                                        <label for="role-<?php echo esc_html( $role->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $role->id ); ?>" name="role[<?php echo esc_html( $role->id ); ?>]" id="role-<?php echo esc_html( $role->id ); ?>" />
-                                    </td>
-                                    <td class="col-1 column-num"><?php echo esc_html( $role->id ); ?></td>
-                                    <td class="col-3 team-name"><?php echo esc_html( $role->role->desc ); ?></td>
-                                    <td class="col-3"><?php echo esc_html( $role->user->display_name ); ?></td>
-                                </tr>
-                                <?php
-                            }
+                        foreach ( $roles as $role ) {
+                            ?>
+                            <tr>
+                                <td class="col-1 check-column">
+                                    <label for="role-<?php echo esc_html( $role->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $role->id ); ?>" name="role[<?php echo esc_html( $role->id ); ?>]" id="role-<?php echo esc_html( $role->id ); ?>" />
+                                </td>
+                                <td class="col-1 column-num"><?php echo esc_html( $role->id ); ?></td>
+                                <td class="col-3 team-name"><?php echo esc_html( $role->role->desc ); ?></td>
+                                <td class="col-3"><?php echo esc_html( $role->user->display_name ); ?></td>
+                            </tr>
+                            <?php
                         }
                         ?>
                     </tbody>

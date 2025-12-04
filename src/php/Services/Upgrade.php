@@ -59,6 +59,7 @@ class Upgrade {
         $this->v10_0_0();
         $this->v10_0_1();
         $this->v10_0_2();
+        $this->v10_0_3();
         /*
         * Update version and dbversion
         */
@@ -192,6 +193,23 @@ class Upgrade {
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_player_errors DROP `status`" );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_player_errors DROP `updated_user`" );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_player_errors DROP `updated_date`" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.3
+     * Add `status` to `racketmanager_club_player` table and set
+     *
+     * @return void
+     */
+    private function v10_0_3 ():void {
+        $version = '10.0.3';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_club_players ADD `status` VARCHAR(20) NULL AFTER `player_id`" );
+            $this->wpdb->query( "UPDATE {$this->wpdb->prefix}racketmanager_club_players SET `status` = 'pending' WHERE `created_date` IS NULL AND `removed_date` IS NULL" );
+            $this->wpdb->query( "UPDATE {$this->wpdb->prefix}racketmanager_club_players SET `status` = 'approved' WHERE `created_date` IS NOT NULL AND `removed_date` IS NULL" );
+            $this->wpdb->query( "UPDATE {$this->wpdb->prefix}racketmanager_club_players SET `status` = 'removed' WHERE `removed_date` IS NOT NULL" );
         }
     }
 

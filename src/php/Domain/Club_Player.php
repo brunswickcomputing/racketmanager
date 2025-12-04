@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Exceptions\Invalid_Status_Exception;
+
 /**
  * Class to implement the Club_Player object
  */
@@ -79,6 +81,12 @@ final class Club_Player {
      * @var boolean|null
      */
     public bool|null $system_record = null;
+    /**
+     * Status
+     *
+     * @var string|null
+     */
+    private ?string $status = null;
 
     /**
      * Constructor
@@ -195,28 +203,15 @@ final class Club_Player {
     }
 
     /**
-     * Set the approval date
+     * Get status
      *
-     * @param string $date
-     *
-     * @return void
+     * @return string|null
      */
-    public function set_approval_date( string $date ): void {
-        $this->created_date = $date;
+    public function get_status(): ?string {
+        return $this->status;
     }
 
-    /**
-     * Set approval user id
-     *
-     * @param int $userid
-     *
-     * @return void
-     */
-    public function set_approval_user( int $userid ): void {
-        $this->created_user = $userid;
-    }
-
-    /**
+     /**
      * Set the removal date
      *
      * @param string $date
@@ -236,5 +231,37 @@ final class Club_Player {
      */
     public function set_removal_user( int $userid ): void {
         $this->removed_user = $userid;
+    }
+
+    /**
+     * Approve registration
+     *
+     * @param int $user_id
+     *
+     * @return void
+     */
+    public function approve( int $user_id ): void {
+        if ($this->status !== 'pending') {
+            throw new Invalid_Status_Exception( __('Registration is not pending approval', 'racketmanager' ) );
+        }
+        $this->status       = 'approved';
+        $this->created_date = current_time('mysql');
+        $this->created_user = $user_id;
+    }
+
+    /**
+     * Remove registration
+     *
+     * @param int $user_id
+     *
+     * @return void
+     */
+    public function remove( int $user_id): void {
+        if ($this->status === 'removed') {
+            throw new Invalid_Status_Exception(__('Registration is already removed', 'racketmanager' ) );
+        }
+        $this->status       = 'removed';
+        $this->removed_date = current_time('mysql');
+        $this->removed_user = $user_id;
     }
 }

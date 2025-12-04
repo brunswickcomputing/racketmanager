@@ -43,9 +43,9 @@ final class Club {
     /**
      * Short code
      *
-     * @var string
+     * @var ?string
      */
-    public string $shortcode;
+    public ?string $shortcode = null;
     /**
      * Type
      *

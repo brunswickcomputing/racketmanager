@@ -741,6 +741,15 @@ final class Player {
     }
 
     /**
+     * Get player age
+     *
+     * @return int|null
+     */
+    public function get_age(): ?int {
+        return $this->age;
+    }
+
+    /**
      * Handle outstanding results warnings function
      *
      * @param string $type type of check.

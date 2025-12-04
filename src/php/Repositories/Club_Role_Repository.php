@@ -1,4 +1,11 @@
 <?php
+/**
+ * Club_Role Repository class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Repositories
+ */
 
 namespace Racketmanager\Repositories;
 
@@ -6,6 +13,9 @@ use Racketmanager\Domain\Club_Role;
 use Racketmanager\Util\Util;
 use wpdb;
 
+/**
+ * Class to implement the Club_Role repository
+ */
 class Club_Role_Repository {
     private wpdb $wpdb;
     private string $table_name;
@@ -175,5 +185,16 @@ class Club_Role_Repository {
             array( '%d' )
         );
         wp_cache_flush_group( 'club-roles' );
+    }
+
+    /**
+     * Get all club roles for a club.
+     *
+     * @param int $club_id
+     *
+     * @return array
+     */
+    public function get_roles_for_club( int $club_id ): array {
+        return $this->search( array( 'club' => $club_id ) );
     }
 }

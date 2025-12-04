@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
@@ -52,10 +54,9 @@ class Shortcodes_Club extends Shortcodes {
         return $this->load_template(
             $filename,
             array(
-                'clubs'                  => $clubs,
-                'user_can_update_club'   => false,
-                'user_can_update_player' => false,
-                'standalone'             => false,
+                'clubs'                => $clubs,
+                'user_can_update_club' => false,
+                'standalone'           => false,
             )
         );
     }
@@ -81,40 +82,20 @@ class Shortcodes_Club extends Shortcodes {
         // Get League by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = str_replace( '-', ' ', $club_name );
-
-        $club = get_club( $club_name, 'shortcode' );
-
-        if ( ! $club ) {
-            return false;
+        try {
+            $club = $this->club_service->get_club_by_shortcode( $club_name );
+            $club_details = $this->club_service->get_club_details( $club->id );
+        } catch ( Club_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        $user_can_update_club   = false;
-        $user_can_update_player = false;
+        $user_can_update_club = false;
         if ( is_user_logged_in() ) {
             $user   = wp_get_current_user();
             $userid = $user->ID;
-            if ( current_user_can( 'manage_racketmanager' ) || ( ! empty( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) ) {
+            if ( current_user_can( 'manage_racketmanager' ) || $this->club_service->is_user_match_secretary( $userid, $club->id ) ) {
                 $user_can_update_club   = true;
-                $user_can_update_player = true;
-            } else {
-                $options = $racketmanager->get_options( 'rosters' );
-                if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] && $club->is_player_captain( $userid ) ) {
-                    $user_can_update_player = true;
-                }
             }
         }
-        $club_players    = $club->get_players(
-            array(
-                'active' => true,
-                'type'   => 'real',
-                'cache'  => false,
-            )
-        );
-        $player_requests = $club->get_players(
-            array(
-                'club'   => $club->id,
-                'status' => 'outstanding',
-            )
-        );
         $keys            = $racketmanager->get_options( 'keys' );
         $google_maps_key = $keys['googleMapsKey'] ?? '';
 
@@ -124,13 +105,10 @@ class Shortcodes_Club extends Shortcodes {
         return $this->load_template(
             $filename,
             array(
-                'club'                   => $club,
-                'club_players'           => $club_players,
-                'player_requests'        => $player_requests,
-                'google_maps_key'        => $google_maps_key,
-                'user_can_update_club'   => $user_can_update_club,
-                'user_can_update_player' => $user_can_update_player,
-                'standalone'             => true,
+                'club'                 => $club_details,
+                'google_maps_key'      => $google_maps_key,
+                'user_can_update_club' => $user_can_update_club,
+                'standalone'           => true,
             )
         );
     }
@@ -155,40 +133,32 @@ class Shortcodes_Club extends Shortcodes {
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
-        $club      = get_club( $club_name, 'shortcode' );
-        if ( $club ) {
+        $players   = array();
+        $player    = null;
+        try {
+            $club = $this->club_service->get_club_by_shortcode( $club_name );
             // Get Player by Name.
             $player_name = get_query_var( 'player_id' );
             if ( $player_name ) {
-                $player = $this->get_player_details( $player_name, $club );
-                if ( ! is_object( $player ) ) {
-                    $msg = $player;
-                } else {
-                    $club->player = $player;
-                }
-             } else {
-                $club->players = $club->get_players(
-                    array(
-                        'active' => true,
-                        'type'   => 'real',
-                        'cache'  => false,
-                    )
-                );
+                $player_name = un_seo_url( $player_name );
+                $player      = $this->player_service->get_player_by_name( $player_name );
+                $club_player = $this->club_player_service->get_player_for_club( $club->id, $player->id );
+            } else {
+                $players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id, null );
             }
-            if ( empty( $msg ) ) {
-                return $this->load_template(
-                    $filename,
-                    array(
-                        'club'            => $club,
-                        'user_can_update' => $club->can_user_update_players(),
-                    ),
-                    'club'
-                );
-            }
-        } else {
-            $msg = $this->club_not_found;
+            return $this->load_template(
+                $filename,
+                array(
+                    'club'            => $club,
+                    'user_can_update' => $club->can_user_update_players(),
+                    'players'         => $players,
+                    'player'          => $club_player,
+                ),
+                'club'
+            );
+        } catch ( Club_Not_Found_Exception|Player_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        return $this->return_error( $msg );
     }
 
     /**

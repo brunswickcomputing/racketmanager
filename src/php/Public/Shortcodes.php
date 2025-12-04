@@ -706,45 +706,36 @@ class Shortcodes {
      * @return array
      */
     protected function get_club_players( object $event, object $club ): array {
-        $age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
-        $age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
+        $max_age = null;
+        $min_age = null;
+        $min_age_female = null;
+        $options   = $this->racketmanager->get_options( 'rosters' );
+        $age_limit = $event->age_limit ?? null;
+        if ( $age_limit ) {
+            $age_offset = $event->age_offset ?? 0;
+        }
+        if ( ! empty( $options['ageLimitCheck'] ) && $age_limit && 'open' !== $age_limit ) {
+            if ( $age_limit < 30 ) {
+                $max_age = $age_limit;
+            } else {
+                $min_age        = $age_limit;
+                $min_age_female = $min_age - $age_offset;
+            }
+        }
+
         switch ( $event->type ) {
             case 'BD':
             case 'MD':
-                $club_players['m'] = $club->get_players(
-                    array(
-                        'gender'     => 'M',
-                        'age_limit'  => $age_limit,
-                        'age_offset' => $age_offset,
-                    )
-                );
+                $club_players['m'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
                 break;
             case 'GD':
             case 'WD':
-                $club_players['f'] = $club->get_players(
-                    array(
-                        'gender'     => 'F',
-                        'age_limit'  => $age_limit,
-                        'age_offset' => $age_offset,
-                    )
-                );
+                $club_players['f'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age );
                 break;
             case 'XD':
             case 'LD':
-                $club_players['m'] = $club->get_players(
-                    array(
-                        'gender'     => 'M',
-                        'age_limit'  => $age_limit,
-                        'age_offset' => $age_offset,
-                    )
-                );
-                $club_players['f'] = $club->get_players(
-                    array(
-                        'gender'     => 'F',
-                        'age_limit'  => $age_limit,
-                        'age_offset' => $age_offset,
-                    )
-                );
+                $club_players['m'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
+                $club_players['f'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age_female );
                 break;
             default:
                 $club_players['m'] = array();

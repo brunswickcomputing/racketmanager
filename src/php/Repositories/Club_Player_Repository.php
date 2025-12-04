@@ -50,6 +50,7 @@ class Club_Player_Repository {
                     'removed_date'   => $club_player->get_removed_date(),
                     'removed_user'   => $club_player->get_removed_user(),
                     'system_record'  => $club_player->get_system_record(),
+                    'status'         => $club_player->get_status(),
                 ),
                 array(
                     '%d', // Format for player_id (int)
@@ -61,6 +62,7 @@ class Club_Player_Repository {
                     '%s', // Format for removed_date (string)
                     '%d', // Format for removed_user (int)
                     '%s', // Format for system_record (bool)
+                    '%s', // Format for status (string)
                 )
             );
             $club_player->set_id( $this->wpdb->insert_id );
@@ -77,6 +79,7 @@ class Club_Player_Repository {
                     'removed_date'   => $club_player->get_removed_date(),
                     'removed_user'   => $club_player->get_removed_user(),
                     'system_record'  => $club_player->get_system_record(),
+                    'status'         => $club_player->get_status(),
                 ), // Data to update
                 array( // Where clause
                     'id' => $club_player->get_id()
@@ -91,6 +94,7 @@ class Club_Player_Repository {
                     '%s', // Format for removed_date (string)
                     '%d', // Format for removed_user (int)
                     '%s', // Format for system_record (bool)
+                    '%s', // Format for status (string)
                 ),
                 array( // Where format
                     '%d'
@@ -110,7 +114,7 @@ class Club_Player_Repository {
     public function find_by_id( $club_player_id ): ?Club_Player {
         $row   = $this->wpdb->get_row(
             $this->wpdb->prepare(
-                "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user` FROM $this->table_name WHERE id = %d",
+                "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`, `status` FROM $this->table_name WHERE id = %d",
                 $club_player_id
             )
         );

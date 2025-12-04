@@ -18,7 +18,6 @@ use Racketmanager\Services\Validator\Validator_Club;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
-use function Racketmanager\get_club_player;
 use function Racketmanager\get_league;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
@@ -40,7 +39,7 @@ class Admin_Club extends Admin_Display {
      * @return void
      */
     public function handle_display( ?string $view ): void {
-        $this->admin_players = new Admin_Player();
+        $this->admin_players = new Admin_Player( $this->racketmanager );
         if ( 'teams' === $view ) {
             $this->display_teams_page();
         } elseif ( 'team' === $view ) {
@@ -61,7 +60,6 @@ class Admin_Club extends Admin_Display {
      * Display clubs page
      */
     public function display_clubs_page(): void {
-        global $racketmanager;
         $validator = new Validator_Club();
         $validator = $validator->capability( 'edit_teams' );
         if ( ! empty( $validator->error ) ) {
@@ -104,7 +102,7 @@ class Admin_Club extends Admin_Display {
             if ( ! empty( $validator->error ) ) {
                 $this->set_message( $validator->msg, true );
             } else {
-                $result = $racketmanager->schedule_player_ratings();
+                $result = $this->racketmanager->schedule_player_ratings();
                 if ( is_wp_error( $result ) ) {
                     $this->set_message( __( 'Error scheduling player ratings calculation', 'racketmanager' ), 'error' );
                 } elseif ( $result ) {
@@ -132,14 +130,14 @@ class Admin_Club extends Admin_Display {
         }
         $club_id = isset( $_GET[ 'club_id' ] ) ? (int) $_GET[ 'club_id' ] : null;
         if ( $club_id ) {
-            $validator = $validator->club( $club_id );
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->err_msgs[0], true );
+            try {
+                $club = $this->club_service->get_club( $club_id );
+            } catch ( Club_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
                 $this->show_message();
                 return;
             }
             $edit = true;
-            $club = get_club( $club_id );
         } else {
             $edit = false;
             $club = null;
@@ -247,74 +245,77 @@ class Admin_Club extends Admin_Display {
      * Display club players page
      */
     public function display_club_players_page(): void {
-        global $racketmanager;
-        $club_id = null;
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_teams' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
-        } else {
-            if ( isset( $_POST['addPlayer'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-player' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                } else {
-                    $player_valid = $racketmanager->validate_player();
-                    if ( $player_valid[0] ) {
-                        $new_player = $player_valid[1];
-                        if ( isset( $_POST['club_Id'] ) ) {
-                            $club = get_club( intval( $_POST['club_Id'] ) );
-                            $answer = $club->register_player( $new_player );
-                            $this->set_message( $answer->msg, $answer->error );
-                            if ( $answer->error ) {
-                                $player = $new_player;
-                            }
-                        }
-                    } else {
-                        $form_valid     = false;
-                        $error_fields   = $player_valid[1];
-                        $error_messages = $player_valid[2];
-                        $player         = $player_valid[3];
-                        $message        = __( 'Error with player details', 'racketmanager' );
-                        $this->set_message( $message, true );
-                    }
-                }
-            } elseif ( isset( $_POST['doClubPlayerDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-                check_admin_referer( 'club-players-bulk' );
-                if ( isset( $_POST['clubPlayer'] ) ) {
-                    foreach ( $_POST['clubPlayer'] as $club_player_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $club_player = get_club_player( $club_player_id );
-                        $club_player?->remove();
-                    }
-                }
-            } elseif ( isset( $_POST['doPlayerRatings'] ) ) {
-                check_admin_referer( 'club-players-bulk' );
-                if ( isset( $_POST['club_id'] ) ) {
-                    $club_id = intval( $_POST['club_id'] );
-                    $club    = get_club( $club_id );
-                    if ( $club ) {
-                        $schedule_name  = 'rm_calculate_player_ratings';
-                        $schedule_args[]  = $club->id;
-                        wp_schedule_single_event( time(), $schedule_name, $schedule_args );
-                        $this->set_message( __( 'Player ratings set', 'racketmanager' ) );
-                    }
-                }
-            }
-            $this->show_message();
-            if ( isset( $_GET['club_id'] ) ) {
-                $club_id = intval( $_GET['club_id'] );
-            }
-            $club    = get_club( $club_id );
-            $active  = isset( $_GET['active'] ) ? sanitize_text_field( wp_unslash( $_GET['active'] ) ) : false;
-            $gender  = isset( $_GET['gender'] ) ? sanitize_text_field( wp_unslash( $_GET['gender'] ) ) : false;
-            $players = $club->get_players(
-                array(
-                    'active' => $active,
-                    'gender' => $gender,
-                    'type'   => true,
-                )
-            );
-            require_once RACKETMANAGER_PATH . 'templates/admin/club/show-club-players.php';
+            return;
         }
+        if ( isset( $_POST['addPlayer'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-player');
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } else {
+                $club_id = isset( $_POST['club_Id'] ) ? intval( $_POST['club_Id'] ) : null;
+                try {
+                    $response = $this->club_player_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
+                    if ( is_wp_error( $response ) ) {
+                        $form_valid     = false;
+                        $error_fields   = $response->get_error_codes();
+                        $error_messages = $response->get_error_messages();
+                        $player         = $response->get_error_data( 'player' );
+                        $this->set_message( __( 'Error with player details', 'racketmanager' ), true );
+                    } else {
+                        $this->set_message( $response );
+                        $player = null;
+                    }
+                } catch ( Club_Not_Found_Exception|Player_Already_Registered_Exception|Registration_Not_Found_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
+                }
+            }
+        } elseif ( isset( $_POST['doClubPlayerDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_club-players-bulk');
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } elseif ( isset( $_POST['clubPlayer'] ) ) {
+                $msg = array();
+                foreach ( $_POST['clubPlayer'] as $club_player_id ) {
+                    try {
+                        $this->club_player_service->remove_registration( $club_player_id, wp_get_current_user()->ID );
+                        $msg[] = sprintf( __( '%s - Player has been removed from club', 'racketmanager' ), $club_player_id );
+                    } catch ( Club_Not_Found_Exception | Registration_Not_Found_Exception $e ) {
+                        $this->set_message( $e->getMessage(), true );
+                    }
+                }
+                $message = implode( '<br>', $msg );
+                $this->set_message( $message );
+            }
+        } elseif ( isset( $_POST['doPlayerRatings'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_club-players-bulk');
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } else {
+                $club_id = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
+                try {
+                    $this->player_service->schedule_player_ratings( $club_id );
+                    $this->set_message( __( 'Player ratings scheduled', 'racketmanager' ) );
+                } catch ( Club_Not_Found_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
+                }
+            }
+        }
+        $this->show_message();
+        $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
+        try {
+            $club = $this->club_service->get_club( $club_id );
+        } catch ( Club_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+        }
+        $active  = isset( $_GET['active'] ) ? sanitize_text_field( wp_unslash( $_GET['active'] ) ) : false;
+        $gender  = isset( $_GET['gender'] ) ? sanitize_text_field( wp_unslash( $_GET['gender'] ) ) : false;
+        $players = $this->club_player_service->get_registered_players_list( $active, null, $club_id, $gender );
+        require_once RACKETMANAGER_PATH . 'templates/admin/club/show-club-players.php';
     }
     /**
      * Display teams page
@@ -323,21 +324,19 @@ class Admin_Club extends Admin_Display {
         $club_id   = null;
         $validator = new Validator();
         $validator = $validator->capability( 'edit_teams' );
-        if ( empty( $validator->error ) ) {
-            $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
-            $validator = $validator->club( $club_id );
-        }
         if ( ! empty( $validator->error ) ) {
-            if ( empty( $validator->msg ) ) {
-                $msg = $validator->err_msgs[0];
-            } else {
-                $msg = $validator->msg;
-            }
-            $this->set_message( $msg, true );
+            $this->set_message( $validator->msg, true );
             $this->show_message();
             return;
         }
-        $club = get_club( $club_id );
+        $club_id = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : null;
+        try {
+            $club = $this->club_service->get_club( $club_id );
+        } catch ( Club_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+            return;
+        }
         if ( isset( $_POST['addTeam'] ) ) {
             if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-team' ) ) {
                 $this->set_message( $this->invalid_security_token, true );
@@ -457,7 +456,13 @@ class Admin_Club extends Admin_Display {
             $this->show_message();
             return;
         }
-        $club                 = get_club( $club_id );
+        try {
+            $club = $this->club_service->get_club( $club_id );
+        } catch ( Club_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+            return;
+        }
         if ( isset( $_POST['addRole'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-club-role' );
             if ( empty( $validator->error ) ) {
@@ -493,7 +498,8 @@ class Admin_Club extends Admin_Display {
             }
         }
         $this->show_message();
-        $roles = $club->get_club_roles( array( 'group' => true ) );
+        $roles        = $this->club_service->get_roles_for_club( $club_id );
+        $club_players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id );
         require_once RACKETMANAGER_PATH . 'templates/admin/club/show-roles.php';
     }
 }

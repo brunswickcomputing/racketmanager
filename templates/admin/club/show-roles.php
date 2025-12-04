@@ -12,6 +12,7 @@ use Racketmanager\Util\Util_Lookup;
 /** @var object $club */
 /** @var int    $club_id */
 /** @var array  $roles */
+/** @var array  $club_players */
 ?>
 <div class="container">
     <div class="row justify-content-end">
@@ -102,7 +103,6 @@ use Racketmanager\Util\Util_Lookup;
                         <select class="form-select" size='1' required="required" name='user_id' id='user_id'>
                             <option disabled selected><?php esc_html_e( 'Select user', 'racketmanager' ); ?></option>
                             <?php
-                            $club_players = $club->get_players( array( 'type' => 'user' ) );
                             foreach ( $club_players as $player) {
                                 ?>
                                 <option value="<?php echo esc_attr( $player->player_id ); ?>"><?php echo esc_html( $player->display_name ); ?></option>

@@ -15,7 +15,7 @@ namespace Racketmanager;
 $tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="';
 ?>
 <!-- Club Player Request Filter -->
-<form id="club-player-request-filter" method="get" action="" class="form-control mb-3">
+<form id="club-player-request-selection" method="get" action="" class="form-control mb-3">
     <input type="hidden" name="page" value="racketmanager-players" />
     <input type="hidden" name="view" value="requests" />
     <div class="col-auto">

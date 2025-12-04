@@ -380,12 +380,12 @@ if ( $match->is_walkover ) {
                                                                                                         } else {
                                                                                                             $disabled = '';
                                                                                                         }
-                                                                                                        $player_display = $player_option->fullname;
+                                                                                                        $player_display = $player_option->display_name;
                                                                                                         if ( ! empty( $player_option->btm ) ) {
                                                                                                             $player_display .= ' - ' . $player_option->btm;
                                                                                                         }
                                                                                                         ?>
-                                                                                                        <option value="<?php echo esc_attr( $player_option->roster_id ); ?>" <?php selected( $player_option->roster_id, $rubber->players[$opponent][$player_number]->club_player_id ?? null); ?> <?php echo esc_html( $disabled ); ?>>
+                                                                                                        <option value="<?php echo esc_attr( $player_option->registration_id ); ?>" <?php selected( $player_option->registration_id, $rubber->players[$opponent][$player_number]->club_player_id ?? null); ?> <?php echo esc_html( $disabled ); ?>>
                                                                                                             <?php echo esc_html( $player_display ); ?>
                                                                                                         </option>
                                                                                                         <?php
@@ -399,7 +399,7 @@ if ( $match->is_walkover ) {
                                                                                                 $player_detail = $rubber->players[ $opponent ][ $player_number ];
                                                                                                 if ( empty( $player_detail->system_record ) ) {
                                                                                                     ?>
-                                                                                                    <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->fullname ) ); ?>/">
+                                                                                                    <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
                                                                                                     <?php
                                                                                                 }
                                                                                                 ?>
@@ -411,7 +411,7 @@ if ( $match->is_walkover ) {
                                                                                                     <?php
                                                                                                 }
                                                                                                 ?>
-                                                                                                ><?php echo esc_html( $player_detail->fullname ); ?></span>
+                                                                                                ><?php echo esc_html( $player_detail->display_name ); ?></span>
                                                                                                 <?php
                                                                                                 if ( empty( $player_detail->system_record ) ) {
                                                                                                     ?>

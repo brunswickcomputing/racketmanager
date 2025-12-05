@@ -192,7 +192,6 @@ class Ajax_Club extends Ajax {
             wp_send_json_error( $return, $return->status );
         }
         $club_id      = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
-        $role_id      = isset( $_POST['roleId'] ) ? intval( $_POST['roleId'] ) : null;
         $user_id      = isset( $_POST['userId'] ) ? intval( $_POST['userId'] ) : null;
         $club_role_id = isset( $_POST['clubRoleId'] ) ? intval( $_POST['clubRoleId'] ) : null;
         $contact_no   = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;

@@ -13,6 +13,7 @@ use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use wpdb;
 
@@ -45,7 +46,8 @@ class Upgrade {
         $club_player_repository = new Registration_Repository();
         $club_role_repository   = new Club_Role_Repository();
         $player_repository      = new Player_Repository();
-        $this->club_service     = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
+        $team_repository        = new Team_Repository();
+        $this->club_service     = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository, $team_repository );
     }
 
     /**

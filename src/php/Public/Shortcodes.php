@@ -14,6 +14,7 @@ use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
@@ -85,10 +86,11 @@ class Shortcodes {
 
         $this->racketmanager       = $racketmanager;
         $club_repository           = new Club_Repository();
-        $player_repository         = new Player_Repository();
         $club_player_repository    = new Registration_Repository();
         $club_role_repository      = new Club_Role_Repository();
-        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
+        $player_repository         = new Player_Repository();
+        $team_repository           = new Team_Repository();
+        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository, $team_repository );
         $this->player_service      = new Player_Service( $this->racketmanager, $player_repository );
         $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }

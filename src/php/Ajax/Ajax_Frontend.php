@@ -9,12 +9,12 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use stdClass;
 use function Racketmanager\event_team_match_dropdown;
 use function Racketmanager\get_club;
-use function Racketmanager\get_club_player;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
@@ -689,8 +689,8 @@ class Ajax_Frontend extends Ajax {
                 $team_wtn = 0;
                 foreach( $rubber->players as $player_ref => $player_id ) {
                     if ( $player_id ) {
-                        $player = get_club_player( $player_id );
-                        if ( $player ) {
+                        try {
+                            $player = $this->club_player_service->get_registration( $player_id );
                             $player_found = in_array( $player_id, $match_players, true );
                             if ( $player_found ) {
                                 $return->error      = true;
@@ -698,9 +698,14 @@ class Ajax_Frontend extends Ajax {
                                 $return->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
                                 $return->status     = 400;
                             } else {
-                                $team_wtn       += empty( $player->player->wtn[ $match_type ] ) ? 40.9 : $player->player->wtn[ $match_type ];
+                                $team_wtn       += empty( $player->wtn[ $match_type ] ) ? 40.9 : $player->wtn[ $match_type ];
                                 $match_players[] = $player_id;
                             }
+                        } catch ( Registration_Not_Found_Exception $e ) {
+                            $return->error      = true;
+                            $return->err_msgs[] = $e->getMessage();
+                            $return->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
+                            $return->status     = 400;
                         }
                     } else {
                         $return->error      = true;

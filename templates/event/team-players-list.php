@@ -102,12 +102,12 @@ namespace Racketmanager;
                                                         } else {
                                                             $disabled = '';
                                                         }
-                                                        $player_display = $player_option->fullname;
+                                                        $player_display = $player_option->display_name;
                                                         if ( ! empty( $player_option->btm ) ) {
                                                             $player_display .= ' - ' . $player_option->btm;
                                                         }
                                                         ?>
-                                                        <option value="<?php echo esc_attr( $player_option->roster_id ); ?>"  <?php echo esc_html( $disabled ); ?>>
+                                                        <option value="<?php echo esc_attr( $player_option->registration_id ); ?>"  <?php echo esc_html( $disabled ); ?>>
                                                             <?php echo esc_html( $player_display ); ?>
                                                         </option>
                                                         <?php

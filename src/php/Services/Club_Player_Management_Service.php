@@ -51,6 +51,21 @@ class Club_Player_Management_Service {
     }
 
     /**
+     * Get registration details
+     *
+     * @param $registration_id
+     *
+     * @return Club_Player_DTO
+     */
+    public function get_registration( $registration_id ): Club_Player_DTO {
+        $registration = $this->club_player_repository->find( $registration_id );
+        if ( ! $registration ) {
+            throw new Registration_Not_Found_Exception( __( 'Registration not found', 'racketmanager' ) );
+        }
+        return $this->create_club_player_dto( $registration_id );
+    }
+
+    /**
      * Register player to club
      *
      * @param int|null $club_id

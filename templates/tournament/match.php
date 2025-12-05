@@ -97,7 +97,7 @@ if ( ! empty( $match->winner_id ) ) {
                             <?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?>
                             <?php
                             if ( ! empty( $match->start_time ) ) {
-                                echo ' ' . esc_html_e( 'at', 'racketmanager' );
+                                echo ' ' . esc_html__( 'at', 'racketmanager' );
                                 the_match_time( $match->start_time );
                             }
                             ?>
@@ -295,7 +295,7 @@ if ( ! empty( $match->winner_id ) ) {
                             <?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?>
                             <?php
                             if ( ! empty( $match->start_time ) ) {
-                                echo ' ' . esc_html_e( 'at', 'racketmanager' );
+                                echo ' ' . esc_html__( 'at', 'racketmanager' );
                                 the_match_time( $match->start_time );
                             }
                             ?>

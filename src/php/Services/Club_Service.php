@@ -23,6 +23,7 @@ use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_team;
@@ -149,7 +150,7 @@ class Club_Service {
     public function get_club( $club_id ): Club {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( sprintf( __( 'Club with ID %d not found', 'racketmanager' ), $club_id ) );
+            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
 
         return $club;
@@ -181,7 +182,7 @@ class Club_Service {
     public function remove_club( int $club_id ): void {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( sprintf( __( 'Club Id %d not found', 'racketmanager' ), $club_id ) );
+            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
         if ( $this->club_repository->has_teams( $club_id ) ) {
             throw new Club_Has_Teams_Exception( sprintf( __( 'Unable to delete %s - still has teams', 'racketmanager' ), $club->get_name() ) );
@@ -321,7 +322,7 @@ class Club_Service {
      */
     public function get_match_secretary_details( int $club_id ): Player {
         if ( ! $this->club_repository->find( $club_id ) ) {
-            throw new Club_Not_Found_Exception( __('Club with ID %s not found', 'racketmanager' ), $club_id );
+            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
         $roles = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1 ) );
         $secretary_user_id = null;
@@ -354,7 +355,7 @@ class Club_Service {
     public function get_club_details( int $club_id ): Club_Details_DTO {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( __('Club with ID %s not found', 'racketmanager' ), $club_id );
+            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
         $roles = $this->club_role_repository->get_roles_for_club( $club_id );
         try {

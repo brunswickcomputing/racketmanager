@@ -146,14 +146,14 @@ class Club_Player_Management_Service {
     public function approve_registration( int $registration_id, int $approving_user ): void {
         $registration = $this->club_player_repository->find( $registration_id );
         if ( ! $registration ) {
-            throw new Registration_Not_Found_Exception( __( 'Registration not found', 'racketmanager' ) );
+            throw new Registration_Not_Found_Exception( __( 'Registration not found to approve', 'racketmanager' ) );
         }
         $registration->approve( $approving_user );
         $this->club_player_repository->save( $registration );
     }
 
     /**
-     * Remove registration from club
+     * Remove registration from the club
      *
      * @param int $registration_id
      * @param int $removing_user
@@ -163,7 +163,7 @@ class Club_Player_Management_Service {
     public function remove_registration( int $registration_id, int $removing_user ): void {
         $registration = $this->club_player_repository->find( $registration_id );
         if ( ! $registration ) {
-            throw new Registration_Not_Found_Exception( __( 'Registration not found', 'racketmanager' ) );
+            throw new Registration_Not_Found_Exception( __( 'Registration not found to remove', 'racketmanager' ) );
         }
         $registration->approve( $removing_user );
         $this->club_player_repository->save( $registration );
@@ -241,7 +241,7 @@ class Club_Player_Management_Service {
     }
 
     /**
-     * Check if player is active in club
+     * Check if a player is active in a club
      *
      * @param int $club_id
      * @param int $player_id

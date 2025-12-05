@@ -11,14 +11,18 @@ namespace Racketmanager\Domain;
 
 use DateMalformedStringException;
 use DateTime;
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
+use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_club_player;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
-use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 
 /**
@@ -259,6 +263,8 @@ final class Rubber {
      * @var string
      */
     public string $retired;
+    private Registration_Service $registration_service;
+
     /**
      * Get rubber instance function
      *
@@ -294,6 +300,13 @@ final class Rubber {
      */
     public function __construct( ?object $rubber = null ) {
         global $racketmanager;
+        $club_player_repository     = new Registration_Repository();
+        $player_repository          = new Player_Repository();
+        $player_error_repository    = new Player_Error_Repository();
+        $club_repository            = new Club_Repository();
+        $player_service             = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
+        $this->registration_service = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
+
         if ( ! is_null( $rubber ) ) {
             if ( ! empty( $rubber->custom ) ) {
                 $custom = stripslashes_deep( (array) maybe_unserialize( $rubber->custom ) );
@@ -426,7 +439,7 @@ final class Rubber {
         global $wpdb;
         foreach ( $players as $player_team => $player_ref ) {
             foreach ( $player_ref as $player_num => $player ) {
-                $club_player = get_club_player( $player );
+                $club_player = $this->registration_service->get_registration( $player );
                 if ( $club_player ) {
                     $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                         $wpdb->prepare(
@@ -434,14 +447,12 @@ final class Rubber {
                             $this->id,
                             $player_num,
                             $player_team,
-                            $club_player->player->id,
-                            $club_player->id,
+                            $club_player->user_id,
+                            $club_player->registration_id,
                         )
                     );
-                    $player = $club_player->player;
                     if ( $player ) {
-                        $this->players[ $player_team ][ $player_num ]                 = $player;
-                        $this->players[ $player_team ][ $player_num ]->club_player_id = $club_player->id;
+                        $this->players[ $player_team ][ $player_num ] = $club_player;
                     }
                 }
             }
@@ -590,8 +601,7 @@ final class Rubber {
         );
 
         foreach ( $players as $player ) {
-            $this->players[ $player->player_team ][ $player->player_ref ]                 = get_player( $player->player_id );
-            $this->players[ $player->player_team ][ $player->player_ref ]->club_player_id = $player->club_player_id;
+            $this->players[ $player->player_team ][ $player->player_ref ] = $this->registration_service->get_registration( $player->club_player_id );
             $this->players[ $player->player_team ][ $player->player_ref ]->description    = null;
             $this->players[ $player->player_team ][ $player->player_ref ]->class          = null;
             $player_errors = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -660,14 +670,14 @@ final class Rubber {
                             $error = __( 'locked', 'racketmanager' );
                             $match->add_player_result_check( $team->id, $player->id, $error, $this->id );
                         }
-                        if ( ! empty( $match->league->event->competition->rules['leadTimecheck'] ) && ! empty( $options['leadTimecheck'] ) && isset( $options['rosterLeadTime'] ) && isset( $player->created_date ) ) {
+                        if ( ! empty( $match->league->event->competition->rules['leadTimecheck'] ) && ! empty( $options['leadTimecheck'] ) && isset( $options['rosterLeadTime'] ) && isset( $player->approval_date ) ) {
                             try {
-                                $match_date = new DateTime($match->date);
+                                $match_date = new DateTime( $match->date );
                             } catch ( DateMalformedStringException) {
                                 $match_date = null;
                             }
                             try {
-                                $roster_date = new DateTime($player->created_date);
+                                $roster_date = new DateTime( $player->approval_date );
                             } catch ( DateMalformedStringException) {
                                 $roster_date = null;
                             }
@@ -723,7 +733,7 @@ final class Rubber {
                                     $match->match_day,
                                     $match->league_id,
                                     $match->league_id,
-                                    $player->club_player_id,
+                                    $player->registration_id,
                                 )
                             );
                             if ( $count > 0 ) {
@@ -745,7 +755,7 @@ final class Rubber {
                                                     $match->season,
                                                     $match->match_day,
                                                     $match->league_id,
-                                                    $player->club_player_id
+                                                    $player->registration_id
                                                 )
                                             );
                                             if ( 0 === intval( $count ) ) {
@@ -762,7 +772,7 @@ final class Rubber {
                                 $player_stats = $event->get_player_stats(
                                     array(
                                         'season' => $match->season,
-                                        'player' => $player->club_player_id,
+                                        'player' => $player->registration_id,
                                     )
                                 );
                                 $team_play     = array();

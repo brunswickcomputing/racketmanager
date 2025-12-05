@@ -53,6 +53,7 @@ class Upgrade {
         $this->v10_0_1();
         $this->v10_0_2();
         $this->v10_0_3();
+        $this->v10_0_4();
         /*
         * Update version and dbversion
         */
@@ -203,6 +204,21 @@ class Upgrade {
             $this->wpdb->query( "UPDATE {$this->wpdb->prefix}racketmanager_club_players SET `status` = 'pending' WHERE `created_date` IS NULL AND `removed_date` IS NULL" );
             $this->wpdb->query( "UPDATE {$this->wpdb->prefix}racketmanager_club_players SET `status` = 'approved' WHERE `created_date` IS NOT NULL AND `removed_date` IS NULL" );
             $this->wpdb->query( "UPDATE {$this->wpdb->prefix}racketmanager_club_players SET `status` = 'removed' WHERE `removed_date` IS NOT NULL" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.4
+     * Drop redundant columns
+     *
+     * @return void
+     */
+    private function v10_0_4 ():void {
+        $version = '10.0.4';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_teams DROP `custom`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_teams DROP `logo`" );
         }
     }
 

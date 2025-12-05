@@ -28,7 +28,7 @@ class Upgrade {
      * @var array racketmanager options
      */
     private array $options;
-    private Club_Management_Service $club_service;
+    private Club__Service $club_service;
     private wpdb $wpdb;
     private RacketManager $racketmanager;
 
@@ -45,7 +45,7 @@ class Upgrade {
         $club_player_repository = new Registration_Repository();
         $club_role_repository   = new Club_Role_Repository();
         $player_repository      = new Player_Repository();
-        $this->club_service     = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
+        $this->club_service     = new Club__Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
     }
 
     /**

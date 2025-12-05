@@ -269,13 +269,4 @@ class Club_Repository {
         wp_cache_flush_group( 'clubs' );
         return $result !== false;
     }
-    public function has_teams( int $club_id ): bool {
-        $count = $this->wpdb->query(
-            $this->wpdb->prepare(
-                "SELECT COUNT(*) FROM {$this->wpdb->prefix}racketmanager_teams WHERE `club_id` = %d",
-                $club_id
-            )
-        );
-        return $count > 0;
-    }
 }

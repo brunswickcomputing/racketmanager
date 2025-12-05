@@ -184,7 +184,7 @@ class Club_Service {
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
-        if ( $this->club_repository->has_teams( $club_id ) ) {
+        if ( $this->team_repository->has_teams( $club_id ) ) {
             throw new Club_Has_Teams_Exception( sprintf( __( 'Unable to delete %s - still has teams', 'racketmanager' ), $club->get_name() ) );
         }
         $this->club_player_repository->delete_for_club( $club_id );

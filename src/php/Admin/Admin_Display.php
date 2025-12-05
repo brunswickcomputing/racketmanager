@@ -18,7 +18,7 @@ use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Club_Management_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
-use Racketmanager\Services\Player_Management_Service;
+use Racketmanager\Services\Player__Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -73,7 +73,7 @@ class Admin_Display {
     protected ?string $errors_found = 'Errors found';
     public Admin_Upgrade $admin_upgrade;
     protected Club_Management_Service $club_service;
-    protected Player_Management_Service $player_service;
+    protected Player__Service $player_service;
     protected Registration_Service $club_player_service;
     protected RacketManager $racketmanager;
 
@@ -90,7 +90,7 @@ class Admin_Display {
         $player_error_repository   = new Player_Error_Repository();
         $wtn_api_client            = new Wtn_Api_Client();
         $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
-        $this->player_service      = new Player_Management_Service( $this->racketmanager, $player_repository, $player_error_repository, $wtn_api_client );
+        $this->player_service      = new Player__Service( $this->racketmanager, $player_repository, $player_error_repository, $wtn_api_client );
         $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
     public function load_translations(): void {

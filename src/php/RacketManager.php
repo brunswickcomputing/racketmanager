@@ -21,7 +21,7 @@ use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Login;
-use Racketmanager\Services\Player_Management_Service;
+use Racketmanager\Services\Player__Service;
 use Racketmanager\Services\Rewrites;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Public\Shortcodes;
@@ -133,7 +133,7 @@ class RacketManager {
     public object $shortcodes_message;
     public object $shortcodes_tournament;
     public object $rewrites;
-    private Player_Management_Service $player_service;
+    private Player__Service $player_service;
 
     /**
      * Constructor
@@ -173,7 +173,7 @@ class RacketManager {
             $player_repository       = new Player_Repository();
             $player_error_repository = new Player_Error_Repository();
             $wtn_api_client          = new Wtn_Api_Client();
-            $this->player_service    = new Player_Management_Service( $this, $player_repository, $player_error_repository, $wtn_api_client );
+            $this->player_service    = new Player__Service( $this, $player_repository, $player_error_repository, $wtn_api_client );
         }
         self::$instance = $this;
     }
@@ -471,7 +471,7 @@ class RacketManager {
      * @return void
      */
     public function calculate_player_ratings( int $club_id = null ): void {
-        // Delegate to the Player_Management_Service implementation.
+        // Delegate to the Player__Service implementation.
         $this->player_service->calculate_player_ratings( $club_id );
     }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Player_Management_Service class
+ * Player__Service class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -33,7 +33,7 @@ use function Racketmanager\get_club;
 /**
  * Class to implement the Player Management Service
  */
-class Player_Management_Service {
+class Player__Service {
     private Player_Repository $player_repository;
     private ?RacketManager $racketmanager;
     private ?Player_Error_Repository $player_error_repository;
@@ -413,7 +413,7 @@ class Player_Management_Service {
     /**
      * Calculate player ratings
      *
-     * Moved from RacketManager to the Player_Management_Service to better align
+     * Moved from RacketManager to the Player__Service to better align
      * responsibility with the player domain. This method gathers the list of
      * registered, active players (optionally scoped to a club) and triggers the
      * WTN update workflow in the plugin core.

@@ -5,7 +5,7 @@
  * Architectural placement:
  * - External API communication classes live under Services/External
  * - They implement contracts from Services/Contracts and are injected into
- *   domain services (e.g. Player_Management_Service) as needed.
+ *   domain services (e.g. Player__Service) as needed.
  */
 
 namespace Racketmanager\Services\External;

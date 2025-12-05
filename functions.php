@@ -670,30 +670,6 @@ function match_add_players( array $match_players, object $match ): array {
     return $match_players;
 }
 /**
- * Get club player object
- *
- * @param object|int|null $club_player ID or player_error object. Defaults to global $club_player.
- *
- * @return Club_Player|null
- */
-function get_club_player( object|int|null $club_player = null ): ?Club_Player {
-    if ( empty( $club_player ) && isset( $GLOBALS['club_player'] ) ) {
-        $club_player = $GLOBALS['club_player'];
-    }
-    if ( $club_player instanceof Club_Player ) {
-        $_club_player = $club_player;
-    } elseif ( is_object( $club_player ) ) {
-        $_club_player = new Club_Player( $club_player );
-    } else {
-        $_club_player = Club_Player::get_instance( $club_player );
-    }
-
-    if ( ! $_club_player ) {
-        return null;
-    }
-    return $_club_player;
-}
-/**
  * Get club role object
  *
  * @param object|int|null $club_role ID. Defaults to global $club_role.

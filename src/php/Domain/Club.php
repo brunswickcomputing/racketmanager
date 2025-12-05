@@ -76,12 +76,6 @@ final class Club {
      */
     public string $address;
     /**
-     * Number of players.
-     *
-     * @var int
-     */
-    public int $num_players;
-    /**
      * Url link.
      *
      * @var string

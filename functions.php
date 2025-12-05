@@ -670,32 +670,6 @@ function match_add_players( array $match_players, object $match ): array {
     return $match_players;
 }
 /**
- * Get player errors object
- *
- * @param object|int|null $player_error ID or player_error object. Defaults to global $player_error.
- *
- * @return object|null
- */
-function get_player_error( object|int|null $player_error = null ): Player_Error|null {
-    if ( empty( $player_error ) && isset( $GLOBALS['player_error'] ) ) {
-        $player_error = $GLOBALS['player_error'];
-    }
-
-    if ( $player_error instanceof Player_Error ) {
-        $_player_error = $player_error;
-    } elseif ( is_object( $player_error ) ) {
-        $_player_error = new Player_Error( $player_error );
-    } else {
-        $_player_error = Player_Error::get_instance( $player_error );
-    }
-
-    if ( ! $_player_error ) {
-        return null;
-    }
-
-    return $_player_error;
-}
-/**
  * Get club player object
  *
  * @param object|int|null $club_player ID or player_error object. Defaults to global $club_player.

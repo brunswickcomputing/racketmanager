@@ -131,10 +131,10 @@ class Shortcodes_Club extends Shortcodes {
         $template = $args['template'];
         $filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
         // Get Club by Name.
-        $club_name = get_query_var( 'club_name' );
-        $club_name = un_seo_url( $club_name );
-        $players   = array();
-        $player    = null;
+        $club_name   = get_query_var( 'club_name' );
+        $club_name   = un_seo_url( $club_name );
+        $players     = array();
+        $club_player = null;
         try {
             $club = $this->club_service->get_club_by_shortcode( $club_name );
             // Get Player by Name.
@@ -146,6 +146,7 @@ class Shortcodes_Club extends Shortcodes {
             } else {
                 $players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id, null );
             }
+
             return $this->load_template(
                 $filename,
                 array(

@@ -14,10 +14,8 @@ use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Details_DTO;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Repositories\Registration_Repository;
@@ -42,17 +40,19 @@ class Club_Service {
     private Registration_Repository $club_player_repository;
     private Player_Repository $player_repository;
     private Team_Repository $team_repository;
+    private Team_Service $team_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository ) {
+    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Team_Service $team_service ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->team_repository        = $team_repository;
+        $this->team_service           = $team_service;
     }
 
     /**
@@ -404,7 +404,7 @@ class Club_Service {
             foreach ( $event_entry->team as $team_entry ) {
                 $match_day = Util_Lookup::get_match_day( $team_entry->match_day );
                 if ( empty( $team_entry->id ) ) {
-                    $team = $this->create_team( $club_id, $event->type );
+                    $team = $this->team_service->create_team( $club_id, $event->type );
                 } else {
                     $team = get_team( $team_entry->id );
                 }

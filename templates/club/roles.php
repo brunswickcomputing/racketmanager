@@ -13,6 +13,7 @@
 namespace Racketmanager;
 
 /** @var object $club */
+/** @var array $roles */
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>
@@ -45,29 +46,27 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                     </div>
                 </div>
                 <?php
-                foreach ( $club->roles as $role_type ) {
-                    foreach ( $role_type as $role ) {
-                        ?>
-                        <div class="row mb-2 row-list">
-                            <div class="col-2 col-md-2"><?php echo esc_html( $role->role->desc ); ?></div>
-                            <div class="col-6 col-md-3">
-                                <a href="#" class="club-role" data-action="open-club-role-modal" data-club-role-id="<?php echo esc_attr( $role->id ); ?>"><span><?php echo esc_html( $role->user->display_name ); ?></span></a>
-                            </div>
-                            <?php
-                            if ( is_user_logged_in() ) {
-                                ?>
-                                <div class="col-6 col-md-3">
-                                    <span class=""><?php echo empty( $role->user->email ) ? null : esc_html( $role->user->email ); ?></span>
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <span class=""><?php echo empty( $role->user->contactno ) ? null : esc_html( $role->user->contactno ); ?></span>
-                                </div>
-                                <?php
-                            }
-                            ?>
+                foreach ( $roles as $role ) {
+                    ?>
+                    <div class="row mb-2 row-list">
+                        <div class="col-2 col-md-2"><?php echo esc_html( $role->role->desc ); ?></div>
+                        <div class="col-6 col-md-3">
+                            <a href="#" class="club-role" data-action="open-club-role-modal" data-club-role-id="<?php echo esc_attr( $role->id ); ?>"><span><?php echo esc_html( $role->user->display_name ); ?></span></a>
                         </div>
                         <?php
-                    }
+                        if ( is_user_logged_in() ) {
+                            ?>
+                            <div class="col-6 col-md-3">
+                                <span class=""><?php echo empty( $role->user->email ) ? null : esc_html( $role->user->email ); ?></span>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <span class=""><?php echo empty( $role->user->contactno ) ? null : esc_html( $role->user->contactno ); ?></span>
+                            </div>
+                            <?php
+                        }
+                        ?>
+                    </div>
+                    <?php
                 }
                 ?>
             </div>

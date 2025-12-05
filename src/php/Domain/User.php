@@ -538,11 +538,16 @@ final class User {
 
         $order = Util::order_by_string( $orderby );
         if ( $count ) {
-            $sql = 'SELECT COUNT(ID)' . $sql;
-            return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
+            $sql           = 'SELECT COUNT(ID)' . $sql;
+            $message_count = wp_cache_get( md5( $sql ), 'messages' );
+            if ( ! $message_count ) {
+                $message_count = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    $sql
+                );
+                wp_cache_set( md5( $sql ), $message_count, 'messages' );
+            }
+            return $message_count;
         }
 
         $sql = 'SELECT `id` ' . $sql;

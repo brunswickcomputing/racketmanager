@@ -761,7 +761,7 @@ class Ajax_Frontend extends Ajax {
             if ( empty( $return->msg ) ) {
                 $return->msg = __( 'Unable to validate match', 'racketmanager' );
             }
-            wp_send_json_error( $return );
+            wp_send_json_error( $return, $return->status );
         }
     }
 

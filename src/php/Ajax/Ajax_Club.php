@@ -14,7 +14,6 @@ use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Club;
 use stdClass;
-use function Racketmanager\get_club;
 use function Racketmanager\get_club_player;
 use function Racketmanager\get_club_role;
 use function Racketmanager\get_user;
@@ -51,57 +50,53 @@ class Ajax_Club extends Ajax {
      * @see templates/club.php
      */
     public function update_club(): void {
-        $club_id         = null;
-        $address         = null;
-        $contactno       = null;
-        $facilities      = null;
-        $founded         = null;
-        $website         = null;
-        $match_secretary = null;
-        $validator       = new Validator_Club();
-        $validator       = $validator->check_security_token( 'racketmanager_nonce', 'club-update' );
-        if ( empty( $validator->error ) ) {
-            $club_id                    = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
-            $contactno                  = isset( $_POST['clubContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['clubContactNo'] ) ) : null;
-            $facilities                 = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
-            $founded                    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
-            $match_secretary            = new stdClass();
-            $match_secretary->id        = isset( $_POST['matchSecretaryId'] ) ? intval( $_POST['matchSecretaryId'] ) : null;
-            $match_secretary->contactno = isset( $_POST['matchSecretaryContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['matchSecretaryContactNo'] ) ) : null;
-            $match_secretary->email     = isset( $_POST['matchSecretaryEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['matchSecretaryEmail'] ) ) : null;
-            $website                    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
-            $address                    = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
-            // validate inputs.
-            $validator = $validator->club( $club_id );
-            $validator = $validator->address( $address );
-            $validator = $validator->match_secretary( $match_secretary->id, 'matchSecretaryName' );
-            $validator = $validator->telephone( $match_secretary->contactno, 'matchSecretaryContactNo', true );
-            $validator = $validator->email( $match_secretary->email, $match_secretary->id, true, 'matchSecretaryEmail', true );
+        $validator = new Validator_Club();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'club-update' );
+        if ( ! empty( $validator->error ) ) {
+            $return      = $validator->get_details();
+            $return->msg = __( 'Serious error in club update', 'racketmanager' );
+            wp_send_json_error( $return, $return->status );
         }
-        if ( empty( $validator->error ) ) {
-            $club                          = get_club( $club_id );
-            $club_updated                  = clone $club;
-            $club_updated->contactno       = $contactno;
-            $club_updated->facilities      = $facilities;
-            $club_updated->founded         = $founded;
-            $club_updated->website         = $website;
-            $club_updated->address         = $address;
-            $club_updated->match_secretary = $match_secretary;
-            $club_updated                  = $this->club_service->update_club( $club->id, $club_updated );
-            if ( $club_updated ) {
-                $return['msg'] = __( 'Club updated', 'racketmanager' );
-                $return['status'] = 'success';
-            } else {
-                $return['msg']    = __( 'Nothing to update', 'racketmanager' );
-                $return['status'] = 'warning';
-            }
-            wp_send_json_success( $return );
-        } else {
+        $club_id                    = isset( $_POST['club_id'] ) ? intval( $_POST['club_id'] ) : null;
+        $contactno                  = isset( $_POST['clubContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['clubContactNo'] ) ) : null;
+        $facilities                 = isset( $_POST['facilities'] ) ? sanitize_text_field( wp_unslash( $_POST['facilities'] ) ) : null;
+        $founded                    = isset( $_POST['founded'] ) ? intval( $_POST['founded'] ) : null;
+        $website                    = isset( $_POST['website'] ) ? sanitize_text_field( wp_unslash( $_POST['website'] ) ) : null;
+        $address                    = isset( $_POST['address'] ) ? sanitize_text_field( wp_unslash( $_POST['address'] ) ) : null;
+        $match_secretary            = new stdClass();
+        $match_secretary->id        = isset( $_POST['matchSecretaryId'] ) ? intval( $_POST['matchSecretaryId'] ) : null;
+        $match_secretary->contactno = isset( $_POST['matchSecretaryContactNo'] ) ? sanitize_text_field( wp_unslash( $_POST['matchSecretaryContactNo'] ) ) : null;
+        $match_secretary->email     = isset( $_POST['matchSecretaryEmail'] ) ? sanitize_text_field( wp_unslash( $_POST['matchSecretaryEmail'] ) ) : null;
+        // validate inputs.
+        $validator = $validator->club( $club_id );
+        $validator = $validator->address( $address );
+        $validator = $validator->telephone( $match_secretary->contactno, 'matchSecretaryContactNo', true );
+        $validator = $validator->email( $match_secretary->email, $match_secretary->id, true, 'matchSecretaryEmail', true );
+        $validator = $validator->match_secretary( $match_secretary->id, 'matchSecretaryName' );
+        if ( ! empty( $validator->error ) ) {
             $return      = $validator->get_details();
             $return->msg = __( 'Error in club update', 'racketmanager' );
             wp_send_json_error( $return, $return->status );
         }
+        $club                          = $this->club_service->get_club( $club_id );
+        $club_updated                  = clone $club;
+        $club_updated->contactno       = $contactno;
+        $club_updated->facilities      = $facilities;
+        $club_updated->founded         = $founded;
+        $club_updated->website         = $website;
+        $club_updated->address         = $address;
+        $club_updated->match_secretary = $match_secretary;
+        $club_updated                  = $this->club_service->update_club( $club->id, $club_updated );
+        if ( $club_updated ) {
+            $return['msg']    = __( 'Club updated', 'racketmanager' );
+            $return['status'] = 'success';
+        } else {
+            $return['msg']    = __( 'Nothing to update', 'racketmanager' );
+            $return['status'] = 'warning';
+        }
+        wp_send_json_success( $return );
     }
+
     /**
      * Save club player requests
      *

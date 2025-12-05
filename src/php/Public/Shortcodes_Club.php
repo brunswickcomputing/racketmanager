@@ -11,14 +11,12 @@ namespace Racketmanager\Public;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\get_club;
-use function Racketmanager\get_club_role;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_invoice;
-use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 use function Racketmanager\show_invoice;
 use function Racketmanager\un_seo_url;
@@ -144,7 +142,7 @@ class Shortcodes_Club extends Shortcodes {
                 $player      = $this->player_service->get_player_by_name( $player_name );
                 $club_player = $this->club_player_service->get_player_for_club( $club->id, $player->id );
             } else {
-                $players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id, null );
+                $players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id );
             }
 
             return $this->load_template(
@@ -162,32 +160,6 @@ class Shortcodes_Club extends Shortcodes {
         }
     }
 
-    /**
-     * Get player details
-     *
-     * @param string $player_name
-     * @param object $club
-     *
-     * @return object|string|null
-     */
-    private function get_player_details( string $player_name, object $club ): object|string|null {
-        $player_name = un_seo_url( $player_name );
-        $player      = get_player( $player_name, 'name' ); // get player by name.
-        if ( $player ) {
-            $club_player = $club->get_players( array( 'player' => $player->id ) );
-            if ( $club_player ) {
-                $player->club              = $club;
-                $player->created_date      = $club_player[0]->created_date;
-                $player->created_user      = $club_player[0]->created_user;
-                $player->created_user_name = $club_player[0]->created_user_name;
-                return $player;
-            } else {
-                return $this->club_player_not_found;
-            }
-        } else {
-            return $this->player_not_found;
-        }
-    }
     /**
      * Function to display Club competitions
      *
@@ -209,8 +181,8 @@ class Shortcodes_Club extends Shortcodes {
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
-        $club      = get_club( $club_name, 'shortcode' );
-        if ( $club ) {
+        try {
+            $club = $this->club_service->get_club_by_shortcode( $club_name );
             $club_competitions = array();
             // Get competition by Name.
             $competition_name = get_query_var( 'competition_name' );
@@ -239,14 +211,14 @@ class Shortcodes_Club extends Shortcodes {
                     'club'
                 );
             }
-        } else {
-            $msg = $this->club_not_found;
+        } catch ( Club_Not_Found_Exception $e ) {
+            $msg = $e->getMessage();
         }
         return $this->return_error( $msg );
     }
 
     /**
-     * Get competitions for club
+     * Get competitions for a club
      *
      * @param object $club
      * @param array $club_competitions
@@ -294,7 +266,7 @@ class Shortcodes_Club extends Shortcodes {
         return $club_competitions;
     }
     /**
-     * Function to display Club team
+     * Function to display a Club team
      *
      *  [club-team club= team= template=X]
      *
@@ -316,9 +288,10 @@ class Shortcodes_Club extends Shortcodes {
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
-        $club      = get_club( $club_name, 'shortcode' );
-        if ( ! $club ) {
-            $msg = $this->club_not_found;
+        try {
+            $club = $this->club_service->get_club_by_shortcode( $club_name );
+        } catch ( Club_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         // Get team by Name.
         $team_name = get_query_var( 'team' );
@@ -379,41 +352,42 @@ class Shortcodes_Club extends Shortcodes {
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
-        $club      = get_club( $club_name, 'shortcode' );
-        if ( ! $club ) {
-            $msg = $this->club_not_found;
-        }
-        $event_name = get_query_var( 'event' );
-        if ( $event_name ) {
-            $event_name = un_seo_url( $event_name );
-            $event      = get_event( $event_name, 'name' );
-            if ( ! $event ) {
-                $msg = $this->event_not_found;
+        try {
+            $club = $this->club_service->get_club_by_shortcode( $club_name );
+            $event_name = get_query_var( 'event' );
+            if ( $event_name ) {
+                $event_name = un_seo_url( $event_name );
+                $event      = get_event( $event_name, 'name' );
+                if ( ! $event ) {
+                    $msg = $this->event_not_found;
+                }
+            } else {
+                $msg = $this->no_event_id;
             }
-        } else {
-            $msg = $this->no_event_id;
-        }
-        $season = get_query_var( 'season' );
-        if ( ! $season && ! isset( $event->current_season['name'] ) ) {
-            $msg = __( 'No seasons for event', 'racketmanager' );
-        }
-        if ( empty( $msg ) ) {
-            $season_dtls        = $event->current_season;
-            $player_stats       = $event->get_player_stats(
-                array(
-                    'season' => $season_dtls['name'],
-                    'club'   => $club->id,
-                )
-            );
-            $club->event        = $event;
-            $club->player_stats = $player_stats;
-            return $this->load_template(
-                $filename,
-                array(
-                    'club' => $club,
-                ),
-                'club'
-            );
+            $season = get_query_var( 'season' );
+            if ( ! $season && ! isset( $event->current_season['name'] ) ) {
+                $msg = __( 'No seasons for event', 'racketmanager' );
+            }
+            if ( empty( $msg ) ) {
+                $season_dtls        = $event->current_season;
+                $player_stats       = $event->get_player_stats(
+                    array(
+                        'season' => $season_dtls['name'],
+                        'club'   => $club->id,
+                    )
+                );
+                $club->event        = $event;
+                $club->player_stats = $player_stats;
+                return $this->load_template(
+                    $filename,
+                    array(
+                        'club' => $club,
+                    ),
+                    'club'
+                );
+            }
+        } catch ( Club_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         return $this->return_error( $msg );
     }
@@ -437,21 +411,17 @@ class Shortcodes_Club extends Shortcodes {
         $template        = $args['template'];
         $msg             = null;
         $template_ref    = null;
-        $user_can_update = null;
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
-        $club      = get_club( $club_name, 'shortcode' );
-        if ( ! $club ) {
-            $msg = $this->club_not_found;
-        }
-        if ( empty( $msg ) ) {
+        try {
+            $club = $this->club_service->get_club_by_shortcode( $club_name );
             $user_can_update       = new stdClass();
             $user_can_update->club = false;
             if ( is_user_logged_in() ) {
                 $user   = wp_get_current_user();
                 $userid = $user->ID;
-                if ( current_user_can( 'manage_racketmanager' ) || ( ! empty( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) ) {
+                if ( current_user_can( 'manage_racketmanager' ) || $this->club_service->is_user_match_secretary( $userid, $club->id ) ) {
                     $user_can_update->club   = true;
                 }
             }
@@ -474,21 +444,21 @@ class Shortcodes_Club extends Shortcodes {
                 $club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
                 $template_ref   = 'invoices';
             }
+        } catch ( Club_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        if ( empty( $msg ) ) {
-            $filename = ( ! empty( $template ) ) ? $template_ref . '-' . $template : $template_ref;
-
-            return $this->load_template(
-                $filename,
-                array(
-                    'club'            => $club,
-                    'user_can_manage' => $user_can_update,
-                ),
-                'club'
-            );
-        } else{
+        $filename = ( ! empty( $template ) ) ? $template_ref . '-' . $template : $template_ref;
+        if ( ! empty( $msg ) ) {
             return $this->return_error( $msg );
         }
+        return $this->load_template(
+            $filename,
+            array(
+                'club'            => $club,
+                'user_can_manage' => $user_can_update,
+            ),
+            'club'
+        );
     }
     /**
      * Function to display Club Invoices
@@ -573,19 +543,20 @@ class Shortcodes_Club extends Shortcodes {
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
-        $club      = get_club( $club_name, 'shortcode' );
-        if ( $club ) {
+        try {
+            $club       = $this->club_service->get_club_by_shortcode( $club_name );
+            $club_roles = $this->club_service->get_roles_for_club( $club->id );
             return $this->load_template(
                 $filename,
                 array(
-                    'club' => $club,
+                    'club'  => $club,
+                    'roles' => $club_roles,
                 ),
                 'club'
             );
-        } else {
-            $msg = $this->club_not_found;
+        } catch ( Club_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        return $this->return_error( $msg );
     }
     /**
      * Function to display Club Invoices
@@ -609,13 +580,8 @@ class Shortcodes_Club extends Shortcodes {
         $modal         = $args['modal'];
         $template      = $args['template'];
         $filename      = ( ! empty( $template ) ) ? 'club-role-modal-' . $template : 'club-role-modal';
-        $club_role     = null;
-        if ( $club_role_id ) {
-            $club_role = get_club_role( $club_role_id );
-        } else {
-            $msg = __( 'Club role not found', 'racketmanager' );
-        }
-        if ( empty( $msg ) ) {
+        try {
+            $club_role  = $this->club_service->get_role( $club_role_id );
             $club_roles = Util_Lookup::get_club_roles();
             return $this->load_template(
                 $filename,
@@ -626,7 +592,8 @@ class Shortcodes_Club extends Shortcodes {
                 ),
                 'club'
             );
+        } catch ( Role_Assignment_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage(), 'modal' );
         }
-        return $this->return_error( $msg, 'modal' );
     }
 }

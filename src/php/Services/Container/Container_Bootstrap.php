@@ -12,6 +12,7 @@ use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Team_Service;
 
 /**
  * Registers core services in the Simple_Container.
@@ -48,6 +49,13 @@ final class Container_Bootstrap {
                 $c->get('club_role_repository'),
                 $c->get('player_repository'),
                 $c->get('team_repository')
+            );
+        });
+
+        $c->set('team_service', function(Simple_Container $c) {
+            return new Team_Service(
+                $c->get('team_repository'),
+                $c->get('club_repository'),
             );
         });
 

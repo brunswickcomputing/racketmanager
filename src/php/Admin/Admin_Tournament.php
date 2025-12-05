@@ -39,9 +39,9 @@ final class Admin_Tournament extends Admin_Championship {
      * @return void
      */
     public function handle_display( ?string $view ): void {
-        $this->admin_competition = new Admin_Competition();
-        $this->admin_club        = new Admin_Club();
-        $this->admin_event       = new Admin_Event();
+        $this->admin_competition = new Admin_Competition( $this->racketmanager );
+        $this->admin_club        = new Admin_Club( $this->racketmanager );
+        $this->admin_event       = new Admin_Event( $this->racketmanager );
         if ( 'modify' === $view ) {
             $this->display_tournament_page();
         } elseif ( 'plan' === $view ) {

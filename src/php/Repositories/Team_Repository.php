@@ -1,19 +1,83 @@
 <?php
+/**
+ * Team_Repository class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Repositories
+ */
 
 namespace Racketmanager\Repositories;
 
+use QM_DB;
 use Racketmanager\Domain\Team;
+use wpdb;
 
+/**
+ * Class to implement the Team repository
+ */
 class Team_Repository {
-    private \QM_DB|\wpdb $wpdb;
+    private QM_DB|wpdb $wpdb;
     private string $table_name;
 
+    /**
+     * Create a new Team_Repository instance
+     */
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_teams';
     }
 
+    /**
+     * Find a team by ID
+     *
+     * @param $team_id
+     *
+     * @return Team|null
+     */
+    public function find_by_id( $team_id ): ?Team {
+        $team = $this->wpdb->get_row( $this->wpdb->prepare( "SELECT * FROM $this->table_name WHERE id = %d", $team_id ) );
+        return $team ? new Team( $team ) : null;
+    }
+
+    /**
+     * Find all teams for a club
+     *
+     * @param int $club_id
+     * @param string|null $type
+     *
+     * @return array
+     */
+    public function find_by_club( int $club_id, ?string $type ): array {
+        $query    = "SELECT * FROM $this->table_name WHERE club_id = %d";
+        $params[] = $club_id;
+        if ( $type ) {
+            $query   .= " AND type = '%s'";
+            $params[] = $type;
+        }
+        $query   .= " AND team_type IS NULL ORDER BY title";
+        $results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $params ) );
+        return array_map( function( $row ) { return new Team( $row ); }, $results );
+    }
+
+    /**
+     * Find all teams that are used for players
+     *
+     * @return array
+     */
+    public function find_for_players(): array {
+        $results = $this->wpdb->get_results( "SELECT * FROM $this->table_name WHERE team_type = 'P' ORDER BY title" );
+        return array_map( function( $row ) { return new Team( $row ); }, $results );
+    }
+
+    /**
+     * Save a team.
+     *
+     * @param Team $team
+     *
+     * @return void
+     */
     public function save( Team $team ): void {
         if ( $team->get_id() === null ) {
             $this->wpdb->insert(

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Club_Repository class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Repositories
+ */
 
 namespace Racketmanager\Repositories;
 
@@ -7,6 +14,9 @@ use Racketmanager\Util\Util;
 use wpdb;
 use function Racketmanager\get_team;
 
+/**
+ * Class to implement the Club repository
+ */
 class Club_Repository {
     private wpdb $wpdb;
     private string $table_name;

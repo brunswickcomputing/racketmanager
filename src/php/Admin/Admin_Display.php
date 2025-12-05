@@ -13,6 +13,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -70,6 +71,7 @@ class Admin_Display {
     protected Player_Service $player_service;
     protected Registration_Service $registration_service;
     protected RacketManager $racketmanager;
+    protected Team_Service $team_service;
 
     /**
      * Constructor
@@ -77,10 +79,11 @@ class Admin_Display {
     public function __construct( $plugin_instance ) {
         $this->racketmanager = $plugin_instance;
         add_action( 'init', array( &$this, 'load_translations' ) );
-        $c                         = $this->racketmanager->container;
-        $this->club_service        = $c->get( 'club_service' );
-        $this->player_service      = $c->get( 'player_service' );
+        $c                          = $this->racketmanager->container;
+        $this->club_service         = $c->get( 'club_service' );
+        $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );
+        $this->team_service         = $c->get( 'team_service' );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );
@@ -414,7 +417,11 @@ class Admin_Display {
             $entry_type = 'player';
         }
         if ( empty( $league->championship->is_consolation ) ) {
-            $teams = $this->get_club_teams( $entry_type, $league_type );
+            if ( $league->event->competition->is_player_entry ) {
+                $teams = $this->team_service->get_player_teams();
+            } else {
+                $teams = $this->get_club_teams( $league_type );
+            }
         } else {
             $teams = $this->get_consolation_teams( $league );
         }
@@ -432,12 +439,11 @@ class Admin_Display {
     /**
      * Function to get club teams for list.
      *
-     * @param string $entry_type entry type.
      * @param string $league_type league type.
      *
      * @return array
      */
-    private function get_club_teams( string $entry_type, string $league_type ): array {
+    private function get_club_teams( string $league_type ): array {
         $teams = array();
         $clubs = $this->club_service->get_clubs(
             array(
@@ -447,7 +453,7 @@ class Admin_Display {
         if ( $clubs ) {
             foreach ( $clubs as $club ) {
                 $club       = get_club( $club );
-                $club_teams = $club->get_teams( array( 'players' => $entry_type, 'type' => $league_type ) );
+                $club_teams = $this->team_service->get_teams_for_club( $club->id, $league_type );
                 if ( $club_teams ) {
                     foreach ( $club_teams as $team ) {
                         $teams[] = $team;

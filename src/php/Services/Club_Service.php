@@ -40,10 +40,6 @@ class Club_Service {
     /**
      * Constructor
      *
-     * @param Club_Repository $club_repository
-     * @param Registration_Repository $club_player_repository
-     * @param Club_Role_Repository $club_role_repository
-     * @param Player_Repository $player_repository
      */
     public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository ) {
         $this->club_repository        = $club_repository;

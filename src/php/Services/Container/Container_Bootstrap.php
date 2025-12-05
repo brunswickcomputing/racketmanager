@@ -1,0 +1,67 @@
+<?php
+namespace Racketmanager\Services\Container;
+
+use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Registration_Repository;
+use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\External\Wtn_Api_Client;
+use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Registration_Service;
+
+/**
+ * Registers core services in the Simple_Container.
+ */
+final class Container_Bootstrap {
+    public static function boot(RacketManager $app): Simple_Container {
+        $c = new Simple_Container();
+
+        // Repositories
+        $c->set('club_repository', fn() => new Club_Repository());
+        $c->set('registration_repository', fn() => new Registration_Repository());
+        $c->set('club_role_repository', fn() => new Club_Role_Repository());
+        $c->set('player_repository', fn() => new Player_Repository());
+        $c->set('player_error_repository', fn() => new Player_Error_Repository());
+        $c->set('team_repository', fn() => new Team_Repository());
+
+        // External clients
+        $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
+
+        // Services
+        $c->set('player_service', function(Simple_Container $c) use ($app) {
+            return new Player_Service(
+                $app,
+                $c->get('player_repository'),
+                $c->get('player_error_repository'),
+                $c->get('wtn_api_client')
+            );
+        });
+
+        $c->set('club_service', function(Simple_Container $c) {
+            return new Club_Service(
+                $c->get('club_repository'),
+                $c->get('registration_repository'),
+                $c->get('club_role_repository'),
+                $c->get('player_repository'),
+                $c->get('team_repository')
+            );
+        });
+
+        $c->set('registration_service', function(Simple_Container $c) use ($app) {
+            // Depends on player_service
+            return new Registration_Service(
+                $app,
+                $c->get('registration_repository'),
+                $c->get('player_repository'),
+                $c->get('club_repository'),
+                $c->get('player_service')
+            );
+        });
+
+        return $c;
+    }
+}

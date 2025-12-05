@@ -24,6 +24,8 @@ use Racketmanager\Services\Login;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Rewrites;
 use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Services\Container\Container_Bootstrap;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\Public\Shortcodes_Club;
 use Racketmanager\Public\Shortcodes_Competition;
@@ -134,6 +136,10 @@ class RacketManager {
     public object $shortcodes_tournament;
     public object $rewrites;
     private Player_Service $player_service;
+    /**
+     * Simple dependency injection container.
+     */
+    public Simple_Container $container;
 
     /**
      * Constructor
@@ -146,6 +152,9 @@ class RacketManager {
             $wpdb->show_errors();
             $this->load_options();
             $this->load_libraries();
+
+            // Boot the dependency injection container and register services.
+            $this->container = Container_Bootstrap::boot( $this );
 
             add_action( 'widgets_init', array( &$this, 'register_widget' ) );
             add_action( 'init', array( &$this, 'racketmanager_locale' ) );
@@ -170,10 +179,8 @@ class RacketManager {
             add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
             add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ) );
-            $player_repository       = new Player_Repository();
-            $player_error_repository = new Player_Error_Repository();
-            $wtn_api_client          = new Wtn_Api_Client();
-            $this->player_service    = new Player_Service( $this, $player_repository, $player_error_repository, $wtn_api_client );
+            // Resolve commonly used services from the container.
+            $this->player_service    = $this->container->get( 'player_service' );
         }
         self::$instance = $this;
     }

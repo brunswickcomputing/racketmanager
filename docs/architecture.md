@@ -20,7 +20,7 @@ wp-content/plugins/racketmanager/
   - includes/                     (Shared partials, modals, etc.)
 - src/
   - php/                          (If using PSR‑4; otherwise use includes/)
-    - Plugin.php                  (Main plugin class / service container)
+    - Plugin.php                  (Main plugin class / service container — in this project, `RacketManager` boots a small DI container; see docs/dependency-injection.md)
     - Activator.php               (Activation/deactivation hooks handler; PSR‑4 bridge allowed)
     - Admin/                      (Admin‑only screens, settings pages)
     - Public/                     (Frontend hooks, shortcodes/blocks)
@@ -68,6 +68,7 @@ wp-content/plugins/racketmanager/
   - racketmanager.js              (Thin wrappers delegating to modules)
 - docs/
   - architecture.md               (This document)
+  - dependency-injection.md       (Lightweight DI container overview and usage)
 
 Notes
 - Keep business logic in PHP classes under src/php (or includes/ if not using Composer), not inside templates.

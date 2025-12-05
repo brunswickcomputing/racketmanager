@@ -385,7 +385,7 @@ if ( $match->is_walkover ) {
                                                                                                             $player_display .= ' - ' . $player_option->btm;
                                                                                                         }
                                                                                                         ?>
-                                                                                                        <option value="<?php echo esc_attr( $player_option->registration_id ); ?>" <?php selected( $player_option->registration_id, $rubber->players[$opponent][$player_number]->club_player_id ?? null); ?> <?php echo esc_html( $disabled ); ?>>
+                                                                                                        <option value="<?php echo esc_attr( $player_option->registration_id ); ?>" <?php selected( $player_option->registration_id, $rubber->players[$opponent][$player_number]->registration_id ?? null); ?> <?php echo esc_html( $disabled ); ?>>
                                                                                                             <?php echo esc_html( $player_display ); ?>
                                                                                                         </option>
                                                                                                         <?php

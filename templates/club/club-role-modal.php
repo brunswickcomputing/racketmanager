@@ -14,7 +14,7 @@ namespace Racketmanager;
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
         <form id="club-role-update" class="" action="#" method="post">
-            <?php wp_nonce_field( 'club-role-update', 'racketmanager_nonce' ); ?>
+            <?php wp_nonce_field( 'racketmanager_club-role-update', 'racketmanager_nonce' ); ?>
             <input type="hidden" name="clubRoleId" value="<?php echo esc_attr( $club_role->id ); ?>" />
             <input type="hidden" name="roleId" value="<?php echo esc_attr( $club_role->role_id ); ?>" />
             <input type="hidden" name="clubId" id="clubId" value="<?php echo esc_attr( $club_role->club_id ); ?>" />

@@ -196,7 +196,7 @@ class Ajax_Club extends Ajax {
         $email        = null;
         $updates      = false;
         $validator      = new Validator_Club();
-        $validator      = $validator->check_security_token( 'racketmanager_nonce', 'club-role-update' );
+        $validator      = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_club-role-update' );
         if ( empty( $validator->error ) ) {
             $club_id      = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
             $role_id      = isset( $_POST['roleId'] ) ? intval( $_POST['roleId'] ) : null;

@@ -14,7 +14,7 @@ use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Player__Service;
+use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
@@ -62,7 +62,7 @@ class Validator {
      */
     public ?string $msg;
     public WP_Error $err;
-    private Player__Service $player_service;
+    private Player_Service $player_service;
     protected Registration_Service $registration_service;
 
     /**
@@ -81,7 +81,7 @@ class Validator {
         $player_repository          = new Player_Repository();
         $player_error_repository    = new Player_Error_Repository();
         $club_repository            = new Club_Repository();
-        $this->player_service       = new Player__Service( $racketmanager, $player_repository, $player_error_repository );
+        $this->player_service       = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
         $this->registration_service = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
 

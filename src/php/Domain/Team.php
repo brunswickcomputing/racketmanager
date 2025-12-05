@@ -10,7 +10,7 @@
 namespace Racketmanager\Domain;
 
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Services\Player__Service;
+use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -203,7 +203,7 @@ final class Team {
      * @var array
      */
     public array $matches;
-    private Player__Service $player_service;
+    private Player_Service $player_service;
 
     /**
      * Retrieve team instance
@@ -260,7 +260,7 @@ final class Team {
     public function __construct( ?object $team = null ) {
         global $racketmanager;
         $player_repository    = new Player_Repository();
-        $this->player_service = new Player__Service( $racketmanager, $player_repository );
+        $this->player_service = new Player_Service( $racketmanager, $player_repository );
 
         $this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
         $this->msg_team_added         = __( 'Team added', 'racketmanager' );

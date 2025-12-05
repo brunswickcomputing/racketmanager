@@ -21,7 +21,7 @@ use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Login;
-use Racketmanager\Services\Player__Service;
+use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Rewrites;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Public\Shortcodes;
@@ -133,7 +133,7 @@ class RacketManager {
     public object $shortcodes_message;
     public object $shortcodes_tournament;
     public object $rewrites;
-    private Player__Service $player_service;
+    private Player_Service $player_service;
 
     /**
      * Constructor
@@ -173,7 +173,7 @@ class RacketManager {
             $player_repository       = new Player_Repository();
             $player_error_repository = new Player_Error_Repository();
             $wtn_api_client          = new Wtn_Api_Client();
-            $this->player_service    = new Player__Service( $this, $player_repository, $player_error_repository, $wtn_api_client );
+            $this->player_service    = new Player_Service( $this, $player_repository, $player_error_repository, $wtn_api_client );
         }
         self::$instance = $this;
     }

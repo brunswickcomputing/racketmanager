@@ -14,9 +14,9 @@ use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Services\Club__Service;
+use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Player__Service;
+use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
@@ -54,9 +54,9 @@ class Shortcodes {
     public string $club_player_not_found;
     public string $season_not_found_for_competition;
     protected Registration_Service $club_player_service;
-    protected Club__Service $club_service;
+    protected Club_Service $club_service;
     private RacketManager $racketmanager;
-    protected Player__Service $player_service;
+    protected Player_Service $player_service;
 
     /**
      * Initialize shortcodes
@@ -88,8 +88,8 @@ class Shortcodes {
         $player_repository         = new Player_Repository();
         $club_player_repository    = new Registration_Repository();
         $club_role_repository      = new Club_Role_Repository();
-        $this->club_service        = new Club__Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
-        $this->player_service      = new Player__Service( $this->racketmanager, $player_repository );
+        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
+        $this->player_service      = new Player_Service( $this->racketmanager, $player_repository );
         $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
     /**

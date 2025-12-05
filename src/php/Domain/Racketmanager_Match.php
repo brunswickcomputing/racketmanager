@@ -15,7 +15,7 @@ use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Championship;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Player__Service;
+use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Validator\Validator_Match;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -2337,7 +2337,7 @@ final class Racketmanager_Match {
         $club_player_repository  = new Registration_Repository();
         $player_repository       = new Player_Repository();
         $player_error_repository = new Player_Error_Repository();
-        $player_service          = new Player__Service( $racketmanager, $player_repository, $player_error_repository );
+        $player_service          = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
         $club_player_service     = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
 
         $home_team           = $this->teams['home'];
@@ -2971,7 +2971,7 @@ final class Racketmanager_Match {
         $club_player_repository  = new Registration_Repository();
         $player_repository       = new Player_Repository();
         $player_error_repository = new Player_Error_Repository();
-        $player_service          = new Player__Service( $racketmanager, $player_repository, $player_error_repository );
+        $player_service          = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
         $club_player_service     = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
 
         $validator         = new Validator_Match();

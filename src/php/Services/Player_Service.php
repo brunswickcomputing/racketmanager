@@ -33,7 +33,7 @@ use function Racketmanager\get_club;
 /**
  * Class to implement the Player Management Service
  */
-class Player__Service {
+class Player_Service {
     private Player_Repository $player_repository;
     private ?RacketManager $racketmanager;
     private ?Player_Error_Repository $player_error_repository;

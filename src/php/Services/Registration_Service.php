@@ -30,7 +30,7 @@ class Registration_Service {
     private Registration_Repository $club_player_repository;
     private Player_Repository $player_repository;
     private Club_Repository $club_repository;
-    private Player__Service $player_service;
+    private Player_Service $player_service;
     private ?RacketManager $racketmanager;
 
     /**
@@ -40,9 +40,9 @@ class Registration_Service {
      * @param Registration_Repository $club_player_repository
      * @param Player_Repository $player_repository
      * @param Club_Repository $club_repository
-     * @param Player__Service $player_service
+     * @param Player_Service $player_service
      */
-    public function __construct( $plugin_instance, Registration_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player__Service $player_service ) {
+    public function __construct( $plugin_instance, Registration_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;

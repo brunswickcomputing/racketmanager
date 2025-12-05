@@ -29,7 +29,7 @@ use function Racketmanager\get_team;
 /**
  * Class to implement the Club Management Service
  */
-class Club__Service {
+class Club_Service {
     private Club_Role_Repository $club_role_repository;
     private Club_Repository $club_repository;
     private Registration_Repository $club_player_repository;

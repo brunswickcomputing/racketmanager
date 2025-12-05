@@ -11,7 +11,7 @@ namespace Racketmanager\Domain;
 
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Services\Player__Service;
+use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_charge;
@@ -310,7 +310,7 @@ final class Tournament {
     private ?string $notification_error;
     private ?string $no_secretary_email;
     private ?string $no_notification;
-    private Player__Service $player_service;
+    private Player_Service $player_service;
 
     /**
      * Retrieve tournament instance
@@ -461,7 +461,7 @@ final class Tournament {
         
         $player_repository       = new Player_Repository();
         $player_error_repository = new Player_Error_Repository();
-        $this->player_service    = new Player__Service( $racketmanager, $player_repository, $player_error_repository );
+        $this->player_service    = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
     }
 
     /**

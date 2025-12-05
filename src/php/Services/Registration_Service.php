@@ -123,7 +123,7 @@ class Registration_Service {
             $message_args['requestor'] = $user->display_name;
             $message_args['action']    = $action;
             $message_args['club']      = $club->shortcode;
-            $message_args['player']    = $player->fullname;
+            $message_args['player']    = $player->display_name;
             $message_args['btm']       = empty( $player->btm ) ? null : $player->btm;
             $headers[]                 = RACKETMANAGER_FROM_EMAIL . $this->racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
             $headers[]                 = RACKETMANAGER_CC_EMAIL . $this->racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';

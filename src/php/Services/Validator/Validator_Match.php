@@ -10,7 +10,6 @@
 namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Util\Util;
-use function Racketmanager\get_club_player;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_rubber;

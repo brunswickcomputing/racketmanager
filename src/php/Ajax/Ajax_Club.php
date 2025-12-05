@@ -14,7 +14,6 @@ use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Club;
 use stdClass;
-use function Racketmanager\get_club_player;
 use function Racketmanager\get_club_role;
 use function Racketmanager\get_user;
 use function Racketmanager\show_alert;

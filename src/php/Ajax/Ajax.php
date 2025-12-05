@@ -9,11 +9,6 @@
 namespace Racketmanager\Ajax;
 
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Registration_Repository;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Club_Role_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
@@ -29,7 +24,7 @@ class Ajax {
     public string $event_not_found;
     protected Club_Service $club_service;
     private Player_Service $player_service;
-    protected Registration_Service $club_player_service;
+    protected Registration_Service $registration_service;
     private RacketManager $racketmanager;
 
     /**
@@ -38,14 +33,10 @@ class Ajax {
     public function __construct( $plugin_instance ) {
         add_action( 'wp_ajax_racketmanager_get_player_details', array( &$this, 'get_player_details' ) );
         $this->racketmanager       = $plugin_instance;
-        $club_repository           = new Club_Repository();
-        $club_player_repository    = new Registration_Repository();
-        $club_role_repository      = new Club_Role_Repository();
-        $player_repository         = new Player_Repository();
-        $team_repository           = new Team_Repository();
-        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository, $team_repository );
-        $this->player_service      = new Player_Service( $this->racketmanager, $player_repository );
-        $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
+        $c                         = $this->racketmanager->container;
+        $this->club_service        = $c->get( 'club_service' );
+        $this->player_service      = $c->get( 'player_service' );
+        $this->registration_service = $c->get( 'registration_service' );
     }
 
     /**

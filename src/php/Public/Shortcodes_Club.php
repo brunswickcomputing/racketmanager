@@ -140,9 +140,9 @@ class Shortcodes_Club extends Shortcodes {
             if ( $player_name ) {
                 $player_name = un_seo_url( $player_name );
                 $player      = $this->player_service->get_player_by_name( $player_name );
-                $club_player = $this->club_player_service->get_player_for_club( $club->id, $player->id );
+                $club_player = $this->registration_service->get_player_for_club( $club->id, $player->id );
             } else {
-                $players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id );
+                $players = $this->registration_service->get_registered_players_list( 'active', null, $club->id );
             }
 
             return $this->load_template(

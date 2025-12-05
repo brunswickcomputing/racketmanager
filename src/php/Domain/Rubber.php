@@ -11,11 +11,6 @@ namespace Racketmanager\Domain;
 
 use DateMalformedStringException;
 use DateTime;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Player_Error_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Registration_Repository;
-use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -300,12 +295,8 @@ final class Rubber {
      */
     public function __construct( ?object $rubber = null ) {
         global $racketmanager;
-        $club_player_repository     = new Registration_Repository();
-        $player_repository          = new Player_Repository();
-        $player_error_repository    = new Player_Error_Repository();
-        $club_repository            = new Club_Repository();
-        $player_service             = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
-        $this->registration_service = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
+        $c                          = $racketmanager->container;
+        $this->registration_service = $c->get( 'registration_service' );
 
         if ( ! is_null( $rubber ) ) {
             if ( ! empty( $rubber->custom ) ) {

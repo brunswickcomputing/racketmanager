@@ -688,7 +688,7 @@ class Ajax_Frontend extends Ajax {
                 foreach( $rubber->players as $player_ref => $player_id ) {
                     if ( $player_id ) {
                         try {
-                            $player = $this->club_player_service->get_registration( $player_id );
+                            $player = $this->registration_service->get_registration( $player_id );
                             $player_found = in_array( $player_id, $match_players, true );
                             if ( $player_found ) {
                                 $return->error      = true;

@@ -192,13 +192,13 @@ final class Admin_Player extends Admin_Display {
                         foreach ( $_POST['playerRequest'] as $player_request_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                             if ( 'approve' === $_POST['action'] ) {
                                 try {
-                                    $this->club_player_service->approve_registration( $player_request_id, get_current_user_id() );
+                                    $this->registration_service->approve_registration( $player_request_id, get_current_user_id() );
                                     $msg [] = sprintf( __( '%s - Player has been approved', 'racketmanager' ), $player_request_id );
                                 } catch ( Registration_Not_Found_Exception $e ) {
                                     $msg[] = $e->getMessage();
                                 }
                             } elseif ( 'delete' === $_POST['action'] ) {
-                                $this->club_player_service->remove_registration( $player_request_id, get_current_user_id() );
+                                $this->registration_service->remove_registration( $player_request_id, get_current_user_id() );
                                 $msg[] = sprintf( __( '%s - Player has been removed from club', 'racketmanager' ), $player_request_id );
                             }
                         }
@@ -217,7 +217,7 @@ final class Admin_Player extends Admin_Display {
         $this->show_message();
         $racketmanager_tab = 'requests';
         $clubs             = $this->club_service->get_clubs();
-        $player_requests   = $this->club_player_service->get_registered_players_list( null, $status, $club_id );
+        $player_requests   = $this->registration_service->get_registered_players_list( null, $status, $club_id );
         require_once RACKETMANAGER_PATH . 'templates/admin/players/show-requests.php';
     }
 

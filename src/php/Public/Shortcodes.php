@@ -10,11 +10,6 @@
 namespace Racketmanager\Public;
 
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Registration_Repository;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Club_Role_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
@@ -54,7 +49,7 @@ class Shortcodes {
     public string $no_team_id;
     public string $club_player_not_found;
     public string $season_not_found_for_competition;
-    protected Registration_Service $club_player_service;
+    protected Registration_Service $registration_service;
     protected Club_Service $club_service;
     private RacketManager $racketmanager;
     protected Player_Service $player_service;
@@ -85,14 +80,10 @@ class Shortcodes {
         $this->not_played_no_opponent           = __( 'Match not played - %s did not show', 'racketmanager' );
 
         $this->racketmanager       = $racketmanager;
-        $club_repository           = new Club_Repository();
-        $club_player_repository    = new Registration_Repository();
-        $club_role_repository      = new Club_Role_Repository();
-        $player_repository         = new Player_Repository();
-        $team_repository           = new Team_Repository();
-        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository, $team_repository );
-        $this->player_service      = new Player_Service( $this->racketmanager, $player_repository );
-        $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
+        $c                         = $this->racketmanager->container;
+        $this->club_service        = $c->get( 'club_service' );
+        $this->player_service      = $c->get( 'player_service' );
+        $this->registration_service = $c->get( 'registration_service' );
     }
     /**
      * Display Daily Matches
@@ -728,16 +719,16 @@ class Shortcodes {
         switch ( $event->type ) {
             case 'BD':
             case 'MD':
-                $club_players['m'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
+                $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
                 break;
             case 'GD':
             case 'WD':
-                $club_players['f'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age );
+                $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age );
                 break;
             case 'XD':
             case 'LD':
-                $club_players['m'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
-                $club_players['f'] = $this->club_player_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age_female );
+                $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
+                $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age_female );
                 break;
             default:
                 $club_players['m'] = array();

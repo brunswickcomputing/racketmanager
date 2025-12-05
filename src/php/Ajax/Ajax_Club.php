@@ -107,7 +107,7 @@ class Ajax_Club extends Ajax {
         if ( empty( $validator->error ) ) {
             $club_id = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
             try {
-                $response = $this->club_player_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
+                $response = $this->registration_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
                 if ( is_wp_error( $response ) ) {
                     $validator->error  = true;
                     $validator->status = 401;
@@ -143,7 +143,7 @@ class Ajax_Club extends Ajax {
         if ( empty( $validator->error ) ) {
             $club_players = empty( $_POST['clubPlayer'] ) ? array() : $_POST['clubPlayer'];
             foreach ( $club_players as $club_player_id ) {
-                $this->club_player_service->remove_registration( $club_player_id, wp_get_current_user()->ID );
+                $this->registration_service->remove_registration( $club_player_id, wp_get_current_user()->ID );
                 ++$deleted;
             }
         }

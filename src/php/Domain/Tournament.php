@@ -9,8 +9,6 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Repositories\Player_Error_Repository;
-use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -458,10 +456,9 @@ final class Tournament {
         $this->notification_error = __( 'Notification error', 'racketmanager' );
         $this->no_secretary_email = __( 'No secretary email', 'racketmanager' );
         $this->no_notification    = __( 'No notification', 'racketmanager' );
-        
-        $player_repository       = new Player_Repository();
-        $player_error_repository = new Player_Error_Repository();
-        $this->player_service    = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
+
+        $c                    = $racketmanager->container;
+        $this->player_service = $c->get( 'player_service' );
     }
 
     /**

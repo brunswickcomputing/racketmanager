@@ -9,13 +9,8 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Repositories\Registration_Repository;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Player_Error_Repository;
-use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Championship;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Validator\Validator_Match;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -555,6 +550,8 @@ final class Racketmanager_Match {
      * @var int|null
      */
     public ?int $num_sets;
+    private Registration_Service $registration_service;
+
     /**
      * Retrieve match instance
      *
@@ -591,7 +588,9 @@ final class Racketmanager_Match {
      * @param object|null $match Racketmanager_Match object.
      */
     public function __construct( ?object $match = null ) {
-        global $wp;
+        global $wp, $racketmanager;
+        $c                          = $racketmanager->container;
+        $this->registration_service = $c->get( 'registration_service' );
         if ( ! is_null( $match ) ) {
             if ( ! empty( $match->custom ) ) {
                 $match->custom = stripslashes_deep( (array) maybe_unserialize( $match->custom ) );
@@ -2333,12 +2332,6 @@ final class Racketmanager_Match {
      */
     public function is_update_allowed(): object {
         global $racketmanager;
-        $club_repository         = new Club_Repository();
-        $club_player_repository  = new Registration_Repository();
-        $player_repository       = new Player_Repository();
-        $player_error_repository = new Player_Error_Repository();
-        $player_service          = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
-        $club_player_service     = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
 
         $home_team           = $this->teams['home'];
         $away_team           = $this->teams['away'];
@@ -2421,8 +2414,8 @@ final class Racketmanager_Match {
                                 }
                             }
                         } else {
-                            $home_club_player = $club_player_service->is_player_active_in_club( $home_team->club_id, $userid );
-                            $away_club_player = $club_player_service->is_player_active_in_club( $away_team->club_id, $userid );
+                            $home_club_player = $this->registration_service->is_player_active_in_club( $home_team->club_id, $userid );
+                            $away_club_player = $this->registration_service->is_player_active_in_club( $away_team->club_id, $userid );
                             if ( $home_club_player ) {
                                 $user_type = 'player';
                                 $user_team = 'home';
@@ -2966,14 +2959,6 @@ final class Racketmanager_Match {
      * @return object
      */
     public function handle_team_result_update( ?string $match_status, array $rubber_statuses, ?array $match_comments, array $rubber_ids, array $rubber_types, array $match_players, array $match_sets ): object {
-        global $racketmanager;
-        $club_repository         = new Club_Repository();
-        $club_player_repository  = new Registration_Repository();
-        $player_repository       = new Player_Repository();
-        $player_error_repository = new Player_Error_Repository();
-        $player_service          = new Player_Service( $racketmanager, $player_repository, $player_error_repository );
-        $club_player_service     = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
-
         $validator         = new Validator_Match();
         $validator         = $validator->match_status( $match_status );
         $is_update_allowed = $this->is_update_allowed();
@@ -3003,7 +2988,7 @@ final class Racketmanager_Match {
             $club_id = $this->teams[ $opponent ]->club_id;
             $club    = get_club( $club_id );
             if ( $club ) {
-                $dummy_players[ $opponent ] = $club_player_service->get_dummy_players( $club_id );
+                $dummy_players[ $opponent ] = $this->registration_service->get_dummy_players( $club_id );
             }
         }
         if ( empty( $this->date_result_entered ) ) {

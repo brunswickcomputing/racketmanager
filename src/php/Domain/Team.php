@@ -259,8 +259,8 @@ final class Team {
      */
     public function __construct( ?object $team = null ) {
         global $racketmanager;
-        $player_repository    = new Player_Repository();
-        $this->player_service = new Player_Service( $racketmanager, $player_repository );
+        $c                    = $racketmanager->container;
+        $this->player_service = $c->get( 'player_service' );
 
         $this->msg_team_updated       = __( 'Team updated', 'racketmanager' );
         $this->msg_team_added         = __( 'Team added', 'racketmanager' );

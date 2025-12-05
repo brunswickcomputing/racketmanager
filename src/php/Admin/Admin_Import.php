@@ -302,7 +302,7 @@ class Admin_Import extends Admin_Display {
             if ( $i > 0 && count( $line ) > 1 ) {
                 $this->get_player_details( $line );
                 try {
-                    $response = $this->club_player_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
+                    $response = $this->registration_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
                     if ( is_wp_error( $response ) ) {
                         $player_messages = $response->get_error_messages();
                         /* translators: %d: player id */

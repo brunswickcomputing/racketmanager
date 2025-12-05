@@ -260,7 +260,7 @@ class Admin_Club extends Admin_Display {
             } else {
                 $club_id = isset( $_POST['club_Id'] ) ? intval( $_POST['club_Id'] ) : null;
                 try {
-                    $response = $this->club_player_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
+                    $response = $this->registration_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
                     if ( is_wp_error( $response ) ) {
                         $form_valid     = false;
                         $error_fields   = $response->get_error_codes();
@@ -283,7 +283,7 @@ class Admin_Club extends Admin_Display {
                 $msg = array();
                 foreach ( $_POST['clubPlayer'] as $club_player_id ) {
                     try {
-                        $this->club_player_service->remove_registration( $club_player_id, wp_get_current_user()->ID );
+                        $this->registration_service->remove_registration( $club_player_id, wp_get_current_user()->ID );
                         $msg[] = sprintf( __( '%s - Player has been removed from club', 'racketmanager' ), $club_player_id );
                     } catch ( Club_Not_Found_Exception | Registration_Not_Found_Exception $e ) {
                         $this->set_message( $e->getMessage(), true );
@@ -315,7 +315,7 @@ class Admin_Club extends Admin_Display {
         }
         $active  = isset( $_GET['active'] ) ? sanitize_text_field( wp_unslash( $_GET['active'] ) ) : false;
         $gender  = isset( $_GET['gender'] ) ? sanitize_text_field( wp_unslash( $_GET['gender'] ) ) : false;
-        $players = $this->club_player_service->get_registered_players_list( $active, null, $club_id, $gender );
+        $players = $this->registration_service->get_registered_players_list( $active, null, $club_id, $gender );
         require_once RACKETMANAGER_PATH . 'templates/admin/club/show-club-players.php';
     }
     /**
@@ -505,7 +505,7 @@ class Admin_Club extends Admin_Display {
         }
         $this->show_message();
         $roles        = $this->club_service->get_roles_for_club( $club_id );
-        $club_players = $this->club_player_service->get_registered_players_list( 'active', null, $club->id );
+        $club_players = $this->registration_service->get_registered_players_list( 'active', null, $club->id );
         require_once RACKETMANAGER_PATH . 'templates/admin/club/show-roles.php';
     }
 }

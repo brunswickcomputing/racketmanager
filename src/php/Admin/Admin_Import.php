@@ -92,7 +92,7 @@ class Admin_Import extends Admin_Display {
             if ( 'direct' === $access_type ) {
                 /* you can safely run request_filesystem_credentials() without any issues and don't need to worry about passing in a URL */
                 $credentials = request_filesystem_credentials( site_url() . '/wp-admin/', '', false, false, array() );
-                /* initialize the API */
+                /* initialise the API */
                 if ( ! WP_Filesystem( $credentials ) ) {
                     /* any problems and we exit */
                     $this->set_message( __( 'Unable to access file system', 'racketmanager' ), true );
@@ -124,7 +124,7 @@ class Admin_Import extends Admin_Display {
                             $this->set_message( __( 'Unable to delete file', 'racketmanager' ), true );
                         }
                     } else {
-                        /* translators: %s: location of file */
+                        /* translators: %s: location of the file */
                         $this->set_message( sprintf( __( 'The uploaded file could not be moved to %s.', 'racketmanager' ), ABSPATH . 'wp-content/uploads' ), true );
                     }
                 }
@@ -135,7 +135,7 @@ class Admin_Import extends Admin_Display {
     }
 
     /**
-     * Import table from CSV file
+     * Import table from a CSV file
      *
      * @param array $contents array of file contents.
      * @param string $delimiter delimiter.
@@ -205,7 +205,7 @@ class Admin_Import extends Admin_Display {
     }
 
     /**
-     * Import fixtures from file
+     * Import fixtures from a file
      *
      * @param array $contents array of file contents.
      * @param string $delimiter delimiter.
@@ -244,7 +244,7 @@ class Admin_Import extends Admin_Display {
     }
 
     /**
-     * Import players from file
+     * Import players from a file
      *
      * @param array $contents array of file contents.
      * @param string $delimiter delimiter.
@@ -329,7 +329,7 @@ class Admin_Import extends Admin_Display {
     }
 
     /**
-     * Get player details from line and store as $_POST variables.
+     * Get player details from a line and store as $_POST variables.
      *
      * @param array $line
      *

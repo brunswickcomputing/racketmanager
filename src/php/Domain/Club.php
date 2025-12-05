@@ -9,7 +9,6 @@
 
 namespace Racketmanager\Domain;
 
-use function Racketmanager\get_team;
 use function Racketmanager\seo_url;
 
 /**

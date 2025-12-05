@@ -48,6 +48,18 @@ class Club_Player_DTO {
     public mixed $approved_by_user;
     public mixed $removed_by_user;
     public ?bool $system_record;
+    /**
+     * Error description variable
+     *
+     * @var string|null
+     */
+    public ?string $description;
+    /**
+     * Class
+     *
+     * @var string|null
+     */
+    public ?string $class;
 
     /**
      * Club_Player_DTO constructor.
@@ -55,6 +67,9 @@ class Club_Player_DTO {
      * @param Player $player
      * @param Club $club
      * @param Club_Player $registration
+     * @param $registered_by
+     * @param $approved_by
+     * @param $removed_by
      */
     public function __construct( Player $player, Club $club, Club_Player $registration, $registered_by, $approved_by, $removed_by ) {
         $this->registration_id       = $registration->id;

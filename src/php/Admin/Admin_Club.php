@@ -18,7 +18,6 @@ use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Club;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\get_club;
 use function Racketmanager\get_league;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;

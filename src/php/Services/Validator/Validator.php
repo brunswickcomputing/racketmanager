@@ -9,6 +9,12 @@
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Repositories\Club_Player_Repository;
+use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Services\Club_Player_Management_Service;
+use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
@@ -56,18 +62,29 @@ class Validator {
      */
     public ?string $msg;
     public WP_Error $err;
+    private Player_Management_Service $player_service;
+    protected Club_Player_Management_Service $registration_service;
 
     /**
      * Constructor
      */
     public function __construct() {
+        global $racketmanager;
         $this->error    = false;
         $this->err_flds = array();
         $this->err_msgs = array();
         $this->status   = null;
         $this->msg      = null;
         $this->err      = new WP_Error();
+
+        $club_player_repository     = new Club_Player_Repository();
+        $player_repository          = new Player_Repository();
+        $player_error_repository    = new Player_Error_Repository();
+        $club_repository            = new Club_Repository();
+        $this->player_service       = new Player_Management_Service( $racketmanager, $player_repository, $player_error_repository );
+        $this->registration_service = new Club_Player_Management_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
+
     /**
      * Validate security token
      *

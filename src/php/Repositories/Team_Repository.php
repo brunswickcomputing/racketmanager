@@ -163,4 +163,25 @@ class Team_Repository {
         return $max_sequence + 1;
     }
 
+    /**
+     * Checks if a player is a captain of a team
+     *
+     * @param int $club_id
+     * @param int $player
+     *
+     * @return bool
+     */
+    public function find_captain( int $club_id, int $player ): bool {
+        $team_events_table = $this->wpdb->prefix . 'racketmanager_team_events';
+        $clubs_table       = $this->wpdb->prefix . 'racketmanager_clubs';
+
+        $count = $this->wpdb->get_var(
+            $this->wpdb->prepare(
+               "SELECT count(*) FROM $team_events_table te, $this->table_name t, $clubs_table c WHERE c.`id` = %d AND c.`id` = t.`club_id` AND t.`team_type` IS NULL AND t.`id` = te.`team_id` AND e.`captain` = %d",
+                $club_id,
+                $player
+            )
+        );
+        return $count > 0;
+    }
 }

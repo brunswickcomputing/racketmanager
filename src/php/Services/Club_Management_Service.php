@@ -18,7 +18,7 @@ use Racketmanager\Exceptions\Club_Has_Teams_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
-use Racketmanager\Repositories\Club_Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
@@ -32,18 +32,18 @@ use function Racketmanager\get_team;
 class Club_Management_Service {
     private Club_Role_Repository $club_role_repository;
     private Club_Repository $club_repository;
-    private Club_Player_Repository $club_player_repository;
+    private Registration_Repository $club_player_repository;
     private Player_Repository $player_repository;
 
     /**
      * Constructor
      *
      * @param Club_Repository $club_repository
-     * @param Club_Player_Repository $club_player_repository
+     * @param Registration_Repository $club_player_repository
      * @param Club_Role_Repository $club_role_repository
      * @param Player_Repository $player_repository
      */
-    public function __construct( Club_Repository $club_repository, Club_Player_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository ) {
+    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
         $this->club_player_repository = $club_player_repository;

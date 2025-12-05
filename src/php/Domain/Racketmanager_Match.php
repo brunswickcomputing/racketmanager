@@ -9,12 +9,12 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Repositories\Club_Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Championship;
-use Racketmanager\Services\Club_Player_Management_Service;
+use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Management_Service;
 use Racketmanager\Services\Validator\Validator_Match;
 use Racketmanager\Util\Util;
@@ -2334,11 +2334,11 @@ final class Racketmanager_Match {
     public function is_update_allowed(): object {
         global $racketmanager;
         $club_repository         = new Club_Repository();
-        $club_player_repository  = new Club_Player_Repository();
+        $club_player_repository  = new Registration_Repository();
         $player_repository       = new Player_Repository();
         $player_error_repository = new Player_Error_Repository();
         $player_service          = new Player_Management_Service( $racketmanager, $player_repository, $player_error_repository );
-        $club_player_service     = new Club_Player_Management_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
+        $club_player_service     = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
 
         $home_team           = $this->teams['home'];
         $away_team           = $this->teams['away'];
@@ -2968,11 +2968,11 @@ final class Racketmanager_Match {
     public function handle_team_result_update( ?string $match_status, array $rubber_statuses, ?array $match_comments, array $rubber_ids, array $rubber_types, array $match_players, array $match_sets ): object {
         global $racketmanager;
         $club_repository         = new Club_Repository();
-        $club_player_repository  = new Club_Player_Repository();
+        $club_player_repository  = new Registration_Repository();
         $player_repository       = new Player_Repository();
         $player_error_repository = new Player_Error_Repository();
         $player_service          = new Player_Management_Service( $racketmanager, $player_repository, $player_error_repository );
-        $club_player_service     = new Club_Player_Management_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
+        $club_player_service     = new Registration_Service( $racketmanager, $club_player_repository, $player_repository, $club_repository, $player_service );
 
         $validator         = new Validator_Match();
         $validator         = $validator->match_status( $match_status );

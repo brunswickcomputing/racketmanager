@@ -15,12 +15,12 @@ use wpdb;
 /**
  * Class to implement the Club_Player repository
  */
-class Club_Player_Repository {
+class Registration_Repository {
     private wpdb $wpdb;
     private string $table_name;
 
     /**
-     * Create a new Club_Player_Repository instance.
+     * Create a new Registration_Repository instance.
      */
     public function __construct() {
         global $wpdb;

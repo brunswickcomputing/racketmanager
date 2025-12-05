@@ -9,12 +9,12 @@
 namespace Racketmanager\Ajax;
 
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Club_Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Club_Management_Service;
-use Racketmanager\Services\Club_Player_Management_Service;
+use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Management_Service;
 use stdClass;
 use function Racketmanager\show_alert;
@@ -28,7 +28,7 @@ class Ajax {
     public string $event_not_found;
     protected Club_Management_Service $club_service;
     private Player_Management_Service $player_service;
-    protected Club_Player_Management_Service $club_player_service;
+    protected Registration_Service $club_player_service;
     private RacketManager $racketmanager;
 
     /**
@@ -38,12 +38,12 @@ class Ajax {
         add_action( 'wp_ajax_racketmanager_get_player_details', array( &$this, 'get_player_details' ) );
         $this->racketmanager       = $plugin_instance;
         $club_repository           = new Club_Repository();
-        $club_player_repository    = new Club_Player_Repository();
+        $club_player_repository    = new Registration_Repository();
         $club_role_repository      = new Club_Role_Repository();
         $player_repository         = new Player_Repository();
         $this->club_service        = new Club_Management_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
         $this->player_service      = new Player_Management_Service( $this->racketmanager, $player_repository );
-        $this->club_player_service = new Club_Player_Management_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
+        $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }
 
     /**

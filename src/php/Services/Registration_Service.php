@@ -1,6 +1,6 @@
 <?php
 /**
- * Club_Player_Management_Service class
+ * Registration_Service class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -16,7 +16,7 @@ use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Club_Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use stdClass;
@@ -26,8 +26,8 @@ use function Racketmanager\club_players_notification;
 /**
  * Class to implement the Club Player Management Service
  */
-class Club_Player_Management_Service {
-    private Club_Player_Repository $club_player_repository;
+class Registration_Service {
+    private Registration_Repository $club_player_repository;
     private Player_Repository $player_repository;
     private Club_Repository $club_repository;
     private Player_Management_Service $player_service;
@@ -37,12 +37,12 @@ class Club_Player_Management_Service {
      * Constructor
      *
      * @param $plugin_instance
-     * @param Club_Player_Repository $club_player_repository
+     * @param Registration_Repository $club_player_repository
      * @param Player_Repository $player_repository
      * @param Club_Repository $club_repository
      * @param Player_Management_Service $player_service
      */
-    public function __construct( $plugin_instance, Club_Player_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Management_Service $player_service ) {
+    public function __construct( $plugin_instance, Registration_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Management_Service $player_service ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;

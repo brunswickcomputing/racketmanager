@@ -142,18 +142,6 @@ final class Club {
      */
     public bool $single;
     /**
-     * Invoices variable
-     *
-     * @var array
-     */
-    public array $invoices;
-    /**
-     * Invoice variable
-     *
-     * @var object
-     */
-    public object $invoice;
-    /**
      * Entry
      *
      * @var array

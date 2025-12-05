@@ -13,9 +13,9 @@
 namespace Racketmanager;
 
 /** @var object $club */
+/** @var object $invoice */
 $header_level = 1;
 require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
-$invoice = $club->invoice;
 ?>
 <div class="module module--card">
     <div class="module__banner">

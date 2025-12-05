@@ -411,6 +411,8 @@ class Shortcodes_Club extends Shortcodes {
         $template        = $args['template'];
         $msg             = null;
         $template_ref    = null;
+        $invoices        = array();
+        $invoice         = null;
         // Get Club by Name.
         $club_name = get_query_var( 'club_name' );
         $club_name = un_seo_url( $club_name );
@@ -432,7 +434,6 @@ class Shortcodes_Club extends Shortcodes {
                 if ( $invoice ) {
                     if ( $invoice->club_id === $club->id ) {
                         $invoice->details = show_invoice( $invoice->id );
-                        $club->invoice    = $invoice;
                         $template_ref     = 'invoice';
                     } else {
                         $msg = __( 'Invoice not for this club', 'racketmanager' );
@@ -441,8 +442,8 @@ class Shortcodes_Club extends Shortcodes {
                     $msg = __( 'Invoice not found', 'racketmanager' );
                 }
             } else {
-                $club->invoices = $racketmanager->get_invoices( array( 'club' => $club->id ));
-                $template_ref   = 'invoices';
+                $invoices     = $racketmanager->get_invoices( array( 'club' => $club->id ));
+                $template_ref = 'invoices';
             }
         } catch ( Club_Not_Found_Exception $e ) {
             return $this->return_error( $e->getMessage() );
@@ -456,6 +457,8 @@ class Shortcodes_Club extends Shortcodes {
             array(
                 'club'            => $club,
                 'user_can_manage' => $user_can_update,
+                'invoices'        => $invoices,
+                'invoice'         => $invoice,
             ),
             'club'
         );

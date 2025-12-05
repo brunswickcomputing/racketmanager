@@ -13,6 +13,7 @@
 namespace Racketmanager;
 
 /** @var object $club */
+/** @var array $invoices */
 $header_level = 1;
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>
@@ -42,7 +43,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                 </div>
                 <?php
                 $total_amount = 0;
-                foreach ( $club->invoices as $invoice ) {
+                foreach ( $invoices as $invoice ) {
                     $total_amount += $invoice->amount;
                     ?>
                     <div class="row mb-2 row-list">

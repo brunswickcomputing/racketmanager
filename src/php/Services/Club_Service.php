@@ -297,6 +297,23 @@ class Club_Service {
     }
 
     /**
+     * Get a club role by ID
+     *
+     * @param int|null $role_id
+     *
+     * @return Club_Role|null
+     */
+    public function get_role( ?int $role_id ): ?Club_Role {
+        if ( empty( $role_id ) ) {
+            throw new Role_Assignment_Not_Found_Exception( __('No role ID provided', 'racketmanager' ) );
+        }
+        $role =  $this->club_role_repository->find( $role_id );
+        if ( empty( $role ) ) {
+            throw new Role_Assignment_Not_Found_Exception( __('Role ID %s not found', 'racketmanager' ), $role_id );
+        }
+        return $role;
+    }
+    /**
      * Get match secretary details for a club
      *
      * @param int $club_id

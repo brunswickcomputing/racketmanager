@@ -244,7 +244,7 @@ class Validator {
      *
      * @param string|null $email email address.
      * @param int|null    $player_id player id.
-     * @param bool   $email_required is email address required.
+     * @param bool   $email_required is email address required?
      * @param string|null $field_ref field.
      * @param bool $field_ref_override field ref override.
      *

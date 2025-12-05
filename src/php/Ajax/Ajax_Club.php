@@ -184,55 +184,53 @@ class Ajax_Club extends Ajax {
      * Set club role
      */
     public function set_club_role(): void {
-        $user_id      = null;
-        $club_role_id = null;
-        $contact_no   = null;
-        $email        = null;
         $updates      = false;
         $validator      = new Validator_Club();
         $validator      = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_club-role-update' );
-        if ( empty( $validator->error ) ) {
-            $club_id      = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
-            $role_id      = isset( $_POST['roleId'] ) ? intval( $_POST['roleId'] ) : null;
-            $user_id      = isset( $_POST['userId'] ) ? intval( $_POST['userId'] ) : null;
-            $club_role_id = isset( $_POST['clubRoleId'] ) ? intval( $_POST['clubRoleId'] ) : null;
-            $contact_no   = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-            $email        = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
-            $validator    = $validator->club( $club_id );
-            $validator    = $validator->club_role( $club_role_id );
-            $validator    = $validator->user( $user_id );
-            $validator    = $validator->telephone( $contact_no, 'contactno', true );
-            $validator    = $validator->email( $email, $user_id, true, 'contactemail', true );
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            wp_send_json_error( $return, $return->status );
         }
-        if ( empty( $validator->error ) ) {
-            $user      = get_user( $user_id );
-            $club_role = get_club_role( $club_role_id );
-            if ( $club_role->user->id !== $user_id ) {
-                $club_role = $this->club_service->reassign_role_user( $club_role_id, $user_id );
-                if ( $club_role ) {
-                    $updates = true;
-                }
+        $club_id      = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
+        $role_id      = isset( $_POST['roleId'] ) ? intval( $_POST['roleId'] ) : null;
+        $user_id      = isset( $_POST['userId'] ) ? intval( $_POST['userId'] ) : null;
+        $club_role_id = isset( $_POST['clubRoleId'] ) ? intval( $_POST['clubRoleId'] ) : null;
+        $contact_no   = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
+        $email        = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
+        $validator    = $validator->club( $club_id );
+        $validator    = $validator->club_role( $club_role_id );
+        $validator    = $validator->user( $user_id );
+        $validator    = $validator->telephone( $contact_no, 'contactno', true );
+        $validator    = $validator->email( $email, $user_id, true, 'contactemail', true );
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            if ( empty( $return->msg ) ) {
+                $return->msg = __( 'Unable to set club role', 'racketmanager' );
             }
-            $user_updates = $user->update_contact( $contact_no, $email );
-            if ( $user_updates ) {
+            wp_send_json_error( $return, $return->status );
+        }
+        $user      = get_user( $user_id );
+        $club_role = get_club_role( $club_role_id );
+        if ( $club_role->user->id !== $user_id ) {
+            $club_role = $this->club_service->reassign_role_user( $club_role_id, $user_id );
+            if ( $club_role ) {
                 $updates = true;
             }
-            if ( $updates ) {
-                $msg = __( 'Club role updated', 'racketmanager' );
-                $status = 'success';
-            } else {
-                $msg = __( 'No updates', 'racketmanager' );
-                $status = 'warning';
-            }
-            $return         = new stdClass();
-            $return->msg    = $msg;
-            $return->status = $status;
-            wp_send_json_success( $return );
         }
-        $return = $validator->get_details();
-        if ( empty( $return->msg ) ) {
-            $return->msg = __( 'Unable to set club role', 'racketmanager' );
+        $user_updates = $user->update_contact( $contact_no, $email );
+        if ( $user_updates ) {
+            $updates = true;
         }
-        wp_send_json_error( $return, $return->status );
+        if ( $updates ) {
+            $msg = __( 'Club role updated', 'racketmanager' );
+            $status = 'success';
+        } else {
+            $msg = __( 'No updates', 'racketmanager' );
+            $status = 'warning';
+        }
+        $return         = new stdClass();
+        $return->msg    = $msg;
+        $return->status = $status;
+        wp_send_json_success( $return );
     }
 }

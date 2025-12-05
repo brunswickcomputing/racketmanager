@@ -149,7 +149,7 @@ class Shortcodes_Club extends Shortcodes {
                 $filename,
                 array(
                     'club'            => $club,
-                    'user_can_update' => $club->can_user_update_players(),
+                    'user_can_update' => $this->club_service->can_user_update_players( $club->get_id() ),
                     'players'         => $players,
                     'player'          => $club_player,
                 ),
@@ -206,7 +206,7 @@ class Shortcodes_Club extends Shortcodes {
                     $filename,
                     array(
                         'club'            => $club,
-                        'user_can_update' => $club->can_user_update(),
+                        'user_can_update' => $this->club_service->can_user_update( $club->get_id() ),
                     ),
                     'club'
                 );
@@ -323,7 +323,7 @@ class Shortcodes_Club extends Shortcodes {
                 $filename,
                 array(
                     'club'            => $club,
-                    'user_can_update' => $club->can_user_update(),
+                    'user_can_update' => $this->club_service->can_user_update( $club->get_id() ),
                 ),
                 'club'
             );

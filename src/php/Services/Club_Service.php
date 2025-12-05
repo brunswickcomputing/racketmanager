@@ -542,4 +542,77 @@ class Club_Service {
         $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
     }
 
+    /**
+     * Can user update as match secretary or admin user?
+     *
+     * @param int $club_id
+     *
+     * @return bool
+     */
+    public function can_user_update( int $club_id ): bool {
+        $user_can_update     = false;
+        if ( is_user_logged_in() ) {
+            if ( current_user_can( 'manage_racketmanager' ) ) {
+                $user_can_update = true;
+            } else {
+                $user   = wp_get_current_user();
+                $userid = $user->ID;
+                if ( $this->is_user_match_secretary( $club_id, $userid ) ) {
+                    $user_can_update = true;
+                }
+            }
+        }
+        return $user_can_update;
+    }
+
+    /**
+     * Can user update players.
+     *
+     * @param int $club_id
+     *
+     * @return bool
+     */
+    public function can_user_update_players( int $club_id ): bool {
+        global $racketmanager;
+        $user_can_update = false;
+        if ( is_user_logged_in() ) {
+            if ( current_user_can( 'manage_racketmanager' ) ) {
+                $user_can_update = true;
+            } else {
+                $user   = wp_get_current_user();
+                $userid = $user->ID;
+                if ( $this->is_user_match_secretary( $club_id, $userid ) ) {
+                    $user_can_update = true;
+                } elseif ( $this->is_player_captain( $club_id, $userid ) ) {
+                    $options = $racketmanager->get_options( 'rosters' );
+                    if ( isset( $options['rosterEntry'] ) && 'captain' === $options['rosterEntry'] ) {
+                        $user_can_update = true;
+                    }
+                }
+            }
+        }
+        return $user_can_update;
+    }
+
+    /**
+     * Check if a player is a captain
+     *
+     * @param int $club_id
+     * @param int $player player id.
+     *
+     * @return bool
+     */
+    public function is_player_captain( int $club_id, int $player ): bool {
+        // Ensure user and club exist (optional but good practice)
+        if ( ! $this->club_repository->find( $club_id ) ) {
+            return false;
+        }
+        if ( ! $this->player_repository->find( $player ) ) {
+            return false;
+        }
+
+        // If a player object is returned, the assignment exists
+        return $this->team_repository->find_captain( $club_id, $player );
+    }
+
 }

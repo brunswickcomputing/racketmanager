@@ -550,7 +550,7 @@ class Shortcodes_Event extends Shortcodes {
                         $template_args['teams']        = $event->get_teams( $team_args );
                         $template_args['matches']      = array();
                         $template_args['club_players'] = $club_players;
-                        $template_args['can_update']   = $club->can_user_update_as_captain();
+                        $template_args['can_update']   = $this->club_service->can_user_update_as_captain( $club->get_id() );
                         $filename                      = 'team-players-list';
                         return $this->load_template(
                             $filename,

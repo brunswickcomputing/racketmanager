@@ -26,9 +26,9 @@ final class Team {
     /**
      * ID variable
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Title variable
      *
@@ -112,7 +112,7 @@ final class Team {
      *
      * @var string|null
      */
-    public ? string $team_type;
+    public ?string $team_type = null;
     /**
      * Home variable
      *
@@ -276,16 +276,6 @@ final class Team {
         }
         foreach ( get_object_vars( $team ) as $key => $value ) {
             $this->$key = $value;
-        }
-        if ( empty( $this->id ) ) {
-            $this->add();
-        }
-        $this->title   = htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
-        $this->stadium = empty( $this->stadium) ? null : stripslashes( $this->stadium );
-        $this->roster  = maybe_unserialize( $this->roster );
-        $this->profile = intval( $this->profile );
-        if ( $this->club_id ) {
-            $this->club = get_club( $this->club_id );
         }
         if ( 'P' === $this->team_type && ! empty( $this->roster ) ) {
             $players = $this->get_players();
@@ -738,4 +728,70 @@ final class Team {
         $this->players = $players;
         return $players;
     }
+
+    /**
+     * Get row id
+     *
+     * @return int|null
+     */
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+    /**
+     * Get team name
+     *
+     * @return string
+     */
+    public function get_name(): string {
+        return $this->title;
+    }
+
+    /**
+     * Get club id
+     *
+     * @return int|null
+     */
+    public function get_club_id(): ?int {
+        return $this->club_id;
+    }
+
+    /**
+     * Get stadium name
+     *
+     * @return string|null
+     */
+    public function get_stadium(): ?string {
+        return $this->stadium;
+    }
+
+    /**
+     * Get team type
+     *
+     * @return string
+     */
+    public function get_type(): string {
+        return $this->type;
+    }
+
+    /**
+     * Get team type
+     *
+     * @return string|null
+     */
+    public function get_team_type(): ?string {
+    return $this->team_type;
+    }
+
+    /**
+     * Set team id
+     *
+     * @param int $insert_id
+     *
+     * @return void
+     */
+    public function set_id( int $insert_id ): void {
+        $this->id = $insert_id;
+    }
+
 }

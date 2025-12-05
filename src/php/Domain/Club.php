@@ -9,12 +9,6 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Repositories\Club_Role_Repository;
-use Racketmanager\Util\Util_Lookup;
-use stdClass;
-use function Racketmanager\get_competition;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
 use function Racketmanager\get_team;
 use function Racketmanager\seo_url;
 
@@ -380,38 +374,7 @@ final class Club {
     }
 
     /**
-     * Create team in database
-     *
-     * @param string $type type of team to create.
-     * @return object|boolean
-     */
-    public function add_team( string $type ): object|bool {
-        global $racketmanager;
-
-        $type_name = match (substr($type, 0, 1)) {
-            'B' => 'Boys',
-            'G' => 'Girls',
-            'W' => 'Ladies',
-            'M' => 'Mens',
-            'X' => 'Mixed',
-            default => 'error',
-        };
-
-        if ( 'error' === $type_name ) {
-            $racketmanager->set_message( __( 'Type not selected', 'racketmanager' ), true );
-            return false;
-        }
-        $team_count = $this->get_teams( array( 'count' => true, 'type' => $type ) );
-        ++$team_count;
-        $team          = new stdClass();
-        $team->title   = $this->shortcode . ' ' . $type_name . ' ' . $team_count;
-        $team->stadium = $this->name;
-        $team->club_id = $this->id;
-        $team->type    = $type;
-        return new Team( $team );
-    }
-    /**
-     * Get teams for club
+     * Get teams for a club
      *
      * @param array $args query arguments.
      *
@@ -469,7 +432,7 @@ final class Club {
             $teams = $wpdb->get_results(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                 $sql
-            ); // db call ok.
+            );
             wp_cache_set( md5( $sql ), $teams, 'teams' );
         }
 
@@ -484,7 +447,7 @@ final class Club {
     }
 
     /**
-     * Check if player is captain
+     * Check if a player is a captain
      *
      * @param int $player player id.
      * @return string|null
@@ -525,7 +488,7 @@ final class Club {
         return $user_can_update;
     }
     /**
-     * Can user update as a team captain in addition to as match secretary or admin user.
+     * Can a user update as a team captain in addition to as match secretary or admin user?
      * @return bool
      */
     public function can_user_update_as_captain(): bool {
@@ -544,7 +507,7 @@ final class Club {
         return $user_can_update;
     }
     /**
-     * Can user update as match secretary or admin user.
+     * Can user update as match secretary or admin user?
      * @return bool
      */
     public function can_user_update(): bool {
@@ -561,147 +524,5 @@ final class Club {
             }
         }
         return $user_can_update;
-    }
-    /**
-     * Cup entry function
-     *
-     * @param object $club_entry club cup entry object.
-     */
-    public function cup_entry( object $club_entry ): void {
-        global $racketmanager;
-        $cup_entries = array();
-        foreach ( $club_entry->events as $event_entry ) {
-            $cup_entry = array();
-            $event     = get_event( $event_entry->id );
-            if ( isset( $event->primary_league ) ) {
-                $league = get_league( $event->primary_league );
-            } else {
-                $league = get_league( array_key_first( $event->league_index ) );
-            }
-            $team_id   = $event_entry->team_id;
-            $team      = get_team( $team_id );
-            $team_info = $event->get_team_info( $team_id );
-            $match_day = Util_Lookup::get_match_day( $event_entry->match_day );
-            if ( ! $team_info ) {
-                $team->add_event( $event->id, $event_entry->captain_id, $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
-            } else {
-                $team->update_event( $event->id, $event_entry->captain_id, $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
-            }
-            $league->add_team( $team_id, $club_entry->season );
-            $cup_entry['event']        = $event->name;
-            $cup_entry['teamName']     = $team->title;
-            $cup_entry['captain']      = $event_entry->captain;
-            $cup_entry['contactno']    = $event_entry->telephone;
-            $cup_entry['contactemail'] = $event_entry->email;
-            $cup_entry['matchday']     = $match_day;
-            $cup_entry['matchtime']    = $event_entry->match_time;
-            $cup_entries[]             = $cup_entry;
-        }
-        $email_to        = $this->match_secretary->display_name . ' <' . $this->match_secretary->email . '>';
-        $email_from      = $racketmanager->get_confirmation_email( 'cup' );
-        $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __('Entry', 'racketmanager' ) . ' - ' . $this->shortcode;
-        $headers         = array();
-        $secretary_email = __( 'Cup Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-        $headers[]       = RACKETMANAGER_FROM_EMAIL . $secretary_email;
-        $headers[]       = RACKETMANAGER_CC_EMAIL . $secretary_email;
-
-        $template                     = 'cup-entry';
-        $template_args['cup_entries'] = $cup_entries;
-        $this->entry_form_send( $template_args, $club_entry, $email_from, $template, $email_to, $email_subject, $headers );
-    }
-
-    /**
-     * League entry function
-     *
-     * @param object $club_entry club league entry object.
-     */
-    public function league_entry( object $club_entry ): void {
-        global $racketmanager;
-        $event_details = array();
-        $competition   = get_competition( $club_entry->competition );
-        foreach ( $club_entry->event as $event_entry ) {
-            $event                       = get_event( $event_entry->id );
-            $league_event_entry['event'] = $event_entry->name;
-            $league_entries              = array();
-            foreach ( $event_entry->team as $team_entry ) {
-                $match_day = Util_Lookup::get_match_day( $team_entry->match_day );
-                if ( empty( $team_entry->id ) ) {
-                    $team = $this->add_team( $event->type );
-                } else {
-                    $team = get_team( $team_entry->id );
-                }
-                $team_info = $event->get_team_info( $team->id );
-                if ( ! $team_info ) {
-                    $team->add_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $team_entry->match_day, $team_entry->match_time );
-                } else {
-                    $team->update_event( $event_entry->id, $team_entry->captain_id, $team_entry->telephone, $team_entry->email, $team_entry->match_day, $team_entry->match_time );
-                }
-                if ( $team_entry->existing ) {
-                    $event->mark_teams_entered( $team->id, $club_entry->season );
-                } else {
-                    $event->add_team_to_event( $team->id, $club_entry->season );
-                }
-                $league_entry                 = array();
-                $league_entry['teamName']     = $team->title;
-                $league_entry['captain']      = $team_entry->captain;
-                $league_entry['contactno']    = $team_entry->telephone;
-                $league_entry['contactemail'] = $team_entry->email;
-                $league_entry['matchday']     = $match_day;
-                $league_entry['matchtime']    = substr( $team_entry->match_time, 0, 5 );
-                $league_entries[]             = $league_entry;
-            }
-            if ( ! empty( $event_entry->withdrawn_teams ) ) {
-                foreach ( $event_entry->withdrawn_teams as $team ) {
-                    if ( $team ) {
-                        $event->mark_teams_withdrawn( $club_entry->season, $this->id, $team );
-                    }
-                }
-            }
-            $league_event_entry['teams'] = $league_entries;
-            $event_details[]             = $league_event_entry;
-        }
-        $event_entries['events']               = $event_details;
-        $event_entries['num_courts_available'] = $club_entry->num_courts_available;
-        if ( ! empty( $club_entry->withdrawn_events ) ) {
-            foreach ( $club_entry->withdrawn_events as $event_id ) {
-                $event = get_event( $event_id );
-                $event->mark_teams_withdrawn( $club_entry->season, $this->id );
-            }
-        }
-        $competition->settings['num_courts_available'][ $this->id ] = $club_entry->num_courts_available;
-        $competition->set_settings( $competition->settings );
-        $email_to        = $this->match_secretary->display_name . ' <' . $this->match_secretary->email . '> ';
-        $email_from      = $racketmanager->get_confirmation_email( 'league' );
-        $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $this->shortcode;
-        $headers         = array();
-        $secretary_email = __( 'League Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
-        $headers[]       = RACKETMANAGER_FROM_EMAIL . $secretary_email;
-        $headers[]       = RACKETMANAGER_CC_EMAIL . $secretary_email;
-
-        $template                       = 'league-entry';
-        $template_args['event_entries'] = $event_entries;
-        $this->entry_form_send( $template_args, $club_entry, $email_from, $template, $email_to, $email_subject, $headers );
-    }
-    /**
-     * Send entry form
-     * *
-     * @param array  $template_args
-     * @param object $club_entry
-     * @param string $email_from
-     * @param string $template
-     * @param string $email_to
-     * @param string $email_subject
-     * @param array $headers
-     * @return void
-     */
-    public function entry_form_send( array $template_args, object $club_entry, string $email_from, string $template, string $email_to, string $email_subject, array $headers ): void {
-        global $racketmanager;
-        $template_args['organisation']     = $racketmanager->site_name;
-        $template_args['season']           = $club_entry->season;
-        $template_args['competition_name'] = $club_entry->competition->name;
-        $template_args['club']             = $this->name;
-        $template_args['contact_email']    = $email_from;
-        $template_args['comments']         = $club_entry->comments;
-        $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
     }
 }

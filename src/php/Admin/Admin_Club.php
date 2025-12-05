@@ -11,6 +11,7 @@ namespace Racketmanager\Admin;
 
 use Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
@@ -340,10 +341,15 @@ class Admin_Club extends Admin_Display {
         if ( isset( $_POST['addTeam'] ) ) {
             if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-team' ) ) {
                 $this->set_message( $this->invalid_security_token, true );
-            } elseif ( isset( $_POST['club'] ) && isset( $_POST['team_type'] ) ) {
-                $club = get_club( intval( $_POST['club'] ) );
-                $club->add_team( sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
-                $this->set_message( __( 'Team added', 'racketmanager' ) );
+            } else {
+                $club_id_passed = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
+                $team_type = isset( $_POST['team_type'] ) ? sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) : null;
+                try {
+                    $team = $this->club_service->create_team( $club_id_passed, $team_type );
+                    $this->set_message( __( 'Team added', 'racketmanager' ) );
+                } catch ( Club_Not_Found_Exception|Invalid_Argument_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
+                }
             }
         } elseif ( isset( $_POST['editTeam'] ) ) {
             if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-teams' ) ) {

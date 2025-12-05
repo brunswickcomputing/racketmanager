@@ -276,8 +276,7 @@ class Ajax_Frontend extends Ajax {
             }
         }
         if ( empty( $validator->error ) ) {
-            $club = get_club( $club_id );
-            $club->cup_entry( $club_entry );
+            $this->club_service->cup_entry( $club_id, $club_entry );
             $msg = __( 'Cup entry complete', 'racketmanager' );
             wp_send_json_success( $msg );
         } else {
@@ -491,8 +490,7 @@ class Ajax_Frontend extends Ajax {
             $validator  = $validator->entry_acceptance( $acceptance );
         }
         if ( ! $validator->error ) {
-            $club = get_club( $club_id );
-            $club->league_entry( $club_entry );
+            $this->club_service->league_entry( $club_id, $club_entry );
             $msg = __( 'League entry complete', 'racketmanager' );
             wp_send_json_success( $msg );
         } else {

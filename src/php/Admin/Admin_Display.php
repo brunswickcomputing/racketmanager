@@ -15,6 +15,7 @@ use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
@@ -88,8 +89,9 @@ class Admin_Display {
         $club_role_repository      = new Club_Role_Repository();
         $player_repository         = new Player_Repository();
         $player_error_repository   = new Player_Error_Repository();
+        $team_repository           = new Team_Repository();
         $wtn_api_client            = new Wtn_Api_Client();
-        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository );
+        $this->club_service        = new Club_Service( $club_repository, $club_player_repository, $club_role_repository, $player_repository, $team_repository );
         $this->player_service      = new Player_Service( $this->racketmanager, $player_repository, $player_error_repository, $wtn_api_client );
         $this->club_player_service = new Registration_Service( $this->racketmanager, $club_player_repository, $player_repository, $club_repository, $this->player_service );
     }

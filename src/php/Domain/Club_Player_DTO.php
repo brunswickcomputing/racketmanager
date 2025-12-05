@@ -47,6 +47,7 @@ class Club_Player_DTO {
     public mixed $registered_by_user;
     public mixed $approved_by_user;
     public mixed $removed_by_user;
+    public ?bool $system_record;
 
     /**
      * Club_Player_DTO constructor.
@@ -59,6 +60,7 @@ class Club_Player_DTO {
         $this->registration_id       = $registration->id;
         $this->user_id               = $registration->player_id;
         $this->club_id               = $registration->club_id;
+        $this->system_record         = $registration->system_record;
         $this->registration_date     = $registration->requested_date;
         $this->approval_date         = $registration->created_date;
         $this->removal_date          = $registration->removed_date;

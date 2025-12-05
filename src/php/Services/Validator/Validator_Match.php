@@ -723,7 +723,7 @@ final class Validator_Match extends Validator {
                     $this->err_msgs[] = __( 'Player not selected', 'racketmanager' );
                 } else {
                     $player_ref  = $team_players[ $player_number ];
-                    $club_player = get_club_player( $player_ref );
+                    $club_player = $this->registration_service->get_registration( $player_ref );
                     if ( ! $club_player->system_record ) {
                         $player_found = in_array( $player_ref, $this->players_involved, true );
                         if ( ! $player_found ) {

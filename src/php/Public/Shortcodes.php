@@ -56,7 +56,7 @@ class Shortcodes {
     protected Player_Service $player_service;
 
     /**
-     * Initialize shortcodes
+     * Initialise shortcodes
      */
     public function __construct() {
         global $racketmanager;
@@ -94,7 +94,7 @@ class Shortcodes {
      * - league_id is the ID of league (optional)
      * - competition_id is the ID of the competition (optional)
      * - season: display specific season (optional)
-     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     * - template is the template used for displaying. Replace the template name appropriately. Templates must be named "matches-template.php" (optional)
      *
      * @param array $atts shortcode attributes.
      * @return string
@@ -158,7 +158,7 @@ class Shortcodes {
      * - league_id is the ID of league (optional)
      * - competition_id is the ID of the competition (optional)
      * - season: display specific season (optional)
-     * - template is the template used for displaying. Replace name appropriately. Templates must be named "matches-template.php" (optional)
+     * - template is the template used for displaying. Replace the template name appropriately. Templates must be named "matches-template.php" (optional)
      *
      * @param array $atts shortcode attributes.
      * @return string
@@ -301,7 +301,7 @@ class Shortcodes {
         if ( $btm ) {
             $player = get_player( $btm, 'btm' );
         } else {
-            $player = get_player( $player_name, 'name' ); // get player by name.
+            $player = get_player( $player_name, 'name' ); // get a player by name.
         }
         if ( ! $player ) {
             return $this->player_not_found;
@@ -535,7 +535,7 @@ class Shortcodes {
                                     );
     }
     /**
-     * Load template for user display. First the current theme directory is checked for a template
+     * Load template for user display. First, the current theme directory is checked for a template
      * before defaulting to the plugin
      *
      * @param string $template Name of the template file (without extension).
@@ -652,7 +652,7 @@ class Shortcodes {
      * @param string $msg message to display.
      * @param string|null $template template suffix (modal or null).
      *
-     * @return string output html
+     * @return string output HTML
      */
     public function return_error( string $msg, ?string $template = null ): string {
         $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
@@ -669,7 +669,7 @@ class Shortcodes {
      *
      * @param array $atts shortcode attributes.
      *
-     * @return string output html
+     * @return string output HTML
      */
     public function show_alert( array $atts ): string {
         $args     = shortcode_atts(
@@ -693,7 +693,7 @@ class Shortcodes {
         );
     }
     /**
-     * Get players for club by event type and age
+     * Get players for a club by event type and age
      *
      * @param object $event event.
      * @param object $club club.
@@ -739,7 +739,7 @@ class Shortcodes {
         return $club_players;
     }
     /**
-     * Function to display finals order of play
+     * Function to display the finals' order of play
      *
      *    [orderofplay id=ID template=X]
      *

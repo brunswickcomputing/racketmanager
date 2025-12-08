@@ -7,11 +7,10 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-
 use Racketmanager\Util\Util_Lookup;
 
 /** @var object $player */
+/** @var array  $clubs */
 if ( empty( $is_page_header ) ) {
     $is_page_header = false;
     $header_level   = 3;
@@ -73,16 +72,16 @@ if ( empty( $is_page_header ) ) {
                                     </a>
                                 </span>
                                 <?php
-                            } elseif ( ! empty( $player->clubs ) ) {
+                            } elseif ( ! empty( $clubs ) ) {
                                 ?>
                                 <ul class="media__subheading-info">
                                     <?php
-                                    foreach ( $player->clubs as $club ) {
+                                    foreach ( $clubs as $club ) {
                                         ?>
                                         <li class="media__subheading-info-item">
                                             <a href="<?php echo esc_html( $club->link ); ?>">
                                                 <span class="nav--link">
-                                                    <span class="nav-link__value"><?php echo esc_html( $club->shortcode ); ?></span>
+                                                    <span class="nav-link__value"><?php echo esc_html( $club->club_name ); ?></span>
                                                 </span>
                                             </a>
                                         </li>

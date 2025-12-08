@@ -306,7 +306,8 @@ class Shortcodes {
         if ( ! $player ) {
             return $this->player_not_found;
         }
-        $player->clubs        = $player->get_clubs();
+        $player_clubs = $this->registration_service->get_clubs_for_player( $player->get_id() );
+
         $player->titles       = $player->get_titles();
         $player->stats        = $player->get_career_stats();
         $player->competitions = array( 'cup', 'league', 'tournament' );
@@ -323,6 +324,7 @@ class Shortcodes {
             $filename,
             array(
                 'player' => $player,
+                'clubs'  => $player_clubs,
             )
         );
     }

@@ -102,8 +102,7 @@ class Ajax {
         } elseif ( 'name' === $type ) {
             $results = $this->get_players_by_name( $name, $gender, $club_id );
         }
-
-        return $this->set_player_results( $results, $type, $gender );
+        return $this->set_player_results( $results, $type );
     }
 
     /**
@@ -178,7 +177,7 @@ class Ajax {
      *
      * @return array of players.
      */
-    private function set_player_results( ?array $results, string $type, ?string $gender ): array {
+    private function set_player_results( ?array $results, string $type ): array {
         $players = array();
         if ( empty( $results ) ) {
             return array(
@@ -202,12 +201,6 @@ class Ajax {
                 $player['value'] = $player['btm'];
             } else {
                 $player['value'] = $player['name'];
-            }
-            if ( $gender ) {
-                $player['gender'] = get_user_meta( $r->player_id, 'gender', true );
-                if ( $gender !== $player['gender'] ) {
-                    continue;
-                }
             }
             $players[] = $player;
         }

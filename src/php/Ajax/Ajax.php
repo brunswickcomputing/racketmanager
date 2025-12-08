@@ -195,8 +195,8 @@ class Ajax {
             $player['id']         = $r->roster_id;
             $player['playerId']   = $r->player_id;
             $player['user_email'] = $r->user_email;
-            $player['contactno']  = get_user_meta( $r->player_id, 'contactno', true );
-            $player['btm']        = get_user_meta( $r->player_id, 'btm', true );
+            $player['contactno']  = $r->contactno;
+            $player['btm']        = $r->btm;
             if ( 'btm' === $type ) {
                 $player['value'] = $player['btm'];
             } else {

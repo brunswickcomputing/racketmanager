@@ -201,7 +201,7 @@ class Ajax_Frontend extends Ajax {
     }
 
     /**
-     * Update player entries from tournament entry form
+     * Function to process a cup entry input form
      */
     public function cup_entry_request(): void {
         $start_times = array();
@@ -300,7 +300,7 @@ class Ajax_Frontend extends Ajax {
     }
 
     /**
-     * Update player entries from league entry form
+     * Function to process a league entry input form
      */
     public function league_entry_request(): void {
         $validator             = new Validator_Entry_Form();
@@ -538,7 +538,7 @@ class Ajax_Frontend extends Ajax {
     }
 
     /**
-     * Get data for tab
+     * Get data for a tab
      */
     public function tab_data(): void {
         $target = null;

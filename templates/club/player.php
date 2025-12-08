@@ -29,7 +29,7 @@ if ( ! $page_referrer ) {
         <div class="module-container">
             <div class="entry-content">
                 <form id="playerUpdateFrm" action="" method="post">
-                    <?php wp_nonce_field( 'player-update', 'racketmanager_nonce' ); ?>
+                    <?php wp_nonce_field( 'racketmanager_update-player', 'racketmanager_nonce' ); ?>
                     <input type="hidden" id="playerId" name="playerId" value="<?php echo esc_html( $player->id ); ?>" />
                     <div class="form-control mb-3">
                         <legend><?php esc_html_e( 'Personal details', 'racketmanager' ); ?></legend>

@@ -447,7 +447,7 @@ class Player_Repository {
         if ( is_numeric( $min_age ) ) {
             // A player who is at least $minAge must have a YOB <= ($currentYear - $minAge)
             $max_year_of_birth = $current_year - (int) $min_age;
-            // We need to add an explicit JOIN condition for the YOB meta key for the WHERE clause to work efficiently
+            // We need to add an explicit JOIN condition for the YOB meta-key for the WHERE clause to work efficiently
             $search_terms[] = $this->wpdb->prepare( "CAST(um_yob.meta_value AS UNSIGNED) <= %d", $max_year_of_birth );
         }
         if ( is_numeric( $max_age ) ) {

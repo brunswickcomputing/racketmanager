@@ -952,7 +952,7 @@ final class Player {
                 }
                 foreach ( $opponents as $opponent ) {
                     foreach ( $rubber_players as $p => $rubber_player ) {
-                        if ( $rubber->players[ $opponent ][ $p ]->fullname === $this->display_name ) {
+                        if ( $rubber->players[ $opponent ][ $p ]->display_name === $this->display_name ) {
                             $player_team = $opponent;
                             if ( 'home' === $player_team ) {
                                 $player_ref = 'player1';

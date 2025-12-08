@@ -142,7 +142,7 @@ if ( ! empty( $match->winner_id ) ) {
             if ( ! empty( $match->player ) ) {
                 foreach ( $opponents as $opponent ) {
                     foreach ( $rubber_players as $p => $rubber_player ) {
-                        if ( $rubber->players[ $opponent ][ $p ]->fullname === $match->player->display_name ) {
+                        if ( $rubber->players[ $opponent ][ $p ]->display_name === $match->player->display_name ) {
                             $player_team = $opponent;
                             break 2;
                         }
@@ -216,7 +216,7 @@ if ( ! empty( $match->winner_id ) ) {
                                                             $player_detail = $rubber->players[ $opponent ][ $player_number ];
                                                             if ( empty( $player_detail->system_record ) ) {
                                                                 ?>
-                                                                <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->fullname ) ); ?>/">
+                                                                <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
                                                                 <?php
                                                             }
                                                             ?>
@@ -228,7 +228,7 @@ if ( ! empty( $match->winner_id ) ) {
                                                                 <?php
                                                             }
                                                             ?>
-                                                            ><?php echo esc_html( $player_detail->fullname ); ?></span>
+                                                            ><?php echo esc_html( $player_detail->display_name ); ?></span>
                                                             <?php
                                                             if ( empty( $player_detail->system_record ) ) {
                                                                 ?>

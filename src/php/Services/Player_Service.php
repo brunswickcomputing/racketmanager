@@ -159,10 +159,14 @@ class Player_Service {
      *
      * @param int|null $id
      *
-     * @return Player|null
+     * @return Player
      */
-    public function get_player( ?int $id ): Player|null {
-        return $this->player_repository->find( $id );
+    public function get_player( ?int $id ): Player {
+        $player = $this->player_repository->find( $id );
+        if ( ! $player ) {
+            throw new Player_Not_Found_Exception( sprintf( __( 'Player not found', 'racketmanager' ), $id ) );
+        }
+        return $player;
     }
 
     /**

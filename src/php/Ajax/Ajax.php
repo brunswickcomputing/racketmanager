@@ -12,6 +12,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\show_alert;
 
@@ -68,20 +69,21 @@ class Ajax {
      * Ajax Response to get player information
      */
     public function get_player_details(): void {
-        $players     = null;
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $players   = null;
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $type    = isset( $_POST['type'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['type'] ) ) ) :null;
             $name    = isset( $_POST['name'] ) ? stripslashes( sanitize_text_field( wp_unslash( $_POST['name'] ) ) ) : null;
             $gender  = empty( $_POST['partnerGender'] ) ? null : sanitize_text_field( wp_unslash( $_POST['partnerGender'] ) );
             $club_id = empty( $_POST['club'] ) ? null : intval( $_POST['club'] );
             $players = $this->get_players_lookup( $type, $name, $gender, $club_id );
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $response = wp_json_encode( $players );
             wp_send_json_success( $response );
         } else {
-            wp_send_json_error( $return->msg, $return->status );
+            wp_send_json_error( $validator->msg, $validator->status );
         }
     }
 

@@ -24,9 +24,9 @@ use function Racketmanager\show_alert;
 class Ajax {
     public string $event_not_found;
     protected Club_Service $club_service;
-    private Player_Service $player_service;
+    protected Player_Service $player_service;
     protected Registration_Service $registration_service;
-    private RacketManager $racketmanager;
+    protected RacketManager $racketmanager;
 
     /**
      * Register ajax actions.

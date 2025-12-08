@@ -624,13 +624,14 @@ class Ajax_Frontend extends Ajax {
      */
     #[NoReturn]
     public function show_team_order_players(): void {
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $club_id  = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : null;
             $event_id = isset( $_POST['eventId'] ) ? sanitize_text_field( wp_unslash( $_POST['eventId'] ) ) : null;
             $output   = team_order_players( $event_id, array( 'club_id' => $club_id ) );
         } else {
-            $output = show_alert( $return->msg, 'danger' );
+            $output = show_alert( $validator->msg, 'danger' );
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         wp_die();

@@ -325,6 +325,7 @@ class Shortcodes {
             array(
                 'player' => $player,
                 'clubs'  => $player_clubs,
+                'titles' => $titles,
             )
         );
     }

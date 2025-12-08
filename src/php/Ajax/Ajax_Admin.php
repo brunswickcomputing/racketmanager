@@ -44,7 +44,6 @@ class Ajax_Admin extends Ajax {
         add_action( 'wp_ajax_racketmanager_get_season_dropdown', array( &$this, 'set_season_dropdown' ) );
         add_action( 'wp_ajax_racketmanager_get_match_dropdown', array( &$this, 'set_match_dropdown' ) );
         add_action( 'wp_ajax_racketmanager_check_team_exists', array( &$this, 'check_team_exists' ) );
-        add_action( 'wp_ajax_racketmanager_get_player_clubs', array( &$this, 'get_player_clubs' ) );
 
         add_action( 'wp_ajax_racketmanager_email_constitution', array( &$this, 'email_constitution' ) );
         add_action( 'wp_ajax_racketmanager_notify_competition_entries_open', array( &$this, 'notify_competition_entries_open' ) );
@@ -184,34 +183,6 @@ class Ajax_Admin extends Ajax {
             wp_send_json_error( $return->msg, '500' );
         } else {
             wp_send_json_success( $found );
-        }
-    }
-    /**
-     * Get clubs for player
-     */
-    public function get_player_clubs(): void {
-        $player_clubs = array();
-        $return = $this->check_security_token();
-        if ( ! isset( $return->error ) ) {
-            $player_id = isset( $_POST['player'] ) ? intval( $_POST['player'] ) : null;
-            if ( $player_id ) {
-                $player = get_player( $player_id );
-                if ( $player ) {
-                    $player_clubs = $player->get_clubs();
-                    $return->msg = __( 'Captains emailed', 'racketmanager' );
-                } else {
-                    $return->error = true;
-                    $return->msg   = __( 'Player not found', 'racketmanager' );
-                }
-            } else {
-                $return->error = true;
-                $return->msg   = __( 'No player passed', 'racketmanager' );
-            }
-        }
-        if ( isset( $return->error ) ) {
-            wp_send_json_error( $return->msg, 500 );
-        } else {
-            wp_send_json_success( $player_clubs );
         }
     }
     /**

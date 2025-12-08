@@ -8,7 +8,12 @@
 
 namespace Racketmanager\Ajax;
 
+use Exception;
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Exceptions\Duplicate_BTM_Exception;
+use Racketmanager\Exceptions\Duplicate_Email_Exception;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
@@ -137,31 +142,31 @@ class Ajax_Frontend extends Ajax {
      * @return void
      */
     public function update_player(): void {
-        $update  = null;
-        $team_id = null;
-        $player  = null;
-        $type    = null;
-        $userid  = null;
-        $value   = null;
-        $player_id = null;
+        $return    = new stdClass();
         $validator = new Validator();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'update-player' );
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_update-player' );
         if ( empty( $validator->error ) ) {
-            $team_id   = empty( $_POST['team_id'] ) ? null : intval( $_POST['team_id'] );
-            $validator = $validator->team( $team_id );
-        }
-        if ( empty( $validator->error ) ) {
-            $type     = empty( $_POST['type'] ) ? null : sanitize_text_field( wp_unslash( $_POST['type'] ) );
-            $userid   = empty( $_POST['userid'] ) ? null : intval( $_POST['userid'] );
-            $player   = empty( $_POST['player'] ) ? null : intval( $_POST['player'] );
-            $value    = empty( $_POST['value'] ) ? null : sanitize_textarea_field( wp_unslash( $_POST['value'] ) );
             $player_id = empty( $_POST['playerId'] ) ? null : intval( $_POST['playerId'] );
-            $validator = $validator->team_player( $userid, $player, $player_id, $type );
+            try {
+                $player = $this->player_service->amend_player_details( $player_id );
+                if ( is_wp_error( $player ) ) {
+                    $validator->error    = true;
+                    $validator->err_flds = $player->get_error_codes();
+                    $validator->err_msgs = $player->get_error_messages();
+                    $validator->msg = __( 'Error with player details', 'racketmanager' );
+                } else {
+                    $return->msg = __( 'Player updated', 'racketmanager' );
+                }
+            } catch ( Player_Not_Updated_Exception $e ) {
+                $return->state = 'warning';
+                $return->msg   = $e->getMessage();
+            } catch ( Player_Not_Found_Exception|Duplicate_Email_Exception|Duplicate_BTM_Exception|Exception $e ) {
+                $validator->error = true;
+                $validator->msg   = $e->getMessage();
+            }
         }
         if ( empty( $validator->error ) ) {
-            $team = get_team( $team_id );
-            $msg  = $team->update_player( $type, $userid, $player_id, $value );
-            wp_send_json_success( $msg );
+            wp_send_json_success( $return );
         }
         $return = $validator->get_details();
         wp_send_json_error( $return, $return->status );
@@ -506,20 +511,22 @@ class Ajax_Frontend extends Ajax {
     /**
      * Search players
      */
+    #[NoReturn]
     public function search_players(): void {
         $output = null;
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $search_string = isset( $_GET['search_string'] ) ? sanitize_text_field( wp_unslash( $_GET['search_string'] ) ) : null;
             if ( $search_string ) {
                 $output = player_search( $search_string );
             } else {
-                $return->error = true;
-                $return->msg   = __( 'Search string not supplied', 'racketmanager' );
+                $validator->error = true;
+                $validator->msg   = __( 'Search string not supplied', 'racketmanager' );
             }
         }
-        if ( ! empty( $return->error ) ) {
-            $output = show_alert( $return->msg, 'danger' );
+        if ( ! empty( $validator->error ) ) {
+            $output = show_alert( $validator->msg, 'danger' );
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         wp_die();
@@ -632,8 +639,9 @@ class Ajax_Frontend extends Ajax {
         $rubber   = null;
         $event    = null;
         $rubbers  = null;
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $club_id  = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
             $event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
             $team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
@@ -642,33 +650,33 @@ class Ajax_Frontend extends Ajax {
             if ( $club_id ) {
                 $club = get_club( $club_id );
                 if ( ! $club ) {
-                    $return->error      = true;
-                    $return->err_msgs[] = $this->club_not_found;
-                    $return->err_flds[] = 'club_id';
-                    $return->status     = 404;
+                    $validator->error      = true;
+                    $validator->err_msgs[] = $this->club_not_found;
+                    $validator->err_flds[] = 'club_id';
+                    $validator->status     = 404;
                 }
             } else {
-                $return->error      = true;
-                $return->err_msgs[] = __( 'Club id not supplied', 'racketmanager' );
-                $return->err_flds[] = 'club_id';
-                $return->status     = 404;
+                $validator->error      = true;
+                $validator->err_msgs[] = __( 'Club id not supplied', 'racketmanager' );
+                $validator->err_flds[] = 'club_id';
+                $validator->status     = 404;
             }
             if ( $event_id ) {
                 $event = get_event( $event_id );
                 if ( ! $event ) {
-                    $return->error      = true;
-                    $return->err_msgs[] = $this->event_not_found;
-                    $return->err_flds[] = 'event_id';
-                    $return->status     = 404;
+                    $validator->error      = true;
+                    $validator->err_msgs[] = $this->event_not_found;
+                    $validator->err_flds[] = 'event_id';
+                    $validator->status     = 404;
                 }
             } else {
-                $return->error      = true;
-                $return->err_msgs[] = $this->no_event_id;
-                $return->err_flds[] = 'event_id';
-                $return->status     = 404;
+                $validator->error      = true;
+                $validator->err_msgs[] = $this->no_event_id;
+                $validator->err_flds[] = 'event_id';
+                $validator->status     = 404;
             }
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $rubber_nums = isset( $_POST['rubber_num'] ) ? wp_unslash( $_POST['rubber_num'] ) : null;
             $players     = isset( $_POST['players'] ) ? wp_unslash( $_POST['players'] ) : null;
             $wtns        = isset( $_POST['wtn'] ) ? wp_unslash( $_POST['wtn'] ) : null;
@@ -691,32 +699,32 @@ class Ajax_Frontend extends Ajax {
                             $player = $this->registration_service->get_registration( $player_id );
                             $player_found = in_array( $player_id, $match_players, true );
                             if ( $player_found ) {
-                                $return->error      = true;
-                                $return->err_msgs[] = __( 'Player already selected', 'racketmanager' );
-                                $return->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
-                                $return->status     = 400;
+                                $validator->error      = true;
+                                $validator->err_msgs[] = __( 'Player already selected', 'racketmanager' );
+                                $validator->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
+                                $validator->status     = 400;
                             } else {
                                 $team_wtn       += empty( $player->wtn[ $match_type ] ) ? 40.9 : $player->wtn[ $match_type ];
                                 $match_players[] = $player_id;
                             }
                         } catch ( Registration_Not_Found_Exception $e ) {
-                            $return->error      = true;
-                            $return->err_msgs[] = $e->getMessage();
-                            $return->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
-                            $return->status     = 400;
+                            $validator->error      = true;
+                            $validator->err_msgs[] = $e->getMessage();
+                            $validator->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
+                            $validator->status     = 400;
                         }
                     } else {
-                        $return->error      = true;
-                        $return->err_msgs[] = __( 'Player not selected', 'racketmanager' );
-                        $return->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
-                        $return->status     = 400;
+                        $validator->error      = true;
+                        $validator->err_msgs[] = __( 'Player not selected', 'racketmanager' );
+                        $validator->err_flds[] = 'players_' . $rubber->num . '_' . $player_ref;
+                        $validator->status     = 400;
                     }
                 }
                 $rubber->wtn = round( $team_wtn, 1 );
             }
             $rubbers[ $rubber->num ] = $rubber;
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $valid_order = $this->check_player_order( $rubbers );
             $rubbers[ $rubber->num ] = $rubber;
             if ( $valid_order ) {
@@ -756,15 +764,15 @@ class Ajax_Frontend extends Ajax {
             } else {
                 $msg = __( 'Invalid playing order', 'racketmanager' );
             }
-            $return->rubbers = $rubbers;
-            $return->msg     = $msg;
-            $return->valid   = $valid_order;
-            wp_send_json_success( $return );
+            $validator->rubbers = $rubbers;
+            $validator->msg     = $msg;
+            $validator->valid   = $valid_order;
+            wp_send_json_success( $validator );
         } else {
-            if ( empty( $return->msg ) ) {
-                $return->msg = __( 'Unable to validate match', 'racketmanager' );
+            if ( empty( $validator->msg ) ) {
+                $validator->msg = __( 'Unable to validate match', 'racketmanager' );
             }
-            wp_send_json_error( $return, $return->status );
+            wp_send_json_error( $validator, $validator->status );
         }
     }
 
@@ -809,16 +817,17 @@ class Ajax_Frontend extends Ajax {
      */
     #[NoReturn]
     public function show_team_edit_modal(): void {
-        $return  = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
             $event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
             $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $output   = show_team_edit_modal( $team_id, array( 'event_id' => $event_id, 'modal' => $modal ) );
         } else {
-            $output = show_alert( $return->msg, 'danger', 'modal' );
-            if ( ! empty( $return->status ) ) {
-                status_header( $return->status );
+            $output = show_alert( $validator->msg, 'danger', 'modal' );
+            if ( ! empty( $validator->status ) ) {
+                status_header( $validator->status );
             }
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -828,14 +837,16 @@ class Ajax_Frontend extends Ajax {
     /**
      * Get team/match dropdown for event
      */
+    #[NoReturn]
     public function get_event_team_match_dropdown(): void {
-        $return  = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
             $event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
             $output   = event_team_match_dropdown( $event_id, array( 'team_id' => $team_id ) );
         } else {
-            $output = show_alert( $return->msg, 'danger' );
+            $output = show_alert( $validator->msg, 'danger' );
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         wp_die();

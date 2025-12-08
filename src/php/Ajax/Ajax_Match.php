@@ -141,17 +141,18 @@ class Ajax_Match extends Ajax {
      */
     #[NoReturn]
     public function show_match_option(): void {
-        $output  = null;
-        $return  = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $output    = null;
+        $validator = new Validator_Match();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
             $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $option   = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
             $output   = match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
         }
-        if ( ! empty( $return->error ) ) {
-            $output = show_alert( $return->msg, 'danger', 'modal' );
-            status_header( $return->status );
+        if ( ! empty( $validator->error ) ) {
+            $output = show_alert( $validator->msg, 'danger', 'modal' );
+            status_header( $validator->status );
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         wp_die();
@@ -255,39 +256,40 @@ class Ajax_Match extends Ajax {
         $msg       = null;
         $match_id  = null;
         $modal     = null;
-        $return    = $this->check_security_token( 'racketmanager_nonce', 'match-option');
-        if ( empty( $return->error ) ) {
+        $validator = new Validator_Match();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'match-option');
+        if ( empty( $validator->error ) ) {
             $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
             if ( ! $modal ) {
-                $return->error  = true;
-                $return->msg    = $this->no_modal;
-                $return->status = 404;
+                $validator->error  = true;
+                $validator->msg    = $this->no_modal;
+                $validator->status = 404;
             }
             if ( ! $match_id ) {
-                $return->error  = true;
-                $return->msg    = $this->no_match_id;
-                $return->status = 404;
+                $validator->error  = true;
+                $validator->msg    = $this->no_match_id;
+                $validator->status = 404;
             }
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $match = get_match( $match_id );
             if ( $match ) {
                 $match->reset_result();
-                $msg   = __( 'Match result reset', 'racketmanager' );
+                $msg = __( 'Match result reset', 'racketmanager' );
             } else {
-                $return->error  = true;
-                $return->msg    = $this->match_not_found;
-                $return->status = 404;
+                $validator->error  = true;
+                $validator->msg    = $this->match_not_found;
+                $validator->status = 404;
             }
         }
-        if ( empty( $return->error ) ) {
-            $return->msg      = $msg;
-            $return->modal    = $modal;
-            $return->match_id = $match_id;
-            wp_send_json_success( $return );
+        if ( empty( $validator->error ) ) {
+            $validator->msg      = $msg;
+            $validator->modal    = $modal;
+            $validator->match_id = $match_id;
+            wp_send_json_success( $validator );
         } else {
-            wp_send_json_error( $return, $return->status );
+            wp_send_json_error( $validator, $validator->status );
         }
     }
     /**

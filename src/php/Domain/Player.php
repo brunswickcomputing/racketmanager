@@ -782,61 +782,6 @@ final class Player {
         }
     }
     /**
-     * Get clubs for player
-     *
-     * @param array|string $args search parameters.
-     * @return array
-     */
-    public function get_clubs( array|string $args = array() ): array {
-        global $wpdb;
-        $defaults     = array(
-            'type'  => 'active',
-        );
-        $args         = array_merge( $defaults, (array) $args );
-        $type         = $args['type'];
-        $search_args  = array();
-        $search_terms = array();
-        if ( $type ) {
-            switch ( $type ) {
-                case 'active':
-                    $search_terms[] = '`removed_date` is null';
-                    break;
-                case 'inactive':
-                    $search_terms[] = '`removed_date` is not null';
-                    break;
-                case 'all':
-                default:
-                    break;
-            }
-        }
-        $search_args[] = $this->id;
-        $search        = Util::search_string( $search_terms );
-        $sql           = "SELECT `club_id`, `created_date`, `removed_date`, cp.`id` as `club_player_id` FROM $wpdb->racketmanager_club_players cp, $wpdb->racketmanager_clubs c WHERE cp.`club_id` = c.`id` AND `player_id` = %d";
-        if ( '' !== $search ) {
-            $sql .= " $search";
-        }
-        $sql = $wpdb->prepare($sql, $search_args );
-
-        $player_clubs = wp_cache_get( md5( $sql ), 'player_clubs' );
-        if ( ! $player_clubs ) {
-            $player_clubs = $wpdb->get_results( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
-            wp_cache_set( md5( $sql ), $player_clubs, 'player_clubs' );
-        }
-        $clubs        = array();
-        foreach ( $player_clubs as $player_club ) {
-            $club = get_club( $player_club->club_id );
-            if ( $club ) {
-                $club->created_date   = $player_club->created_date;
-                $club->removed_date   = $player_club->removed_date;
-                $club->club_player_id = $player_club->club_player_id;
-                $clubs[]              = $club;
-            }
-        }
-        return $clubs;
-    }
-    /**
      * Get matches for player
      *
      * @param object|null $grouping source of matches.

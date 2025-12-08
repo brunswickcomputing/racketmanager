@@ -540,6 +540,7 @@ class Ajax_Frontend extends Ajax {
     /**
      * Get data for a tab
      */
+    #[NoReturn]
     public function tab_data(): void {
         $target = null;
         $output = null;
@@ -621,6 +622,7 @@ class Ajax_Frontend extends Ajax {
     /**
      * Show team order players modal
      */
+    #[NoReturn]
     public function show_team_order_players(): void {
         $return = $this->check_security_token();
         if ( empty( $return->error ) ) {

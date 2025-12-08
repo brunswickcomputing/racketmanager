@@ -1126,49 +1126,6 @@ final class Player {
         return $tournaments;
     }
     /**
-     * Get titles for player function
-     *
-     * @param array|string $args search parameters.
-     * @return array
-     */
-    public function get_titles( array|string $args = array() ): array {
-        global $wpdb;
-        $defaults     = array(
-            'season' => false,
-        );
-        $args         = array_merge( $defaults, (array) $args );
-        $season       = $args['season'];
-        $search_terms = array();
-        if ( $season ) {
-            $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-        }
-        $sql     = "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t WHERE tp.`player_id` = $this->ID AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season`";
-        $sql    .= Util::search_string( $search_terms );
-        $sql    .= " ORDER BY m.`season` DESC, t.`name` ASC";
-        $matches = wp_cache_get( md5( $sql ), 'player_finals' );
-        if ( ! $matches ) {
-            $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
-            wp_cache_set( md5( $sql ), $matches, 'player_finals' );
-        }
-        $seasons = array();
-        foreach ( $matches as $match ) {
-            $season     = $match->season;
-            $tournament = $match->tournament;
-            if ( false === array_key_exists( $season, $seasons ) ) {
-                $seasons[ $season ] = array();
-            }
-            if ( false === array_key_exists( $tournament, $seasons[ $season ] ) ) {
-                $seasons[ $season ][ $tournament ] = array();
-            }
-            $seasons[ $season ][ $tournament ][] = $match;
-        }
-        $this->titles = $seasons;
-        return $this->titles;
-    }
-    /**
      * Get player career statistics function
      *
      * @return array of statistics

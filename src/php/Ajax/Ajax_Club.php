@@ -165,15 +165,16 @@ class Ajax_Club extends Ajax {
      */
     #[NoReturn]
     public function show_club_role_modal(): void {
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator_Club();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $club_role_id = isset( $_POST['clubRoleId'] ) ? intval( $_POST['clubRoleId'] ) : null;
             $modal      = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $output     = show_club_role_modal( $club_role_id, array( 'modal' => $modal ) );
         } else {
-            $output = show_alert( $return->msg, 'danger', 'modal' );
-            if ( ! empty( $return->status ) ) {
-                status_header( $return->status );
+            $output = show_alert( $validator->msg, 'danger', 'modal' );
+            if ( ! empty( $validator->status ) ) {
+                status_header( $validator->status );
             }
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

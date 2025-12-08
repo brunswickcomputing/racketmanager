@@ -6,7 +6,7 @@
  * @package Racketmanager/Templates
  *
  * The following variables are usable:
- *  $club: contains data of current club
+ *  $club: contains data of the current club
  *  $player: contains the player details
  *
  * You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>

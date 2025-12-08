@@ -21,9 +21,9 @@ use wpdb;
  * Class to implement the Player repository
  */
 class Player_Repository {
-    const META_KEY_GENDER = 'gender';
-    const META_KEY_BTM = 'btm';
-    const META_KEY_YOB = 'year_of_birth';
+    const string META_KEY_GENDER = 'gender';
+    const string META_KEY_BTM = 'btm';
+    const string META_KEY_YOB = 'year_of_birth';
     private wpdb $wpdb;
 
     /**

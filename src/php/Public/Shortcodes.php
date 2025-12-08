@@ -307,8 +307,8 @@ class Shortcodes {
             return $this->player_not_found;
         }
         $player_clubs = $this->registration_service->get_clubs_for_player( $player->get_id() );
+        $titles       = $this->player_service->get_titles_for_player( $player->get_id() );
 
-        $player->titles       = $player->get_titles();
         $player->stats        = $player->get_career_stats();
         $player->competitions = array( 'cup', 'league', 'tournament' );
         foreach ( $player->competitions as $competition_type ) {

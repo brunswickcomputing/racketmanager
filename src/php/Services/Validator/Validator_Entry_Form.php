@@ -142,19 +142,24 @@ final class Validator_Entry_Form extends Validator {
      * @param string $schedule_time current scheduled match time.
      * @param string $field_ref field reference.
      * @return object $validation updated validation object.
-     * @throws DateMalformedStringException
      */
     public function match_overlap( string $match_time, string $schedule_time, string $field_ref ): object {
         $date_format = '!H:i:s';
         $start_time = DateTime::createFromFormat( $date_format, $match_time );
-        $start_time->modify( '-2 hours' );
-        $end_time = DateTime::createFromFormat( $date_format, $match_time );
-        $end_time->modify( '+2 hours' );
-        $current_match_time = DateTime::createFromFormat( $date_format, $schedule_time );
-        if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
+        try {
+            $start_time->modify( '-2 hours' );
+            $end_time = DateTime::createFromFormat( $date_format, $match_time );
+            $end_time->modify( '+2 hours' );
+            $current_match_time = DateTime::createFromFormat( $date_format, $schedule_time );
+            if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
+                $this->error      = true;
+                $this->err_flds[] = 'matchtime-' . $field_ref;
+                $this->err_msgs[] = __( 'Match overlap', 'racketmanager' );
+            }
+        } catch ( DateMalformedStringException ) {
             $this->error      = true;
             $this->err_flds[] = 'matchtime-' . $field_ref;
-            $this->err_msgs[] = __( 'Match overlap', 'racketmanager' );
+            $this->err_msgs[] = __( 'Invalid time', 'racketmanager' );
         }
         return $this;
     }

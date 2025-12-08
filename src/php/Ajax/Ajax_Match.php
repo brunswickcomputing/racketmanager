@@ -137,7 +137,7 @@ class Ajax_Match extends Ajax {
         wp_send_json_error( $return, $return->status );
     }
     /**
-     * Build screen to show selected match option
+     * Build screen to show the selected match option
      */
     #[NoReturn]
     public function show_match_option(): void {
@@ -157,7 +157,7 @@ class Ajax_Match extends Ajax {
         wp_die();
     }
     /**
-     * Set match date function
+     * Set the match date function
      *
      * @return void
      */

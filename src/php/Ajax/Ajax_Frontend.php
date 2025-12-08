@@ -772,10 +772,11 @@ class Ajax_Frontend extends Ajax {
             } else {
                 $msg = __( 'Invalid playing order', 'racketmanager' );
             }
-            $validator->rubbers = $rubbers;
-            $validator->msg     = $msg;
-            $validator->valid   = $valid_order;
-            wp_send_json_success( $validator );
+            $return          = new stdClass();
+            $return->rubbers = $rubbers;
+            $return->msg     = $msg;
+            $return->valid   = $valid_order;
+            wp_send_json_success( $return );
         } else {
             if ( empty( $validator->msg ) ) {
                 $validator->msg = __( 'Unable to validate match', 'racketmanager' );

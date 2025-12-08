@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
@@ -455,16 +456,15 @@ class Shortcodes {
             return $this->return_error( __( 'You must be logged in to view memberships', 'racketmanager' ) );
         }
         $template = $args['template'];
-        $player   = get_player( get_current_user_id() );
-        if ( $player ) {
-            $player->clubs         = $player->get_clubs( array( 'type' => 'active' ) );
-            $player->clubs_archive = $player->get_clubs( array( 'type' => 'inactive' ) );
-        } else {
-            return $this->return_error( $this->player_not_found );
+        try {
+            $player                         = $this->player_service->get_player( get_current_user_id() );
+            $template_args['clubs']         = $this->registration_service->get_clubs_for_player( $player->get_id() );
+            $template_args['clubs_archive'] = $this->registration_service->get_clubs_for_player( $player->get_id(), 'removed' );
+            $filename                       = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
+            return $this->load_template( $filename, $template_args, 'account' );
+        } catch ( Player_Not_Found_Exception $e) {
+            return $this->return_error( $e->getMessage() );
         }
-        $filename = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
-
-        return $this->load_template( $filename, array( 'player' => $player ), 'account' );
     }
     /**
      * Function to search players

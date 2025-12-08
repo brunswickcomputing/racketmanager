@@ -17,15 +17,15 @@ global $racketmanager;
         <div class="module__content">
             <div class="module-container">
                 <?php
-                if ( empty( $player->clubs ) ) {
+                if ( empty( $clubs ) ) {
                     esc_html_e( 'You are not currently a member of any club', 'racketmanager' );
                 } else {
                     ?>
                     <ul class="list list--grid list--bordered">
                         <?php
                         $image = 'assets/icons/lta-icons-extra.svg#icon-team';
-                        foreach ( $player->clubs as $player_club ) {
-                            $fav_link = '/clubs/' . seo_url( $player_club->shortcode ) . '/';
+                        foreach ( $clubs as $player_club ) {
+                            $fav_link = '/clubs/' . seo_url( $player_club->club_name ) . '/';
                             ?>
                             <li class="list__item col-12 col-sm-6">
                                 <div class="media">
@@ -38,17 +38,17 @@ global $racketmanager;
                                         <div class="media__content">
                                             <h4 class="media__title">
                                                 <a class="nav--link media__link" href="<?php echo esc_attr( $fav_link ); ?>">
-                                                    <span class="nav-link__value"><?php echo esc_html( $player_club->shortcode ); ?></span>
+                                                    <span class="nav-link__value"><?php echo esc_html( $player_club->club_name ); ?></span>
                                                 </a>
                                             </h4>
                                             <?php
-                                            if ( ! empty( $player_club->created_date ) ) {
+                                            if ( ! empty( $player_club->approval_date ) ) {
                                                 ?>
                                                 <div class="media__content-subinfo">
                                                     <small class="media__subheading">
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->created_date ) ); ?>
+                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->approval_date ) ); ?>
                                                             </span>
                                                         </span>
                                                     </small>
@@ -71,7 +71,7 @@ global $racketmanager;
         </div>
     </div>
     <?php
-    if ( ! empty( $player->clubs_archive ) ) {
+    if ( ! empty( $clubs_archive ) ) {
         ?>
         <div class="module module--card">
             <div class="module__banner">
@@ -82,8 +82,8 @@ global $racketmanager;
                     <ul class="list list--grid list--bordered">
                         <?php
                         $image = 'assets/icons/lta-icons-extra.svg#icon-team';
-                        foreach ( $player->clubs_archive as $player_club ) {
-                            $fav_link = '/clubs/' . seo_url( $player_club->shortcode ) . '/';
+                        foreach ( $clubs_archive as $player_club ) {
+                            $fav_link = '/clubs/' . seo_url( $player_club->club_name ) . '/';
                             ?>
                             <li class="list__item col-12 col-sm-6">
                                 <div class="media">
@@ -96,17 +96,17 @@ global $racketmanager;
                                         <div class="media__content">
                                             <h4 class="media__title">
                                                 <a class="nav--link media__link" href="<?php echo esc_attr( $fav_link ); ?>">
-                                                    <span class="nav-link__value"><?php echo esc_html( $player_club->shortcode ); ?></span>
+                                                    <span class="nav-link__value"><?php echo esc_html( $player_club->club_name ); ?></span>
                                                 </a>
                                             </h4>
                                             <?php
-                                            if ( ! empty( $player_club->removed_date ) ) {
+                                            if ( ! empty( $player_club->removal_date ) ) {
                                                 ?>
                                                 <div class="media__content-subinfo">
                                                     <small class="media__subheading">
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html__( 'Removed', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->removed_date ) ); ?>
+                                                                <?php echo esc_html__( 'Removed', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->removal_date ) ); ?>
                                                             </span>
                                                         </span>
                                                     </small>
@@ -115,13 +115,13 @@ global $racketmanager;
                                             }
                                             ?>
                                             <?php
-                                            if ( ! empty( $player_club->created_date ) ) {
+                                            if ( ! empty( $player_club->approval_date ) ) {
                                                 ?>
                                                 <div class="media__content-subinfo">
                                                     <small class="media__subheading">
                                                         <span class="nav--link">
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->created_date ) ); ?>
+                                                                <?php echo esc_html__( 'Added', 'racketmanager' ) . ': ' . esc_html( mysql2date( $racketmanager->date_format, $player_club->approval_date ) ); ?>
                                                             </span>
                                                         </span>
                                                     </small>

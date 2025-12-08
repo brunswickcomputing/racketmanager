@@ -189,6 +189,20 @@ class Registration_Service {
     }
 
     /**
+     * Get clubs for a player
+     *
+     * @param int $player_id
+     * @param string|null $status
+     *
+     * @return array
+     */
+    public function get_clubs_for_player( int $player_id, ?string $status = 'active' ): array {
+        $registrations = $this->club_player_repository->find_by_player( $player_id, $status );
+        return array_map( function ( $registration ) {
+            return $this->create_club_player_dto( $registration->id );
+        }, $registrations );
+    }
+    /**
      * Create Club Player DTO from registration ID
      *
      * @param int $registration_id

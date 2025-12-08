@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_message;
 use function Racketmanager\get_user;
@@ -45,8 +46,9 @@ class Ajax_Account extends Ajax {
      * @return void
      */
     public function login(): void {
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $info                  = array();
             $info['user_login']    = isset( $_POST['log'] ) ? sanitize_text_field( wp_unslash( $_POST['log'] ) ) : null;
             $info['user_password'] = isset( $_POST['pwd'] ) ? sanitize_text_field( wp_unslash( $_POST['pwd'] ) ) : null;
@@ -54,30 +56,31 @@ class Ajax_Account extends Ajax {
             $user                  = wp_signon( $info, true );
             if ( is_wp_error( $user ) ) {
                 foreach ( $user->errors as $field => $error ) {
-                    $return->err_flds[] = Util::get_error_field( $field );
-                    $return->err_msgs[] = Util::get_error_message( $field );
+                    $validator->err_flds[] = Util::get_error_field( $field );
+                    $validator->err_msgs[] = Util::get_error_message( $field );
                 }
-                $return->error  = true;
-                $return->status = 401;
+                $validator->error  = true;
+                $validator->status = 401;
             }
         } else {
-            $return->status = 403;
+            $validator->status = 403;
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $redirect = isset( $_POST['redirect_to'] ) ? sanitize_url( $_POST['redirect_to'] ) : home_url();
             $redirect = wp_validate_redirect( $redirect, home_url() );
             wp_send_json_success( $redirect );
         } else {
-            $return->msg = __( 'Login failed', 'racketmanager' );
-            wp_send_json_error( $return, $return->status );
+            $validator->msg = __( 'Login failed', 'racketmanager' );
+            wp_send_json_error( $validator, $validator->status );
         }
     }
     /**
      * Add item as favourite
      */
     public function add_favourite(): void {
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $type            = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '';
             $id              = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : '';
             $userid          = get_current_user_id();
@@ -86,47 +89,49 @@ class Ajax_Account extends Ajax {
             $favourite_found = ( array_search( strval( $id ), $meta, true ) );
             if ( ! is_numeric( $favourite_found ) ) {
                 add_user_meta( $userid, $meta_key, $id );
-                $return->msg    = __( 'Favourite added', 'racketmanager' );
-                $return->action = 'add';
+                $validator->msg    = __( 'Favourite added', 'racketmanager' );
+                $validator->action = 'add';
             } else {
                 delete_user_meta( $userid, $meta_key, $id );
-                $return->msg    = __( 'Favourite removed', 'racketmanager' );
-                $return->action = 'del';
+                $validator->msg    = __( 'Favourite removed', 'racketmanager' );
+                $validator->action = 'del';
             }
         }
-        if ( empty( $return->error ) ) {
-            wp_send_json_success( $return );
+        if ( empty( $validator->error ) ) {
+            wp_send_json_success( $validator );
         } else {
-            wp_send_json_error( $return->msg, 500 );
+            wp_send_json_error( $validator->msg, 500 );
         }
     }
     /**
      * Build screen to show a message
      */
     public function get_user_message(): void {
-        $return      = $this->check_security_token();
-        if ( empty( $return->error ) ) {
-            $message_id     = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
-            $message_dtl    = get_message( $message_id );
-            $return->status = $message_dtl?->status;
-            $output         = show_message(  $message_id );
-            $return->output = $output;
-            wp_send_json_success( $return );
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $message_id        = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
+            $message_dtl       = get_message( $message_id );
+            $validator->status = $message_dtl?->status;
+            $output            = show_message(  $message_id );
+            $validator->output = $output;
+            wp_send_json_success( $validator );
         } else {
-            wp_send_json_error( $return->msg, $return->status );
+            wp_send_json_error( $validator->msg, $validator->status );
         }
     }
     /**
      * Delete a message
      */
     public function delete_message(): void {
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $message_id = isset( $_POST['message_id'] ) ? intval( $_POST['message_id'] ) : 0;
             if ( ! $message_id ) {
-                $return->error = true;
-                $return->msg    = __( 'No message id found in request', 'racketmanager' );
-                $return->status = 404;
+                $validator->error  = true;
+                $validator->msg    = __( 'No message id found in request', 'racketmanager' );
+                $validator->status = 404;
             } else {
                 $message_dtl = get_message( $message_id );
                 if ( $message_dtl ) {
@@ -138,16 +143,16 @@ class Ajax_Account extends Ajax {
                         $alert_class = 'danger';
                         $alert_text  = __( 'Unable to delete message', 'racketmanager' );
                     }
-                    $return->output  = show_alert( $alert_text, $alert_class );
-                    $return->success = $success;
-                    wp_send_json_success( $return );
+                    $validator->output  = show_alert( $alert_text, $alert_class );
+                    $validator->success = $success;
+                    wp_send_json_success( $validator );
                 } else {
-                    $return->error  = true;
-                    $return->msg    = __( 'Message not found', 'racketmanager' );
-                    $return->status = 404;
+                    $validator->error  = true;
+                    $validator->msg    = __( 'Message not found', 'racketmanager' );
+                    $validator->status = 404;
                 }
             }
-            wp_send_json_error( $return->msg, $return->status );
+            wp_send_json_error( $validator->msg, $validator->status );
         }
     }
     /**
@@ -157,33 +162,34 @@ class Ajax_Account extends Ajax {
         $user         = null;
         $userid       = null;
         $message_type = null;
-        $return = $this->check_security_token( 'racketmanager_nonce', 'racketmanager_delete-messages');
-        if ( empty( $return->error ) ) {
+        $validator    = new Validator();
+        $validator    = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_delete-messages');
+        if ( empty( $validator->error ) ) {
             $message_type = isset( $_POST['message_type'] ) ? sanitize_text_field( wp_unslash( $_POST['message_type'] ) ) : null;
             if ( ! isset( $message_type ) ) {
-                $return->error  = true;
-                $return->msg    = __( 'You must select the type of messages to delete', 'racketmanager' );
-                $return->status = 401;
+                $validator->error  = true;
+                $validator->msg    = __( 'You must select the type of messages to delete', 'racketmanager' );
+                $validator->status = 401;
             }
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $userid = get_current_user_id();
             if ( ! $userid ) {
-                $return->error  = true;
-                $return->msg    = __( 'Userid not found', 'racketmanager' );
-                $return->status = 404;
+                $validator->error  = true;
+                $validator->msg    = __( 'Userid not found', 'racketmanager' );
+                $validator->status = 404;
             }
         }
-        if ( empty( $return->error ) ) {
+        if ( empty( $validator->error ) ) {
             $user = get_user( $userid );
             if ( ! $user ) {
-                $return->error  = true;
-                $return->msg    = __( 'User not found', 'racketmanager' );
-                $return->status = 404;
+                $validator->error  = true;
+                $validator->msg    = __( 'User not found', 'racketmanager' );
+                $validator->status = 404;
             }
         }
-        if ( ! empty( $return->error ) ) {
-            wp_send_json_error( $return, $return->status );
+        if ( ! empty( $validator->error ) ) {
+            wp_send_json_error( $validator, $validator->status );
         }
         $message_type_name = Util::get_message_type( $message_type );
         $success           = $user->delete_messages( $message_type );
@@ -197,10 +203,10 @@ class Ajax_Account extends Ajax {
             $alert_class = 'danger';
             $alert_text  = __( 'Unable to delete messages', 'racketmanager' );
         }
-        $return->output  = show_alert( $alert_text, $alert_class );
-        $return->success = $success;
-        $return->type    = $message_type_name;
-        wp_send_json_success( $return );
+        $validator->output  = show_alert( $alert_text, $alert_class );
+        $validator->success = $success;
+        $validator->type    = $message_type_name;
+        wp_send_json_success( $validator );
     }
     /**
      * Reset password function
@@ -251,26 +257,27 @@ class Ajax_Account extends Ajax {
      * @return void
      */
     public function update_account(): void {
-        $return    = $this->check_security_token( 'racketmanager_nonce', 'member_account' );
-        if ( empty( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'member_account' );
+        if ( empty( $validator->error ) ) {
             $current_user = wp_get_current_user();
             $user         = get_user( $current_user->ID );
             $user_update  = $this->get_updated_user_details( $user );
             $user         = $user->update( $user_update );
-            $return->msg  = $user->message;
+            $validator->msg  = $user->message;
             if ( empty( $user->err_flds ) ) {
-                $return->class = $user->update_result;
+                $validator->class = $user->update_result;
             } else {
-                $return->err_flds = $user->err_flds;
-                $return->err_msgs = $user->err_msgs;
-                $return->error = true;
-                $return->status = 401;
+                $validator->err_flds = $user->err_flds;
+                $validator->err_msgs = $user->err_msgs;
+                $validator->error = true;
+                $validator->status = 401;
             }
         }
-        if ( empty( $return->error ) ) {
-            wp_send_json_success( $return );
+        if ( empty( $validator->error ) ) {
+            wp_send_json_success( $validator );
         } else {
-            wp_send_json_error( $return, $return->status );
+            wp_send_json_error( $validator, $validator->status );
         }
     }
 

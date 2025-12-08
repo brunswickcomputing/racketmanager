@@ -356,6 +356,7 @@ class Ajax_Match extends Ajax {
      * Update match header
      */
     public function update_match_header(): void {
+        $match_id  = null;
         $validator = new Validator_Match();
         $validator = $validator->check_security_token();
         if ( empty( $validator->error ) ) {

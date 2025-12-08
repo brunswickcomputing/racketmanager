@@ -302,8 +302,8 @@ class Ajax_Match extends Ajax {
             $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : null;
             $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $validator = $validator->modal( $modal, $error_field );
-            $validator = $validator->rubber( $rubber_id, $error_field );
+            $validator = $validator->modal( $modal );
+            $validator = $validator->rubber( $rubber_id );
             if ( empty( $validator->error ) ) {
                 $output = rubber_status_modal( $rubber_id, array( 'status' => $status, 'modal' => $modal ) );
             }

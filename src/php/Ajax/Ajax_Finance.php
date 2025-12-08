@@ -39,15 +39,16 @@ class Ajax_Finance extends Ajax {
      */
     #[NoReturn]
     public function show_purchase_order_modal(): void {
-        $return = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator_Finance();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $invoice_id = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;
             $modal      = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $output     = show_purchase_order_modal( $invoice_id, array( 'modal' => $modal ) );
         } else {
-            $output = show_alert( $return->msg, 'danger', 'modal' );
-            if ( ! empty( $return->status ) ) {
-                status_header( $return->status );
+            $output = show_alert( $validator->msg, 'danger', 'modal' );
+            if ( ! empty( $validator->status ) ) {
+                status_header( $validator->status );
             }
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

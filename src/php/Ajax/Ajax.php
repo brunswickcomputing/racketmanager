@@ -98,39 +98,75 @@ class Ajax {
     private function get_players_lookup( string $type, string $name, ?string $gender, ?int $club_id ): array {
         $results = array();
         if ( 'btm' === $type ) {
-            $player = $this->player_service->find_player_by_btm( $name );
-            if ( $player ) {
-                $result             = new stdClass();
-                $result->fullname   = $player->display_name;
-                $result->user_email = $player->user_email;
-                $result->club       = null;
-                $result->club_id    = null;
-                $result->roster_id  = null;
-                $result->player_id  = $player->ID;
-                $results[]          = $result;
-            }
+            $results = $this->get_player_by_reference( $name );
         } elseif ( 'name' === $type ) {
-            $player_args         = array();
-            $player_args['name'] = $name;
-            $players             = $this->player_service->get_all_players( $player_args );
-            foreach ( $players as $player ) {
-                $player_clubs = $player->get_clubs();
-                foreach ( $player_clubs as $player_club ) {
-                    if ( empty( $club_id ) || $club_id === $player_club->id ) {
-                        $result             = new stdClass();
-                        $result->fullname   = $player->display_name;
-                        $result->user_email = $player->user_email;
-                        $result->club_id    = $player_club->id;
-                        $result->roster_id  = $player_club->club_player_id;
-                        $result->club       = $player_club->shortcode;
-                        $result->player_id  = $player->ID;
-                        $results[]          = $result;
-                    }
-                }
-            }
+            $results = $this->get_players_by_name( $name, $gender, $club_id );
         }
 
         return $this->set_player_results( $results, $type, $gender );
+    }
+
+    /**
+     * Get player by reference
+     *
+     * @param string $reference
+     *
+     * @return array
+     */
+    private function get_player_by_reference( string $reference ): array {
+        $results = array();
+        $player = $this->player_service->find_player_by_btm( $reference );
+        if ( $player ) {
+            $result             = new stdClass();
+            $result->fullname   = $player->display_name;
+            $result->user_email = $player->user_email;
+            $result->club       = null;
+            $result->club_id    = null;
+            $result->roster_id  = null;
+            $result->player_id  = $player->ID;
+            $results[]          = $result;
+        }
+        return $results;
+    }
+
+    /**
+     * Get players by nam
+     *
+     * @param string $name
+     * @param string|null $gender
+     * @param int|null $club_id
+     *
+     * @return array
+     */
+    private function get_players_by_name( string $name, ?string $gender, ?int $club_id ): array {
+        $results = array();
+        $player_args         = array();
+        $player_args['name'] = $name;
+        $players             = $this->player_service->get_all_players( $player_args );
+        foreach ( $players as $player ) {
+            if ( ! empty( $gender ) && $gender !== $player->get_gender() ) {
+                continue;
+            }
+            $player_clubs = $this->registration_service->get_clubs_for_player( $player->get_id() );
+            foreach ( $player_clubs as $player_club ) {
+                if ( empty( $club_id ) || $club_id === $player_club->club_id ) {
+                    $result             = new stdClass();
+                    $result->fullname   = $player->get_display_name();
+                    $result->user_email = $player->get_email();
+                    $result->player_id  = $player->get_id();
+                    $result->btm        = $player->get_btm();
+                    $result->contactno  = $player->get_contactno();
+                    $result->gender     = $player->get_gender();
+                    $result->roster_id  = $player_club->registration_id;
+                    if ( empty( $club_id ) ) {
+                        $result->club_id = $player_club->club_id;
+                        $result->club    = $player_club->club_name;
+                    }
+                    $results[] = $result;
+                }
+            }
+        }
+        return $results;
     }
 
     /**

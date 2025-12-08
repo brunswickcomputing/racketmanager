@@ -560,4 +560,19 @@ class Player_Service {
     public function remove_player_error( $id ): void {
         $this->player_error_repository->delete( $id );
     }
+
+    /**
+     * Get titles for player
+     *
+     * @param int|null $player_id
+     *
+     * @return array
+     */
+    public function get_titles_for_player( ?int $player_id ): array {
+        $player = $this->player_repository->find( $player_id );
+        if ( ! $player ) {
+            throw new Player_Not_Found_Exception( sprintf( __( 'Player Id %d not found', 'racketmanager' ), $player_id ) );
+        }
+        return $this->player_repository->get_titles( $player_id );
+    }
 }

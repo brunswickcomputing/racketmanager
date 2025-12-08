@@ -115,7 +115,7 @@ final class Validator_Entry_Form extends Validator {
         if ( $court_needs_by_day > $num_courts_available ) {
             $this->error      = true;
             $this->err_flds[] = 'numCourtsAvailable';
-            /* translators: %1$s: match day,  %2$s: match time, %3$s: courts needed */
+            /* translators: %1$s: match day, %2$s: match time, %3$s: courts needed */
             $this->err_msgs[] = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
         }
         return $this;

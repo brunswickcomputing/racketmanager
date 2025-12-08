@@ -9,7 +9,6 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Club_Player_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;

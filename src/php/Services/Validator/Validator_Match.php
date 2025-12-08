@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
@@ -667,35 +668,33 @@ final class Validator_Match extends Validator {
         if ( $update_allowed ) {
             if ( 'player' === $user_type ) {
                 $player_found = false;
-                $userid = wp_get_current_user()->ID;
-                if ( $userid ) {
-                    $player = get_player( $userid );
-                    if ( $player ) {
-                        $player_clubs = $player->get_clubs();
-                        if ( $player_clubs ) {
-                            foreach ( $player_clubs as $player_club ) {
-                                $club_player_id = $player_club->club_player_id;
-                                foreach ( $match_players as $teams ) {
-                                    foreach ( $teams as $players ) {
-                                        foreach ( $players as $player ) {
-                                            if ( $player == $club_player_id ) {
-                                                $player_found = true;
-                                            }
-                                        }
+                try {
+                    $registrations = $this->registration_service->get_clubs_for_player( get_current_user_id() );
+                    foreach ( $registrations as $registration ) {
+                        $registration_id = $registration->registration_id;
+                        foreach ( $match_players as $teams ) {
+                            foreach ( $teams as $players ) {
+                                foreach ( $players as $player ) {
+                                    if ( intval( $player ) === $registration_id ) {
+                                        $player_found = true;
+                                        break 4;
                                     }
                                 }
                             }
                         }
                     }
-                }
-                if ( ! $player_found ) {
-                    $this->error      = true;
-                    $this->err_msgs[] = __( 'Player cannot submit results', 'racketmanager' );
+                    if ( ! $player_found ) {
+                        $this->error = true;
+                        $this->msg   = __( 'Player cannot submit results', 'racketmanager' );
+                    }
+                } catch ( Player_Not_Found_Exception ) {
+                    $this->error = true;
+                    $this->msg   = __( 'Player not found', 'racketmanager' );
                 }
             }
         } else {
-            $this->error      = true;
-            $this->err_msgs[] = __( 'Result entry not permitted', 'racketmanager' );
+            $this->error = true;
+            $this->msg   = __( 'Result entry not permitted', 'racketmanager' );
         }
         return $this;
     }

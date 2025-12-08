@@ -65,7 +65,6 @@ final class Admin_Player extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             $this->show_message();
-
             return;
         }
         $player_id     = null;
@@ -129,8 +128,13 @@ final class Admin_Player extends Admin_Display {
                 $page_referrer = 'admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=' . $club_id;
             }
         }
-        $player = $this->player_service->get_player( $player_id );
-        require_once RACKETMANAGER_PATH . 'templates/admin/players/show-player.php';
+        try {
+            $player = $this->player_service->get_player( $player_id );
+            require_once RACKETMANAGER_PATH . 'templates/admin/players/show-player.php';
+        } catch ( Player_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+        }
     }
 
     /**

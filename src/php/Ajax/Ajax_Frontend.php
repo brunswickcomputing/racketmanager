@@ -122,8 +122,13 @@ class Ajax_Frontend extends Ajax {
         }
         wp_send_json_error( $return, $return->status );
     }
+
     /**
+     * Get team input details
+     *
      * @param string $field_ref
+     *
+     * @return object
      */
     private function get_team_input( string $field_ref ): object {
         $team_details               = new stdClass();

@@ -177,26 +177,26 @@ class Ajax_Tournament extends Ajax {
      * Validate partner selection
      */
     public function validate_partner(): void {
-        $return      = $this->check_security_token();
-        if ( empty( $return->error ) ) {
-            $validator   = new Validator_Tournament();
-            $player_id   = $_POST['playerId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $partner_id  = $_POST['partnerId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $season      = $_POST['season'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $event_id    = $_POST['eventId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $validator = new Validator_Tournament();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $validator     = new Validator_Tournament();
+            $player_id     = $_POST['playerId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $partner_id    = $_POST['partnerId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $season        = $_POST['season'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            $event_id      = $_POST['eventId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $tournament_id = $_POST['tournamentId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $tournament  = get_tournament( intval( $tournament_id ) );
-            $event       = get_event( intval( $event_id ) );
-            $validator   = $validator->partner( intval( $partner_id ), $event->id, $event->name, $event, $season, intval( $player_id ), $tournament->date );
+            $tournament    = get_tournament( intval( $tournament_id ) );
+            $event         = get_event( intval( $event_id ) );
+            $validator     = $validator->partner( intval( $partner_id ), $event->id, $event->name, $event, $season, intval( $player_id ), $tournament->date );
         }
         if ( empty( $validator->error ) ) {
             wp_send_json_success();
         } else {
-            $return = $validator;
-            if ( empty( $return->status ) ) {
-                $return->status = 400;
+            if ( empty( $validator->status ) ) {
+                $validator->status = 400;
             }
-            wp_send_json_error( $return, $return->status );
+            wp_send_json_error( $validator, $validator->status );
         }
     }
 
@@ -204,8 +204,9 @@ class Ajax_Tournament extends Ajax {
      * Tournament Withdrawal modal
      */
     public function tournament_withdrawal(): void {
-        $return    = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator_Tournament();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $tournament_id = $_POST['tournament'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $player_id     = $_POST['player'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $entry_key     = $tournament_id . '_' . $player_id;
@@ -218,7 +219,7 @@ class Ajax_Tournament extends Ajax {
             $output = tournament_withdrawal_modal( $tournament_id, $player_id );
             wp_send_json_success( $output );
         } else {
-            wp_send_json_error( $return->msg, $return->status );
+            wp_send_json_error( $validator->msg, $validator->status );
         }
     }
 
@@ -226,8 +227,9 @@ class Ajax_Tournament extends Ajax {
      * Confirm Tournament Withdrawal
      */
     public function confirm_tournament_withdrawal(): void {
-        $return       = $this->check_security_token();
-        if ( empty( $return->error ) ) {
+        $validator = new Validator_Tournament();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $tournament_id = $_POST['tournament'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $player_id     = $_POST['player'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $tournament    = get_tournament( intval( $tournament_id ) );
@@ -251,7 +253,7 @@ class Ajax_Tournament extends Ajax {
             show_alert( $msg, 'success' );
             wp_die();
         } else {
-            wp_send_json_error( $return->msg, $return->status );
+            wp_send_json_error( $validator->msg, $validator->status );
         }
     }
 
@@ -295,10 +297,11 @@ class Ajax_Tournament extends Ajax {
      * @return void
      */
     public function update_payment(): void {
-        $nonce    = 'racketmanager_nonce';
-        $action   = 'payment-update';
-        $return   = $this->check_security_token( $nonce, $action );
-        if ( empty( $return->error ) ) {
+        $nonce     = 'racketmanager_nonce';
+        $action    = 'payment-update';
+        $validator = new Validator_Tournament();
+        $validator = $validator->check_security_token( $nonce, $action );
+        if ( empty( $validator->error ) ) {
             $order_id          = $_POST['orderId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $intent_id         = $_POST['paymentIntent'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $payment_reference = $_POST['paymentReference'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -306,7 +309,7 @@ class Ajax_Tournament extends Ajax {
             $invoice->update_payment( $intent_id, $payment_reference );
             wp_send_json_success();
         } else {
-            wp_send_json_error( $return->msg, $return->status );
+            wp_send_json_error( $validator->msg, $validator->status );
         }
     }
 

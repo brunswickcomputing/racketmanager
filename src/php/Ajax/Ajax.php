@@ -175,7 +175,6 @@ class Ajax {
      *
      * @param array|null $results result details.
      * @param string $type lookup type.
-     * @param string|null $gender gender.
      *
      * @return array of players.
      */

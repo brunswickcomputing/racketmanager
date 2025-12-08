@@ -151,13 +151,13 @@ class Ajax {
         }
         foreach ( $results as $r ) {
             $player['label'] = $r->fullname;
-            if ( $r->club ) {
-                $player['label'] .= ' - ' . $r->club;
+            if ( ! empty( $r->club ) ) {
+                $player['label']  .= ' - ' . $r->club;
+                $player['club_id'] = $r->club_id;
+                $player['club']    = $r->club;
             }
             $player['name']       = $r->fullname;
             $player['id']         = $r->roster_id;
-            $player['club_id']    = $r->club_id;
-            $player['club']       = $r->club;
             $player['playerId']   = $r->player_id;
             $player['user_email'] = $r->user_email;
             $player['contactno']  = get_user_meta( $r->player_id, 'contactno', true );

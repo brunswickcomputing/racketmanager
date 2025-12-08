@@ -133,9 +133,11 @@ class Registration_Repository {
         $search = null;
         if ( 'active' === $status ) {
             $search = ' AND `removed_date` IS NULL';
+        } elseif( 'removed' === $status ) {
+            $search = ' AND `removed_date` IS NOT NULL';
         }
         $query   = $this->wpdb->prepare(
-            "SELECT * FROM $this->table_name WHERE player_id = %d $search",
+            "SELECT `id` FROM $this->table_name WHERE player_id = %d $search",
             $player_id
         );
         $results = $this->wpdb->get_results( $query );

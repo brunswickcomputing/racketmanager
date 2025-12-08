@@ -439,7 +439,7 @@ class Ajax_Match extends Ajax {
             if ( empty( $return->msg ) ) {
                 $return->msg = __( 'Unable to save result', 'racketmanager' );
             }
-            $return->rubbers = $validator->rubbers;
+            $return->rubbers = $validator->rubbers ?? array();
             wp_send_json_error( $return, $return->status );
         }
         $return           = $validator;

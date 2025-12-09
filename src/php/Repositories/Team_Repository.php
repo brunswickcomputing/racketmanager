@@ -32,13 +32,46 @@ class Team_Repository {
     /**
      * Find a team by ID
      *
-     * @param $team_id
+     * @param int|string|null $team_id
      *
      * @return Team|null
      */
-    public function find_by_id( $team_id ): ?Team {
-        $team = $this->wpdb->get_row( $this->wpdb->prepare( "SELECT * FROM $this->table_name WHERE id = %d", $team_id ) );
-        return $team ? new Team( $team ) : null;
+    public function find_by_id( int|string|null $team_id ): ?Team {
+        if ( is_numeric( $team_id ) ) {
+            $search = $this->wpdb->prepare(
+                '`id` = %d',
+                $team_id
+            );
+        } else {
+            $search = $this->wpdb->prepare(
+                '`title` = %s',
+                $team_id
+            );
+        }
+        if ( ! $team_id ) {
+            return null;
+        }
+        $team = wp_cache_get( $team_id, 'teams' );
+
+        if ( ! $team ) {
+            if ( -1 === $team_id ) {
+                $team = (object) array(
+                    'id'     => $team_id,
+                    'title'  => __( 'Bye', 'racketmanager' ),
+                );
+            } else {
+                $team = $this->wpdb->get_row(
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                    "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM $this->table_name WHERE " . $search . ' LIMIT 1',
+                );
+            }
+            if ( ! $team ) {
+                return null;
+            }
+            $team = new Team( $team );
+            wp_cache_set( $team->id, $team, 'teams' );
+        }
+        return $team;
     }
 
     /**
@@ -184,4 +217,5 @@ class Team_Repository {
         );
         return $count > 0;
     }
+
 }

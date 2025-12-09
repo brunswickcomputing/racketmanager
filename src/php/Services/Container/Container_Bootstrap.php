@@ -60,6 +60,15 @@ final class Container_Bootstrap {
             );
         });
 
+        // Services
+        $c->set('team_service', function(Simple_Container $c) {
+            return new Team_Service(
+                $c->get('team_repository'),
+                $c->get('club_repository'),
+                $c->get('player_service'),
+            );
+        });
+
         $c->set('registration_service', function(Simple_Container $c) use ($app) {
             // Depends on player_service
             return new Registration_Service(

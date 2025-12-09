@@ -267,7 +267,6 @@ final class User {
             $this->id            = $this->ID;
             $this->email         = $this->user_email;
             $this->fullname      = $this->display_name;
-            $this->created_date  = $this->user_registered;
             $this->firstname     = get_user_meta( $this->ID, 'first_name', true );
             $this->surname       = get_user_meta( $this->ID, 'last_name', true );
             $this->gender        = get_user_meta( $this->ID, 'gender', true );

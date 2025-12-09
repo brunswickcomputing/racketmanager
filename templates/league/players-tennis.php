@@ -67,7 +67,7 @@ if ( ! empty( $league->player ) ) {
                             if ( intval( $player->id ) === get_current_user_id() ) {
                                 $selected_player = true;
                             }
-                            $player_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
+                            $player_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
                             $team_link   = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/team/' . seo_url( $player->team->title ) . '/';
                             ?>
                             <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
@@ -89,7 +89,7 @@ if ( ! empty( $league->player ) ) {
                                                     <p class="media__title">
                                                         <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players" >
                                                             <span class="nav-link__value">
-                                                                <?php echo esc_html( $player->fullname ); ?>
+                                                                <?php echo esc_html( $player->get_fullname() ); ?>
                                                             </span>
                                                         </a>
                                                     </p>

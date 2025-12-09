@@ -82,7 +82,7 @@ namespace Racketmanager;
                         </div>
                         <div class="col-1"><?php echo esc_html( $player->gender ); ?></div>
                         <div class="col-3 col-md-2 col-lg-1"><?php echo esc_html( $player->btm ); ?></div>
-                        <div class="col-auto"><?php echo esc_html( substr( $player->created_date, 0, 10 ) ); ?></div>
+                        <div class="col-auto"><?php echo esc_html( substr( $player->user_registered, 0, 10 ) ); ?></div>
                         <div class="col-auto">
                         <?php
                         if ( isset( $player->removed_date ) ) {

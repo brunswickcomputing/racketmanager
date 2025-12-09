@@ -1698,7 +1698,7 @@ class League {
             foreach ( $team->roster as $player ) {
                 $team_player           = get_player( $player );
                 $team->players [ $i ]  = $team_player;
-                $team->player[ $i ]    = $team_player->fullname ?? '';
+                $team->player[ $i ]    = $team_player->get_fullname() ?? '';
                 $team->player_id[ $i ] = $player;
                 ++$i;
             }
@@ -3246,7 +3246,7 @@ class League {
                 continue;
             }
             if ( ! $stats ) {
-                $league_players[] = $player->fullname;
+                $league_players[] = $player->get_fullname();
             } else {
                 $player->matches = $player->get_matches( $this, $this->current_season['name'], 'league' );
                 $player->stats   = $player->get_stats();

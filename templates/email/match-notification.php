@@ -76,7 +76,7 @@ foreach ( $opponents as $opponent ) {
                                                 foreach ( $teams[ $opponent ]->player as $player ) {
                                                     ?>
                                                     <tr style="line-height: 22px;">
-                                                        <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->fullname ); ?></td>
+                                                        <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->get_fullname() ); ?></td>
                                                         <td><?php echo esc_html( $teams[ $opponent ]->club ); ?></td>
                                                     </tr>
                                                     <?php
@@ -121,7 +121,7 @@ foreach ( $opponents as $opponent ) {
                                                     if ( $player->contactno ) {
                                                         ?>
                                                         <tr style="line-height: 22px;">
-                                                            <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->fullname ); ?></td>
+                                                            <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->get_fullname() ); ?></td>
                                                             <td><a href="tel:<?php echo esc_html( $player->contactno ); ?>"><?php echo esc_html( $player->contactno ); ?></a></td>
                                                         </tr>
                                                         <?php

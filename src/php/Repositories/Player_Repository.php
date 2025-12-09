@@ -46,7 +46,7 @@ class Player_Repository {
         $userdata                    = array();
         $userdata['first_name']      = $player->get_firstname();
         $userdata['last_name']       = $player->get_surname();
-        $userdata['display_name']    = $player->get_display_name();
+        $userdata['display_name']    = $player->get_fullname();
         $userdata['user_login']      = $player->get_login();
         $userdata['user_pass']       = $player->get_password();
         $userdata['user_registered'] = $player->get_date_registered();
@@ -109,7 +109,7 @@ class Player_Repository {
             $user_data                  = array();
             $user_data['first_name']    = $player->get_firstname();
             $user_data['last_name']     = $player->get_surname();
-            $user_data['display_name']  = $player->get_display_name();
+            $user_data['display_name']  = $player->get_fullname();
             $user_data['user_nicename'] = sanitize_title( $user_data['display_name'] );
             $user_data['user_email']    = $player->get_email();
             $user_data['ID']            = $player->get_id();

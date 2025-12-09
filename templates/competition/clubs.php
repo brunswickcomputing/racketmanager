@@ -247,7 +247,7 @@ if ( empty( $competition_club ) ) {
                                 if ( intval( $player->id ) === get_current_user_id() ) {
                                     $selected_player = true;
                                 }
-                                $player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
+                                $player_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
                                 ?>
                                 <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                     <div class="media">
@@ -268,7 +268,7 @@ if ( empty( $competition_club ) ) {
                                                         <p class="media__title">
                                                             <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="competition" data-type-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $competition->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
                                                                 <span class="nav-link__value">
-                                                                    <?php echo esc_html( $player->fullname ); ?>
+                                                                    <?php echo esc_html( $player->get_fullname() ); ?>
                                                                 </span>
                                                             </a>
                                                         </p>

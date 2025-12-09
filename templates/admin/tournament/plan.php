@@ -285,7 +285,7 @@ jQuery(document).ready(function(){
                                                         if ( false !== $player_found ) {
                                                             $player = get_player( $player_id );
                                                             if ( $player ) {
-                                                                $player_warnings[] = $player->fullname;
+                                                                $player_warnings[] = $player->get_fullname();
                                                             }
                                                         }
                                                         $scheduled_players[] = $player_id;

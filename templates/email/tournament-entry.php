@@ -22,7 +22,7 @@ require 'email-header.php';
 $title_text  = __( 'Entry confirmation', 'racketmanager' );
 $title_level = '1';
 require $title;
-$salutation_link = $player->fullname;
+$salutation_link = $player->get_fullname();
 require $salutation;
 /* translators: $s: tournament link */
 $paragraph_text  = sprintf( __( 'Thank you for your entry for the %s tournament. You will find confirmation of your entry below.', 'racketmanager' ), $tournament_link );

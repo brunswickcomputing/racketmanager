@@ -1476,6 +1476,7 @@ class Event {
                 foreach ( $team->players as $team_player ) {
                     $event_team->player[ $p ]    = $team_player->fullname;
                     $event_team->player_id[ $p ] = $team_player->id;
+                    $event_team->player[ $p ]    = $team_player->get_fullname();
                     ++$p;
                 }
             } elseif ( $event_team->club ) {

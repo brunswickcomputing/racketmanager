@@ -21,7 +21,7 @@ require 'email-header.php';
 $title_text  = __( 'Withdrawal confirmation', 'racketmanager' );
 $title_level = '1';
 require $title;
-$salutation_link = $player->fullname;
+$salutation_link = $player->get_fullname();
 require $salutation;
 /* translators: $s: tournament link */
 $paragraph_text  = sprintf( __( 'You have now been withdrawn from the %s tournament.', 'racketmanager' ), $tournament_link );

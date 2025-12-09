@@ -1385,7 +1385,7 @@ final class Tournament {
                         if ( $partner_id ) {
                             $partner = get_player( $partner_id );
                             if ( $partner ) {
-                                $partner_name                = $partner->fullname;
+                                $partner_name                = $partner->get_fullname();
                                 $tournament_entry['partner'] = $partner_name;
                             }
                         }

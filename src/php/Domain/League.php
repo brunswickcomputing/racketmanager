@@ -3251,7 +3251,7 @@ class League {
                 $player->matches = $player->get_matches( $this, $this->current_season['name'], 'league' );
                 $player->stats   = $player->get_stats();
                 if ( ! $team ) {
-                    $player->team = $this->get_player_team( array( 'player' => $player->id ) );
+                    $player->team = $this->get_player_team( array( 'player' => $player->get_id() ) );
                 }
                 $player->win_pct      = $player->stats['total']->win_pct;
                 $player->matches_won  = $player->stats['total']->matches_won;

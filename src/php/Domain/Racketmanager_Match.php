@@ -1947,8 +1947,8 @@ final class Racketmanager_Match {
                 $player_id = $team->player_id;
                 foreach ( $player_id as $player ) {
                     $player = get_player( $player );
-                    if ( ! empty( $player->email ) ) {
-                        $to[] = $player->fullname . '<' . $player->email . '>';
+                    if ( ! empty( $player->get_email() ) ) {
+                        $to[] = $player->get_fullname() . '<' . $player->get_email() . '>';
                     }
                 }
             } elseif ( ! empty( $team->contactemail ) ) {
@@ -2751,8 +2751,8 @@ final class Racketmanager_Match {
             foreach ( $opponents as $opponent ) {
                 $players = $this->teams[$opponent]->players ?? array();
                 foreach ( $players as $player ) {
-                    if ( ! empty( $player->email ) ) {
-                        $email_to[] = $player->fullname . '<' . $player->email . '>';
+                    if ( ! empty( $player->get_email() ) ) {
+                        $email_to[] = $player->get_fullname() . '<' . $player->get_email() . '>';
                     }
                 }
             }

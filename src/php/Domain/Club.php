@@ -26,7 +26,7 @@ final class Club {
      *
      * @var object|null
      */
-    public ?object $match_secretary;
+    public ?object $match_secretary = null;
     /**
      * Name
      *

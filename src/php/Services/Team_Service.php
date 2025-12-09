@@ -1,25 +1,51 @@
 <?php
+/**
+ * Team_Service class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Services
+ */
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Team;
+use Racketmanager\Domain\Team_Details_DTO;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
+use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 
+/**
+ * Class to implement the Team Management Service
+ */
 class Team_Service {
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
     private Player_Service $player_service;
 
+    /**
+     * Constructor
+     *
+     * @param Team_Repository $team_repository
+     * @param Club_Repository $club_repository
+     * @param Player_Service $player_service
+     */
     public function __construct( Team_Repository $team_repository, Club_Repository $club_repository, Player_Service $player_service ) {
         $this->team_repository = $team_repository;
         $this->club_repository = $club_repository;
         $this->player_service  = $player_service;
     }
 
+    /**
+     * Get teams for a club
+     *
+     * @param int|null $club_id
+     * @param $type
+     *
+     * @return array
+     */
     public function get_teams_for_club( ?int $club_id, $type = null ): array {
         if ( ! $this->club_repository->find( $club_id ) ) {
             throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
@@ -27,8 +53,35 @@ class Team_Service {
         return $this->team_repository->find_by_club( $club_id, $type );
     }
 
+    /**
+     * Get player teams
+     *
+     * @return array
+     */
     public function get_player_teams(): array {
         return $this->team_repository->find_for_players();
     }
 
+    /**
+     * Get team details
+     *
+     * @param int|string|null $team_id
+     *
+     * @return Team_Details_DTO
+     */
+    public function get_team_details( int|string|null $team_id ): Team_Details_DTO {
+        if ( ! $team_id ) {
+            throw new Invalid_Argument_Exception( __( 'Invalid team ID', 'racketmanager' ) );
+        }
+        $team = $this->team_repository->find_by_id( $team_id );
+        if ( ! $team ) {
+            throw new Team_Not_Found_Exception( __( 'Team not found', 'racketmanager' ) );
+        }
+        $club = $this->club_repository->find( $team->club_id );
+        if ( ! $club ) {
+            throw new Club_Not_Found_Exception( Util::club_not_found( $team->club_id ) );
+        }
+        $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
+        return new Team_Details_DTO( $team, $club, $match_secretary );
+    }
 }

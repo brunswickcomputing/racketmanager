@@ -14,6 +14,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
@@ -50,10 +51,12 @@ class Shortcodes {
     public string $no_team_id;
     public string $club_player_not_found;
     public string $season_not_found_for_competition;
+
     protected Registration_Service $registration_service;
     protected Club_Service $club_service;
-    private RacketManager $racketmanager;
+    protected RacketManager $racketmanager;
     protected Player_Service $player_service;
+    protected Team_Service $team_service;
 
     /**
      * Initialise shortcodes
@@ -80,11 +83,12 @@ class Shortcodes {
         $this->retired_player                   = __( 'Retired - %s', 'racketmanager' );
         $this->not_played_no_opponent           = __( 'Match not played - %s did not show', 'racketmanager' );
 
-        $this->racketmanager       = $racketmanager;
-        $c                         = $this->racketmanager->container;
-        $this->club_service        = $c->get( 'club_service' );
-        $this->player_service      = $c->get( 'player_service' );
+        $this->racketmanager        = $racketmanager;
+        $c                          = $this->racketmanager->container;
+        $this->club_service         = $c->get( 'club_service' );
+        $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );
+        $this->team_service         = $c->get( 'team_service' );
     }
     /**
      * Display Daily Matches

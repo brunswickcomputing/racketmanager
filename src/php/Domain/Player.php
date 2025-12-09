@@ -537,7 +537,7 @@ final class Player {
      *
      * @return string
      */
-    public function get_display_name(): string {
+    public function get_fullname(): string {
         return $this->display_name;
     }
 

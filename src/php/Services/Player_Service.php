@@ -20,8 +20,10 @@ use Racketmanager\Exceptions\LTA_Tennis_Number_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Exists_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
+use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
@@ -41,6 +43,7 @@ class Player_Service {
      * @var mixed|null
      */
     private null|Wtn_Api_Client_Interface $wtn_api_client;
+    private ?Club_Role_Repository $club_role_repository;
 
     /**
      * Constructor
@@ -48,12 +51,14 @@ class Player_Service {
      * @param $plugin_instance
      * @param Player_Repository $player_repository
      * @param null|Player_Error_Repository $player_error_repository
+     * @param Club_Role_Repository|null $club_role_repository
      * @param Wtn_Api_Client_Interface|null $wtn_api_client
      */
-    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository $player_error_repository = null, ?Wtn_Api_Client_Interface $wtn_api_client = null ) {
+    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository $player_error_repository = null, Club_Role_Repository $club_role_repository = null, ?Wtn_Api_Client_Interface $wtn_api_client = null ) {
         $this->racketmanager           = $plugin_instance;
         $this->player_repository       = $player_repository;
         $this->player_error_repository = $player_error_repository;
+        $this->club_role_repository    = $club_role_repository;
         $this->wtn_api_client          = $wtn_api_client;
     }
 

@@ -63,7 +63,7 @@ final class Team {
      *
      * @var object|null
      */
-    public null|object $club;
+    public null|object $club = null;
     /**
      * Status variable
      *

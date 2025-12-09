@@ -66,7 +66,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     <span class="profile-icon">
                         <span class="profile-icon__abbr">
                             <?php
-                            $words    = explode( ' ', $object->team->title );
+                            $words    = explode( ' ', $team->get_name() );
                             $initials = null;
                             foreach ( $words as $w ) {
                                 $initials .= $w[0];
@@ -78,10 +78,10 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                 </div>
                 <div class="media__content">
                     <h3 class="media__title">
-                        <span><?php echo esc_html( $object->team->title ); ?></span>
+                        <span><?php echo esc_html( $team->get_name() ); ?></span>
                         <?php
                         $favourite_type = 'team';
-                        $favourite_id   = $object->team->id;
+                        $favourite_id   = $team->get_id();
                         require_once 'includes/favourite-button.php';
                         ?>
                     </h3>
@@ -147,7 +147,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     <div class="module__banner">
                         <h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
-                            <a href="/index.php?league_id=<?php echo esc_html( $object->id ); ?>&team_id=<?php echo esc_html( $object->team->id ); ?>&team=<?php echo esc_html( seo_url( $object->team->title ) ); ?>&season=<?php echo esc_html( $object->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
+                            <a href="/index.php?league_id=<?php echo esc_html( $object->id ); ?>&team_id=<?php echo esc_html( $team->get_id() ); ?>&team=<?php echo esc_html( seo_url( $team->get_name() ) ); ?>&season=<?php echo esc_html( $object->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
                                 <svg width="32" height="32" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
                                 </svg>
@@ -192,7 +192,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     if ( $user_can_edit_team ) {
                         ?>
                         <div class="module__aside">
-                            <button class="btn btn--link" id="teamEditLink" data-action="open-team-edit-modal" data-team-id="<?php echo esc_attr( $object->team->id ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
+                            <button class="btn btn--link" id="teamEditLink" data-action="open-team-edit-modal" data-team-id="<?php echo esc_attr( $team->get_id() ); ?>" data-event-id="<?php echo esc_attr( $object_event->id ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Edit team', 'racketmanager' ); ?>">
                                 <svg width="16" height="16" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#pencil-fill' ); ?>"></use>
                                 </svg>
@@ -207,7 +207,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                         <?php
                         if ( $object_competition->is_team_entry ) {
                             ?>
-                            <h4 class="subheading" id="captain-name-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
+                            <h4 class="subheading" id="captain-name-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
                                 <?php echo esc_html( $object->team->info->captain ); ?>
                             </h4>
                             <?php
@@ -265,7 +265,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                                     <use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
-                                                    <span class="nav-link__value" id="captain-contact-no-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
+                                                    <span class="nav-link__value" id="captain-contact-no-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
                                                         <?php echo esc_html( $object->team->info->contactno ); ?>
                                                     </span>
                                                 </span>
@@ -283,7 +283,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                                     <use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
-                                                    <span class="nav-link__value" id="captain-contact-email-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
+                                                    <span class="nav-link__value" id="captain-contact-email-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
                                                         <?php echo esc_html( $object->team->info->contactemail ); ?>
                                                     </span>
                                                 </span>
@@ -302,7 +302,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                         <svg width="16" height="16" class="icon-team">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-day-fill' ); ?>"></use>
                                         </svg>
-                                        <span class="nav-link__value" id="team-match-day-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
+                                        <span class="nav-link__value" id="team-match-day-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
                                             <?php echo esc_html( $object->team->info->match_day ); ?>
                                         </span>
                                     </span>
@@ -312,7 +312,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                         <svg width="16" height="16" class="icon-team">
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#clock-fill' ); ?>"></use>
                                         </svg>
-                                        <span class="nav-link__value" id="team-match-time-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $object->team->id ); ?>">
+                                        <span class="nav-link__value" id="team-match-time-<?php echo esc_attr( $object_event->id ); ?>-<?php echo esc_attr( $team->get_id() ); ?>">
                                             <?php echo esc_html( mysql2date( $racketmanager->time_format, $object->team->info->match_time ) ); ?>
                                         </span>
                                     </span>

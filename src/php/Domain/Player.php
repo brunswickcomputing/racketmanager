@@ -34,12 +34,6 @@ final class Player {
      */
     public ?int $id = null;
     /**
-     * Club player id.
-     *
-     * @var int
-     */
-    public int $club_player_id;
-    /**
      * Email address.
      *
      * @var ?string
@@ -69,12 +63,6 @@ final class Player {
      * @var string
      */
     public string $name;
-    /**
-     * Date player created.
-     *
-     * @var string
-     */
-    public string $created_date;
     /**
      * Email address.
      *
@@ -142,18 +130,6 @@ final class Player {
      */
     public int|null $removed_user = null;
     /**
-     * Created user.
-     *
-     * @var int|null
-     */
-    public ?int $created_user;
-    /**
-     * Created username.
-     *
-     * @var string|null
-     */
-    public ?string $created_user_name;
-    /**
      * Locked indicator.
      *
      * @var boolean
@@ -196,35 +172,11 @@ final class Player {
      */
     public array $statistics = array();
     /**
-     * Clubs.
-     *
-     * @var array
-     */
-    public array $clubs = array();
-    /**
-     * Clubs archive.
-     *
-     * @var array
-     */
-    public array $clubs_archive = array();
-    /**
-     * Titles.
-     *
-     * @var array
-     */
-    public array $titles = array();
-    /**
      * Url link.
      *
      * @var string
      */
     public string $link;
-    /**
-     * Rating.
-     *
-     * @var array
-     */
-    public array $rating;
     /**
      * Opt in detail.
      *
@@ -280,12 +232,6 @@ final class Player {
      */
     public array $stats;
     /**
-     * Class
-     *
-     * @var string|null
-     */
-    public ?string $class;
-    /**
      * Matches won variable
      *
      * @var int
@@ -309,12 +255,6 @@ final class Player {
      * @var int
      */
     public int $played;
-    /**
-     * Error description variable
-     *
-     * @var string|null
-     */
-    public ?string $description;
     /**
      * Competitions variable
      *
@@ -400,7 +340,6 @@ final class Player {
             $this->id            = &$this->ID;
             $this->email         = &$this->user_email;
             $this->fullname      = &$this->display_name;
-            $this->created_date  = &$this->user_registered;
             $this->calculate_age();
             if ( ! empty( $this->locked_user ) ) {
                 $this->locked_user_name = get_userdata( $this->locked_user )->display_name;

@@ -580,4 +580,33 @@ class Player_Service {
         }
         return $this->player_repository->get_titles( $player_id );
     }
+
+    /**
+     * Get match secretary details for a club
+     *
+     * @param int $club_id
+     *
+     * @return Player
+     */
+    public function get_match_secretary_details( int $club_id ): Player {
+        $roles = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1 ) );
+        $secretary_user_id = null;
+        foreach ( $roles as $role ) {
+            if ( $role->get_user_id() ) {
+                $secretary_user_id = $role->get_user_id();
+                break;
+            }
+        }
+        if ( ! $secretary_user_id  ) {
+            // No user assigned to the role, or the role doesn't exist
+            throw new Role_Assignment_Not_Found_Exception( __('No active match secretary assigned for Club %s', 'racketmanager' ), $club_id );
+        }
+        $secretary_player = $this->player_repository->find( $secretary_user_id );
+
+        if ( ! $secretary_player ) {
+            throw new Player_Not_Found_Exception(__( 'Match Secretary user ID %s found in roles table, but not in users table', 'racketmanager' ), $club_id );
+        }
+        return $secretary_player;
+    }
+
 }

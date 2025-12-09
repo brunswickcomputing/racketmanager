@@ -13,10 +13,10 @@ use Exception;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Details_DTO;
 use Racketmanager\Domain\Club_Role;
-use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
@@ -40,19 +40,19 @@ class Club_Service {
     private Registration_Repository $club_player_repository;
     private Player_Repository $player_repository;
     private Team_Repository $team_repository;
-    private Team_Service $team_service;
+    private Player_Service $player_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Team_Service $team_service ) {
+    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Player_Service $player_service ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->team_repository        = $team_repository;
-        $this->team_service           = $team_service;
+        $this->player_service         = $player_service;
     }
 
     /**
@@ -319,38 +319,6 @@ class Club_Service {
         return $role;
     }
     /**
-     * Get match secretary details for a club
-     *
-     * @param int $club_id
-     *
-     * @return Player
-     */
-    public function get_match_secretary_details( int $club_id ): Player {
-        if ( ! $this->club_repository->find( $club_id ) ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
-        }
-        $roles = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1 ) );
-        $secretary_user_id = null;
-        foreach ( $roles as $role ) {
-            if ( $role->get_user_id() ) {
-                $secretary_user_id = $role->get_user_id();
-                break;
-            }
-        }
-        if ( ! $secretary_user_id  ) {
-            // No user assigned to the role, or role doesn't exist
-            throw new Role_Assignment_Not_Found_Exception( __('No active match secretary assigned for Club %s', 'racketmanager' ), $club_id );
-        }
-        $secretary_Player = $this->player_repository->find( $secretary_user_id );
-
-        if ( ! $secretary_Player ) {
-            throw new Player_Not_Found_Exception(__( 'Match Secretary user ID %s found in roles table, but not in users table', 'racketmanager' ), $club_id );
-        }
-
-        return $secretary_Player;
-    }
-
-    /**
      * Get club details
      *
      * @param int $club_id
@@ -364,7 +332,7 @@ class Club_Service {
         }
         $roles = $this->club_role_repository->get_roles_for_club( $club_id );
         try {
-            $match_secretary = $this->get_match_secretary_details( $club_id );
+            $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
         } catch ( Role_Assignment_Not_Found_Exception ) {
             $match_secretary = null;
         }
@@ -530,7 +498,7 @@ class Club_Service {
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
-        $match_secretary = $this->get_match_secretary_details( $club_id );
+        $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
         $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '> ';
         global $racketmanager;
         $template_args['organisation']     = $racketmanager->site_name;

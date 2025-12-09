@@ -119,12 +119,12 @@ class Ajax {
         $player = $this->player_service->find_player_by_btm( $reference );
         if ( $player ) {
             $result             = new stdClass();
-            $result->fullname   = $player->display_name;
-            $result->user_email = $player->user_email;
+            $result->fullname   = $player->get_fullname();
+            $result->user_email = $player->get_email();
             $result->club       = null;
             $result->club_id    = null;
             $result->roster_id  = null;
-            $result->player_id  = $player->ID;
+            $result->player_id  = $player->get_id();
             $results[]          = $result;
         }
         return $results;

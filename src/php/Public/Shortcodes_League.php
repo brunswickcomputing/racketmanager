@@ -635,12 +635,15 @@ class Shortcodes_League extends Shortcodes {
 
         $league->set_template( 'teams', $template );
         $league->set_group( $group );
+        $team_details = array();
         $league_teams = array();
         if ( ! $team_id && isset( $wp->query_vars['team'] ) ) {
             $team_id = un_seo_url( get_query_var( 'team' ) );
         }
         if ( $team_id ) {
-            $team = get_team( $team_id );
+            $template     = 'team-details';
+            $team_details = $this->team_service->get_team_details( $team_id, 'name' );
+            $team         = get_team( $team_id );
             if ( $team ) {
                 $team->info      = $league->get_team_dtls( $team->id );
                 $team->standings = $league->get_league_team( $team->id );
@@ -665,6 +668,7 @@ class Shortcodes_League extends Shortcodes {
                 $league->team  = $team;
             }
         } else {
+            $template  = 'teams-list';
             $team_args = array( 'orderby' => array( 'title' => 'ASC' ) );
             if ( $group ) {
                 $team_args['group'] = $group;
@@ -676,16 +680,14 @@ class Shortcodes_League extends Shortcodes {
             }
         }
 
-        if ( empty( $template ) && $this->check_template( 'teams-' . $league->sport ) ) {
-            $filename = 'teams-' . $league->sport;
-        } else {
-            $filename = ( ! empty( $template ) ) ? 'teams-' . $template : 'teams-list';
-        }
+        $filename = $template;
         return $this->load_template(
             $filename,
             array(
-                'league' => $league,
-                'teams'  => $league_teams,
+                'league'       => $league,
+                'teams'        => $league_teams,
+                'object'       => $league,
+                'team_details' => $team_details,
             )
         );
     }

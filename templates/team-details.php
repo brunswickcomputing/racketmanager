@@ -16,6 +16,9 @@ namespace Racketmanager;
 use Racketmanager\Util\Util_Lookup;
 
 /** @var object $object */
+/** @var object $team_details */
+$team = $team_details->team;
+$club = $team_details->club;
 global $racketmanager;
 $envelope           = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#envelope-fill';
 $telephone          = RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#telephone-fill';
@@ -26,7 +29,7 @@ if ( is_user_logged_in() ) {
     } else {
         $user   = wp_get_current_user();
         $userid = $user->ID;
-        if ( intval( $object->team->club->match_secretary->id ) === $userid ) {
+        if ( intval( $team_details->match_secretary->id ) === $userid ) {
             $user_can_edit_team = true;
         }
     }
@@ -333,8 +336,8 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     <div class="module__content">
                         <div class="module-container">
                             <h4 class="subheading">
-                                <a href="/clubs/<?php echo esc_attr( seo_url( $object->team->club->shortcode ) ); ?>/">
-                                    <span><?php echo esc_html( $object->team->club->name ); ?></span>
+                                <a href="/clubs/<?php echo esc_attr( seo_url( $team_details->club->shortcode ) ); ?>/">
+                                    <span><?php echo esc_html( $team_details->club->name ); ?></span>
                                 </a>
                             </h4>
                             <ul class="list list--naked">
@@ -344,7 +347,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-marker' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
-                                            <?php echo esc_html( $object->team->club->address ); ?>
+                                            <?php echo esc_html( $team_details->club->address ); ?>
                                         </span>
                                     </span>
                                 </li>
@@ -354,22 +357,22 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-captain' ); ?>"></use>
                                         </svg>
                                         <span class="nav-link__value">
-                                            <?php echo esc_html( $object->team->club->match_secretary->display_name ); ?>
+                                            <?php echo esc_html( $team_details->match_secretary->display_name ); ?>
                                         </span>
                                     </span>
                                 </li>
                                 <?php
                                 if ( is_user_logged_in() ) {
-                                    if ( ! empty( $object->team->club->match_secretary->contactno ) ) {
+                                    if ( ! empty( $team_details->match_secretary->contactno ) ) {
                                         ?>
                                         <li class="list__item">
-                                            <a href="tel:<?php echo esc_html( $object->team->club->match_secretary->contactno ); ?>" class="nav--link" rel="nofollow">
+                                            <a href="tel:<?php echo esc_html( $team_details->match_secretary->contactno ); ?>" class="nav--link" rel="nofollow">
                                                 <svg width="16" height="16" class="">
                                                     <use xlink:href="<?php echo esc_url( $telephone ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
                                                     <span class="nav-link__value">
-                                                        <?php echo esc_html( $object->team->club->match_secretary->contactno ); ?>
+                                                        <?php echo esc_html( $team_details->match_secretary->contactno ); ?>
                                                     </span>
                                                 </span>
                                             </a>
@@ -378,16 +381,16 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                     }
                                     ?>
                                     <?php
-                                    if ( ! empty( $object->team->club->match_secretary->email ) ) {
+                                    if ( ! empty( $team_details->match_secretary->email ) ) {
                                         ?>
                                         <li class="list__item">
-                                            <a href="mailto:<?php echo esc_html( $object->team->club->match_secretary->email ); ?>" class="nav--link">
+                                            <a href="mailto:<?php echo esc_html( $team_details->match_secretary->email ); ?>" class="nav--link">
                                                 <svg width="16" height="16" class="">
                                                     <use xlink:href="<?php echo esc_url( $envelope ); ?>"></use>
                                                 </svg>
                                                 <span class="nav--link">
                                                     <span class="nav-link__value">
-                                                        <?php echo esc_html( $object->team->club->match_secretary->email ); ?>
+                                                        <?php echo esc_html( $team_details->match_secretary->email ); ?>
                                                     </span>
                                                 </span>
                                             </a>
@@ -397,16 +400,16 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                 }
                                 ?>
                                 <?php
-                                if ( ! empty( $object->team->club->website ) ) {
+                                if ( ! empty( $team_details->club->website ) ) {
                                     ?>
                                     <li class="list__item">
-                                        <a href="<?php echo esc_html( $object->team->club->website ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
+                                        <a href="<?php echo esc_html( $team_details->club->website ); ?>" class="nav--link" target="_blank" rel="noopener nofollow">
                                             <svg width="16" height="16" class="icon-globe">
                                                 <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#globe' ); ?>"></use>
                                             </svg>
                                             <span class="nav--link">
                                                 <span class="nav-link__value">
-                                                    <?php echo esc_html( $object->team->club->website ); ?>
+                                                    <?php echo esc_html( $team_details->club->website ); ?>
                                                 </span>
                                             </span>
                                         </a>
@@ -429,10 +432,10 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                     <?php
                                     foreach ( $object->team->players as $player ) {
                                         $selected_player = false;
-                                        if ( intval( $player->id ) === get_current_user_id() ) {
+                                        if ( intval( $player->get_id() ) === get_current_user_id() ) {
                                             $selected_player = true;
                                         }
-                                        $player_link = '/' . $object_competition->type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->fullname ) . '/';
+                                        $player_link = '/' . $object_competition->type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
                                         ?>
                                         <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                             <div class="media">
@@ -441,7 +444,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                                         <div class="profile-icon">
                                                             <span class="profile-icon__abbr">
                                                                 <?php
-                                                                $player_initials = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
+                                                                $player_initials = substr( $player->get_firstname(), 0, 1 ) . substr( $player->get_surname(), 0, 1 );
                                                                 echo esc_html( $player_initials );
                                                                 ?>
                                                             </span>
@@ -453,7 +456,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                                                 <p class="media__title">
                                                                     <a href="<?php echo esc_attr( $player_link ); ?>" class="nav--link tabDataLink" data-type="<?php echo esc_attr( $object_type ); ?>" data-type-id="<?php echo esc_attr( $object->id ); ?>" data-season="<?php echo esc_attr( $object->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $player->id ); ?>" data-link-type="players">
                                                                         <span class="nav-link__value">
-                                                                            <?php echo esc_html( $player->fullname ); ?>
+                                                                            <?php echo esc_html( $player->get_fullname() ); ?>
                                                                         </span>
                                                                     </a>
                                                                 </p>

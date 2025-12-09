@@ -344,7 +344,7 @@ class Admin_Club extends Admin_Display {
                 $club_id_passed = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
                 $team_type = isset( $_POST['team_type'] ) ? sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) : null;
                 try {
-                    $team = $this->team_service->create_team( $club_id_passed, $team_type );
+                    $team = $this->club_service->create_team( $club_id_passed, $team_type );
                     $this->set_message( __( 'Team added', 'racketmanager' ) );
                 } catch ( Club_Not_Found_Exception|Invalid_Argument_Exception $e ) {
                     $this->set_message( $e->getMessage(), true );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Club__Service class
+ * Club_Service class
  *
  * @author Paul Moffat
  * @package RacketManager
@@ -372,7 +372,7 @@ class Club_Service {
             foreach ( $event_entry->team as $team_entry ) {
                 $match_day = Util_Lookup::get_match_day( $team_entry->match_day );
                 if ( empty( $team_entry->id ) ) {
-                    $team = $this->team_service->create_team( $club_id, $event->type );
+                    $team = $this->create_team( $club_id, $event->type );
                 } else {
                     $team = get_team( $team_entry->id );
                 }
@@ -534,7 +534,7 @@ class Club_Service {
     }
 
     /**
-     * Can user update players.
+     * Can the user update players?
      *
      * @param int $club_id
      *
@@ -581,6 +581,51 @@ class Club_Service {
 
         // If a player object is returned, the assignment exists
         return $this->team_repository->find_captain( $club_id, $player );
+    }
+
+    /**
+     * Creates a new team with an automatically generated name based on club shortcode and sequence number.
+     *
+     * @param int|null $club_id The ID of the parent club.
+     * @param string $type The type of team (e.g. 'Boys', 'Girls', 'Ladies', 'Mens', 'Mixed').
+     *
+     * @return Team The newly created Team object.
+     */
+    public function create_team( ?int $club_id, string $type ): Team {
+        $club = $this->club_repository->find( $club_id );
+        if ( ! $club ) {
+            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+        }
+        $type_name = match( substr( $type, 0, 1 ) ) {
+            'B' => __( 'Boys', 'racketmanager' ),
+            'G' => __( 'Girls', 'racketmanager' ),
+            'W' => __( 'Ladies', 'racketmanager' ),
+            'M' => __( 'Mens', 'racketmanager' ),
+            'X' => __( 'Mixed', 'racketmanager' ),
+            default => null,
+        };
+
+        if ( empty( $type_name ) ) {
+            throw new Invalid_Argument_Exception( __( 'Invalid team type', 'racketmanager' ) );
+        }
+
+        // 1. Get the next available sequence number
+        $next_sequence_number = $this->team_repository->find_next_sequence_number( $club->get_shortcode(), $type_name );
+
+        // 2. Generate the team name
+        $team_name = $club->get_shortcode() . ' ' . $type_name . ' ' . $next_sequence_number;
+
+        // 3. Create the Domain Entity and Save it
+        $team          = new stdClass();
+        $team->title   = $team_name;
+        $team->stadium = $club->get_shortcode();
+        $team->club_id = $club->get_id();
+        $team->type    = $type;
+        $team          = new Team( $team );
+        // We assume a save method exists in TeamRepository from a previous step
+        $this->team_repository->save( $team );
+
+        return $team;
     }
 
 }

@@ -137,17 +137,23 @@ final class Admin_Finances extends Admin_Display {
             return;
         }
         $players = '';
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( __( $this->invalid_permissions ), true );
-            $this->show_message();
-        } else {
-            $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
-            $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-            $club_id           = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
-            $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
-            $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
-            $racketmanager_tab = 'charges';
-            if ( isset( $_POST['generateInvoices'] ) ) {
+        $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
+        $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $club_id           = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
+        $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
+        $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
+        $racketmanager_tab = 'charges';
+        if ( isset( $_POST['generateInvoices'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_charges-bulk' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, 'error' );
+            } else {
+                if ( isset( $_POST['competition_id'] ) ) {
+                    $competition_id = intval( $_POST['competition_id'] );
+                }
+                if ( isset( $_POST['season'] ) ) {
+                    $season = sanitize_text_field( wp_unslash( $_POST['season'] ) );
+                }
                 $racketmanager_tab = 'racketmanager-invoices';
                 if ( isset( $_POST['charges_id'] ) ) {
                     $charge_id = intval( $_POST['charges_id'] );
@@ -159,44 +165,47 @@ final class Admin_Finances extends Admin_Display {
                         $charge->send_invoices();
                     }
                 }
-            } elseif ( isset( $_POST['doChargesDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-                $racketmanager_tab = 'racketmanager-charges';
-                check_admin_referer( 'charges-bulk' );
-                if ( ! current_user_can( 'del_teams' ) ) {
-                    $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
-                } else {
-                    $messages      = array();
-                    $message_error = false;
-                    if ( isset( $_POST['charge'] ) ) {
-                        foreach ( $_POST['charge'] as $charges_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            $charge     = get_charge( $charges_id );
-                            $charge_ref = ucfirst( $charge->competition->name ) . ' ' . $charge->season;
-                            if ( $charge->has_invoices() ) {
-                                $messages[]    = $charge_ref . ' ' . __( 'not deleted - still has invoices attached', 'racketmanager' );
-                                $message_error = true;
-                            } else {
-                                $charge->delete();
-                                $messages[] = $charge_ref . ' ' . __( 'deleted', 'racketmanager' );
-                            }
+            }
+        } elseif ( isset( $_POST['doChargesDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+            $racketmanager_tab = 'racketmanager-charges';
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_charges-bulk' );
+            if ( empty( $validator->error ) ) {
+                $validator = $validator->capability( 'del_teams' );
+            }
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, 'error' );
+            } else {
+                $messages      = array();
+                $message_error = false;
+                if ( isset( $_POST['charge'] ) ) {
+                    foreach ( $_POST['charge'] as $charges_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                        $charge     = get_charge( $charges_id );
+                        $charge_ref = ucfirst( $charge->competition->name ) . ' ' . $charge->season;
+                        if ( $charge->has_invoices() ) {
+                            $messages[]    = $charge_ref . ' ' . __( 'not deleted - still has invoices attached', 'racketmanager' );
+                            $message_error = true;
+                        } else {
+                            $charge->delete();
+                            $messages[] = $charge_ref . ' ' . __( 'deleted', 'racketmanager' );
                         }
-                        $message = implode( '<br>', $messages );
-                        $this->set_message( $message, $message_error );
                     }
+                    $message = implode( '<br>', $messages );
+                    $this->set_message( $message, $message_error );
                 }
             }
-
-            $this->show_message();
-            $args             = array();
-            if ( $competition_id ) {
-                $args['competition'] = $competition_id;
-            }
-            if ( $season ) {
-                $args['season'] = $season;
-            }
-            $finance_charges = $this->racketmanager->get_charges( $args );
-
-            require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
         }
+
+        $this->show_message();
+        $args             = array();
+        if ( $competition_id ) {
+            $args['competition'] = $competition_id;
+        }
+        if ( $season ) {
+            $args['season'] = $season;
+        }
+        $finance_charges = $this->racketmanager->get_charges( $args );
+
+        require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
     }
     /**
      * Display charges page
@@ -322,52 +331,50 @@ final class Admin_Finances extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, 'error' );
             $this->show_message();
+            return;
+        }
+        if ( isset( $_POST['saveInvoice'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-invoice' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } elseif ( isset( $_POST['invoice_id'] ) ) {
+                $invoice = get_invoice( intval( $_POST['invoice_id'] ) );
+                $updates = false;
+                if ( isset( $_POST['status'] ) && $invoice->status !== $_POST['status'] ) {
+                    $invoice_update = $invoice->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
+                    if ( $invoice_update ) {
+                        $updates = true;
+                    }
+                }
+                if ( isset( $_POST['purchaseOrder'] ) && $invoice->purchase_order !== $_POST['purchaseOrder'] ) {
+                    $invoice_update = $invoice->set_purchase_order( sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) );
+                    if ( $invoice_update ) {
+                        $updates = true;
+                    }
+                }
+                if ( $updates ) {
+                    $this->set_message( __( 'Invoice updated', 'racketmanager' ) );
+                } else {
+                    $this->set_message( $this->no_updates, true );
+                }
+            }
+        }
+        $this->show_message();
+        if ( isset( $_GET['charge'] ) && isset( $_GET['club'] ) ) {
+            $invoice_id = $this->get_invoice( intval( $_GET['charge'] ), intval( $_GET['club'] ) );
+        } elseif ( isset( $_GET['invoice'] ) ) {
+            $invoice_id = intval( $_GET['invoice'] );
+        }
+        $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
+        if ( isset( $invoice_id ) && $invoice_id ) {
+            $invoice = get_invoice( $invoice_id );
+        }
+        if ( isset( $invoice ) && $invoice ) {
+            $invoice_view = show_invoice( $invoice->id );
+            require_once RACKETMANAGER_PATH . 'templates/admin/finances/invoice.php';
         } else {
-            if ( isset( $_POST['saveInvoice'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-invoice' ) ) {
-                    $this->set_message( __( 'Security token invalid', 'racketmanager' ), true );
-                    $this->show_message();
-                    return;
-                }
-                if ( isset( $_POST['invoice_id'] ) ) {
-                    $invoice = get_invoice( intval( $_POST['invoice_id'] ) );
-                    $updates = false;
-                    if ( isset( $_POST['status'] ) && $invoice->status !== $_POST['status'] ) {
-                        $invoice_update = $invoice->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
-                        if ( $invoice_update ) {
-                            $updates = true;
-                        }
-                    }
-                    if ( isset( $_POST['purchaseOrder'] ) && $invoice->purchase_order !== $_POST['purchaseOrder'] ) {
-                        $invoice_update = $invoice->set_purchase_order( sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) );
-                        if ( $invoice_update ) {
-                            $updates = true;
-                        }
-                    }
-                    if ( $updates ) {
-                        $this->set_message( __( 'Invoice updated', 'racketmanager' ) );
-                    } else {
-                        $this->set_message( $this->no_updates, true );
-                    }
-                }
-            }
+            $this->set_message( __( 'Invoice not found', 'racketmanager' ), true );
             $this->show_message();
-            if ( isset( $_GET['charge'] ) && isset( $_GET['club'] ) ) {
-                $invoice_id = $this->get_invoice( intval( $_GET['charge'] ), intval( $_GET['club'] ) );
-            } elseif ( isset( $_GET['invoice'] ) ) {
-                $invoice_id = intval( $_GET['invoice'] );
-            }
-            $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
-            if ( isset( $invoice_id ) && $invoice_id ) {
-                $invoice = get_invoice( $invoice_id );
-            }
-            if ( isset( $invoice ) && $invoice ) {
-                $invoice_view = show_invoice( $invoice->id );
-                require_once RACKETMANAGER_PATH . 'templates/admin/finances/invoice.php';
-            } else {
-                $this->set_message( __( 'Invoice not found', 'racketmanager' ), true );
-                $this->show_message();
-            }
         }
     }
     /**

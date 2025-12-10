@@ -80,7 +80,7 @@ $invoices = $finance_invoices;
             $invoices_total = 0;
             ?>
             <form id="invoices-action" method="post" action="" class="form-control">
-                <?php wp_nonce_field( 'invoices-bulk' ); ?>
+                <?php wp_nonce_field( 'racketmanager_invoices-bulk', 'racketmanager_nonce' ); ?>
                 <div class="row gx-3 mb-3 align-items-center">
                     <!-- Bulk Actions -->
                     <div class="col-auto">

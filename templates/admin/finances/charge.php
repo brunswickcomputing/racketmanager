@@ -221,6 +221,7 @@ $msg        = null;
             if ( $club_charges ) {
                 ?>
                 <form action="/admin.php?page=racketmanager-finances" method="post" enctype="multipart/form-data" name="clubcharges" class="form-control">
+                    <?php wp_nonce_field( 'racketmanager_charges-bulk', 'racketmanager_nonce' ); ?>
                     <div class="row fw-bold">
                         <div class="col-5"><?php esc_html_e( 'Club', 'racketmanager' ); ?></div>
                         <div class="col-2"><?php esc_html_e( 'Number of Teams', 'racketmanager' ); ?></div>

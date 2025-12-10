@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Validator\Validator;
@@ -24,7 +25,6 @@ use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
-use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
@@ -60,6 +60,8 @@ class Rest_Resources extends WP_REST_Controller {
      */
     public function __construct( $plugin_instance ) {
         $this->racketmanager = $plugin_instance;
+        $c                   = $this->racketmanager->container;
+        $this->club_service  = $c->get( 'club_service' );
         $this->version       = '1';
         $this->namespace     = 'racketmanager/v' . $this->version;
     }
@@ -162,8 +164,12 @@ class Rest_Resources extends WP_REST_Controller {
         $club_id = null;
         if ( $club ) {
             $club_name = un_seo_url( $request['club'] );
-            $club      = get_club( $club_name, 'shortcode' );
-            $club_id   = $club?->id;
+            try {
+                $club    = $this->club_service->get_club_by_shortcode( $club_name );
+                $club_id = $club?->id;
+            } catch ( Club_Not_Found_Exception $e ) {
+                return new WP_Error( 'rest_invalid_param', esc_html( $e->getMessage() ), array( 'status' => 400 ) );
+            }
         }
         $is_league = false;
         $competition_name = isset( $request['competition'] ) ? sanitize_text_field( wp_unslash( $request['competition'] ) ) : null;
@@ -272,12 +278,14 @@ class Rest_Resources extends WP_REST_Controller {
         $home       = $request['home'] ?? null;
         if ( $club ) {
             $club_name = un_seo_url( $request['club'] );
-            $club      = get_club( $club_name, 'shortcode' );
-            if ( $club ) {
+            try {
+                $club               = $this->club_service->get_club_by_shortcode( $club_name );
                 $match_args['club'] = $club->id;
                 if ( $home ) {
                     $match_args['home_club'] = $club->id;
                 }
+            } catch ( Club_Not_Found_Exception $e ) {
+                return new WP_Error( 'rest_invalid_param', esc_html( $e->getMessage() ), array( 'status' => 400 ) );
             }
         }
         $match_args['season'] = $season;
@@ -526,7 +534,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_clubs(): array {
-        $clubs = $this->racketmanager->get_clubs();
+        $clubs = $this->club_service->get_clubs();
         foreach ( $clubs as $i => $club ) {
             $clubs[ $i ] = seo_url( $club->shortcode );
         }

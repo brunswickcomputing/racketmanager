@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\RacketManager;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Lookup;
@@ -47,13 +48,20 @@ class Rest_Resources extends WP_REST_Controller {
      */
     public $namespace;
     /**
+     * Plugin instance
+     *
+     * @var RacketManager
+     */
+    private RacketManager $racketmanager;
+    /**
      * Constructor
      *
      * @return void
      */
-    public function __construct() {
-        $this->version   = '1';
-        $this->namespace = 'racketmanager/v' . $this->version;
+    public function __construct( $plugin_instance ) {
+        $this->racketmanager = $plugin_instance;
+        $this->version       = '1';
+        $this->namespace     = 'racketmanager/v' . $this->version;
     }
     /**
      * Register the routes for the objects of the controller.
@@ -257,7 +265,6 @@ class Rest_Resources extends WP_REST_Controller {
      * @return WP_Error|WP_REST_Response
      */
     public function get_matches( WP_REST_Request $request ): WP_Error|WP_REST_Response {
-        global $racketmanager;
         $matches    = null;
         $match_args = array();
         $season     = $request['season'] ?? null;
@@ -292,7 +299,7 @@ class Rest_Resources extends WP_REST_Controller {
                     $validator = $validator->season_set( $season, $competition->seasons );
                     if ( empty( $validator->error ) ) {
                         $match_args['competition_id'] = $competition->id;
-                        $matches                      = $racketmanager->get_matches( $match_args );
+                        $matches                      = $this->racketmanager->get_matches( $match_args );
                     }
                 } else {
                     $validator->error = true;
@@ -467,7 +474,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return true|WP_Error
      */
     public function string_arg_validate_callback( mixed $value, WP_REST_Request $request, string $param ): true|WP_Error {
-        // If the argument is not a string return an error.
+        // If the argument is not a string, return an error.
         if ( ! is_string( $value ) ) {
             return new WP_Error( 'rest_invalid_param', esc_html__( 'The argument must be a string.', 'racketmanager' ), array( 'status' => 400 ) );
         }
@@ -478,7 +485,7 @@ class Rest_Resources extends WP_REST_Controller {
         // Grab the filter param schema.
         $args = $attributes['args'][ $param ];
 
-        // If the param is not a value in our enum then we should return an error as well.
+        // If the param is not a value in our enum, then we should return an error as well.
         if ( ! in_array( $value, $args['enum'], true ) ) {
             /* translators: %1$s: value passed */
             return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not valid', 'racketmanager' ), $param ), array( 'status' => 400 ) );
@@ -495,7 +502,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return true|WP_Error|null
      */
     public function int_arg_validate_callback( mixed $value, WP_REST_Request $request, mixed $param ): true|WP_Error|null {
-        // If the argument is not an integer return an error.
+        // If the argument is not an integer, return an error.
         if ( ! is_numeric( $value ) ) {
             return new WP_Error( 'rest_invalid_param', esc_html__( 'The argument must be an integer.', 'racketmanager' ), array( 'status' => 400 ) );
         }
@@ -506,7 +513,7 @@ class Rest_Resources extends WP_REST_Controller {
         // Grab the filter param schema.
         $args = $attributes['args'][ $param ];
 
-        // If the param is not a value in our enum then we should return an error as well.
+        // If the param is not a value in our enum, then we should return an error as well.
         if ( ! in_array( $value, $args['enum'], true ) ) {
             /* translators: %1$s: value passed */
             return new WP_Error( 'rest_invalid_param', sprintf( __( '%1$s is not valid', 'racketmanager' ), $param ), array( 'status' => 400 ) );
@@ -519,8 +526,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_clubs(): array {
-        global $racketmanager;
-        $clubs = $racketmanager->get_clubs();
+        $clubs = $this->racketmanager->get_clubs();
         foreach ( $clubs as $i => $club ) {
             $clubs[ $i ] = seo_url( $club->shortcode );
         }
@@ -532,8 +538,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_competitions(): array {
-        global $racketmanager;
-        $competitions = $racketmanager->get_competitions();
+        $competitions = $this->racketmanager->get_competitions();
         foreach ( $competitions as $i => $competition ) {
             $competitions[ $i ] = seo_url( $competition->name );
         }
@@ -545,8 +550,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_events(): array {
-        global $racketmanager;
-        $events = $racketmanager->get_events();
+        $events = $this->racketmanager->get_events();
         foreach ( $events as $i => $event ) {
             $events[ $i ] = seo_url( $event->name );
         }
@@ -558,8 +562,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_leagues(): array {
-        global $racketmanager;
-        $leagues = $racketmanager->get_leagues();
+        $leagues = $this->racketmanager->get_leagues();
         foreach ( $leagues as $i => $league ) {
             $leagues[ $i ] = seo_url( $league->title );
         }
@@ -571,8 +574,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_seasons(): array {
-        global $racketmanager;
-        $seasons = $racketmanager->get_seasons();
+        $seasons = $this->racketmanager->get_seasons();
         foreach ( $seasons as $i => $season ) {
             $seasons[ $i ] = seo_url( $season->name );
         }

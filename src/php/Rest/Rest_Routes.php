@@ -9,15 +9,20 @@
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\RacketManager;
+
 /**
  * Class to implement the Rest_Routes object
  */
 class Rest_Routes {
+    private RacketManager $racketmanager;
+
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct( $plugin_instance ) {
         global $wp_version;
+        $this->racketmanager = $plugin_instance;
         if ( version_compare( $wp_version, '4.7', '>=' ) && class_exists( 'WP_REST_Controller' ) ) {
             require_once plugin_dir_path( __FILE__ ) . 'Rest_Resources.php';
             add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );

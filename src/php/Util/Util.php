@@ -665,6 +665,8 @@ class Util {
      */
     public static function get_default_match_days( string $type ): int {
         global $racketmanager;
+        $c                      = $racketmanager->container;
+        $club_service           = $c->get( 'club_service' );
         $options                = $racketmanager->get_options();
         $rm_options             = $options['championship'];
         $default_num_match_days = $rm_options['numRounds'] ?? 1;
@@ -672,7 +674,7 @@ class Util {
             case 'cup':
                 $args['count'] = true;
                 $args['type']  = 'affiliated';
-                $num_clubs     = $racketmanager->get_clubs( $args );
+                $num_clubs     = $club_service->get_clubs( $args );
                 if ( $num_clubs ) {
                     $num_match_days = ceil( log( $num_clubs, 2 ) );
                 } else {

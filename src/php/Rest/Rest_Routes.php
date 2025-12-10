@@ -50,7 +50,7 @@ class Rest_Routes {
      */
     public function register_rest_routes(): void {
         $resources = array(
-            new Rest_Resources(),
+            new Rest_Resources( $this->racketmanager ),
         );
         foreach ( $resources as $resource ) {
             $resource->register_routes();

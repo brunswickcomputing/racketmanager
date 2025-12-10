@@ -516,7 +516,7 @@ class Shortcodes {
         $template          = $args['template'];
         $club_args         = array();
         $club_args['type'] = 'affiliated';
-        $clubs             = $racketmanager->get_clubs( $club_args );
+        $clubs             = $this->club_service->get_clubs( $club_args );
         if ( ! $clubs ) {
             return $this->return_error( __( 'No clubs found', 'racketmanager' ) );
         }

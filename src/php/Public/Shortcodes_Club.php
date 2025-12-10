@@ -43,11 +43,7 @@ class Shortcodes_Club extends Shortcodes {
             $atts
         );
         $template = $args['template'];
-        $clubs    = $racketmanager->get_clubs(
-            array(
-                'type' => 'current',
-            )
-        );
+        $clubs    = $this->club_service->get_clubs_with_details( array( 'type' => 'current' ) );
         $filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
         return $this->load_template(
             $filename,

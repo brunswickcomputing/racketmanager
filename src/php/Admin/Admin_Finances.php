@@ -68,18 +68,21 @@ final class Admin_Finances extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, 'error' );
             $this->show_message();
-        } else {
-            $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
-            $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-            $club_id           = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
-            $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
-            $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
-            $racketmanager_tab = 'club-invoices';
-            $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
-            $args['type']      = 'club';
-            $finance_invoices  = $racketmanager->get_invoices( $args );
-            require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
+            return;
         }
+        $players           = '';
+        $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
+        $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $club_id           = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
+        $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
+        $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
+        $racketmanager_tab = 'club-invoices';
+        $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
+        $args['type']      = 'club';
+        $finance_invoices  = $this->racketmanager->get_invoices( $args );
+        $clubs             = $this->club_service->get_clubs();
+        $charges           = $this->get_finance_charges_for_invoices( 'team' );
+        require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
     }
     /**
      * Display player invoices page
@@ -90,18 +93,19 @@ final class Admin_Finances extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, 'error' );
             $this->show_message();
-        } else {
-            $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
-            $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-            $club_id           = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
-            $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
-            $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
-            $racketmanager_tab = 'player-invoices';
-            $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
-            $args['type'] = 'player';
-            $finance_invoices = $racketmanager->get_invoices( $args );
-            require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
+            return;
         }
+        $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
+        $season            = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $club_id           = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
+        $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
+        $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
+        $racketmanager_tab = 'player-invoices';
+        $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
+        $args['type']      = 'player';
+        $finance_invoices  = $this->racketmanager->get_invoices( $args );
+        $charges           = $this->get_finance_charges_for_invoices( 'player' );
+        require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
     }
 
     /**

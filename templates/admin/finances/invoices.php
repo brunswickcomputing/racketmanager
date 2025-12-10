@@ -86,7 +86,7 @@ $invoices = $finance_invoices;
                     <div class="col-auto">
                         <label>
                             <select class="form-select" name="action">
-                                <option value="-1" selected="selected"><?php esc_html_e( 'Change Status', 'racketmanager' ); ?></option>
+                                <option value="" selected disabled><?php esc_html_e( 'Change Status', 'racketmanager' ); ?></option>
                                 <option value="paid"><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
                             </select>
                         </label>

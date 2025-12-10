@@ -69,7 +69,7 @@ $charges         = $finance_charges;
                 <div class="col-auto">
                     <label>
                         <select class="form-select" name="action">
-                            <option value="-1" selected="selected"><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
+                            <option value="" selected disabled><?php esc_html_e( 'Bulk Actions', 'racketmanager' ); ?></option>
                             <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
                         </select>
                     </label>

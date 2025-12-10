@@ -77,10 +77,10 @@ class Upgrade {
             $charset_collate = '';
             if ( $this->wpdb->has_cap( 'collation' ) ) {
                 if ( ! empty( $this->wpdb->charset ) ) {
-                    $charset_collate = "DEFAULT CHARACTER SET {$this->wpdb}->charset";
+                    $charset_collate = 'DEFAULT CHARACTER SET ' . $this->wpdb->charset;
                 }
                 if ( ! empty( $this->wpdb->collate ) ) {
-                    $charset_collate .= " COLLATE {$this->wpdb}->collate";
+                    $charset_collate .= ' COLLATE ' . $this->wpdb->collate;
                 }
             }
             $this->wpdb->query( "CREATE TABLE {$this->wpdb->prefix}racketmanager_club_roles ( `id` int( 11 ) NOT NULL AUTO_INCREMENT, `club_id` int( 11 ) NOT NULL, `role_id` int( 11 ) NOT NULL, `user_id` int( 11 ) NOT NULL, PRIMARY KEY ( `id` )) $charset_collate;" );

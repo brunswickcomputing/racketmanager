@@ -129,6 +129,13 @@ final class Admin_Finances extends Admin_Display {
      * Display charges page
      */
     public function display_charges_page(): void {
+        $validator = new Validator_Finance();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, 'error' );
+            $this->show_message();
+            return;
+        }
         $players = '';
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( __( $this->invalid_permissions ), true );
@@ -310,8 +317,10 @@ final class Admin_Finances extends Admin_Display {
      * Display invoice page
      */
     public function display_invoice_page(): void {
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator_Finance();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, 'error' );
             $this->show_message();
         } else {
             if ( isset( $_POST['saveInvoice'] ) ) {
@@ -390,10 +399,11 @@ final class Admin_Finances extends Admin_Display {
      * @return array
      */
     public function get_invoice_actions( string $status, ?int $club_id, ?int $charge_id ): array {
-        if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) && - 1 !== $_POST['action'] ) {
-            check_admin_referer( 'invoices-bulk' );
-            if ( ! current_user_can( 'del_teams' ) ) {
-                $this->set_message( __( 'You do not have permission to perform this task', 'racketmanager' ), true );
+        $validator = new Validator_Finance();
+        if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_invoices-bulk' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
             } else {
                 $messages = array();
                 if ( isset( $_POST['invoice'] ) ) {

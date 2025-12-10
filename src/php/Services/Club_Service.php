@@ -209,6 +209,29 @@ class Club_Service {
     }
 
     /**
+     * Get clubs with details
+     *
+     * @param array $args
+     *
+     * @return array
+     */
+    public function get_clubs_with_details( array $args = array() ): array {
+        $clubs              = $this->club_repository->find_all( $args );
+        $clubs_with_details = array();
+        foreach ( $clubs as $club ) {
+            $club_id = $club->get_id();
+            $roles   = $this->club_role_repository->get_roles_for_club( $club_id );
+            try {
+                $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
+            } catch ( Role_Assignment_Not_Found_Exception ) {
+                $match_secretary = null;
+            }
+            $clubs_with_details[] = new Club_Details_DTO( $club, $roles, $match_secretary );
+        }
+        return $clubs_with_details;
+    }
+
+    /**
      * Function to set a club role for a user
      *
      * @param int $club_id

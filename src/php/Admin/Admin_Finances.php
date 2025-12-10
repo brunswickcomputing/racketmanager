@@ -63,10 +63,10 @@ final class Admin_Finances extends Admin_Display {
      * Display club invoices page
      */
     public function display_club_invoices_page(): void {
-        global $racketmanager;
-        $players = '';
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator_Finance();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, 'error' );
             $this->show_message();
         } else {
             $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;
@@ -85,10 +85,10 @@ final class Admin_Finances extends Admin_Display {
      * Display player invoices page
      */
     public function display_player_invoices_page(): void {
-        global $racketmanager;
-        $players = '';
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( __( 'You do not have sufficient permissions to access this page', 'racketmanager' ), true );
+        $validator = new Validator_Finance();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, 'error' );
             $this->show_message();
         } else {
             $competition_id    = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : null;

@@ -32,12 +32,14 @@ class Rest_Routes {
     /**
      * Singleton
      *
+     * @param RacketManager $plugin_instance
+     *
      * @return Rest_Routes
      */
-    public static function single(): Rest_Routes {
+    public static function single( RacketManager $plugin_instance ): Rest_Routes {
         static $single;
         if ( empty( $single ) ) {
-            $single = new self();
+            $single = new self( $plugin_instance );
         }
 
         return $single;

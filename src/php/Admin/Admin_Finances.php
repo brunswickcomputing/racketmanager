@@ -129,7 +129,6 @@ final class Admin_Finances extends Admin_Display {
      * Display charges page
      */
     public function display_charges_page(): void {
-        global $racketmanager;
         $players = '';
         if ( ! current_user_can( 'edit_leagues' ) ) {
             $this->set_message( __( $this->invalid_permissions ), true );
@@ -187,7 +186,7 @@ final class Admin_Finances extends Admin_Display {
             if ( $season ) {
                 $args['season'] = $season;
             }
-            $finance_charges = $racketmanager->get_charges( $args );
+            $finance_charges = $this->racketmanager->get_charges( $args );
 
             require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
         }
@@ -311,7 +310,6 @@ final class Admin_Finances extends Admin_Display {
      * Display invoice page
      */
     public function display_invoice_page(): void {
-        global $racketmanager;
         if ( ! current_user_can( 'edit_teams' ) ) {
             $this->set_message( $this->invalid_permissions, true );
             $this->show_message();

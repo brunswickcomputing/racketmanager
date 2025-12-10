@@ -210,15 +210,17 @@ class Club_Repository {
      *
      * @param array $args search arguments.
      *
-     * @return array array of clubs.
+     * @return array|int array of clubs.
      */
-    public function find_all( array $args = array() ): array {
+    public function find_all( array $args = array() ): array|int {
         $defaults = array(
             'type'    => false,
+            'count'   => false,
             'orderby' => 'asc',
         );
         $args     = array_merge( $defaults, $args );
         $type     = $args['type'];
+        $count    = $args['count'];
         $orderby  = $args['orderby'];
 
         $search_terms = array();
@@ -230,6 +232,15 @@ class Club_Repository {
             }
         }
         $search = Util::search_string( $search_terms, true );
+        if ( $count ) {
+            $sql    = "SELECT COUNT(*) FROM $this->table_name $search";
+            $count  = wp_cache_get( md5( $sql ), 'clubs' );
+            if ( ! $count ) {
+                $count = $this->wpdb->get_var( $sql );
+                wp_cache_set( md5( $sql ), $count, 'clubs' );
+            }
+            return $count;
+        }
         switch ( $orderby ) {
             case 'asc':
                 $order = '`name` ASC';

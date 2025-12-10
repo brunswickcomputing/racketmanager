@@ -8,25 +8,13 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var string $racketmanager_tab */
 /** @var array  $finance_invoices */
 /** @var int    $club_id */
 /** @var int    $charge_id */
 /** @var string $status */
-$args = array();
-if ( 'club-invoices' === $racketmanager_tab ) {
-    $clubs         = $racketmanager->get_clubs();
-    $args['entry'] = 'team';
-} else {
-    $args['entry'] = 'player';
-}
-$args['status']  = 'final';
-$args['orderby'] = array(
-    'season'         => 'DESC',
-    'competition_id' => 'ASC',
-);
-$charges         = $racketmanager->get_charges( $args );
+/** @var array  $clubs */
+/** @var array  $charges */
 $invoices = $finance_invoices;
 ?>
 <div class="container">

@@ -103,6 +103,24 @@ final class Admin_Finances extends Admin_Display {
             require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
         }
     }
+
+    /**
+     * Get charges for invoices
+     *
+     * @param $type
+     *
+     * @return array
+     */
+    private function get_finance_charges_for_invoices( $type ): array {
+        $args = array();
+        $args['entry'] = $type;
+        $args['orderby'] = array(
+                'season'         => 'DESC',
+                'competition_id' => 'ASC',
+        );
+        return $this->racketmanager->get_charges( $args );
+
+    }
     /**
      * Display charges page
      */

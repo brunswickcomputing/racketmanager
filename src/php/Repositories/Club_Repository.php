@@ -258,7 +258,7 @@ class Club_Repository {
                 break;
         }
         $order  = empty( $order ) ? null : 'ORDER BY ' . $order;
-        $sql    = "SELECT `id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode` FROM $this->table_name $search $order";
+        $sql    = "SELECT * FROM $this->table_name $search $order";
         $clubs  = wp_cache_get( md5( $sql ), 'clubs' );
         if ( ! $clubs ) {
             $results = $this->wpdb->get_results( $sql );

@@ -302,7 +302,7 @@ final class Admin_Finances extends Admin_Display {
     }
 
     /**
-     * Function to get charge inout data from screen
+     * Function to get charge inout data from the screen
      *
      * @param object|null $charge charge object.
      *
@@ -397,7 +397,7 @@ final class Admin_Finances extends Admin_Display {
     }
 
     /**
-     * Get invoice actions from screen
+     * Get invoice actions from the screen
      *
      * @param string $status
      * @param int|null $club_id

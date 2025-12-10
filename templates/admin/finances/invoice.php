@@ -12,7 +12,7 @@ namespace Racketmanager;
 if ( empty( $invoice->player_id ) ) {
     $view       = 'club-invoices';
     $breadcrumb = __( 'Club invoices', 'racketmanager' );
-    $inv_name = $invoice->club->name;
+    $inv_name   = $invoice->club->name;
 } else {
     $view       = 'player-invoices';
     $breadcrumb = __( 'Player invoices', 'racketmanager' );

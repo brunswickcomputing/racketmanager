@@ -529,32 +529,40 @@ final class Team {
      * @param string|null $captain captain id.
      * @param string|null $contactno optional contact number.
      * @param string|null $contactemail optional contact email.
-     * @param int|null    $matchday optional match day.
+     * @param int|null $matchday optional match day.
      * @param string|null $matchtime optional match time.
-     * @return int $team_event_id
+     *
+     * @return void
      */
-    public function add_event( int $event_id, ?string $captain = null, ?string $contactno = null, ?string $contactemail = null, int|null $matchday = null, string $matchtime = null ): int {
+    public function add_event( int $event_id, ?string $captain = null, ?string $contactno = null, ?string $contactemail = null, int|null $matchday = null, string $matchtime = null ): void {
         global $wpdb;
+        // Derive match day string
         if ( is_null( $matchday) ) {
             $match_day = '';
         } else {
             $match_day = Util_Lookup::get_match_day( $matchday );
         }
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_team_events (`team_id`, `event_id`, `captain`, `match_day`, `match_time`) VALUES (%d, %d, %d, %s, %s)",
-                $this->id,
-                $event_id,
-                $captain,
-                $match_day,
-                $matchtime
-            )
-        );
-        $team_event_id = $wpdb->insert_id;
+
+        // Update per-league/table fields for the current season and leagues mapped to this event
+        $event = get_event( $event_id );
+        $season = $event->get_season();
+        if ( $captain || $match_day || $matchtime ) {
+            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    "UPDATE $wpdb->racketmanager_table SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `season` = %s AND `league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)",
+                    $captain,
+                    $match_day,
+                    $matchtime,
+                    $this->id,
+                    $season,
+                    $event_id
+                )
+            );
+        }
+
         if ( $captain ) {
             $this->player_service->update_contact_details( $captain, $contactno, $contactemail );
         }
-        return $team_event_id;
     }
 
     /**

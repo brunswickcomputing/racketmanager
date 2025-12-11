@@ -591,8 +591,7 @@ class Admin_Display {
             foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 $league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
                 if ( is_numeric( $team_id ) ) {
-                    $team = get_team( $team_id );
-                    $team->set_event( intval( $_POST['event_id'] ) );
+                    $this->set_message( __( 'Team added', 'racketmanager' ) );
                 }
             }
         }

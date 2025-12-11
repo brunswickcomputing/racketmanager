@@ -1432,10 +1432,11 @@ final class Tournament {
                             $team->club_id     = $club->id;
                             $team              = new Team( $team );
                         }
-                        $team->set_event( $league->event_id, $player->id, $player->contactno, $player->email );
                         $league_entry_id = $league->add_team( $team->id, $this->season );
                         if ( $league_entry_id ) {
                             $league_entry = get_league_team( $league_entry_id );
+                            $league_entry->set_team_details( $player->get_id() );
+                            $team->set_event( $league->event_id, $player->id, $player->contactno, $player->email );
                             $league_entry?->set_player_rating($team, $event);
                         }
                         $updates = true;

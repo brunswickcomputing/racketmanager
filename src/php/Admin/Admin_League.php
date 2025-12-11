@@ -1795,8 +1795,7 @@ final class Admin_League extends Admin_Display {
                 $profile = '1';
                 $league  = get_league( intval( $_POST['league_id'] ) );
                 $league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ), $rank, $status, $profile );
-                $team = get_team( $team_id );
-                $team->set_event( intval( $_POST['event_id'] ) );
+                $team       = get_team( $team_id );
                 $messages[] = $team->title . ' ' . __( 'added', 'racketmanager' );
             }
             $message = implode( '<br>', $messages );

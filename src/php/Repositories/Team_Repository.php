@@ -205,12 +205,11 @@ class Team_Repository {
      * @return bool
      */
     public function find_captain( int $club_id, int $player ): bool {
-        $team_events_table = $this->wpdb->prefix . 'racketmanager_team_events';
-        $clubs_table       = $this->wpdb->prefix . 'racketmanager_clubs';
+        $tables_table = $this->wpdb->prefix . 'racketmanager_table';
 
         $count = $this->wpdb->get_var(
             $this->wpdb->prepare(
-               "SELECT count(*) FROM $team_events_table te, $this->table_name t, $clubs_table c WHERE c.`id` = %d AND c.`id` = t.`club_id` AND t.`team_type` IS NULL AND t.`id` = te.`team_id` AND e.`captain` = %d",
+               "SELECT count(*) FROM $this->table_name t, $tables_table t1 WHERE t.`club_id` = %d AND t.`team_type` IS NULL AND t.`id` = t1.`team_id` AND t1.`captain` = %d",
                 $club_id,
                 $player
             )

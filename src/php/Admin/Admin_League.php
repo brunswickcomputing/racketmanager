@@ -872,7 +872,7 @@ final class Admin_League extends Admin_Display {
             $teams_missing_details = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    "SELECT `t`.`title`FROM $wpdb->racketmanager_teams t , $wpdb->racketmanager_team_events tc , $wpdb->racketmanager_table t1 , $wpdb->racketmanager l WHERE t.`id` = `tc`.`team_id` AND `tc`.`match_day` = '' AND `tc`.`event_id` in (" . $event_ids . ') AND l.`id` = `t1`.`league_id` AND `l`.`event_id` = tc.`event_id` AND `t1`.`season` = %s AND `t1`.`team_id` = `tc`.`team_id`',
+                    "SELECT `t`.`title` FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager_table t1, $wpdb->racketmanager l WHERE t.`id` = t1.`team_id` AND t1.`match_day` IS NULL AND l.`id` = t1.`league_id` AND l.`event_id` in (" . $event_ids . ') AND t1.`season` = %s',
                     $season
                 )
             );
@@ -957,7 +957,7 @@ final class Admin_League extends Admin_Display {
         $event_ids = implode( ',', $events );
         /* set refs for those teams in the same division so they play first */
         $sql = $wpdb->prepare(
-            "SELECT `t`.`club_id`, tbl.`league_id` FROM $wpdb->racketmanager_team_events tc, $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s GROUP BY t.`club_id`, tbl.`league_id` HAVING COUNT(*) > 1',
+            "SELECT `t`.`club_id`, tbl.`league_id` FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND l.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s GROUP BY t.`club_id`, tbl.`league_id` HAVING COUNT(*) > 1',
             $season
         );
         $club_leagues = wp_cache_get( md5( $sql ), 'club_leagues' );
@@ -970,7 +970,7 @@ final class Admin_League extends Admin_Display {
         }
         foreach ( $club_leagues as $club_league ) {
             $sql = $wpdb->prepare(
-                "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM $wpdb->racketmanager_team_events tc, $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND t.`club_id` = %d AND tbl.`league_id` = %d ORDER BY tbl.`team_id`',
+                "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id` FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND l.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND t.`club_id` = %d AND tbl.`league_id` = %d ORDER BY tbl.`team_id`',
                 $season,
                 $club_league->club_id,
                 $club_league->league_id
@@ -1073,7 +1073,7 @@ final class Admin_League extends Admin_Display {
         $event_teams = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                "SELECT `t`.`club_id`, `tc`.`match_day`, `tc`.`match_time`, count(*) FROM $wpdb->racketmanager_team_events tc, $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND tbl.`profile` != 3 GROUP BY t.`club_id`, tc.`match_day`, tc.`match_time` HAVING COUNT(*) > 1 ORDER BY count(*) DESC, RAND()',
+                "SELECT `t`.`club_id`, tbl.`match_day`, tbl.`match_time`, count(*) FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND l.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND tbl.`profile` != 3 GROUP BY t.`club_id`, tbl.`match_day`, tbl.`match_time` HAVING COUNT(*) > 1 ORDER BY count(*) DESC, RAND()',
                 $season
             )
         );
@@ -1082,7 +1082,7 @@ final class Admin_League extends Admin_Display {
             $teams = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id`, tbl.`group` FROM $wpdb->racketmanager_team_events tc, $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE tc.`team_id` = t.`id` AND tc.`event_id` = l.`event_id` AND l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND tc.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND t.`club_id` = %d AND tc.`match_day` = %s AND tc.`match_time` = %s AND tbl.`profile` != 3 ORDER BY tbl.`group`, tbl.`team_id`',
+                    "SELECT tbl.`id`, tbl.`team_id`, tbl.`league_id`, tbl.`group` FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_table tbl WHERE l.`id` = tbl.`league_id` AND tbl.`team_id` = t.`id` AND l.`event_id` in (" . $event_ids . ') AND tbl.`season` = %s AND t.`club_id` = %d AND tbl.`match_day` = %s AND tbl.`match_time` = %s AND tbl.`profile` != 3 ORDER BY tbl.`group`, tbl.`team_id`',
                     $season,
                     $event_team->club_id,
                     $event_team->match_day,

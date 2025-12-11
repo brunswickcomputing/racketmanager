@@ -995,7 +995,7 @@ class Event {
 
         $search = Util::search_string( $search_terms );
         $order  = Util::order_by_string( $orderby );
-        $sql = "SELECT DISTINCT B.`id`, B.`title`, C.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, C.`match_day`, C.`match_time` FROM $wpdb->racketmanager_teams B, $wpdb->racketmanager_table A, $wpdb->racketmanager_team_events C WHERE B.id = A.team_id AND A.team_id = C.team_id and C.event_id in (select `event_id` from $wpdb->racketmanager WHERE `id` = A.league_id) AND C.`event_id` = " . $this->id . ' AND A.season = ' . $this->get_season() . " $search $order";
+        $sql = "SELECT DISTINCT B.`id`, B.`title`, A.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, A.`match_day`, A.`match_time` FROM $wpdb->racketmanager_teams B, $wpdb->racketmanager_table A WHERE B.id = A.team_id AND A.league_id in (select `id` from $wpdb->racketmanager WHERE `event_id` = " . $this->id . ') AND A.season = ' . $this->get_season() . " $search $order";
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
         if ( ! $teams ) {
@@ -1042,9 +1042,11 @@ class Event {
     public function get_team_info( int $team_id ): ?object {
         global $wpdb;
 
-        $sql = $wpdb->prepare( "SELECT `captain`, `match_day`, `match_time` FROM $wpdb->racketmanager_team_events WHERE `event_id` = %d AND `team_id` = %d",
-            $this->id,
-            $team_id
+        $sql = $wpdb->prepare(
+            "SELECT TBL.`captain`, TBL.`match_day`, TBL.`match_time` FROM $wpdb->racketmanager_table TBL WHERE TBL.`team_id` = %d AND TBL.`season` = %s AND TBL.`league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) LIMIT 1",
+            $team_id,
+            $this->get_season(),
+            $this->id
         );
 
         $team = wp_cache_get( md5( $sql ), 'team' );

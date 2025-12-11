@@ -37,6 +37,9 @@ class Widget extends WP_Widget {
      */
     public function widget( $args, $instance ): void {
         global $racketmanager;
+        $c            = $racketmanager->container;
+        $club_service = $c->get( 'club_service' );
+
         $cache = array();
         if ( ! $this->is_preview() ) {
             $cache = wp_cache_get( 'racketmanager', 'widget' );
@@ -61,17 +64,13 @@ class Widget extends WP_Widget {
         $title         = apply_filters( 'widget_title', $instance['title'] );
         $club_name     = isset( $instance['club_name'] ) ? esc_html( $instance['club_name'] ) : '';
         $club_link     = isset( $instance['club_link'] ) ? esc_html( $instance['club_link'] ) : '';
-        $num_items     = empty( $instance['num_items'] ) ? 999999 : intval( $instance['num_items'] );
-        $club_type     = $instance['club_type'];
-        $orderby       = $instance['orderby'];
-        $clubs         = $racketmanager->get_clubs(
-            array(
-                'type'    => $club_type,
-                'limit'   => $num_items,
-                'orderby' => $orderby,
-            )
-        );
-        $data = new stdClass();
+
+        $args['limit']     = empty( $instance['num_items'] ) ? 999999 : intval( $instance['num_items'] );
+        $args['club_type'] = $instance['club_type'];
+        $args['orderby']   = $instance['orderby'];
+        $clubs             = $club_service->get_clubs( $args );
+
+        $data                = new stdClass();
         $data->clubs         = $clubs;
         $data->club_name     = $club_name;
         $data->club_link     = $club_link;

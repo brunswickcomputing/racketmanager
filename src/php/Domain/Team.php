@@ -655,13 +655,6 @@ final class Team {
                 $this->id
             )
         );
-        // remove team event.
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_team_events WHERE `team_id` = %d",
-                $this->id
-            )
-        );
         // remove team.
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(

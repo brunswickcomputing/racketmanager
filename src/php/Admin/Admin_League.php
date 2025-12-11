@@ -1551,15 +1551,7 @@ final class Admin_League extends Admin_Display {
         $team_id = isset( $_POST['team_id'] ) ? intval( $_POST['team_id'] ) : null;
         if ( $team_id ) {
             $team = get_team( intval( $_POST['team_id'] ) );
-            if ( ! empty( $_POST['league_id'] ) && ! empty( $_POST['editTeam'] ) ) {
-                $league       = get_league( $league );
-                $captain      = isset( $_POST['captainId'] ) ? intval( $_POST['captainId'] ) : null;
-                $contactno    = isset( $_POST['contactno'] ) ? sanitize_text_field( wp_unslash( $_POST['contactno'] ) ) : null;
-                $contactemail = isset( $_POST['contactemail'] ) ? sanitize_text_field( wp_unslash( $_POST['contactemail'] ) ) : null;
-                $match_day    = isset( $_POST['matchday'] ) ? intval( $_POST['matchday'] ) : null;
-                $matchtime    = isset( $_POST['matchtime'] ) ? sanitize_text_field( wp_unslash( $_POST['matchtime'] ) ) : null;
-                $team->set_event( $league->event->id, $captain, $contactno, $contactemail, $match_day, $matchtime );
-            } elseif ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
+            if ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
                 $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
             }
         }

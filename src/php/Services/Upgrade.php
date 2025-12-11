@@ -54,6 +54,7 @@ class Upgrade {
         $this->v10_0_2();
         $this->v10_0_3();
         $this->v10_0_4();
+        $this->v10_0_5();
         /*
         * Update version and dbversion
         */
@@ -222,6 +223,51 @@ class Upgrade {
         }
     }
 
+    /**
+     * Upgrade to 10.0.5
+     * Move the event specific team details (captain/match day/match time) to tables
+     *
+     * @return void
+     */
+    private function v10_0_5 ():void {
+        $version = '10.0.5';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_table ADD `captain` INT NULL AFTER `season`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_table ADD `match_day` VARCHAR( 25 ) NULL AFTER `captain`" );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_table ADD `match_time` TIME NULL AFTER `match_day`" );
+            // Migrate captain/match_day/match_time from team_events to table rows if missing
+            // captain
+            $this->wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
+                "UPDATE {$this->wpdb->prefix}racketmanager_table tbl
+             JOIN {$this->wpdb->prefix}racketmanager_leagues l ON l.id = tbl.league_id
+             JOIN {$this->wpdb->prefix}racketmanager_team_events tc ON tc.team_id = tbl.team_id AND tc.event_id = l.event_id
+             SET tbl.captain = IF((tbl.captain IS NULL OR tbl.captain = 0), tc.captain, tbl.captain)"
+            );
+            // match_day
+            $this->wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
+                "UPDATE {$this->wpdb->prefix}racketmanager_table tbl
+             JOIN {$this->wpdb->prefix}racketmanager_leagues l ON l.id = tbl.league_id
+             JOIN {$this->wpdb->prefix}racketmanager_team_events tc ON tc.team_id = tbl.team_id AND tc.event_id = l.event_id
+             SET tbl.match_day = IF((tbl.match_day IS NULL OR tbl.match_day = ''), tc.match_day, tbl.match_day)"
+            );
+            // match_time
+            $this->wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared
+                "UPDATE {$this->wpdb->prefix}racketmanager_table tbl
+             JOIN {$this->wpdb->prefix}racketmanager_leagues l ON l.id = tbl.league_id
+             JOIN {$this->wpdb->prefix}racketmanager_team_events tc ON tc.team_id = tbl.team_id AND tc.event_id = l.event_id
+             SET tbl.match_time = IF((tbl.match_time IS NULL), tc.match_time, tbl.match_time)"
+            );
+        }
+    }
+
+    /**
+     * Show upgrade step
+     *
+     * @param string $version
+     *
+     * @return void
+     */
     private function show_upgrade_step( string $version ): void {
         echo '<p>' . sprintf(esc_html__( 'starting %s upgrade', 'racketmanager' ), $version ) . '</p>';
     }

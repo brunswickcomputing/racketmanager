@@ -813,4 +813,8 @@ final class League_Team {
             )
         );
     }
+
+    public function set_team_details( $player_id ) {
+
+    }
 }

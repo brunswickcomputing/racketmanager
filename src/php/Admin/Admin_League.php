@@ -50,15 +50,15 @@ final class Admin_League extends Admin_Display {
                 $this->display_setup_event_page();
                 break;
             case 'modify':
-                $this->admin_competition = new Admin_Competition();
+                $this->admin_competition = new Admin_Competition( $this->racketmanager );
                 $this->admin_competition->display_season_modify_page();
                 break;
             case 'config':
-                $this->admin_competition = new Admin_Competition();
+                $this->admin_competition = new Admin_Competition( $this->racketmanager );
                 $this->admin_competition->display_config_page();
                 break;
             case 'event-config':
-                $this->admin_event = new Admin_Event();
+                $this->admin_event = new Admin_Event( $this->racketmanager );
                 $this->admin_event->display_config_page();
                 break;
             case 'event':
@@ -83,7 +83,7 @@ final class Admin_League extends Admin_Display {
                 $this->display_teams_list();
                 break;
             case 'team':
-                $this->admin_club = new Admin_Club();
+                $this->admin_club = new Admin_Club( $this->racketmanager );
                 $this->admin_club->display_team_page();
                 break;
             case 'contact':

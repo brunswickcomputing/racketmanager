@@ -701,7 +701,7 @@ class Shortcodes_Competition extends Shortcodes {
             $args['count'] = true;
         }
         if ( current_user_can( 'manage_racketmanager' ) ) {
-            $clubs = $racketmanager->get_clubs( $args );
+            $clubs = $this->club_service->get_clubs( $args );
         } else {
             $competition_options = $racketmanager->get_options( $competition->type );
             if ( $competition_options ) {

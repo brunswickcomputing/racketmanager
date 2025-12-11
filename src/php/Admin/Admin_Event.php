@@ -25,12 +25,6 @@ use function Racketmanager\get_tournament;
  * @subpackage RacketManagerAdmin
  */
 final class Admin_Event extends Admin_Display {
-
-    /**
-     * Constructor
-     */
-    public function __construct() {
-    }
     /**
      * Handle config page function
      *

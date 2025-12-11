@@ -1640,8 +1640,7 @@ class League {
         }
 
         $sql = $wpdb->prepare(
-            "SELECT A.`title`, B.`captain`, A.`club_id`, B.`match_day`, B.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points_2_plus`, C.`points_2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_table C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d LEFT JOIN $wpdb->racketmanager_team_events B ON A.`id` = B.`team_id` and B.`event_id` IN (select `event_id` FROM $wpdb->racketmanager WHERE `id` = %d) WHERE A.`id` = %d AND C.`season` = %s",
-            $this->id,
+            "SELECT A.`title`, C.`captain`, A.`club_id`, C.`match_day`, C.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points_2_plus`, C.`points_2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_table C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d WHERE A.`id` = %d AND C.`season` = %s",
             $this->id,
             $team_id,
             $season

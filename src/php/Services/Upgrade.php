@@ -55,6 +55,7 @@ class Upgrade {
         $this->v10_0_3();
         $this->v10_0_4();
         $this->v10_0_5();
+        $this->v10_0_6();
         /*
         * Update version and dbversion
         */
@@ -258,6 +259,20 @@ class Upgrade {
              JOIN {$this->wpdb->prefix}racketmanager_team_events tc ON tc.team_id = tbl.team_id AND tc.event_id = l.event_id
              SET tbl.match_time = IF((tbl.match_time IS NULL), tc.match_time, tbl.match_time)"
             );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.6
+     * Rename racketmanager_table to racketmanager_league_teams
+     *
+     * @return void
+     */
+    private function v10_0_6 ():void {
+        $version = '10.0.6';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "RENAME TABLE {$this->wpdb->prefix}racketmanager_table TO {$this->wpdb->prefix}racketmanager_league_teams" );
         }
     }
 

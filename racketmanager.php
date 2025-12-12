@@ -66,7 +66,7 @@ register_deactivation_hook( __FILE__, array( 'Racketmanager\\Activator', 'deacti
 function define_tables(): void {
     global $wpdb;
     $wpdb->racketmanager                      = $wpdb->prefix . 'racketmanager_leagues';
-    $wpdb->racketmanager_table                = $wpdb->prefix . 'racketmanager_table';
+    $wpdb->racketmanager_league_teams         = $wpdb->prefix . 'racketmanager_league_teams';
     $wpdb->racketmanager_teams                = $wpdb->prefix . 'racketmanager_teams';
     $wpdb->racketmanager_matches              = $wpdb->prefix . 'racketmanager_matches';
     $wpdb->racketmanager_rubbers              = $wpdb->prefix . 'racketmanager_rubbers';

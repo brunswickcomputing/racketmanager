@@ -647,7 +647,7 @@ class RacketManager {
         $season    = $args['season'];
         $team_id   = $args['team'];
         $age_group = $args['age_group'];
-        $sql       = "SELECT l.id, t.`won_matches`,t.`rank` FROM $wpdb->racketmanager l, $wpdb->racketmanager_table t WHERE l.`id` = t.`league_id` AND l.`id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` IN (SELECT e.`id` FROM $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE e.`competition_id` = c.`id` AND c.`type` = 'league'))";
+        $sql       = "SELECT l.id, t.`won_matches`,t.`rank` FROM $wpdb->racketmanager l, $wpdb->racketmanager_league_teams t WHERE l.`id` = t.`league_id` AND l.`id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` IN (SELECT e.`id` FROM $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE e.`competition_id` = c.`id` AND c.`type` = 'league'))";
         if ( $season ) {
             $sql .= $wpdb->prepare(
                 ' AND t.`season` = %d',

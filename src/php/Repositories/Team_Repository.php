@@ -205,7 +205,7 @@ class Team_Repository {
      * @return bool
      */
     public function find_captain( int $club_id, int $player ): bool {
-        $tables_table = $this->wpdb->prefix . 'racketmanager_table';
+        $tables_table = $this->wpdb->prefix . 'racketmanager_league_teams';
 
         $count = $this->wpdb->get_var(
             $this->wpdb->prepare(

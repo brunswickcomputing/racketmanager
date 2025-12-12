@@ -812,7 +812,7 @@ class Event {
             $search_terms[] = "'consolation' = 'consolation'";
         }
         if ( $season ) {
-            $search_terms[] = $wpdb->prepare( "`id` IN (SELECT DISTINCT `league_id` FROM $wpdb->racketmanager_table t, $wpdb->racketmanager l WHERE t.`league_id` = l.`id` AND `season` = %d AND `event_id` = %d)", intval( $season ), $this->id);
+            $search_terms[] = $wpdb->prepare( "`id` IN (SELECT DISTINCT `league_id` FROM $wpdb->racketmanager_league_teams t, $wpdb->racketmanager l WHERE t.`league_id` = l.`id` AND `season` = %d AND `event_id` = %d)", intval( $season ), $this->id);
         }
         $search = Util::search_string( $search_terms, true );
         if ( $count ) {
@@ -995,7 +995,7 @@ class Event {
 
         $search = Util::search_string( $search_terms );
         $order  = Util::order_by_string( $orderby );
-        $sql = "SELECT DISTINCT B.`id`, B.`title`, A.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, A.`match_day`, A.`match_time` FROM $wpdb->racketmanager_teams B, $wpdb->racketmanager_table A WHERE B.id = A.team_id AND A.league_id in (select `id` from $wpdb->racketmanager WHERE `event_id` = " . $this->id . ') AND A.season = ' . $this->get_season() . " $search $order";
+        $sql = "SELECT DISTINCT B.`id`, B.`title`, A.`captain`, B.`club_id`, B.`stadium`, B.`home`, B.`roster`, B.`profile`, A.`group`, A.`match_day`, A.`match_time` FROM $wpdb->racketmanager_teams B, $wpdb->racketmanager_league_teams A WHERE B.id = A.team_id AND A.league_id in (select `id` from $wpdb->racketmanager WHERE `event_id` = " . $this->id . ') AND A.season = ' . $this->get_season() . " $search $order";
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
         if ( ! $teams ) {
@@ -1043,7 +1043,7 @@ class Event {
         global $wpdb;
 
         $sql = $wpdb->prepare(
-            "SELECT TBL.`captain`, TBL.`match_day`, TBL.`match_time` FROM $wpdb->racketmanager_table TBL WHERE TBL.`team_id` = %d AND TBL.`season` = %s AND TBL.`league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) LIMIT 1",
+            "SELECT TBL.`captain`, TBL.`match_day`, TBL.`match_time` FROM $wpdb->racketmanager_league_teams TBL WHERE TBL.`team_id` = %d AND TBL.`season` = %s AND TBL.`league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) LIMIT 1",
             $team_id,
             $this->get_season(),
             $this->id
@@ -1160,7 +1160,7 @@ class Event {
         } else {
             $sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, ot.`league_id` AS old_league_id, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank`,`ot`.`rank` AS old_rank, l.`id`, ot.`points_plus`, ot.`add_points`, t1.`status`, t1.`profile`, t1.`rating`';
         }
-        $sql .= " FROM $wpdb->racketmanager l, $wpdb->racketmanager_teams t2, $wpdb->racketmanager_table t1 LEFT OUTER JOIN $wpdb->racketmanager_table ot ON `ot`.`season` = %s and `ot`.`team_id` = `t1`.`team_id` and ot.league_id in (select id from $wpdb->racketmanager ol where ol.`event_id` = %d) WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ";
+        $sql .= " FROM $wpdb->racketmanager l, $wpdb->racketmanager_teams t2, $wpdb->racketmanager_league_teams t1 LEFT OUTER JOIN $wpdb->racketmanager_league_teams ot ON `ot`.`season` = %s and `ot`.`team_id` = `t1`.`team_id` and ot.league_id in (select id from $wpdb->racketmanager ol where ol.`event_id` = %d) WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ";
         $sql  = $wpdb->prepare(
             $sql, // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $oldseason,
@@ -1237,7 +1237,7 @@ class Event {
         $search = Util::search_string( $search_terms );
         $sql    = $wpdb->prepare(
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile` FROM $wpdb->racketmanager l, $wpdb->racketmanager_table t1, $wpdb->racketmanager_teams t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
+            "SELECT `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile` FROM $wpdb->racketmanager l, $wpdb->racketmanager_league_teams t1, $wpdb->racketmanager_teams t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );
@@ -1312,7 +1312,7 @@ class Event {
         } else {
             $sql = 'SELECT t2.`club_id`, count(t2.`id`) as `team_count`';
         }
-        $sql .= " FROM $wpdb->racketmanager l, $wpdb->racketmanager_teams t2, $wpdb->racketmanager_table t1, $wpdb->racketmanager_clubs c WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` AND t2.`club_id` = c.`id`" . $search;
+        $sql .= " FROM $wpdb->racketmanager l, $wpdb->racketmanager_teams t2, $wpdb->racketmanager_league_teams t1, $wpdb->racketmanager_clubs c WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` AND t2.`club_id` = c.`id`" . $search;
 
         if ( $count ) {
             return $wpdb->get_var(
@@ -1425,7 +1425,7 @@ class Event {
         } else {
             $sql = 'SELECT `l`.`title` AS `league_title`, l.`id` AS `league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title` as `name`,`t1`.`rank`, l.`id`, t1.`status`, t1.`profile`, t1.`group`, t2.`roster`, t2.`club_id`, t2.`team_type` AS `team_type`, t1.`rating`';
         }
-        $sql .= " FROM $wpdb->racketmanager l, $wpdb->racketmanager_teams t2, $wpdb->racketmanager_table t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
+        $sql .= " FROM $wpdb->racketmanager l, $wpdb->racketmanager_teams t2, $wpdb->racketmanager_league_teams t1 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` " . $search;
 
         if ( $count ) {
             $event_teams = wp_cache_get( md5( $sql ), 'event_teams' );
@@ -1528,7 +1528,7 @@ class Event {
             $sql = 'SELECT DISTINCT `player_id`';
         }
         if ( $this->competition->is_player_entry ) {
-            $sql .= " FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_table t, $wpdb->racketmanager l  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = %d";
+            $sql .= " FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_league_teams t, $wpdb->racketmanager l  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = %d";
         } else {
             $sql .= " FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m  WHERE rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)";
         }
@@ -1643,7 +1643,7 @@ class Event {
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "UPDATE $wpdb->racketmanager_table SET `profile` = 3, `status` = 'W' WHERE `league_id` IN (select `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) AND `season` = %s AND `team_id` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d) $search ",
+                "UPDATE $wpdb->racketmanager_league_teams SET `profile` = 3, `status` = 'W' WHERE `league_id` IN (select `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) AND `season` = %s AND `team_id` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d) $search ",
                 $this->id,
                 $season,
                 $club
@@ -1662,7 +1662,7 @@ class Event {
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "UPDATE $wpdb->racketmanager_table SET `profile` = 1 WHERE `league_id` IN (select `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) AND `season` = %s AND `team_id` = %d",
+                "UPDATE $wpdb->racketmanager_league_teams SET `profile` = 1 WHERE `league_id` IN (select `id` FROM $wpdb->racketmanager WHERE `event_id` = %d) AND `season` = %s AND `team_id` = %d",
                 $this->id,
                 $season,
                 $team
@@ -2003,7 +2003,7 @@ class Event {
                 // remove tables.
                 $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                     $wpdb->prepare(
-                        "DELETE FROM $wpdb->racketmanager_table WHERE `league_id` = %d AND `season` = %s",
+                        "DELETE FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d AND `season` = %s",
                         $league->id,
                         $season
                     )

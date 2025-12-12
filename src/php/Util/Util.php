@@ -749,7 +749,7 @@ class Util {
 
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_table SET `group` = %s WHERE `id` = %d",
+                "UPDATE $wpdb->racketmanager_league_teams SET `group` = %s WHERE `id` = %d",
                 $group,
                 $id
             )

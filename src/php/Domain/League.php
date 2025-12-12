@@ -797,7 +797,7 @@ class League {
         // remove tables.
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_table WHERE `league_id` = %d",
+                "DELETE FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d",
                 $this->id
             )
         );
@@ -855,7 +855,7 @@ class League {
         // remove tables.
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_table WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
+                "DELETE FROM $wpdb->racketmanager_league_teams WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
                 $team,
                 $this->id,
                 $season
@@ -908,7 +908,7 @@ class League {
         // update table.
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_table SET `status` = 'W' WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
+                "UPDATE $wpdb->racketmanager_league_teams SET `status` = 'W' WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
                 $team_id,
                 $this->id,
                 $season
@@ -1377,7 +1377,7 @@ class League {
         } else {
             $sql = 'SELECT B.`id` AS `id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points_2_plus`, A.`points_2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating`';
         }
-        $sql .= " FROM $wpdb->racketmanager_teams B INNER JOIN $wpdb->racketmanager_table A ON B.id = A.team_id WHERE `league_id` = %d";
+        $sql .= " FROM $wpdb->racketmanager_teams B INNER JOIN $wpdb->racketmanager_league_teams A ON B.id = A.team_id WHERE `league_id` = %d";
 
         if ( '' === $season ) {
             $sql   .= ' AND A.`season` = %s';
@@ -1538,7 +1538,7 @@ class League {
         }
         $table_id = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                "SELECT `id` FROM $wpdb->racketmanager_table WHERE `team_id` = %d AND `season` = %s AND `league_id` = %d",
+                "SELECT `id` FROM $wpdb->racketmanager_league_teams WHERE `team_id` = %d AND `season` = %s AND `league_id` = %d",
                 $team_id,
                 $season,
                 $this->id
@@ -1552,7 +1552,7 @@ class League {
                 $result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                     $wpdb->prepare(
                     // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                        "INSERT INTO $wpdb->racketmanager_table (`team_id`, `season`, `league_id`, `profile`) VALUES (%d, %s, %d, %d)",
+                        "INSERT INTO $wpdb->racketmanager_league_teams (`team_id`, `season`, `league_id`, `profile`) VALUES (%d, %s, %d, %d)",
                         $team_id,
                         $season,
                         $this->id,
@@ -1562,7 +1562,7 @@ class League {
             } else {
                 $result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                     $wpdb->prepare(
-                        "INSERT INTO $wpdb->racketmanager_table (`team_id`, `season`, `league_id`, `rank`, `status`, `profile`) VALUES (%d, %s, %d, %d, %s, %d)",
+                        "INSERT INTO $wpdb->racketmanager_league_teams (`team_id`, `season`, `league_id`, `rank`, `status`, `profile`) VALUES (%d, %s, %d, %d, %s, %d)",
                         $team_id,
                         $season,
                         $this->id,
@@ -1640,7 +1640,7 @@ class League {
         }
 
         $sql = $wpdb->prepare(
-            "SELECT A.`title`, C.`captain`, A.`club_id`, C.`match_day`, C.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points_2_plus`, C.`points_2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_table C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d WHERE A.`id` = %d AND C.`season` = %s",
+            "SELECT A.`title`, C.`captain`, A.`club_id`, C.`match_day`, C.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points_2_plus`, C.`points_2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_league_teams C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d WHERE A.`id` = %d AND C.`season` = %s",
             $this->id,
             $team_id,
             $season
@@ -1883,7 +1883,7 @@ class League {
             $orderby['date'] = 'DESC';
         }
         if ( ! $withdrawn ) {
-            $sql_start .= " ,$wpdb->racketmanager_table t1, $wpdb->racketmanager_table t2";
+            $sql_start .= " ,$wpdb->racketmanager_league_teams t1, $wpdb->racketmanager_league_teams t2";
             $sql       .= " AND `home_team` = t1.`team_id` AND t1.`league_id` = m.`league_id` and t1.`season` = m.`season` AND t1.`status` != 'W'";
             $sql       .= " AND `away_team` = t2.`team_id` AND t2.`league_id` = m.`league_id` and t2.`season` = m.`season` AND t2.`status` != 'W'";
         }
@@ -2393,7 +2393,7 @@ class League {
     public function get_rank( int $team_id, string $season ): ?int {
         global $wpdb;
         $sql       = $wpdb->prepare(
-            "SELECT `rank` FROM $wpdb->racketmanager_table WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
+            "SELECT `rank` FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
             $this->id,
             $season,
             $team_id,
@@ -2424,7 +2424,7 @@ class League {
     public function get_status( int $team_id, string $season ): ?string {
         global $wpdb;
         $sql         = $wpdb->prepare(
-            "SELECT `status` FROM $wpdb->racketmanager_table WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
+            "SELECT `status` FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
             $this->id,
             $season,
             $team_id,
@@ -2510,7 +2510,7 @@ class League {
         foreach ( $teams as $team ) {
             $wpdb->query(
                 $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_table SET `rank` = %d, `status` = %s WHERE `id` = %d",
+                    "UPDATE $wpdb->racketmanager_league_teams SET `rank` = %d, `status` = %s WHERE `id` = %d",
                     $team->rank,
                     $team->status,
                     $team->table_id
@@ -2546,7 +2546,7 @@ class League {
 
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_table SET `points_plus` = %d, `points_minus` = %d, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `add_points` = %d WHERE `team_id` = %d and `league_id` = %d AND `season` = %s",
+                    "UPDATE $wpdb->racketmanager_league_teams SET `points_plus` = %d, `points_minus` = %d, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `add_points` = %d WHERE `team_id` = %d and `league_id` = %d AND `season` = %s",
                     $points['points_plus'][ $id ],
                     $points['points_minus'][ $id ],
                     $points_2_plus,
@@ -2648,7 +2648,7 @@ class League {
             $league_team->custom = $this->get_standings_data( $league_team->id, $league_team->custom );
             $wpdb->query(
                 $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_table SET `points_plus` = %f, `points_minus` = %f, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `custom` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",
+                    "UPDATE $wpdb->racketmanager_league_teams SET `points_plus` = %f, `points_minus` = %f, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `custom` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",
                     $league_team->points['plus'],
                     $league_team->points['minus'],
                     $league_team->points_2['plus'],

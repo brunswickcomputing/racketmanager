@@ -549,7 +549,7 @@ final class Team {
         if ( $captain || $match_day || $matchtime ) {
             $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_table SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `season` = %s AND `league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)",
+                    "UPDATE $wpdb->racketmanager_league_teams SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `season` = %s AND `league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)",
                     $captain,
                     $match_day,
                     $matchtime,
@@ -592,7 +592,7 @@ final class Team {
                 // Update values on the league table rows for this event's leagues in current season
                 $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                     $wpdb->prepare(
-                        "UPDATE $wpdb->racketmanager_table SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `season` = %s AND `league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)",
+                        "UPDATE $wpdb->racketmanager_league_teams SET `captain` = %s, `match_day` = %s, `match_time` = %s WHERE `team_id` = %d AND `season` = %s AND `league_id` IN (SELECT `id` FROM $wpdb->racketmanager WHERE `event_id` = %d)",
                         $captain,
                         $match_day,
                         $matchtime,
@@ -661,7 +661,7 @@ final class Team {
         // remove tables.
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_table WHERE `team_id` = %d",
+                "DELETE FROM $wpdb->racketmanager_league_teams WHERE `team_id` = %d",
                 $this->id
             )
         );

@@ -834,7 +834,7 @@ final class Tournament {
         } else {
             $sql = 'SELECT DISTINCT `player_id`';
         }
-        $sql          .= " FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_table t, $wpdb->racketmanager l, $wpdb->racketmanager_events e  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d";
+        $sql          .= " FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_league_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_events e  WHERE tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d";
         $search_terms  = array();
         $search_args   = array();
         $search_args[] = $this->competition_id;

@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
 
       - name: Run Qodana PHP
-        uses: JetBrains/qodana-action@v2024.3
+        uses: JetBrains/qodana-action@b60a4b9259f448dd00f2ca4763db5677d69ba868  # JetBrains/qodana-action@v2024.3.4
         with:
           linter: jetbrains/qodana-php:2024.3
           pr-mode: true
@@ -32,14 +32,14 @@ jobs:
             --results-dir=qodana-results-php
           
       - name: Upload Qodana PHP Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # actions/upload-artifact@v5.0.0
         if: always()
         with:
           name: qodana-php-report
           path: qodana-results-php
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@f47c8e6a9bd05ef3ee422fc8d8663be7fe4bdc61  # github/codeql-action@v3
         if: always()
         with:
           sarif_file: qodana-results-php/qodana.sarif.json
@@ -49,10 +49,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
 
       - name: Run Qodana JS
-        uses: JetBrains/qodana-action@v2024.3
+        uses: JetBrains/qodana-action@b60a4b9259f448dd00f2ca4763db5677d69ba868  # JetBrains/qodana-action@v2024.3.4
         with:
           linter: jetbrains/qodana-js:2024.3
           pr-mode: true
@@ -62,14 +62,14 @@ jobs:
             --save-report
 
       - name: Upload Qodana JS Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # actions/upload-artifact@v5.0.0
         if: always()
         with:
           name: qodana-js-report
           path: qodana-results-js
 
       - name: Upload JS SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@f47c8e6a9bd05ef3ee422fc8d8663be7fe4bdc61  # github/codeql-action@v3
         if: always()
         with:
           sarif_file: qodana-results-js/qodana.sarif.json
@@ -80,10 +80,10 @@ jobs:
     continue-on-error: true
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # shivammathur/setup-php@2.36.0
         with:
           php-version: '8.3'
           tools: composer
@@ -116,10 +116,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # shivammathur/setup-php@2.36.0
         with:
           php-version: '8.3'
           tools: composer

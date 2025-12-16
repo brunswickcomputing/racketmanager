@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -1675,18 +1676,18 @@ final class Admin_League extends Admin_Display {
             $this->set_message( $validator->msg, true );
             return;
         }
-        if ( empty( $_POST['league_id'] ) ) {
-            if ( isset( $_POST['event_id'] ) ) {
-                $event_id = intval( $_POST['event_id'] );
-                $event    = get_event( $event_id );
-                if ( $event ) {
-                    $league_title = isset( $_POST['league_title'] ) ? sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) : null;
-                    $event->add_league( $league_title );
-                }
+        $league_id   = isset( $_POST['league_id'] ) ? (int) $_POST['league_id'] : null;
+        $event_id    = isset( $_POST['event_id'] ) ? (int) $_POST['event_id'] : null;
+        $league_name = isset( $_POST['league_title'] ) ? sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) : null;
+        if ( empty( $league_id ) ) {
+            try {
+                $league = $this->league_service->add_league_to_event( $event_id, $league_name );
                 $this->set_message( __( 'League added', 'racketmanager' ) );
+            } catch ( League_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
             }
         } else {
-            $league = get_league( intval( $_POST['league_id'] ) );
+            $league = get_league( $league_id );
             if ( sanitize_text_field( wp_unslash( $_POST['league_title'] ) ) === $league->title ) {
                 $this->set_message( $this->no_updates, 'warning' );
             } else {

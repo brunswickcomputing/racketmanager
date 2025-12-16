@@ -2994,8 +2994,6 @@ class League {
      * @return array
      */
     protected function get_standings_data( int $team_id, array $data, array $matches = array() ): array {
-        global $league;
-
         $data['straight_set']   = array(
             'win'  => 0,
             'lost' => 0,
@@ -3013,14 +3011,13 @@ class League {
         $data['matches_won']    = 0;
         $data['matches_shared'] = 0;
 
-        $league         = get_league( $this->id );
-        $walkover_sets  = $league->num_sets_to_win;
-        $set_type       = Util::get_set_type( $league->scoring );
+        $walkover_sets  = $this->num_sets_to_win;
+        $set_type       = Util::get_set_type( $this->scoring );
         $set_info       = Util::get_set_info( $set_type );
         $games_to_win   = $set_info->min_win;
         $walkover_games = $walkover_sets * $games_to_win;
 
-        $season = $league->get_season();
+        $season = $this->get_season();
 
         if ( ! $matches ) {
             $matches = $this->get_matches_for_standings( $season, $team_id );
@@ -3035,7 +3032,7 @@ class League {
                 if ( ! empty( $match->status ) && 3 === $match->status ) {
                     ++$data['matches_shared'];
                 }
-                if ( ! empty( $league->num_rubbers ) ) {
+                if ( ! empty( $this->num_rubbers ) ) {
                     $rubbers_won    = 0;
                     $rubbers_lost   = 0;
                     $rubbers_shared = 0;
@@ -3053,8 +3050,8 @@ class League {
                                     }
                                 }
                             }
-                            for ( $j = 1; $j <= $league->num_sets; $j++ ) {
-                                $set_type = Util::get_set_type( $league->scoring, null, $league->num_sets, $j );
+                            for ( $j = 1; $j <= $this->num_sets; $j++ ) {
+                                $set_type = Util::get_set_type( $this->scoring, null, $this->num_sets, $j );
                                 if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
                                     $set        = $rubber->sets[ $j ];
                                     $set_winner = null;
@@ -3096,7 +3093,7 @@ class League {
                                 }
                             }
                         } elseif ( $rubber->is_shared ) {
-                            $data['sets_shared'] += $league->num_sets;
+                            $data['sets_shared'] += $this->num_sets;
                             ++$data['rubbers_shared'];
                             ++$rubbers_shared;
                         }
@@ -3159,7 +3156,7 @@ class League {
                     }
                 } else {
                     $set_winner = null;
-                    for ( $j = 1; $j <= $league->num_sets; $j++ ) {
+                    for ( $j = 1; $j <= $this->num_sets; $j++ ) {
                         $set = $match->sets[ $j ];
                         if ( ( $set[ $player_ref ] > $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref === $set_winner ) {
                             $data['sets_won'] += 1;
@@ -3171,7 +3168,7 @@ class League {
                         $data['games_allowed'] += $match->sets[ $j ][ $player_ref_alt ];
                         $data['games_won']     += $match->sets[ $j ][ $player_ref ];
                     }
-                    if ( $league->num_sets > 1 && '' !== $match->sets[ $league->num_sets ]['player1'] && '' !== $match->sets[ $league->num_sets ]['player2'] ) {
+                    if ( $this->num_sets > 1 && '' !== $match->sets[ $this->num_sets ]['player1'] && '' !== $match->sets[ $this->num_sets ]['player2'] ) {
                         if ( $match->winner_id === strval( $team_id ) ) {
                             $data['split_set']['win'] += 1;
                         } elseif ( $match->loser_id === strval( $team_id ) ) {
@@ -3197,8 +3194,7 @@ class League {
      * @return array of matches.
      */
     private function get_matches_for_standings( string $season, int $team ): array {
-        global $league;
-        return $league->get_matches(
+        return $this->get_matches(
             array(
                 'season'           => $season,
                 'team_id'          => $team,
@@ -3212,59 +3208,6 @@ class League {
                 'withdrawn'        => false,
             )
         );
-    }
-
-    /**
-     * Display custom standings header
-     */
-    public function display_standings_header(): void {
-        if ( count( $this->fields_team ) > 0 ) {
-            foreach ( $this->fields_team as $key => $data ) {
-                if ( show_standings( $key ) || ( is_admin() && 'manual' === $this->point_rule ) ) {
-                    echo '<th class="manage-column column-' . esc_html( $key ) . ' column-num d-none d-md-table-cell">' . esc_html( $data['label'] ) . '</th>';
-                }
-            }
-        }
-    }
-
-    /**
-     * Display custom standings columns
-     *
-     * @param object $team team.
-     * @param string $rule rule.
-     */
-    public function display_standings_columns( object $team, string $rule ): void {
-        if ( count( $this->fields_team ) > 0 ) {
-            foreach ( $this->fields_team as $key => $data ) {
-                if ( ! isset( $team->{$key} ) ) {
-                    if ( isset( $data['keys'] ) ) {
-                        $team->{$key} = array();
-                        foreach ( $data['keys'] as $k ) {
-                            $team->{$key}[ $k ] = '';
-                        }
-                    } else {
-                        $team->{$key} = '';
-                    }
-                }
-
-                if ( ( isset( $data['type'] ) && 'input' === $data['type'] ) && is_admin() && 'manual' === $rule ) {
-                    echo '<td class="column-' . esc_html( $key ) . ' column-num d-none d-md-table-cell" data-colname="' . esc_html( $data['label'] ) . '">';
-                    if ( is_array( $team->{$key} ) ) {
-                        foreach ( $team->{$key} as $k => $v ) {
-                            echo '<input class="points" type="text" size="2" id="home_' . esc_html( $team->id ) . '_' . esc_html( $k ) . '" name="custom[' . esc_html( $team->id ) . '][' . esc_html( $key ) . '][' . esc_html( $k ) . ']" value="' . esc_html( $team->{$key}[ $k ] ) . '" />';
-                        }
-                    } else {
-                        echo '<input class="points" type="text" size="2" id="home_' . esc_html( $team->id ) . '" name="custom[' . esc_html( $team->id ) . '][' . esc_html( $key ) . ']" value="' . esc_html( $team->{$key} ) . '" />';
-                    }
-                    echo '</td>';
-                } elseif ( show_standings( $key ) ) {
-                    if ( is_array( $team->{$key} ) ) {
-                        $team->{$key} = vsprintf( $this->point_2_format, $team->{$key} );
-                    }
-                    echo '<td class="num column-' . esc_html( $key ) . ' d-none d-md-table-cell d-none d-md-table-cell" data-colname="' . esc_html( $data['label'] ) . '">' . esc_html( $team->{$key} ) . '</td>';
-                }
-            }
-        }
     }
 
     /**

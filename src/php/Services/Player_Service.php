@@ -602,7 +602,7 @@ class Player_Service {
      * @return Player
      */
     public function get_match_secretary_details( int $club_id ): Player {
-        $roles = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1 ) );
+        $roles             = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1 ) );
         $secretary_user_id = null;
         foreach ( $roles as $role ) {
             if ( $role->get_user_id() ) {

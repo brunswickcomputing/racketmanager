@@ -199,4 +199,25 @@ class Registration_Repository {
             array( '%d' )
         );
     }
+
+    /**
+     * Finds all Club IDs where the given player has any type of registration.
+     *
+     * @param int $player_id
+     *
+     * @return int[] Array of Club IDs.
+     */
+    public function find_club_ids_where_player_is_registered( int $player_id, ?int $club_id ): array {
+        $sql      = "SELECT club_id FROM $this->table_name WHERE player_id = %d AND `removed_date` IS NULL";
+        $params[] = $player_id;
+        if ( $club_id ) {
+            $sql .= " AND club_id = %d";
+            $params[] = $club_id;
+        }
+        $query = $this->wpdb->prepare(
+            $sql,
+            $params
+        );
+        return $this->wpdb->get_col($query);
+    }
 }

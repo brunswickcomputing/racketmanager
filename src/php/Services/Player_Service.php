@@ -10,6 +10,7 @@
 namespace Racketmanager\Services;
 
 use Exception;
+use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Player_Error;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
@@ -23,9 +24,12 @@ use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
@@ -44,22 +48,31 @@ class Player_Service {
      */
     private null|Wtn_Api_Client_Interface $wtn_api_client;
     private ?Club_Role_Repository $club_role_repository;
+    private League_Team_Repository $league_team_repository;
+    private Club_Repository $club_repository;
+    private Registration_Repository $registration_repository;
 
     /**
      * Constructor
      *
      * @param $plugin_instance
      * @param Player_Repository $player_repository
-     * @param null|Player_Error_Repository $player_error_repository
-     * @param Club_Role_Repository|null $club_role_repository
-     * @param Wtn_Api_Client_Interface|null $wtn_api_client
+     * @param Player_Error_Repository $player_error_repository
+     * @param Club_Role_Repository $club_role_repository
+     * @param Wtn_Api_Client_Interface $wtn_api_client
+     * @param League_Team_Repository $league_team_repository
+     * @param Club_Repository $club_repository
+     * @param Registration_Repository $registration_repository
      */
-    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository $player_error_repository = null, Club_Role_Repository $club_role_repository = null, ?Wtn_Api_Client_Interface $wtn_api_client = null ) {
+    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository $player_error_repository, Club_Role_Repository $club_role_repository, Wtn_Api_Client_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository $registration_repository ) {
         $this->racketmanager           = $plugin_instance;
         $this->player_repository       = $player_repository;
         $this->player_error_repository = $player_error_repository;
         $this->club_role_repository    = $club_role_repository;
         $this->wtn_api_client          = $wtn_api_client;
+        $this->league_team_repository  = $league_team_repository;
+        $this->club_repository         = $club_repository;
+        $this->registration_repository = $registration_repository;
     }
 
     public function add_new_player(): Player|WP_Error {

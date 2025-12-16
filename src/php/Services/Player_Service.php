@@ -508,12 +508,12 @@ class Player_Service {
         $email_to      = $this->racketmanager->admin_email;
         $email_message = $this->racketmanager->shortcodes->load_template(
             'wtn-report', array(
-                'error_count'   => $error_count,
-                'club'          => $club,
-                'player_count'  => count( $players ),
-                'email_subject' => $email_subject,
-                'organisation'  => $organisation_name,
-            ),
+            'error_count'   => $error_count,
+            'club'          => $club,
+            'player_count'  => count( $players ),
+            'email_subject' => $email_subject,
+            'organisation'  => $organisation_name,
+        ),
             'email',
         );
         wp_mail( $email_to, $email_subject, $email_message, $headers );

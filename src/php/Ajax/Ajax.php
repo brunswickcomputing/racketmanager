@@ -33,10 +33,10 @@ class Ajax {
      */
     public function __construct( $plugin_instance ) {
         add_action( 'wp_ajax_racketmanager_get_player_details', array( &$this, 'get_player_details' ) );
-        $this->racketmanager       = $plugin_instance;
-        $c                         = $this->racketmanager->container;
-        $this->club_service        = $c->get( 'club_service' );
-        $this->player_service      = $c->get( 'player_service' );
+        $this->racketmanager        = $plugin_instance;
+        $c                          = $this->racketmanager->container;
+        $this->club_service         = $c->get( 'club_service' );
+        $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );
     }
 

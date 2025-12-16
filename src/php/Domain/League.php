@@ -2149,7 +2149,7 @@ class League {
                 'fordraw' => 0,
                 'forloss' => 0,
             );
-            // Two point rule.
+            // Two-point rule.
             $point_rules['two'] = array(
                 'forwin'  => 2,
                 'fordraw' => 1,
@@ -2161,21 +2161,89 @@ class League {
                 'fordraw' => 1,
                 'forloss' => 0,
             );
-            // Score. One point for each scored goal.
-            $point_rules['score'] = array(
-                'forwin'  => 0,
-                'fordraw' => 0,
-                'forloss' => 0,
+            $point_rules['tennis']                = array(
+                'forwin'             => 1,
+                'fordraw'            => 0,
+                'forloss'            => 0,
+                'forwin_split'       => 0,
+                'forloss_split'      => 0,
+                'forshare'           => 0.5,
+                'rubber_win'         => 0,
+                'rubber_draw'        => 0,
+                'shared_match'       => 0.5,
+                'match_result'       => null,
+                'forwalkover_rubber' => 1,
+                'forwalkover_match'  => 1,
+                'result_late'        => 1,
+                'confirmation_late'  => 1,
             );
-
-            /**
-             * Fired when point rules are retrieved
-             *
-             * @param array $point_rules
-             * @return array
-             * @category wp-filter
-             */
-            $point_rules = apply_filters( 'racketmanager_point_rules', $point_rules );
+            $point_rules['tennisNoPenalty']       = array(
+                'forwin'             => 1,
+                'fordraw'            => 0,
+                'forloss'            => 0,
+                'forwin_split'       => 0,
+                'forloss_split'      => 0,
+                'forshare'           => 0.5,
+                'rubber_win'         => 0,
+                'rubber_draw'        => 0,
+                'shared_match'       => 0.5,
+                'match_result'       => null,
+                'forwalkover_rubber' => 0,
+                'forwalkover_match'  => 0,
+            );
+            $point_rules['tennisRubber']          = array(
+                'forwin'             => 0,
+                'fordraw'            => 0,
+                'forloss'            => 0,
+                'forwin_split'       => 0,
+                'forloss_split'      => 0,
+                'forshare'           => 0.5,
+                'rubber_win'         => 2,
+                'rubber_draw'        => 1,
+                'shared_match'       => 0.5,
+                'match_result'       => 'rubber_count',
+                'forwalkover_rubber' => 2,
+                'forwalkover_match'  => 0,
+            );
+            $point_rules['tennisSummer']          = array(
+                'forwin'             => 1,
+                'fordraw'            => 0,
+                'forloss'            => 0,
+                'forwin_split'       => 0,
+                'forloss_split'      => 0,
+                'forshare'           => 0.5,
+                'matches_win'        => 3,
+                'matches_draw'       => 1.5,
+                'forwalkover_rubber' => 1,
+                'forwalkover_match'  => 1,
+                'result_late'        => 1,
+                'confirmation_late'  => 1,
+            );
+            $point_rules['tennisSummerNoPenalty'] = array(
+                'forwin'             => 1,
+                'fordraw'            => 0,
+                'forloss'            => 0,
+                'forwin_split'       => 0,
+                'forloss_split'      => 0,
+                'forshare'           => 0.5,
+                'matches_win'        => 3,
+                'matches_draw'       => 1.5,
+                'forwalkover_rubber' => 0,
+                'forwalkover_match'  => 0,
+            );
+            $point_rules['score']                 = array(
+                'forwin'             => 0,
+                'fordraw'            => 0,
+                'forloss'            => 0,
+                'forwin_split'       => 0,
+                'forloss_split'      => 0,
+                'forshare'           => 1,
+                'matches_win'        => 0,
+                'matches_draw'       => 0,
+                'match_result'       => 'games',
+                'forwalkover_rubber' => 1,
+                'forwalkover_match'  => 1,
+            );
 
             return $point_rules[ $rule ];
         }

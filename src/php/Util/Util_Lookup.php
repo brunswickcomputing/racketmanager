@@ -155,29 +155,28 @@ class Util_Lookup {
         return $scoring_types;
     }
     /**
-     * Get array of supported point rules
+     * Get an array of supported point rules
      *
      * @return array
      */
     public static function get_point_rules(): array {
-        $rules           = array();
-        $rules['manual'] = __( 'Update Standings Manually', 'racketmanager' );
-        $rules['one']    = __( 'One-Point-Rule', 'racketmanager' );
-        $rules['two']    = __( 'Two-Point-Rule', 'racketmanager' );
-        $rules['three']  = __( 'Three-Point-Rule', 'racketmanager' );
-        $rules['score']  = __( 'Score', 'racketmanager' );
-        $rules['user']   = __( 'User defined', 'racketmanager' );
-        /**
-         * Fired when league point rules are built
-         *
-         * @param array $rules
-         * @return array
-         * @category wp-filter
-         */
-        $rules = apply_filters( 'racketmanager_point_rules_list', $rules );
+        $rules                          = array();
+        $rules['manual']                = __( 'Update Standings Manually', 'racketmanager' );
+        $rules['one']                   = __( 'One-Point-Rule', 'racketmanager' );
+        $rules['two']                   = __( 'Two-Point-Rule', 'racketmanager' );
+        $rules['three']                 = __( 'Three-Point-Rule', 'racketmanager' );
+        $rules['score']                 = __( 'Score', 'racketmanager' );
+        $rules['user']                  = __( 'User defined', 'racketmanager' );
+        $rules['tennis']                = __( 'Tennis', 'racketmanager' );
+        $rules['tennisNoPenalty']       = __( 'Tennis No Penalty', 'racketmanager' );
+        $rules['tennisSummer']          = __( 'Tennis Summer', 'racketmanager' );
+        $rules['tennisSummerNoPenalty'] = __( 'Tennis Summer No Penalty', 'racketmanager' );
+        $rules['tennisRubber']          = __( 'Tennis Rubber', 'racketmanager' );
         asort( $rules );
+
         return $rules;
     }
+
     /**
      * Get available point formats
      *

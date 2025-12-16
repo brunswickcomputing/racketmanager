@@ -622,4 +622,48 @@ class Player_Service {
         return $secretary_player;
     }
 
+    /**
+     * Finds all unique Club entities where the player has any association (registered, captain, or secretary).
+     *
+     * @param int $player_id
+     * @param string $type
+     * @param int|null $club_id
+     *
+     * @return Club[] Array of Club domain objects.
+     */
+    public function find_all_associated_clubs( int $player_id, string $type, ?int $club_id ): array {
+        // Ensure the player exists first
+        if ( ! $this->player_repository->find( $player_id ) ) {
+            throw new Player_Not_Found_Exception( sprintf( __('Player ID %s not found', 'racketmanager'), $player_id ) );
+        }
+
+        if ( 'player' === $type ) {
+            $registered_club_ids = $this->registration_repository->find_club_ids_where_player_is_registered( $player_id, $club_id );
+        } else {
+            $registered_club_ids = array();
+        }
+
+        if ( 'secretary' === $type || 'captain' === $type ) {
+            $secretary_club_ids = $this->club_role_repository->find_clubs_by_player_and_role( $player_id, 'Match Secretary', $club_id );
+        } else {
+            $secretary_club_ids = array();
+        }
+
+        if ( 'captain' === $type ) {
+            $captain_club_ids = $this->league_team_repository->find_club_ids_where_player_is_captain( $player_id, $club_id );
+        } else {
+            $captain_club_ids = array();
+        }
+
+        $combined_club_ids = array_unique( array_merge( $secretary_club_ids, $captain_club_ids, $registered_club_ids ) );
+
+        $clubs = [];
+        foreach ( $combined_club_ids as $club_id ) {
+            $club = $this->club_repository->find( $club_id );
+            if ( $club ) {
+                $clubs[] = $club;
+            }
+        }
+        return $clubs;
+    }
 }

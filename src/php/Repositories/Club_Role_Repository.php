@@ -11,6 +11,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use wpdb;
 
 /**
@@ -209,5 +210,32 @@ class Club_Role_Repository {
      */
     public function get_roles_for_club( int $club_id ): array {
         return $this->search( array( 'club' => $club_id ) );
+    }
+
+    /**
+     * Finds all Club ids where the given player holds a specific role name.
+     *
+     * @param int $user_id
+     * @param string $role_name
+     *
+     * @return int[] Array of Club IDs.
+     */
+    public function find_clubs_by_player_and_role( int $user_id, string $role_name, ?int $club_id ): array {
+        $role_id = Util_Lookup::get_club_role_ref( $role_name );
+        if ( $role_id ) {
+            $sql = "SELECT club_id FROM $this->table_name WHERE user_id = %d AND role_id= %d";
+            $params = array( $user_id, $role_id );
+            if ( $club_id ) {
+                $sql .= " AND club_id = %d";
+                $params[] = $club_id;
+            }
+            $query = $this->wpdb->prepare(
+                $sql,
+                $params,
+            );
+            return $this->wpdb->get_col($query);
+        } else {
+            return array();
+        }
     }
 }

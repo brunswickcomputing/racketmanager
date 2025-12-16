@@ -514,9 +514,7 @@ class Event {
         }
 
         $this->name        = stripslashes( $this->name );
-        $this->num_rubbers = stripslashes( $this->num_rubbers );
-        $this->num_sets    = stripslashes( $this->num_sets );
-        $this->type        = stripslashes( $this->type );
+        $this->type        = empty( $this->type ) ? null : stripslashes( $this->type );
         $this->competition = get_competition( $this->competition_id );
         if ( ! isset( $this->reverse_rubbers ) ) {
             $this->reverse_rubbers = '0';

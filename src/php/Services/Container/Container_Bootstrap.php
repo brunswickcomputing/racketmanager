@@ -39,13 +39,17 @@ final class Container_Bootstrap {
         // External clients
         $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
 
+        // Services
         $c->set('player_service', function(Simple_Container $c) use ($app) {
             return new Player_Service(
                 $app,
                 $c->get('player_repository'),
                 $c->get('player_error_repository'),
                 $c->get('club_role_repository'),
-                $c->get('wtn_api_client')
+                $c->get('wtn_api_client'),
+                $c->get('league_team_repository'),
+                $c->get('club_repository'),
+                $c->get('registration_repository'),
             );
         });
 
@@ -60,7 +64,6 @@ final class Container_Bootstrap {
             );
         });
 
-        // Services
         $c->set('team_service', function(Simple_Container $c) {
             return new Team_Service(
                 $c->get('team_repository'),

@@ -983,11 +983,11 @@ class Shortcodes_Competition extends Shortcodes {
                     $event_teams[ $c ] = $event_team;
                 }
                 $event->event_teams = $event_teams;
+                $event_type         = $event->type;
                 if ( 'LD' === $event->type ) {
-                    $event->teams = $club->get_teams( array( 'type' => 'XD' ) );
-                } else {
-                    $event->teams = $club->get_teams( array( 'type' => $event->type ) );
+                    $event_type = 'XD';
                 }
+                $event->teams = $this->team_service->get_teams_for_club( $club->get_id(), $event_type );
                 $key = 0;
                 foreach ( $event->teams as $team ) {
                     $found = in_array( $team->id, array_column( $event->event_teams, 'team_id' ) );

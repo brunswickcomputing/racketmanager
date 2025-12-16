@@ -707,20 +707,12 @@ class Shortcodes_Competition extends Shortcodes {
             if ( $competition_options ) {
                 $entry_option = $competition_options['entry_level'] ?? null;
                 if ( $entry_option ) {
-                    $args[ 'player_type' ] = $entry_option;
-                    $args[ 'player' ]      = $userid;
-                    $clubs = $racketmanager->get_clubs( $args );
+                    $clubs = $this->player_service->find_all_associated_clubs( $userid, $entry_option, $club_id );
                 }
             }
         }
         if ( $clubs ) {
-            if ( $club_id ) {
-                $result = $clubs;
-            } elseif ( 1 === count( $clubs ) ) {
-                $result = $clubs[0];
-            } else {
-                $result = $clubs;
-            }
+            $result = $clubs;
         } else {
             $result = false;
         }

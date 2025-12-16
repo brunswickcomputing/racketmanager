@@ -9,8 +9,11 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
@@ -72,6 +75,7 @@ class Admin_Display {
     protected Registration_Service $registration_service;
     protected RacketManager $racketmanager;
     protected Team_Service $team_service;
+    protected League_Service $league_service;
 
     /**
      * Constructor
@@ -84,6 +88,7 @@ class Admin_Display {
         $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );
         $this->team_service         = $c->get( 'team_service' );
+        $this->league_service       = $c->get( 'league_service' );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );
@@ -586,12 +591,15 @@ class Admin_Display {
             $this->show_message();
             return;
         }
+        $league_id = $league->get_id();
+        $season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
         if ( isset( $_POST['team'] ) && isset( $_POST['event_id'] ) && isset( $_POST['season'] ) ) {
-            $league = get_league( $league );
-            foreach ( $_POST['team'] as $team_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $league->add_team( $team_id, sanitize_text_field( wp_unslash( $_POST['season'] ) ) );
-                if ( is_numeric( $team_id ) ) {
+            foreach ( $_POST['team'] as $team_id ) {
+                try {
+                    $this->league_service->add_team_to_league( $team_id, $league_id, $season );
                     $this->set_message( __( 'Team added', 'racketmanager' ) );
+                } catch ( Team_Not_Found_Exception|League_Not_Found_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
                 }
             }
         }

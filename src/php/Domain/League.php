@@ -33,9 +33,9 @@ class League {
     /**
      * League ID
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
 
     /**
      * League title
@@ -55,8 +55,13 @@ class League {
      *
      * @var array|string
      */
-    public string|array $seasons;
-
+    public string|array $seasons = array();
+    /**
+     * Sequence
+     *
+     * @var string|null
+     */
+    public ?string $sequence = null;
     /**
      * Number of seasons
      *
@@ -571,12 +576,6 @@ class League {
      */
     public array $players;
     /**
-     * Sequence
-     *
-     * @var string|null
-     */
-    public ?string $sequence;
-    /**
      * Team
      *
      * @var object
@@ -667,9 +666,6 @@ class League {
             }
         }
 
-        if ( ! isset( $this->id ) ) {
-            $this->add();
-        }
         $this->title = stripslashes( $this->title );
         $this->name  = $this->title;
         $event       = get_event( $this->event_id );
@@ -730,30 +726,68 @@ class League {
     }
 
     /**
-     * Add new League
+     * Get the id
+     *
+     * @return int|null
      */
-    private function add(): void {
-        global $wpdb;
+    public function get_id(): ?int {
+        return $this->id;
+    }
 
-        $settings = array();
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager (title, event_id, settings) VALUES (%s, %d, %s)",
-                $this->title,
-                $this->event_id,
-                maybe_serialize( $settings )
-            )
-        );
-        $this->id = $wpdb->insert_id;
-        if ( ! empty( $this->sequence ) ) {
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager SET `sequence` = %s WHERE `id` = %d",
-                    $this->sequence,
-                    $this->id,
-                )
-            );
-        }
+    /**
+     * Get the name
+     *
+     * @return string
+     */
+    public function get_name(): string {
+        return $this->title;
+    }
+
+    /**
+     * Get the settings
+     *
+     * @return array|string
+     */
+    public function get_settings(): array|string {
+        return $this->settings;
+    }
+
+    /**
+     * Get the seasons
+     *
+     * @return array|string
+     */
+    public function get_seasons(): array|string {
+        return $this->seasons;
+    }
+
+    /**
+     * Get the sequence
+     *
+     * @return string|null
+     */
+    public function get_sequence(): ?string {
+        return $this->sequence;
+    }
+
+    /**
+     * Get the event id
+     *
+     * @return int
+     */
+    public function get_event_id(): int {
+        return $this->event_id;
+    }
+
+    /**
+     * Set the id
+     *
+     * @param int $id
+     *
+     * @return void
+     */
+    public function set_id( int $id ): void {
+        $this->id = $id;
     }
 
     /**

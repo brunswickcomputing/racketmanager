@@ -59,7 +59,7 @@ final class League_Team {
      *
      * @param int $team_id
      */
-
+    private int $team_id;
     /**
      * Win percent multiplication factor
      *
@@ -75,9 +75,9 @@ final class League_Team {
     /**
      * Team id variable
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Table id variable
      *
@@ -87,9 +87,9 @@ final class League_Team {
     /**
      * Title variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $title;
+    public ?string $title = null;
     /**
      * Stadium variable
      *
@@ -101,13 +101,13 @@ final class League_Team {
      *
      * @var string
      */
-    public string $profile;
+    public string $profile = '1';
     /**
      * Status variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $status;
+    public ?string $status = null;
     /**
      * Status text variable
      *
@@ -137,13 +137,13 @@ final class League_Team {
      *
      * @var float
      */
-    public float $points_plus;
+    public float $points_plus = 0;
     /**
      * Additional points variable
      *
      * @var int
      */
-    public int $add_points;
+    public int $add_points = 0;
     /**
      * Points variable
      *
@@ -179,37 +179,37 @@ final class League_Team {
      *
      * @var float
      */
-    public float $points_minus;
+    public float $points_minus = 0;
     /**
      * Secondary points variable
      *
      * @var array
      */
-    public array $points_2;
+    public array $points_2 = array();
     /**
      * Secondary points plus variable
      *
      * @var int
      */
-    public int $points_2_plus;
+    public int $points_2_plus = 0;
     /**
      * Secondary points minus variable
      *
      * @var int
      */
-    public int $points_2_minus;
+    public int $points_2_minus = 0;
     /**
      * Points difference variable
      *
      * @var string|int
      */
-    public string|int $diff;
+    public string|int $diff = 0;
     /**
      * Roster variable
      *
      * @var array
      */
-    public mixed $roster;
+    public mixed $roster = null;
     /**
      * Player variable
      *
@@ -249,9 +249,9 @@ final class League_Team {
     /**
      * Custom variable
      *
-     * @var string|array
+     * @var string|array|null
      */
-    public string|array $custom;
+    public string|array|null $custom = null;
     /**
      * Display class variable
      *
@@ -273,9 +273,9 @@ final class League_Team {
     /**
      * Captain id variable
      *
-     * @var int
+     * @var ?int
      */
-    public int $captain_id;
+    public ?int $captain_id = null;
     /**
      * Contact number variable
      *
@@ -291,15 +291,15 @@ final class League_Team {
     /**
      * Match day variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $match_day;
+    public ?string $match_day = null;
     /**
      * Match time variable
      *
-     * @var string
+     * @var ?string
      */
-    public string $match_time;
+    public ?string $match_time = null;
     /**
      * Old rank
      *
@@ -317,7 +317,7 @@ final class League_Team {
      *
      * @var string|null
      */
-    public ?string $team_type;
+    public ?string $team_type = null;
     /**
      * Is withdrawn variable
      *
@@ -335,19 +335,19 @@ final class League_Team {
      *
      * @var string
      */
-    public string $group;
+    public ?string $group = null;
     /**
      * Rank variable
      *
      * @var string
      */
-    public string $rank;
+    public ?string $rank = null;
     /**
      * Rating variable
      *
      * @var string|null
      */
-    public ?string $rating;
+    public ?string $rating = null;
     /**
      * Straight set variable
      *
@@ -471,8 +471,6 @@ final class League_Team {
                 $key        = trim( $key );
                 $this->$key = $value;
             }
-            $this->title   = empty( $this->title ) ? '' : htmlspecialchars( stripslashes( $this->title ), ENT_QUOTES );
-            $this->stadium = stripslashes( $this->stadium );
 
             $this->points_plus += $this->add_points; // add or subtract extra points.
             $this->points       = array(
@@ -513,7 +511,7 @@ final class League_Team {
             } elseif ( '=' === $this->status ) {
                 $this->status_icon = 'dot';
             }
-            if ( str_contains( $this->title, '_' ) ) {
+            if ( ! empty( $this->title ) && str_contains( $this->title, '_' ) ) {
                 $team_name = Util::generate_team_name( $this->title );
                 if ( ! empty( $team_name ) ) {
                     $this->team_ref = $this->title;
@@ -521,6 +519,224 @@ final class League_Team {
                 }
             }
         }
+    }
+
+    /**
+     * Get id
+     *
+     * @return int|null
+     */
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+    /**
+     * Get team id
+     *
+     * @return int Team identifier
+     */
+    public function get_team_id(): int {
+        return $this->team_id;
+    }
+
+    /**
+     * Get league id
+     *
+     * @return int League identifier
+     */
+    public function get_league_id(): int {
+        return $this->league_id;
+    }
+
+    /**
+     * Get season code/name
+     *
+     * @return string Season
+     */
+    public function get_season(): string {
+        return $this->season;
+    }
+
+    /**
+     * Get captain id
+     *
+     * @return int|null Player id or null
+     */
+    public function get_captain(): ?int {
+        return $this->captain_id;
+    }
+
+    /**
+     * Get match day
+     *
+     * @return string|null Match day label or null
+     */
+    public function get_match_day(): ?string {
+        return $this->match_day;
+    }
+
+    /**
+     * Get match time
+     *
+     * @return string|null Match time or null
+     */
+    public function get_match_time(): ?string {
+        return $this->match_time;
+    }
+
+    /**
+     * Get primary points scored (plus)
+     *
+     * @return float
+     */
+    public function get_points_plus(): float {
+        return $this->points_plus;
+    }
+
+    /**
+     * Get primary points conceded (minus)
+     *
+     * @return float
+     */
+    public function get_points_minus(): float {
+        return $this->points_minus;
+    }
+
+    /**
+     * Get secondary points scored (plus)
+     *
+     * @return int
+     */
+    public function get_points_2_plus(): int {
+        return $this->points_2_plus;
+    }
+
+    /**
+     * Get secondary points conceded (minus)
+     *
+     * @return int
+     */
+    public function get_points_2_minus(): int {
+        return $this->points_2_minus;
+    }
+
+    /**
+     * Get additional points adjustment
+     *
+     * @return float
+     */
+    public function get_add_points(): float {
+        return $this->add_points;
+    }
+
+    /**
+     * Get number of matches played (cached on object)
+     *
+     * @return int
+     */
+    public function get_done_matches(): int {
+        return $this->done_matches;
+    }
+
+    /**
+     * Get number of matches won (cached on object)
+     *
+     * @return int
+     */
+    public function get_won_matches(): int {
+        return $this->won_matches;
+    }
+
+    /**
+     * Get number of matches lost (cached on object)
+     *
+     * @return int
+     */
+    public function get_lost_matches(): int {
+        return $this->lost_matches;
+    }
+
+    /**
+     * Get number of matches drawn (cached on object)
+     *
+     * @return int
+     */
+    public function get_drawn_matches(): int {
+        return $this->draw_matches;
+    }
+
+    /**
+     * Get points difference
+     *
+     * @return int
+     */
+    public function get_diff(): int {
+        return $this->diff;
+    }
+
+    /**
+     * Get group
+     *
+     * @return string|null Group name/code
+     */
+    public function get_group(): ?string {
+        return $this->group;
+    }
+
+    /**
+     * Get rank
+     *
+     * @return int|null Rank position
+     */
+    public function get_rank(): ?int {
+        return $this->rank;
+    }
+
+    /**
+     * Get profile id
+     *
+     * @return int|null Profile identifier
+     */
+    public function get_profile(): ?int {
+        return $this->profile;
+    }
+
+    /**
+     * Get status code
+     *
+     * @return string|null Status
+     */
+    public function get_status(): ?string {
+        return $this->status;
+    }
+
+    /**
+     * Get rating value
+     *
+     * @return float|null Rating
+     */
+    public function get_rating(): ?float {
+        return $this->rating;
+    }
+
+    /**
+     * Get custom data
+     *
+     * @return string|array|null Custom metadata
+     */
+    public function get_custom(): string|array|null {
+        return $this->custom;
+    }
+
+    /**
+     * Set id
+     *
+     * @param int|string $id Identifier
+     *
+     * @return void
+     */
+    public function set_id( $id ): void {
+        $this->id = $id;
     }
 
     /**
@@ -772,6 +988,14 @@ final class League_Team {
         $league?->set_teams_rank( $this->season );
         wp_cache_set( $this->id, $this, 'league-teams' );
     }
+    /**
+     * Persist current computed/edited stats to database
+     *
+     * Updates aggregate fields such as matches played/won/lost/drawn and
+     * points (plus/minus/secondary) and custom data for this league team.
+     *
+     * @return void
+     */
     public function update(): void {
         global $wpdb;
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -814,6 +1038,13 @@ final class League_Team {
         );
     }
 
+    /**
+     * Set team details for given player
+     *
+     * @param int|string $player_id Player identifier
+     *
+     * @return void
+     */
     public function set_team_details( $player_id ) {
 
     }

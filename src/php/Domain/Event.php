@@ -559,6 +559,62 @@ class Event {
     }
 
     /**
+     * Get event id
+     *
+     * @return int|null
+     */
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+    /**
+     * Get event name
+     *
+     * @return string
+     */
+    public function get_name(): string {
+        return $this->name;
+    }
+
+    /**
+     * Get event settings
+     *
+     * @return array
+     */
+    public function get_settings(): array {
+        return $this->settings;
+    }
+
+    /**
+     * Get event seasons
+     *
+     * @return array
+     */
+    public function get_seasons(): array {
+        return $this->seasons;
+    }
+
+    /**
+     * Get event competition id
+     *
+     * @return int
+     */
+    public function get_competition_id(): int {
+        return $this->competition_id;
+    }
+
+    /**
+     * Set id
+     *
+     * @param int $id
+     *
+     * @return void
+     */
+    public function set_id( int $id ): void {
+        $this->id = $id;
+    }
+
+    /**
      * Add new event
      *
      * @param object $event event object.
@@ -1076,25 +1132,6 @@ class Event {
         }
 
         return $team;
-    }
-
-    /**
-     * Get settings
-     *
-     * @param false|string $key settings key.
-     * @return array|boolean
-     */
-    public function get_settings(false|string $key = false ): bool|array {
-        $settings = array();
-        foreach ( $this->settings_keys as $k ) {
-            $settings[ $k ] = $this->$k;
-        }
-
-        if ( $key ) {
-            return ( isset( $settings[ $key ] ) ) ? $settings[ $key ] : false;
-        }
-
-        return $settings;
     }
 
     /**

@@ -9,6 +9,7 @@ use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\External\Wtn_Api_Client;
+use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;

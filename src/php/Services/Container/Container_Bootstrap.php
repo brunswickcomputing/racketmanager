@@ -73,6 +73,16 @@ final class Container_Bootstrap {
             );
         });
 
+        $c->set('league_service', function(Simple_Container $c) use ($app) {
+            return new League_Service(
+                $app,
+                $c->get('league_repository'),
+                $c->get('event_repository'),
+                $c->get('league_team_repository'),
+                $c->get('team_repository'),
+            );
+        });
+
         return $c;
     }
 }

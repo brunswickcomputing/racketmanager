@@ -126,8 +126,6 @@ return array(
     'Racketmanager\\Services\\Validator\\Validator_Plan' => $baseDir . '/src/php/Services/Validator/Validator_Plan.php',
     'Racketmanager\\Services\\Validator\\Validator_Tournament' => $baseDir . '/src/php/Services/Validator/Validator_Tournament.php',
     'Racketmanager\\Services\\Widget' => $baseDir . '/src/php/Services/Widget.php',
-    'Racketmanager\\Sports\\Competition_Tennis' => $baseDir . '/src/php/Sports/Competition_Tennis.php',
-    'Racketmanager\\Sports\\League_Tennis' => $baseDir . '/src/php/Sports/League_Tennis.php',
     'Racketmanager\\Util\\Util' => $baseDir . '/src/php/Util/Util.php',
     'Racketmanager\\Util\\Util_Lookup' => $baseDir . '/src/php/Util/Util_Lookup.php',
     'Stripe\\Account' => $vendorDir . '/stripe/stripe-php/lib/Account.php',

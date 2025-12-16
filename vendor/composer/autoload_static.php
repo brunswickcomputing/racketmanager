@@ -149,8 +149,6 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Services\\Validator\\Validator_Plan' => __DIR__ . '/../..' . '/src/php/Services/Validator/Validator_Plan.php',
         'Racketmanager\\Services\\Validator\\Validator_Tournament' => __DIR__ . '/../..' . '/src/php/Services/Validator/Validator_Tournament.php',
         'Racketmanager\\Services\\Widget' => __DIR__ . '/../..' . '/src/php/Services/Widget.php',
-        'Racketmanager\\Sports\\Competition_Tennis' => __DIR__ . '/../..' . '/src/php/Sports/Competition_Tennis.php',
-        'Racketmanager\\Sports\\League_Tennis' => __DIR__ . '/../..' . '/src/php/Sports/League_Tennis.php',
         'Racketmanager\\Util\\Util' => __DIR__ . '/../..' . '/src/php/Util/Util.php',
         'Racketmanager\\Util\\Util_Lookup' => __DIR__ . '/../..' . '/src/php/Util/Util_Lookup.php',
         'Stripe\\Account' => __DIR__ . '/..' . '/stripe/stripe-php/lib/Account.php',

@@ -178,14 +178,14 @@ class Event {
      *
      * @var int|null
      */
-    public ?int $num_rubbers = 0;
+    public ?int $num_rubbers = null;
 
     /**
      * Num_sets
      *
-     * @var string|int
+     * @var int|null
      */
-    public string|int $num_sets = '';
+    public ?int $num_sets = null;
 
     /**
      * Type
@@ -601,6 +601,33 @@ class Event {
      */
     public function get_competition_id(): int {
         return $this->competition_id;
+    }
+
+    /**
+     * Get event type
+     *
+     * @return string
+     */
+    public function get_type(): string {
+        return $this->type;
+    }
+
+    /**
+     * Get event num sets
+     *
+     * @return int
+     */
+    public function get_num_sets(): int {
+        return $this->num_sets;
+    }
+
+    /**
+     * Get event num rubbers
+     *
+     * @return int
+     */
+    public function get_num_rubbers(): int {
+        return $this->num_rubbers;
     }
 
     /**

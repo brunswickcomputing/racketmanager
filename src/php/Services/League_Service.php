@@ -62,11 +62,11 @@ class League_Service {
         if ( ! $league ) {
             throw new League_Not_Found_Exception( __( 'League not found', 'racketmanager' ) );
         }
-        $lt = new stdClass();
+        $lt            = new stdClass();
         $lt->league_id = $league_id;
-        $lt->team_id    = $team_id;
-        $lt->season     = $season;
-        $league_team    = new League_Team( $lt );
+        $lt->team_id   = $team_id;
+        $lt->season    = $season;
+        $league_team   = new League_Team( $lt );
         $this->league_team_repository->save( $league_team );
         return $league_team;
     }

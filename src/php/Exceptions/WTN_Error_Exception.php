@@ -2,8 +2,6 @@
 
 namespace Racketmanager\Exceptions;
 
-use RuntimeException;
-
-class WTN_Error_Exception extends RuntimeException {
+class WTN_Error_Exception extends Plugin_Exception {
 
 }

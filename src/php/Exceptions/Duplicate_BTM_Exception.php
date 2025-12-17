@@ -2,8 +2,6 @@
 
 namespace Racketmanager\Exceptions;
 
-use RuntimeException;
-
-class Duplicate_BTM_Exception extends RuntimeException {
+class Duplicate_BTM_Exception extends Plugin_Exception {
 
 }

@@ -2,8 +2,6 @@
 
 namespace Racketmanager\Exceptions;
 
-use RuntimeException;
-
-class Role_Assignment_Not_Found_Exception extends RuntimeException {
+class Role_Assignment_Not_Found_Exception extends Plugin_Exception {
 
 }

@@ -765,7 +765,7 @@ There is no automatic PHP-side build. The JavaScript bundle is produced on deman
 
 - Location: src/php/Exceptions/
 - Namespace: Racketmanager\\Exceptions\\ (PSR-4 is already configured in composer.json).
-- Base class: Create a minimal base exception, e.g., Racketmanager\\Exceptions\\PluginException extends \\RuntimeException. Use this as the parent for plugin-specific errors.
+- Base class: Create a minimal base exception, e.g., Racketmanager\\Exceptions\\Plugin_Exception extends \\RuntimeException. Use this as the parent for plugin-specific errors.
 - Sub-namespaces: For clarity you may organize exceptions by area, e.g., Exceptions\\Domain, Exceptions\\Services, Exceptions\\Repositories.
 - Usage guidance:
   - Throw domain-/service-specific exceptions rather than generic Exception.

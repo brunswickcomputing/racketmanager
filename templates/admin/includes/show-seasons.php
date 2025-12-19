@@ -70,8 +70,9 @@ namespace Racketmanager;
             </thead>
             <tbody>
                 <?php
-                foreach ( array_reverse( $competition->seasons ) as $season ) {
-                    $key   = $season['name'];
+                $seasons_list = $competition->get_seasons_array();
+                foreach ( array_reverse( $seasons_list ) as $season ) {
+                    $key = $season['name'] ?? '';
                     ?>
                     <tr>
                         <td class="check-column"><label for="del_season-<?php echo esc_html( $key ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $key ); ?>" name="del_season[<?php echo esc_html( $key ); ?>]" id="del_season-<?php echo esc_html( $key ); ?>" /></td>
@@ -82,7 +83,8 @@ namespace Racketmanager;
                             <?php
                             $today = gmdate( 'Y-m-d' );
                             if ( ! empty( $season['date_end'] ) && $today > $season['date_end'] ) {
-                                $competition_code = $season->competition_code ?? null;
+                                // $season is an array; prefer season-specific code then fall back to competition setting
+                                $competition_code = $season['competition_code'] ?? null;
                                 if ( empty( $competition_code ) ) {
                                     $competition_code = empty( $competition->competition_code ) ? null : $competition->competition_code;
                                 }

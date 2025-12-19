@@ -154,8 +154,9 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $league->event->compe
                                         } else {
                                             $round_no = $final['round'] - 1;
                                         }
-                                        if ( ! empty( $league->event->seasons[ $season ]['match_dates'][ $round_no ] ) ) {
-                                            $date = $league->event->seasons[ $season ]['match_dates'][ $round_no ];
+                                        $season_dtls = $league->event->get_season_by_name( $season );
+                                        if ( ! empty( $season_dtls['match_dates'][ $round_no ] ) ) {
+                                            $date = $season_dtls['match_dates'][ $round_no ];
                                         }
                                     }
                                 }

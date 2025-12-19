@@ -26,14 +26,15 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
     $today              = gmdate( 'Y-m-d' );
     $latest_season_dtls = $event->current_season;
     $latest_season      = $latest_season_dtls['name'];
-    if ( ! empty( $event->competition->seasons[ $latest_season ]['date_start'] ) && $event->competition->seasons[ $latest_season ]['date_start'] > $today ) {
+    $competition_seasons = $event->competition->get_seasons_array();
+    if ( ! empty( $competition_seasons[ $latest_season ]['date_start'] ) && $competition_seasons[ $latest_season ]['date_start'] > $today ) {
         $updates_allowed = true;
     } else {
         $updates_allowed = false;
     }
     $latest_event_season = $event->current_season['name'];
     $stop_next           = false;
-    foreach ( array_reverse( $event->competition->seasons ) as $season ) {
+    foreach ( array_reverse( $competition_seasons ) as $season ) {
         if ( $stop_next ) {
             $latest_event_season = $season['name'];
             break;

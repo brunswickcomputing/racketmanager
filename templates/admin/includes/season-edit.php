@@ -69,12 +69,15 @@ $msg         = null;
                             <?php
                         } else {
                             ?>
+                            <?php
+                            $competition_seasons = $competition->get_seasons_array();
+                            ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="season" id="season">
                                 <option disabled <?php selected( null, empty( $current_season->name ) ? null : $current_season->name ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $seasons as $season_option ) {
                                     ?>
-                                    <option value="<?php echo esc_html( $season_option->name ); ?>" <?php selected( $season_option->name, $current_season->name ?? ''); ?> <?php disabled( isset( $competition->seasons[ $season_option->name ] ) ); ?>><?php echo esc_html( $season_option->name ); ?></option>
+                                    <option value="<?php echo esc_html( $season_option->name ); ?>" <?php selected( $season_option->name, $current_season->name ?? ''); ?> <?php disabled( isset( $competition_seasons[ $season_option->name ] ) ); ?>><?php echo esc_html( $season_option->name ); ?></option>
                                 <?php } ?>
                             </select>
                             <?php

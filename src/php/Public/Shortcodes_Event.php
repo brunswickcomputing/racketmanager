@@ -57,7 +57,7 @@ class Shortcodes_Event extends Shortcodes {
                 $msg = __( 'Season not found for event', 'racketmanager' );
             } else {
                 $season  = $event->current_season['name'];
-                $seasons = $event->seasons;
+                $seasons = $event->get_seasons();
                 $tab = get_tab();
                 $filename = 'event';
                 return $this->load_template(

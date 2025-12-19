@@ -676,7 +676,8 @@ class League {
             $this->seasons = array();
         }
         $this->seasons     = (array) maybe_unserialize( $this->seasons );
-        $this->num_seasons = count( $this->event->seasons );
+        $event_seasons     = $this->event->get_seasons();
+        $this->num_seasons = count( $event_seasons );
         // set season to latest.
         $this->set_season();
         $this->groups          = trim( $this->groups ?? '' );
@@ -1074,45 +1075,43 @@ class League {
      */
     public function set_season( false|string $season = false, bool $force_overwrite = false ): void {
         global $wp;
+        // Build a safe seasons array from Event (JSON-backed) and an index by name
+        $seasons_list = $this->event->get_seasons();
+        $by_name = array();
+        if ( is_array( $seasons_list ) ) {
+            foreach ( $seasons_list as $s ) {
+                if ( is_array( $s ) && isset( $s['name'] ) ) {
+                    $by_name[ $s['name'] ] = $s;
+                }
+            }
+        } else {
+            $seasons_list = array();
+        }
         // phpcs:disable WordPress.Security.NonceVerification.Recommended
         if ( ! empty( $season ) && true === $force_overwrite ) {
-            $data = $this->event->seasons[ $season ];
+            $data = $by_name[ $season ] ?? null;
         } elseif ( ! empty( $_POST['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_POST['season'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            if ( ! isset( $this->event->seasons[ $key ] ) ) {
-                $data = false;
-            } else {
-                $data = $this->event->seasons[ $key ];
-            }
+            $key  = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_POST['season'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $data = $by_name[ $key ] ?? false;
         } elseif ( ! empty( $_GET['season'] ) ) {
-            $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-            if ( ! isset( $this->event->seasons[ $key ] ) ) {
-                $data = false;
-            } else {
-                $data = $this->event->seasons[ $key ];
-            }
+            $key  = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
+            $data = $by_name[ $key ] ?? false;
         } elseif ( isset( $_GET[ 'season_' . $this->id ] ) && ! empty( $_GET[ 'season_' . $this->id ] ) ) {
-            $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
-            if ( ! isset( $this->event->seasons[ $key ] ) ) {
-                $data = false;
-            } else {
-                $data = $this->event->seasons[ $key ];
-            }
+            $key  = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
+            $data = $by_name[ $key ] ?? false;
         } elseif ( isset( $wp->query_vars['season'] ) ) {
-            $key = $wp->query_vars['season'];
-            if ( ! isset( $this->event->seasons[ $key ] ) ) {
-                $data = false;
-            } else {
-                $data = $this->event->seasons[ $key ];
-            }
+            $key  = $wp->query_vars['season'];
+            $data = $by_name[ $key ] ?? false;
         } elseif ( ! empty( $season ) ) {
-            $data = $this->event->seasons[ $season ];
+            $data = $by_name[ $season ] ?? null;
         } else {
-            $data = end( $this->event->seasons );
+            $tmp  = $seasons_list;
+            $data = ! empty( $tmp ) ? end( $tmp ) : null;
         }
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
         if ( empty( $data ) ) {
-            $data = end( $this->event->seasons );
+            $tmp  = $seasons_list;
+            $data = ! empty( $tmp ) ? end( $tmp ) : null;
         }
         if ( ! $data ) {
             $data                   = array();
@@ -2455,11 +2454,23 @@ class League {
      * @return boolean
      */
     private function season_exists( string $season ): bool {
-        if ( is_array( $this->event->seasons ) ) {
-            return in_array( intval( $season ), array_keys( $this->event->seasons ), true );
-        } else {
+        $seasons_list = method_exists( $this->event, 'get_seasons' )
+            ? $this->event->get_seasons()
+            : ( is_array( $this->event->seasons ) ? $this->event->seasons : array() );
+        if ( ! is_array( $seasons_list ) ) {
             return false;
         }
+        // Check associative by key first
+        if ( isset( $seasons_list[ $season ] ) ) {
+            return true;
+        }
+        // Then scan list entries by ['name']
+        foreach ( $seasons_list as $s ) {
+            if ( is_array( $s ) && isset( $s['name'] ) && (string) $s['name'] === (string) $season ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

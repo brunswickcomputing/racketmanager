@@ -28,9 +28,9 @@ class Competition {
     /**
      * Competition ID
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
 
     /**
      * Competition name
@@ -186,7 +186,7 @@ class Competition {
      *
      * @var array
      */
-    public array $settings;
+    public array $settings = array();
     /**
      * Entry type
      *
@@ -620,29 +620,43 @@ class Competition {
         $this->name = stripslashes( $this->name );
         $this->type = stripslashes( $this->type );
 
-        // set seasons.
-        if ( empty( $this->seasons ) ) {
-            $this->seasons = array();
+        // Seasons handling (Option B): keep property as JSON string; compute derived fields from a local decode
+        $seasons_json = '';
+        if ( isset( $this->seasons ) && is_string( $this->seasons ) ) {
+            $seasons_json = $this->seasons;
+        } elseif ( isset( $this->seasons ) && is_array( $this->seasons ) ) {
+            // Normalize to JSON string without mutating callers that rely on property presence
+            $seasons_json = wp_json_encode( $this->seasons );
+            $this->seasons = $seasons_json;
         } else {
-            $this->seasons = (array) maybe_unserialize( $this->seasons );
+            // Keep as valid empty JSON string to avoid decoding issues
+            $this->seasons = '[]';
         }
-        if ( ! is_admin() ) {
-            $i       = 0;
-            $seasons = array();
-            foreach ( $this->seasons as $season ) {
-                $seasons[ $season['name'] ] = $season;
-                if ( isset( $season['status'] ) && 'draft' === $season['status'] ) {
-                    unset( $seasons[ $season['name'] ] );
-                }
-                ++$i;
+
+        // Decode locally for calculations
+        $decoded_seasons = array();
+        if ( is_string( $this->seasons ) && $this->seasons !== '' ) {
+            $tmp = json_decode( $this->seasons, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $tmp ) ) {
+                $decoded_seasons = $tmp;
             }
-            $this->seasons = $seasons;
         }
-        $this->num_seasons = count( $this->seasons );
+
+        // If not admin, filter out draft seasons (do not reindex or mutate stored JSON)
+        $effective_seasons = $decoded_seasons;
+        if ( ! is_admin() && ! empty( $decoded_seasons ) ) {
+            $effective_seasons = array_values( array_filter( $decoded_seasons, function( $season ) {
+                return ! ( isset( $season['status'] ) && $season['status'] === 'draft' );
+            } ) );
+        }
+
+        $this->num_seasons = is_array( $effective_seasons ) ? count( $effective_seasons ) : 0;
         $this->set_num_events( true );
-        // set season to latest.
+
+        // Set current season and date-related derived fields using effective seasons
         if ( $this->num_seasons > 0 ) {
-            $this->set_season();
+            // set_season() relies on internal seasons structure; adapt by setting a local map temporarily
+            $this->current_season = $this->derive_current_season_from_list( $effective_seasons );
             if ( ! empty( $this->current_season['date_open'] ) ) {
                 $this->date_open = $this->current_season['date_open'];
             }
@@ -717,6 +731,127 @@ class Competition {
         if ( empty( $this->competition_code ) ) {
             $this->competition_code = null;
         }
+    }
+
+    /**
+     * Derive the current season from a list of seasons (array as decoded from JSON)
+     * Tries to mimic previous behavior of set_season() by picking the latest by date_start/name if available.
+     *
+     * @param array $seasons_list
+     * @return array|null
+     */
+    private function derive_current_season_from_list( array $seasons_list ): ?array {
+        if ( empty( $seasons_list ) ) {
+            return null;
+        }
+        // Prefer seasons with date_start; fallback to last element
+        $sorted = $seasons_list;
+        usort( $sorted, function( $a, $b ) {
+            $aStart = $a['date_start'] ?? null;
+            $bStart = $b['date_start'] ?? null;
+            if ( $aStart && $bStart ) {
+                return strcmp( $aStart, $bStart );
+            }
+            if ( $aStart ) { return 1; }
+            if ( $bStart ) { return -1; }
+            // fallback to name compare if both have names
+            $aName = $a['name'] ?? '';
+            $bName = $b['name'] ?? '';
+            return strcmp( $aName, $bName );
+        } );
+        // Latest (max) should be at the end
+        return end( $sorted ) ?: $sorted[ count( $sorted ) - 1 ];
+    }
+
+    /**
+     * Get seasons as JSON string for UI/Shortcodes/API output.
+     *
+     * Note: Internal logic should continue using get_seasons() which returns array.
+     */
+    public function get_seasons_json(): string {
+        // If seasons is already a JSON string, return as-is; otherwise encode
+        if ( is_string( $this->seasons ) ) {
+            return $this->seasons;
+        }
+        return wp_json_encode( $this->get_seasons() );
+    }
+
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+    public function get_name(): string {
+        return $this->name;
+    }
+
+    public function get_type(): string {
+        return $this->type;
+    }
+
+    public function get_settings(): array {
+        return $this->settings;
+    }
+    public function get_seasons(): array {
+        // With Option B, seasons is a JSON string; decode lazily for callers who still expect array
+        if ( is_string( $this->seasons ) ) {
+            $decoded = json_decode( $this->seasons, true );
+            return ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) ? $decoded : array();
+        }
+        return is_array( $this->seasons ) ? $this->seasons : array();
+    }
+
+    /**
+     * Helper to get seasons as array without relying on direct property access in templates
+     */
+    public function get_seasons_array(): array {
+        return $this->get_seasons();
+    }
+
+    /**
+     * Get a season by name
+     */
+    public function get_season_by_name( string $name ): ?array {
+        foreach ( $this->get_seasons() as $season ) {
+            if ( isset( $season['name'] ) && $season['name'] === $name ) {
+                return $season;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * List season names
+     */
+    public function list_season_names(): array {
+        $names = array();
+        foreach ( $this->get_seasons() as $season ) {
+            if ( isset( $season['name'] ) ) {
+                $names[] = $season['name'];
+            }
+        }
+        return $names;
+    }
+
+    /**
+     * Has specific season
+     */
+    public function has_season( string $name ): bool {
+        return $this->get_season_by_name( $name ) !== null;
+    }
+
+    public function get_age_group(): ?string {
+        return $this->age_group;
+    }
+
+    public function get_num_seasons(): int {
+        return $this->num_seasons;
+    }
+
+    public function get_num_events(): int {
+        return $this->num_events;
+    }
+    public function set_id( int $id ): void {
+        $this->id = $id;
     }
 
     /**
@@ -831,58 +966,59 @@ class Competition {
      */
     public function set_season( string $season = '', bool $force_overwrite = false ): void {
         global $wp;
+        // Use a local decoded seasons array (property holds JSON string in Option B)
+        $seasons = $this->get_seasons();
         if ( ! empty( $season ) && true === $force_overwrite ) {
-            $data = $this->seasons[ $season ];
+            $data = $seasons[ $season ] ?? null;
         } elseif ( ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $seasons[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $seasons[ $key ];
             }
         } elseif ( isset( $_GET[ 'season_' . $this->id ] ) && ! empty( $_GET[ 'season_' . $this->id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $seasons[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $seasons[ $key ];
             }
         } elseif ( isset( $wp->query_vars['season'] ) ) {
             $key = $wp->query_vars['season'];
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $seasons[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $seasons[ $key ];
             }
         } elseif ( ! empty( $season ) ) {
-            $data = $this->seasons[ $season ];
+            $data = $seasons[ $season ] ?? null;
         } else {
             $data = null;
         }
         $today = gmdate( 'Y-m-d' );
         if ( ! isset( $data ) ) {
-            foreach ( array_reverse( $this->seasons ) as $season ) {
-                $date_active = empty( $season['date_closing'] ) ? null : Util::amend_date( $season['date_closing'], 7 );
+            foreach ( array_reverse( $seasons ) as $season_item ) {
+                $date_active = empty( $season_item['date_closing'] ) ? null : Util::amend_date( $season_item['date_closing'], 7 );
                 if ( ! empty( $date_active ) && $date_active <= $today ) {
-                    $data = $season;
+                    $data = $season_item;
                     break;
                 }
             }
         }
         if ( empty( $data ) ) {
-            $data = end( $this->seasons );
+            $tmp = $seasons;
+            $data = ! empty( $tmp ) ? end( $tmp ) : null;
         }
         $count_match_dates = isset( $data['match_dates'] ) && is_array( $data['match_dates'] ) ? count( $data['match_dates'] ) : 0;
         $this->is_complete = false;
         if ( empty( $data['date_end'] ) && $count_match_dates >= 2 ) {
             $data['date_end']               = end( $data['match_dates'] );
-            $this->seasons[ $data['name'] ] = $data;
         }
         if ( empty( $data['date_start'] ) && $count_match_dates >= 2 ) {
             $data['date_start']             = $data['match_dates'][0];
-            $this->seasons[ $data['name'] ] = $data;
         }
         if ( ! empty( $data['date_end'] ) && $today > $data['date_end'] ) {
             $this->current_phase = 'end';
@@ -1572,24 +1708,41 @@ class Competition {
     /**
      * Update seasons
      *
-     * @param array $seasons season data.
+     * Accepts either an array (preferred) or a JSON string (Option B compatibility).
+     * Keeps the internal seasons property as a JSON string and persists JSON to DB.
+     *
+     * @param array|string $seasons Season data as array or JSON string.
      */
-    public function update_seasons( array $seasons ): bool {
+    public function update_seasons( array|string $seasons ): bool {
         global $wpdb;
-        if ( $this->seasons !== $seasons ) {
-            $this->seasons = $seasons;
+
+        // Normalize input to array
+        if ( is_string( $seasons ) ) {
+            $decoded = json_decode( $seasons, true );
+            if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                $seasons = $decoded;
+            } else {
+                // Invalid JSON string; do not persist
+                return false;
+            }
+        }
+
+        // Compare to current decoded seasons
+        $current = $this->get_seasons();
+        if ( $current !== $seasons ) {
+            // Keep property as JSON string
+            $this->seasons = wp_json_encode( $seasons );
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "UPDATE $wpdb->racketmanager_competitions SET `seasons` = %s WHERE `id` = %d",
-                    maybe_serialize( $seasons ),
+                    $this->get_seasons_json(),
                     $this->id
                 )
             );
             wp_cache_set( $this->id, $this, 'competitions' );
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
     /**
      * Save plan

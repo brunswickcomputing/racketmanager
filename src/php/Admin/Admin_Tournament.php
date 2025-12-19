@@ -367,8 +367,10 @@ final class Admin_Tournament extends Admin_Championship {
                                 'final' => 'all',
                             )
                         );
-                        $tab         = 'matches';
-                        $match_dates = empty( $league->event->seasons[ $season ]['match_dates'] ) ? $league->event->competition->seasons[ $season ]['match_dates'] : $league->event->seasons[ $season ]['match_dates'];
+                        $tab              = 'matches';
+                        $event_dtls       = $league->event->get_season_by_name( $season );
+                        $competition_dtls = $league->event->competition->get_season_by_name( $season );
+                        $match_dates      = empty( $event_dtls['match_dates'] ) ? $competition_dtls['match_dates'] : $event_dtls['match_dates'];
                         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
                     }
                 }

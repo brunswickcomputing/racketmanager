@@ -177,7 +177,7 @@ class Shortcodes_League extends Shortcodes {
             if ( ! $event ) {
                 return false;
             }
-            $seasons = $event->seasons;
+            $seasons = $event->get_seasons();
             $leagues = $event->get_leagues();
             $league->set_tab( true );
             $league->set_templates(

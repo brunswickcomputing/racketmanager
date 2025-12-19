@@ -520,25 +520,23 @@ class Event {
             $this->reverse_rubbers = '0';
         }
 
-        // set seasons.
+        // Seasons handling (Option B for Event): keep property as JSON string; do not reindex or mutate stored structure
         if ( empty( $this->seasons ) ) {
-            $this->seasons = array();
-        } else {
-            $this->seasons = (array) maybe_unserialize( $this->seasons );
-        }
-        if ( ! is_admin() ) {
-            $i       = 0;
-            $seasons = array();
-            foreach ( $this->seasons as $season ) {
-                $seasons[ $season['name'] ] = $season;
-                if ( isset( $season['status'] ) && 'draft' === $season['status'] ) {
-                    unset( $seasons[ $season['name'] ] );
-                }
-                ++$i;
+            $this->seasons = '[]';
+        } elseif ( is_array( $this->seasons ) ) {
+            // Normalize arrays to JSON string
+            $this->seasons = wp_json_encode( $this->seasons );
+        } elseif ( is_string( $this->seasons ) ) {
+            // If the string looks serialized, try to unserialize and convert to JSON
+            $maybe = @maybe_unserialize( $this->seasons );
+            if ( is_array( $maybe ) ) {
+                $this->seasons = wp_json_encode( $maybe );
+            } else {
+                // assume already JSON string
+                $this->seasons = $this->seasons;
             }
-            $this->seasons = $seasons;
         }
-        $this->num_seasons = count( $this->seasons );
+        $this->num_seasons = count( $this->get_seasons() );
         $this->set_num_leagues( true );
         $this->standings = $this->competition->standings;
         // set season to latest.
@@ -589,7 +587,54 @@ class Event {
      * @return array
      */
     public function get_seasons(): array {
-        return $this->seasons;
+        // Lazily decode JSON string; return empty array on failure
+        if ( is_string( $this->seasons ) ) {
+            $decoded = json_decode( $this->seasons, true );
+            return ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) ? $decoded : array();
+        }
+        return is_array( $this->seasons ) ? $this->seasons : array();
+    }
+
+    /**
+     * Get seasons as JSON string
+     */
+    public function get_seasons_json(): string {
+        if ( is_string( $this->seasons ) ) {
+            return $this->seasons;
+        }
+        return wp_json_encode( $this->get_seasons() );
+    }
+
+    /**
+     * Helper for templates/services that expect an array
+     */
+    public function get_seasons_array(): array {
+        return $this->get_seasons();
+    }
+
+    /**
+     * Get a season by name (searches by season['name'])
+     */
+    public function get_season_by_name( string $name ): ?array {
+        foreach ( $this->get_seasons() as $season ) {
+            if ( isset( $season['name'] ) && $season['name'] === $name ) {
+                return $season;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * List all season names
+     */
+    public function list_season_names(): array {
+        $names = array();
+        foreach ( $this->get_seasons() as $season ) {
+            if ( isset( $season['name'] ) ) {
+                $names[] = $season['name'];
+            }
+        }
+        return $names;
     }
 
     /**
@@ -752,38 +797,47 @@ class Event {
      */
     public function set_season( ?string $season = null, bool $force_overwrite = false ): void {
         global $wp;
+        $seasons_list = $this->get_seasons();
+        // Build a local index by name for lookup without mutating storage
+        $by_name = array();
+        foreach ( $seasons_list as $s ) {
+            if ( isset( $s['name'] ) ) {
+                $by_name[ $s['name'] ] = $s;
+            }
+        }
         if ( ! empty( $season ) && true === $force_overwrite ) {
-            $data = $this->seasons[ $season ];
+            $data = $by_name[ $season ] ?? null;
         } elseif ( ! empty( $_GET['season'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $by_name[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $by_name[ $key ];
             }
         } elseif ( ! empty( $_GET[ 'season_' . $this->id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $by_name[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $by_name[ $key ];
             }
         } elseif ( isset( $wp->query_vars['season'] ) ) {
             $key = $wp->query_vars['season'];
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $by_name[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $by_name[ $key ];
             }
-        } elseif ( ! empty( $this->seasons[ $season ] ) ) {
-            $data = $this->seasons[ $season ];
+        } elseif ( ! empty( $season ) ) {
+            $data = $by_name[ $season ] ?? null;
         } else {
             $data = null;
         }
         if ( ! isset( $data ) ) {
-            $data                 = end( $this->seasons );
+            $tmp = $seasons_list;
+            $data                 = ! empty( $tmp ) ? end( $tmp ) : null;
             $this->num_match_days = $data['num_match_days'] ?? 0;
         }
 
@@ -811,31 +865,40 @@ class Event {
      * @return false|array|string
      */
     public function get_season_event(false|string $season = false, bool $index = false ): false|array|string {
+        $seasons_list = $this->get_seasons();
+        $by_name = array();
+        foreach ( $seasons_list as $s ) {
+            if ( isset( $s['name'] ) ) {
+                $by_name[ $s['name'] ] = $s;
+            }
+        }
         if (! empty( $_GET['season'] )) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['season'] ) ) );
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $by_name[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $by_name[ $key ];
             }
         } elseif ( isset( $_GET[ 'season_' . $this->id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $key = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET[ 'season_' . $this->id ] ) ) );
-            if ( ! isset( $this->seasons[ $key ] ) ) {
+            if ( ! isset( $by_name[ $key ] ) ) {
                 $data = false;
             } else {
-                $data = $this->seasons[ $key ];
+                $data = $by_name[ $key ];
             }
         } elseif ( $season ) {
-            $data = $this->seasons[ $season ];
-        } elseif ( ! empty( $this->seasons ) ) {
-            $data = end( $this->seasons );
+            $data = $by_name[ $season ] ?? null;
+        } elseif ( ! empty( $seasons_list ) ) {
+            $tmp  = $seasons_list;
+            $data = end( $tmp );
         } else {
             $data = false;
         }
         if ( empty( $data ) ) {
-            $data = end( $this->seasons );
+            $tmp  = $seasons_list;
+            $data = ! empty( $tmp ) ? end( $tmp ) : false;
         }
         if ( $index ) {
             return $data[ $index ];
@@ -1982,12 +2045,14 @@ class Event {
      */
     public function update_seasons( array $seasons ): bool {
         global $wpdb;
-        if ( $this->seasons !== $seasons ) {
-            $this->seasons = $seasons;
+        $current = $this->get_seasons();
+        if ( $current !== $seasons ) {
+            // Keep property as JSON string
+            $this->seasons = wp_json_encode( $seasons );
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "UPDATE $wpdb->racketmanager_events SET `seasons` = %s WHERE `id` = %d",
-                    maybe_serialize( $seasons ),
+                    $this->get_seasons_json(),
                     $this->id
                 )
             );
@@ -2004,7 +2069,7 @@ class Event {
      */
     public function add_season( array $season ): void {
         global $racketmanager;
-        $seasons                 = $this->seasons;
+        $seasons                 = $this->get_seasons();
         $season_name             = $season['name'];
         $seasons[ $season_name ] = $season;
         $this->update_seasons( $seasons );
@@ -2041,7 +2106,7 @@ class Event {
      */
     public function update_season(array $season ): void {
         global $racketmanager;
-        $seasons                 = $this->seasons;
+        $seasons                 = $this->get_seasons();
         $season_name             = $season['name'];
         $seasons[ $season_name ] = $season;
         ksort( $seasons );
@@ -2055,8 +2120,8 @@ class Event {
      */
     public function delete_season(int $season ): void {
         global $wpdb;
-        if ( isset( $this->seasons[ $season ] ) ) {
-            $seasons = $this->seasons;
+        if ( isset( $this->get_seasons()[ $season ] ) ) {
+            $seasons = $this->get_seasons();
             $leagues = $this->get_leagues();
             foreach ( $leagues as $league ) {
                 $league = get_league( $league->id );

@@ -33,7 +33,8 @@ class Event_Repository {
                 array(
                     'name'           => $event->get_name(),
                     'settings'       => maybe_serialize( $event->get_settings() ),
-                    'seasons'        => maybe_serialize( $event->get_seasons() ),
+                    // Persist seasons as JSON
+                    'seasons'        => $event->get_seasons_json(),
                     'type'           => $event->get_type(),
                     'num_sets'       => $event->get_num_sets(),
                     'num_rubbers'    => $event->get_num_rubbers(),
@@ -56,7 +57,8 @@ class Event_Repository {
                 array(
                     'name'           => $event->get_name(),
                     'settings'       => maybe_serialize( $event->get_settings() ),
-                    'seasons'        => maybe_serialize( $event->get_seasons() ),
+                    // Persist seasons as JSON
+                    'seasons'        => $event->get_seasons_json(),
                     'type'           => $event->get_type(),
                     'num_sets'       => $event->get_num_sets(),
                     'num_rubbers'    => $event->get_num_rubbers(),

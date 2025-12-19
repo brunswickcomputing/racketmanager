@@ -11,6 +11,7 @@ namespace Racketmanager;
 /** @var object $club */
 /** @var object $event */
 /** @var string $curr_season */
+/** @var array  $seasons */
 global $wp_query, $racketmanager;
 $post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 if ( isset( $wp_query->query['pagename'] ) && 'club/event' === $wp_query->query['pagename'] ) {
@@ -31,8 +32,6 @@ $image = match ($event->competition->type) {
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
     default => null,
 };
-$seasons     = $event->seasons;
-$curr_season = $event->current_season['name'];
 if ( empty( $header_level ) ) {
     $header_level = 1;
 }
@@ -93,10 +92,17 @@ if ( empty( $header_level ) ) {
                                 <div class="form-floating">
                                     <select class="form-select" size="1" name="season" id="season">
                                         <?php
+                                        // Only iterate arrays and ensure each season item is an array with a name
                                         foreach ( array_reverse( $seasons ) as $season ) {
-                                            $option_name = $season['name'];
+                                            if ( ! is_array( $season ) ) {
+                                                continue;
+                                            }
+                                            $option_name = $season['name'] ?? '';
+                                            if ( '' === $option_name ) {
+                                                continue;
+                                            }
                                             ?>
-                                            <option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $curr_season ); ?>>
+                                            <option value="<?php echo esc_html( $option_name ); ?>" <?php selected( $option_name, $curr_season ); ?>>
                                                 <?php echo esc_html( $option_name ); ?>
                                             </option>
                                             <?php

@@ -137,7 +137,8 @@ class Shortcodes_Competition extends Shortcodes {
             $msg = $this->no_competition_id;
         }
         if ( empty( $msg ) ) {
-            if ( empty( $competition->seasons ) ) {
+            $seasons = $competition->get_seasons();
+            if ( empty( $seasons ) ) {
                 $msg = __( 'No seasons found for competition', 'racketmanager' );
             } else {
                 $competition->set_season( $season );
@@ -145,7 +146,7 @@ class Shortcodes_Competition extends Shortcodes {
                     $msg = __( 'Season not found for competition', 'racketmanager' );
                 } else {
                     $season             = $competition->current_season['name'];
-                    $competition_season = $competition->seasons[ $season ];
+                    $competition_season = $competition->current_season;
                     if ( ! empty( $competition_season['venue'] ) ) {
                         $venue_club = get_club( $competition_season['venue'] );
                         if ( $venue_club ) {
@@ -171,6 +172,7 @@ class Shortcodes_Competition extends Shortcodes {
                             'competition'        => $competition,
                             'competition_season' => $competition_season,
                             'tab'                => $tab,
+                            'seasons'            => $seasons,
                         )
                     );
                 }
@@ -623,7 +625,7 @@ class Shortcodes_Competition extends Shortcodes {
                 } else {
                     $season = get_query_var( 'season' );
                     if ( $season ) {
-                        $competition_season = $competition->seasons[$season] ?? null;
+                        $competition_season = method_exists( $competition, 'get_season_by_name' ) ? $competition->get_season_by_name( $season ) : ( $competition->get_seasons_array()[ $season ] ?? null );
                         if ( $competition_season ) {
                             if ( ! empty( $competition_season['venue'] ) ) {
                                 $venue_club = get_club( $competition_season['venue'] );

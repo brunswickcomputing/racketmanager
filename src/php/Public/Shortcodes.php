@@ -778,8 +778,9 @@ class Shortcodes {
             $competition = get_competition( $competition_id );
             if ( $competition ) {
                 if ( $season ) {
-                    if ( isset( $competition->seasons[ $season ] ) ) {
-                        $finals_order = $competition->seasons[ $season ]['orderofplay'];
+                    $competition_season = $competition->get_season_by_name( $season );
+                    if ( $competition_season ) {
+                        $finals_order = $competition_season['orderofplay'] ?? array();
                     } else{
                         $msg = $this->season_not_found_for_competition;
                     }

@@ -13,6 +13,7 @@ global $racketmanager;
 /** @var string $post_id */
 /** @var string $pagename */
 /** @var array $competition_season */
+/** @var string $seasons */
 $image = match ($competition->type) {
     'league' => 'assets/icons/bootstrap-icons.svg#table',
     'cup' => 'assets/icons/bootstrap-icons.svg#trophy-fill',
@@ -84,13 +85,15 @@ $image = match ($competition->type) {
                                 <div class="form-floating">
                                     <select class="form-select" size="1" name="season" id="season">
                                         <?php
-                                        foreach ( array_reverse( $competition->seasons ) as $season ) {
-                                            $option_name = $season['name'];
-                                            ?>
-                                            <option value="<?php echo esc_html( $season['name'] ); ?>" <?php selected( $season['name'], $competition_season['name'] ); ?>>
-                                                <?php echo esc_html( $option_name ); ?>
-                                            </option>
-                                            <?php
+                                        foreach ( array_reverse( $seasons ) as $season_item ) {
+                                            $option_name = $season_item['name'] ?? '';
+                                            if ( $option_name ) {
+                                                ?>
+                                                <option value="<?php echo esc_html( $option_name ); ?>" <?php selected( $option_name, $competition_season['name'] ?? '' ); ?>>
+                                                    <?php echo esc_html( $option_name ); ?>
+                                                </option>
+                                                <?php
+                                            }
                                         }
                                         ?>
                                     </select>

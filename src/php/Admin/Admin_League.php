@@ -153,8 +153,9 @@ final class Admin_League extends Admin_Display {
             $validator      = $validator->competition( $competition_id );
             if ( empty( $validator->error ) ) {
                 $competition = get_competition( $competition_id );
-                $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $validator   = $validator->season_set( $season, $competition->seasons );
+                $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+                $seasons     = $competition->get_seasons_array();
+                $validator   = $validator->season_set( $season, $seasons );
             }
         }
         if ( ! empty( $validator->error ) ) {
@@ -173,7 +174,7 @@ final class Admin_League extends Admin_Display {
         //contactTeam
         $competition->events = $competition->get_events();
         $tab                 = 'overview';
-        $current_season      = (object) $competition->seasons[ $season ];
+        $current_season = (object) ( $seasons[ $season ] ?? array() );
         if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
             $current_season->is_active = true;
         } else {

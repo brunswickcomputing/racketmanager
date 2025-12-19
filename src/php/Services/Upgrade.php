@@ -56,6 +56,8 @@ class Upgrade {
         $this->v10_0_4();
         $this->v10_0_5();
         $this->v10_0_6();
+        $this->v10_0_7();
+        $this->v10_0_8();
         /*
         * Update version and dbversion
         */
@@ -273,6 +275,117 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $this->wpdb->query( "RENAME TABLE {$this->wpdb->prefix}racketmanager_table TO {$this->wpdb->prefix}racketmanager_league_teams" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.7
+     * Make competition season json not array
+     *
+     * @return void
+     */
+    private function v10_0_7 ():void {
+        $version = '10.0.7';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $table_name = $this->wpdb->prefix . 'racketmanager_competitions';
+            $this->wpdb->query( "ALTER TABLE {$table_name} CHANGE `seasons` `seasons` JSON NULL DEFAULT NULL" );
+            $updated = 0;
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $rows = $this->wpdb->get_results( "SELECT `id`, `seasons` FROM {$table_name}" );
+            if ( empty( $rows ) ) {
+                return;
+            }
+            foreach ( $rows as $row ) {
+                $raw = $row->seasons;
+                $decoded = null;
+                if ( is_string( $raw ) && $raw !== '' ) {
+                    // Try JSON first
+                    $json = json_decode( $raw, true );
+                    if ( json_last_error() === JSON_ERROR_NONE && is_array( $json ) ) {
+                        // Already JSON; skip
+                        continue;
+                    }
+                    // Fallback: maybe serialized array
+                    if ( is_serialized( $raw ) ) {
+                        $decoded = maybe_unserialize( $raw );
+                    }
+                } elseif ( is_array( $raw ) ) {
+                    $decoded = $raw;
+                }
+
+                if ( is_array( $decoded ) ) {
+                    $json_value = wp_json_encode( $decoded );
+                    $result     = $this->wpdb->update(
+                        $table_name,
+                        array( 'seasons' => $json_value ),
+                        array( 'id' => (int) $row->id ),
+                        array( '%s' ),
+                        array( '%d' )
+                    );
+                    if ( false !== $result ) {
+                        $updated += (int) $result;
+                    }
+                }
+                echo '<p>' . sprintf( 'Updated %d competition row(s) to JSON seasons.', (int) $updated ) . '</p>';
+            }
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.8
+     * Migrate racketmanager_events.seasons from serialized PHP to JSON strings
+     */
+    private function v10_0_8(): void {
+        $version = '10.0.8';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $table = $this->wpdb->prefix . 'racketmanager_events';
+            $this->wpdb->query( "ALTER TABLE {$table} CHANGE `seasons` `seasons` JSON NULL DEFAULT NULL" );
+            // Fetch id and seasons for migration
+            $rows = $this->wpdb->get_results( "SELECT id, seasons FROM {$table}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            foreach ( $rows as $row ) {
+                $raw = $row->seasons;
+                $needs_update = false;
+                $json = '';
+                if ( is_null( $raw ) || $raw === '' ) {
+                    $json = '[]';
+                    $needs_update = true;
+                } else {
+                    // If already valid JSON array/object, keep as-is
+                    $decoded = json_decode( $raw, true );
+                    if ( json_last_error() === JSON_ERROR_NONE && ( is_array( $decoded ) || is_object( $decoded ) ) ) {
+                        // normalize to array json
+                        if ( is_object( $decoded ) ) {
+                            $decoded = (array) $decoded;
+                        }
+                        $json = wp_json_encode( $decoded );
+                        // Only update if normalized differs
+                        $needs_update = ( $json !== $raw );
+                    } else {
+                        // Try unserialize; if array, encode to JSON
+                        $maybe = @maybe_unserialize( $raw );
+                        if ( is_array( $maybe ) || is_object( $maybe ) ) {
+                            if ( is_object( $maybe ) ) { $maybe = (array) $maybe; }
+                            $json = wp_json_encode( $maybe );
+                            $needs_update = true;
+                        } else {
+                            // Fallback: treat as string but wrap to valid JSON array
+                            $json = '[]';
+                            $needs_update = true;
+                        }
+                    }
+                }
+                if ( $needs_update ) {
+                    $this->wpdb->update(
+                        $table,
+                        array( 'seasons' => $json ),
+                        array( 'id' => $row->id ),
+                        array( '%s' ),
+                        array( '%d' )
+                    );
+                }
+            }
         }
     }
 

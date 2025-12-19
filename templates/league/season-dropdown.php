@@ -12,10 +12,14 @@ namespace Racketmanager;
 <select size='1' name='season' id='season' class="form-select" onChange='Racketmanager.getMatchDropdown(<?php echo esc_html( $league->id ); ?>, this.value)'>
     <option value="0"><?php esc_html_e( 'Choose Season', 'racketmanager' ); ?></option>
     <?php
-    foreach ( array_reverse( $league->event->seasons ) as $season_entry ) {
-        ?>
-        <option value=<?php echo esc_html( $season_entry['name'] ); ?> <?php selected( $season, $season_entry['name'], false ); ?>><?php echo esc_html( $season_entry['name'] ); ?></option>
-        <?php
+    $event_seasons = $league->event->get_seasons_array();
+    foreach ( array_reverse( $event_seasons ) as $season_entry ) {
+        $opt_name = $season_entry['name'] ?? '';
+        if ( $opt_name ) {
+            ?>
+            <option value=<?php echo esc_html( $opt_name ); ?> <?php selected( $season ?? '', $opt_name, false ); ?>><?php echo esc_html( $opt_name ); ?></option>
+            <?php
+        }
     }
     ?>
 </select>

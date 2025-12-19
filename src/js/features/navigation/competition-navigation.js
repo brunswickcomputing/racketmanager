@@ -7,7 +7,7 @@ export function initializeCompetitionNavigation() {
         const pagename = jQuery('#pagename').val();
         const season = jQuery('#season').val();
         const base = `${globalThis.location.protocol}//${globalThis.location.host}`;
-        const fullPath = `${pagename.toLowerCase()}${season}/`;
+        const fullPath = `${pagename.toLowerCase()}/${season}/`;
         const finalUrl = new URL(fullPath, base).href;
         globalThis.location = finalUrl;
         return false;

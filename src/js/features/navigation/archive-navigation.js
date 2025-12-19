@@ -4,12 +4,13 @@
 
 export function initializeArchiveNavigation() {
     jQuery('#racketmanager_archive').on('change', function () {
-        let league = jQuery('#league_id').val();
-        let season = jQuery('#season').val();
+        const league = jQuery('#league_id').val();
+        const season = jQuery('#season').val();
 
-        globalThis.location = encodeURI(globalThis.location.protocol) + '//' +
-            encodeURIComponent(globalThis.location.host) + '/league/' +
-            encodeURIComponent(league.toLowerCase()) + '/' + encodeURIComponent(season) + '/';
+        const base = `${globalThis.location.protocol}//${globalThis.location.host}`;
+        const fullPath = `league/${league.toLowerCase()}/${season}/`;
+        const finalUrl = new URL(fullPath, base).href;
+        globalThis.location = finalUrl;
 
         return false;
     });

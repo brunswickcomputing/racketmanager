@@ -4,13 +4,12 @@
 
 export function initializeCompetitionNavigation() {
     jQuery('#racketmanager_competition_archive #season').on('change', function () {
-        let pagename = jQuery('#pagename').val();
-        let season = jQuery('#season').val();
-
-        globalThis.location = encodeURI(globalThis.location.protocol) + '//' +
-            encodeURIComponent(globalThis.location.host) + '/' +
-            encodeURIComponent(pagename.toLowerCase()) + '/' + encodeURIComponent(season) + '/';
-
+        const pagename = jQuery('#pagename').val();
+        const season = jQuery('#season').val();
+        const base = `${globalThis.location.protocol}//${globalThis.location.host}`;
+        const fullPath = `${pagename.toLowerCase()}${season}/`;
+        const finalUrl = new URL(fullPath, base).href;
+        globalThis.location = finalUrl;
         return false;
     });
 }

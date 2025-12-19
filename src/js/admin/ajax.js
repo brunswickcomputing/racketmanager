@@ -194,6 +194,14 @@ Racketmanager.setEndDate = function () {
         }
     }
 };
+Racketmanager.amendDate = function (date, adjustment) {
+	let newDate = new Date(date);
+	newDate.setDate(newDate.getDate() + adjustment);
+	let year = newDate.toLocaleString("default", { year: "numeric" });
+	let month = newDate.toLocaleString("default", { month: "2-digit" });
+	let day = newDate.toLocaleString("default", { day: "2-digit" });
+	return year + "-" + month + "-" + day;
+};
 Racketmanager.setNumMatchDays = function () {
     let homeAwayTrueField = "#homeAwayTrue";
     let maxTeamsField = "#max_teams";

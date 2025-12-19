@@ -13,6 +13,7 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
@@ -76,6 +77,7 @@ class Admin_Display {
     protected RacketManager $racketmanager;
     protected Team_Service $team_service;
     protected League_Service $league_service;
+    protected Competition_Service $competition_service;
 
     /**
      * Constructor
@@ -89,6 +91,7 @@ class Admin_Display {
         $this->registration_service = $c->get( 'registration_service' );
         $this->team_service         = $c->get( 'team_service' );
         $this->league_service       = $c->get( 'league_service' );
+        $this->competition_service  = $c->get( 'competition_service' );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );

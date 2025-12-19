@@ -7,19 +7,13 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-
 use Racketmanager\Util\Util_Lookup;
 
-$age_group_select               = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
-$competition_query['age_group'] = $age_group_select ?? null;
-$orderby['age_group']           = 'ASC';
-$orderby['type']                = 'ASC';
-$orderby['name']                = 'ASC';
-$competition_query['orderby']   = $orderby;
-$competitions                   = $racketmanager->get_competitions( $competition_query );
-$age_groups                     = Util_Lookup::get_age_groups();
-$page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
+/** @var string $competition_type */
+$age_group_select = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
+$competitions     = $this->competition_service->find_competitions_with_summary( $age_group_select, $competition_type );
+$age_groups       = Util_Lookup::get_age_groups();
+$page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
 ?>
 <div class="container">
     <div class="row justify-content-between mb-3">
@@ -100,10 +94,10 @@ $page_name                      = isset( $_GET['page'] ) ? sanitize_text_field( 
                             <?php echo esc_html( ucfirst( $competition->type ) ); ?>
                         </td>
                         <td class="d-none d-md-table-cell text-center">
-                            <?php echo esc_html( $competition->num_seasons ); ?>
+                            <?php echo esc_html( $competition->season_count ); ?>
                         </td>
                         <td class="d-none d-md-table-cell text-center">
-                            <?php echo esc_html( $competition->num_events ); ?>
+                            <?php echo esc_html( $competition->event_count ); ?>
                         </td>
                     </tr>
                     <?php

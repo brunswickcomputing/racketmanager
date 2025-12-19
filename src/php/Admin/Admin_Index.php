@@ -9,10 +9,9 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Competition;
+use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
-use function Racketmanager\get_competition;
 
 /**
  * RacketManager Index Admin functions
@@ -82,9 +81,14 @@ class Admin_Index extends Admin_Display {
         $competition->name      = $name;
         $competition->type      = $type;
         $competition->age_group = $age_group;
-        $competition            = new Competition( $competition );
         $return                 = new stdClass();
-        $return->msg            = __( 'Competition added', 'racketmanager' );
+        try {
+            $this->competition_service->create( $competition );
+            $return->msg = __( 'Competition added', 'racketmanager' );
+        } catch ( Duplicate_Competition_Exception $e ) {
+            $return->msg   = $e->getMessage();
+            $return->error = true;
+        }
         return $return;
     }
     /**
@@ -109,12 +113,8 @@ class Admin_Index extends Admin_Display {
         $competitions = isset( $_POST['competition'] ) ? wp_unslash( $_POST['competition'] ) : array();
         if ( $competitions ) {
             foreach ( $competitions as $competition_id ) {
-                $competition = get_competition( intval( $competition_id ) );
-                if ( $competition ) {
-                    $competition->delete();
-                    $this->delete_competition_pages( $competition->name );
-                    $messages[] = $competition->name . ' ' . __( 'deleted', 'racketmanager' );
-                }
+                $this->competition_service->remove( intval( $competition_id ) );
+                $messages[] = sprintf( __( 'Deleted %d', 'racketmanager' ), $competition_id );
             }
             $message = implode( '<br>', $messages );
         } else {
@@ -124,31 +124,5 @@ class Admin_Index extends Admin_Display {
         $return->msg = $message;
         return $return;
     }
-    /**
-     * Delete all Competition Pages
-     *
-     * @param string $competition_name competition name.
-     */
-    private function delete_competition_pages( string $competition_name ): void {
-        $title     = $competition_name . ' ' . __( 'Tables', 'racketmanager' );
-        $page_name = sanitize_title_with_dashes( $title );
-        $this->delete_racketmanager_page( $page_name );
-        $title     = $competition_name;
-        $page_name = sanitize_title_with_dashes( $title );
-        $this->delete_racketmanager_page( $page_name );
-    }
-    /**
-     * Delete page
-     *
-     * @param string $page_name page name.
-     */
-    private function delete_racketmanager_page( string $page_name ): void {
-        $option  = 'racketmanager_page_' . $page_name . '_id';
-        $page_id = intval( get_option( $option ) );
-        // Force delete this so the Title/slug "Menu" can be used again.
-        if ( $page_id ) {
-            wp_delete_post( $page_id, true );
-            delete_option( $option );
-        }
-    }
+
 }

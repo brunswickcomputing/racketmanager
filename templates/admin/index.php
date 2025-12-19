@@ -17,7 +17,7 @@ use Racketmanager\Util\Util_Lookup;
     <div id="competitions-table" class="league-block-container mb-3">
         <div class="">
             <?php
-            $competition_query = array();
+            $competition_type = null;
             require_once 'includes/competitions.php';
             ?>
         </div>

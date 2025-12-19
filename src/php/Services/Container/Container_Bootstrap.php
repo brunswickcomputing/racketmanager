@@ -3,6 +3,7 @@ namespace Racketmanager\Services\Container;
 
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
@@ -11,6 +12,7 @@ use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
@@ -35,11 +37,18 @@ final class Container_Bootstrap {
         $c->set('event_repository', fn() => new Event_Repository());
         $c->set('league_repository', fn() => new League_Repository());
         $c->set('league_team_repository', fn() => new League_Team_Repository());
+        $c->set('competition_repository', fn() => new Competition_Repository());
 
         // External clients
         $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
 
         // Services
+        $c->set('competition_service', function(Simple_Container $c) {
+            return new Competition_Service(
+                $c->get('competition_repository'),
+            );
+        });
+
         $c->set('player_service', function(Simple_Container $c) use ($app) {
             return new Player_Service(
                 $app,

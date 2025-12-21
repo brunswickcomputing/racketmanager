@@ -3206,6 +3206,46 @@ class League {
     }
 
     /**
+     * Display custom standings columns
+     *
+     * @param object $team team.
+     * @param string $rule rule.
+     */
+    public function display_standings_columns( object $team, string $rule ): void {
+        if ( count( $this->fields_team ) > 0 ) {
+            foreach ( $this->fields_team as $key => $data ) {
+                if ( ! isset( $team->{$key} ) ) {
+                    if ( isset( $data['keys'] ) ) {
+                        $team->{$key} = array();
+                        foreach ( $data['keys'] as $k ) {
+                            $team->{$key}[ $k ] = '';
+                        }
+                    } else {
+                        $team->{$key} = '';
+                    }
+                }
+
+                if ( ( isset( $data['type'] ) && 'input' === $data['type'] ) && is_admin() && 'manual' === $rule ) {
+                    echo '<td class="column-' . esc_html( $key ) . ' column-num d-none d-md-table-cell" data-colname="' . esc_html( $data['label'] ) . '">';
+                    if ( is_array( $team->{$key} ) ) {
+                        foreach ( $team->{$key} as $k => $v ) {
+                            echo '<input class="points" type="text" size="2" id="home_' . esc_html( $team->id ) . '_' . esc_html( $k ) . '" name="custom[' . esc_html( $team->id ) . '][' . esc_html( $key ) . '][' . esc_html( $k ) . ']" value="' . esc_html( $team->{$key}[ $k ] ) . '" />';
+                        }
+                    } else {
+                        echo '<input class="points" type="text" size="2" id="home_' . esc_html( $team->id ) . '" name="custom[' . esc_html( $team->id ) . '][' . esc_html( $key ) . ']" value="' . esc_html( $team->{$key} ) . '" />';
+                    }
+                    echo '</td>';
+                } elseif ( show_standings( $key ) ) {
+                    if ( is_array( $team->{$key} ) ) {
+                        $team->{$key} = vsprintf( $this->point_2_format, $team->{$key} );
+                    }
+                    echo '<td class="num column-' . esc_html( $key ) . ' d-none d-md-table-cell d-none d-md-table-cell" data-colname="' . esc_html( $data['label'] ) . '">' . esc_html( $team->{$key} ) . '</td>';
+                }
+            }
+        }
+    }
+
+    /**
      * Import matches
      *
      * @param array $custom custom.

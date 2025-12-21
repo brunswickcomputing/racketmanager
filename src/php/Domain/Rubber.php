@@ -622,10 +622,12 @@ final class Rubber {
         $player_wtns = array();
         $match       = get_match( $this->match_id );
         if ( $match ) {
-            $options          = $racketmanager->get_options( 'checks' );
-            $register_options = $racketmanager->get_options( 'rosters' );
-            $player_options   = $racketmanager->get_options( 'player' );
-            $opponents        = array( 'home', 'away' );
+            $competition_season = $match->league->event->competition->get_season_by_name( $match->season );
+            $event_season       = $match->league->event->get_season_by_name( $match->season );
+            $options            = $racketmanager->get_options( 'checks' );
+            $register_options   = $racketmanager->get_options( 'rosters' );
+            $player_options     = $racketmanager->get_options( 'player' );
+            $opponents          = array( 'home', 'away' );
             foreach ( $opponents as $opponent ) {
                 $team_ref         = $opponent . '_team';
                 $team_id          = $match->$team_ref;
@@ -692,10 +694,10 @@ final class Rubber {
                                 $error = __( 'no age provided', 'racketmanager' );
                                 $match->add_player_result_check( $team->id, $player->id, $error, $this->id );
                             } else {
-                                if ( ! empty( $match->league->event->competition->seasons[ $match->season ]['date_end'] ) ) {
-                                    $date_end = $match->league->event->competition->seasons[ $match->season ]['date_end'];
-                                } elseif ( ! empty( $match->league->event->seasons[ $match->season ]['match_dates'] ) ) {
-                                    $date_end = end( $match->league->event->seasons[ $match->season ]['match_dates'] );
+                                if ( ! empty( $competition_season['date_end'] ) ) {
+                                    $date_end = $competition_season['date_end'];
+                                } elseif ( ! empty( $event_season['match_dates'] ) ) {
+                                    $date_end = end( $event_season['match_dates'] );
                                 } else {
                                     $date_end = null;
                                 }
@@ -737,8 +739,7 @@ final class Rubber {
                                 if ( $competition ) {
                                     $competition_season = $competition->seasons[ $match->season ];
                                     if ( $competition_season && ! empty( $competition_season['fixed_match_dates'] ) ) {
-                                        $league         = get_league( $match->league_id );
-                                        $num_match_days = $league->event->seasons[ $match->season ]['num_match_days'];
+                                        $num_match_days = $event_season['num_match_days'];
                                         if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {
                                             $count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                                                 $wpdb->prepare(

@@ -2187,11 +2187,12 @@ class Event {
      * @return boolean
      */
     public function promote_and_relegate(array $teams, int $season ): bool {
+        $competition_season = $this->competition->get_season_by_name( $season );
         $leagues            = $this->get_leagues( array( 'season' => $season ) );
-        $teams_prom_relg    = intval( $this->competition->seasons[ $season ]['teams_prom_relg'] );
-        $teams_per_club     = intval( $this->competition->seasons[ $season ]['teams_per_club'] );
-        $max_teams          = intval( $this->competition->seasons[ $season ]['max_teams'] );
-        $lowest_promotion   = intval( $this->competition->seasons[ $season ]['lowest_promotion'] );
+        $teams_prom_relg    = intval( $competition_season['teams_prom_relg'] );
+        $teams_per_club     = intval( $competition_season['teams_per_club'] );
+        $max_teams          = intval( $competition_season['max_teams'] );
+        $lowest_promotion   = intval( $competition_season['lowest_promotion'] );
         $highest_relegation = $max_teams - $teams_prom_relg + 1;
         if ( $leagues ) {
             $curr_league_id = null;

@@ -532,7 +532,7 @@ class Shortcodes_League extends Shortcodes {
             if ( $match ) {
                 $event = get_event( $match->league->event_id );
                 if ( $event ) {
-                    $seasons           = $event->seasons;
+                    $seasons           = $event->get_seasons();
                     $leagues           = $event->get_leagues();
                     $is_update_allowed = $match->is_update_allowed();
                     if ( ! empty( $match->league->num_rubbers ) ) {

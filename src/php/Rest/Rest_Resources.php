@@ -194,7 +194,7 @@ class Rest_Resources extends WP_REST_Controller {
             if ( empty( $validator->error ) ) {
                 $event = get_event( $event_name, 'name' );
                 if ( $event ) {
-                    $validator = $validator->season_set( $season, $event->seasons );
+                    $validator = $validator->season_set( $season, $event->get_seasons() );
                     if ( empty( $validator->error ) ) {
                         $events[] = $event;
                     }
@@ -320,7 +320,7 @@ class Rest_Resources extends WP_REST_Controller {
             if ( empty( $validator->error ) ) {
                 $event = get_event( $event_name, 'name' );
                 if ( $event ) {
-                    $validator = $validator->season_set( $season, $event->seasons );
+                    $validator = $validator->season_set( $season, $event->get_seasons() );
                     if ( empty( $validator->error ) ) {
                         $matches = $event->get_matches( $match_args );
                     }

@@ -2454,23 +2454,7 @@ class League {
      * @return boolean
      */
     private function season_exists( string $season ): bool {
-        $seasons_list = method_exists( $this->event, 'get_seasons' )
-            ? $this->event->get_seasons()
-            : ( is_array( $this->event->seasons ) ? $this->event->seasons : array() );
-        if ( ! is_array( $seasons_list ) ) {
-            return false;
-        }
-        // Check associative by key first
-        if ( isset( $seasons_list[ $season ] ) ) {
-            return true;
-        }
-        // Then scan list entries by ['name']
-        foreach ( $seasons_list as $s ) {
-            if ( is_array( $s ) && isset( $s['name'] ) && (string) $s['name'] === (string) $season ) {
-                return true;
-            }
-        }
-        return false;
+        return $this->event->get_season_by_name( $season ) ? true: false;
     }
 
     /**
@@ -3448,9 +3432,10 @@ class League {
     public function add_match( object $match ): void {
         $match = new Racketmanager_Match( $match );
         if ( $this->is_championship && $this->event->current_season['home_away'] && 'final' !== $match->final_round ) {
+            $competition_season      = $this->event->competition->get_season_by_name( $match->season );
             $match->leg              = 1;
             $new_match               = clone $match;
-            $weeks_diff              = empty( $this->event->competition->seasons[ $match->season ]['home_away_diff'] ) ? 2 : $this->event->competition->seasons[ $match->season ]['home_away_diff'];
+            $weeks_diff              = empty( $competition_season['home_away_diff'] ) ? 2 : $competition_season['home_away_diff'];
             $new_match->date         = Util::amend_date( $match->date, $weeks_diff, '+', 'weeks' );
             $new_match->linked_match = $match->id;
             $new_match->leg          = $match->leg + 1;

@@ -39,7 +39,7 @@ class Admin_Championship extends Admin_Display {
         $away_team       = null;
         $matches         = array();
         $valid           = true;
-        $event_season    = $league->event->seasons[ $season ];
+        $event_season    = $league->event->get_season_by_name( $season );
         $num_first_round = $league->championship->num_teams_first_round;
         $rounds          = array();
         $msg             = null;

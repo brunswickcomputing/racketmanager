@@ -18,7 +18,7 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
     ?>
     <p><?php esc_html_e( 'No leagues defined', 'racketmanager' ); ?>
     <?php
-} elseif ( empty( $event->seasons ) ) {
+} elseif ( empty( $event->get_seasons() ) ) {
     ?>
     <p><?php esc_html_e( 'No pending seasons for event', 'racketmanager' ); ?>
     <?php

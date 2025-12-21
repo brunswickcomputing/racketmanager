@@ -10,6 +10,7 @@ namespace Racketmanager;
 /** @var string $tab */
 /** @var object $league */
 /** @var string $season */
+/** @var array  $seasons */
 /** @var string $group */
 /** @var string $league_mode */
 ?>
@@ -40,7 +41,7 @@ namespace Racketmanager;
                 ?>
             </div>
             <?php
-            if ( ! empty( $league->event->seasons ) ) {
+            if ( ! empty( $seasons ) ) {
                 ?>
                 <!-- Season Dropdown -->
                 <div class="col-auto">
@@ -51,7 +52,7 @@ namespace Racketmanager;
                         <label for="season" style="vertical-align: middle;"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label>
                         <select size="1" name="season" id="season">
                             <?php
-                            foreach ( $league->event->seasons as $season_entry ) {
+                            foreach ( $seasons as $season_entry ) {
                                 ?>
                                 <option value="<?php echo esc_html( $season_entry['name'] ); ?>"
                                 <?php

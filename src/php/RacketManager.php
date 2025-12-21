@@ -1780,7 +1780,7 @@ class RacketManager {
         foreach ( $leagues as $i => $league ) {
             $league = get_league( $league->id );
             if ( $season ) {
-                if ( array_search( $season, array_column( $league->event->seasons, 'name' ) ) ) {
+                if ( $league->event->get_season_by_name( $season ) ) {
                     $leagues[ $i ] = $league;
                 } else {
                     unset( $leagues[ $i ] );

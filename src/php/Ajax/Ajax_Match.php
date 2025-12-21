@@ -225,7 +225,8 @@ class Ajax_Match extends Ajax {
             $match = get_match( $match_id );
             $old_home   = $match->home_team;
             $old_away   = $match->away_team;
-            $match_date = $match->league->event->seasons[ $match->season ]['match_dates'][ $match->match_day - 1 ];
+            $season_dtl = $match->league->event->get_season_by_name( $match->season );
+            $match_date = $season_dtl['match_dates'][ $match->match_day - 1 ];
             if ( $match_date ) {
                 $match->update_match_date( $match_date );
                 $match->set_teams( $old_away, $old_home );

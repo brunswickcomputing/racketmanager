@@ -246,7 +246,7 @@ final class Admin_Tournament extends Admin_Championship {
                     $season        = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
                     $tournament    = get_tournament( $tournament_id );
                     if ( $tournament ) {
-                        $tournament_season = $tournament->competition->seasons[ $season ];
+                        $tournament_season = $tournament->competition->get_season_by_name( $season );
                         if ( isset( $_POST['rounds'] ) ) {
                             $msg    = array();
                             $rounds = array();
@@ -303,7 +303,8 @@ final class Admin_Tournament extends Admin_Championship {
             if ( $tournament_id ) {
                 $tournament = get_tournament( $tournament_id );
                 if ( $tournament ) {
-                    $match_dates = $tournament->competition->seasons[ $season ]['match_dates'] ?? null;
+                    $tournament_season = $tournament->competition->get_season_by_name( $season );
+                    $match_dates       = $tournament_season['match_dates'] ?? null;
                     if ( empty( $match_dates ) ) {
                         $match_dates  = array();
                         $match_date   = null;
@@ -946,7 +947,7 @@ final class Admin_Tournament extends Admin_Championship {
         $events = $competition->get_events();
         foreach ( $events as $event ) {
             $event = get_event( $event );
-            if ( ! isset( $event->seasons[ $season ] ) ) {
+            if ( empty( $event->get_season_by_name( $season ) ) ) {
                 $this->add_season_to_event( $season, $event->id, $num_match_days );
             }
         }

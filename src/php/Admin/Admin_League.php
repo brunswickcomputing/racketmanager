@@ -241,7 +241,7 @@ final class Admin_League extends Admin_Display {
                                 $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
                                 $events = $competition->get_events();
                                 foreach ( $events as $competition_event ) {
-                                    $seasons = $competition_event->seasons;
+                                    $seasons = $competition_event->get_seasons();
                                     if ( empty( $competition_event->offset ) ) {
                                         $match_dates = $current_season['match_dates'];
                                     } else {
@@ -382,6 +382,7 @@ final class Admin_League extends Admin_Display {
             if ( $league_id ) {
                 $league = get_league( $league_id );
                 if ( $league ) {
+                    $seasons   = $league->event->get_seasons();
                     $league_id = $league->id;
                     $league->set_season();
                     $season      = $league->get_season();
@@ -457,7 +458,7 @@ final class Admin_League extends Admin_Display {
                     if ( $league->num_matches_per_page > 0 ) {
                         $match_args['limit'] = $league->num_matches_per_page;
                     }
-                    if ( empty( $league->event->seasons ) ) {
+                    if ( empty( $league->event->get_seasons() ) ) {
                         $this->set_message( __( 'You need to add at least one season for the competition', 'racketmanager' ), true );
                         $this->show_message();
                     }

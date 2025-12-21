@@ -2013,8 +2013,10 @@ final class Racketmanager_Match {
         global $racketmanager;
         $result = null;
         if ( empty( $competition_code ) ) {
-            $competition_season = $this->league->event->competition->seasons[$this->season] ?? null;
+            $competition_season = empty( $this->league->event->competition->get_season_by_name( $this->season ) ) ? null : $this->league->event->competition->get_season_by_name( $this->season );
             $competition_code   = empty( $competition_season['competition_code'] ) ? $this->league->event->competition->competition_code : $competition_season['competition_code'];
+            $event_season       = empty( $this->league->event->get_season_by_name( $this->season ) ) ? null : $this->league->event->get_season( $this->season );
+            $grade              = $event_season['grade'] ?? $this->league->event->competition->grade;
         }
         if ( ! empty( $competition_code ) ) {
             $result                   = new stdClass();
@@ -2023,7 +2025,7 @@ final class Racketmanager_Match {
             $result->organiser        = '';
             $result->venue            = '';
             $result->event_name       = $this->league->event->name;
-            $result->grade            = $this->league->event->seasons[$this->season]['grade'] ?? $this->league->event->competition->grade;
+            $result->grade            = $grade;
             $result->event_end_date   = $this->league->event->competition->date_end;
             $result->event_start_date = $this->league->event->competition->date_start;
             $age_group                = match ($this->league->event->age_limit) {

@@ -1123,7 +1123,7 @@ class Competition {
         $event_index = array();
         foreach ( $events as $i => $event ) {
             $event = get_event( $event->id );
-            if ( $season && empty( $event->seasons[ $season ] ) ) {
+            if ( $season && empty( $event->get_season_by_name( $season ) ) ) {
                 unset( $events[ $i ] );
             } else {
                 $event_index[ $event->id ] = $i;

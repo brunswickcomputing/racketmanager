@@ -27,6 +27,7 @@ $user_can_update          = $is_update_allowed->user_can_update;
 $user_type                = $is_update_allowed->user_type;
 $user_team                = $is_update_allowed->user_team;
 $match_approval_mode      = $is_update_allowed->match_approval_mode;
+$event_season             = $match->league->event->get_season_by_name( $match->season );
 $allow_schedule_match     = false;
 $allow_switch_match       = false;
 $allow_amend_score        = false;
@@ -40,7 +41,7 @@ if ( $match->is_pending ) {
         if ( ( 'admin' === $user_type || 'matchsecretary' === $user_type || 'captain' === $user_type ) && ( 'admin' === $user_type || 'both' === $user_team || 'home' === $user_team ) ) {
             $allow_schedule_match = true;
         }
-        if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $match->league->event->seasons[ $match->season ]['home_away'] ) ) {
+        if ( ( 'admin' === $user_type || ( 'matchsecretary' === $user_type && ( 'both' === $user_team || 'home' === $user_team ) ) ) && ( $event_season['home_away'] ) ) {
             $allow_switch_match = true;
         }
     }

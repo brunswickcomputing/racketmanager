@@ -34,9 +34,9 @@ final class Admin_Cup extends Admin_Championship {
      * @return void
      */
     public function handle_display( ?string $view ): void {
-        $this->admin_competition = new Admin_Competition();
-        $this->admin_club        = new Admin_Club();
-        $this->admin_event       = new Admin_Event();
+        $this->admin_competition = new Admin_Competition( $this->racketmanager );
+        $this->admin_club        = new Admin_Club( $this->racketmanager );
+        $this->admin_event       = new Admin_Event( $this->racketmanager );
         if ( 'seasons' === $view ) {
             $this->display_cup_seasons_page();
         } elseif ( 'modify' === $view ) {
@@ -365,15 +365,18 @@ final class Admin_Cup extends Admin_Championship {
                                 'final' => 'all',
                             )
                         );
-                        $tab         = 'matches';
-                        if ( empty( $league->seasons[ $season ]['rounds'] ) ) {
-                            if ( empty( $league->event->seasons[ $season ]['match_dates'] ) ) {
+                        $tab                = 'matches';
+                        $league_season      = $league->seasons[ $season ];
+                        $event_season       = $league->event->get_season_by_name( $season );
+                        $competition_season = $competition->get_season_by_name( $season );
+                        if ( empty( $league_season['rounds'] ) ) {
+                            if ( empty( $event_season['match_dates'] ) ) {
                                 if ( empty( $league->event->offset ) ) {
-                                    $match_dates = $league->event->competition->seasons[ $season ]['match_dates'];
-                                } elseif( isset( $league->event->competition->seasons[ $season ]['match_dates'] ) && is_array( $league->event->competition->seasons[ $season ]['match_dates'] ) ) {
+                                    $match_dates = $competition_season['match_dates'];
+                                } elseif( isset( $competition_season['match_dates'] ) && is_array( $competition_season['match_dates'] ) ) {
                                     $i = 0;
-                                    $num_match_dates = count( $league->event->competition->seasons[ $season ]['match_dates'] );
-                                    foreach( $league->event->competition->seasons[ $season ]['match_dates'] as $match_date ) {
+                                    $num_match_dates = count( $competition_season['match_dates'] );
+                                    foreach( $competition_season['match_dates'] as $match_date ) {
                                         if ( $i === $num_match_dates - 1 ) {
                                             $match_dates[ $i ] = $match_date;
                                         } else {
@@ -385,10 +388,10 @@ final class Admin_Cup extends Admin_Championship {
                                     $match_dates = array();
                                 }
                             } else {
-                                $match_dates = $league->event->seasons[ $season ]['match_dates'];
+                                $match_dates = $event_season['match_dates'];
                             }
                         } else {
-                            foreach ( array_reverse( $league->seasons[ $season ]['rounds'] ) as $round ) {
+                            foreach ( array_reverse( $league_season['rounds'] ) as $round ) {
                                 $match_dates[] = $round->date;
                             }
                         }

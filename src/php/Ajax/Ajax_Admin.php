@@ -237,7 +237,7 @@ class Ajax_Admin extends Ajax {
                     if ( ! $competition ) {
                         $return->error = true;
                         $return->msg   = __( 'Competition not found', 'racketmanager' );
-                    } elseif ( isset( $competition->seasons[ $season ] ) ) {
+                    } elseif ( ! empty( $competition->get_season_by_name( $season ) ) ) {
                         if ( 'team' === $competition->entry_type ) {
                             $entry_found = $competition->get_clubs(
                                 array(

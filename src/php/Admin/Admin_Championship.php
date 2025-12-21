@@ -136,7 +136,7 @@ class Admin_Championship extends Admin_Display {
                 $event_season['num_match_days'] = count( $event_season['match_dates'] );
                 $event                          = get_event( $league->event_id );
                 if ( $event ) {
-                    $event_seasons            = $event->seasons;
+                    $event_seasons            = $event->get_seasons();
                     $event_seasons[ $season ] = $event_season;
                     $event->update_seasons( $event_seasons );
                 }

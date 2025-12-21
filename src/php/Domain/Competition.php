@@ -2170,7 +2170,7 @@ class Competition {
                     if ( empty( $event->get_leagues() ) ) {
                         $return->error = true;
                         $msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
-                    } elseif ( count( $event->seasons ) > 1 ) {
+                    } elseif ( count( $event->get_seasons() ) > 1 ) {
                         $constitution = $event->get_constitution(
                             array(
                                 'season' => $season,

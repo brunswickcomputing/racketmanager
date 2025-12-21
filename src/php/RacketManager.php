@@ -490,7 +490,7 @@ class RacketManager {
     public function calculate_team_ratings( int $competition_id, int $season ): void {
         if ( $competition_id ) {
             $competition = get_competition( $competition_id );
-            if ( $competition && $season && isset( $competition->seasons[ $season ] ) ) {
+            if ( $competition && $season && ! empty( $competition->get_season_by_name( $season ) ) ) {
                 $competition->calculate_team_ratings( $season );
             }
         }
@@ -1624,7 +1624,7 @@ class RacketManager {
         foreach ( $competitions as $i => $competition ) {
             $competition = get_competition( $competition->id );
             if ( $season ) {
-                if ( array_search( $season, array_column( $competition->seasons, 'name' ) ) ) {
+                if ( ! empty( $competition->get_season_by_name( $season ) ) ) {
                     $competitions[ $i ] = $competition;
                 } else {
                     unset( $competitions[ $i ] );
@@ -1702,7 +1702,7 @@ class RacketManager {
             $event = get_event( $event->id );
             if ( $event ) {
                 if ( $season ) {
-                    if ( array_search( $season, array_column( $event->seasons, 'name' ) ) ) {
+                    if ( ! empty( $event->get_season_by_name( $season ) ) ) {
                         $show_event = true;
                     } else {
                         $show_event = false;

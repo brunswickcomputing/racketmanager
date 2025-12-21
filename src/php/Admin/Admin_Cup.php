@@ -120,7 +120,7 @@ final class Admin_Cup extends Admin_Championship {
             $competition    = get_competition( $competition_id );
             if ( $competition ) {
                 $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                if ( $season && isset( $competition->seasons[ $season ] ) ) {
+                if ( $season && ! empty( $competition->get_season_by_name( $season ) ) ) {
                     $competition->events = $competition->get_events();
                     $i                   = 0;
                     foreach ( $competition->events as $event ) {
@@ -132,7 +132,7 @@ final class Admin_Cup extends Admin_Championship {
                         $leagues = $event->get_leagues();
                     }
                     $tab                 = 'overview';
-                    $cup_season          = (object) $competition->seasons[ $season ];
+                    $cup_season          = (object) $competition->get_season_by_name( $season );
                     if ( isset( $cup_season->date_closing ) && $cup_season->date_closing <= gmdate( 'Y-m-d' ) ) {
                         $cup_season->is_active = true;
                     } else {
@@ -221,7 +221,7 @@ final class Admin_Cup extends Admin_Championship {
                     if ( $competition_id ) {
                         $competition = get_competition( $competition_id );
                         if ( $competition ) {
-                            $cup_season = $competition->seasons[ $season ];
+                            $cup_season = $competition->get_season_by_name( $season );
                             if ( isset( $_POST['rounds'] ) ) {
                                 $msg    = array();
                                 $rounds = array();
@@ -245,7 +245,7 @@ final class Admin_Cup extends Admin_Championship {
                                     foreach ( array_reverse( $rounds ) as $match_date ) {
                                         $cup_season['match_dates'][] = $match_date;
                                     }
-                                    $cup_seasons                  = $competition->seasons;
+                                    $cup_seasons                  = $competition->get_seasons();
                                     $cup_season['num_match_days'] = count( $cup_season['match_dates'] );
                                     $cup_seasons[ $season ]       = $cup_season;
                                     $competition->update_seasons( $cup_seasons );
@@ -281,7 +281,7 @@ final class Admin_Cup extends Admin_Championship {
             if ( $competition_id ) {
                 $competition = get_competition( $competition_id );
                 if ( $competition ) {
-                    $season_data = $competition->seasons[ $season ];
+                    $season_data = $competition->get_season_by_name( $season );
                     $match_dates = $season_data['match_dates'];
                     if ( empty( $match_dates ) ) {
                         $date_end     = date_create( $season_data['date_end'] );
@@ -512,7 +512,7 @@ final class Admin_Cup extends Admin_Championship {
             if ( $competition ) {
                 $competition->events = $competition->get_events();
                 if ( $season ) {
-                    $cup_season             = (object) $competition->seasons[ $season ];
+                    $cup_season             = (object) $competition->get_season_by_name( $season );
                     $cup_season->venue_name = null;
                     if ( isset( $cup_season->venue ) ) {
                         $venue_club = get_club( $cup_season->venue );

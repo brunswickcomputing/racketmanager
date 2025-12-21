@@ -210,7 +210,7 @@ final class Admin_League extends Admin_Display {
             if ( $competition_id ) {
                 $competition = get_competition( $competition_id );
                 if ( $competition ) {
-                    $current_season = $competition->seasons[ $season ];
+                    $current_season = $competition->get_season_by_name( $season );
                     if ( isset( $_POST['rounds'] ) ) {
                         $rounds = array();
                         foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -233,7 +233,7 @@ final class Admin_League extends Admin_Display {
                             foreach ( $rounds as $match_date ) {
                                 $current_season['match_dates'][] = $match_date;
                             }
-                            $seasons            = $competition->seasons;
+                            $seasons            = $competition->get_seasons();
                             $seasons[ $season ] = $current_season;
                             $updates            = $competition->update_seasons( $seasons );
                             if ( $updates ) {
@@ -286,7 +286,7 @@ final class Admin_League extends Admin_Display {
         $validator      = $validator->competition( $competition_id );
         if ( empty( $validator->error ) ) {
             $competition = get_competition( $competition_id );
-            $current_season = $competition->seasons[ $season ];
+            $current_season = $competition->get_season_by_name( $season );
             require_once RACKETMANAGER_PATH . 'templates/admin/includes/setup.php';
         } else {
             $this->set_message( $validator->err_msg[0], true );
@@ -318,7 +318,7 @@ final class Admin_League extends Admin_Display {
             if ( $event_id ) {
                 $event = get_event( $event_id );
                 if ( $event ) {
-                    $current_season = $event->seasons[ $season ];
+                    $current_season = $event->get_season_by_name( $season );
                     if ( isset( $_POST['rounds'] ) ) {
                         $rounds = array();
                         foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -341,7 +341,7 @@ final class Admin_League extends Admin_Display {
                             foreach ( $rounds as $match_date ) {
                                 $current_season['match_dates'][] = $match_date;
                             }
-                            $seasons            = $event->seasons;
+                            $seasons            = $event->get_seasons();
                             $seasons[ $season ] = $current_season;
                             $updates            = $event->update_seasons( $seasons );
                             if ( $updates ) {
@@ -363,7 +363,7 @@ final class Admin_League extends Admin_Display {
         if ( $event_id ) {
             $event = get_event( $event_id );
             if ( $event ) {
-                $current_season = $event->seasons[ $season ];
+                $current_season = $event->get_season_by_name( $season );
                 require_once RACKETMANAGER_PATH . 'templates/admin/includes/setup.php';
             }
         }
@@ -1237,7 +1237,7 @@ final class Admin_League extends Admin_Display {
             if ( empty( $validator->error ) ) {
                 $event     = get_event( $event_id );
                 $season    = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-                $validator = $validator->season_set( $season, $event->seasons );
+                $validator = $validator->season_set( $season, $event->get_seasons() );
             }
         }
         if ( ! empty( $validator->error ) ) {

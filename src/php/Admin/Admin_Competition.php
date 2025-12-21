@@ -235,7 +235,7 @@ final class Admin_Competition extends Admin_Display {
             if ( empty( $validator->error ) ) {
                 $competition = get_competition( $competition_id );
                 if ( $season ) {
-                    $validator = $validator->season_set( $season, $competition->seasons );
+                    $validator = $validator->season_set( $season, $competition->get_seasons() );
                     if ( ! empty( $validator->error ) ) {
                         $this->set_message( $validator->err_msgs[0], true );
                     }
@@ -303,7 +303,7 @@ final class Admin_Competition extends Admin_Display {
             }
         } else {
             if ( $season ) {
-                $current_season = isset( $competition->seasons[ $season ] ) ? (object) $competition->seasons[ $season ] : null;
+                $current_season = $competition->get_season_by_name( $season );
                 if ( $current_season ) {
                     $fee_competition = 0;
                     $fee_event       = 0;
@@ -467,7 +467,7 @@ final class Admin_Competition extends Admin_Display {
         } elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
             $charge_create = true;
         }
-        $season = $competition->seasons[$current_season->name] ?? null;
+        $season = empty( $competition->get_season_by_name( $current_season->name ) ) ? null : $competition->get_season_by_name( $current_season->name );
         if ( $season ) {
             if ( empty( $season['date_open'] ) || $season['date_open'] !== $current_season->date_open ) {
                 $updates             = true;

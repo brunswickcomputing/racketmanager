@@ -273,7 +273,7 @@ final class Admin_Tournament extends Admin_Championship {
                                 $tournament_season['num_match_days'] = count( $tournament_season['match_dates'] );
                                 $competition                         = get_competition( $tournament->competition->id );
                                 if ( $competition ) {
-                                    $tournament_seasons            = $competition->seasons;
+                                    $tournament_seasons            = $competition->get_seasons();
                                     $tournament_seasons[ $season ] = $tournament_season;
                                     $competition->update_seasons( $tournament_seasons );
                                 }
@@ -739,7 +739,7 @@ final class Admin_Tournament extends Admin_Championship {
     private function set_competition_dates( object $tournament ): void {
         $competition = get_competition( $tournament->competition_id );
         if ( $competition ) {
-            $season = $competition->seasons[ $tournament->season ] ?? null;
+            $season = $competition->get_season_by_name( $tournament->season ) ?? null;
             if ( $season ) {
                 $updates = false;
                 if ( empty( $season['date_open'] ) || $season['date_open'] !== $tournament->date_open ) {
@@ -936,7 +936,7 @@ final class Admin_Tournament extends Admin_Championship {
             $this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
             return false;
         }
-        $seasons            = empty( $competition->seasons ) ? array() : $competition->seasons;
+        $seasons            = empty( $competition->get_seasons() ) ? array() : $competition->get_seasons();
         $seasons[ $season ] = array(
             'name'           => $season,
             'num_match_days' => $num_match_days,
@@ -954,7 +954,7 @@ final class Admin_Tournament extends Admin_Championship {
         /* translators: %s: season name */
         $this->set_message( sprintf( __( 'Season %s added', 'racketmanager' ), $season ) );
 
-        return $competition->seasons[ $season ];
+        return $competition->get_season_by_name( $season );
     }
     /**
      * Edit season in object - competition or event
@@ -1026,10 +1026,10 @@ final class Admin_Tournament extends Admin_Championship {
         global $event;
 
         $event = get_event( $event_id );
-        if ( '' === $event->seasons ) {
+        if ( '' === $event->get_seasons() ) {
             $event_seasons = array();
         } else {
-            $event_seasons = $event->seasons;
+            $event_seasons = $event->get_seasons();
         }
         if ( $event->is_box ) {
             $event_seasons[ $season ] = array(
@@ -1051,7 +1051,8 @@ final class Admin_Tournament extends Admin_Championship {
                 'status'         => 'draft',
             );
         }
-        ksort( $event->seasons );
-        $event->update_seasons( $event_seasons );
+        $seasons = $event->get_seasons();
+        ksort( $seasons );
+        $event->update_seasons( $seasons );
     }
 }

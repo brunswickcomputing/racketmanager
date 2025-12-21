@@ -737,7 +737,7 @@ final class Rubber {
                             if ( ! empty( $match->league->event->competition->rules['playedRounds'] ) && isset( $options['playedRounds'] ) ) {
                                 $competition = get_competition( $match->league->event->competition->id );
                                 if ( $competition ) {
-                                    $competition_season = $competition->seasons[ $match->season ];
+                                    $competition_season = $competition->get_season_by_name( $match->season );
                                     if ( $competition_season && ! empty( $competition_season['fixed_match_dates'] ) ) {
                                         $num_match_days = $event_season['num_match_days'];
                                         if ( $match->match_day > ( $num_match_days - $options['playedRounds'] ) ) {

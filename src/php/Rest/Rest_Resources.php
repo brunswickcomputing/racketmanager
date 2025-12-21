@@ -182,7 +182,7 @@ class Rest_Resources extends WP_REST_Controller {
             if ( empty( $validator->error ) ) {
                 $competition = get_competition( $competition_name, 'name' );
                 if ( $competition ) {
-                    $validator = $validator->season_set( $season, $competition->seasons );
+                    $validator = $validator->season_set( $season, $competition->get_seasons() );
                     if ( empty( $validator->error ) ) {
                         $events = $competition->get_events();
                     }
@@ -304,7 +304,7 @@ class Rest_Resources extends WP_REST_Controller {
             if ( empty( $validator->error ) ) {
                 $competition = get_competition( $competition_name, 'name' );
                 if ( $competition ) {
-                    $validator = $validator->season_set( $season, $competition->seasons );
+                    $validator = $validator->season_set( $season, $competition->get_seasons() );
                     if ( empty( $validator->error ) ) {
                         $match_args['competition_id'] = $competition->id;
                         $matches                      = $this->racketmanager->get_matches( $match_args );

@@ -116,7 +116,7 @@ final class Admin_Event extends Admin_Display {
                             </script>
                             <?php
                             $add_season = false;
-                            foreach ( $competition->seasons as $competition_season ) {
+                            foreach ( $competition->get_seasons() as $competition_season ) {
                                 if ( $competition_season['name'] === $competition->current_season['name'] ) {
                                     $add_season = true;
                                 }

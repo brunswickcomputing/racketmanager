@@ -108,6 +108,20 @@ class Event_Repository {
         return $event;
     }
 
+    public function find_by_competition_id( int $competition_id ): array {
+        $events = wp_cache_get( md5( $competition_id ), 'events' );
+        if ( ! $events ) {
+            $events = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                    "SELECT * FROM $this->table_name WHERE `competition_id` = %d ORDER BY `name`",
+                    $competition_id
+                )
+            );
+            wp_cache_set( md5( $competition_id ), $events, 'events' );
+        }
+        return $events;
+    }
+
     public function delete( int $event_id ): void {
         $this->wpdb->delete( $this->table_name, array( 'id' => $event_id ), array( '%d' ) );
     }

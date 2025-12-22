@@ -46,6 +46,7 @@ final class Container_Bootstrap {
         $c->set('competition_service', function(Simple_Container $c) {
             return new Competition_Service(
                 $c->get('competition_repository'),
+                $c->get('event_repository'),
             );
         });
 

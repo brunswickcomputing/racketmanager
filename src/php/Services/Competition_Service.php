@@ -14,6 +14,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\Repositories\Competition_Repository;
+use Racketmanager\Repositories\Event_Repository;
 use stdClass;
 
 /**
@@ -21,14 +22,16 @@ use stdClass;
  */
 class Competition_Service {
     private Competition_Repository $competition_repository;
+    private Event_Repository $event_repository;
 
     /**
      * Constructor
      *
      * @param Competition_Repository $competition_repository
      */
-    public function __construct( Competition_Repository $competition_repository ) {
+    public function __construct( Competition_Repository $competition_repository, Event_Repository $event_repository ) {
         $this->competition_repository = $competition_repository;
+        $this->event_repository       = $event_repository;
     }
 
     public function get_by_id( null|string|int $competition_id ): Competition {

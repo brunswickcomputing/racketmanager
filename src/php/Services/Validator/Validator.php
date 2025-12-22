@@ -244,7 +244,7 @@ class Validator {
      *
      * @param string|null $email email address.
      * @param int|null    $player_id player id.
-     * @param bool   $email_required is email address required?
+     * @param bool   $email_required is an email address required?
      * @param string|null $field_ref field.
      * @param bool $field_ref_override field ref override.
      *
@@ -318,20 +318,26 @@ class Validator {
         }
         return $this;
     }
+
     /**
      * Validate season for event/competition
      *
      * @param string|null $season season.
-     * @param array|null  $seasons
+     * @param array|null $seasons
      *
      * @return object $validation updated validation object.
      */
-    public function season_set( ?string $season, ?array $seasons ): object {
+    public function season_set( ?string $season, array|null $seasons ): object {
+        // Validate season value
         if ( empty( $season ) ) {
             $this->error      = true;
             $this->err_flds[] = 'season';
             $this->err_msgs[] = __( 'Season is required', 'racketmanager' );
-        } elseif( empty( $seasons ) || empty( $seasons[ $season ] ) ) {
+        } elseif ( empty( $seasons ) ) {
+            $this->error      = true;
+            $this->err_flds[] = 'season';
+            $this->err_msgs[] = __( 'No seasons found', 'racketmanager' );
+        } elseif ( empty( $seasons[ $season ] ) ) {
             $this->error      = true;
             $this->err_flds[] = 'season';
             $this->err_msgs[] = __( 'Season not found', 'racketmanager' );
@@ -473,7 +479,7 @@ class Validator {
         return $this;
     }
     /**
-     * Validate competition type
+     * Validate a competition type
      *
      * @param string|null $type competition type.
      *

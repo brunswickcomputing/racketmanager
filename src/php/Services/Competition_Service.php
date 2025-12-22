@@ -91,33 +91,17 @@ class Competition_Service {
         return ( int ) $result; // Returns 1 if updated, 0 if no change
     }
 
-    public function remove( $competition_id ) {
+    public function remove( $competition_id ): void {
         try {
             $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
+        } catch ( Competition_Not_Found_Exception ) {
             return;
         }
+        $events = $this->event_repository->find_by_competition_id( $competition->get_id() );
+        foreach ( $events as $event ) {
+            $this->event_repository->delete( $event->id );
+        }
         $this->competition_repository->delete( $competition_id );
-        $title     = $competition->name . ' ' . __( 'Tables', 'racketmanager' );
-        $page_name = sanitize_title_with_dashes( $title );
-        $this->delete_racketmanager_page( $page_name );
-        $title     = $competition->name;
-        $page_name = sanitize_title_with_dashes( $title );
-        $this->delete_racketmanager_page( $page_name );
     }
 
-    /**
-     * Delete page
-     *
-     * @param string $page_name page name.
-     */
-    private function delete_racketmanager_page( string $page_name ): void {
-        $option  = 'racketmanager_page_' . $page_name . '_id';
-        $page_id = intval( get_option( $option ) );
-        // Force delete this so the Title/slug "Menu" can be used again.
-        if ( $page_id ) {
-            wp_delete_post( $page_id, true );
-            delete_option( $option );
-        }
-    }
 }

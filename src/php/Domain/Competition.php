@@ -801,13 +801,6 @@ class Competition {
     }
 
     /**
-     * Helper to get seasons as array without relying on direct property access in templates
-     */
-    public function get_seasons_array(): array {
-        return $this->get_seasons();
-    }
-
-    /**
      * Get a season by name
      */
     public function get_season_by_name( string $name ): ?array {
@@ -817,19 +810,6 @@ class Competition {
             }
         }
         return null;
-    }
-
-    /**
-     * List season names
-     */
-    public function list_season_names(): array {
-        $names = array();
-        foreach ( $this->get_seasons() as $season ) {
-            if ( isset( $season['name'] ) ) {
-                $names[] = $season['name'];
-            }
-        }
-        return $names;
     }
 
     /**

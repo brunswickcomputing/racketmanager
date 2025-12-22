@@ -154,7 +154,7 @@ final class Admin_League extends Admin_Display {
             if ( empty( $validator->error ) ) {
                 $competition = get_competition( $competition_id );
                 $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-                $seasons     = $competition->get_seasons_array();
+                $seasons     = $competition->get_seasons();
                 $validator   = $validator->season_set( $season, $seasons );
             }
         }
@@ -174,7 +174,7 @@ final class Admin_League extends Admin_Display {
         //contactTeam
         $competition->events = $competition->get_events();
         $tab                 = 'overview';
-        $current_season = (object) ( $seasons[ $season ] ?? array() );
+        $current_season      = (object) ( $seasons[ $season ] ?? array() );
         if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
             $current_season->is_active = true;
         } else {

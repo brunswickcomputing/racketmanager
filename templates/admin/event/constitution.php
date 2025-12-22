@@ -23,11 +23,12 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
     <p><?php esc_html_e( 'No pending seasons for event', 'racketmanager' ); ?>
     <?php
 } else {
-    $today              = gmdate( 'Y-m-d' );
-    $latest_season_dtls = $event->current_season;
-    $latest_season      = $latest_season_dtls['name'];
-    $competition_seasons = $event->competition->get_seasons_array();
-    if ( ! empty( $competition_seasons[ $latest_season ]['date_start'] ) && $competition_seasons[ $latest_season ]['date_start'] > $today ) {
+    $today               = gmdate( 'Y-m-d' );
+    $latest_season_dtls  = $event->current_season;
+    $latest_season       = $latest_season_dtls['name'];
+    $latest_competition  = $event->competition->get_season_by_name( $latest_season );
+    $competition_seasons = $event->competition->get_seasons();
+    if ( ! empty( $latest_competition['date_start'] ) && $latest_competition['date_start'] > $today ) {
         $updates_allowed = true;
     } else {
         $updates_allowed = false;

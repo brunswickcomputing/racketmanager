@@ -606,13 +606,6 @@ class Event {
     }
 
     /**
-     * Helper for templates/services that expect an array
-     */
-    public function get_seasons_array(): array {
-        return $this->get_seasons();
-    }
-
-    /**
      * Get a season by name (searches by season['name'])
      */
     public function get_season_by_name( string $name ): ?array {
@@ -622,19 +615,6 @@ class Event {
             }
         }
         return null;
-    }
-
-    /**
-     * List all season names
-     */
-    public function list_season_names(): array {
-        $names = array();
-        foreach ( $this->get_seasons() as $season ) {
-            if ( isset( $season['name'] ) ) {
-                $names[] = $season['name'];
-            }
-        }
-        return $names;
     }
 
     /**

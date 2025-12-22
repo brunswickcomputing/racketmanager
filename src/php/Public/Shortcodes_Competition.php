@@ -625,7 +625,7 @@ class Shortcodes_Competition extends Shortcodes {
                 } else {
                     $season = get_query_var( 'season' );
                     if ( $season ) {
-                        $competition_season = method_exists( $competition, 'get_season_by_name' ) ? $competition->get_season_by_name( $season ) : ( $competition->get_seasons_array()[ $season ] ?? null );
+                        $competition_season = $competition->get_season_by_name( $season );
                         if ( $competition_season ) {
                             if ( ! empty( $competition_season['venue'] ) ) {
                                 $venue_club = get_club( $competition_season['venue'] );

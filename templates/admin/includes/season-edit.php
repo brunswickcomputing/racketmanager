@@ -70,7 +70,7 @@ $msg         = null;
                         } else {
                             ?>
                             <?php
-                            $competition_seasons = $competition->get_seasons_array();
+                            $competition_seasons = $competition->get_seasons();
                             ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="season" id="season">
                                 <option disabled <?php selected( null, empty( $current_season->name ) ? null : $current_season->name ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>

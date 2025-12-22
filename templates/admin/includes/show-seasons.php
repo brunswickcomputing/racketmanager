@@ -70,7 +70,7 @@ namespace Racketmanager;
             </thead>
             <tbody>
                 <?php
-                $seasons_list = $competition->get_seasons_array();
+                $seasons_list = $competition->get_seasons();
                 foreach ( array_reverse( $seasons_list ) as $season ) {
                     $key = $season['name'] ?? '';
                     ?>

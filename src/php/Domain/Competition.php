@@ -169,13 +169,6 @@ class Competition {
     public int $num_match_days = 0;
 
     /**
-     * Number of events
-     *
-     * @var int
-     */
-    public int $num_events = 0;
-
-    /**
      * Events
      *
      * @var array
@@ -601,9 +594,6 @@ class Competition {
      * @param object $competition Competition object.
      */
     public function __construct( object $competition ) {
-        if ( ! isset( $competition->id ) ) {
-            $this->add( $competition );
-        }
         if ( isset( $competition->settings ) ) {
             $competition->settings      = (array) maybe_unserialize( $competition->settings );
             $competition                = (object) array_merge( (array) $competition, $competition->settings );
@@ -651,7 +641,6 @@ class Competition {
         }
 
         $this->num_seasons = is_array( $effective_seasons ) ? count( $effective_seasons ) : 0;
-        $this->set_num_events( true );
 
         // Set current season and date-related derived fields using effective seasons
         if ( $this->num_seasons > 0 ) {
@@ -823,95 +812,8 @@ class Competition {
         return $this->age_group;
     }
 
-    public function get_num_seasons(): int {
-        return $this->num_seasons;
-    }
-
-    public function get_num_events(): int {
-        return $this->num_events;
-    }
     public function set_id( int $id ): void {
         $this->id = $id;
-    }
-
-    /**
-     * Add new competition
-     *
-     * @param object $competition competition object.
-     */
-    private function add( object $competition ): void {
-        global $wpdb;
-
-        if ( 'league' === $competition->type ) {
-            $mode       = 'default';
-            $entry_type = 'team';
-        } elseif ( 'cup' === $competition->type ) {
-            $mode       = 'championship';
-            $entry_type = 'team';
-        } elseif ( 'tournament' === $competition->type ) {
-            $mode       = 'championship';
-            $entry_type = 'player';
-        }
-        if ( ! empty( $mode ) && ! empty( $entry_type ) ) {
-            $settings = array(
-                'mode'       => $mode,
-                'entry_type' => $entry_type,
-            );
-
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "INSERT INTO $wpdb->racketmanager_competitions (`name`, `type`, `settings`, `age_group` ) VALUES (%s, %s, %s, %s)",
-                    $competition->name,
-                    $competition->type,
-                    maybe_serialize( $settings ),
-                    $competition->age_group,
-                )
-            );
-            $competition->id = $wpdb->insert_id;
-        }
-    }
-
-    /**
-     * Delete Competition
-     */
-    public function delete(): void {
-        global $wpdb;
-
-        foreach ( $this->get_events() as $event ) {
-            $event = get_event( $event->id );
-            $event->delete();
-        }
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_competitions_seasons WHERE `competition_id` = %d",
-                $this->id
-            )
-        );
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_competitions WHERE `id` = %d",
-                $this->id
-            )
-        );
-    }
-
-    /**
-     * Set name
-     *
-     * @param string $name competition name.
-     */
-    public function set_name( string $name ): void {
-        global $wpdb;
-
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_competitions SET `name` = %s WHERE `id` =%d",
-                $name,
-                $this->id
-            )
-        );
-        $this->name = $name;
-        wp_cache_set( $this->id, $this, 'competitions' );
     }
 
     /**
@@ -1040,23 +942,6 @@ class Competition {
     public function get_season(): string {
         return stripslashes( $this->current_season['name'] );
     }
-    /**
-     * Gets number of events
-     *
-     * @param boolean $total should total be stored.
-     */
-    public function set_num_events( bool $total = false ): void {
-        global $wpdb;
-
-        if ( true === $total ) {
-            $this->num_events = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "SELECT COUNT(ID) FROM $wpdb->racketmanager_events WHERE `competition_id` = %d",
-                    $this->id
-                )
-            );
-        }
-    }
 
     /**
      * Get events from database
@@ -1115,23 +1000,6 @@ class Competition {
         $this->event_index = $event_index;
 
         return $events;
-    }
-    /**
-     * Reload settings from database
-     */
-    public function reload_settings(): void {
-        global $wpdb;
-
-        wp_cache_delete( $this->id, 'competitions' );
-        $result = $wpdb->get_row( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT `settings` FROM $wpdb->racketmanager_competitions WHERE `id` = %d",
-                $this->id
-            )
-        );
-        foreach ( maybe_unserialize( $result->settings ) as $key => $value ) {
-            $this->$key = $value;
-        }
     }
     /**
      * Get teams from database

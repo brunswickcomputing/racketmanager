@@ -58,6 +58,22 @@ class Competition_Service {
         if ( $competition_check ) {
             throw new Duplicate_Competition_Exception( __( 'Competition already exists', 'racketmanager' ) );
         }
+        if ( 'league' === $competition->type ) {
+            $mode       = 'default';
+            $entry_type = 'team';
+        } elseif ( 'cup' === $competition->type ) {
+            $mode       = 'championship';
+            $entry_type = 'team';
+        } elseif ( 'tournament' === $competition->type ) {
+            $mode       = 'championship';
+            $entry_type = 'player';
+        }
+        if ( ! empty( $mode ) && ! empty( $entry_type ) ) {
+            $competition->settings = array(
+                'mode'       => $mode,
+                'entry_type' => $entry_type,
+            );
+        }
         $competition = new Competition( $competition );
         $this->competition_repository->save( $competition );
         return $competition;

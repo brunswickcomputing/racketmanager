@@ -7,8 +7,8 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var array $clubs */
+/** @var array $competitions */
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'RacketManager Import', 'racketmanager' ); ?></h1>
@@ -38,14 +38,6 @@ global $racketmanager;
 		</div>
 		<div id="competitions" class="form-floating mb-3" style="display:none">
 			<?php
-			$competitions = $racketmanager->get_competitions(
-				array(
-					'orderby' => array(
-						'type' => 'ASC',
-						'name' => 'ASC',
-					),
-				)
-			);
 			if ( $competitions ) {
 				?>
 				<select class="form-select" size="1" name="competition_id" id="competition_id" onChange='Racketmanager.getEventDropdown(this.value)'>

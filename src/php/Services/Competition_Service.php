@@ -50,6 +50,14 @@ class Competition_Service {
         return $this->competition_repository->find_by( $criteria );
     }
 
+    public function get_leagues(): array {
+        return $this->competition_repository->find_by( array( 'type' => 'league' ) );
+    }
+
+    public function get_tournaments(): array {
+        return $this->competition_repository->find_by( array( 'type' => 'tournament' ) );
+    }
+
     public function find_competitions_with_summary( ?string $age_group, ?string $type ): array {
         return $this->competition_repository->find_competitions_with_summary( $age_group, $type );
     }

@@ -14,6 +14,7 @@ use Racketmanager\Util\Util_Lookup;
 /** @var string $edit */
 /** @var string $form_action */
 /** @var array  $club_charges */
+/** @var array  $competitions */
 global $racketmanager;
 $is_invalid = false;
 $msg        = null;
@@ -39,7 +40,6 @@ $msg        = null;
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
-                        <?php $competitions = $racketmanager->get_competitions(); ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="competition_id" id="competition_id" >
                             <option disabled <?php selected( null, empty( $charges->competition_id ) ? null : $charges->competition_id ); ?>><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
                             <?php

@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Admin;
 
+use function Racketmanager\get_competition;
 use function Racketmanager\get_result_check;
 
 /**
@@ -80,6 +81,17 @@ class Admin_Result extends Admin_Display {
                     'status'      => $results_check_filter,
                 )
             );
+            $competitions = $this->competition_service->get_leagues();
+            $events       = array();
+            foreach ( $competitions as $competition ) {
+                $competition = get_competition( $competition );
+                if ( $competition ) {
+                    $competition_events = $competition->get_events();
+                    foreach ( $competition_events as $event ) {
+                        $events[] = $event;
+                    }
+                }
+            }
             include_once RACKETMANAGER_PATH . 'templates/admin/show-results.php';
         }
     }

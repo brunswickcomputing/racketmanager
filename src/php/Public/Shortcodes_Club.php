@@ -226,7 +226,7 @@ class Shortcodes_Club extends Shortcodes {
         global $racketmanager;
         $competition_found = false;
         $c                 = 0;
-        $competitions      = $racketmanager->get_competitions( array( 'type' => $type ) );
+        $competitions      = $this->competition_service->get_by_criteria( array( 'type' => $type ) );
         foreach ( $competitions as $competition ) {
             $event_found = false;
             $events      = $competition->get_events();

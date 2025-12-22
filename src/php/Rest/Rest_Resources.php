@@ -11,6 +11,8 @@ namespace Racketmanager\Rest;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Lookup;
@@ -54,16 +56,24 @@ class Rest_Resources extends WP_REST_Controller {
      */
     private RacketManager $racketmanager;
     /**
+     * @var callable|object
+     */
+    private Competition_Service $competition_service;
+    private Club_Service $club_service;
+
+    /**
      * Constructor
      *
      * @return void
      */
     public function __construct( $plugin_instance ) {
-        $this->racketmanager = $plugin_instance;
-        $c                   = $this->racketmanager->container;
-        $this->club_service  = $c->get( 'club_service' );
-        $this->version       = '1';
-        $this->namespace     = 'racketmanager/v' . $this->version;
+        $this->racketmanager        = $plugin_instance;
+        $c                          = $this->racketmanager->container;
+        $this->competition_service  = $c->get( 'competition_service' );
+        $this->club_service         = $c->get( 'club_service' );
+
+        $this->version   = '1';
+        $this->namespace = 'racketmanager/v' . $this->version;
     }
     /**
      * Register the routes for the objects of the controller.
@@ -546,7 +556,7 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_competitions(): array {
-        $competitions = $this->racketmanager->get_competitions();
+        $competitions = $this->competition_service->get_all();
         foreach ( $competitions as $i => $competition ) {
             $competitions[ $i ] = seo_url( $competition->name );
         }

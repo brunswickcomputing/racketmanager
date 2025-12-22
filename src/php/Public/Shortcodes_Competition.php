@@ -65,8 +65,13 @@ class Shortcodes_Competition extends Shortcodes {
         if ( is_user_logged_in() ) {
             $player = get_player( get_current_user_id() );
         }
-        $query_args['type']      = $type;
-        $query_args['age_group'] = $age_group;
+        $query_args = array();
+        if ( $type ) {
+            $query_args['type'] = $type;
+        }
+        if ( $age_group ) {
+            $query_args['age_group'] = $age_group;
+        }
         if ( 'tournament' === $type ) {
             $query_args['orderby'] = array( 'date' => 'DESC' );
             $tournaments           = $racketmanager->get_tournaments( $query_args );
@@ -78,7 +83,7 @@ class Shortcodes_Competition extends Shortcodes {
             }
             $user_competitions = $player?->get_tournaments($query_args);
         } else {
-            $competitions      = $racketmanager->get_competitions( $query_args );
+            $competitions      = $this->competition_service->get_by_criteria( $query_args );
             $user_competitions = $player?->get_competitions($query_args);
         }
         $competition_type = match ($type) {

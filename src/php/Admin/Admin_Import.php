@@ -69,6 +69,7 @@ class Admin_Import extends Admin_Display {
                     'type' => 'affiliated',
                 )
             );
+            $competitions = $this->competition_service->get_all();
             require_once RACKETMANAGER_PATH . 'templates/admin/tools/import.php';
         }
     }

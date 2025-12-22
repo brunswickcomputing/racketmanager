@@ -119,7 +119,7 @@ final class Admin_Tournament extends Admin_Championship {
             )
         );
         $seasons      = $racketmanager->get_seasons( 'DESC' );
-        $competitions = $racketmanager->get_competitions( array( 'type' => 'tournament' ) );
+        $competitions = $this->competition_service->get_tournaments();
         $age_groups   = Util_Lookup::get_age_groups();
         require_once RACKETMANAGER_PATH . 'templates/admin/show-tournaments.php';
     }
@@ -475,7 +475,7 @@ final class Admin_Tournament extends Admin_Championship {
             )
         );
         $competition_query = array( 'type' => 'tournament' );
-        $competitions      = $racketmanager->get_competitions( $competition_query );
+        $competitions      = $this->competition_service->get_tournaments();
         $seasons           = $racketmanager->get_seasons( 'DESC' );
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament-edit.php';
     }

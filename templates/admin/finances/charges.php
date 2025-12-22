@@ -11,14 +11,9 @@ global $racketmanager;
 /** @var array  $finance_charges */
 /** @var int    $competition_id */
 /** @var string $season */
-$args            = array();
-$args['orderby'] = array(
-    'type' => 'ASC',
-    'name' => 'ASC',
-);
-$competitions    = $racketmanager->get_competitions( $args );
-$seasons         = $racketmanager->get_seasons( 'DESC' );
-$charges         = $finance_charges;
+/** @var array  $competitions */
+$seasons = $racketmanager->get_seasons( 'DESC' );
+$charges = $finance_charges;
 ?>
 <div class="container">
     <div class="row gx-3 align-items-center mb-3">

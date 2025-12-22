@@ -98,7 +98,7 @@ class Competition_Repository {
     public function find_all(): array {
         $competitions = wp_cache_get( 'competitions', 'competitions' );
         if ( ! $competitions ) {
-            $competitions = $this->wpdb->get_results( "SELECT * FROM $this->table_name" );
+            $competitions = $this->wpdb->get_results( "SELECT * FROM $this->table_name ORDER BY `name`" );
             $competitions = array_map( fn( $competition ) => new Competition( $competition ), $competitions );
             wp_cache_set( 'competitions', $competitions, 'competitions' );
         }
@@ -115,6 +115,7 @@ class Competition_Repository {
             }
             $sql .= ' WHERE ' . implode( ' AND ', $clauses );
         }
+        $sql .= ' ORDER BY `name`';
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         $rows = $this->wpdb->get_results( $sql );
         return array_map( fn( $row ) => new Competition( $row ), $rows );

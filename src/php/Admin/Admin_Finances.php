@@ -204,7 +204,7 @@ final class Admin_Finances extends Admin_Display {
             $args['season'] = $season;
         }
         $finance_charges = $this->racketmanager->get_charges( $args );
-
+        $competitions    = $this->competition_service->get_all();
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
     }
     /**
@@ -297,7 +297,7 @@ final class Admin_Finances extends Admin_Display {
             $form_title  = __( 'Add Charge', 'racketmanager' );
             $form_action = __( 'Add', 'racketmanager' );
         }
-
+        $competitions    = $this->competition_service->get_all();
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/charge.php';
     }
 

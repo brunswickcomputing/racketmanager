@@ -13,18 +13,9 @@ global $racketmanager;
 /** @var string $event_select */
 /** @var string $results_check_filter */
 /** @var array  $results_checkers */
-$seasons      = $racketmanager->get_seasons( 'DESC' );
-$competitions = $racketmanager->get_competitions( array( 'type' => 'league' ) );
-$events       = array();
-foreach ( $competitions as $competition ) {
-	$competition = get_competition( $competition );
-	if ( $competition ) {
-		$competition_events = $competition->get_events();
-		foreach ( $competition_events as $event ) {
-			$events[] = $event;
-		}
-	}
-}
+/** @var array  $competitions */
+/** @var array  $events */
+$seasons = $racketmanager->get_seasons( 'DESC' );
 ?>
 <!-- Results Checker -->
 

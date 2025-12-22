@@ -28,7 +28,8 @@ class Competition_Repository {
     public function save( Competition $competition ): int|bool {
         $data = array(
             'name'           => $competition->get_name(),
-            'settings'       => maybe_serialize( $competition->get_settings() ),
+            // Store settings as JSON
+            'settings'       => $competition->get_settings_json(),
             // Store seasons as JSON in DB
             'seasons'        => $competition->get_seasons_json(),
             'type'           => $competition->get_type(),

@@ -108,4 +108,8 @@ class Event_Repository {
         return $event;
     }
 
+    public function delete( int $event_id ): void {
+        $this->wpdb->delete( $this->table_name, array( 'id' => $event_id ), array( '%d' ) );
+    }
+
 }

@@ -13,9 +13,13 @@ use Racketmanager\Domain\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
+use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Services\Validator\Validator_Config;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
+use WP_Error;
 
 /**
  * Class to implement the Competition Management Service
@@ -23,13 +27,17 @@ use stdClass;
 class Competition_Service {
     private Competition_Repository $competition_repository;
     private Event_Repository $event_repository;
+    private RacketManager $racketmanager;
 
     /**
      * Constructor
      *
+     * @param RacketManager $plugin_instance
      * @param Competition_Repository $competition_repository
+     * @param Event_Repository $event_repository
      */
-    public function __construct( Competition_Repository $competition_repository, Event_Repository $event_repository ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Event_Repository $event_repository ) {
+        $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->event_repository       = $event_repository;
     }
@@ -61,38 +69,31 @@ class Competition_Service {
     public function find_competitions_with_summary( ?string $age_group, ?string $type ): array {
         return $this->competition_repository->find_competitions_with_summary( $age_group, $type );
     }
-    public function create( stdClass $competition ): Competition {
-        $competition_check = $this->competition_repository->find_by( [ 'name' => $competition->name ] );
+    public function create( ?string $name, ?string $type, ?string $age_group ): Competition {
+        $competition_check = $this->competition_repository->find_by( [ 'name' => $name ] );
         if ( $competition_check ) {
             throw new Duplicate_Competition_Exception( __( 'Competition already exists', 'racketmanager' ) );
         }
-        if ( 'league' === $competition->type ) {
-            $mode       = 'default';
-            $entry_type = 'team';
-        } elseif ( 'cup' === $competition->type ) {
-            $mode       = 'championship';
-            $entry_type = 'team';
-        } elseif ( 'tournament' === $competition->type ) {
-            $mode       = 'championship';
-            $entry_type = 'player';
-        }
-        if ( ! empty( $mode ) && ! empty( $entry_type ) ) {
-            $competition->settings = array(
-                'mode'       => $mode,
-                'entry_type' => $entry_type,
-            );
-        }
-        $competition = new Competition( $competition );
+        // One-liner creation using the Factory Pattern
+        $competition = Competition::create( $name, $type, $age_group );
         $this->competition_repository->save( $competition );
         return $competition;
     }
 
-    public function update_details( int $competition_id, Competition $competition_data ): int {
-        $competition_check = $this->competition_repository->find_by_id( $competition_id );
-        if ( ! $competition_check ) {
+    public function amend_details( int $competition_id, stdClass $config ): int|WP_Error {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
         }
-        $result = $this->competition_repository->save( $competition_data );
+        $competition_valid = $this->validate_config( $config, $competition->is_team_entry );
+        if ( is_wp_error( $competition_valid ) ) {
+            return $competition_valid;
+        }
+        $competition->set_name( $config->name );
+        $competition->set_age_group( $config->age_group );
+        $settings = $this->set_config( $config, $competition->is_team_entry );
+        $competition->set_settings( $settings );
+        $result = $this->competition_repository->save( $competition );
         if ( false === $result ) {
             throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
         }
@@ -110,6 +111,157 @@ class Competition_Service {
             $this->event_repository->delete( $event->id );
         }
         $this->competition_repository->delete( $competition_id );
+    }
+
+    /**
+     * Validate competition config
+     *
+     * @param stdClass $config
+     * @param bool $is_team_entry
+     *
+     * @return true|WP_Error
+     */
+    private function validate_config( stdClass $config, bool $is_team_entry = false ): true|WP_Error {
+        $validator = new Validator_Config();
+        $validator = $validator->name( $config->name );
+        $validator = $validator->sport( $config->sport );
+        $validator = $validator->competition_type( $config->type );
+        $validator = $validator->entry_type( $config->entry_type );
+        $validator = $validator->age_group( $config->age_group );
+        $validator = $validator->grade( $config->grade );
+        if ( 'league' === $config->type ) {
+            $validator = $validator->max_teams( $config->max_teams );
+            $validator = $validator->teams_per_club( $config->teams_per_club );
+            $validator = $validator->teams_prom_relg( $config->teams_prom_relg, $config->teams_per_club );
+            $validator = $validator->lowest_promotion( $config->lowest_promotion );
+        } elseif ( 'tournament' === $config->type ) {
+            $validator = $validator->num_entries( $config->num_entries );
+        }
+        $validator = $validator->team_ranking( $config->team_ranking );
+        $validator = $validator->point_rule( $config->point_rule );
+        $validator = $validator->scoring( $config->scoring );
+        $validator = $validator->num_sets( $config->num_sets );
+        if ( $is_team_entry ) {
+            $validator = $validator->num_rubbers( $config->num_rubbers );
+        }
+        $validator = $validator->match_date_option( $config->fixed_match_dates);
+        $validator = $validator->fixture_type( $config->home_away );
+        $validator = $validator->round_length( $config->round_length );
+        $validator = $validator->default_match_start_time( $config->default_match_start_time );
+        if ( 'tournament' !== $config->type ) {
+            $validator = $validator->match_day_restriction( $config->match_day_restriction, $config->match_days_allowed, $config->start_time );
+        }
+        $validator = $validator->point_format( $config->point_format );
+        $validator = $validator->point_2_format( $config->point_2_format );
+        $validator = $validator->num_matches_per_page( $config->num_matches_per_page );
+        if ( ! empty( $validator->error ) ) {
+            return $validator->err;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Set competition config
+     *
+     * @param stdClass $config
+     * @param bool $is_team_entry
+     *
+     * @return array
+     */
+    private function set_config( stdClass $config, bool $is_team_entry = false ): array {
+        $settings = array();
+        $settings['sport'] = $config->sport;
+        $settings['type'] = $config->type;
+        switch ( $config->type ) {
+            case 'league':
+                $config->mode = 'default';
+                break;
+            case 'cup':
+                $config->mode       = 'championship';
+                $config->entry_type = 'team';
+                break;
+            case 'tournament':
+                $config->mode       = 'championship';
+                $config->entry_type = 'player';
+                break;
+            default:
+                break;
+        }
+        $settings['entry_type'] = $config->entry_type;
+        $settings['mode'] = $config->mode;
+        $settings['competition_code'] = $config->competition_code;
+        $settings['grade'] = $config->grade;
+        if ( 'league' === $config->type ) {
+            $settings['max_teams'] = $config->max_teams;
+            $settings['teams_per_club'] = $config->teams_per_club;
+            $settings['teams_prom_relg'] = $config->teams_prom_relg;
+            $settings['lowest_promotion'] = $config->lowest_promotion;
+        } elseif ( 'tournament' === $config->type ) {
+            $settings['num_entries'] = $config->num_entries;
+        }
+        $settings['team_ranking'] = $config->team_ranking;
+        $settings['point_rule'] = $config->point_rule;
+        $settings['scoring'] = $config->scoring;
+        $settings['num_sets'] = $config->num_sets;
+        if ( $is_team_entry ) {
+            $settings['num_rubbers'] = $config->num_rubbers;
+            $settings['reverse_rubbers'] = $config->reverse_rubbers;
+        }
+        $settings['fixed_match_dates'] = $config->fixed_match_dates;
+        $settings['home_away'] = $config->home_away;
+        $settings['round_length'] = $config->round_length;
+        if ( 'league' === $config->type || 'cup' === $config->type ) {
+            $settings['home_away_diff'] = $config->home_away_diff;
+        }
+        if ( 'league' === $config->type ) {
+            $settings['filler_weeks'] = $config->filler_weeks;
+        }
+        if ( 'tournament' !== $config->type ) {
+            $match_days = Util_Lookup::get_match_days();
+            foreach ( $match_days as $match_day => $value ) {
+                $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
+            }
+            $settings['match_days_allowed'] = $config->match_days_allowed;
+            $settings['match_day_restriction'] = $config->match_day_restriction;
+            $settings['match_day_weekends'] = $config->match_day_weekends;
+            $settings['default_match_start_time'] = $config->default_match_start_time;
+            $settings['start_time'] = $config->start_time;
+        }
+        $settings['point_format'] = $config->point_format;
+        $settings['point_2_format'] = $config->point_2_format;
+        $settings['num_matches_per_page'] = $config->num_matches_per_page;
+        $standing_display_options       = Util_Lookup::get_standings_display_options();
+        foreach ( $standing_display_options as $display_option => $value ) {
+            $config->standings[ $display_option ] = isset( $config->standings[ $display_option ] ) ? 1 : 0;
+        }
+        $settings['standings'] = $config->standings;
+        $rules_options = $this->get_rules_options( $config->type );
+        foreach ( $rules_options as $rules_option => $value ) {
+            $config->rules[ $rules_option ] = isset( $config->rules[ $rules_option ] ) ? 1 : 0;
+        }
+        $settings['rules'] = $config->rules;
+        if ( 'league' === $config->type ) {
+            $settings['num_courts_available'] = $config->num_courts_available;
+        }
+        return $settings;
+    }
+
+    /**
+     * Get rules options
+     *
+     * @return array of rules options.
+     */
+    public function get_rules_options( string $type ): array {
+        $rules_options    = $this->racketmanager->get_options( 'checks' );
+        $result_options   = $this->racketmanager->get_options( $type );
+        if ( isset( $result_options['resultTimeout'] ) ) {
+            $rules_options['resultTimeout'] = $result_options['resultTimeout'];
+        }
+        if ( isset( $result_options['confirmationTimeout'] ) ) {
+            $rules_options['confirmationTimeout'] = $result_options['confirmationTimeout'];
+        }
+        return $rules_options;
     }
 
 }

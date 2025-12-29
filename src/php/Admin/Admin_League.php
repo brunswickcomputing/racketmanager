@@ -122,7 +122,7 @@ final class Admin_League extends Admin_Display {
         if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
             $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
             if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_by_id( $competition_id );
                 if ( $competition ) {
                     $this->delete_seasons_from_competition( $competition );
                 } else {
@@ -133,7 +133,7 @@ final class Admin_League extends Admin_Display {
             }
         } elseif ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition    = get_competition( $competition_id );
+            $competition = $this->competition_service->get_by_id( $competition_id );
         }
         $this->show_message();
         if ( $competition ) {

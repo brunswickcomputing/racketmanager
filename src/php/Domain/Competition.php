@@ -10,7 +10,6 @@
 namespace Racketmanager\Domain;
 
 use Racketmanager\Util\Util;
-use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
@@ -299,7 +298,7 @@ class Competition {
      *
      * @var string|null
      */
-    public ?string $competition_code;
+    public ?string $competition_code = null;
     /**
      * Is competition active
      *
@@ -531,61 +530,108 @@ class Competition {
     );
     private string $select_count = 'SELECT COUNT(*)';
     private string $time_zero = ':00:00';
-    /**
-     * Retrieve competition instance
-     *
-     * @param int|string $competition_id competition id.
-     * @param string|null $search_term search.
-     */
-    public static function get_instance( int|string $competition_id, ?string $search_term = 'id' ) {
-        global $wpdb;
-        switch ( $search_term ) {
-            case 'name':
-                $search = $wpdb->prepare(
-                    '`name` = %s',
-                    $competition_id
-                );
+    public static function create( string $name, string $type, string $age_group ): self {
+        $settings = array();
+        if ( 'league' === $type ) {
+            $mode       = 'default';
+            $entry_type = 'team';
+        } elseif ( 'cup' === $type ) {
+            $mode       = 'championship';
+            $entry_type = 'team';
+        } elseif ( 'tournament' === $type ) {
+            $mode       = 'championship';
+            $entry_type = 'player';
+        }
+        if ( ! empty( $mode ) && ! empty( $entry_type ) ) {
+            $settings['mode'] = $mode;
+            $settings['entry_type'] = $entry_type;
+        }
+        $settings['sport'] = 'Tennis'; // Default
+
+        $seasons = new stdClass();
+
+        return new self( $name, $type, $age_group, $seasons, $settings );
+    }
+
+    public static function from_database( object $row ): self {
+        return new self(
+            $row->name,
+            $row->type,
+            $row->age_group,
+            json_decode($row->seasons, true) ?: array(),
+            json_decode($row->settings, true) ?: array(),
+            (int) $row->id
+        );
+    }
+
+    public function __construct(
+        string $name,
+        string $type,
+        string $age_group,
+        ?array $seasons = null,
+        ?array $settings = null,
+        ?int $id = null
+    ) {
+        $this->id = $id;
+        $this->name = $name;
+        $this->type = $type;
+        $this->age_group = $age_group;
+        // Ensure properties are always objects even if null is passed
+        $this->seasons = $seasons ?? array();
+        $this->settings = $settings ?? array();
+        // Championship.
+        if ( 'championship' === $this->mode ) {
+            $this->is_championship = true;
+        } else {
+            $this->is_championship = false;
+        }
+        $this->is_league       = false;
+        $this->is_cup          = false;
+        $this->is_tournament   = false;
+        $this->is_team_entry   = false;
+        $this->is_player_entry = false;
+        switch ( $this->type ) {
+            case 'league':
+                $this->is_league     = true;
+                $this->is_team_entry = true;
                 break;
-            case 'id':
+            case 'cup':
+                $this->is_cup        = true;
+                $this->is_team_entry = true;
+                $finals              = array();
+                $max_rounds          = 4;
+                $r                   = $max_rounds;
+                for ( $round = 1; $round <= $max_rounds; ++$round ) {
+                    $num_teams      = pow( 2, $round );
+                    $num_matches    = $num_teams / 2;
+                    $key            = Util::get_final_key( $num_teams );
+                    $name           = Util::get_final_name( $key );
+                    $finals[ $key ] = array(
+                        'key'         => $key,
+                        'name'        => $name,
+                        'num_matches' => $num_matches,
+                        'num_teams'   => $num_teams,
+                        'round'       => $r,
+                    );
+                    --$r;
+                }
+                $this->finals = $finals;
+                break;
+            case 'tournament':
+                $this->is_tournament   = true;
+                $this->is_player_entry = true;
+                break;
             default:
-                $competition_id = (int) $competition_id;
-                $search         = $wpdb->prepare(
-                    '`id` = %d',
-                    $competition_id
-                );
                 break;
         }
-        if ( ! $competition_id ) {
-            return false;
-        }
-        $competition = wp_cache_get( $competition_id, 'competitions' );
-        if ( ! $competition ) {
-            $competition = $wpdb->get_row(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                "SELECT `name`, `id`, `type`, `settings`, `seasons`, `age_group` FROM $wpdb->racketmanager_competitions WHERE " . $search . ' LIMIT 1'
-            );
-            if ( ! $competition ) {
-                return false;
-            }
-            $competition->settings              = (array) maybe_unserialize( $competition->settings );
-            $competition->settings['type']      = $competition->type;
-            $competition->settings['age_group'] = $competition->age_group;
-            $competition                        = (object) ( $competition->settings + (array) $competition );
-            // check if specific sports class exists.
-            if ( ! isset( $competition->sport ) ) {
-                $competition->sport = '';
-            }
-            $instance = 'Racketmanager\sports\Competition_' . ucfirst( $competition->sport );
-            if ( class_exists( $instance ) ) {
-                $competition = new $instance( $competition );
-            } else {
-                $competition = new Competition( $competition );
-            }
+    }
 
-            wp_cache_set( $competition->id, $competition, 'competitions' );
-        }
+    public function set_name( $name ): void {
+        $this->name = $name;
+    }
 
-        return $competition;
+    public function set_age_group( $age_group ): void {
+        $this->age_group = $age_group;
     }
 
     /**
@@ -593,10 +639,30 @@ class Competition {
      *
      * @param object $competition Competition object.
      */
-    public function __construct( object $competition ) {
+/**    public function __construct( object $competition ) {
+        // Normalize settings to JSON string, but still merge decoded keys into the object for backward-compatible props
+        $settings_json = '{}';
+        $settings_arr  = array();
         if ( isset( $competition->settings ) ) {
-            $competition->settings      = (array) maybe_unserialize( $competition->settings );
-            $competition                = (object) array_merge( (array) $competition, $competition->settings );
+            if ( is_string( $competition->settings ) ) {
+                $decoded = json_decode( $competition->settings, true );
+                if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
+                    $settings_arr  = $decoded;
+                    $settings_json = $competition->settings;
+                } else {
+                    // Legacy serialized handling during transition
+                    $maybe = @maybe_unserialize( $competition->settings );
+                    if ( is_array( $maybe ) ) {
+                        $settings_arr  = $maybe;
+                        $settings_json = wp_json_encode( $maybe );
+                    }
+                }
+            } elseif ( is_array( $competition->settings ) ) {
+                $settings_arr  = $competition->settings;
+                $settings_json = wp_json_encode( $competition->settings );
+            }
+            // Merge decoded settings into the competition object to preserve existing property expectations
+            $competition = (object) array_merge( (array) $competition, $settings_arr );
         }
 
         foreach ( get_object_vars( $competition ) as $key => $value ) {
@@ -610,8 +676,12 @@ class Competition {
         $this->name = stripslashes( $this->name );
         $this->type = stripslashes( $this->type );
 
-        // Seasons handling (Option B): keep property as JSON string; compute derived fields from a local decode
-        $seasons_json = '';
+        // Keep canonical JSON string for settings on the instance
+        if ( empty( $settings_json ) ) {
+            $settings_json = '{}';
+        }
+        $this->settings = $settings_json;
+
         if ( isset( $this->seasons ) && is_string( $this->seasons ) ) {
             $seasons_json = $this->seasons;
         } elseif ( isset( $this->seasons ) && is_array( $this->seasons ) ) {
@@ -672,55 +742,10 @@ class Competition {
             }
         }
 
-        // Championship.
-        if ( 'championship' === $this->mode ) {
-            $this->is_championship = true;
-        } else {
-            $this->is_championship = false;
-        }
-        $this->is_league       = false;
-        $this->is_cup          = false;
-        $this->is_tournament   = false;
-        $this->is_team_entry   = false;
-        $this->is_player_entry = false;
-        switch ( $this->type ) {
-            case 'league':
-                $this->is_league     = true;
-                $this->is_team_entry = true;
-                break;
-            case 'cup':
-                $this->is_cup        = true;
-                $this->is_team_entry = true;
-                $finals              = array();
-                $max_rounds          = 4;
-                $r                   = $max_rounds;
-                for ( $round = 1; $round <= $max_rounds; ++$round ) {
-                    $num_teams      = pow( 2, $round );
-                    $num_matches    = $num_teams / 2;
-                    $key            = Util::get_final_key( $num_teams );
-                    $name           = Util::get_final_name( $key );
-                    $finals[ $key ] = array(
-                        'key'         => $key,
-                        'name'        => $name,
-                        'num_matches' => $num_matches,
-                        'num_teams'   => $num_teams,
-                        'round'       => $r,
-                    );
-                    --$r;
-                }
-                $this->finals = $finals;
-                break;
-            case 'tournament':
-                $this->is_tournament   = true;
-                $this->is_player_entry = true;
-                break;
-            default:
-                break;
-        }
         if ( empty( $this->competition_code ) ) {
             $this->competition_code = null;
         }
-    }
+    } **/
 
     /**
      * Derive the current season from a list of seasons (array as decoded from JSON)
@@ -777,9 +802,42 @@ class Competition {
         return $this->type;
     }
 
+    public function get_age_group(): ?string {
+        return $this->age_group;
+    }
+
+    public function set_id( int $id ): void {
+        $this->id = $id;
+    }
+
     public function get_settings(): array {
         return $this->settings;
     }
+
+    public function get_seasons(): array {
+        return $this->seasons;
+    }
+
+    /**
+     * Get settings as array (decoded from JSON)
+     */
+    public function get_settings_array(): array {
+        if ( is_string( $this->settings ) ) {
+            $decoded = json_decode( $this->settings, false );
+            return ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) ? $decoded : array();
+        }
+        return is_array( $this->settings ) ? $this->settings : array();
+    }
+    /**
+     * Get settings as JSON string
+     */
+    public function get_settings_json(): string {
+        if ( is_string( $this->settings ) ) {
+            return $this->settings;
+        }
+        return wp_json_encode( $this->get_settings_array() );
+    }
+    /**
     public function get_seasons(): array {
         // With Option B, seasons is a JSON string; decode lazily for callers who still expect array
         if ( is_string( $this->seasons ) ) {
@@ -788,6 +846,7 @@ class Competition {
         }
         return is_array( $this->seasons ) ? $this->seasons : array();
     }
+     **/
 
     /**
      * Get a season by name
@@ -808,36 +867,13 @@ class Competition {
         return $this->get_season_by_name( $name ) !== null;
     }
 
-    public function get_age_group(): ?string {
-        return $this->age_group;
-    }
-
-    public function set_id( int $id ): void {
-        $this->id = $id;
-    }
-
     /**
      * Update settings
      *
      * @param array $settings settings array.
      */
     public function set_settings( array $settings ): void {
-        global $wpdb;
-        foreach ( Util_Lookup::get_standings_display_options() as $key => $value ) {
-            $settings['standings'][ $key ] = isset( $settings['standings'][ $key ] ) ? 1 : 0;
-        }
-        $type = $settings['type'];
-
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_competitions SET `settings` = %s, `type` = %s WHERE `id` = %d",
-                maybe_serialize( $settings ),
-                $type,
-                $this->id
-            )
-        );
         $this->settings = $settings;
-        wp_cache_set( $this->id, $this, 'competitions' );
     }
 
     /**
@@ -1766,238 +1802,7 @@ class Competition {
         ksort( $seasons );
         return $this->update_seasons( $seasons );
     }
-    /**
-     * Set configuration function
-     *
-     * @param object $config config object.
-     *
-     * @return boolean update indicator.
-     */
-    public function set_config( object $config ): bool {
-        $updates = false;
-        $settings = new stdClass();
-        if ( empty( $this->sport ) || $this->sport !== $config->sport ) {
-            $updates = true;
-        }
-        $settings->sport = $config->sport;
-        if ( $this->type !== $config->type ) {
-            $settings->type = $config->type;
-            switch ( $config->type ) {
-                case 'league':
-                    $config->mode = 'default';
-                    $updates      = true;
-                    break;
-                case 'cup':
-                    $config->mode       = 'championship';
-                    $config->entry_type = 'team';
-                    $updates            = true;
-                    break;
-                case 'tournament':
-                    $config->mode       = 'championship';
-                    $config->entry_type = 'player';
-                    $updates            = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-        if ( empty( $this->entry_type ) || $this->entry_type !== $config->entry_type ) {
-            $updates = true;
-        }
-        $settings->entry_type = $config->entry_type;
-        if ( empty( $this->mode ) || $this->mode !== $config->mode ) {
-            $updates = true;
-        }
-        $settings->mode = $config->mode;
-        if ( empty( $this->competition_code ) || $this->competition_code !== $config->competition_code ) {
-            $updates = true;
-        }
-        $settings->competition_code = $config->competition_code;
-        if ( empty( $this->grade ) || $this->grade !== $config->grade ) {
-            $updates = true;
-        }
-        $settings->grade = $config->grade;
-        if ( empty( $this->age_group ) || $this->age_group !== $config->age_group ) {
-            $updates = true;
-        }
-        $this->age_group = $config->age_group;
-        if ( 'league' === $config->type ) {
-            if ( empty( $this->max_teams ) || $this->max_teams !== $config->max_teams ) {
-                $updates = true;
-            }
-            $settings->max_teams = $config->max_teams;
-            if ( empty( $this->teams_per_club ) || $this->teams_per_club !== $config->teams_per_club ) {
-                $updates = true;
-            }
-            $settings->teams_per_club = $config->teams_per_club;
-            if ( empty( $this->teams_prom_relg ) || $this->teams_prom_relg !== $config->teams_prom_relg ) {
-                $updates = true;
-            }
-            $settings->teams_prom_relg = $config->teams_prom_relg;
-            if ( empty( $this->lowest_promotion ) || $this->lowest_promotion !== $config->lowest_promotion ) {
-                $updates = true;
-            }
-            $settings->lowest_promotion = $config->lowest_promotion;
-        } elseif ( 'tournament' === $config->type ) {
-            if ( empty( $this->num_entries ) || $this->num_entries !== $config->num_entries ) {
-                $updates = true;
-            }
-            $settings->num_entries = $config->num_entries;
-        }
-        if ( empty( $this->team_ranking ) || $this->team_ranking !== $config->team_ranking ) {
-            $updates = true;
-        }
-        $settings->team_ranking = $config->team_ranking;
-        if ( empty( $this->point_rule ) || $this->point_rule !== $config->point_rule ) {
-            $updates = true;
-        }
-        $settings->point_rule = $config->point_rule;
-        if ( empty( $this->scoring ) || $this->scoring !== $config->scoring ) {
-            $updates = true;
-        }
-        $settings->scoring = $config->scoring;
-        if ( empty( $this->num_sets ) || $this->num_sets !== $config->num_sets ) {
-            $updates = true;
-        }
-        $settings->num_sets = $config->num_sets;
-        if ( $this->is_team_entry ) {
-            if ( empty( $this->num_rubbers ) || $this->num_rubbers !== $config->num_rubbers ) {
-                $updates = true;
-            }
-            $settings->num_rubbers = $config->num_rubbers;
-            if ( ! isset( $this->reverse_rubbers ) || $this->reverse_rubbers !== $config->reverse_rubbers ) {
-                $updates = true;
-            }
-            $settings->reverse_rubbers = $config->reverse_rubbers;
-        }
-        if ( ! isset( $this->fixed_match_dates ) || $this->fixed_match_dates !== $config->fixed_match_dates ) {
-            $updates = true;
-        }
-        $settings->fixed_match_dates = $config->fixed_match_dates;
-        if ( ! isset( $this->home_away ) || $this->home_away !== $config->home_away ) {
-            $updates = true;
-        }
-        $settings->home_away = $config->home_away;
-        if ( ! isset( $this->round_length ) || $this->round_length !== $config->round_length ) {
-            $updates = true;
-        }
-        $settings->round_length = $config->round_length;
-        if ( 'league' === $config->type || 'cup' === $config->type ) {
-            if ( ! isset( $this->home_away_diff ) || $this->home_away_diff !== $config->home_away_diff ) {
-                $updates = true;
-            }
-            $settings->home_away_diff = $config->home_away_diff;
-        }
-        if ( 'league' === $config->type ) {
-            if ( empty( $this->filler_weeks ) || $this->filler_weeks !== $config->filler_weeks ) {
-                $updates = true;
-            }
-            $settings->filler_weeks = $config->filler_weeks;
-        }
-        if ( 'tournament' !== $config->type ) {
-            $match_days = Util_Lookup::get_match_days();
-            foreach ( $match_days as $match_day => $value ) {
-                $config->match_days_allowed[ $match_day ] = isset( $config->match_days_allowed[ $match_day ] ) ? 1 : 0;
-                if ( ! isset( $this->match_days_allowed[ $match_day ] ) || $this->match_days_allowed[ $match_day ] !== $config->match_days_allowed[ $match_day ] ) {
-                    $updates = true;
-                }
-            }
-            $settings->match_days_allowed = $config->match_days_allowed;
-            if ( ! isset( $this->match_day_restriction ) || $this->match_day_restriction !== $config->match_day_restriction ) {
-                $updates = true;
-            }
-            $settings->match_day_restriction = $config->match_day_restriction;
-            if ( ! isset( $this->match_day_weekends ) || $this->match_day_weekends !== $config->match_day_weekends ) {
-                $updates = true;
-            }
-            $settings->match_day_weekends     = $config->match_day_weekends;
-            $default_match_start_time         = explode( ':', $config->default_match_start_time );
-            $default_match_start_time_hour    = $default_match_start_time[0];
-            $default_match_start_time_minutes = $default_match_start_time[1];
-            if ( empty( $this->default_match_start_time['hour'] ) || $this->default_match_start_time['hour'] !== $default_match_start_time_hour ) {
-                $updates = true;
-            }
-            $settings->default_match_start_time['hour'] = $default_match_start_time_hour;
-            if ( empty( $this->default_match_start_time['minutes'] ) || $this->default_match_start_time['minutes'] !== $default_match_start_time_minutes ) {
-                $updates = true;
-            }
-            $settings->default_match_start_time['minutes'] = $default_match_start_time_minutes;
-            if ( ! isset( $this->start_time['weekday']['min'] ) || $this->start_time['weekday']['min'] !== $config->start_time['weekday']['min'] ) {
-                $updates = true;
-            }
-            $settings->start_time['weekday']['min'] = $config->start_time['weekday']['min'];
-            if ( ! isset( $this->start_time['weekday']['max'] ) || $this->start_time['weekday']['max'] !== $config->start_time['weekday']['max'] ) {
-                $updates = true;
-            }
-            $settings->start_time['weekday']['max'] = $config->start_time['weekday']['max'];
-            if ( ! isset( $this->start_time['weekend']['min'] ) || $this->start_time['weekend']['min'] !== $config->start_time['weekend']['min'] ) {
-                $updates = true;
-            }
-            $settings->start_time['weekend']['min'] = $config->start_time['weekend']['min'];
-            if ( ! isset( $this->start_time['weekend']['max'] ) || $this->start_time['weekend']['max'] !== $config->start_time['weekend']['max'] ) {
-                $updates = true;
-            }
-            $settings->start_time['weekend']['max'] = $config->start_time['weekend']['max'];
-        }
-        if ( empty( $this->point_format ) || $this->point_format !== $config->point_format ) {
-            $updates = true;
-        }
-        $settings->point_format = $config->point_format;
-        if ( empty( $this->point_2_format ) || $this->point_2_format !== $config->point_2_format ) {
-            $updates = true;
-        }
-        $settings->point_2_format = $config->point_2_format;
-        if ( empty( $this->num_matches_per_page ) || $this->num_matches_per_page !== $config->num_matches_per_page ) {
-            $updates = true;
-        }
-        $settings->num_matches_per_page = $config->num_matches_per_page;
-        $standing_display_options       = Util_Lookup::get_standings_display_options();
-        foreach ( $standing_display_options as $display_option => $value ) {
-            $config->standings[ $display_option ] = isset( $config->standings[ $display_option ] ) ? 1 : 0;
-            if ( $this->standings[ $display_option ] !== $config->standings[ $display_option ] ) {
-                $updates = true;
-            }
-        }
-        $settings->standings = $config->standings;
-        $rules_options       = $this->get_rules_options();
-        foreach ( $rules_options as $rules_option => $value ) {
-            $config->rules[ $rules_option ] = isset( $config->rules[ $rules_option ] ) ? 1 : 0;
-            if ( ! isset( $this->rules[ $rules_option ] ) || $this->rules[ $rules_option ] !== $config->rules[ $rules_option ] ) {
-                $updates = true;
-            }
-        }
-        $settings->rules = $config->rules;
-        if ( 'league' === $config->type ) {
-            if ( empty( $this->num_courts_available ) || $this->num_courts_available !== $config->num_courts_available ) {
-                $updates = true;
-            }
-            $settings->num_courts_available = $config->num_courts_available;
-        }
-        if ( $this->name !== $config->name || $updates ) {
-            $this->name     = $config->name;
-            $this->settings = (array) $settings;
-            $updates        = true;
-            $this->update_settings();
-        }
-        return $updates;
-    }
-    /**
-     * Update settings function
-     */
-    private function update_settings(): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_competitions SET `name` = %s, `type` = %s, `settings` = %s, `age_group` = %s WHERE `id` = %d",
-                $this->name,
-                $this->type,
-                maybe_serialize( $this->settings ),
-                $this->age_group,
-                $this->id
-            )
-        );
-        wp_cache_set( $this->id, $this, 'competitions' );
-    }
+
     /**
      * Notify team entry open
      *
@@ -2372,4 +2177,58 @@ class Competition {
             }
         }
     }
+    /**
+     * Retrieve competition instance
+     *
+     * @param int|string $competition_id competition id.
+     * @param string|null $search_term search.
+     */
+    public static function get_instance( int|string $competition_id, ?string $search_term = 'id' ) {
+        global $wpdb;
+        switch ( $search_term ) {
+            case 'name':
+                $search = $wpdb->prepare(
+                    '`name` = %s',
+                    $competition_id
+                );
+                break;
+            case 'id':
+            default:
+                $competition_id = (int) $competition_id;
+                $search         = $wpdb->prepare(
+                    '`id` = %d',
+                    $competition_id
+                );
+                break;
+        }
+        if ( ! $competition_id ) {
+            return false;
+        }
+        $competition = wp_cache_get( $competition_id, 'competitions' );
+        if ( ! $competition ) {
+            $competition = $wpdb->get_row(
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+                "SELECT `name`, `id`, `type`, `settings`, `seasons`, `age_group` FROM $wpdb->racketmanager_competitions WHERE " . $search . ' LIMIT 1'
+            );
+            if ( ! $competition ) {
+                return false;
+            }
+            // Do not maybe_unserialize here; the domain constructor will normalize `settings`
+            // check if specific sports class exists.
+            if ( ! isset( $competition->sport ) ) {
+                $competition->sport = '';
+            }
+            $instance = 'Racketmanager\sports\Competition_' . ucfirst( $competition->sport );
+            if ( class_exists( $instance ) ) {
+                $competition = new $instance( $competition );
+            } else {
+                $competition = new Competition( $competition );
+            }
+
+            wp_cache_set( $competition->id, $competition, 'competitions' );
+        }
+
+        return $competition;
+    }
+
 }

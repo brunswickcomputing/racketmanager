@@ -29,9 +29,9 @@ class Competition_Repository {
         $data = array(
             'name'           => $competition->get_name(),
             // Store settings as JSON
-            'settings'       => $competition->get_settings_json(),
+            'settings'       => json_encode( $competition->get_settings() ),
             // Store seasons as JSON in DB
-            'seasons'        => $competition->get_seasons_json(),
+            'seasons'        => json_encode( $competition->get_seasons() ),
             'type'           => $competition->get_type(),
             'age_group'      => $competition->get_age_group(),
         );
@@ -49,8 +49,10 @@ class Competition_Repository {
                 $data_format,
             );
             $competition->set_id( $this->wpdb->insert_id );
+            wp_cache_set( $competition->get_id(), $competition, 'competitions' );
             return $result !== false;
         } else {
+            wp_cache_set( $competition->get_id(), $competition, 'competitions' );
             return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
@@ -78,18 +80,17 @@ class Competition_Repository {
         $competition = wp_cache_get( $competition_id, 'competitions' );
 
         if ( ! $competition ) {
-            $competition = $this->wpdb->get_row(
+            $row = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE $search LIMIT 1",
                     $competition_id
                 )
             );
 
-            if ( ! $competition ) {
+            if ( ! $row ) {
                 return null;
             }
-            $competition = new Competition( $competition );
-
+            $competition = Competition::from_database( $row );
             wp_cache_set( $competition->get_id(), $competition, 'competitions' );
         }
 
@@ -100,7 +101,7 @@ class Competition_Repository {
         $competitions = wp_cache_get( 'competitions', 'competitions' );
         if ( ! $competitions ) {
             $competitions = $this->wpdb->get_results( "SELECT * FROM $this->table_name ORDER BY `name`" );
-            $competitions = array_map( fn( $competition ) => new Competition( $competition ), $competitions );
+            $competitions = array_map( [ Competition::class, 'from_database' ], $competitions );
             wp_cache_set( 'competitions', $competitions, 'competitions' );
         }
         return $competitions;
@@ -111,7 +112,7 @@ class Competition_Repository {
         if ( ! empty( $criteria ) ) {
             $clauses = array();
             foreach ( $criteria as $key => $value ) {
-                // Use prepare for values to avoid SQL injection
+                // Use prepare statement for values to avoid SQL injection
                 $clauses[] = $this->wpdb->prepare( "`$key` = %s", $value );
             }
             $sql .= ' WHERE ' . implode( ' AND ', $clauses );
@@ -119,7 +120,7 @@ class Competition_Repository {
         $sql .= ' ORDER BY `name`';
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         $rows = $this->wpdb->get_results( $sql );
-        return array_map( fn( $row ) => new Competition( $row ), $rows );
+        return array_map( [ Competition::class, 'from_database' ], $rows );
     }
 
     public function find_competitions_with_summary( $age_group = null, $type = null ): array {
@@ -140,7 +141,7 @@ class Competition_Repository {
         // Build the WHERE clause only if conditions exist
         $where_clause = ! empty( $conditions ) ? ' WHERE ' . implode( ' AND ', $conditions ) : '';
 
-        $query = "SELECT c.id, c.name, c.age_group, c.type, JSON_LENGTH(c.seasons) as season_count, COUNT(DISTINCT e.id) as event_count FROM {$this->table_name} c LEFT JOIN $events_table e ON c.id = e.competition_id $where_clause GROUP BY c.id ORDER BY c.age_group, c.type, c.name";
+        $query = "SELECT c.id, c.name, c.age_group, c.type, JSON_LENGTH(c.seasons) as season_count, COUNT(DISTINCT e.id) as event_count FROM $this->table_name c LEFT JOIN $events_table e ON c.id = e.competition_id $where_clause GROUP BY c.id ORDER BY c.age_group, c.type, c.name";
 
         if ( $where_clause ) {
             $query = $this->wpdb->prepare( $query, $params );

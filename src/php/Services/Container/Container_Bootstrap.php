@@ -43,8 +43,9 @@ final class Container_Bootstrap {
         $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
 
         // Services
-        $c->set('competition_service', function(Simple_Container $c) {
+        $c->set('competition_service', function(Simple_Container $c) use ($app) {
             return new Competition_Service(
+                $app,
                 $c->get('competition_repository'),
                 $c->get('event_repository'),
             );

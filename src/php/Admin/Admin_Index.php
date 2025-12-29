@@ -83,7 +83,7 @@ class Admin_Index extends Admin_Display {
         $competition->age_group = $age_group;
         $return                 = new stdClass();
         try {
-            $this->competition_service->create( $competition );
+            $competition = $this->competition_service->create( $name, $type, $age_group );
             $return->msg = __( 'Competition added', 'racketmanager' );
         } catch ( Duplicate_Competition_Exception $e ) {
             $return->msg   = $e->getMessage();

@@ -20,11 +20,13 @@ namespace Racketmanager;
         <tbody>
             <?php
             foreach ( $clubs as $club ) {
+                $club_id       = $club->get_id();
+                $current_value = $_POST['num_courts_available'][ $club_id ] ?? $competition->config->num_courts_available[ $club_id ] ?? null;
                 ?>
                 <tr>
                     <td><?php echo esc_html( $club->name ); ?></td>
                     <td>
-                        <label for="num_courts_available-[<?php echo esc_html( $club->id ); ?>]" class="visually-hidden"><?php esc_html_e( 'Numer of courts', 'racketmanager' ); ?></label><input type="number" step="1" min="0" class="small-text" name="num_courts_available[<?php echo esc_html( $club->id ); ?>]" id="num_courts_available-[<?php echo esc_html( $club->id ); ?>]" value="<?php echo isset( $competition->config->num_courts_available[ $club->id ] ) ? esc_html( $competition->config->num_courts_available[ $club->id ] ) : null; ?>" />
+                        <label for="num_courts_available-[<?php echo esc_html( $club_id ); ?>]" class="visually-hidden"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label><input type="number" step="1" min="0" class="small-text" name="num_courts_available[<?php echo esc_html( $club_id ); ?>]" id="num_courts_available-<?php echo esc_html( $club->id ); ?>" value="<?php echo esc_html( $current_value ); ?>" />
                     </td>
                 </tr>
                 <?php

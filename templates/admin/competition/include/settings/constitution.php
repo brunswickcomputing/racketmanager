@@ -29,8 +29,9 @@ $msg        = null;
                         $msg_id     = array_search( 'max_teams', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
+                    $current_value = $_POST['max_teams'] ?? $competition->config->max_teams ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->max_teams ) ? esc_html( $competition->config->max_teams ) : null; ?>" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="max_teams" id="max_teams" placeholder="<?php esc_html_e( 'Max teams', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="max_teams" class="form-label"><?php esc_html_e( 'Max teams per league', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -52,8 +53,9 @@ $msg        = null;
                         $msg_id     = array_search( 'teams_per_club', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
+                    $current_value = $_POST['teams_per_club'] ?? $competition->config->teams_per_club ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_per_club" id="teams_per_club" placeholder="<?php esc_html_e( 'Club teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->teams_per_club ) ? esc_html( $competition->config->teams_per_club ) : null; ?>" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_per_club" id="teams_per_club" placeholder="<?php esc_html_e( 'Club teams', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="teams_per_club" class="form-label"><?php esc_html_e( 'Max clubs teams in league', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -79,8 +81,9 @@ $msg        = null;
                         $msg_id     = array_search( 'num_entries', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
+                    $current_value = $_POST['num_entries'] ?? $competition->config->num_entries ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" placeholder="<?php esc_html_e( 'Max number of entries', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->num_entries ) ? esc_html( $competition->config->num_entries ) : null; ?>" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" placeholder="<?php esc_html_e( 'Max number of entries', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="num_entries" class="form-label"><?php esc_html_e( 'Max entries', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -111,8 +114,9 @@ $msg        = null;
                         $msg_id     = array_search( 'teams_prom_relg', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
+                    $current_value = $_POST['teams_prom_relg'] ?? $competition->config->teams_prom_relg ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_prom_relg" id="teams_prom_relg" placeholder="<?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->teams_prom_relg ) ? esc_html( $competition->config->teams_prom_relg ) : null; ?>" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="teams_prom_relg" id="teams_prom_relg" placeholder="<?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="teams_prom_relg" class="form-label"><?php esc_html_e( 'Promoted/Relegated teams', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -134,8 +138,9 @@ $msg        = null;
                         $msg_id     = array_search( 'lowest_promotion', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
+                    $current_value = $_POST['lowest_promotion'] ?? $competition->config->lowest_promotion ?? null;
                     ?>
-                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="lowest_promotion" id="lowest_promotion" placeholder="<?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?>" value="<?php echo isset( $competition->config->lowest_promotion ) ? esc_html( $competition->config->lowest_promotion ) : null; ?>" />
+                    <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="lowest_promotion" id="lowest_promotion" placeholder="<?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?>" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                     <label for="lowest_promotion" class="form-label"><?php esc_html_e( 'Lowest promotion', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -164,13 +169,14 @@ $msg        = null;
                     $msg_id     = array_search( 'team_ranking', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
+                $current_value = $_POST['team_ranking'] ?? $competition->config->team_ranking ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="team_ranking" id="team_ranking" >
-                    <option disabled <?php selected( null, empty( $competition->config->type ) ? null : $competition->config->type ); ?>><?php esc_html_e( 'Select team ranking', 'racketmanager' ); ?></option>
+                    <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select team ranking', 'racketmanager' ); ?></option>
                     <?php
                     foreach ( $ranking_types as $ranking_type => $type_desc ) {
                         ?>
-                        <option value="<?php echo esc_html( $ranking_type ); ?>" <?php selected( $ranking_type, empty( $competition->config->team_ranking ) ? null : $competition->config->team_ranking ); ?>><?php echo esc_html( ucfirst( $type_desc ) ); ?></option>
+                        <option value="<?php echo esc_html( $ranking_type ); ?>" <?php selected( $ranking_type, empty( $current_value ) ? null : $current_value ); ?>><?php echo esc_html( ucfirst( $type_desc ) ); ?></option>
                         <?php
                     }
                     ?>
@@ -200,13 +206,14 @@ $msg        = null;
                     $msg_id     = array_search( 'point_rule', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
+                $current_value = $_POST['point_rule'] ?? $competition->config->point_rule ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_rule" id="point_rule" >
-                    <option disabled <?php selected( null, empty( $competition->config->type ) ? null : $competition->config->type ); ?>><?php esc_html_e( 'Select team ranking', 'racketmanager' ); ?></option>
+                    <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select team ranking', 'racketmanager' ); ?></option>
                     <?php
                     foreach ( $point_rules as $point_rule => $type_desc ) {
                         ?>
-                        <option value="<?php echo esc_html( $point_rule ); ?>" <?php selected( $point_rule, empty( $competition->config->point_rule ) ? null : $competition->config->point_rule ); ?>><?php echo esc_html( ucfirst( $type_desc ) ); ?></option>
+                        <option value="<?php echo esc_html( $point_rule ); ?>" <?php selected( $point_rule, empty( $current_value ) ? null : $current_value); ?>><?php echo esc_html( ucfirst( $type_desc ) ); ?></option>
                         <?php
                     }
                     ?>

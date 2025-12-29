@@ -16,6 +16,7 @@ if ( empty( $tournament ) ) {
     $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=tournament&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
     $add_link        = '&amp;tournament=' . $tournament->id;
 }
+$mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : $competition->config->mode;
 ?>
 <div>
     <div class="alert_rm" id="alert-season" style="display:none;">
@@ -38,7 +39,7 @@ if ( empty( $tournament ) ) {
             <form action="" method="post" class="">
                 <?php wp_nonce_field( 'racketmanager_manage-competition-config', 'racketmanager_nonce' ); ?>
                 <input type="hidden" class="active-tab" name="active-tab" value="<?php echo esc_attr( $tab ); ?>" />
-                <input type="hidden" class="mode" name="mode" value="<?php echo esc_attr( $competition->config->mode ); ?>" />
+                <input type="hidden" class="mode" name="mode" value="<?php echo esc_attr( $mode ); ?>" />
                 <div class="mb-3">
                     <nav class="navbar navbar-expand-lg bg-body-tertiary">
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar<?php echo esc_attr( $competition->id ); ?>" aria-controls="navbar<?php echo esc_attr( $competition->type ); ?>" aria-expanded="false" aria-label="Toggle navigation">

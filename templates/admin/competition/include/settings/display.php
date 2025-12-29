@@ -31,13 +31,14 @@ $tab_name = 'display';
                                 $msg_id     = array_search( 'point_format', $validator->err_flds, true );
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
+                            $current_value = $_POST['point_format'] ?? $competition->config->point_format ?? null;
                             ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format" id="point_format" >
-                                <option disabled <?php selected( null, empty( $competition->config->point_format ) ? null : $competition->config->point_format ); ?>><?php esc_html_e( 'Select point format', 'racketmanager' ); ?></option>
+                                <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select point format', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $point_formats as $point_format => $desc ) {
                                     ?>
-                                    <option value="<?php echo esc_html( $point_format ); ?>" <?php selected( $point_format, empty( $competition->config->point_format ) ? null : $competition->config->point_format ); ?>><?php echo esc_html( $desc ); ?></option>
+                                    <option value="<?php echo esc_html( $point_format ); ?>" <?php selected( $point_format, empty( $current_value ) ? null : $current_value ); ?>><?php echo esc_html( $desc ); ?></option>
                                     <?php
                                 }
                                 ?>
@@ -63,13 +64,14 @@ $tab_name = 'display';
                                 $msg_id     = array_search( 'point_2_format', $validator->err_flds, true );
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
+                            $current_value = $_POST['point_2_format'] ?? $competition->config->point_2_format ?? null;
                             ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_2_format" id="point_2_format" >
-                                <option disabled <?php selected( null, empty( $competition->config->point_2_format ) ? null : $competition->config->point_2_format ); ?>><?php esc_html_e( 'Select point 2 format', 'racketmanager' ); ?></option>
+                                <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select point 2 format', 'racketmanager' ); ?></option>
                                 <?php
                                 foreach ( $point_formats as $point_format => $desc ) {
                                     ?>
-                                    <option value="<?php echo esc_html( $point_format ); ?>" <?php selected( $point_format, empty( $competition->config->point_2_format ) ? null : $competition->config->point_2_format ); ?>><?php echo esc_html( $desc ); ?></option>
+                                    <option value="<?php echo esc_html( $point_format ); ?>" <?php selected( $point_format, empty( $current_value ) ? null : $current_value ); ?>><?php echo esc_html( $desc ); ?></option>
                                     <?php
                                 }
                                 ?>
@@ -96,8 +98,9 @@ $tab_name = 'display';
                     $msg_id     = array_search( 'num_matches_per_page', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
+                $current_value = $_POST['num_matches_per_page'] ?? $competition->config->num_matches_per_page ?? null;
                 ?>
-                <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo isset( $competition->config->num_matches_per_page ) ? esc_html( $competition->config->num_matches_per_page ) : null; ?>" />
+                <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                 <label for="num_matches_per_page"><?php esc_html_e( 'Matches per page', 'racketmanager' ); ?></label>
                 <?php
                 if ( $is_invalid ) {
@@ -124,9 +127,10 @@ $tab_name = 'display';
             <div>
                 <?php
                 foreach ( $standings_options as $standings_option => $type_desc ) {
+                    $current_value = $_POST['standings'][ $standings_option ] ?? $competition->config->standings[ $standings_option ] ?? null;
                     ?>
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input" name="standings[<?php echo esc_html( $standings_option ); ?>]" id="standings-<?php echo esc_html( $standings_option ); ?>" value="1" <?php checked( 1, empty( $competition->config->standings[ $standings_option ] ) ? null : $competition->config->standings[ $standings_option ] ); ?> />
+                        <input type="checkbox" class="form-check-input" name="standings[<?php echo esc_html( $standings_option ); ?>]" id="standings-<?php echo esc_html( $standings_option ); ?>" value="1" <?php checked( 1, $current_value ); ?> />
                         <label class="form-check-label" for="standings-<?php echo esc_html( $standings_option ); ?>"><?php echo esc_html( ucfirst( $type_desc ) ); ?></label>
                     </div>
                     <?php

@@ -14,7 +14,6 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\constitution_notification;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
@@ -515,7 +514,9 @@ class Event {
 
         $this->name        = stripslashes( $this->name );
         $this->type        = empty( $this->type ) ? null : stripslashes( $this->type );
-        $this->competition = get_competition( $this->competition_id );
+        global $racketmanager;
+        $competition_service = $racketmanager->container->get( 'competition_service' );
+        $this->competition = $competition_service->get_by_id( $this->competition_id );
         if ( ! isset( $this->reverse_rubbers ) ) {
             $this->reverse_rubbers = '0';
         }
@@ -609,12 +610,8 @@ class Event {
      * Get a season by name (searches by season['name'])
      */
     public function get_season_by_name( string $name ): ?array {
-        foreach ( $this->get_seasons() as $season ) {
-            if ( isset( $season['name'] ) && $season['name'] === $name ) {
-                return $season;
-            }
-        }
-        return null;
+        $seasons = $this->get_seasons();
+        return $seasons[ $name ] ?? null;
     }
 
     /**

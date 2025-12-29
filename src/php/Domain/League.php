@@ -17,7 +17,6 @@ use stdClass;
 use function get_query_var;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
-use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
@@ -1413,7 +1412,7 @@ class League {
         }
         $sql .= " FROM $wpdb->racketmanager_teams B INNER JOIN $wpdb->racketmanager_league_teams A ON B.id = A.team_id WHERE `league_id` = %d";
 
-        if ( '' === $season ) {
+        if ( empty( $season ) ) {
             $sql   .= ' AND A.`season` = %s';
             $args[] = $this->current_season['name'];
         } elseif ( 'any' === $season ) {
@@ -2454,7 +2453,7 @@ class League {
      * @return boolean
      */
     private function season_exists( string $season ): bool {
-        return $this->event->get_season_by_name( $season ) ? true: false;
+        return (bool) $this->event->get_season_by_name( $season );
     }
 
     /**

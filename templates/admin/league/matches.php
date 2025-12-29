@@ -188,13 +188,7 @@ global $racketmanager;
                             <?php
                         }
                         ?>
-                        <td class="match-title"><a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=match&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $match->id ); ?>&amp;season=<?php echo esc_html( $season ); ?>
-                            <?php
-                            if ( isset( $group ) ) {
-                                echo esc_html( '&amp;group=' . $group );
-                            }
-                            ?>
-                        "><?php echo esc_html( $match->match_title ); ?></a></td>
+                        <td class="match-title"><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=match&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $match->id ); ?>&amp;season=<?php echo esc_html( $season ); ?><?php echo empty( $group ) ? null : '&amp;group=' . esc_attr( $group ); ?>"><?php echo esc_html( $match->match_title ); ?></a></td>
                         <td><?php echo esc_html( ( empty( $match->location ) ) ? 'N/A' : $match->location ); ?></td>
                         <td><?php echo esc_html( ( '00:00' === $match->hour . ':' . $match->minutes ) ? 'N/A' : mysql2date( $racketmanager->time_format, $match->date ) ); ?></td>
                         <?php

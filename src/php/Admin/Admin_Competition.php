@@ -9,7 +9,10 @@
 
 namespace Racketmanager\Admin;
 
+use Exception;
 use Racketmanager\Domain\Charges;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Util\Util;
@@ -47,14 +50,50 @@ final class Admin_Competition extends Admin_Display {
             return;
         }
         $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $competition    = get_competition( $competition_id );
-        $tournament     = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+            return;
+        }
+        $tournament = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
         if ( $tournament ) {
             $tournament = get_tournament( $tournament );
         }
         if ( isset( $_POST['updateCompetitionConfig'] ) ) {
-            $competition->config = $this->get_config_input();
-            $validator           = $this->handle_config_update( $competition );
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-competition-config' );
+            if ( empty( $validator->error ) ) {
+                $competition_id_passed = isset( $_POST['competition_id'] ) ?  intval( $_POST['competition_id'] ) : null;
+                $validator             = $validator->compare( $competition_id_passed, $competition->id );
+            }
+            if ( ! empty( $validator->error ) ) {
+                if ( empty( $validator->msg ) ) {
+                    $msg = $validator->err_msgs[0];
+                } else {
+                    $msg = $validator->msg;
+                }
+                $this->set_message( $msg, true );
+            } else {
+                $config = $this->get_config_input();
+                try {
+                    $updates = $this->competition_service->amend_details( $competition_id, $config );
+                    if ( is_wp_error( $updates ) ) {
+                        $validator->error    = true;
+                        $validator->err_flds = $updates->get_error_codes();
+                        $validator->err_msgs = $updates->get_error_messages();
+                        $this->set_message( __( 'Error with competition details', 'racketmanager' ), true );
+                    } elseif( $updates) {
+                        $this->set_message( __( 'Competition updated', 'racketmanager' ) );
+                    } else {
+                        $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                    }
+                } catch ( Competition_Not_Updated_Exception $e ) {
+                    $this->set_message( $e->getMessage(), 'warning' );
+                } catch ( Competition_Not_Found_Exception|Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
+                }
+            }
         } elseif ( isset( $_POST['doActionEvent'] ) ) {
             $validator = new Validator();
             $validator = $validator->check_security_token( 'racketmanager_event_nonce', 'racketmanager_events-bulk' );
@@ -67,7 +106,8 @@ final class Admin_Competition extends Admin_Display {
                 $this->set_message( __( 'No action specified', 'racketmanager' ), 'warning' );
             }
         } else {
-            $competition->config            = (object) $competition->settings;
+            $competition->config            = (object) $competition->get_settings();
+            $competition->config->type      = $competition->type;
             $competition->config->age_group = $competition->age_group;
         }
         $this->show_message();
@@ -114,10 +154,18 @@ final class Admin_Competition extends Admin_Display {
         $config->round_length                 = isset( $_POST['round_length'] ) ? intval( $_POST['round_length'] ) : null;
         $config->home_away_diff               = isset( $_POST['home_away_diff'] ) ? intval( $_POST['home_away_diff'] ) : null;
         $config->filler_weeks                 = isset( $_POST['filler_weeks'] ) ? intval( $_POST['filler_weeks'] ) : null;
-        $config->match_day_restriction        = isset( $_POST['match_day_restriction'] ) && 'true' === $_POST['match_day_restriction'];
+        $config->match_day_restriction        = isset( $_POST['match_day_restriction'] );
         $config->match_day_weekends           = isset( $_POST['match_day_weekends'] ) && 'true' === $_POST['match_day_weekends'];
-        $config->match_days_allowed           = isset( $_POST['match_days_allowed'] ) ? wp_unslash( $_POST['match_days_allowed'] ) : null;
-        $config->default_match_start_time     = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;
+        $config->match_days_allowed           = isset( $_POST['match_days_allowed'] ) ? array_map( 'intval', $_POST['match_days_allowed'] ) : null;
+        $default_match_start_time_string      = isset( $_POST['default_match_start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['default_match_start_time'] ) ) : null;
+        $default_match_start_time             = explode( ':', $default_match_start_time_string );
+        if ( count( $default_match_start_time ) !== 2 ) {
+            $config->default_match_start_time['hour'] = '0';
+            $config->default_match_start_time['minutes'] = '00';
+        } else {
+            $config->default_match_start_time['hour'] = intval( $default_match_start_time[0] );
+            $config->default_match_start_time['minutes'] = intval( $default_match_start_time[1] );
+        }
         $config->start_time['weekday']['min'] = isset( $_POST['min_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekday'] ) ) : null;
         $config->start_time['weekday']['max'] = isset( $_POST['max_start_time_weekday'] ) ? sanitize_text_field( wp_unslash( $_POST['max_start_time_weekday'] ) ) : null;
         $config->start_time['weekend']['min'] = isset( $_POST['min_start_time_weekend'] ) ? sanitize_text_field( wp_unslash( $_POST['min_start_time_weekend'] ) ) : null;
@@ -125,77 +173,10 @@ final class Admin_Competition extends Admin_Display {
         $config->point_format                 = isset( $_POST['point_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_format'] ) ) : null;
         $config->point_2_format               = isset( $_POST['point_2_format'] ) ? sanitize_text_field( wp_unslash( $_POST['point_2_format'] ) ) : null;
         $config->num_matches_per_page         = isset( $_POST['num_matches_per_page'] ) ? intval( $_POST['num_matches_per_page'] ) : null;
-        $config->rules                        = isset( $_POST['rules'] ) ? wp_unslash( $_POST['rules'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $config->rules                        = isset( $_POST['rules'] ) ? array_map( 'intval', $_POST['rules'] ) : null;
         $config->standings                    = isset( $_POST['standings'] ) ? wp_unslash( $_POST['standings'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $config->num_courts_available         = isset( $_POST['num_courts_available'] ) ? wp_unslash( $_POST['num_courts_available'] ) : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $config->num_courts_available         = isset( $_POST['num_courts_available'] ) ? array_map( 'intval', $_POST['num_courts_available'] ) : array();
         return $config;
-    }
-    /**
-     * Function to handle competition config update
-     *
-     * @param object $competition
-     *
-     * @return object
-     */
-    private function handle_config_update( object $competition ): object {
-        $validator = new Validator_Config();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-competition-config' );
-        if ( empty( $validator->error ) ) {
-            $competition_id_passed = isset( $_POST['competition_id'] ) ?  intval( $_POST['competition_id'] ) : null;
-            $validator             = $validator->compare( $competition_id_passed, $competition->id );
-        }
-        if ( ! empty( $validator->error ) ) {
-            if ( empty( $validator->msg ) ) {
-                $msg = $validator->err_msgs[0];
-            } else {
-                $msg = $validator->msg;
-            }
-            $this->set_message( $msg, true );
-        }
-        $config    = $competition->config;
-        $validator = $validator->name( $config->name );
-        $validator = $validator->sport( $config->sport );
-        $validator = $validator->competition_type( $config->type );
-        $validator = $validator->entry_type( $config->entry_type );
-        $validator = $validator->age_group( $config->age_group );
-        $validator = $validator->grade( $config->grade );
-        if ( 'league' === $config->type ) {
-            $validator = $validator->max_teams( $config->max_teams );
-            $validator = $validator->teams_per_club( $config->teams_per_club );
-            $validator = $validator->teams_prom_relg( $config->teams_prom_relg, $config->teams_per_club );
-            $validator = $validator->lowest_promotion( $config->lowest_promotion );
-        } elseif ( 'tournament' === $config->type ) {
-            $validator = $validator->num_entries( $config->num_entries );
-        }
-        $validator = $validator->team_ranking( $config->team_ranking );
-        $validator = $validator->point_rule( $config->point_rule );
-        $validator = $validator->scoring( $config->scoring );
-        $validator = $validator->num_sets( $config->num_sets );
-        if ( $competition->is_team_entry ) {
-            $validator = $validator->num_rubbers( $config->num_rubbers );
-        }
-        $validator = $validator->match_date_option( $config->fixed_match_dates);
-        $validator = $validator->fixture_type( $config->home_away );
-        $validator = $validator->round_length( $config->round_length );
-        if ( 'tournament' !== $config->type ) {
-            $validator = $validator->match_day_restriction( $config->match_day_restriction, $config->match_days_allowed, $config->start_time );
-        }
-        $validator = $validator->point_format( $config->point_format );
-        $validator = $validator->point_2_format( $config->point_2_format );
-        $validator = $validator->num_matches_per_page( $config->num_matches_per_page );
-        $return    = $validator->get_details();
-        if ( empty( $validator->error ) ) {
-            $competition->config = $config;
-            $updates             = $competition->set_config( $config );
-            if ( $updates ) {
-                $this->set_message( __( 'Competition config updated', 'racketmanager' ) );
-            } else {
-                $this->set_message( $this->no_updates, 'warning' );
-            }
-        } else {
-            $this->set_message( __( 'Errors found', 'racketmanager' ), true );
-        }
-        return $return;
     }
     /**
      * Function to delete events for competition

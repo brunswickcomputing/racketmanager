@@ -10,6 +10,7 @@
 namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util_Lookup;
@@ -62,6 +63,7 @@ class Validator {
     protected Player_Service $player_service;
     protected Registration_Service $registration_service;
     protected Club_Service $club_service;
+    protected Competition_Service $competition_service;
 
     /**
      * Constructor
@@ -76,6 +78,7 @@ class Validator {
         $this->err      = new WP_Error();
 
         $c                          = $racketmanager->container;
+        $this->competition_service  = $c->get( 'competition_service' );
         $this->club_service         = $c->get( 'club_service' );
         $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );
@@ -382,9 +385,9 @@ class Validator {
             $this->err_msgs[] = __( 'Competition not specified', 'racketmanager' );
         } else {
             if ( is_int( $competition ) ) {
-                $competition = get_competition( $competition );
+                $competition = $this->competition_service->get_by_id( $competition );
             } elseif ( is_string( $competition ) ) {
-                $competition = get_competition( $competition, 'name' );
+                $competition = $this->competition_service->get_by_id( $competition );
             }
             if ( ! $competition ) {
                 if ( $exists ) {
@@ -710,5 +713,12 @@ class Validator {
         }
         $return->status   = $this->status;
         return $return;
+    }
+
+    public function set_errors( string $error_field, string $error_message ): void {
+        $this->error      = true;
+        $this->err_flds[] = $error_field;
+        $this->err_msgs[] = $error_message;
+        $this->err->add( $error_field, $error_message );
     }
 }

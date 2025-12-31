@@ -882,7 +882,7 @@ class Competition {
      * @param string $season season.
      * @param boolean $force_overwrite force overwrite.
      */
-    public function set_season( string $season = '', bool $force_overwrite = false ): void {
+    public function set_current_season( string $season = '', bool $force_overwrite = false ): void {
         global $wp;
         // Use a local decoded seasons array (property holds JSON string in Option B)
         $seasons = $this->get_seasons();

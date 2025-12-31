@@ -146,7 +146,7 @@ class Shortcodes_Competition extends Shortcodes {
             if ( empty( $seasons ) ) {
                 $msg = __( 'No seasons found for competition', 'racketmanager' );
             } else {
-                $competition->set_season( $season );
+                $competition->set_current_season( $season );
                 if ( empty( $competition->current_season ) ) {
                     $msg = __( 'Season not found for competition', 'racketmanager' );
                 } else {
@@ -209,7 +209,7 @@ class Shortcodes_Competition extends Shortcodes {
             return $this->return_error( $msg );
         }
         if ( $season ) {
-            $competition->set_season( $season );
+            $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
@@ -259,7 +259,7 @@ class Shortcodes_Competition extends Shortcodes {
             return $this->return_error( $msg );
         }
         if ( $season ) {
-            $competition->set_season( $season );
+            $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
@@ -313,7 +313,7 @@ class Shortcodes_Competition extends Shortcodes {
             return $this->return_error( $msg );
         }
         if ( $season ) {
-            $competition->set_season( $season );
+            $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
@@ -364,7 +364,7 @@ class Shortcodes_Competition extends Shortcodes {
             return $this->return_error( $msg );
         }
         if ( $season ) {
-            $competition->set_season( $season );
+            $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
@@ -475,7 +475,7 @@ class Shortcodes_Competition extends Shortcodes {
             return $this->return_error( $msg );
         }
         if ( $season ) {
-            $competition->set_season( $season );
+            $competition->set_current_season( $season );
         }
         $competition->players = array();
         if ( ! $player_id && isset( $wp->query_vars['player_id'] ) ) {
@@ -532,7 +532,7 @@ class Shortcodes_Competition extends Shortcodes {
             return $this->return_error( $msg );
         }
         if ( $season ) {
-            $competition->set_season( $season );
+            $competition->set_current_season( $season );
         }
         $competition->winners = $competition->get_winners( true );
         $filename             = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';

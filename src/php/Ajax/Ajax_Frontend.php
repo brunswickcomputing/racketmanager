@@ -343,7 +343,7 @@ class Ajax_Frontend extends Ajax {
             if ( $competition_id ) {
                 $competition = get_competition( $competition_id );
                 if ( $competition ) {
-                    $competition->set_season( $season );
+                    $competition->set_current_season( $season );
                     $validator = $validator->competition_open( $competition );
                 } else {
                     $validator = $validator->competition( $competition );

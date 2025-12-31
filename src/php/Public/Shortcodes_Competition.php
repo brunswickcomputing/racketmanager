@@ -608,7 +608,7 @@ class Shortcodes_Competition extends Shortcodes {
                 $competition_ref    = $competition_name;
                 $competition_lookup = 'name';
             }
-            $competition = get_competition( $competition_ref, $competition_lookup );
+            $competition = $this->competition_service->get_by_id( $competition_ref );
             if ( $competition ) {
                 if ( $competition->is_tournament ) {
                     $player_id = get_query_var( 'player_id' );

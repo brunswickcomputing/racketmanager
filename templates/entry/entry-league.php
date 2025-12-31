@@ -140,7 +140,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                                     <div class="list__item">
                                                         <dt class="list__label"><?php esc_html_e( 'Available', 'racketmanager' ); ?></dt>
                                                         <dd class="list__value">
-                                                            <label for="numCourtsAvailable" class="visually-hidden"><?php esc_html_e( 'Court to use', 'racketmanager' ); ?></label><input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->num_courts_available[ $club->id ] ) ? null : esc_html( $competition->num_courts_available[ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
+                                                            <label for="numCourtsAvailable" class="visually-hidden"><?php esc_html_e( 'Court to use', 'racketmanager' ); ?></label><input type="number" class="form-control" id="numCourtsAvailable" name="numCourtsAvailable" value="<?php echo empty( $competition->settings['num_courts_available'][ $club->id ] ) ? null : esc_html( $competition->settings['num_courts_available'][ $club->id ] ); ?>" <?php echo $changes_allowed ? null : 'disabled'; ?> />
                                                             <div id="numCourtsAvailableFeedback" class="invalid-feedback"></div>
                                                         </dd>
                                                     </div>

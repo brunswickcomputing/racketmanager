@@ -438,8 +438,6 @@ class Club_Service {
                 $event->mark_teams_withdrawn( $club_entry->season, $club_id );
             }
         }
-        $competition->settings['num_courts_available'][ $club_id ] = $club_entry->num_courts_available;
-        $competition->set_settings( $competition->settings );
         $this->competition_service->set_court_availability( $club_entry->competition->id, $club_id, $club_entry->num_courts_available );
 
         $email_from      = $racketmanager->get_confirmation_email( 'league' );

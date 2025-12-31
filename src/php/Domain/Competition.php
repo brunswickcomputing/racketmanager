@@ -585,6 +585,12 @@ class Competition {
         } else {
             $this->is_championship = false;
         }
+        $this->num_seasons = is_array( $this->seasons ) ? count( $this->seasons ) : 0;
+
+        // Set current season and date-related derived fields using effective seasons
+        if ( $this->num_seasons > 0 ) {
+            $this->set_current_season();
+        }
         $this->is_league       = false;
         $this->is_cup          = false;
         $this->is_tournament   = false;

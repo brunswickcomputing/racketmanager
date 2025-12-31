@@ -388,8 +388,7 @@ class Club_Service {
         }
         global $racketmanager;
         $club_entry->club_name = $club->get_name();
-        $event_details = array();
-        $competition   = get_competition( $club_entry->competition );
+        $event_details         = array();
         foreach ( $club_entry->event as $event_entry ) {
             $event                       = get_event( $event_entry->id );
             $league_event_entry['event'] = $event_entry->name;
@@ -441,6 +440,8 @@ class Club_Service {
         }
         $competition->settings['num_courts_available'][ $club_id ] = $club_entry->num_courts_available;
         $competition->set_settings( $competition->settings );
+        $this->competition_service->set_court_availability( $club_entry->competition->id, $club_id, $club_entry->num_courts_available );
+
         $email_from      = $racketmanager->get_confirmation_email( 'league' );
         $email_subject   = $racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' League Entry - ' . $club->get_shortcode();
         $headers         = array();

@@ -640,6 +640,13 @@ class Competition {
         $this->age_group = $age_group;
     }
 
+    public function set_num_courts_available( int $club_id, int $num_courts_available ): void {
+        if ( empty( $this->settings['num_courts_available'] ) ) {
+            $this->settings['num_courts_available'] = array();
+        }
+        $this->settings['num_courts_available'][ $club_id ] = $num_courts_available;
+    }
+
     /**
      * Constructor
      *

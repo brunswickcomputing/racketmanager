@@ -264,4 +264,17 @@ class Competition_Service {
         return $rules_options;
     }
 
+    public function set_court_availability( int $competition_id, int $club_id, int $num_courts_available ) {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+        }
+        if ( empty( $competition->settings['num_courts_available'] ) ) {
+            $competition->settings['num_courts_available'] = array();
+        }
+        $competition->set_num_courts_available( $club_id, $num_courts_available );
+        $this->competition_repository->save( $competition );
+
+    }
+
 }

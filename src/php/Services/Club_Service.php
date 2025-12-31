@@ -202,9 +202,9 @@ class Club_Service {
      *
      * @param array $args
      *
-     * @return array
+     * @return array|int
      */
-    public function get_clubs( array $args = array() ): array {
+    public function get_clubs( array $args = array() ): array|int {
         return $this->club_repository->find_all( $args );
     }
 

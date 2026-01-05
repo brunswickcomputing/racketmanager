@@ -11,12 +11,14 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Services\Validator\Validator_Config;
+use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
@@ -275,6 +277,47 @@ class Competition_Service {
         $competition->set_num_courts_available( $club_id, $num_courts_available );
         $this->competition_repository->save( $competition );
 
+    }
+
+    /**
+     * Delete seasons for a competition
+     *
+     * @param ?int $competition_id
+     * @param array $seasons
+     *
+     * @return void
+     */
+    public function delete_seasons( ?int $competition_id, array $seasons ): void {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+        }
+        $deleted = false;
+        foreach ( $seasons as $season ) {
+            $season_found = $competition->get_season_by_name( $season );
+            if ( $season_found ) {
+                $deleted = true;
+                $seasons = $competition->seasons;
+                foreach ( $competition->get_events() as $event ) {
+                    $event->delete_season( $season );
+                }
+                unset( $seasons[ $season ] );
+                $schedule_args[] = intval( $competition->id );
+                $schedule_args[] = intval( $season );
+                $schedule_name   = 'rm_notify_team_entry_open';
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                $schedule_name = 'rm_notify_team_entry_reminder';
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
+                $schedule_name = 'rm_calculate_team_ratings';
+                Util::clear_scheduled_event( $schedule_name, $schedule_args );
+            }
+        }
+        if ( $deleted ) {
+            $competition->set_seasons( $seasons );
+            $this->competition_repository->save( $competition );
+        } else {
+            throw new Competition_Not_Updated_Exception( __( 'No seasons deleted', 'racketmanager' ) );
+        }
     }
 
 }

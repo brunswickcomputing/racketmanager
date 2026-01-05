@@ -96,14 +96,10 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
-                        if ( empty( $current_season->grade ) ) {
-                            $current_grade = empty( $competition->grade ) ? null : $competition->grade;
-                        } else {
-                            $current_grade = $current_season->grade;
-                        }
-                        $grades = Util_Lookup::get_event_grades();
+                        $is_invalid    = false;
+                        $msg           = null;
+                        $current_grade = $current_season->grade ?? ( $competition->settings['grade'] ?? null );
+                        $grades        = Util_Lookup::get_event_grades();
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'grade', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'grade', $validator->err_flds, true );
@@ -172,13 +168,9 @@ $msg         = null;
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
-                        if ( empty( $current_season->competition_code ) ) {
-                            $competition_code = empty( $competition->competition_code ) ? null : $competition->competition_code;
-                        } else {
-                            $competition_code = $current_season->competition_code;
-                        }
+                        $is_invalid       = false;
+                        $msg              = null;
+                        $competition_code = $current_season->competition_code ?? ( $competition->settings['competition_code'] ?? null );
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'competition_code', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'competition_code', $validator->err_flds, true );
@@ -209,11 +201,7 @@ $msg         = null;
                             <?php
                             $is_invalid = false;
                             $msg        = null;
-                            if ( empty( $current_season->max_teams ) ) {
-                                $max_teams = empty( $competition->settings['max_teams'] ) ? null : $competition->settings['max_teams'];
-                            } else {
-                                $max_teams = $current_season->max_teams;
-                            }
+                            $max_teams  = $current_season->max_teams ?? ( $competition->settings['max_teams'] ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'max_teams', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'max_teams', $validator->err_flds, true );
@@ -234,13 +222,9 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( empty( $current_season->teams_per_club ) ) {
-                                $teams_per_club = empty( $competition->teams_per_club ) ? null : $competition->teams_per_club;
-                            } else {
-                                $teams_per_club = $current_season->teams_per_club;
-                            }
+                            $is_invalid     = false;
+                            $msg            = null;
+                            $teams_per_club = $current_season->teams_per_club ?? ( $competition->settings['teams_per_club'] ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'teams_per_club', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'teams_per_club', $validator->err_flds, true );
@@ -263,13 +247,9 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( empty( $current_season->teams_prom_relg ) ) {
-                                $teams_prom_relg = empty( $competition->teams_prom_relg ) ? null : $competition->teams_prom_relg;
-                            } else {
-                                $teams_prom_relg = $current_season->teams_prom_relg;
-                            }
+                            $is_invalid      = false;
+                            $msg             = null;
+                            $teams_prom_relg = $current_season->teams_prom_relg ?? ( $competition->settings['teams_prom_relg'] ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'teams_prom_relg', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'teams_prom_relg', $validator->err_flds, true );
@@ -290,13 +270,9 @@ $msg         = null;
                     <div class="col-md-6">
                         <div class="form-floating mb-3">
                             <?php
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( empty( $current_season->lowest_promotion ) ) {
-                                $lowest_promotion = empty( $competition->lowest_promotion ) ? null : $competition->lowest_promotion;
-                            } else {
-                                $lowest_promotion = $current_season->lowest_promotion;
-                            }
+                            $is_invalid       = false;
+                            $msg              = null;
+                            $lowest_promotion = $current_season->lowest_promotion ?? ( $competition->settings['lowest_promotion'] ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'lowest_promotion', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'lowest_promotion', $validator->err_flds, true );
@@ -326,7 +302,7 @@ $msg         = null;
                     <?php
                     $is_invalid        = false;
                     $msg               = null;
-                    $fixed_match_dates = $current_season->fixed_match_dates ?? ( $competition->fixed_match_dates ?? null );
+                    $fixed_match_dates = $current_season->settings['fixed_match_dates'] ?? ( $competition->settings['fixed_match_dates'] ?? null );
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'fixedMatchDates', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'fixedMatchDates', $validator->err_flds, true );
@@ -361,7 +337,7 @@ $msg         = null;
                         $home_away_desc_true  = __( 'Two legs', 'racketmanager' );
                         $home_away_desc_false = __( 'Single leg', 'racketmanager' );
                     }
-                    $home_away = $current_season->home_away ?? ( $competition->home_away ?? null );
+                    $home_away = $current_season->home_away ?? ( $competition->settings['home_away'] ?? null );
                     if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'homeAway', $validator->err_flds, true ) ) ) {
                         $is_invalid = true;
                         $msg_id     = array_search( 'homeAway', $validator->err_flds, true );
@@ -390,7 +366,7 @@ $msg         = null;
                         <?php
                         $is_invalid     = false;
                         $msg            = null;
-                        $num_match_days = $current_season->num_match_days ?? ( $competition->num_match_days ?? null );
+                        $num_match_days = $current_season->num_match_days ?? ( $competition->settings['num_match_days'] ?? null );
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_match_days', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'num_match_days', $validator->err_flds, true );
@@ -415,7 +391,7 @@ $msg         = null;
                         <?php
                         $is_invalid   = false;
                         $msg          = null;
-                        $round_length = $current_season->round_length ?? ( $competition->round_length ?? null );
+                        $round_length = $current_season->round_length ?? ( $competition->settings['round_length'] ?? null );
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'round_length', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'round_length', $validator->err_flds, true );
@@ -441,7 +417,7 @@ $msg         = null;
                             <?php
                             $is_invalid     = false;
                             $msg            = null;
-                            $home_away_diff = $current_season->home_away_diff ?? ( $competition->home_away_diff ?? null );
+                            $home_away_diff = $current_season->home_away_diff ?? ( $competition->settings['home_away_diff'] ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'home_away_diff', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'home_away_diff', $validator->err_flds, true );
@@ -464,7 +440,7 @@ $msg         = null;
                             <?php
                             $is_invalid   = false;
                             $msg          = null;
-                            $filler_weeks = $current_season->filler_weeks ?? ( $competition->filler_weeks ?? null );
+                            $filler_weeks = $current_season->filler_weeks ?? ( $competition->settings['filler_weeks'] ?? null );
                             if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'filler_weeks', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
                                 $msg_id     = array_search( 'filler_weeks', $validator->err_flds, true );

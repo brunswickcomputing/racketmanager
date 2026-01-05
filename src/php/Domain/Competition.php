@@ -821,7 +821,7 @@ class Competition {
     }
 
     /**
-     * Get current season name
+     * Get the current season name
      *
      * @return string
      */

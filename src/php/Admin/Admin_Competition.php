@@ -282,47 +282,45 @@ final class Admin_Competition extends Admin_Display {
                     }
                 }
             }
-        } else {
-            if ( $season ) {
-                $current_season = $competition->get_season_by_name( $season );
-                if ( $current_season ) {
-                    $fee_competition = 0;
-                    $fee_event       = 0;
-                    $fee_status      = null;
-                    $fee_id          = null;
-                    $charges         = $racketmanager->get_charges(
-                        array(
-                            'competition' => $competition_id,
-                            'season'      => $season,
-                        )
-                    );
-                    switch ( count( $charges ) ) {
-                        case 1:
-                            $fee_competition = $charges[0]->fee_competition;
-                            $fee_event       = $charges[0]->fee_event;
-                            $fee_status      = $charges[0]->status;
-                            $fee_id          = $charges[0]->id;
-                            break;
-                        case 0:
-                            break;
-                        default:
-                            foreach ( $charges as $charge ) {
-                                $fee_competition += $charge->fee_competition;
-                                $fee_event       += $charge->fee_event;
-                                $fee_status       = $charge->status;
-                            }
-                            break;
-                    }
-                    $current_season->fee_competition = $fee_competition;
-                    $current_season->fee_event       = $fee_event;
-                    $current_season->fee_status      = $fee_status;
-                    $current_season->fee_id          = $fee_id;
-                } else {
-                    $this->set_message( __( 'Season not found for competition', 'racketmanager' ), true );
+        } elseif ( $season ) {
+            $current_season = (object) $competition->get_season_by_name( $season );
+            if ( $current_season ) {
+                $fee_competition = 0;
+                $fee_event       = 0;
+                $fee_status      = null;
+                $fee_id          = null;
+                $charges         = $racketmanager->get_charges(
+                    array(
+                        'competition' => $competition_id,
+                        'season'      => $season,
+                    )
+                );
+                switch ( count( $charges ) ) {
+                    case 1:
+                        $fee_competition = $charges[0]->fee_competition;
+                        $fee_event       = $charges[0]->fee_event;
+                        $fee_status      = $charges[0]->status;
+                        $fee_id          = $charges[0]->id;
+                        break;
+                    case 0:
+                        break;
+                    default:
+                        foreach ( $charges as $charge ) {
+                            $fee_competition += $charge->fee_competition;
+                            $fee_event       += $charge->fee_event;
+                            $fee_status      = $charge->status;
+                        }
+                        break;
                 }
+                $current_season->fee_competition = $fee_competition;
+                $current_season->fee_event       = $fee_event;
+                $current_season->fee_status      = $fee_status;
+                $current_season->fee_id          = $fee_id;
             } else {
-                $this->set_message( __( 'New season', 'racketmanager' ), 'info' );
+                $this->set_message( __( 'Season not found for competition', 'racketmanager' ), true );
             }
+        } else {
+            $this->set_message( __( 'New season', 'racketmanager' ), 'info' );
         }
         $this->show_message();
         $seasons = $racketmanager->get_seasons( 'DESC' );

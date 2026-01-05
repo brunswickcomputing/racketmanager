@@ -24,6 +24,7 @@ use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
+use function Racketmanager\get_match;
 
 /**
  * Class to implement the Competition Management Service
@@ -129,6 +130,96 @@ class Competition_Service {
         $result = $this->competition_repository->save( $competition );
         if ( false === $result ) {
             throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+        }
+        return ( int ) $result;
+    }
+
+    public function save_plan( ?int $competition_id, ?int $season, array $courts, array $start_times, array $matches, array $match_times ): int {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( __( 'Competition not found', 'racketmanager' ) );
+        }
+        $current_season = $competition->get_season_by_name( $season );
+        if ( ! $current_season ) {
+            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+        }
+        $seasons       = $competition->get_seasons();
+        $order_of_play = array();
+        $num_courts    = count( $courts );
+        for ( $i = 0; $i < $num_courts; $i++ ) {
+            $order_of_play[ $i ]['court']      = $courts[ $i ];
+            $order_of_play[ $i ]['start_time'] = $start_times[ $i ];
+            $order_of_play[ $i ]['matches']    = $matches[ $i ];
+            $num_matches                       = count( $matches[ $i ] );
+            for ( $m = 0; $m < $num_matches; $m++ ) {
+                $match_id = trim( $matches[ $i ][ $m ] );
+                if ( ! empty( $match_id ) ) {
+                    $time  = strtotime( $start_times[ $i ] ) + $match_times[ $i ][ $m ];
+                    $match = get_match( $match_id );
+                    if ( $match ) {
+                        $month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
+                        $day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
+                        $date     = $match->year . '-' . $month . '-' . $day . ' ' . gmdate( 'H:i', $time );
+                        $location = $courts[ $i ];
+                        if ( $date !== $match->date || $location !== $match->location ) {
+                            $match->set_match_date_in_db( $date );
+                            $match->set_location( $location );
+                        }
+                    }
+                }
+            }
+        }
+        $curr_order_of_play = $current_season['orderofplay'] ?? null;
+        if ( $order_of_play !== $curr_order_of_play ) {
+            $current_season['orderofplay'] = $order_of_play;
+            $seasons[ $season ]            = $current_season;
+            $competition->set_seasons( $seasons );
+            $result = $this->competition_repository->save( $competition );
+            if ( false === $result ) {
+                throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+            }
+        } else {
+            $result = false;
+        }
+        return ( int ) $result;
+    }
+
+    public function reset_plan( int $competition_id, int $season, array $matches ): int {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( __( 'Competition not found', 'racketmanager' ) );
+        }
+        $current_season = $competition->get_season_by_name( $season );
+        if ( ! $current_season ) {
+            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+        }
+        $seasons   = $competition->get_seasons();
+        $updates   = false;
+        $result    = false;
+        if ( $matches ) {
+            foreach ( $matches as $match_id ) {
+                $match = get_match( intval( $match_id ) );
+                if ( $match ) {
+                    $month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
+                    $day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
+                    $date     = $match->year . '-' . $month . '-' . $day . ' 00:00';
+                    $location = '';
+                    if ( $date !== $match->date || $location !== $match->location ) {
+                        $match->set_match_date_in_db( $date );
+                        $match->set_location( $location );
+                        $updates = true;
+                    }
+                }
+            }
+        }
+        if ( $updates ) {
+            $current_season['orderofplay'] = array();
+            $seasons[ $season ]            = $current_season;
+            $competition->set_seasons( $seasons );
+            $result = $this->competition_repository->save( $competition );
+            if ( false === $result ) {
+                throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+            }
         }
         return ( int ) $result;
     }

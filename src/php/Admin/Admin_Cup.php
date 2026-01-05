@@ -402,25 +402,17 @@ final class Admin_Cup extends Admin_Championship {
             $start_time     = $_POST['startTime'] ?? null;
             $matches        = $_POST['match'] ?? null;
             $match_time     = $_POST['matchtime'] ?? null;
-            if ( isset( $_POST['competition_id'] ) ) {
-                // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $competition = get_competition( intval( $_POST['competition_id'] ) );
-                if ( $competition ) {
-                    if ( $season ) {
-                        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $updates = $competition->save_plan( $season, $courts, $start_time, $matches, $match_time );
-                        if ( $updates ) {
-                            $this->set_message( __( 'Plan updated', 'racketmanager' ) );
-                        } else {
-                            $this->set_message( $this->no_updates, 'warning' );
-                        }
-                    } else {
-                        $this->set_message( __( 'Season not specified', 'racketmanager' ), true );
-                    }
+            try {
+                $updates = $this->competition_service->save_plan( $competition_id, $season, $courts, $start_time, $matches, $match_time );
+                if ( $updates ) {
+                    $this->set_message( __( 'Plan saved', 'racketmanager' ) );
                 } else {
-                    $this->set_message( __( 'Competition not specified', 'racketmanager' ), true );
+                    $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
                 }
-                $this->show_message();
+            } catch ( Competition_Not_Updated_Exception $e ) {
+                $this->set_message( $e->getMessage(), 'warning' );
+            } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
             }
             $tab = 'matches';
         } elseif ( isset( $_POST['resetPlan'] ) ) {
@@ -433,22 +425,17 @@ final class Admin_Cup extends Admin_Championship {
             $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
             $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
             $matches        = $_POST['match'] ?? null;
-            check_admin_referer( 'racketmanager_cup-planner' );
-            if ( isset( $_POST['competition_id'] ) ) {
-                $competition = get_competition( intval( $_POST['competition_id'] ) );
-                if ( $competition ) {
-                    $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    if ( $season ) {
-                        $matches = $_POST['match'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $updates = $competition->reset_plan( $season, $matches );
-                        if ( $updates ) {
-                            $this->set_message( __( 'Plan reset', 'racketmanager' ) );
-                        } else {
-                            $this->set_message( $this->no_updates, 'warning' );
-                        }
-                    }
+            try {
+                $updates = $this->competition_service->reset_plan( $competition_id, $season, $matches );
+                if ( $updates ) {
+                    $this->set_message( __( 'Plan reset', 'racketmanager' ) );
+                } else {
+                    $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
                 }
-                $this->show_message();
+            } catch ( Competition_Not_Updated_Exception $e ) {
+                $this->set_message( $e->getMessage(), 'warning' );
+            } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
             }
             $tab = 'matches';
         } elseif ( isset( $_POST['saveCup'] ) ) {
@@ -480,9 +467,9 @@ final class Admin_Cup extends Admin_Championship {
             } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
                 $this->set_message( $e->getMessage(), true );
             }
-            $this->show_message();
             $tab = 'config';
         }
+        $this->show_message();
 
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
         try {

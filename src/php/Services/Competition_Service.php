@@ -105,6 +105,17 @@ class Competition_Service {
         return ( int ) $result; // Returns 1 if updated, 0 if no change
     }
 
+    /**
+     * Set plan configuration
+     *
+     * @param int|null $competition_id
+     * @param int|null $season
+     * @param string|null $start_time
+     * @param int|null $num_courts
+     * @param string|null $time_increment
+     *
+     * @return int|WP_Error
+     */
     public function set_plan_config( ?int $competition_id, ?int $season, ?string $start_time, ?int $num_courts, ?string $time_increment ): int| WP_Error {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
@@ -134,6 +145,18 @@ class Competition_Service {
         return ( int ) $result;
     }
 
+    /**
+     * Save plan
+     *
+     * @param int|null $competition_id competition id.
+     * @param int|null $season season.
+     * @param array $courts number of courts available.
+     * @param array $start_times start times of matches.
+     * @param array $matches matches.
+     * @param array $match_times match times.
+     *
+     * @return int
+     */
     public function save_plan( ?int $competition_id, ?int $season, array $courts, array $start_times, array $matches, array $match_times ): int {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
@@ -184,6 +207,15 @@ class Competition_Service {
         return ( int ) $result;
     }
 
+    /**
+     * Reset the plan
+     *
+     * @param int $competition_id
+     * @param int $season
+     * @param array $matches
+     *
+     * @return int
+     */
     public function reset_plan( int $competition_id, int $season, array $matches ): int {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {

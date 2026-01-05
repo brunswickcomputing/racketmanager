@@ -680,20 +680,20 @@ class League {
         // set season to latest.
         $this->set_season();
         $this->groups          = trim( $this->groups ?? '' );
-        $this->mode            = $event->competition->mode;
+        $this->mode            = $event->competition->settings['mode'];
         $this->num_sets        = $event->num_sets;
         $this->num_sets_to_win = floor( $this->num_sets / 2 ) + 1;
         $this->num_rubbers     = $event->num_rubbers;
         $this->type            = $event->type;
-        $this->point_rule      = $event->competition->point_rule;
-        $this->sport           = $event->competition->sport;
+        $this->point_rule      = $event->competition->settings['point_rule'];
+        $this->sport           = $event->competition->settings['sport'];
         $this->scoring         = $event->scoring ?? null;
         $this->set_match_query_args();
         $this->set_num_matches(); // for pagination.
         $this->set_num_teams( true ); // get total number of teams.
         $this->standings      = $event->standings;
-        $this->point_format   = $event->competition->point_format;
-        $this->point_2_format = $event->competition->point_2_format;
+        $this->point_format   = $event->competition->settings['point_format'];
+        $this->point_2_format = $event->competition->settings['point_2_format'];
         // set default standings display options for additional team fields.
         if ( count( $this->fields_team ) > 0 ) {
             foreach ( $this->fields_team as $key => $data ) {
@@ -2494,7 +2494,7 @@ class League {
             }
             $teams = $this->get_league_teams( $team_args );
 
-            if ( ! empty( $teams ) && 'auto' === $this->event->competition->team_ranking ) {
+            if ( ! empty( $teams ) && 'auto' === $this->event->competition->settings['team_ranking'] ) {
                 $teams = $this->rank_teams( $teams );
                 $teams = $this->get_ranking( $teams );
                 $this->update_ranking( $teams );
@@ -2686,7 +2686,7 @@ class League {
         }
 
         // Update Teams Rank and Status if not set to manual ranking.
-        if ( 'manual' !== $this->event->competition->team_ranking ) {
+        if ( 'manual' !== $this->event->competition->settings['team_ranking'] ) {
             $this->set_teams_rank( $season );
         }
     }

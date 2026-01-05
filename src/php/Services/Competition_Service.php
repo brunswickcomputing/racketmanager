@@ -184,25 +184,18 @@ class Competition_Service {
                         $day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
                         $date     = $match->year . '-' . $month . '-' . $day . ' ' . gmdate( 'H:i', $time );
                         $location = $courts[ $i ];
-                        if ( $date !== $match->date || $location !== $match->location ) {
-                            $match->set_match_date_in_db( $date );
-                            $match->set_location( $location );
-                        }
+                        $match->set_match_date_in_db( $date );
+                        $match->set_location( $location );
                     }
                 }
             }
         }
-        $curr_order_of_play = $current_season['orderofplay'] ?? null;
-        if ( $order_of_play !== $curr_order_of_play ) {
-            $current_season['orderofplay'] = $order_of_play;
-            $seasons[ $season ]            = $current_season;
-            $competition->set_seasons( $seasons );
-            $result = $this->competition_repository->save( $competition );
-            if ( false === $result ) {
-                throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
-            }
-        } else {
-            $result = false;
+        $current_season['orderofplay'] = $order_of_play;
+        $seasons[ $season ]            = $current_season;
+        $competition->set_seasons( $seasons );
+        $result = $this->competition_repository->save( $competition );
+        if ( false === $result ) {
+            throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
         }
         return ( int ) $result;
     }
@@ -236,11 +229,9 @@ class Competition_Service {
                     $day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
                     $date     = $match->year . '-' . $month . '-' . $day . ' 00:00';
                     $location = '';
-                    if ( $date !== $match->date || $location !== $match->location ) {
-                        $match->set_match_date_in_db( $date );
-                        $match->set_location( $location );
-                        $updates = true;
-                    }
+                    $match->set_match_date_in_db( $date );
+                    $match->set_location( $location );
+                    $updates = true;
                 }
             }
         }

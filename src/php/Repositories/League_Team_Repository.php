@@ -171,6 +171,7 @@ class League_Team_Repository {
      * Finds all Club IDs where the given player is assigned as a team captain.
      *
      * @param int $player_id
+     * @param int|null $club_id
      *
      * @return int[] Array of Club IDs.
      */

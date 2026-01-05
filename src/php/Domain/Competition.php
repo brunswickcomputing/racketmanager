@@ -1995,7 +1995,7 @@ class Competition {
                         if ( ! $league->event->competition->is_league ) {
                             $position = 0;
                         } elseif ( is_numeric( $league_no ) ) {
-                            $teams_per_league = $league->event->competition->max_teams ?? 10;
+                            $teams_per_league = $league->event->competition->settings['max_teams'] ?? 10;
                             $position         = ( $league_no * $teams_per_league ) + $league_standing->rank;
                         } else {
                             $position = $league_standing->rank;

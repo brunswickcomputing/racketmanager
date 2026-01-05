@@ -80,7 +80,7 @@ jQuery(document).ready(function(){
     <div class="tab-content">
         <div class="tab-pane fade" id="config" role="tabpanel" aria-labelledby="config-tab">
             <form id="cupDetails" class="form-control" method="POST">
-                <?php wp_nonce_field( 'racketmanager_cup' ); ?>
+                <?php wp_nonce_field( 'racketmanager_cup', 'racketmanager_cup-nonce' ); ?>
                 <input type="hidden" name="competition_id" value=<?php echo esc_html( $competition->id ); ?> />
                 <input type="hidden" name="season" value=<?php echo esc_attr( $season ); ?> />
                 <div class="row g-3">
@@ -221,7 +221,7 @@ jQuery(document).ready(function(){
                 ?>
                 <h2><?php esc_html_e( 'Schedule', 'racketmanager' ); ?></h2>
                 <form id="cup-planner" method="post" action="">
-                    <?php wp_nonce_field( 'racketmanager_cup-planner' ); ?>
+                    <?php wp_nonce_field( 'racketmanager_cup-planner', 'racketmanager_cup-planner-nonce' ); ?>
                     <input type="hidden" name="numFinals" value=<?php echo esc_attr( $num_matches ); ?> />
                     <input type="hidden" name="numCourts" value=<?php echo esc_attr( $cup_season->num_courts ); ?> />
                     <input type="hidden" name="startTime" value=<?php echo esc_attr( $cup_season->starttime ); ?> />

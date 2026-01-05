@@ -703,36 +703,6 @@ class Competition {
     }
 
     /**
-     * Get settings as array (decoded from JSON)
-     */
-    public function get_settings_array(): array {
-        if ( is_string( $this->settings ) ) {
-            $decoded = json_decode( $this->settings, false );
-            return ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) ? $decoded : array();
-        }
-        return is_array( $this->settings ) ? $this->settings : array();
-    }
-    /**
-     * Get settings as JSON string
-     */
-    public function get_settings_json(): string {
-        if ( is_string( $this->settings ) ) {
-            return $this->settings;
-        }
-        return wp_json_encode( $this->get_settings_array() );
-    }
-    /**
-    public function get_seasons(): array {
-        // With Option B, seasons is a JSON string; decode lazily for callers who still expect array
-        if ( is_string( $this->seasons ) ) {
-            $decoded = json_decode( $this->seasons, true );
-            return ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) ? $decoded : array();
-        }
-        return is_array( $this->seasons ) ? $this->seasons : array();
-    }
-     **/
-
-    /**
      * Get a season by name
      */
     public function get_season_by_name( string $name ): ?array {

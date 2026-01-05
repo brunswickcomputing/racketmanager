@@ -548,7 +548,7 @@ class Competition {
         }
         $settings['sport'] = 'Tennis'; // Default
 
-        $seasons = new stdClass();
+        $seasons = array();
 
         return new self( $name, $type, $age_group, $seasons, $settings );
     }

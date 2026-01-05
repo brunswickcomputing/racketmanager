@@ -38,7 +38,7 @@ final class Admin_Cup extends Admin_Championship {
         $this->admin_club        = new Admin_Club( $this->racketmanager );
         $this->admin_event       = new Admin_Event( $this->racketmanager );
         if ( 'seasons' === $view ) {
-            $this->display_cup_seasons_page();
+            $this->display_seasons_page();
         } elseif ( 'modify' === $view ) {
             $this->admin_competition->display_season_modify_page();
         } elseif ( 'overview' === $view ) {
@@ -84,36 +84,7 @@ final class Admin_Cup extends Admin_Championship {
             include_once RACKETMANAGER_PATH . 'templates/admin/show-competitions.php';
         }
     }
-    /**
-     * Display cup season list
-     */
-    public function display_cup_seasons_page(): void {
-        $competition = null;
-        if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
-                if ( $competition ) {
-                    $this->delete_seasons_from_competition( $competition );
-                } else {
-                    $this->set_message( __( 'Competition not found', 'racketmanager' ), true );
-                }
-            } else {
-                $this->set_message( __( 'Competition id not found', 'racketmanager' ), true );
-            }
-            $this->show_message();
-        } elseif ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition    = get_competition( $competition_id );
-        }
-        $this->show_message();
-        if ( $competition ) {
-            require_once RACKETMANAGER_PATH . 'templates/admin/includes/show-seasons.php';
-        }
-    }
-    /**
-     * Display cup season overview
-     */
+
     public function display_cup_overview_page(): void {
         if ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended

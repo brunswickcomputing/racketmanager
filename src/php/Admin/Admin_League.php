@@ -114,32 +114,7 @@ final class Admin_League extends Admin_Display {
         $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
         require_once RACKETMANAGER_PATH . 'templates/admin/show-competitions.php';
     }
-    /**
-     * Display season list
-     */
-    public function display_seasons_page(): void {
-        $competition = null;
-        if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            if ( $competition_id ) {
-                $competition = $this->competition_service->get_by_id( $competition_id );
-                if ( $competition ) {
-                    $this->delete_seasons_from_competition( $competition );
-                } else {
-                    $this->set_message( __( 'Competition not found', 'racketmanager' ), true );
-                }
-            } else {
-                $this->set_message( __( 'Competition id not found', 'racketmanager' ), true );
-            }
-        } elseif ( isset( $_GET['competition_id'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition_id = intval( $_GET['competition_id'] ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $competition = $this->competition_service->get_by_id( $competition_id );
-        }
-        $this->show_message();
-        if ( $competition ) {
-            require_once RACKETMANAGER_PATH . 'templates/admin/includes/show-seasons.php';
-        }
-    }
+
     /**
      * Display season overview
      */

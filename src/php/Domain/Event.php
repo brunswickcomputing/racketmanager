@@ -1339,7 +1339,7 @@ class Event {
         $search = Util::search_string( $search_terms );
         $sql    = $wpdb->prepare(
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile` FROM $wpdb->racketmanager l, $wpdb->racketmanager_league_teams t1, $wpdb->racketmanager_teams t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
+            "SELECT `l`.`title` AS `old_league_title`, l.`id` AS `old_league_id`, t2.`id` AS `team_id`, t1.`id` AS `table_id`, `t2`.`title`,`t1`.`rank` AS old_rank, l.`id`, t1.`points_plus`, t1.`add_points`, t1.`status`, t1.`profile`, t1.captain, t1.match_day, t1.match_time FROM $wpdb->racketmanager l, $wpdb->racketmanager_league_teams t1, $wpdb->racketmanager_teams t2 WHERE t1.`team_id` = t2.`id` AND l.`id` = t1.`league_id` $search ORDER BY l.`title` ASC, t1.`rank` ASC LIMIT %d, %d",
             intval( $offset ),
             intval( $limit )
         );

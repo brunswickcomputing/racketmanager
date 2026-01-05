@@ -647,6 +647,9 @@ class Competition {
         $this->settings['num_courts_available'][ $club_id ] = $num_courts_available;
     }
 
+    public function set_seasons( array $seasons ): void {
+        $this->seasons = $seasons;
+    }
     /**
      * Constructor
      *

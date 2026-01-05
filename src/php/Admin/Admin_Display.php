@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
@@ -19,7 +21,6 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Validator\Validator;
-use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
@@ -843,11 +844,11 @@ class Admin_Display {
         }
     }
     /**
-     * Delete season(s) from competition via admin
+     * Delete season(s) from a competition via admin
      *
-     * @param object $competition competition object.
+     * @param ?int $competition_id competition id.
      */
-    protected function delete_seasons_from_competition( object $competition ): void {
+    protected function delete_seasons_from_competition( ?int $competition_id ): void {
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'seasons-bulk' );
         if ( empty( $validator->error ) ) {
@@ -858,27 +859,16 @@ class Admin_Display {
             $this->show_message();
             return;
         }
-        if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] && isset( $_POST['del_season'] ) ) {
-            $msg = array();
-            foreach ( $_POST['del_season'] as $season ) {  //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                $update          = $competition->delete_season( $season );
-                $schedule_args[] = intval( $competition->id );
-                $schedule_args[] = intval( $season );
-                $schedule_name   = 'rm_notify_team_entry_open';
-                Util::clear_scheduled_event( $schedule_name, $schedule_args );
-                $schedule_name = 'rm_notify_team_entry_reminder';
-                Util::clear_scheduled_event( $schedule_name, $schedule_args );
-                $schedule_name = 'rm_calculate_team_ratings';
-                Util::clear_scheduled_event( $schedule_name, $schedule_args );
-                if ( $update ) {
-                    /* translators: %s: season name */
-                    $msg[] = sprintf( __( 'Season %s deleted', 'racketmanager' ), $season );
-                } else {
-                    /* translators: %s: season name */
-                    $msg[] = sprintf( __( 'Season %s not deleted', 'racketmanager' ), $season );
-                }
+        if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+            $seasons = isset( $_POST['del_season'] ) ? array_map( 'intval', $_POST['del_season'] ) : array();
+            try {
+                $this->competition_service->delete_seasons( $competition_id, $seasons );
+                $this->set_message( __( 'Season(s) deleted', 'racketmanager' ) );
+            } catch ( Competition_Not_Updated_Exception $e ) {
+                $this->set_message( $e->getMessage(), 'warning' );
+            } catch ( Competition_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
             }
-            $this->set_message( implode( '<br>', $msg ) );
         }
     }
     /**

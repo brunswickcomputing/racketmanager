@@ -547,7 +547,7 @@ class Event {
         }
 
         // Championship.
-        if ( 'championship' === $this->competition->mode ) {
+        if ( 'championship' === $this->competition->settings['mode'] ) {
             $this->is_championship = true;
         }
         if ( 'league' === $this->competition->type && $this->competition->is_player_entry ) {

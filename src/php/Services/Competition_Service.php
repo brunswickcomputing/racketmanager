@@ -14,10 +14,12 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
+use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Services\Validator\Validator_Config;
+use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -100,6 +102,35 @@ class Competition_Service {
             throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
         }
         return ( int ) $result; // Returns 1 if updated, 0 if no change
+    }
+
+    public function set_plan_config( ?int $competition_id, ?int $season, ?string $start_time, ?int $num_courts, ?string $time_increment ): int| WP_Error {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+        }
+        $current_season = $competition->get_season_by_name( $season );
+        if ( ! $current_season ) {
+            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+        }
+        $seasons   = $competition->get_seasons();
+        $validator = new Validator_Plan();
+        $validator = $validator->start_time( $start_time );
+        $validator = $validator->num_courts_available( $num_courts );
+        $validator = $validator->time_increment( $time_increment );
+        if ( ! empty( $validator->error ) ) {
+            return $validator->err;
+        }
+        $current_season['starttime']      = $start_time;
+        $current_season['num_courts']     = $num_courts;
+        $current_season['time_increment'] = $time_increment;
+        $seasons[ $season ]               = $current_season;
+        $competition->set_seasons( $seasons );
+        $result = $this->competition_repository->save( $competition );
+        if ( false === $result ) {
+            throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+        }
+        return ( int ) $result;
     }
 
     public function remove( $competition_id ): void {

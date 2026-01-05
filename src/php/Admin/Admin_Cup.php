@@ -380,140 +380,151 @@ final class Admin_Cup extends Admin_Championship {
      * Display cup plan page
      */
     public function display_cup_plan_page(): void {
-        if ( ! current_user_can( 'edit_teams' ) ) {
-            $this->set_message( $this->no_permission, true );
+        $validator = new Validator_Plan();
+        $validator = $validator->capability( 'edit_teams' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->error, true );
             $this->show_message();
-        } else {
-            $competition = null;
-            $season      = null;
-            if ( isset( $_POST['savePlan'] ) ) {
-                check_admin_referer( 'racketmanager_cup-planner' );
-                if ( isset( $_POST['competition_id'] ) ) {
-                    // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    $competition = get_competition( intval( $_POST['competition_id'] ) );
-                    if ( $competition ) {
-                        $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                        if ( $season ) {
-                            $courts     = $_POST['court'] ?? null;
-                            $start_time = $_POST['startTime'] ?? null;
-                            $matches    = $_POST['match'] ?? null;
-                            $match_time = $_POST['matchtime'] ?? null;
-                            // phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            $updates = $competition->save_plan( $season, $courts, $start_time, $matches, $match_time );
-                            if ( $updates ) {
-                                $this->set_message( __( 'Plan updated', 'racketmanager' ) );
-                            } else {
-                                $this->set_message( $this->no_updates, 'warning' );
-                            }
-                        } else {
-                            $this->set_message( __( 'Season not specified', 'racketmanager' ), true );
-                        }
-                    } else {
-                        $this->set_message( __( 'Competition not specified', 'racketmanager' ), true );
-                    }
-                    $this->show_message();
-                }
-                $tab = 'matches';
-            } elseif ( isset( $_POST['resetPlan'] ) ) {
-                check_admin_referer( 'racketmanager_cup-planner' );
-                if ( isset( $_POST['competition_id'] ) ) {
-                    $competition = get_competition( intval( $_POST['competition_id'] ) );
-                    if ( $competition ) {
-                        $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                        if ( $season ) {
-                            $matches = $_POST['match'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            $updates = $competition->reset_plan( $season, $matches );
-                            if ( $updates ) {
-                                $this->set_message( __( 'Plan reset', 'racketmanager' ) );
-                            } else {
-                                $this->set_message( $this->no_updates, 'warning' );
-                            }
-                        }
-                    }
-                    $this->show_message();
-                }
-                $tab = 'matches';
-            } elseif ( isset( $_POST['saveCup'] ) ) {
-                check_admin_referer( 'racketmanager_cup' );
-                if ( isset( $_POST['competition_id'] ) ) {
-                    $competition = get_competition( intval( $_POST['competition_id'] ) );
-                    // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    if ( $competition ) {
-                        $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                        if ( $season ) {
-                            $start_time     = isset( $_POST['startTime'] ) ? sanitize_text_field( wp_unslash( $_POST['startTime'] ) ) : null;
-                            $num_courts     = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : null;
-                            $time_increment = isset( $_POST['timeIncrement'] ) ? sanitize_text_field( wp_unslash( $_POST['timeIncrement'] ) ) : null;
-                            $validator      = new Validator_Plan();
-                            $validator      = $validator->start_time( $start_time );
-                            $validator      = $validator->num_courts_available( $num_courts );
-                            $validator      = $validator->time_increment( $time_increment );
-                            if ( empty( $validator->error ) ) {
-                                $updates = $competition->update_plan( $season, $start_time, $num_courts, $time_increment );
-                                if ( $updates ) {
-                                    $this->set_message( __( 'Plan updated', 'racketmanager' ) );
-                                } else {
-                                    $this->set_message(  $this->no_updates, 'warning' );
-                                }
-                            } else {
-                                $this->set_message( __( 'Unable to update plan', 'racketmanager' ), true );
-                            }
-                        } else {
-                            $this->set_message( __( 'Season not specified', 'racketmanager' ), true );
-                        }
-                    } else {
-                        $this->set_message( __( 'Competition not specified', 'racketmanager' ), true );
-                    }
-                    $this->show_message();
-                }
-                $tab = 'config';
-            }
-
-            if ( isset( $_GET['competition_id'] ) ) {
-                $competition_id = intval( $_GET['competition_id'] );
-                $competition    = get_competition( $competition_id );
-                if ( $competition ) {
-                    $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-                    if ( $season ) {
-                        $final_matches = $competition->get_matches(
-                            array(
-                                'season'         => $season,
-                                'final'          => 'final',
-                            )
-                        );
-                    }
-                }
-            }
-            if ( $competition ) {
-                $competition->events = $competition->get_events();
-                if ( $season ) {
-                    $cup_season             = (object) $competition->get_season_by_name( $season );
-                    $cup_season->venue_name = null;
-                    if ( isset( $cup_season->venue ) ) {
-                        $venue_club = get_club( $cup_season->venue );
-                        if ( $venue_club ) {
-                            $cup_season->venue_name = $venue_club->shortcode;
-                        }
-                    }
-                    if ( ! isset( $cup_season->orderofplay ) ) {
-                        $cup_season->orderofplay = array();
-                    }
-                    if ( ! isset( $cup_season->time_increment ) ) {
-                        $cup_season->time_increment = null;
-                    }
-                    if ( ! isset( $cup_season->num_courts ) ) {
-                        $cup_season->num_courts = null;
-                    }
-                    if ( ! isset( $cup_season->starttime ) ) {
-                        $cup_season->starttime = null;
-                    }
-                }
-            }
-            if ( empty( $tab ) ) {
-                $tab = 'matches';
-            }
-            require_once RACKETMANAGER_PATH . 'templates/admin/cup/plan.php';
+            return;
         }
+        $competition = null;
+        $season      = null;
+        if ( isset( $_POST['savePlan'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_cup-planner-nonce', 'racketmanager_cup-planner' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+                $this->show_message();
+                return;
+            }
+            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+            $courts         = $_POST['court'] ?? null;
+            $start_time     = $_POST['startTime'] ?? null;
+            $matches        = $_POST['match'] ?? null;
+            $match_time     = $_POST['matchtime'] ?? null;
+            if ( isset( $_POST['competition_id'] ) ) {
+                // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $competition = get_competition( intval( $_POST['competition_id'] ) );
+                if ( $competition ) {
+                    if ( $season ) {
+                        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                        $updates = $competition->save_plan( $season, $courts, $start_time, $matches, $match_time );
+                        if ( $updates ) {
+                            $this->set_message( __( 'Plan updated', 'racketmanager' ) );
+                        } else {
+                            $this->set_message( $this->no_updates, 'warning' );
+                        }
+                    } else {
+                        $this->set_message( __( 'Season not specified', 'racketmanager' ), true );
+                    }
+                } else {
+                    $this->set_message( __( 'Competition not specified', 'racketmanager' ), true );
+                }
+                $this->show_message();
+            }
+            $tab = 'matches';
+        } elseif ( isset( $_POST['resetPlan'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_cup-planner-nonce', 'racketmanager_cup-planner' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+                $this->show_message();
+                return;
+            }
+            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+            $matches        = $_POST['match'] ?? null;
+            check_admin_referer( 'racketmanager_cup-planner' );
+            if ( isset( $_POST['competition_id'] ) ) {
+                $competition = get_competition( intval( $_POST['competition_id'] ) );
+                if ( $competition ) {
+                    $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                    if ( $season ) {
+                        $matches = $_POST['match'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                        $updates = $competition->reset_plan( $season, $matches );
+                        if ( $updates ) {
+                            $this->set_message( __( 'Plan reset', 'racketmanager' ) );
+                        } else {
+                            $this->set_message( $this->no_updates, 'warning' );
+                        }
+                    }
+                }
+                $this->show_message();
+            }
+            $tab = 'matches';
+        } elseif ( isset( $_POST['saveCup'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_cup-nonce', 'racketmanager_cup' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+                $this->show_message();
+                return;
+            }
+            $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+            $start_time     = isset( $_POST['startTime'] ) ? sanitize_text_field( wp_unslash( $_POST['startTime'] ) ) : null;
+            $num_courts     = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : null;
+            $time_increment = isset( $_POST['timeIncrement'] ) ? sanitize_text_field( wp_unslash( $_POST['timeIncrement'] ) ) : null;
+            try {
+                $updates = $this->competition_service->set_plan_config( $competition_id, $season, $start_time, $num_courts, $time_increment );
+                if ( is_wp_error( $updates ) ) {
+                    $validator->error    = true;
+                    $validator->err_flds = $updates->get_error_codes();
+                    $validator->err_msgs = $updates->get_error_messages();
+                    $this->set_message( __( 'Error with plan details', 'racketmanager' ), true );
+                } elseif( $updates) {
+                    $this->set_message( __( 'Plan updated', 'racketmanager' ) );
+                } else {
+                    $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
+                }
+            } catch ( Competition_Not_Updated_Exception $e ) {
+                $this->set_message( $e->getMessage(), 'warning' );
+            } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
+            }
+            $this->show_message();
+            $tab = 'config';
+        }
+
+        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+            $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+            if ( $season ) {
+                $competition->events    = $competition->get_events();
+                $cup_season             = (object) $competition->get_season_by_name( $season );
+                $cup_season->venue_name = null;
+                if ( isset( $cup_season->venue ) ) {
+                    $venue_club = get_club( $cup_season->venue );
+                    if ( $venue_club ) {
+                        $cup_season->venue_name = $venue_club->shortcode;
+                    }
+                }
+                if ( ! isset( $cup_season->orderofplay ) ) {
+                    $cup_season->orderofplay = array();
+                }
+                if ( ! isset( $cup_season->time_increment ) ) {
+                    $cup_season->time_increment = null;
+                }
+                if ( ! isset( $cup_season->num_courts ) ) {
+                    $cup_season->num_courts = null;
+                }
+                if ( ! isset( $cup_season->starttime ) ) {
+                    $cup_season->starttime = null;
+                }
+                $final_matches = $competition->get_matches(
+                    array(
+                        'season'         => $season,
+                        'final'          => 'final',
+                    )
+                );
+            }
+        } catch ( Competition_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+        }
+        if ( empty( $tab ) ) {
+            $tab = 'matches';
+        }
+        require_once RACKETMANAGER_PATH . 'templates/admin/cup/plan.php';
     }
     /**
      * Display cup matches page

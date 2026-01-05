@@ -446,7 +446,7 @@ class Admin extends RacketManager {
         }
 
         // Draggable interactions – only on the tournaments page
-        if ( $is_rm_page && $page === 'racketmanager-tournaments' ) {
+        if ( $is_rm_page && ( 'racketmanager-tournaments' === $page || 'racketmanager-cups' === $page ) ) {
             wp_register_script(
                 'racketmanager-admin-draggable',
                 $this->get_asset_url('dist/js/admin/draggable.js'),

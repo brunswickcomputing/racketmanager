@@ -564,6 +564,16 @@ class Competition {
         );
     }
 
+    /**
+     * Constructor
+     *
+     * @param string $name
+     * @param string $type
+     * @param string $age_group
+     * @param array|null $seasons
+     * @param array|null $settings
+     * @param int|null $id
+     */
     public function __construct(
         string $name,
         string $type,

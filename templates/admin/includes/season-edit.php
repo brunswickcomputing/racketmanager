@@ -210,7 +210,7 @@ $msg         = null;
                             $is_invalid = false;
                             $msg        = null;
                             if ( empty( $current_season->max_teams ) ) {
-                                $max_teams = empty( $competition->max_teams ) ? null : $competition->max_teams;
+                                $max_teams = empty( $competition->settings['max_teams'] ) ? null : $competition->settings['max_teams'];
                             } else {
                                 $max_teams = $current_season->max_teams;
                             }

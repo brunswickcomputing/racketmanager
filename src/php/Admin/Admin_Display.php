@@ -843,6 +843,32 @@ class Admin_Display {
             $this->set_message( sprintf( _n( '%d Match updated', '%d Matches updated', $num_matches, 'racketmanager' ), $num_matches ) );
         }
     }
+
+    /**
+     * Display season list
+     */
+    public function display_seasons_page(): void {
+        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+        if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $competition_id_post = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $validator           = new Validator();
+            $validator           = $validator->compare( $competition_id_post, $competition_id );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
+            } else {
+                $this->delete_seasons_from_competition( $competition_id );
+            }
+            $this->show_message();
+        }
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+            require_once RACKETMANAGER_PATH . 'templates/admin/includes/show-seasons.php';
+        } catch ( Competition_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+        }
+    }
+
     /**
      * Delete season(s) from a competition via admin
      *

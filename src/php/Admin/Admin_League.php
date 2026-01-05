@@ -361,7 +361,7 @@ final class Admin_League extends Admin_Display {
                     $league_id = $league->id;
                     $league->set_season();
                     $season      = $league->get_season();
-                    $league_mode = ( isset( $league->event->competition->mode ) ? ( $league->event->competition->mode ) : '' );
+                    $league_mode = ( isset( $league->event->competition->settings['mode'] ) ? ( $league->event->competition->settings['mode'] ) : '' );
                     $tab         = 'standings';
                     $match_day   = false;
                     // phpcs:disable WordPress.Security.NonceVerification.Missing

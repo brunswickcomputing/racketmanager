@@ -726,12 +726,8 @@ class Competition {
      * Get a season by name
      */
     public function get_season_by_name( string $name ): ?array {
-        foreach ( $this->get_seasons() as $season ) {
-            if ( isset( $season['name'] ) && $season['name'] === $name ) {
-                return $season;
-            }
-        }
-        return null;
+        $seasons = $this->get_seasons();
+        return $seasons[ $name ] ?? null;
     }
 
     /**

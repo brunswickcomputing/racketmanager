@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -309,6 +310,7 @@ final class Tournament {
     private ?string $no_secretary_email;
     private ?string $no_notification;
     private Player_Service $player_service;
+    private Competition_Service $competition_service;
 
     /**
      * Retrieve tournament instance
@@ -374,6 +376,10 @@ final class Tournament {
      */
     public function __construct( object $tournament = null ) {
         global $racketmanager, $wp;
+        $c                         = $racketmanager->container;
+        $this->player_service      = $c->get( 'player_service' );
+        $this->competition_service = $c->get( 'competition_service' );
+
         if ( ! is_null( $tournament ) ) {
             if ( isset( $tournament->information ) ) {
                 $tournament->information = json_decode( $tournament->information );
@@ -426,7 +432,7 @@ final class Tournament {
             }
             $this->order_of_play = (array) maybe_unserialize( $this->order_of_play );
             if ( $this->competition_id ) {
-                $this->competition = get_competition( $this->competition_id );
+                $this->competition = $this->competition_service->get_by_id( $this->competition_id );
             }
             $finals     = array();
             $max_rounds = 6;
@@ -457,8 +463,6 @@ final class Tournament {
         $this->no_secretary_email = __( 'No secretary email', 'racketmanager' );
         $this->no_notification    = __( 'No notification', 'racketmanager' );
 
-        $c                    = $racketmanager->container;
-        $this->player_service = $c->get( 'player_service' );
     }
 
     /**

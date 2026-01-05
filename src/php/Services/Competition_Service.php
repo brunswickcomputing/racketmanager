@@ -123,7 +123,7 @@ class Competition_Service {
         }
         $current_season = $competition->get_season_by_name( $season );
         if ( ! $current_season ) {
-            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+            throw new Season_Not_Found_Exception( __( 'Season not found', 'racketmanager' ) );
         }
         $seasons   = $competition->get_seasons();
         $validator = new Validator_Plan();

@@ -103,7 +103,7 @@ namespace Racketmanager;
                 ?>
             </tr>
         </thead>
-        <tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->team_ranking ) ? 'sortable' : null ?>">
+        <tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->settings['team_ranking'] ) ? 'sortable' : null ?>">
             <?php
             foreach ( $teams as $i => $team ) {
                 $class = null;
@@ -124,7 +124,7 @@ namespace Racketmanager;
                     </th>
                     <td class="column-num">
                         <?php
-                        if ( 'manual' === $league->event->competition->team_ranking ) {
+                        if ( 'manual' === $league->event->competition->settings['team_ranking'] ) {
                             ?>
                             <label for="rank_<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></label><input type="text" name="rank[<?php echo esc_html( $team->id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->table_id ); ?>]" value="<?php echo esc_html( $team->table_id ); ?>" />
                             <?php
@@ -322,7 +322,7 @@ namespace Racketmanager;
         </tbody>
     </table>
     <?php
-    if ( isset( $league->event->competition->team_ranking ) && 'manual' === $league->event->competition->team_ranking && $league->event->competition->is_championship ) {
+    if ( isset( $league->event->competition->settings['team_ranking'] ) && 'manual' === $league->event->competition->settings['team_ranking'] && $league->event->competition->is_championship ) {
         ?>
         <script type='text/javascript'>
         </script>
@@ -334,7 +334,7 @@ namespace Racketmanager;
         <input type="submit" value="<?php esc_html_e( 'Save Standings', 'racketmanager' ); ?>" class="btn btn-primary" />
         <?php
     }
-    if ( isset( $league->event->competition->team_ranking ) && 'manual' === $league->event->competition->team_ranking ) {
+    if ( isset( $league->event->competition->settings['team_ranking'] ) && 'manual' === $league->event->competition->settings['team_ranking'] ) {
         ?>
         <div class="mb-3">
             <input type="submit" name="saveRanking" value="<?php esc_html_e( 'Save Ranking', 'racketmanager' ); ?>" class="btn btn-primary" />
@@ -345,7 +345,7 @@ namespace Racketmanager;
         </div>
         <?php
     }
-    if ( isset( $league->event->competition->team_ranking ) && 'manual' !== $league->event->competition->team_ranking ) {
+    if ( isset( $league->event->competition->settings['team_ranking'] ) && 'manual' !== $league->event->competition->settings['team_ranking'] ) {
         ?>
         <input type="submit" name="updateRanking" value="<?php esc_html_e( 'Update Ranking', 'racketmanager' ); ?>" class="btn btn-primary" />
         <?php

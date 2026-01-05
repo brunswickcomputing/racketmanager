@@ -2604,7 +2604,7 @@ final class Racketmanager_Match {
                             $next_round_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
                             if ( $this->league->event->competition->is_cup && ! empty( $next_round_details->date ) ) {
                                 $reset_date = true;
-                                $next_round_match->set_match_date( $next_round_details->date, 'monday', implode( ':', $this->league->event->competition->default_match_start_time ) );
+                                $next_round_match->set_match_date( $next_round_details->date, 'monday', implode( ':', $this->league->event->competition->settings['default_match_start_time'] ) );
                             } else {
                                 $reset_date = false;
                             }
@@ -2614,7 +2614,7 @@ final class Racketmanager_Match {
                                     $linked_match->set_teams( $next_round_match->home_team, $next_round_match->away_team );
                                     if ( $reset_date ) {
                                         $linked_match_date = gmdate( 'Y-m-d H:i:s', strtotime( $next_round_details->date . ' +14 day' ) );
-                                        $linked_match->set_match_date( $linked_match_date, 'monday', implode( ':', $this->league->event->competition->default_match_start_time ) );
+                                        $linked_match->set_match_date( $linked_match_date, 'monday', implode( ':', $this->league->event->competition->settings['default_match_start_time'] ) );
                                     }
                                 }
                             }

@@ -1347,8 +1347,8 @@ final class Admin_League extends Admin_Display {
                                 $matches[ $h ]->host = 'away';
                             }
                         }
-                        $matches[ $h ]->hour    = $league->event->competition->default_match_start_time['hour'];
-                        $matches[ $h ]->minutes = $league->event->competition->default_match_start_time['minutes'];
+                        $matches[ $h ]->hour    = $league->event->competition->settings['default_match_start_time']['hour'];
+                        $matches[ $h ]->minutes = $league->event->competition->settings['default_match_start_time']['minutes'];
                     }
                 } else {
                     /* translators: %s: round name */
@@ -1397,8 +1397,8 @@ final class Admin_League extends Admin_Display {
                 $matches[0]->year = ( isset( $_GET['season'] ) && is_numeric( $_GET['season'] ) ) ? intval( $_GET['season'] ) : gmdate( 'Y' );
                 for ( $i = 0; $i < $max_matches; $i++ ) {
                     $matches[]              = new stdClass();
-                    $matches[ $i ]->hour    = $league->event->competition->default_match_start_time['hour'];
-                    $matches[ $i ]->minutes = $league->event->competition->default_match_start_time['minutes'];
+                    $matches[ $i ]->hour    = $league->event->competition->settings['default_match_start_time']['hour'];
+                    $matches[ $i ]->minutes = $league->event->competition->settings['default_match_start_time']['minutes'];
                 }
             }
 

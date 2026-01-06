@@ -415,9 +415,10 @@ class Competition_Service {
     }
 
     public function set_court_availability( int $competition_id, int $club_id, int $num_courts_available ): void {
-        $competition = $this->competition_repository->find_by_id( $competition_id );
-        if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
         }
         if ( empty( $competition->settings['num_courts_available'] ) ) {
             $competition->settings['num_courts_available'] = array();

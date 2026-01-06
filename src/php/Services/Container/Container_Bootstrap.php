@@ -48,6 +48,7 @@ final class Container_Bootstrap {
                 $app,
                 $c->get('competition_repository'),
                 $c->get('event_repository'),
+                $c->get('league_repository'),
                 $c->get('league_team_repository'),
             );
         });

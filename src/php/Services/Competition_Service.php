@@ -18,6 +18,7 @@ use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Services\Validator\Validator_Plan;
@@ -33,8 +34,9 @@ use function Racketmanager\get_match;
 class Competition_Service {
     private Competition_Repository $competition_repository;
     private Event_Repository $event_repository;
-    private RacketManager $racketmanager;
     private League_Team_Repository $league_team_repository;
+    private League_Repository $league_repository;
+    private RacketManager $racketmanager;
 
     /**
      * Constructor
@@ -42,12 +44,14 @@ class Competition_Service {
      * @param RacketManager $plugin_instance
      * @param Competition_Repository $competition_repository
      * @param Event_Repository $event_repository
+     * @param League_Team_Repository $league_team_repository
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Event_Repository $event_repository, League_Team_Repository $league_team_repository ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Event_Repository $event_repository, League_Team_Repository $league_team_repository, League_Repository $league_repository ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->event_repository       = $event_repository;
         $this->league_team_repository = $league_team_repository;
+        $this->league_repository      = $league_repository;
     }
 
     public function get_by_id( null|string|int $competition_id ): Competition {

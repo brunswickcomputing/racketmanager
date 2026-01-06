@@ -437,9 +437,10 @@ class Competition_Service {
      * @return void
      */
     public function delete_seasons( ?int $competition_id, array $seasons ): void {
-        $competition = $this->competition_repository->find_by_id( $competition_id );
-        if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
         }
         $deleted = false;
         foreach ( $seasons as $season ) {

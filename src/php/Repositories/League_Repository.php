@@ -26,45 +26,35 @@ class League_Repository {
     }
 
     public function save( League $league ): void {
+        $data = array(
+            'title'    => $league->get_name(),
+            'settings' => maybe_serialize( $league->get_settings() ),
+            'seasons'  => maybe_serialize( $league->get_seasons() ),
+            'sequence' => $league->get_sequence(),
+            'event_id' => $league->get_event_id(),
+        );
+        $data_format = array(
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%d',
+        );
         if ( empty( $league->get_id() ) ) {
             $this->wpdb->insert(
                 $this->table_name,
-                array(
-                    'title'    => $league->get_name(),
-                    'settings' => maybe_serialize( $league->get_settings() ),
-                    'seasons'  => maybe_serialize( $league->get_seasons() ),
-                    'sequence' => $league->get_sequence(),
-                    'event_id' => $league->get_event_id(),
-                ),
-                array(
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%d',
-                )
+                $data,
+                $data_format
             );
             $league->set_id( $this->wpdb->insert_id );
         } else {
             $this->wpdb->update(
                 $this->table_name,
-                array(
-                    'title'    => $league->get_name(),
-                    'settings' => maybe_serialize( $league->get_settings() ),
-                    'seasons'  => maybe_serialize( $league->get_seasons() ),
-                    'sequence' => $league->get_sequence(),
-                    'event_id' => $league->get_event_id(),
-                ), // Data to update
+                $data, // Data to update
                 array(
                     'id' => $league->get_id()
                 ), // Where clause
-                array(
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%s',
-                    '%d',
-                ),
+                $data_format,
                 array(
                     '%d'
                 ) // Where format

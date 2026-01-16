@@ -10,7 +10,10 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Competition_Overview_DTO;
 use Racketmanager\Domain\Event;
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Clubs_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
@@ -132,6 +135,14 @@ class Competition_Service {
             throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
         }
         return ( int ) $result; // Returns 1 if updated, 0 if no change
+    }
+
+    private function is_season_valid_for_competition( Competition $competition, int $season ): array {
+        $current_season = $competition->get_season_by_name( $season );
+        if ( ! $current_season ) {
+            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+        }
+        return $current_season;
     }
 
     /**

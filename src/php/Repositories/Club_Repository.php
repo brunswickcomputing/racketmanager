@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Club_Competition_DTO;
 use Racketmanager\Util\Util;
 use wpdb;
 use function Racketmanager\get_team;
@@ -289,4 +290,104 @@ class Club_Repository {
         wp_cache_flush_group( 'clubs' );
         return $result !== false;
     }
+
+    /**
+     * Gets all clubs for a specific competition and season with aggregated counts.
+     *
+     * @param int $competition_id
+     * @param string $season (e.g., "2025/26")
+     * @param int $min_fixtures Minimum rubbers played to be 'active'.
+     *
+     * @return Club_Competition_DTO[]
+     */
+    public function find_clubs_by_competition_and_season( int $competition_id, string $season, int $min_fixtures = 1 ): array {
+        $clubs_table          = $this->wpdb->prefix . 'racketmanager_clubs';
+        $events_table         = $this->wpdb->prefix . 'racketmanager_events';
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
+        $league_teams_table   = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $teams_table          = $this->wpdb->prefix . 'racketmanager_teams';
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+        $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $fixtures_table       = $this->wpdb->prefix . 'racketmanager_matches';
+
+        $query = $this->wpdb->prepare(
+            "SELECT
+                    cl.id as club_id,
+                    cl.name as club_name,
+                    cl.shortcode as club_shortcode,
+                    COUNT(DISTINCT t.id) as num_teams,
+                    (SELECT COUNT(DISTINCT rp.player_id)
+                     FROM `$rubber_players_table` rp,
+                          `$rubbers_table` r,
+                          `$fixtures_table` f,
+                          `$leagues_table` l_active,
+                          `$events_table` e_active,
+                          `$league_teams_table` lte_active,
+                          `$teams_table` t_active
+                     WHERE e_active.competition_id = %d
+                       AND f.season = %s
+                       AND rp.rubber_id = r.id
+                       AND r.match_id = f.id
+                       AND f.league_id = l_active.id
+                       AND l_active.event_id = e_active.id
+                       AND t_active.id = lte_active.team_id
+                       AND lte_active.league_id = l_active.id
+                       AND lte_active.season = %s
+                       AND (
+                           (rp.player_team = 'home' AND f.home_team = t_active.id) OR
+                            (rp.player_team = 'away' AND f.away_team = t_active.id)
+                           )
+                       AND t_active.club_id = cl.id
+                     HAVING COUNT(rp.id) >= %d
+                    ) as num_players
+                FROM
+                    `$clubs_table` cl
+                INNER JOIN `$teams_table` t ON cl.id = t.club_id
+                INNER JOIN `$league_teams_table` lte ON t.id = lte.team_id
+                INNER JOIN `$leagues_table` l ON lte.league_id = l.id
+                INNER JOIN `$events_table` e ON l.event_id = e.id
+                WHERE
+                    e.competition_id = %d AND lte.season = %s
+                GROUP BY
+                    cl.id, cl.name, cl.shortcode
+                ORDER BY
+                    cl.name",
+            $competition_id,
+            $season,
+            $season,
+            $min_fixtures,
+            $competition_id,
+            $season
+        );
+
+        $results = $this->wpdb->get_results( $query );
+
+        return array_map( fn( $row ) => new Club_Competition_DTO( $row ), $results );
+    }
+
+    /**
+     * Retrieves a list of clubs NOT participating in a specific competition for a given season.
+     *
+     * @param int $competition_id
+     * @param string $season The season string from the league_teams table (e.g. "2025/26").
+     *
+     * @return Club[] Array of Club domain objects.
+     */
+    public function find_clubs_not_entered( int $competition_id, string $season ): array {
+        $clubs_table        = $this->table_name; // wp_custom_clubs
+        $teams_table        = $this->wpdb->prefix . 'racketmanager_teams';
+        $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
+        $events_table       = $this->wpdb->prefix . 'racketmanager_events';
+
+        // Query for clubs that do NOT have any team assigned to a league in this competition/season
+        $query = $this->wpdb->prepare(
+            "SELECT * FROM `$clubs_table` c WHERE NOT EXISTS (SELECT 1 FROM `$teams_table` t INNER JOIN `$league_teams_table` lte ON t.id = lte.team_id INNER JOIN `$leagues_table` l ON lte.league_id = l.id INNER JOIN `$events_table` e ON l.event_id = e.id WHERE t.club_id = c.id AND e.competition_id = %d AND lte.season = %s) AND c.type = 'affiliated' ORDER BY c.name",
+            $competition_id,
+            $season
+        );
+
+        return $this->wpdb->get_results( $query );
+    }
+
 }

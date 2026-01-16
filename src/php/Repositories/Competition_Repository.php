@@ -44,15 +44,20 @@ class Competition_Repository {
         $this->teams_table          = $this->wpdb->prefix . 'racketmanager_teams';
     }
 
+    /**
+     * Save a competition.
+     *
+     * @param Competition $competition
+     *
+     * @return int|bool
+     */
     public function save( Competition $competition ): int|bool {
         $data = array(
-            'name'           => $competition->get_name(),
-            // Store settings as JSON
-            'settings'       => json_encode( $competition->get_settings() ),
-            // Store seasons as JSON in DB
-            'seasons'        => json_encode( $competition->get_seasons() ),
-            'type'           => $competition->get_type(),
-            'age_group'      => $competition->get_age_group(),
+            'name'      => $competition->get_name(),
+            'settings'  => json_encode( $competition->get_settings() ), // Store settings as JSON
+            'seasons'   => json_encode( $competition->get_seasons() ), // Store seasons as JSON in DB
+            'type'      => $competition->get_type(),
+            'age_group' => $competition->get_age_group(),
         );
         $data_format = array(
             '%s',
@@ -86,6 +91,13 @@ class Competition_Repository {
         }
     }
 
+    /**
+     * Find a competition by its ID.
+     *
+     * @param int|string|null $competition_id
+     *
+     * @return Competition|null
+     */
     public function find_by_id( int|string|null $competition_id ): ?Competition {
         if ( empty( $competition_id ) ) {
             return null;
@@ -116,6 +128,11 @@ class Competition_Repository {
         return $competition;
     }
 
+    /**
+     * Find all competitions.
+     *
+     * @return array
+     */
     public function find_all(): array {
         $competitions = wp_cache_get( 'competitions', 'competitions' );
         if ( ! $competitions ) {
@@ -126,6 +143,13 @@ class Competition_Repository {
         return $competitions;
     }
 
+    /**
+     * Find competitions by criteria.
+     *
+     * @param array $criteria
+     *
+     * @return array
+     */
     public function find_by( array $criteria ): array {
         $sql  = "SELECT * FROM $this->table_name";
         if ( ! empty( $criteria ) ) {
@@ -142,9 +166,16 @@ class Competition_Repository {
         return array_map( [ Competition::class, 'from_database' ], $rows );
     }
 
+    /**
+     * Find competitions with summary data.
+     *
+     * @param $age_group
+     * @param $type
+     *
+     * @return array
+     */
     public function find_competitions_with_summary( $age_group = null, $type = null ): array {
-        $events_table = $this->wpdb->prefix . 'racketmanager_events';
-        $params = [];
+        $params     = [];
         $conditions = []; // Use an array instead of a string
 
         if ( $age_group ) {
@@ -168,6 +199,13 @@ class Competition_Repository {
         return $this->wpdb->get_results( $query );
     }
 
+    /**
+     * Delete a competition from the database.
+     *
+     * @param int $competition_id
+     *
+     * @return void
+     */
     public function delete( int $competition_id ): void {
         $this->wpdb->delete( $this->table_name, array( 'id' => $competition_id ), array( '%d' ) );
     }
@@ -191,7 +229,7 @@ class Competition_Repository {
         $matches_table        = $this->wpdb->prefix . 'racketmanager_matches';
 
         $player_activity_subquery = $this->wpdb->prepare(
-            "SELECT l.event_id, rp.player_id FROM $rubber_players_table rp INNER JOIN $rubbers_table r ON rp.rubber_id = r.id INNER JOIN $matches_table f ON r.match_id = f.id AND f.season = %d INNER JOIN $leagues_table l ON f.league_id = l.id GROUP BY l.event_id, rp.player_id HAVING COUNT(rp.id) >= %d",
+            "SELECT l.event_id, rp.player_id FROM $this->rubber_players_table rp INNER JOIN $this->rubbers_table r ON rp.rubber_id = r.id INNER JOIN $this->fixtures_table f ON r.match_id = f.id AND f.season = %d INNER JOIN $this->leagues_table l ON f.league_id = l.id GROUP BY l.event_id, rp.player_id HAVING COUNT(rp.id) >= %d",
             $season,
             $min_fixtures
         );

@@ -80,6 +80,33 @@ class Competition_Service {
         return $event;
     }
 
+    public function get_leagues_for_event( ?int $event_id, ?int $season = null ): array {
+        try {
+            $event = $this->get_event_by_id( $event_id );
+        } catch ( Event_Not_Found_Exception $e ) {
+            throw new Event_Not_Found_Exception( $e );
+        }
+        return $this->league_repository->get_by_event_id( $event->get_id(), $season );
+    }
+
+    public function get_clubs_for_event( ?int $event_id, ?int $season = null ): array {
+        try {
+            $event = $this->get_event_by_id( $event_id );
+        } catch ( Event_Not_Found_Exception $e ) {
+            throw new Event_Not_Found_Exception( $e );
+        }
+        return $this->league_team_repository->get_clubs_by_event_id( $event->get_id(), $season );
+    }
+
+    public function get_teams_for_event( ?int $event_id, ?int $season = null ): array {
+        try {
+            $event = $this->get_event_by_id( $event_id );
+        } catch ( Event_Not_Found_Exception $e ) {
+            throw new Event_Not_Found_Exception( $e );
+        }
+        return $this->league_team_repository->get_by_event_id( $event->get_id(), $season );
+    }
+
     public function get_by_id( null|string|int $competition_id ): Competition {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {

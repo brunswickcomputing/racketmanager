@@ -264,4 +264,37 @@ class Competition_Repository {
         return (bool) $this->wpdb->get_var($query);
     }
 
+    /**
+     * Get league winners for a competition.
+     *
+     * @param int $competition_id
+     * @param int|null $season
+     *
+     * @return array
+     */
+    public function get_league_winners( int $competition_id, int $season = null ): array {
+        $query = $this->wpdb->prepare(
+            "SELECT l.`title` ,wt.`title` AS `winner` ,e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id` FROM $this->league_teams_table t, $this->leagues_table l, $this->teams_table wt, $this->events_table e WHERE t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND t.`season` = %d AND t.rank = 1 AND t.team_id = wt.id order by e.`name`, l.`title`",
+            $competition_id,
+            $season
+        );
+        return $this->wpdb->get_results( $query );
+    }
+
+    /**
+     * Get championship winners for a competition.
+     *
+     * @param int $competition_id
+     * @param int|null $season
+     *
+     * @return array
+     */
+    public function get_championship_winners( int $competition_id, int $season = null ): array {
+        $query = $this->wpdb->prepare(
+            "SELECT l.`title` ,wt.`title` AS `winner` ,lt.`title` AS `loser`, m.`id`, m.`home_team`, m.`away_team`, m.`winner_id` AS `winner_id`, m.`loser_id` AS `loser_id`, e.`type`, e.`name` AS `event_name`, e.`id` AS `event_id`, wt.`status` AS `team_type` FROM $this->fixtures_table m, $this->leagues_table l, $this->teams_table wt, $this->teams_table lt, $this->events_table e WHERE `league_id` = l.`id` AND l.`event_id` = e.`id` AND e.`competition_id` = %d AND m.`final` = 'FINAL' AND m.`season` = %d AND m.`winner_id` = wt.`id` AND m.`loser_id` = lt.`id` order by e.`name`, l.`title`",
+            $competition_id,
+            $season
+        );
+        return $this->wpdb->get_results( $query );
+    }
 }

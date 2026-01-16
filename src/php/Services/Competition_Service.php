@@ -10,6 +10,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
@@ -65,6 +66,14 @@ class Competition_Service {
         $this->league_repository      = $league_repository;
         $this->team_repository        = $team_repository;
         $this->player_service         = $player_service;
+    }
+
+    public function get_event_by_id( null|string|int $event_id ): Event {
+        $event = $this->event_repository->find_by_id( $event_id );
+        if ( ! $event ) {
+            throw new Competition_Not_Found_Exception( sprintf( __( 'Event %s not found', 'racketmanager' ), $event_id ) );
+        }
+        return $event;
     }
 
     public function get_by_id( null|string|int $competition_id ): Competition {

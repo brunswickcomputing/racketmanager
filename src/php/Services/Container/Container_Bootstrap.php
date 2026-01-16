@@ -43,16 +43,6 @@ final class Container_Bootstrap {
         $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
 
         // Services
-        $c->set('competition_service', function(Simple_Container $c) use ($app) {
-            return new Competition_Service(
-                $app,
-                $c->get('competition_repository'),
-                $c->get('event_repository'),
-                $c->get('league_repository'),
-                $c->get('league_team_repository'),
-            );
-        });
-
         $c->set('player_service', function(Simple_Container $c) use ($app) {
             return new Player_Service(
                 $app,
@@ -63,6 +53,19 @@ final class Container_Bootstrap {
                 $c->get('league_team_repository'),
                 $c->get('club_repository'),
                 $c->get('registration_repository'),
+            );
+        });
+
+        $c->set('competition_service', function(Simple_Container $c) use ($app) {
+            return new Competition_Service(
+                $app,
+                $c->get('competition_repository'),
+                $c->get('club_repository'),
+                $c->get('event_repository'),
+                $c->get('league_repository'),
+                $c->get('league_team_repository'),
+                $c->get('team_repository'),
+                $c->get('player_service'),
             );
         });
 

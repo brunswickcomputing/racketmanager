@@ -201,6 +201,56 @@ class Competition_Service {
         return $this->club_repository->find_clubs_by_competition_and_season( $competition->get_id(), $season );
     }
 
+    public function get_winners_for_competition( ?int $competition_id, ?int $season ): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        try {
+            $this->is_season_valid_for_competition( $competition, $season );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e );
+        }
+        if ( $competition->is_league ) {
+            $winners = $this->competition_repository->get_league_winners( $competition_id, $season );
+        } else {
+            $winners = $this->competition_repository->get_championship_winners( $competition_id, $season );
+        }
+        $return = array();
+        foreach ( $winners as $winner ) {
+            if ( ! $competition->is_league ) {
+                $match = get_match( $winner->id );
+            }
+            if ( $competition->is_player_entry ) {
+                if ( $winner->winner_id === $winner->home_team ) {
+                    $winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
+                } else {
+                    $winner_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
+                }
+                if ( $winner->loser_id === $winner->home_team ) {
+                    $loser_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
+                } else {
+                    $loser_club = isset( $match->teams['away']->club ) ? $match->teams['away']->club->shortcode : null;
+                }
+                $winner->winner_club = $winner_club;
+                $winner->loser_club  = $loser_club;
+            }
+            $winner->league           = $winner->title;
+            $winner->competition_name = $competition->name;
+            $winner->competition_type = $competition->type;
+            $winner->season           = $competition->current_season['name'];
+            $winner->is_team_entry    = $competition->is_team_entry;
+            $key = strtoupper( $winner->type );
+            if ( false === array_key_exists( $key, $return ) ) {
+                $return[ $key ] = array();
+            }
+            // now just add the row data.
+            $return[ $key ][] = $winner;
+        }
+        return $return;
+    }
+
     public function create( ?string $name, ?string $type, ?string $age_group ): Competition {
         $competition_check = $this->competition_repository->find_by( [ 'name' => $name ] );
         if ( $competition_check ) {

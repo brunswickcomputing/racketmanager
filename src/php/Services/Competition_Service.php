@@ -16,10 +16,13 @@ use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
+use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
@@ -37,21 +40,31 @@ class Competition_Service {
     private League_Team_Repository $league_team_repository;
     private League_Repository $league_repository;
     private RacketManager $racketmanager;
+    private Team_Repository $team_repository;
+    private Club_Repository $club_repository;
+    private Player_Service $player_service;
 
     /**
      * Constructor
      *
      * @param RacketManager $plugin_instance
      * @param Competition_Repository $competition_repository
+     * @param Club_Repository $club_repository
      * @param Event_Repository $event_repository
+     * @param League_Repository $league_repository
      * @param League_Team_Repository $league_team_repository
+     * @param Team_Repository $team_repository
+     * @param Player_Service $player_service
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Event_Repository $event_repository, League_Team_Repository $league_team_repository, League_Repository $league_repository ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Club_Repository $club_repository, Event_Repository $event_repository, League_Repository $league_repository , League_Team_Repository $league_team_repository, Team_Repository $team_repository, Player_Service $player_service ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
+        $this->club_repository        = $club_repository;
         $this->event_repository       = $event_repository;
         $this->league_team_repository = $league_team_repository;
         $this->league_repository      = $league_repository;
+        $this->team_repository        = $team_repository;
+        $this->player_service         = $player_service;
     }
 
     public function get_by_id( null|string|int $competition_id ): Competition {

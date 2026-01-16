@@ -19,11 +19,29 @@ use wpdb;
 class Competition_Repository {
     private wpdb $wpdb;
     private string $table_name;
+    private string $events_table;
+    private string $leagues_table;
+    private string $league_teams_table;
+    private string $teams_table;
+    private string $rubber_players_table;
+    private string $rubbers_table;
+    private string $fixtures_table;
 
+    /**
+     * Create a new Competition_Repository instance
+     *
+     */
     public function __construct() {
         global $wpdb;
-        $this->wpdb = $wpdb;
-        $this->table_name = $this->wpdb->prefix . 'racketmanager_competitions';
+        $this->wpdb                 = $wpdb;
+        $this->table_name           = $this->wpdb->prefix . 'racketmanager_competitions';
+        $this->events_table         = $this->wpdb->prefix . 'racketmanager_events';
+        $this->fixtures_table       = $this->wpdb->prefix . 'racketmanager_matches';
+        $this->leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
+        $this->league_teams_table   = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $this->rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+        $this->rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $this->teams_table          = $this->wpdb->prefix . 'racketmanager_teams';
     }
 
     public function save( Competition $competition ): int|bool {

@@ -161,9 +161,10 @@ class Competition_Service {
         if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
         }
-        $current_season = $competition->get_season_by_name( $season );
-        if ( ! $current_season ) {
-            throw new Season_Not_Found_Exception( __( 'Season not found', 'racketmanager' ) );
+        try {
+            $current_season = $this->is_season_valid_for_competition( $competition, $season );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e );
         }
         $seasons   = $competition->get_seasons();
         $validator = new Validator_Plan();
@@ -202,9 +203,10 @@ class Competition_Service {
         if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( __( 'Competition not found', 'racketmanager' ) );
         }
-        $current_season = $competition->get_season_by_name( $season );
-        if ( ! $current_season ) {
-            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+        try {
+            $current_season = $this->is_season_valid_for_competition( $competition, $season );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e );
         }
         $seasons       = $competition->get_seasons();
         $order_of_play = array();
@@ -254,9 +256,10 @@ class Competition_Service {
         if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( __( 'Competition not found', 'racketmanager' ) );
         }
-        $current_season = $competition->get_season_by_name( $season );
-        if ( ! $current_season ) {
-            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+        try {
+            $current_season = $this->is_season_valid_for_competition( $competition, $season );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e );
         }
         $seasons   = $competition->get_seasons();
         $updates   = false;

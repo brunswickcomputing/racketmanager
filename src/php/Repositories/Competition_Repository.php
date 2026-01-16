@@ -237,4 +237,31 @@ class Competition_Repository {
         return $row ? new Competition_Overview_DTO( $row ) : null;
     }
 
+    /**
+     * Checks if a specific club has any teams participating in a competition for a specific season.
+     *
+     * @param int $competition_id
+     * @param int $club_id
+     * @param string $season The season stored in the league_teams table.
+     *
+     * @return bool
+     */
+    public function is_club_participating( int $competition_id, int $club_id, string $season): bool {
+        $query = $this->wpdb->prepare(
+            "SELECT COUNT(*)
+            FROM `$this->events_table` e
+            INNER JOIN `$this->leagues_table` l ON e.id = l.event_id
+            INNER JOIN `$this->league_teams_table` lte ON l.id = lte.league_id
+            INNER JOIN `$this->teams_table` t ON lte.team_id = t.id
+            WHERE e.competition_id = %d
+              AND t.club_id = %d
+              AND lte.season = %s",
+            $competition_id,
+            $club_id,
+            $season
+        );
+
+        return (bool) $this->wpdb->get_var($query);
+    }
+
 }

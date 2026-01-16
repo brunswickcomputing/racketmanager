@@ -18,6 +18,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
+use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
@@ -93,6 +94,34 @@ class Competition_Service {
 
     public function get_by_criteria( array $criteria ): array {
         return $this->competition_repository->find_by( $criteria );
+    }
+
+    public function get_events_for_competition( ?int $competition_id, ?int $season = null ): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        $events = $this->event_repository->find_by_competition_id( $competition->get_id() );
+        foreach ( $events as $i => $event ) {
+            $event = $this->get_event_by_id( $event->id );
+            if ( $season && empty( $event->get_season_by_name( $season ) ) ) {
+                unset( $events[ $i ] );
+            } else {
+                $events[ $i ] = $event;
+            }
+        }
+        return $events;
+    }
+
+    public function get_events_with_details_for_competition($competition_id, $season, $min_fixtures = 1): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+
+        return $this->event_repository->find_events_by_competition_with_counts($competition->get_id(), $season, $min_fixtures);
     }
 
     public function get_leagues(): array {

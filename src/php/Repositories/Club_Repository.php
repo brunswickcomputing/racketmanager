@@ -142,8 +142,7 @@ class Club_Repository {
      * @return array|int
      */
     public function get_teams( array $args = array() ): array|int {
-        global $wpdb;
-
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
         $defaults = array(
             'club'    => false,
             'count'   => false,
@@ -157,7 +156,7 @@ class Club_Repository {
         $type     = $args['type'];
 
         $search_terms = array();
-        $sql    = " FROM $wpdb->racketmanager_teams WHERE `club_id` = '%d'";
+        $sql    = " FROM $teams_table WHERE `club_id` = '%d'";
         $search_terms[] = $club;
         if ( ! $players ) {
             $sql .= " AND (`team_type` is null OR `team_type` != 'P')";
@@ -175,8 +174,8 @@ class Club_Repository {
         }
         if ( $count ) {
             $sql = 'SELECT COUNT(*) ' . $sql;
-            return $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
+            return $this->wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $this->wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                     $sql,
                     $search_terms
@@ -184,7 +183,7 @@ class Club_Repository {
             );
         }
         $sql  = 'SELECT `id` ' . $sql . ' ORDER BY `title`';
-        $sql  = $wpdb->prepare(
+        $sql  = $this->wpdb->prepare(
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,
             $search_terms
@@ -192,7 +191,7 @@ class Club_Repository {
 
         $teams = wp_cache_get( md5( $sql ), 'teams' );
         if ( ! $teams ) {
-            $teams = $wpdb->get_results( $sql );
+            $teams = $this->wpdb->get_results( $sql );
             wp_cache_set( md5( $sql ), $teams, 'teams' );
         }
 

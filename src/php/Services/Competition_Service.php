@@ -135,6 +135,45 @@ class Competition_Service {
     public function find_competitions_with_summary( ?string $age_group, ?string $type ): array {
         return $this->competition_repository->find_competitions_with_summary( $age_group, $type );
     }
+
+    public function get_competition_overview($competition_id, $season, $min_fixtures = 1): ?Competition_Overview_DTO {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+
+        return $this->competition_repository->get_competition_overview($competition->get_id(), $season, $min_fixtures);
+    }
+
+    public function get_teams_for_competition($competition_id, $season, $min_fixtures = 1): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+
+        return $this->team_repository->find_teams_by_competition_with_details($competition->get_id(), $season, $min_fixtures);
+    }
+
+    public function get_clubs_for_competition( ?int $competition_id, ?int $season = null ): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        return $this->league_team_repository->get_clubs_by_competition_id( $competition->get_id(), $season );
+    }
+
+    public function get_club_details_for_competition( ?int $competition_id, ?int $season = null ): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        return $this->club_repository->find_clubs_by_competition_and_season( $competition->get_id(), $season );
+    }
+
     public function create( ?string $name, ?string $type, ?string $age_group ): Competition {
         $competition_check = $this->competition_repository->find_by( [ 'name' => $name ] );
         if ( $competition_check ) {

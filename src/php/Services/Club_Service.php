@@ -542,7 +542,7 @@ class Club_Service {
      * @return bool
      */
     public function can_user_update( int $club_id ): bool {
-        $user_can_update     = false;
+        $user_can_update = false;
         if ( is_user_logged_in() ) {
             if ( current_user_can( 'manage_racketmanager' ) ) {
                 $user_can_update = true;

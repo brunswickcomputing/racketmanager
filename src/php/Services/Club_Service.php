@@ -558,6 +558,23 @@ class Club_Service {
     }
 
     /**
+     * Can the user update as captain (includes match secretary or admin user)?
+     *
+     * @param int $club_id
+     *
+     * @return bool
+     */
+    public function can_user_update_as_captain( int $club_id ): bool {
+        $user_can_update = $this->can_user_update( $club_id );
+        if ( ! $user_can_update ) {
+            $user            = wp_get_current_user();
+            $userid          = $user->ID;
+            $user_can_update = $this->is_player_captain( $club_id, $userid );
+        }
+        return $user_can_update;
+    }
+
+    /**
      * Can the user update players?
      *
      * @param int $club_id

@@ -486,22 +486,6 @@ class RacketManager {
     }
 
     /**
-     * Calculate team ratings
-     *
-     * @param int $competition_id competition id.
-     * @param int $season
-     *
-     * @return void
-     */
-    public function calculate_team_ratings( int $competition_id, int $season ): void {
-        if ( $competition_id ) {
-            $competition = get_competition( $competition_id );
-            if ( $competition && $season && ! empty( $competition->get_season_by_name( $season ) ) ) {
-                $competition->calculate_team_ratings( $season );
-            }
-        }
-    }
-    /**
      * Calculate tournament ratings
      *
      * @param int $tournament_id tournament id.
@@ -513,68 +497,6 @@ class RacketManager {
             $tournament = get_tournament( $tournament_id );
             $tournament?->calculate_player_team_ratings();
         }
-    }
-    /**
-     * Notify team entry open
-     *
-     * @param int $competition_id competition id.
-     * @param int $season season name.
-     *
-     * @return object
-     */
-    public function notify_team_entry_open( int $competition_id, int $season ): object {
-        $return = new stdClass();
-        $msg    = array();
-        if ( $competition_id ) {
-            $competition = get_competition( $competition_id );
-            if ( $competition ) {
-                $return = $competition->notify_team_entry_open( $season );
-            } else {
-                $return->error = true;
-                $msg[]         = __( 'Competition not found', 'racketmanager' );
-            }
-        } else {
-            $return->error = true;
-            $msg[]         = __( 'Competition id not found', 'racketmanager' );
-        }
-        if ( ! empty( $return->error ) ) {
-            $return->msg = __( 'Notification error', 'racketmanager' );
-            foreach ( $msg as $error ) {
-                $return->msg .= '<br>' . $error;
-            }
-        }
-        return $return;
-    }
-    /**
-     * Notify team entry reminder
-     *
-     * @param int $competition_id competition id.
-     * @param int $season season name.
-     *
-     * @return object
-     */
-    public function notify_team_entry_reminder( int $competition_id, int $season ): object {
-        $return = new stdClass();
-        $msg    = array();
-        if ( $competition_id ) {
-            $competition = get_competition( $competition_id );
-            if ( $competition ) {
-                $return = $competition->notify_team_entry_reminder( $season );
-            } else {
-                $return->error = true;
-                $msg[]         = __( 'Competition not found', 'racketmanager' );
-            }
-        } else {
-            $return->error = true;
-            $msg[]         = __( 'Competition id not found', 'racketmanager' );
-        }
-        if ( ! empty( $return->error ) ) {
-            $return->msg = __( 'Notification error', 'racketmanager' );
-            foreach ( $msg as $error ) {
-                $return->msg .= '<br>' . $error;
-            }
-        }
-        return $return;
     }
     /**
      * Notify tournament entry open and lock fees

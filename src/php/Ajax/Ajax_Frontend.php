@@ -214,99 +214,37 @@ class Ajax_Frontend extends Ajax {
      * Function to process a cup entry input form
      */
     public function cup_entry_request(): void {
-        $start_times = array();
-        $club_id     = null;
-        $club_entry  = null;
         $validator   = new Validator_Entry_Form();
         //phpcs:disable WordPress.Security.NonceVerification.Missing
-        $validator = $validator->nonce( 'cup-entry' );
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_cup-entry' );
         if ( ! $validator->error ) {
             if ( ! is_user_logged_in() ) {
                 $validator = $validator->logged_in_entry();
             } else {
-                $season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
-                $competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
-                $club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
-                //phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $events         = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
-                $teams          = isset( $_POST['team'] ) ? wp_unslash( $_POST['team'] ) : array();
-                $captains       = isset( $_POST['captain'] ) ? wp_unslash( $_POST['captain'] ) : array();
-                $captain_ids    = isset( $_POST['captainId'] ) ? wp_unslash( $_POST['captainId'] ) : array();
-                $contact_nos    = isset( $_POST['contactno'] ) ? wp_unslash( $_POST['contactno'] ) : array();
-                $contact_emails = isset( $_POST['contactemail'] ) ? wp_unslash( $_POST['contactemail'] ) : array();
-                $match_days     = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
-                $match_times    = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
-                //phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
-                $club_entry           = new stdClass();
-                $club_entry->club     = $club_id;
-                $club_entry->season   = $season;
-                $club_entry->comments = $comments;
-                if ( $competition_id ) {
-                    $competition = get_competition( $competition_id );
-                    if ( $competition ) {
-                        if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
-                            $start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
-                            $start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
-                        }
-                        if ( ! empty( $competition->start_time['weekend']['min'] ) && ! empty( $competition->start_time['weekend']['max'] ) ) {
-                            $start_times['weekend']['min'] = $competition->start_time['weekend']['min'];
-                            $start_times['weekend']['max'] = $competition->start_time['weekend']['max'];
-                        }
+                $request = new Cup_Entry_Request_DTO( $_POST );
+                try {
+                    $response = $this->competition_entry_service->request_cup_entry( $request );
+                    if ( is_wp_error( $response ) ) {
+                        $validator->error    = true;
+                        $validator->err_flds = $response->get_error_codes();
+                        $validator->err_msgs = $response->get_error_messages();
+                        $validator->msg      = __( 'Errors in cup entry form', 'racketmanager' );
                     } else {
-                        $validator = $validator->competition( $competition );
+                        $msg = __( 'Cup entry complete', 'racketmanager' );
+                        wp_send_json_success( $msg );
                     }
-                    $club_entry->competition = $competition;
+                } catch ( Competition_Not_Found_Exception ) {
+                    $validator->error = true;
                 }
-
-                $validator = $validator->club( $club_id );
-                $validator = $validator->events_entry( $events );
-                foreach ( $events as $event_id ) {
-                    $event      = get_event( $event_id );
-                    $team       = $teams[$event->id] ?? null;
-                    $field_ref  = $event->id;
-                    $field_name = $event->name;
-                    $validator  = $validator->teams( $team, $field_ref, $field_name );
-                    if ( ! empty( $team ) ) {
-                        $captain      = $captains[$event->id] ?? null;
-                        $captain_id   = $captain_ids[$event->id] ?? null;
-                        $contactno    = $contact_nos[$event->id] ?? null;
-                        $contactemail = $contact_emails[$event->id] ?? null;
-                        $match_day    = $match_days[$event->id] ?? null;
-                        $matchtime    = $match_times[$event->id] ?? null;
-                        $validator    = $validator->match_day( $match_day, $field_ref );
-                        $validator    = $validator->match_time( $matchtime, $field_ref, $match_day, $start_times );
-                        $validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
-
-                        $event_entry             = new stdClass();
-                        $event_entry->id         = $event->id;
-                        $event_entry->name       = $event->name;
-                        $event_entry->team_id    = $team;
-                        $event_entry->match_day  = $match_day;
-                        $event_entry->match_time = $matchtime;
-                        $event_entry->captain_id = $captain_id;
-                        $event_entry->captain    = $captain;
-                        $event_entry->telephone  = $contactno;
-                        $event_entry->email      = $contactemail;
-                        $club_entry->events[]    = $event_entry;
-                    }
-                }
-                $acceptance = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';
-                $validator  = $validator->entry_acceptance( $acceptance );
+                $return = $validator->get_details();
+                wp_send_json_error( $return, $return->status );
             }
-        }
-        if ( empty( $validator->error ) ) {
-            $this->club_service->cup_entry( $club_id, $club_entry );
-            $msg = __( 'Cup entry complete', 'racketmanager' );
-            wp_send_json_success( $msg );
-        } else {
-            $return = $validator;
+         }
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
             $return->msg = __( 'Errors in entry form', 'racketmanager' );
-            if ( empty( $return->status ) ) {
-                $return->status = 400;
-            }
-            wp_send_json_error( $return, $return->status );
         }
+        wp_send_json_error( $return, $return->status );
     }
 
     /**

@@ -236,7 +236,7 @@ class Player_Repository {
     }
 
     /**
-     * Find a player by ID, login, name or email.
+     * Find a player by ID, login, name, or email.
      *
      * @param int|string $player_id
      * @param string $search_type
@@ -461,7 +461,7 @@ class Player_Repository {
 
         if ( ! empty( $gender ) ) {
             // Filter happens in the HAVING clause because gender is aggregated
-            // OR we use an INNER JOIN for meta-query optimisation if performance is key.
+            // OR we use an INNER JOIN for meta-query optimization if performance is key.
             // Using HAVING for simplicity here:
             $query    .= " HAVING gender = %s";
             $params[] = $gender;
@@ -513,4 +513,58 @@ class Player_Repository {
         }
         return $seasons;
     }
+
+    /**
+     * Gets a unique list of players who were active in a specific competition and season.
+     *
+     * @param int $competition_id
+     * @param string $season (e.g., "2025/26")
+     *
+     * @return Players_List_DTO[]
+     */
+    public function find_active_players_by_competition_and_season( int $competition_id, string $season): array {
+        $user_table = $this->wpdb->base_prefix . 'users';
+        $usermeta_table = $this->wpdb->base_prefix . 'usermeta';
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+        $rubbers_table = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $fixtures_table = $this->wpdb->prefix . 'racketmanager_matches';
+        $events_table = $this->wpdb->prefix . 'racketmanager_events';
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $registrations_table = $this->wpdb->prefix . 'racketmanager_club_players';
+
+        $query = $this->wpdb->prepare(
+            "
+                SELECT
+                    base.playerId,
+                    u.display_name,
+                    m1.meta_value AS firstName,
+                    m2.meta_value AS surname
+                FROM (
+                    -- Filter down to unique player IDs first to avoid joining meta for duplicates
+                    SELECT DISTINCT rp.player_id AS playerId
+                    FROM `$rubber_players_table` rp
+                        JOIN `$registrations_table` rg ON rp.club_player_id = rg.id
+                    JOIN `$rubbers_table` r ON rp.rubber_id = r.id
+                    JOIN `$fixtures_table` f ON r.match_id = f.id
+                    JOIN `$leagues_table` l ON f.league_id = l.id
+                    JOIN `$events_table` e ON l.event_id = e.id
+                    WHERE f.season = %s
+                      AND e.competition_id = %d
+                      AND rg.system_record IS NULL
+                ) AS base
+                    JOIN `$user_table` u ON base.playerId = u.id
+                LEFT JOIN `$usermeta_table` m1 ON base.playerId = m1.user_id AND m1.meta_key = 'first_name'
+                LEFT JOIN `$usermeta_table` m2 ON base.playerId = m2.user_id AND m2.meta_key = 'last_name'
+                ORDER BY surname, firstName;
+                ",
+            $season,
+            $competition_id,
+        );
+        $results = $this->wpdb->get_results( $query );
+        return array_map(
+            fn( $row ) => new Players_List_DTO( $row ),
+            $results
+        );
+    }
+
 }

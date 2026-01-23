@@ -57,7 +57,6 @@ class League_Team_Repository {
             '%d',
             '%s',
             '%s',
-            '%s',
             '%f',
             '%f',
             '%d',

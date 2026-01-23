@@ -432,10 +432,11 @@ class Ajax_Frontend extends Ajax {
             $match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
             $set_team = ! empty( $_POST['setTeam'] ) && sanitize_text_field( wp_unslash( $_POST['setTeam'] ) );
             if ( $event_id ) {
-                $event = get_event( $event_id );
-                if ( ! $event ) {
+                try {
+                    $event = $this->competition_service->get_event_by_id( $event_id );
+                } catch ( Event_Not_Found_Exception $e ) {
                     $validator->error      = true;
-                    $validator->err_msgs[] = $this->event_not_found;
+                    $validator->err_msgs[] = $e->getMessage();
                     $validator->err_flds[] = 'event_id';
                     $validator->status     = 404;
                 }

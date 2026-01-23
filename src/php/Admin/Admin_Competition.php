@@ -120,7 +120,7 @@ final class Admin_Competition extends Admin_Display {
         $forwin_overtime  = 0;
         $forloss_overtime = 0;
         $is_invalid       = false;
-        $rules_options    = $competition->get_rules_options();
+        $rules_options    = $this->competition_service->get_rules_options( $competition->type );
         $clubs            = $this->club_service->get_clubs(
             array(
                 'type' => 'affiliated',

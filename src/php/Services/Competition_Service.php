@@ -12,8 +12,6 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\Competition;
 use Racketmanager\Domain\DTO\Competition_Overview_DTO;
 use Racketmanager\Domain\Event;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Clubs_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
@@ -27,13 +25,14 @@ use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
+use function Racketmanager\get_league;
+use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 
 /**
@@ -282,12 +281,43 @@ class Competition_Service {
         return ( int ) $result; // Returns 1 if updated, 0 if no change
     }
 
-    private function is_season_valid_for_competition( Competition $competition, int $season ): array {
+    public function is_season_valid_for_competition( Competition $competition, int $season ): array {
         $current_season = $competition->get_season_by_name( $season );
         if ( ! $current_season ) {
             throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
         }
         return $current_season;
+    }
+
+    public function verify_club_entry($competition_id, $club_id, $season): bool {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        return $this->competition_repository->is_club_participating($competition->get_id(), $club_id, $season);
+    }
+
+    public function get_active_events_for_competition( ?int $competition_id, ?int $season = null ): array {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        try {
+            $this->is_season_valid_for_competition( $competition, $season );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e );
+        }
+        $events = $this->event_repository->find_by_competition_id( $competition->get_id() );
+        foreach ( $events as $i => $event ) {
+            if ( $season && empty( $event->get_season_by_name( $season ) ) ) {
+                unset( $events[ $i ] );
+            } else {
+                $events[ $i ] = $event;
+            }
+        }
+        return $events;
     }
 
     /**
@@ -652,6 +682,92 @@ class Competition_Service {
             $this->competition_repository->save( $competition );
         } else {
             throw new Competition_Not_Updated_Exception( __( 'No seasons deleted', 'racketmanager' ) );
+        }
+    }
+
+    public function calculate_team_ratings( ?int $competition_id, ?int $season ): void {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e );
+        }
+        try {
+            $this->is_season_valid_for_competition( $competition, $season );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e );
+        }
+        $teams = $competition->get_teams( array( 'season' => $season ) );
+        foreach ( $teams as $team ) {
+            $team_points = 0;
+            // set league ratings.
+            $prev_season      = $season - 1;
+            $league_standings = $this->racketmanager->get_league_standings(
+                array(
+                    'season'    => $prev_season,
+                    'team'      => $team->team_id,
+                    'age_group' => $competition->get_age_group(),
+                )
+            );
+            if ( $league_standings ) {
+                foreach ( $league_standings as $league_standing ) {
+                    $points       = 0;
+                    $league       = get_league( $league_standing->id );
+                    $league_title = explode( ' ', $league->title );
+                    $league_no    = end( $league_title );
+                    if ( ! $competition->is_league ) {
+                        $position = 0;
+                    } elseif ( is_numeric( $league_no ) ) {
+                        $teams_per_league = $competition->settings['max_teams'] ?? 10;
+                        $position         = ( $league_no * $teams_per_league ) + $league_standing->rank;
+                    } else {
+                        $position = $league_standing->rank;
+                    }
+                    if ( isset( $league->event->age_limit ) ) {
+                        if ( 'open' === $league->event->age_limit ) {
+                            $event_points = 1;
+                        } elseif ( $league->event->age_limit >= 30 ) {
+                            $event_points = 0.25;
+                        } elseif ( 16 === $league->event->age_limit ) {
+                            $event_points = 0.4;
+                        } elseif ( 14 === $league->event->age_limit ) {
+                            $event_points = 0.25;
+                        } elseif ( 12 === $league->event->age_limit ) {
+                            $event_points = 0.15;
+                        } else {
+                            $event_points = 1;
+                        }
+                    } else {
+                        $event_points = 1;
+                    }
+                    $position_points = array( 300, 240, 192, 180, 160, 140, 128, 120, 116, 112, 108, 104, 100, 96, 88, 80, 76, 72, 68, 64, 60, 65, 52, 48, 44, 40, 36, 32, 28, 24, 20 );
+                    $base_points     = $position_points[$position - 1] ?? 0;
+                    if ( ! empty( $base_points ) ) {
+                        $points = ceil( $base_points * $event_points );
+                    }
+                    $base_points_won = 42;
+                    $points_div      = ( $league_no - 1 ) * ( $league->event->num_rubbers * 2 );
+                    $points_won      = ( $base_points_won - round( $points_div * $event_points ) ) * $league_standing->won_matches;
+                    $points         += $points_won;
+                    $team_points    += $points;
+                }
+            }
+            if ( $competition->is_championship ) {
+                // set cup rating.
+                $matches = $competition->get_matches(
+                    array(
+                        'team'     => $team->team_id,
+                        'final'    => 'all',
+                        'time'     => 365,
+                        'complete' => true,
+                    )
+                );
+                foreach ( $matches as $match ) {
+                    $points       = Util::calculate_championship_rating( $match, $team->team_id );
+                    $team_points += $points;
+                }
+            }
+            $league_team = get_league_team( $team->table_id );
+            $league_team?->set_rating($team_points);
         }
     }
 

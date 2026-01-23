@@ -13,6 +13,7 @@ use Racketmanager\Domain\DTO\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
@@ -100,5 +101,29 @@ class Team_Service {
         }
         $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
         return new Team_Details_DTO( $team, $club, $match_secretary );
+    }
+
+    /**
+     * Get the latest team fixture settings for an event
+     *
+     * @param int|null $team_id
+     * @param $event_id
+     *
+     * @return Team_Fixture_Settings_DTO
+     */
+    public function get_latest_team_details_for_event( ?int $team_id, $event_id = null ): Team_Fixture_Settings_DTO {
+        $team = $this->team_repository->find_by_id( $team_id );
+        if ( ! $team ) {
+            throw new Team_Not_Found_Exception( __( 'Team not found', 'racketmanager' ) );
+        }
+        $event = $this->event_repository->find_by_id( $event_id );
+        if ( ! $event ) {
+            throw new Event_Not_Found_Exception( __( 'Event not found', 'racketmanager' ) );
+        }
+        $team_info = $this->team_repository->find_team_settings_for_event( $team_id, $event_id );
+        if ( ! $team_info ) {
+            throw new Team_Not_Found_Exception( __( 'Team not found', 'racketmanager' ) );
+        }
+        return $team_info;
     }
 }

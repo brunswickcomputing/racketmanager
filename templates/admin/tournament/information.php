@@ -149,7 +149,7 @@ namespace Racketmanager;
                     $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                 }
                 ?>
-                <input type="text" class="form-control" name="matchFormat" id="matchFormat" placeholder="<?php esc_html_e( 'Enter match format', 'racktmanager' ); ?>" value="<?php echo empty( $tournament->information->match_format ) ? null : esc_html( $tournament->information->match_format ); ?>" />
+                <input type="text" class="form-control" name="matchFormat" id="matchFormat" placeholder="<?php esc_html_e( 'Enter match format', 'racketmanager' ); ?>" value="<?php echo empty( $tournament->information->match_format ) ? null : esc_html( $tournament->information->match_format ); ?>" />
                 <label for="matchFormat"><?php esc_html_e( 'Match format', 'racketmanager' ); ?></label>
                 <?php
                 if ( $is_invalid ) {

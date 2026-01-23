@@ -616,7 +616,7 @@ class Ajax_Frontend extends Ajax {
     }
 
     /**
-     * Get team/match dropdown for event
+     * Get team/match dropdown for an event
      */
     #[NoReturn]
     public function get_event_team_match_dropdown(): void {

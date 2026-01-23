@@ -17,7 +17,7 @@ if ( empty( $competition_club ) ) {
         <div class="module__content">
             <div class="module-container">
                 <?php
-                if ( ! empty( $competition->clubs ) ) {
+                if ( ! empty( $clubs ) ) {
                     ?>
                     <div class="col-12 col-md-12 col-lg-6">
                         <div class="row mb-2 row-header">
@@ -32,20 +32,20 @@ if ( empty( $competition_club ) ) {
                             </div>
                         </div>
                         <?php
-                        foreach ( $competition->clubs as $club ) {
+                        foreach ( $clubs as $club ) {
                             $url_link = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/club/' . seo_url( $club->shortcode ) . '/';
                             ?>
                             <div class="row mb-2 row-list">
                                 <div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
                                     <a href="<?php echo esc_attr( $url_link ); ?>" class="tabDataLink" data-type="competition" data-type-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $competition->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $url_link ); ?>" data-link-id="<?php echo esc_attr( $club->id ); ?>" data-link-type="clubs">
-                                        <?php echo esc_html( $club->name ); ?>
+                                        <?php echo esc_html( $club->shortcode ); ?>
                                     </a>
                                 </div>
                                 <div class="col-3 text-end">
-                                    <?php echo esc_html( $club->team_count ); ?>
+                                    <?php echo esc_html( $club->num_teams ); ?>
                                 </div>
                                 <div class="col-3 text-end">
-                                    <?php echo esc_html( $club->player_count ); ?>
+                                    <?php echo isset( $club->num_players ) ? esc_html( $club->num_players ) : null; ?>
                                 </div>
                             </div>
                             <?php

@@ -10,13 +10,14 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_charge;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_player;
 use function Racketmanager\get_tab;
@@ -133,13 +134,10 @@ class Shortcodes_Competition extends Shortcodes {
             }
             $competition_id = un_seo_url( $competition_id );
         }
-        if ( $competition_id ) {
-            $competition = get_competition( $competition_id, 'name' );
-            if ( ! $competition ) {
-                $msg = $this->competition_not_found;
-            }
-        } else {
-            $msg = $this->no_competition_id;
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            $msg = $e->getMessage();
         }
         if ( empty( $msg ) ) {
             $seasons = $competition->get_seasons();
@@ -203,33 +201,24 @@ class Shortcodes_Competition extends Shortcodes {
         $competition_id = $args['id'];
         $season         = $args['season'];
         $template       = $args['template'];
-        $competition    = get_competition( $competition_id );
-        if ( ! $competition ) {
-            $msg = $this->competition_not_found;
-            return $this->return_error( $msg );
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         if ( $season ) {
             $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
-        $competition->events  = $competition->get_events();
-        $competition->entries = $competition->get_teams(
-            array(
-                'count'  => true,
-                'season' => $season,
-                'status' => 1,
-            )
-        );
-        $player_args              = array();
-        $player_args['season']    = $competition->current_season['name'];
-        $player_args['count']     = true;
-        $competition->num_players = $competition->get_players( $player_args );
+        $competition_overview = $this->competition_service->get_competition_overview( $competition->get_id(), $season );
+
         $filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
         return $this->load_template(
             $filename,
             array(
                 'competition'        => $competition,
+                'overview'           => $competition_overview,
                 'competition_season' => $competition->current_season,
             ),
             'competition'
@@ -253,29 +242,17 @@ class Shortcodes_Competition extends Shortcodes {
         $competition_id = $args['id'];
         $season         = $args['season'];
         $template       = $args['template'];
-        $competition    = get_competition( $competition_id );
-        if ( ! $competition ) {
-            $msg = $this->competition_not_found;
-            return $this->return_error( $msg );
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         if ( $season ) {
             $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
-        $competition->events = $competition->get_events();
-        $i                   = 0;
-        foreach ( $competition->events as $event ) {
-            $event->num_entries        = $event->get_teams(
-                array(
-                    'count'  => true,
-                    'season' => $season,
-                    'status' => 1,
-                )
-            );
-            $competition->events[ $i ] = $event;
-            ++$i;
-        }
+        $events = $this->competition_service->get_events_with_details_for_competition( $competition_id, $season );
 
         $tab      = 'events';
         $filename = ( ! empty( $template ) ) ? 'events-' . $template : 'events';
@@ -284,6 +261,7 @@ class Shortcodes_Competition extends Shortcodes {
             $filename,
             array(
                 'competition' => $competition,
+                'events'      => $events,
                 'tab'         => $tab,
             ),
             'competition'
@@ -307,16 +285,17 @@ class Shortcodes_Competition extends Shortcodes {
         $competition_id = $args['id'];
         $season         = $args['season'];
         $template       = $args['template'];
-        $competition    = get_competition( $competition_id );
-        if ( ! $competition ) {
-            $msg = $this->competition_not_found;
-            return $this->return_error( $msg );
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         if ( $season ) {
             $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
+        $teams = $this->competition_service->get_teams_for_competition( $competition_id, $season );
         $competition->teams = $competition->get_teams(
             array(
                 'status'  => 1,
@@ -332,6 +311,7 @@ class Shortcodes_Competition extends Shortcodes {
             $filename,
             array(
                 'competition' => $competition,
+                'teams'       => $teams,
                 'tab'         => $tab,
             ),
             'competition'
@@ -358,18 +338,18 @@ class Shortcodes_Competition extends Shortcodes {
         $season         = $args['season'];
         $club_id        = $args['clubs'];
         $template       = $args['template'];
-        $competition    = get_competition( $competition_id );
-        if ( ! $competition ) {
-            $msg = $this->competition_not_found;
-            return $this->return_error( $msg );
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         if ( $season ) {
             $competition->set_current_season( $season );
         } else {
             $season = $competition->current_season['name'];
         }
-        $competition->clubs = $competition->get_clubs( array( 'status' => 1 ) );
-        $competition_club   = null;
+        $clubs            = null;
+        $competition_club = null;
         if ( ! $club_id && isset( $wp->query_vars['club_name'] ) ) {
             $club_id = get_query_var( 'club_name' );
             $club_id = str_replace( '-', ' ', $club_id );
@@ -437,6 +417,8 @@ class Shortcodes_Competition extends Shortcodes {
                 $msg = $this->club_not_found;
                 return $this->return_error( $msg );
             }
+        } else {
+            $clubs = $this->competition_service->get_club_details_for_competition( $competition_id, $season );
         }
         $filename = ( ! empty( $template ) ) ? 'clubs-' . $template : 'clubs';
         return $this->load_template(
@@ -444,6 +426,7 @@ class Shortcodes_Competition extends Shortcodes {
             array(
                 'competition'      => $competition,
                 'competition_club' => $competition_club,
+                'clubs' => $clubs,
             ),
             'competition'
         );
@@ -469,10 +452,10 @@ class Shortcodes_Competition extends Shortcodes {
         $season         = $args['season'];
         $player_id      = $args['players'];
         $template       = $args['template'];
-        $competition    = get_competition( $competition_id );
-        if ( ! $competition ) {
-            $msg = $this->competition_not_found;
-            return $this->return_error( $msg );
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
         if ( $season ) {
             $competition->set_current_season( $season );
@@ -485,7 +468,7 @@ class Shortcodes_Competition extends Shortcodes {
             if ( is_numeric( $player_id ) ) {
                 $player = get_player( $player_id ); // get player by id.
             } else {
-                $player = get_player( $player_id, 'name' ); // get player by name.
+                $player = get_player( $player_id, 'name' ); // get a player by name.
             }
             if ( $player ) {
                 $player->matches = $player->get_matches( $competition, $competition->current_season['name'], 'competition' );
@@ -496,7 +479,7 @@ class Shortcodes_Competition extends Shortcodes {
                 echo $this->player_not_found;
             }
         } else {
-            $players              = $competition->get_players( array( 'season' => $competition->current_season['name'] ) );
+            $players              = $this->player_service->get_players_for_competition( $competition_id, $season );
             $competition->players = Util::get_players_list( $players );
         }
         $filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
@@ -526,20 +509,18 @@ class Shortcodes_Competition extends Shortcodes {
         $competition_id = $args['id'];
         $season         = $args['season'];
         $template       = $args['template'];
-        $competition    = get_competition( $competition_id );
-        if ( ! $competition ) {
-            $msg = $this->competition_not_found;
-            return $this->return_error( $msg );
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+            $winners     = $this->competition_service->get_winners_for_competition( $competition_id, $season );
+        } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        if ( $season ) {
-            $competition->set_current_season( $season );
-        }
-        $competition->winners = $competition->get_winners( true );
-        $filename             = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';
+        $filename = ( ! empty( $template ) ) ? 'winners-' . $template : 'winners';
         return $this->load_template(
             $filename,
             array(
                 'competition' => $competition,
+                'winners'     => $winners,
             ),
             'competition'
         );
@@ -918,9 +899,9 @@ class Shortcodes_Competition extends Shortcodes {
                     $club->entry[ $event->id ] = $event;
                 }
             }
-            $ladies_teams = $club->get_teams( array( 'type' => 'WD' ) );
-            $mens_teams   = $club->get_teams( array( 'type' => 'MD' ) );
-            $mixed_teams  = $club->get_teams( array( 'type' => 'XD' ) );
+            $ladies_teams = $this->team_service->get_teams_for_club( $club->id, 'WD' );
+            $mens_teams   = $this->team_service->get_teams_for_club( $club->id, 'MD' );
+            $mixed_teams  = $this->team_service->get_teams_for_club( $club->id, 'XD' );
             $match_days   = Util_Lookup::get_match_days();
 
             $filename = ( ! empty( $template ) ) ? 'entry-cup-' . $template : 'entry-cup';
@@ -1173,24 +1154,18 @@ class Shortcodes_Competition extends Shortcodes {
         );
         $competition_id = $args['id'];
         $template       = $args['template'];
-        if ( $competition_id ) {
-            $competition = get_competition( $competition_id );
-            if ( $competition ) {
-                $events   = $competition->get_events();
-                $filename = ! empty( $template ) ? 'dropdown-' . $template : 'dropdown';
-                return $this->load_template(
-                    $filename,
-                    array(
-                        'events' => $events,
-                    ),
-                    'competition'
-                );
-            } else {
-                $msg = $this->competition_not_found;
-            }
-        } else {
-            $msg = $this->no_competition_id;
+        try {
+            $events      = $this->competition_service->get_events_for_competition( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        return $this->return_error( $msg );
+        $filename = ! empty( $template ) ? 'dropdown-' . $template : 'dropdown';
+        return $this->load_template(
+            $filename,
+            array(
+                'events' => $events,
+            ),
+            'competition'
+        );
     }
 }

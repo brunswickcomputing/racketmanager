@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 global $racketmanager;
 /** @var object $competition */
+/** @var object $overview */
 ?>
     <div class="module module--card">
         <div class="module__banner">
@@ -43,7 +44,7 @@ global $racketmanager;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( count( $competition->events ) ); ?>
+                                        <?php echo esc_html( $overview->num_events ); ?>
                                     </span>
                                 </span>
                             </div>
@@ -55,13 +56,13 @@ global $racketmanager;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( $competition->entries ); ?>
+                                        <?php echo esc_html( $overview->num_teams ); ?>
                                     </span>
                                 </span>
                             </div>
                         </li>
                         <?php
-                        if ( ! empty( $competition->num_players ) ) {
+                        if ( ! empty( $overview->num_players ) ) {
                             ?>
                             <li class="tournament-meta__info_block">
                                 <div class="text--low-opacity text--small">
@@ -70,7 +71,25 @@ global $racketmanager;
                                 <div class="tournament-meta__title">
                                     <span class="meta-link">
                                         <span class="meta-link__value">
-                                            <?php echo esc_html( $competition->num_players ); ?>
+                                            <?php echo esc_html( $overview->num_players ); ?>
+                                        </span>
+                                    </span>
+                                </div>
+                            </li>
+                            <?php
+                        }
+                        ?>
+                        <?php
+                        if ( ! empty( $overview->grade ) ) {
+                            ?>
+                            <li class="tournament-meta__info_block">
+                                <div class="text--low-opacity text--small">
+                                    <?php esc_html_e( 'Grade', 'racketmanager' ); ?>
+                                </div>
+                                <div class="tournament-meta__title">
+                                    <span class="meta-link">
+                                        <span class="meta-link__value">
+                                            <?php echo esc_html( $overview->grade ); ?>
                                         </span>
                                     </span>
                                 </div>

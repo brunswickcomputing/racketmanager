@@ -162,7 +162,7 @@ class Competition_Service {
         return $this->competition_repository->find_competitions_with_summary( $age_group, $type );
     }
 
-    public function get_competition_overview($competition_id, $season, $min_fixtures = 1): ?Competition_Overview_DTO {
+    public function get_competition_overview(?int $competition_id, ?int $season, int $min_fixtures = 1): ?Competition_Overview_DTO {
         try {
             $competition = $this->get_by_id( $competition_id );
         } catch ( Competition_Not_Found_Exception $e ) {
@@ -172,7 +172,7 @@ class Competition_Service {
         return $this->competition_repository->get_competition_overview($competition->get_id(), $season, $min_fixtures);
     }
 
-    public function get_teams_for_competition($competition_id, $season, $min_fixtures = 1): array {
+    public function get_teams_for_competition( ?int $competition_id, ?int $season, int $min_fixtures = 1): array {
         try {
             $competition = $this->get_by_id( $competition_id );
         } catch ( Competition_Not_Found_Exception $e ) {

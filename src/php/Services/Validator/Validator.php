@@ -715,10 +715,11 @@ class Validator {
         return $return;
     }
 
-    public function set_errors( string $error_field, string $error_message ): void {
+    public function set_errors( string $error_field, string $error_message, int $status = 400 ): void {
         $this->error      = true;
         $this->err_flds[] = $error_field;
         $this->err_msgs[] = $error_message;
+        $this->status     = $status;
         $this->err->add( $error_field, $error_message );
     }
 }

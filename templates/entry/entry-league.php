@@ -44,7 +44,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
     require_once RACKETMANAGER_PATH . 'templates/includes/competition-header.php';
     ?>
     <form id="form-entry" action="" method="post">
-        <?php wp_nonce_field( 'league-entry' ); ?>
+        <?php wp_nonce_field( 'racketmanager_league-entry', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
         <input type="hidden" name="competitionId" value="<?php echo esc_html( $competition->id ); ?>" />
         <input type="hidden" name="competitionType" value="<?php echo esc_html( $competition->type ); ?>" />

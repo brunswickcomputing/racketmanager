@@ -38,9 +38,9 @@ final class Validator_Entry_Form extends Validator {
      * @return object updated validation object.
      */
     public function logged_in_entry(): object {
-        $this->error      = true;
-        $this->err_flds[] = 'clubId';
-        $this->err_msgs[] = __( 'You must be logged in to submit an entry', 'racketmanager' );
+        $error_field   = 'clubId';
+        $error_message = __( 'You must be logged in to submit an entry', 'racketmanager' );
+        $this->set_errors( $error_field, $error_message );
         return $this;
     }
 
@@ -53,9 +53,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function club_membership( ?string $club_id ): object {
         if ( ! $club_id ) {
-            $this->error      = true;
-            $this->err_flds[] = 'clubId';
-            $this->err_msgs[] = __( 'Select the club you are a member of', 'racketmanager' );
+            $error_field   = 'clubId';
+            $error_message = __( 'Select the club you are a member of', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -68,15 +68,14 @@ final class Validator_Entry_Form extends Validator {
      * @return object $validation updated validation object.
      */
     public function events_entry( array $events, ?int $max_entries = null ): object {
+        $error_field = 'event';
         if ( empty( $events ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'event';
-            $this->err_msgs[] = __( 'You must select a event to enter', 'racketmanager' );
+            $error_message = __( 'You must select a event to enter', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         } elseif ( ! empty( $max_entries ) ) {
             if ( count( $events ) > $max_entries ) {
-                $this->error      = true;
-                $this->err_flds[] = 'event';
-                $this->err_msgs[] = __( 'You have entered too many events', 'racketmanager' );
+                $error_message = __( 'You have entered too many events', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
             }
         }
         return $this;
@@ -131,10 +130,10 @@ final class Validator_Entry_Form extends Validator {
         $court_needs_by_day = $court_needs * ceil( $court_data['teams'] / 2 );
         $match_day_name     = Util_Lookup::get_match_day( $match_day );
         if ( $court_needs_by_day > $num_courts_available ) {
-            $this->error      = true;
-            $this->err_flds[] = 'numCourtsAvailable';
+            $error_field = 'numCourtsAvailable';
             /* translators: %1$s: match day, %2$s: match time, %3$s: courts needed */
-            $this->err_msgs[] = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
+            $error_message = sprintf( __( 'There are not enough courts available for %1$s at %2$s. You need %3$s courts.', 'racketmanager' ), $match_day_name, $match_time, $court_needs_by_day );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -142,14 +141,14 @@ final class Validator_Entry_Form extends Validator {
     /**
      * Validate entry acceptance
      *
-     * @param string $acceptance acceptance indicator.
+     * @param bool $acceptance acceptance indicator.
      * @return object $validation updated validation object.
      */
-    public function entry_acceptance( string $acceptance ): object {
+    public function entry_acceptance( bool $acceptance ): object {
         if ( empty( $acceptance ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'acceptance';
-            $this->err_msgs[] = __( 'You must agree to the rules', 'racketmanager' );
+            $error_field   = 'acceptance';
+            $error_message = __( 'You must agree to the rules', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -163,21 +162,20 @@ final class Validator_Entry_Form extends Validator {
      */
     public function match_overlap( string $match_time, string $schedule_time, string $field_ref ): object {
         $date_format = '!H:i:s';
-        $start_time = DateTime::createFromFormat( $date_format, $match_time );
+        $start_time  = DateTime::createFromFormat( $date_format, $match_time );
+        $error_field = 'matchtime-' . $field_ref;
         try {
             $start_time->modify( '-2 hours' );
             $end_time = DateTime::createFromFormat( $date_format, $match_time );
             $end_time->modify( '+2 hours' );
             $current_match_time = DateTime::createFromFormat( $date_format, $schedule_time );
             if ( $current_match_time > $start_time && $current_match_time < $end_time ) {
-                $this->error      = true;
-                $this->err_flds[] = 'matchtime-' . $field_ref;
-                $this->err_msgs[] = __( 'Match overlap', 'racketmanager' );
+                $error_message = __( 'Match overlap', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
             }
         } catch ( DateMalformedStringException ) {
-            $this->error      = true;
-            $this->err_flds[] = 'matchtime-' . $field_ref;
-            $this->err_msgs[] = __( 'Invalid time', 'racketmanager' );
+            $error_message = __( 'Invalid time', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -189,15 +187,14 @@ final class Validator_Entry_Form extends Validator {
      * @return object $validation updated validation object.
      */
     public function tournament_open( object $tournament ): object {
+        $error_field = 'event';
         if ( empty( $tournament->date_closing ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'event';
-            $this->err_msgs[] = __( 'Tournament close date not set', 'racketmanager' );
+            $error_message = __( 'Tournament close date not set', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         } else {
             if ( ! $tournament->is_open && ! $tournament->is_closed && ( ! current_user_can( 'manage_racketmanager' ) || ! $tournament->is_started ) ) {
-                $this->error      = true;
-                $this->err_flds[] = 'event';
-                $this->err_msgs[] = __( 'Tournament not open for entries', 'racketmanager' );
+                $error_message = __( 'Tournament not open for entries', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
             }
         }
         return $this;
@@ -210,9 +207,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function competition_open( object $competition ): object {
         if ( ! $competition->is_open ) {
-            $this->error      = true;
-            $this->err_flds[] = 'acceptance';
-            $this->err_msgs[] = __( 'Competition not open for entries', 'racketmanager' );
+            $error_field   = 'acceptance';
+            $error_message = __( 'Competition not open for entries', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -223,9 +220,9 @@ final class Validator_Entry_Form extends Validator {
      * @return object $validation updated validation object.
      */
     public function weekend_match( string $field_ref ): object {
-        $this->error      = true;
-        $this->err_flds[] = 'matchday-' . $field_ref;
-        $this->err_msgs[] = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
+        $error_field   = 'matchday-' . $field_ref;
+        $error_message = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
+        $this->set_errors( $error_field, $error_message );
         return $this;
     }
 
@@ -237,9 +234,9 @@ final class Validator_Entry_Form extends Validator {
      */
     public function free_slots( string $slots ): object {
         if ( $slots < 1 ) {
-            $this->error      = true;
-            $this->err_flds[] = 'event';
-            $this->err_msgs[] = __( 'Weekend games not allowed when free weekday slots', 'racketmanager' );
+            $error_field   = 'event';
+            $error_message = __( 'Weekend games not allowed when free weekday slots', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }

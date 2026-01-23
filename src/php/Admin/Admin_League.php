@@ -9,7 +9,9 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;

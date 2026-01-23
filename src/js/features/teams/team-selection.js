@@ -34,22 +34,22 @@ function hideLoading(splashSel, responseSel) {
 
 export function initializeTeamSelection() {
     jQuery('select.cupteam').on('change', function () {
-        const team = this.value;
+        const teamId = this.value;
         // name appears like team[EVENT]; extract EVENT
         const name = this.name || '';
-        const event = name.substring(5, name.length - 1);
+        const eventId = name.substring(5, name.length - 1);
 
-        const notifyField = `#team-${event}`;
-        const responseField = `#team-dtls-${event}`;
-        const splash = `#splash-${event}`;
+        const notifyField = `#team-${eventId}`;
+        const responseField = `#team-dtls-${eventId}`;
+        const splash = `#splash-${eventId}`;
 
         jQuery(notifyField).removeClass('is-invalid');
         showLoading(splash, responseField);
 
         // Build AJAX data
         const ajaxData = {
-            team,
-            event,
+            teamId,
+            eventId,
             action: 'racketmanager_get_team_info',
             security: getAjaxNonce(),
         };
@@ -60,14 +60,14 @@ export function initializeTeamSelection() {
             url: getAjaxUrl(),
             data: ajaxData,
             success: function (response) {
-                const team_info = response?.data || {};
-                const captainInput = `captain-${event}`;
+                const team_info = response?.data.info || {};
+                const captainInput = `captain-${eventId}`;
                 const ref = captainInput.substring(7);
 
-                setFieldValue(`#${captainInput}`, team_info.captain);
-                setFieldValue(`#captainId${ref}`, team_info.captainid);
-                setFieldValue(`#contactno${ref}`, team_info.contactno);
-                setFieldValue(`#contactemail${ref}`, team_info.user_email);
+                setFieldValue(`#${captainInput}`, team_info.captain_name);
+                setFieldValue(`#captainId${ref}`, team_info.captain_id);
+                setFieldValue(`#contactno${ref}`, team_info.captain_contact_no);
+                setFieldValue(`#contactemail${ref}`, team_info.captain_email);
                 setFieldValue(`#matchday${ref}`, team_info.match_day_num);
                 setFieldValue(`#matchtime${ref}`, team_info.match_time);
             },

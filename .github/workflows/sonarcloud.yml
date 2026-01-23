@@ -35,12 +35,12 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  pull-requests: read # allows SonarCloud to decorate PRs with analysis results
-
 jobs:
   Analysis:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read # allows SonarCloud to decorate PRs with analysis results
+      contents: read
 
     steps:
       - name: Analyze with SonarCloud

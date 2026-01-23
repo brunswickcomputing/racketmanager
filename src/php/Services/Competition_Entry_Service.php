@@ -91,12 +91,10 @@ class Competition_Entry_Service {
                     $return->error = true;
                     $msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
                 } elseif ( count( $event->get_seasons() ) > 1 ) {
-                    $constitution = $event->get_constitution(
-                        array(
+                    $constitution = $event->get_constitution( array(
                             'season' => $season,
                             'count'  => true,
-                        )
-                    );
+                        ) );
                     if ( ! $constitution ) {
                         $return->error = true;
                         $msg[]         = __( 'Constitution not set', 'racketmanager' ) . ' ' . $event->name;
@@ -116,11 +114,9 @@ class Competition_Entry_Service {
         if ( empty( $return->error ) ) {
             $url              = $this->racketmanager->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
             $competition_name = $competition->name . ' ' . $season;
-            $clubs            = $this->racketmanager->get_clubs(
-                array(
+            $clubs            = $this->racketmanager->get_clubs( array(
                     'type' => 'affiliated',
-                )
-            );
+                ) );
             $headers          = array();
             $from_email       = $this->racketmanager->get_confirmation_email( $competition->type );
             if ( $from_email ) {
@@ -130,12 +126,10 @@ class Competition_Entry_Service {
                 $messages_sent     = 0;
                 foreach ( $clubs as $club ) {
                     $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
-                    $email_subject = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
-                    $email_to      = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
-                    $action_url    = $url . seo_url( $club->shortcode ) . '/';
-                    $email_message = $this->racketmanager->shortcodes->load_template(
-                        'competition-entry-open',
-                        array(
+                    $email_subject   = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entry Open', 'racketmanager' ) . ' - ' . $club->name;
+                    $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
+                    $action_url      = $url . seo_url( $club->shortcode ) . '/';
+                    $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
                             'email_subject'   => $email_subject,
                             'from_email'      => $from_email,
                             'action_url'      => $action_url,
@@ -144,11 +138,9 @@ class Competition_Entry_Service {
                             'competition'     => $competition_name,
                             'addressee'       => $match_secretary->display_name,
                             'season_dtls'     => $season_dtls,
-                        ),
-                        'email'
-                    );
+                        ), 'email' );
                     wp_mail( $email_to, $email_subject, $email_message, $headers );
-                    ++$messages_sent;
+                    ++ $messages_sent;
                 }
                 if ( $messages_sent ) {
                     /* translation: %d number of messages sent */
@@ -168,7 +160,31 @@ class Competition_Entry_Service {
                 $return->msg .= '<br>' . $error;
             }
         }
+
         return $return;
+    }
+
+    /**
+     * Get the venue name for the competition
+     *
+     * @param int|null $club_id
+     *
+     * @return string
+     */
+    private function get_venue_name( ?int $club_id ): string {
+        if ( ! empty( $club_id ) ) {
+            try {
+                $venue_club = $this->club_service->get_club( $club_id );
+                $venue_name = $venue_club->shortcode;
+            } catch ( Club_Not_Found_Exception $e ) {
+                $venue_name = $e;
+            }
+        } else {
+            $venue_name = null;
+        }
+
+        return $venue_name;
+
     }
 
     /**
@@ -218,12 +234,10 @@ class Competition_Entry_Service {
             $organisation_name = $this->racketmanager->site_name;
             foreach ( $clubs as $club ) {
                 $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
-                $email_subject = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
-                $email_to      = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
-                $action_url    = $url . seo_url( $club->shortcode ) . '/';
-                $email_message = $this->racketmanager->shortcodes->load_template(
-                    'competition-entry-open',
-                    array(
+                $email_subject   = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . __( 'Entries Closing Soon', 'racketmanager' ) . ' - ' . $club->name;
+                $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
+                $action_url      = $url . seo_url( $club->shortcode ) . '/';
+                $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
                         'email_subject'   => $email_subject,
                         'from_email'      => $from_email,
                         'action_url'      => $action_url,
@@ -233,16 +247,14 @@ class Competition_Entry_Service {
                         'addressee'       => $match_secretary->display_name,
                         'season_dtls'     => $season_dtls,
                         'days_remaining'  => $days_remaining,
-                    ),
-                    'email'
-                );
+                    ), 'email' );
                 wp_mail( $email_to, $email_subject, $email_message, $headers );
-                ++$messages_sent;
+                ++ $messages_sent;
             }
             /* translation: %d number of messages sent */
             $validator->msg = sprintf( __( '%d match secretaries notified', 'racketmanager' ), $messages_sent );
         } else {
-            $validator->error = true;
+            $validator->error      = true;
             $validator->err_msgs[] = __( 'No secretary email', 'racketmanager' );
         }
         if ( ! empty( $validator->error ) ) {
@@ -251,34 +263,14 @@ class Competition_Entry_Service {
                 $validator->msg .= '<br>' . $error;
             }
         }
+
         return $validator;
     }
 
     /**
-     * Get the venue name for the competition
-     *
-     * @param int|null $club_id
-     *
-     * @return string
-     */
-    private function get_venue_name( ?int $club_id ): string {
-        if ( ! empty( $club_id ) ) {
-            try {
-                $venue_club = $this->club_service->get_club( $club_id );
-                $venue_name = $venue_club->shortcode;
-            } catch ( Club_Not_Found_Exception $e ) {
-                $venue_name = $e;
-            }
-        } else {
-            $venue_name = null;
-        }
-        return $venue_name;
-
-    }
-    /**
      * Get clubs missing from a specific competition.
      */
-    public function get_clubs_pending_entry( ?int $competition_id, ?int $season): array {
+    public function get_clubs_pending_entry( ?int $competition_id, ?int $season ): array {
         try {
             $competition = $this->competition_service->get_by_id( $competition_id );
         } catch ( Competition_Not_Found_Exception $e ) {
@@ -289,6 +281,7 @@ class Competition_Entry_Service {
         } catch ( Season_Not_Found_Exception $e ) {
             throw new Season_Not_Found_Exception( $e );
         }
+
         return $this->club_repository->find_clubs_not_entered( $competition->get_id(), $season );
     }
 
@@ -312,14 +305,14 @@ class Competition_Entry_Service {
         if ( empty( $validator->error ) ) {
             $validator = $validator->season_set( $request->season, $competition->get_seasons() );
             $competition->set_current_season( $request->season );
-//            $validator = $validator->competition_open( $competition );
-            $start_times = $this->get_start_times( $competition->settings );
-            $validator = $validator->club( $request->club_id );
-            $validator = $validator->events_entry( $request->events_entered );
-            $validator = $validator->num_courts_available( $request->num_courts_available );
+            $validator             = $validator->competition_open( $competition );
+            $start_times           = $this->get_start_times( $competition->settings );
+            $validator             = $validator->club( $request->club_id );
+            $validator             = $validator->events_entry( $request->events_entered );
+            $validator             = $validator->num_courts_available( $request->num_courts_available );
             $match_day_restriction = isset( $competition->settings['match_day_restriction'] );
-            $weekend_allowed = isset( $competition->settings['match_day_weekends'] );
-            for ( $i = 0; $i < 7; ++$i ) {
+            $weekend_allowed       = isset( $competition->settings['match_day_weekends'] );
+            for ( $i = 0; $i < 7; ++ $i ) {
                 $competition_days['teams'][ $i ]     = array();
                 $competition_days['available'][ $i ] = array();
             }
@@ -366,7 +359,7 @@ class Competition_Entry_Service {
                     $validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
                     if ( $match_day_restriction && $weekend_allowed && $match_day >= '5' ) {
                         if ( empty( $weekend_matches[ $event->type ] ) ) {
-                            ++$weekend_matches[ $event->type ];
+                            ++ $weekend_matches[ $event->type ];
                         } else {
                             $validator = $validator->weekend_match( $field_ref );
                         }
@@ -376,7 +369,7 @@ class Competition_Entry_Service {
                             if ( ! isset( $competition_days['teams'][ $match_day ][ $event->type ] ) ) {
                                 $competition_days['teams'][ $match_day ][ $event->type ] = 0;
                             }
-                            ++$competition_days['teams'][ $match_day ][ $event->type ];
+                            ++ $competition_days['teams'][ $match_day ][ $event->type ];
                             $competition_days['available'][ $match_day ] = $request->num_courts_available / $event->num_rubbers;
                         }
                         if ( strlen( $match_time ) === 5 ) {
@@ -406,7 +399,7 @@ class Competition_Entry_Service {
                             'telephone'  => $contactno,
                             'email'      => $contactemail,
                             'existing'   => empty( $league_id ),
-                            ) );
+                        ) );
                     }
                 }
                 $club_entry->events[] = $event_entry;
@@ -435,7 +428,7 @@ class Competition_Entry_Service {
                                         $validator  = $validator->free_slots( $free_slots );
                                     }
                                 }
-                                ++$i;
+                                ++ $i;
                             }
                         }
                     }
@@ -443,15 +436,38 @@ class Competition_Entry_Service {
             }
         }
         if ( empty( $validator->error ) ) {
-            $club_entry->club        = $request->club_id;
-            $club_entry->season      = $request->season;
-            $club_entry->comments    = $request->comments;
+            $club_entry->club             = $request->club_id;
+            $club_entry->season           = $request->season;
+            $club_entry->comments         = $request->comments;
             $club_entry->withdrawn_events = $request->missed_event_ids;
-            $club_entry->withdrawn_teams = $request->missed_team_ids;
-            $club_entry->competition = $competition;
+            $club_entry->withdrawn_teams  = $request->missed_team_ids;
+            $club_entry->competition      = $competition;
+
             return $this->league_entry_valid( $request->club_id, $club_entry );
         }
+
         return $validator->err;
+    }
+
+    /**
+     * Get start times from settings
+     *
+     * @param array $settings
+     *
+     * @return array
+     */
+    private function get_start_times( array $settings ): array {
+        $start_times = array();
+        if ( ! empty( $settings['start_time']['weekday']['min'] ) && ! empty( $settings['start_time']['weekday']['max'] ) ) {
+            $start_times['weekday']['min'] = $settings['start_time']['weekday']['min'];
+            $start_times['weekday']['max'] = $settings['start_time']['weekday']['max'];
+        }
+        if ( ! empty( $settings['start_time']['weekend']['min'] ) && ! empty( $settings['start_time']['weekend']['max'] ) ) {
+            $start_times['weekend']['min'] = $settings['start_time']['weekend']['min'];
+            $start_times['weekend']['max'] = $settings['start_time']['weekend']['max'];
+        }
+
+        return $start_times;
     }
 
     /**
@@ -470,14 +486,14 @@ class Competition_Entry_Service {
         $club_entry->club_name = $club->get_name();
         $event_details         = array();
         foreach ( $club_entry->events as $event_entry ) {
-            $event_id = $event_entry->id;
+            $event_id                    = $event_entry->id;
             $league_event_entry['event'] = $event_entry->name;
             $league_entries              = array();
             foreach ( $event_entry->team as $team_entry ) {
                 $match_day = Util_Lookup::get_match_day( $team_entry->match_day );
 
                 if ( empty( $team_entry->id ) ) {
-                    $team = $this->club_service->create_team( $club_id, $event_entry->type );
+                    $team    = $this->club_service->create_team( $club_id, $event_entry->type );
                     $team_id = $team->id;
                 } else {
                     $team_id = $team_entry->id;
@@ -549,6 +565,7 @@ class Competition_Entry_Service {
         $template                       = 'league-entry';
         $template_args['event_entries'] = $event_entries;
         $this->send_entry_form( $club->get_id(), $template_args, $club_entry, $email_from, $template, $email_subject, $headers );
+
         return true;
     }
 
@@ -569,7 +586,39 @@ class Competition_Entry_Service {
             $league_team_entry->set_status( 'W' );
             $this->league_team_repository->save( $league_team_entry );
         }
+
         return count( $teams_to_withdraw );
+    }
+
+    /**
+     * Send the entry form
+     * *
+     *
+     * @param int $club_id
+     * @param array $template_args
+     * @param object $club_entry
+     * @param string $email_from
+     * @param string $template
+     * @param string $email_subject
+     * @param array $headers
+     *
+     * @return void
+     */
+    public function send_entry_form( int $club_id, array $template_args, object $club_entry, string $email_from, string $template, string $email_subject, array $headers ): void {
+        $club = $this->club_repository->find( $club_id );
+        if ( ! $club ) {
+            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+        }
+        $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
+        $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '> ';
+        global $racketmanager;
+        $template_args['organisation']     = $racketmanager->site_name;
+        $template_args['season']           = $club_entry->season;
+        $template_args['competition_name'] = $club_entry->competition->name;
+        $template_args['club']             = $club_entry->club_name;
+        $template_args['contact_email']    = $email_from;
+        $template_args['comments']         = $club_entry->comments;
+        $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
     }
 
     /**
@@ -590,10 +639,11 @@ class Competition_Entry_Service {
             $validator->msg   = $e->getMessage();
         }
         if ( empty( $validator->error ) ) {
-            $validator = $validator->season_set( $request->season, $competition->get_seasons() );
+            $validator   = $validator->season_set( $request->season, $competition->get_seasons() );
+            $validator   = $validator->competition_open( $competition );
             $start_times = $this->get_start_times( $competition->settings );
-            $validator = $validator->club( $request->club_id );
-            $validator = $validator->events_entry( $request->events_entered );
+            $validator   = $validator->club( $request->club_id );
+            $validator   = $validator->events_entry( $request->events_entered );
             foreach ( $request->events_entered as $event_id => $team ) {
                 try {
                     $event = $this->competition_service->get_event_by_id( $event_id );
@@ -630,11 +680,11 @@ class Competition_Entry_Service {
                     $league = get_league( array_key_first( $event->league_index ) );
                 }
 
-                $event_entry       = new stdClass();
-                $event_entry->id   = $event_id;
-                $event_entry->name = $event->get_name();
-                $event_entry->type = $event->get_type();
-                $event_entry->team = Team_Entry_DTO::from_array( array(
+                $event_entry          = new stdClass();
+                $event_entry->id      = $event_id;
+                $event_entry->name    = $event->get_name();
+                $event_entry->type    = $event->get_type();
+                $event_entry->team    = Team_Entry_DTO::from_array( array(
                     'id'         => $team_id,
                     'team_name'  => $team_details->get_name(),
                     'match_day'  => $match_day,
@@ -656,8 +706,10 @@ class Competition_Entry_Service {
             $club_entry->season      = $request->season;
             $club_entry->comments    = $request->comments;
             $this->cup_entry_valid( $request->club_id, $club_entry );
+
             return true;
         }
+
         return $validator->err;
     }
 
@@ -673,14 +725,14 @@ class Competition_Entry_Service {
             throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
         }
         $club_entry->club_name = $club->get_name();
-        $cup_entries = array();
+        $cup_entries           = array();
         foreach ( $club_entry->events as $event_entry ) {
-            $event_id = $event_entry->id;
-            $event_name = $event_entry->name;
-            $cup_entry = array();
-            $team      = $event_entry->team;
-            $team_id   = $team->id;
-            $match_day = Util_Lookup::get_match_day( $team->match_day );
+            $event_id     = $event_entry->id;
+            $event_name   = $event_entry->name;
+            $cup_entry    = array();
+            $team         = $event_entry->team;
+            $team_id      = $team->id;
+            $match_day    = Util_Lookup::get_match_day( $team->match_day );
             $league_teams = $this->league_team_repository->get_by_event_id( $event_id, $club_entry->season, $team_id );
             if ( $league_teams ) {
                 foreach ( $league_teams as $league_team ) {
@@ -690,14 +742,14 @@ class Competition_Entry_Service {
                     $this->league_team_repository->save( $league_team );
                 }
             } else {
-                $league_team = new stdClass();
-                $league_team->team_id = $team->id;
-                $league_team->league_id = $team->league_id;
-                $league_team->season   = $club_entry->season;
-                $league_team->captain = $team->captain_id;
-                $league_team->match_day = $match_day;
+                $league_team             = new stdClass();
+                $league_team->team_id    = $team->id;
+                $league_team->league_id  = $team->league_id;
+                $league_team->season     = $club_entry->season;
+                $league_team->captain    = $team->captain_id;
+                $league_team->match_day  = $match_day;
                 $league_team->match_time = $team->match_time;
-                $league_team = new League_Team( $league_team );
+                $league_team             = new League_Team( $league_team );
                 $this->league_team_repository->save( $league_team );
             }
             try {
@@ -715,7 +767,7 @@ class Competition_Entry_Service {
             $cup_entries[]             = $cup_entry;
         }
         $email_from      = $this->racketmanager->get_confirmation_email( 'cup' );
-        $email_subject   = $this->racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __('Entry', 'racketmanager' ) . ' - ' . $club->get_shortcode();
+        $email_subject   = $this->racketmanager->site_name . ' - ' . ucfirst( $club_entry->competition->name ) . ' ' . $club_entry->season . ' ' . __( 'Entry', 'racketmanager' ) . ' - ' . $club->get_shortcode();
         $headers         = array();
         $secretary_email = __( 'Cup Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
         $headers[]       = RACKETMANAGER_FROM_EMAIL . $secretary_email;
@@ -724,56 +776,5 @@ class Competition_Entry_Service {
         $template                     = 'cup-entry';
         $template_args['cup_entries'] = $cup_entries;
         $this->send_entry_form( $club->get_id(), $template_args, $club_entry, $email_from, $template, $email_subject, $headers );
-    }
-
-    /**
-     * Send the entry form
-     * *
-     *
-     * @param int $club_id
-     * @param array $template_args
-     * @param object $club_entry
-     * @param string $email_from
-     * @param string $template
-     * @param string $email_subject
-     * @param array $headers
-     *
-     * @return void
-     */
-    public function send_entry_form( int $club_id, array $template_args, object $club_entry, string $email_from, string $template, string $email_subject, array $headers ): void {
-        $club = $this->club_repository->find( $club_id );
-        if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
-        }
-        $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
-        $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '> ';
-        global $racketmanager;
-        $template_args['organisation']     = $racketmanager->site_name;
-        $template_args['season']           = $club_entry->season;
-        $template_args['competition_name'] = $club_entry->competition->name;
-        $template_args['club']             = $club_entry->club_name;
-        $template_args['contact_email']    = $email_from;
-        $template_args['comments']         = $club_entry->comments;
-        $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
-    }
-
-    /**
-     * Get start times from settings
-     *
-     * @param array $settings
-     *
-     * @return array
-     */
-    private function get_start_times( array $settings ): array {
-        $start_times = array();
-        if ( ! empty( $settings['start_time']['weekday']['min'] ) && ! empty( $settings['start_time']['weekday']['max'] ) ) {
-            $start_times['weekday']['min'] = $settings['start_time']['weekday']['min'];
-            $start_times['weekday']['max'] = $settings['start_time']['weekday']['max'];
-        }
-        if ( ! empty( $settings['start_time']['weekend']['min'] ) && ! empty( $settings['start_time']['weekend']['max'] ) ) {
-            $start_times['weekend']['min'] = $settings['start_time']['weekend']['min'];
-            $start_times['weekend']['max'] = $settings['start_time']['weekend']['max'];
-        }
-        return $start_times;
     }
 }

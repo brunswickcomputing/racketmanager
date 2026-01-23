@@ -261,9 +261,9 @@ final class League_Team {
     /**
      * Captain name variable
      *
-     * @var string
+     * @var ?int
      */
-    public string $captain;
+    public ?int $captain;
     /**
      * Formatted points variable
      *
@@ -563,7 +563,7 @@ final class League_Team {
      * @return int|null Player id or null
      */
     public function get_captain(): ?int {
-        return $this->captain_id;
+        return $this->captain;
     }
 
     /**
@@ -737,6 +737,21 @@ final class League_Team {
      */
     public function set_id( $id ): void {
         $this->id = $id;
+    }
+    public function set_captain( int $captain ): void {
+        $this->captain = $captain;
+    }
+    public function set_match_day( string $match_day ): void {
+        $this->match_day = $match_day;
+    }
+    public function set_match_time( string $match_time ): void {
+        $this->match_time = $match_time;
+    }
+    public function set_entered_state( string $entered_state ): void {
+        $this->profile = $entered_state;
+    }
+    public function set_status( ?string $status = null ): void {
+        $this->status = $status;
     }
 
     /**

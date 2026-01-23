@@ -9,8 +9,8 @@
 
 namespace Racketmanager\Repositories;
 
+use Racketmanager\Domain\DTO\Event_Details_DTO;
 use Racketmanager\Domain\Event;
-use Racketmanager\Domain\League;
 use wpdb;
 
 /**
@@ -126,4 +126,40 @@ class Event_Repository {
         $this->wpdb->delete( $this->table_name, array( 'id' => $event_id ), array( '%d' ) );
     }
 
+    /**
+     * Retrieves events for a competition with counts of associated leagues, teams, and clubs.
+     *
+     * @param int $competition_id
+     * @param int $season
+     * @param int|null $min_fixtures
+     *
+     * @return Event_Details_DTO[]
+     */
+    public function find_events_by_competition_with_counts( int $competition_id, int $season, ?int $min_fixtures = 1): array {
+        $events_table = $this->table_name;
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+        $rubbers_table = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $matches_table = $this->wpdb->prefix . 'racketmanager_matches';
+
+        $player_activity_subquery = $this->wpdb->prepare(
+            "SELECT l.event_id, rp.player_id FROM $rubber_players_table rp INNER JOIN $rubbers_table r ON rp.rubber_id = r.id INNER JOIN $matches_table f ON r.match_id = f.id AND f.season = %d INNER JOIN $leagues_table l ON f.league_id = l.id GROUP BY l.event_id, rp.player_id HAVING COUNT(rp.id) >= %d",
+            $season,
+            $min_fixtures
+        );
+
+        $query = $this->wpdb->prepare(
+            "SELECT e.id as event_id, e.name as event_name, e.type as format, e.settings as settings, COUNT(DISTINCT l.id) as num_leagues, COUNT(DISTINCT lte.team_id) as num_teams, COUNT(DISTINCT t.club_id) as num_clubs, COUNT(DISTINCT active_players.player_id) as num_players FROM `$events_table` e LEFT JOIN `$leagues_table` l ON e.id = l.event_id LEFT JOIN `$league_teams_table` lte ON l.id = lte.league_id AND lte.season = %d LEFT JOIN `$teams_table` t ON lte.team_id = t.id LEFT JOIN ($player_activity_subquery) AS active_players ON e.id = active_players.event_id WHERE e.competition_id = %d GROUP BY e.id, e.name, e.type ORDER BY e.name",
+            $season,
+            $competition_id
+        );
+
+        $results = $this->wpdb->get_results($query);
+
+        return array_map(function($row) {
+            return new Event_Details_DTO( $row );
+        }, $results);
+    }
 }

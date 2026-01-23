@@ -55,14 +55,6 @@ class Player_Service {
     /**
      * Constructor
      *
-     * @param $plugin_instance
-     * @param Player_Repository $player_repository
-     * @param Player_Error_Repository $player_error_repository
-     * @param Club_Role_Repository $club_role_repository
-     * @param Wtn_Api_Client_Interface $wtn_api_client
-     * @param League_Team_Repository $league_team_repository
-     * @param Club_Repository $club_repository
-     * @param Registration_Repository $registration_repository
      */
     public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository $player_error_repository, Club_Role_Repository $club_role_repository, Wtn_Api_Client_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository $registration_repository ) {
         $this->racketmanager           = $plugin_instance;
@@ -259,10 +251,8 @@ class Player_Service {
             return $this->update_player( $player->id, $player );
         } catch ( Player_Not_Found_Exception $e ) {
             throw new Player_Not_Found_Exception( $e->getMessage() );
-        } catch ( Player_Not_Updated_Exception $e ) {
+        } catch ( Player_Not_Updated_Exception|Exception $e ) {
             throw new Player_Not_Updated_Exception( $e->getMessage() );
-        } catch ( Exception $e ) {
-            throw new Exception( $e->getMessage() );
         }
     }
 
@@ -328,7 +318,7 @@ class Player_Service {
         try {
             $this->player_repository->update( $player, $updates );
         } catch ( Exception $e ) {
-            throw new Exception( $e->getMessage() );
+            throw new Player_Not_Updated_Exception( $e->getMessage() );
         }
 
         return $player;
@@ -666,4 +656,20 @@ class Player_Service {
         }
         return $clubs;
     }
+
+    /**
+     * Retrieves a unique list of active player names for a competition/season.
+     *
+     * @param int|null $competition_id
+     * @param string|null $season
+     *
+     * @return array
+     */
+    public function get_players_for_competition( ?int $competition_id, ?string $season): array {
+        return $this->player_repository->find_active_players_by_competition_and_season(
+            $competition_id,
+            sanitize_text_field($season)
+        );
+    }
+
 }

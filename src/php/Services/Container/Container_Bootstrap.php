@@ -78,7 +78,6 @@ final class Container_Bootstrap {
                 $c->get('player_repository'),
                 $c->get('team_repository'),
                 $c->get('player_service'),
-                $c->get('competition_service'),
             );
         });
 

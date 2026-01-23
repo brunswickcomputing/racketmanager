@@ -42,20 +42,18 @@ class Club_Service {
     private Player_Repository $player_repository;
     private Team_Repository $team_repository;
     private Player_Service $player_service;
-    private Competition_Service $competition_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Player_Service $player_service, Competition_Service $competition_service ) {
+    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Player_Service $player_service ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->team_repository        = $team_repository;
         $this->player_service         = $player_service;
-        $this->competition_service    = $competition_service;
     }
 
     /**

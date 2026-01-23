@@ -25,7 +25,7 @@ class League_Team_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_league_teams';
     }
 
-    public function save( League_Team $league_team ): void {
+    public function save( League_Team $league_team ): int|bool {
         $data = array(
             'team_id'        => $league_team->get_team_id(),
             'league_id'      => $league_team->get_league_id(),
@@ -76,14 +76,17 @@ class League_Team_Repository {
             '%s',
         );
         if ( empty( $league_team->get_id() ) ) {
-            $this->wpdb->insert(
+            $result = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format
             );
             $league_team->set_id( $this->wpdb->insert_id );
+            wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
+            return $result !== false;
         } else {
-            $this->wpdb->update(
+            wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
+            return $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(

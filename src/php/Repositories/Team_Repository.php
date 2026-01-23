@@ -263,7 +263,7 @@ class Team_Repository {
         $phone_meta_key = 'contactno';
 
         $query = $this->wpdb->prepare("
-        SELECT 
+        SELECT
             lte.captain as captain_id,
             u.display_name as captain_name,
             u.user_email as captain_email,

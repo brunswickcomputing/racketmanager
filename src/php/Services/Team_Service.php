@@ -41,6 +41,21 @@ class Team_Service {
     }
 
     /**
+     * Get a team by id
+     *
+     * @param string|int|null $team_id
+     *
+     * @return Team
+     */
+    public function get_team_by_id( null|string|int $team_id ): Team {
+        $team = $this->team_repository->find_by_id( $team_id );
+        if ( ! $team ) {
+            throw new Team_Not_Found_Exception( sprintf( __( 'Team %s not found', 'racketmanager' ), $team_id ) );
+        }
+        return $team;
+    }
+
+    /**
      * Get teams for a club
      *
      * @param int|null $club_id

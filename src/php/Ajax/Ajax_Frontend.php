@@ -427,25 +427,10 @@ class Ajax_Frontend extends Ajax {
         $validator = new Validator();
         $validator = $validator->check_security_token();
         if ( empty( $validator->error ) ) {
-            $club_id  = isset( $_POST['clubId'] ) ? intval( $_POST['clubId'] ) : null;
             $event_id = isset( $_POST['eventId'] ) ? intval( $_POST['eventId'] ) : null;
             $team_id  = isset( $_POST['teamId'] ) ? intval( $_POST['teamId'] ) : null;
             $match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
             $set_team = ! empty( $_POST['setTeam'] ) && sanitize_text_field( wp_unslash( $_POST['setTeam'] ) );
-            if ( $club_id ) {
-                $club = get_club( $club_id );
-                if ( ! $club ) {
-                    $validator->error      = true;
-                    $validator->err_msgs[] = $this->club_not_found;
-                    $validator->err_flds[] = 'club_id';
-                    $validator->status     = 404;
-                }
-            } else {
-                $validator->error      = true;
-                $validator->err_msgs[] = __( 'Club id not supplied', 'racketmanager' );
-                $validator->err_flds[] = 'club_id';
-                $validator->status     = 404;
-            }
             if ( $event_id ) {
                 $event = get_event( $event_id );
                 if ( ! $event ) {

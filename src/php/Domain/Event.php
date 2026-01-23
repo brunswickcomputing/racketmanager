@@ -2070,7 +2070,14 @@ class Event {
                     $league    = get_league( $league_id );
                 }
                 if ( $league ) {
-                    $league->add_team( $team->team_id, $curr_season['name'], $rank, $status, $profile );
+                    $league_team_id = $league->add_team( $team->team_id, $curr_season['name'], $rank, $status, $profile );
+                    if ( $league_team_id ) {
+                        $league_team_entry = get_league_team( $league_team_id );
+                        if ( $league_team_entry ) {
+                            $league_team_entry->add_details( $team->captain, $team->match_day, $team->match_time );
+                        }
+                        $team->league_team_id = $league_team_id;
+                    }
                     ++$rank;
                 }
             }

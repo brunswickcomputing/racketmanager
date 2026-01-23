@@ -251,214 +251,38 @@ class Ajax_Frontend extends Ajax {
      * Function to process a league entry input form
      */
     public function league_entry_request(): void {
-        $validator             = new Validator_Entry_Form();
-        $club_id               = null;
-        $club_entry            = null;
-        $courts_needed         = array();
-        $match_day_restriction = null;
-        $weekend_allowed       = null;
-        $start_times           = array();
-        $competition_days      = array();
-        check_admin_referer( 'league-entry' );
-        if ( ! is_user_logged_in() ) {
-            $validator = $validator->logged_in_entry();
-        } else {
-            $season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : '';
-            $competition_id = isset( $_POST['competitionId'] ) ? intval( $_POST['competitionId'] ) : null;
-            $validator      = $validator->competition( $competition_id );
-            $club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
-            $validator      = $validator->club( $club_id );
-            $events         = isset( $_POST['event'] ) ? array_map( 'intval', $_POST['event'] ) : array();
-            $validator      = $validator->events_entry( $events );
-            // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $team_event           = isset( $_POST['teamEvent'] ) ? wp_unslash( $_POST['teamEvent'] ) : array();
-            $team_event_league    = isset( $_POST['teamEventLeague'] ) ? wp_unslash( $_POST['teamEventLeague'] ) : array();
-            $competition_events   = explode( ',', isset( $_POST['competition_events'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_events'] ) ) : '' );
-            $captains             = isset( $_POST['captain'] ) ? wp_unslash( $_POST['captain'] ) : array();
-            $captain_ids          = isset( $_POST['captainId'] ) ? wp_unslash( $_POST['captainId'] ) : array();
-            $contact_nos          = isset( $_POST['contactno'] ) ? wp_unslash( $_POST['contactno'] ) : array();
-            $contact_emails       = isset( $_POST['contactemail'] ) ? wp_unslash( $_POST['contactemail'] ) : array();
-            $match_days           = isset( $_POST['matchday'] ) ? wp_unslash( $_POST['matchday'] ) : array();
-            $match_times          = isset( $_POST['matchtime'] ) ? wp_unslash( $_POST['matchtime'] ) : array();
-            $comments             = isset( $_POST['commentDetails'] ) ? sanitize_textarea_field( wp_unslash( $_POST['commentDetails'] ) ) : '';
-            $num_courts_available = isset( $_POST['numCourtsAvailable'] ) ? intval( $_POST['numCourtsAvailable'] ) : 0;
-            $validator            = $validator->num_courts_available( $num_courts_available );
-
-            $club_entry           = new stdClass();
-            $club_entry->club     = $club_id;
-            $club_entry->season   = $season;
-            $club_entry->comments = $comments;
-            if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
-                if ( $competition ) {
-                    $competition->set_current_season( $season );
-                    $validator = $validator->competition_open( $competition );
-                } else {
-                    $validator = $validator->competition( $competition );
-                }
-                if ( empty( $competition->match_day_restriction ) ) {
-                    $match_day_restriction  = false;
-                } else {
-                    $match_day_restriction = true;
-                }
-                $weekend_allowed = isset( $competition->match_day_weekends );
-                if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
-                    $start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
-                    $start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
-                }
-                if ( ! empty( $competition->start_time['weekend']['min'] ) && ! empty( $competition->start_time['weekend']['max'] ) ) {
-                    $start_times['weekend']['min'] = $competition->start_time['weekend']['min'];
-                    $start_times['weekend']['max'] = $competition->start_time['weekend']['max'];
-                }
-                $club_entry->competition = $competition;
-                for ( $i = 0; $i < 7; ++$i ) {
-                    $competition_days['teams'][ $i ]     = array();
-                    $competition_days['available'][ $i ] = array();
-                }
-                $weekend_matches = array();
-            }
-
-            // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            foreach ( $events as $event_id ) {
-                $pos = array_search( strval( $event_id ), $competition_events, true );
-                if ( false !== $pos ) {
-                    unset( $competition_events[ $pos ] );
-                }
-                $event = get_event( $event_id );
-                $week  = $event->offset ?? '0';
-                if ( ! isset( $courts_needed[ $week ] ) ) {
-                    $courts_needed[ $week ] = array();
-                }
-                $weekend_matches[ $event->type ] = 0;
-                $event_days                      = $event->match_days_allowed ?? array();
-                if ( $match_day_restriction && ! empty( $event_days ) ) {
-                    foreach ( $event_days as $event_day => $value ) {
-                        if ( ! isset( $competition_days['teams'][ $event_day ][ $event->type ] ) ) {
-                            $competition_days['teams'][ $event_day ][ $event->type ] = 0;
-                        }
-                    }
-                }
-                $event_entry       = new stdClass();
-                $event_entry->id   = $event->id;
-                $event_entry->name = $event->name;
-
-                $teams      = $team_event[$event->id] ?? array();
-                $field_ref  = $event->id;
-                $field_name = $event->name;
-                $validator  = $validator->teams( $teams, $field_ref, $field_name );
-                if ( ! empty( $teams ) ) {
-                    // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    $event_teams = explode( ',', isset( $_POST['event_teams'][ $event->id ] ) ? wp_unslash( $_POST['event_teams'][ $event->id ] ) : '' );
-                    // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    foreach ( $teams as $team_id ) {
-                        $pos = array_search( $team_id, $event_teams, true );
-                        if ( false !== $pos ) {
-                            array_splice( $event_teams, $pos, 1 );
-                        }
-                        $captain          = $captains[ $event->id ][ $team_id] ?? '';
-                        $captain_id       = $captain_ids[ $event->id ][ $team_id ] ?? 0;
-                        $contactno        = $contact_nos[ $event->id ][ $team_id ] ?? '';
-                        $contactemail     = $contact_emails[ $event->id ][ $team_id ] ?? '';
-                        $match_day        = $match_days[ $event->id ] [$team_id ] ?? '';
-                        $match_time       = $match_times[ $event->id ][ $team_id ] ?? '';
-                        $league_id        = $team_event_league[ $event->id ][ $team_id ] ?? null;
-                        $field_ref        = $event->id . '-' . $team_id;
-                        $validator        = $validator->match_day( $match_day, $field_ref, $match_day_restriction, $event_days );
-                        $validator        = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
-                        $validator        = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
-                        if ( $match_day_restriction && $weekend_allowed && ( '5' === $match_day || '6' === $match_day ) ) {
-                            if ( empty( $weekend_matches[ $event->type ] ) ) {
-                                ++$weekend_matches[ $event->type ];
-                            } else {
-                                $validator = $validator->weekend_match( $field_ref );
-                            }
-                        }
-                        if ( ! $validator->error ) {
-                            if ( $match_day_restriction ) {
-                                ++$competition_days['teams'][ $match_day ][ $event->type ];
-                                $competition_days['available'][ $match_day ] = $num_courts_available / $event->num_rubbers;
-                            }
-                            if ( strlen( $match_time ) === 5 ) {
-                                $match_time = $match_time . ':00';
-                            }
-                            if ( ! isset( $courts_needed[ $week ][ $match_day ] ) ) {
-                                $courts_needed[ $week ][ $match_day ] = array();
-                            } elseif ( ! isset( $courts_needed[ $week ][ $match_day ][ $match_time ] ) ) {
-                                foreach ( $courts_needed[ $week ][ $match_day ] as $schedule_time => $value ) {
-                                    $validator = $validator->match_overlap( $match_time, $schedule_time, $field_ref );
-                                }
-                            }
-                            if ( isset( $courts_needed[ $week ][ $match_day ][ $match_time ] ) ) {
-                                $courts_needed[ $week ][ $match_day ][ $match_time ]['teams']  += 1;
-                                $courts_needed[ $week ][ $match_day ][ $match_time ]['courts'] += $event->num_rubbers;
-                            } else {
-                                $courts_needed[ $week ][ $match_day ][ $match_time ]['teams']  = 1;
-                                $courts_needed[ $week ][ $match_day ][ $match_time ]['courts'] = $event->num_rubbers;
-                            }
-                            $team_entry             = new stdClass();
-                            $team_entry->id         = $team_id;
-                            $team_entry->match_day  = $match_day;
-                            $team_entry->match_time = $match_time;
-                            $team_entry->captain_id = $captain_id;
-                            $team_entry->captain    = $captain;
-                            $team_entry->telephone  = $contactno;
-                            $team_entry->email      = $contactemail;
-                            $team_entry->existing   = $league_id;
-
-                            $event_entry->team[] = $team_entry;
-                        }
-                    }
-                    if ( ! empty( $event_teams ) ) {
-                        $event_entry->withdrawn_teams = $event_teams;
-                    }
-                    $club_entry->event[] = $event_entry;
-                }
-            }
-            if ( ! empty( $competition_events ) ) {
-                $club_entry->withdrawn_events = $competition_events;
-            }
-            if ( ! empty( $num_courts_available ) ) {
-                $club_entry->num_courts_available = $num_courts_available;
-                foreach ( $courts_needed as $week ) {
-                    foreach ( $week as $match_day => $match_day_value ) {
-                        foreach ( $match_day_value as $match_time => $court_data ) {
-                            $validator = $validator->court_needs( $num_courts_available, $court_data, $match_day, $match_time );
-                        }
-                    }
-                }
-                if ( ! $validator->error && $match_day_restriction && $weekend_allowed && ! empty( $weekend_matches ) ) {
-                    foreach ( $weekend_matches as $event_type => $team_count ) {
-                        if ( $team_count ) {
-                            $i = 0;
-                            foreach ( $competition_days['teams'] as $match_day => $value ) {
-                                if ( isset( $value[ $event_type ] ) && $i < 5 ) {
-                                    $num_teams[ $match_day ] = array_sum( $value );
-                                    if ( $num_teams[ $match_day ] ) {
-                                        $free_slots = $num_teams[ $match_day ] / 2 / $competition_days['available'][ $i ];
-                                        $validator  = $validator->free_slots( $free_slots );
-                                    }
-                                }
-                                ++$i;
-                            }
-                        }
-                    }
-                }
-            }
-            $acceptance = isset( $_POST['acceptance'] ) ? sanitize_text_field( wp_unslash( $_POST['acceptance'] ) ) : '';
-            $validator  = $validator->entry_acceptance( $acceptance );
-        }
+        $validator = new Validator_Entry_Form();
+        //phpcs:disable WordPress.Security.NonceVerification.Missing
+        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_league-entry' );
         if ( ! $validator->error ) {
-            $this->club_service->league_entry( $club_id, $club_entry );
-            $msg = __( 'League entry complete', 'racketmanager' );
-            wp_send_json_success( $msg );
-        } else {
-            $return = $validator->get_details();
-            $return->msg = __( 'Errors in entry form', 'racketmanager' );
-            if ( empty( $return->status ) ) {
-                $return->status = 400;
+            if ( ! is_user_logged_in() ) {
+                $validator = $validator->logged_in_entry();
+            } else {
+                $request = new League_Entry_Request_DTO( $_POST );
+                try {
+                    $response = $this->competition_entry_service->request_league_entry( $request );
+                    if ( is_wp_error( $response ) ) {
+                        $validator->error    = true;
+                        $validator->err_flds = $response->get_error_codes();
+                        $validator->err_msgs = $response->get_error_messages();
+                        $validator->msg      = __( 'Errors in league entry form', 'racketmanager' );
+                    } else {
+                        $msg = __( 'League entry complete', 'racketmanager' );
+                        wp_send_json_success( $msg );
+                    }
+                } catch ( Competition_Not_Found_Exception $e ) {
+                    $validator->msg = $e->getMessage();
+                    $validator->error = true;
+                }
+                $return = $validator->get_details();
+                wp_send_json_error( $return, $return->status );
             }
-            wp_send_json_error( $return, $return->status );
         }
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Errors in entry form', 'racketmanager' );
+        }
+        wp_send_json_error( $return, $return->status );
     }
 
     /**

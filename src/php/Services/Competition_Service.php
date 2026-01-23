@@ -10,7 +10,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Competition;
-use Racketmanager\Domain\Competition_Overview_DTO;
+use Racketmanager\Domain\DTO\Competition_Overview_DTO;
 use Racketmanager\Domain\Event;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Clubs_Not_Found_Exception;

@@ -9,7 +9,9 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Team_Details_DTO;
+use Racketmanager\Domain\DTO\Team_Details_DTO;
+use Racketmanager\Domain\DTO\Team_Fixture_Settings_DTO;
+use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;

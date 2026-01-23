@@ -10,6 +10,8 @@
 namespace Racketmanager\Repositories;
 
 use QM_DB;
+use Racketmanager\Domain\DTO\Team_Competition_DTO;
+use Racketmanager\Domain\DTO\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Team;
 use wpdb;
 

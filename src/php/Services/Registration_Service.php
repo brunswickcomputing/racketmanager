@@ -10,7 +10,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Club_Player;
-use Racketmanager\Domain\Club_Player_DTO;
+use Racketmanager\Domain\DTO\Club_Player_DTO;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;

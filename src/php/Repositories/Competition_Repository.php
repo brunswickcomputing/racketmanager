@@ -10,7 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Competition;
-use Racketmanager\Domain\Competition_Overview_DTO;
+use Racketmanager\Domain\DTO\Competition_Overview_DTO;
 use wpdb;
 
 /**

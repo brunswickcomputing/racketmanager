@@ -13,6 +13,7 @@ use Exception;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Details_DTO;
 use Racketmanager\Domain\Club_Role;
+use Racketmanager\Domain\DTO\Club_Details_DTO;
 use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;

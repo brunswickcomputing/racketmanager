@@ -10,8 +10,11 @@ namespace Racketmanager\Ajax;
 
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Entry_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\show_alert;
@@ -23,9 +26,12 @@ use function Racketmanager\show_alert;
  */
 class Ajax {
     public string $event_not_found;
+    protected Competition_Entry_Service $competition_entry_service;
+    protected Competition_Service $competition_service;
     protected Club_Service $club_service;
     protected Player_Service $player_service;
     protected Registration_Service $registration_service;
+    protected Team_Service $team_service;
     protected RacketManager $racketmanager;
 
     /**
@@ -33,11 +39,14 @@ class Ajax {
      */
     public function __construct( $plugin_instance ) {
         add_action( 'wp_ajax_racketmanager_get_player_details', array( &$this, 'get_player_details' ) );
-        $this->racketmanager        = $plugin_instance;
-        $c                          = $this->racketmanager->container;
-        $this->club_service         = $c->get( 'club_service' );
-        $this->player_service       = $c->get( 'player_service' );
-        $this->registration_service = $c->get( 'registration_service' );
+        $this->racketmanager             = $plugin_instance;
+        $c                               = $this->racketmanager->container;
+        $this->competition_entry_service = $c->get( 'competition_entry_service' );
+        $this->competition_service       = $c->get( 'competition_service' );
+        $this->club_service              = $c->get( 'club_service' );
+        $this->player_service            = $c->get( 'player_service' );
+        $this->registration_service      = $c->get( 'registration_service' );
+        $this->team_service              = $c->get( 'team_service' );
     }
 
     /**

@@ -11,9 +11,9 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\DTO\Club_Competition_DTO;
+use Racketmanager\Domain\Team;
 use Racketmanager\Util\Util;
 use wpdb;
-use function Racketmanager\get_team;
 
 /**
  * Class to implement the Club repository
@@ -183,7 +183,7 @@ class Club_Repository {
                 )
             );
         }
-        $sql  = 'SELECT `id` ' . $sql . ' ORDER BY `title`';
+        $sql  = 'SELECT * ' . $sql . ' ORDER BY `title`';
         $sql  = $this->wpdb->prepare(
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
             $sql,
@@ -196,12 +196,12 @@ class Club_Repository {
             wp_cache_set( md5( $sql ), $teams, 'teams' );
         }
 
-        foreach ( $teams as $i => $team ) {
-            $team        = get_team( $team->id );
-            $teams[ $i ] = $team;
-        }
-
-        return $teams;
+        return array_map(
+            function( $row ) {
+                return new Team( $row );
+                },
+            $teams
+        );
     }
 
     /**

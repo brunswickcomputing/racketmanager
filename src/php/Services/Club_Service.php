@@ -11,7 +11,6 @@ namespace Racketmanager\Services;
 
 use Exception;
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Details_DTO;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Domain\DTO\Club_Details_DTO;
 use Racketmanager\Domain\Team;
@@ -19,10 +18,10 @@ use Racketmanager\Exceptions\Club_Has_Teams_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
-use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -138,12 +137,11 @@ class Club_Service {
     private function update_club_teams( int $club_id, string $old_shortcode, string $shortcode ): void {
         $teams = $this->club_repository->get_teams( array( 'club' => $club_id ) );
         foreach ( $teams as $team ) {
-            $team      = get_team( $team->id );
             $team_ref  = substr( $team->title, strlen( $old_shortcode ) + 1, strlen( $team->title ) );
             $new_title = $shortcode . ' ' . $team_ref;
-            $team->update_title( $new_title );
+            $team->set_title( $new_title );
+            $this->team_repository->save( $team );
         }
-
     }
 
     /**

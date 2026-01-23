@@ -754,6 +754,22 @@ final class League_Team {
         $this->status = $status;
     }
 
+    public function add_details( int $captain, string $match_day, string $match_time ): void {
+        global $wpdb;
+        $this->captain = $captain;
+        $this->match_day  = $match_day;
+        $this->match_time = $match_time;
+
+        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "UPDATE $wpdb->racketmanager_league_teams SET `captain` = %d, `match_day` = %s, `match_time` = %s WHERE `id` = %d",
+                $this->captain,
+                $this->match_day,
+                $this->match_time,
+                $this->table_id
+            )
+        );
+    }
     /**
      * Compute win percentage
      */

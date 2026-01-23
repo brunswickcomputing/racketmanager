@@ -532,9 +532,6 @@ class Event {
             $maybe = @maybe_unserialize( $this->seasons );
             if ( is_array( $maybe ) ) {
                 $this->seasons = wp_json_encode( $maybe );
-            } else {
-                // assume already JSON string
-                $this->seasons = $this->seasons;
             }
         }
         $this->num_seasons = count( $this->get_seasons() );

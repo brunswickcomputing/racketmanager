@@ -108,7 +108,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
         <?php wp_nonce_field( 'racketmanager_update-finals', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
         <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
-        <input type="hidden" name="round" value="<?php echo esc_html( $final['round'] ); ?>" />
+        <input type="hidden" name="round" value="<?php echo empty( $final['round'] ) ? null : esc_html( $final['round'] ); ?>" />
         <input type="hidden" name="league-tab" value="matches" />
         <input type="hidden" name="action" value="updateFinalResults" />
 

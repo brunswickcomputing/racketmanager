@@ -15,6 +15,7 @@ use Racketmanager\Exceptions\Duplicate_Email_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
+use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use stdClass;
@@ -24,7 +25,6 @@ use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
-use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
@@ -93,6 +93,7 @@ class Ajax_Frontend extends Ajax {
     public function update_team(): void {
         $team_details = null;
         $team_id      = null;
+        $team         = null;
         $event_id     = null;
         $validator    = new Validator();
         $validator    = $validator->check_security_token( 'racketmanager_nonce', 'team-update' );
@@ -112,7 +113,11 @@ class Ajax_Frontend extends Ajax {
             $validator    = $validator->match_time( $team_details->match_time, $field_ref );
         }
         if ( empty( $validator->error ) ) {
-            $team = get_team( $team_id );
+            try {
+                $team = $this->team_service->get_team_by_id( $team_id );
+            } catch ( Team_Not_Found_Exception ) {
+                $validator->error = true; // will never get here since validator->team will catch this
+            }
             $msg = $team->update_event( $event_id, $team_details->captain_id, $team_details->contactno, $team_details->contactemail, $team_details->match_day, $team_details->match_time );
             wp_send_json_success( $msg );
         }

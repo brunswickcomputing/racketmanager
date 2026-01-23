@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\DTO;
 
 /**
  * Class to implement the Event Details Data Transfer Object

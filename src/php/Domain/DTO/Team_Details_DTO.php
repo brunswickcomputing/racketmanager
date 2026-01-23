@@ -7,7 +7,11 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\DTO;
+
+use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Team;
 
 /**
  * Class to implement the Team Details Data Transfer Object

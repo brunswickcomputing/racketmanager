@@ -16,6 +16,7 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 
@@ -25,19 +26,18 @@ use Racketmanager\Util\Util;
 class Team_Service {
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
+    private Event_Repository $event_repository;
     private Player_Service $player_service;
 
     /**
      * Constructor
      *
-     * @param Team_Repository $team_repository
-     * @param Club_Repository $club_repository
-     * @param Player_Service $player_service
      */
-    public function __construct( Team_Repository $team_repository, Club_Repository $club_repository, Player_Service $player_service ) {
-        $this->team_repository = $team_repository;
-        $this->club_repository = $club_repository;
-        $this->player_service  = $player_service;
+    public function __construct( Team_Repository $team_repository, Club_Repository $club_repository, Event_Repository $event_repository ,Player_Service $player_service ) {
+        $this->team_repository  = $team_repository;
+        $this->club_repository  = $club_repository;
+        $this->event_repository = $event_repository;
+        $this->player_service   = $player_service;
     }
 
     /**

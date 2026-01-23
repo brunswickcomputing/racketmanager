@@ -99,6 +99,7 @@ final class Container_Bootstrap {
             return new Team_Service(
                 $c->get('team_repository'),
                 $c->get('club_repository'),
+                $c->get('event_repository'),
                 $c->get('player_service'),
             );
         });

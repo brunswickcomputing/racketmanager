@@ -17,7 +17,6 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use WP_Error;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_player;
@@ -134,17 +133,17 @@ class Validator {
      */
     public function team( ?int $team_id ): object {
         if ( empty( $team_id ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'contactno';
-            $this->err_msgs[] = __( 'Team id required', 'racketmanager' );
-            $this->status     = 400;
-        } else {
+            $error_field   = 'contactno';
+            $error_message = __( 'Team id not found', 'racketmanager' );
+            $status        = 404;
+            $this->set_errors( $error_field, $error_message, $status );
+        } else { // TODO: remove get_team
             $team = get_team( $team_id );
             if ( ! $team ) {
-                $this->error      = true;
-                $this->err_flds[] = 'contactno';
-                $this->err_msgs[] = __( 'Team not found', 'racketmanager' );
-                $this->status     = 404;
+                $error_field   = 'contactno';
+                $error_message = __( 'Team not found', 'racketmanager' );
+                $status        = 404;
+                $this->set_errors( $error_field, $error_message, $status );
             }
         }
         return $this;
@@ -331,19 +330,17 @@ class Validator {
      * @return object $validation updated validation object.
      */
     public function season_set( ?string $season, array|null $seasons ): object {
+        $error_field = 'season';
         // Validate season value
         if ( empty( $season ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'season';
-            $this->err_msgs[] = __( 'Season is required', 'racketmanager' );
+            $error_message = __( 'Season is required', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         } elseif ( empty( $seasons ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'season';
-            $this->err_msgs[] = __( 'No seasons found', 'racketmanager' );
+            $error_message = __( 'No seasons found', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         } elseif ( empty( $seasons[ $season ] ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'season';
-            $this->err_msgs[] = __( 'Season not found', 'racketmanager' );
+            $error_message = __( 'Season not found', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -434,23 +431,23 @@ class Validator {
      *
      * @return object $validation updated validation object.
      */
-    public function event( object|int|null|string $event ): object {
+    public function event( object|int|null|string $event = null ): object {
         if ( empty( $event ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'event';
-            $this->err_msgs[] = __( 'Event id not found', 'racketmanager' );
-            $this->status     = 404;
-        } else {
+            $error_field   = 'event';
+            $error_message = __( 'Event id not found', 'racketmanager' );
+            $status        = 404;
+            $this->set_errors( $error_field, $error_message, $status );
+        } else { // TODO:remove event lookup
             if ( is_int( $event ) ) {
                 $event = get_event( $event );
             } elseif ( is_string( $event ) ) {
                 $event = get_event( $event, 'name' );
             }
             if ( ! $event ) {
-                $this->error      = true;
-                $this->err_flds[] = 'event';
-                $this->err_msgs[] = __( 'Event not found', 'racketmanager' );
-                $this->status     = 404;
+                $error_field   = 'event';
+                $error_message = __( 'Event not found', 'racketmanager' );
+                $status        = 404;
+                $this->set_errors( $error_field, $error_message, $status );
             }
         }
         return $this;
@@ -536,19 +533,19 @@ class Validator {
      */
     public function captain( ?string $captain, ?string $contactno, ?string $contactemail, string $field_ref ): object {
         if ( empty( $captain ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'captain-' . $field_ref;
-            $this->err_msgs[] = __( 'Captain not selected', 'racketmanager' );
+            $error_field   = 'captain-' . $field_ref;
+            $error_message = __( 'Captain not selected', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         } else {
             if ( empty( $contactno ) ) {
-                $this->error      = true;
-                $this->err_flds[] = 'contactno-' . $field_ref;
-                $this->err_msgs[] = __( 'Telephone number required', 'racketmanager' );
+                $error_field   = 'contactno-' . $field_ref;
+                $error_message = __( 'Telephone number required', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
             }
             if ( empty( $contactemail ) ) {
-                $this->error      = true;
-                $this->err_flds[] = 'contactemail-' . $field_ref;
-                $this->err_msgs[] = __( 'Email required missing', 'racketmanager' );
+                $error_field   = 'contactemail-' . $field_ref;
+                $error_message = __( 'Email required', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
             }
         }
         return $this;
@@ -564,15 +561,14 @@ class Validator {
      * @return object $validation updated validation object.
      */
     public function match_day( ?int $match_day, string $field_ref, bool $match_day_restriction = false, array $match_days_allowed = array() ): object {
+        $error_field = 'matchday-' . $field_ref;
         if ( empty( $match_day ) && 0 !== $match_day ) {
-            $this->error      = true;
-            $this->err_flds[] = 'matchday-' . $field_ref;
-            $this->err_msgs[] = __( 'Match day not selected', 'racketmanager' );
+            $error_message = __( 'Match day not selected', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         } elseif ( $match_day_restriction ) {
-            if ( !empty( $match_days_allowed ) && empty( $match_days_allowed[$match_day] ) ) {
-                $this->error      = true;
-                $this->err_flds[] = 'matchday-' . $field_ref;
-                $this->err_msgs[] = __( 'Match day not valid for event', 'racketmanager' );
+            if ( !empty( $match_days_allowed ) && empty( $match_days_allowed[ $match_day ] ) ) {
+                $error_message = __( 'Match day not valid for event', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
             }
         }
         return $this;
@@ -583,31 +579,29 @@ class Validator {
      *
      * @param string|null $match_time match time.
      * @param string $field_ref field reference.
-     * @param string|null $match_day match day.
+     * @param int|null $match_day match day.
      * @param array|null $start_times min/max start times.
      * @return object $validation updated validation object.
      */
-    public function match_time( ?string $match_time, string $field_ref, ?string $match_day = null, ?array $start_times = array() ): object {
+    public function match_time( ?string $match_time, string $field_ref, ?int $match_day = null, ?array $start_times = array() ): object {
+        $error_field = 'matchtime-' . $field_ref;
         if ( empty( $match_time ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'matchtime-' . $field_ref;
-            $this->err_msgs[] = __( 'Match time not selected', 'racketmanager' );
-        } elseif ( $match_day >= 0 ) {
+            $error_message = __( 'Match time not selected', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
+        } elseif ( isset( $match_day ) &  $match_day >= 0 ) {
             $match_time = substr( $match_time, 0, 5 );
-            if ( $match_day <= 5 ) {
+            if ( $match_day <= 4 ) {
                 $index = 'weekday';
             } else {
                 $index = 'weekend';
             }
             if ( isset( $start_times[ $index ] ) ) {
                 if ( $match_time < $start_times[ $index ]['min'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = 'matchtime-' . $field_ref;
-                    $this->err_msgs[] = __( 'Match time less than earliest start', 'racketmanager' );
+                    $error_message = __( 'Match time less than earliest start', 'racketmanager' );
+                    $this->set_errors( $error_field, $error_message );
                 } elseif ( $match_time > $start_times[ $index ]['max'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = 'matchtime-' . $field_ref;
-                    $this->err_msgs[] = __( 'Match time greater than latest start', 'racketmanager' );
+                    $error_message = __( 'Match time greater than latest start', 'racketmanager' );
+                    $this->set_errors( $error_field, $error_message );
                 }
             }
         }
@@ -621,10 +615,9 @@ class Validator {
      */
     public function num_courts_available( ?int $num_courts_available ): object {
         if ( empty( $num_courts_available ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'numCourtsAvailable';
-            /* translators: %s: competition name */
-            $this->err_msgs[] = __( 'You must specify the number of courts available', 'racketmanager' );
+            $error_field   = 'numCourtsAvailable';
+            $error_message = __( 'You must specify the number of courts available', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }

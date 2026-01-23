@@ -14,11 +14,9 @@ use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_tournament;
-use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Competition object
@@ -518,6 +516,7 @@ class Competition {
         'history'             => false,
         'club'                => false,
         'league_name'         => false,
+        'team'                => false,
         'team_name'           => false,
         'home_team'           => false,
         'away_team'           => false,
@@ -558,7 +557,7 @@ class Competition {
             $row->name,
             $row->type,
             $row->age_group,
-            json_decode($row->seasons, true) ?: array(),
+            ( empty( $row->seasons ) ? array() : json_decode( $row->seasons, true ) ) ? : array(),
             json_decode($row->settings, true) ?: array(),
             (int) $row->id
         );
@@ -1243,6 +1242,7 @@ class Competition {
         $history              = $match_args['history'];
         $club                 = $match_args['club'];
         $league_name          = $match_args['league_name'];
+        $team                 = $match_args['team'];
         $team_name            = $match_args['team_name'];
         $home_team            = $match_args['home_team'];
         $home_club            = $match_args['home_club'];
@@ -1275,7 +1275,9 @@ class Competition {
             $search_terms[] = $wpdb->prepare( ' `season` = %s ', $season );
         }
         if ( $final ) {
-            $search_terms[] = $wpdb->prepare( "`final` = %s", $final );
+            if ( 'all' !== $final ) {
+                $search_terms[] = $wpdb->prepare( "`final` = %s", $final );
+            }
         }
         if ( $time_offset ) {
             $time_offset = intval( $time_offset ) . $this->time_zero;
@@ -1335,6 +1337,9 @@ class Competition {
         if ( ! empty( $team_name ) ) {
             $team_name_search = '%' . $team_name . '%';
             $search_terms[] = $wpdb->prepare( " (`home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `title` LIKE %s) OR `away_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `title` LIKE %s)) ", $team_name_search, $team_name_search );
+        }
+        if ( ! empty( $team ) ) {
+            $search_terms[] = $wpdb->prepare( " (`home_team` = %d OR `away_team` = %d) ", $team, $team );
         }
         if ( $match_day && intval( $match_day ) > 0 ) {
             $search_terms[] = $wpdb->prepare( " `match_day` = %d", $match_day );

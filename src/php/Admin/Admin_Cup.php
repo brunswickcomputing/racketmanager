@@ -9,9 +9,11 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_club;
@@ -74,25 +76,32 @@ final class Admin_Cup extends Admin_Championship {
      * Display cups page
      */
     public function display_cups_page(): void {
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
-        } else {
-            $competition_type  = 'cup';
-            $type              = '';
-            $season            = '';
-            $standalone        = true;
-            $competition_query = array( 'type' => $competition_type );
-            $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
-            include_once RACKETMANAGER_PATH . 'templates/admin/show-competitions.php';
+            return;
         }
+        $competition_type  = 'cup';
+        $type              = '';
+        $season            = '';
+        $standalone        = true;
+        $competition_query = array( 'type' => $competition_type );
+        $page_title        = ucfirst( $competition_type ) . ' ' . __( 'Competitions', 'racketmanager' );
+        include_once RACKETMANAGER_PATH . 'templates/admin/show-competitions.php';
     }
 
+    /**
+     * Display cup overview page
+     *
+     * @return void
+     */
     public function display_cup_overview_page(): void {
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
         try {
             $competition = $this->competition_service->get_by_id( $competition_id );
-            $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             if ( $season && ! empty( $competition->get_season_by_name( $season ) ) ) {
                 $competition->events = $competition->get_events();
                 $i                   = 0;
@@ -104,8 +113,8 @@ final class Admin_Cup extends Admin_Championship {
                     ++$i;
                     $leagues = $event->get_leagues();
                 }
-                $tab                 = 'overview';
-                $cup_season          = (object) $competition->get_season_by_name( $season );
+                $tab        = 'overview';
+                $cup_season = (object) $competition->get_season_by_name( $season );
                 if ( isset( $cup_season->date_closing ) && $cup_season->date_closing <= gmdate( 'Y-m-d' ) ) {
                     $cup_season->is_active = true;
                 } else {
@@ -114,12 +123,16 @@ final class Admin_Cup extends Admin_Championship {
                 $cup_season->is_open    = false;
                 $cup_season->venue_name = null;
                 if ( isset( $cup_season->venue ) ) {
-                    $venue_club = get_club( $cup_season->venue );
-                    if ( $venue_club ) {
+                    try {
+                        $venue_club             = $this->club_service->get_club( $cup_season->venue );
                         $cup_season->venue_name = $venue_club->shortcode;
+                    } catch ( Club_Not_Found_Exception ) {
+                        $cup_season->venue_name = null;
                     }
                 }
-                $cup_season->entries = $competition->get_clubs( array( 'status' => 1 ) );
+                $cup_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
+                $competition_overview = $this->competition_service->get_competition_overview( $competition_id, $season );
+
                 require_once RACKETMANAGER_PATH . 'templates/admin/cup/show-season.php';
 
             }
@@ -139,241 +152,260 @@ final class Admin_Cup extends Admin_Championship {
         $league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
         $tab            = isset( $_GET['league-tab'] ) ? sanitize_text_field( wp_unslash( $_GET['league-tab'] ) ) : null;
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
-        if ( $competition_id ) {
-            $competition = get_competition( $competition_id );
-            if ( $competition && $league_id ) {
-                $league = get_league( $league_id );
-                if ( $league ) {
-                    $updates = $this->handle_league_teams_action( $league );
-                    if ( $updates ) {
-                        $tab = 'preliminary';
-                    }
-                    if ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                        $this->manage_matches_in_league( $league );
-                        $tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                    } elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                        $this->league_add_teams( $league );
-                        if ( $league->is_championship ) {
-                            $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                        }
-                    } elseif( empty( $tab) ) {
-                        $tab = $this->handle_championship_admin_page( $league ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                        if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                            $this->rank_teams( $league, 'manual' );
-                            $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                        } elseif ( isset( $_POST['randomRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                            $this->rank_teams( $league, 'random' );
-                            $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                        } elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                            $this->rank_teams( $league, 'ratings' );
-                            $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                        } elseif ( empty( $tab ) ) {
-                            $tab = 'finalResults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                        }
-                    }
-                    $this->show_message();
-                    require_once RACKETMANAGER_PATH . 'templates/admin/cup/draw.php';
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+            return;
+        }
+        $league = get_league( $league_id );
+        if ( $league ) {
+            $updates = $this->handle_league_teams_action( $league );
+            if ( $updates ) {
+                $tab = 'preliminary';
+            }
+            if ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $this->manage_matches_in_league( $league );
+                $tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+            } elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $this->league_add_teams( $league );
+                if ( $league->is_championship ) {
+                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+                }
+            } elseif( empty( $tab) ) {
+                $tab = $this->handle_championship_admin_page( $league ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+                if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    $this->rank_teams( $league, 'manual' );
+                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+                } elseif ( isset( $_POST['randomRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    $this->rank_teams( $league, 'random' );
+                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+                } elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                    $this->rank_teams( $league, 'ratings' );
+                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+                } elseif ( empty( $tab ) ) {
+                    $tab = 'finalResults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
                 }
             }
+            $this->show_message();
+            require_once RACKETMANAGER_PATH . 'templates/admin/cup/draw.php';
         }
     }
     /**
      * Display cup setup
      */
     public function display_cup_setup_page(): void {
-        if ( ! current_user_can( 'edit_matches' ) ) {
-            $this->set_message( $this->no_permission, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_matches' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->error, true );
             $this->show_message();
-        } else {
-            if ( isset( $_POST['action'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add_championship-matches' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                } else {
-                    $valid          = true;
-                    $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                    $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    if ( $competition_id ) {
-                        $competition = get_competition( $competition_id );
-                        if ( $competition ) {
-                            $cup_season = $competition->get_season_by_name( $season );
-                            if ( isset( $_POST['rounds'] ) ) {
-                                $msg    = array();
-                                $rounds = array();
-                                foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                                    if ( empty( $round['match_date'] ) ) {
-                                        /* translators: $s: $round number */
-                                        $msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
-                                        $valid = false;
-                                    } elseif ( ! empty( $next_round_date ) && $round['match_date'] >= $next_round_date ) {
-                                        /* translators: $s: $round number */
-                                        $msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
-                                        $valid = false;
-                                    } else {
-                                        $round_date      = $round['match_date'];
-                                        $rounds[]        = $round_date;
-                                        $next_round_date = $round_date;
-                                    }
-                                }
-                                if ( $valid ) {
-                                    $cup_season['match_dates'] = array();
-                                    foreach ( array_reverse( $rounds ) as $match_date ) {
-                                        $cup_season['match_dates'][] = $match_date;
-                                    }
-                                    $cup_seasons                  = $competition->get_seasons();
-                                    $cup_season['num_match_days'] = count( $cup_season['match_dates'] );
-                                    $cup_seasons[ $season ]       = $cup_season;
-                                    $competition->update_seasons( $cup_seasons );
-                                    $this->set_message( __( 'Cup match dates updated', 'racketmanager' ) );
+            return;
+        }
+        if ( isset( $_POST['action'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce','racketmanager_add_championship-matches');
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+            } else {
+                $valid          = true;
+                $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                if ( $competition_id ) {
+                    $competition = get_competition( $competition_id );
+                    if ( $competition ) {
+                        $cup_season = $competition->get_season_by_name( $season );
+                        if ( isset( $_POST['rounds'] ) ) {
+                            $msg    = array();
+                            $rounds = array();
+                            foreach ( $_POST['rounds'] as $round ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                                if ( empty( $round['match_date'] ) ) {
+                                    /* translators: $s: $round number */
+                                    $msg[] = sprintf( __( 'Match date missing for round %s', 'racketmanager' ), $round['round'] );
+                                    $valid = false;
+                                } elseif ( ! empty( $next_round_date ) && $round['match_date'] >= $next_round_date ) {
+                                    /* translators: $s: $round number */
+                                    $msg[] = sprintf( __( 'Match date for round %s after next round date', 'racketmanager' ), $round['round'] );
+                                    $valid = false;
                                 } else {
-                                    $message = implode( '<br>', $msg );
-                                    $this->set_message( $message, true );
+                                    $round_date      = $round['match_date'];
+                                    $rounds[]        = $round_date;
+                                    $next_round_date = $round_date;
                                 }
-                                $this->show_message();
                             }
-                        }
-                    }
-                }
-            } elseif ( isset( $_POST['rank'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                } else {
-                    $valid          = true;
-                    $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
-                    if ( $competition_id ) {
-                        $competition = get_competition( $competition_id );
-                        if ( $competition ) {
-                            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                            $competition->calculate_team_ratings( $season );
-                            $this->set_message( __( 'Cup ratings set', 'racketmanager' ) );
-                        }
-                    }
-                }
-                $this->show_message();
-            }
-            $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
-                if ( $competition ) {
-                    $season_data = $competition->get_season_by_name( $season );
-                    $match_dates = $season_data['match_dates'];
-                    if ( empty( $match_dates ) ) {
-                        $date_end     = date_create( $season_data['date_end'] );
-                        $day_end      = date_format( $date_end, 'N' );
-                        $day_adjust   = $day_end - 1;
-                        $end_date     = Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
-                        $round_length = $season_data['round_length'] ?? 7;
-                        $match_date   = null;
-                        $i            = 0;
-                        foreach( $competition->finals as $final ) {
-                            $r = $final['round'] - 1;
-                            if ( 0 === $i ) {
-                                $match_date = $season_data['date_end'];
-                            } elseif ( 1 === $i ) {
-                                if ( $competition->fixed_match_dates ) {
-                                    $match_date = Util::amend_date( $end_date, $round_length, '-' );
-                                } else {
-                                    $match_date = Util::amend_date( $season_data['date_end'], 7 );
+                            if ( $valid ) {
+                                $cup_season['match_dates'] = array();
+                                foreach ( array_reverse( $rounds ) as $match_date ) {
+                                    $cup_season['match_dates'][] = $match_date;
                                 }
-                            } elseif ( 0 === $r && $competition->fixed_match_dates ) {
-                                $match_date = $competition->date_start;
+                                $cup_seasons                  = $competition->get_seasons();
+                                $cup_season['num_match_days'] = count( $cup_season['match_dates'] );
+                                $cup_seasons[ $season ]       = $cup_season;
+                                $competition->update_seasons( $cup_seasons );
+                                $this->set_message( __( 'Cup match dates updated', 'racketmanager' ) );
                             } else {
-                                $match_date = Util::amend_date( $match_date, $round_length, '-' );
+                                $message = implode( '<br>', $msg );
+                                $this->set_message( $message, true );
                             }
-                            $match_dates[ $r ] = $match_date;
-                            ++$i;
+                            $this->show_message();
                         }
                     }
-                    require_once RACKETMANAGER_PATH . 'templates/admin/cup/setup.php';
                 }
             }
+        } elseif ( isset( $_POST['rank'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce','racketmanager_calculate_ratings');
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+            } else {
+                $valid          = true;
+                $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+                $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                try {
+                    $this->competition_service->calculate_team_ratings( $competition_id, $season);
+                    $this->set_message( __( 'Cup ratings set', 'racketmanager' ) );
+                } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
+                }
+            }
+            $this->show_message();
+        }
+        $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( $competition_id ) {
+            try {
+                $competition = $this->competition_service->get_by_id( $competition_id );
+            } catch ( Competition_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
+                $this->show_message();
+                return;
+            }
+            $season_data = $competition->get_season_by_name( $season );
+            $match_dates = $season_data['match_dates'];
+            if ( empty( $match_dates ) ) {
+                $date_end     = date_create( $season_data['date_end'] );
+                $day_end      = date_format( $date_end, 'N' );
+                $day_adjust   = $day_end - 1;
+                $end_date     = Util::amend_date( $season_data['date_end'], $day_adjust, '-' );
+                $round_length = $season_data['round_length'] ?? 7;
+                $match_date   = null;
+                $i            = 0;
+                foreach( $competition->finals as $final ) {
+                    $r = $final['round'] - 1;
+                    if ( 0 === $i ) {
+                        $match_date = $season_data['date_end'];
+                    } elseif ( 1 === $i ) {
+                        if ( $competition->settings['fixed_match_dates'] ) {
+                            $match_date = Util::amend_date( $end_date, $round_length, '-' );
+                        } else {
+                            $match_date = Util::amend_date( $season_data['date_end'], 7 );
+                        }
+                    } elseif ( 0 === $r && $competition->settings['fixed_match_dates'] ) {
+                        $match_date = $season_data['date_start'];
+                    } else {
+                        $match_date = Util::amend_date( $match_date, $round_length, '-' );
+                    }
+                    $match_dates[ $r ] = $match_date;
+                    ++$i;
+                }
+            }
+            require_once RACKETMANAGER_PATH . 'templates/admin/cup/setup.php';
         }
     }
     /**
      * Display event setup
      */
     public function display_setup_event_page(): void {
-        if ( ! current_user_can( 'edit_matches' ) ) {
-            $this->set_message( $this->no_permission, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_matches' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->error, true );
             $this->show_message();
-        } else {
-            if ( isset( $_POST['action'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add_championship-matches' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                } else {
-                    $valid     = true;
-                    $action    = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-                    $league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-                    $season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    $rounds    = $_POST['rounds'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    $league    = get_league( $league_id );
-                    if ( $league ) {
+            return;
+        }
+        if ( isset( $_POST['action'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+            } else {
+                $valid     = true;
+                $action    = sanitize_text_field( wp_unslash( $_POST['action'] ) );
+                $league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
+                $season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                $rounds    = $_POST['rounds'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $league    = get_league( $league_id );
+                if ( $league ) {
+                    if ( $rounds ) {
                         $this->set_championship_matches( $league, $season, $rounds, $action );
+                    } else {
+                        $this->set_message( __( 'No rounds specified', 'racketmanager' ), true );
                     }
                 }
-            } elseif ( isset( $_POST['rank'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_calculate_ratings' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                    $this->show_message();
-                } else {
-                    $valid          = true;
-                    $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
-                    $league_id      = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-                    $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                    $this->calculate_team_ratings( $competition_id, $season );
+            }
+        } elseif ( isset( $_POST['rank'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce','racketmanager_calculate_ratings');
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->error, true );
+            } else {
+                $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
+                $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+                try {
+                    $this->competition_service->calculate_team_ratings( $competition_id, $season);
+                    $this->set_message( __( 'Cup ratings set', 'racketmanager' ) );
+                } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
                 }
             }
-            $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-            $league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-            //phpcs:enable WordPress.Security.NonceVerification.Recommended
-            if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
-                if ( $competition && $league_id ) {
-                    $league = get_league( $league_id );
-                    if ( $league ) {
-                        $match_count = $league->get_matches(
-                            array(
-                                'count' => true,
-                                'final' => 'all',
-                            )
-                        );
-                        $tab                = 'matches';
-                        $league_season      = $league->seasons[ $season ];
-                        $event_season       = $league->event->get_season_by_name( $season );
-                        $competition_season = $competition->get_season_by_name( $season );
-                        if ( empty( $league_season['rounds'] ) ) {
-                            if ( empty( $event_season['match_dates'] ) ) {
-                                if ( empty( $league->event->offset ) ) {
-                                    $match_dates = $competition_season['match_dates'];
-                                } elseif( isset( $competition_season['match_dates'] ) && is_array( $competition_season['match_dates'] ) ) {
-                                    $i = 0;
-                                    $num_match_dates = count( $competition_season['match_dates'] );
-                                    foreach( $competition_season['match_dates'] as $match_date ) {
-                                        if ( $i === $num_match_dates - 1 ) {
-                                            $match_dates[ $i ] = $match_date;
-                                        } else {
-                                            $match_dates[ $i ] = Util::amend_date( $match_date, $league->event->offset, '+', 'week' );
-                                        }
-                                        ++$i;
-                                    }
-                                } else {
-                                    $match_dates = array();
-                                }
+        }
+        $this->show_message();
+        $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
+        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+            return;
+        }
+        $league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
+        //phpcs:enable WordPress.Security.NonceVerification.Recommended
+        $league = get_league( $league_id );
+        if ( $league ) {
+            $match_count = $league->get_matches(
+                array(
+                    'count' => true,
+                    'final' => 'all',
+                )
+            );
+            $tab                = 'matches';
+            $league_season      = $league->seasons[ $season ] ?? array();
+            $event_season       = $league->event->get_season_by_name( $season );
+            $competition_season = $competition->get_season_by_name( $season );
+            if ( empty( $league_season['rounds'] ) ) {
+                if ( empty( $event_season['match_dates'] ) ) {
+                    $match_dates = array();
+                    if ( empty( $league->event->offset ) ) {
+                        $match_dates = $competition_season['match_dates'] ?? array();
+                    } elseif( isset( $competition_season['match_dates'] ) && is_array( $competition_season['match_dates'] ) ) {
+                        $i = 0;
+                        $num_match_dates = count( $competition_season['match_dates'] );
+                        foreach( $competition_season['match_dates'] as $match_date ) {
+                            if ( $i === $num_match_dates - 1 ) {
+                                $match_dates[ $i ] = $match_date;
                             } else {
-                                $match_dates = $event_season['match_dates'];
+                                $match_dates[ $i ] = Util::amend_date( $match_date, $league->event->offset, '+', 'week' );
                             }
-                        } else {
-                            foreach ( array_reverse( $league_season['rounds'] ) as $round ) {
-                                $match_dates[] = $round->date;
-                            }
+                            ++$i;
                         }
-                        require_once RACKETMANAGER_PATH . 'templates/admin/cup/setup.php';
                     }
+                } else {
+                    $match_dates = $event_season['match_dates'];
+                }
+            } else {
+                foreach ( array_reverse( $league_season['rounds'] ) as $round ) {
+                    $match_dates[] = $round->date;
                 }
             }
+            require_once RACKETMANAGER_PATH . 'templates/admin/cup/setup.php';
         }
     }
     /**

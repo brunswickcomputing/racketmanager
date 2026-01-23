@@ -340,14 +340,11 @@ class Ajax_Frontend extends Ajax {
                         break;
                     case 'league':
                         $target      = get_league( $target_id );
-                        $target_name = 'league';
                         break;
                     case 'tournament':
                         $target      = get_tournament( $target_id );
-                        $target_name = 'tournament';
                         break;
                     default:
-                        $target_name   = 'null';
                         $return->error = true;
                         $return->msg   = __( 'Invalid target', 'racketmanager' );
                 }
@@ -371,7 +368,7 @@ class Ajax_Frontend extends Ajax {
                             if ( $season ) {
                                 $args['season'] = $season;
                             }
-                            $function_name = 'Racketmanager\\' . $target_name . '_' . $tab_name;
+                            $function_name = 'Racketmanager\\' . $target_ref . '_' . $tab_name;
                             if ( function_exists( $function_name ) ) {
                                 $output = $function_name( $target->id, $args );
                             } else {

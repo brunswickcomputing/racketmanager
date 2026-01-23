@@ -147,4 +147,148 @@ class League_Team_Repository {
         );
         return $this->wpdb->get_col($query);
     }
+
+    /**
+     * Get league teams for an event
+     *
+     * @param int|null $event_id
+     * @param int|null $season
+     * @param int|null $team_id
+     *
+     * @return array
+     */
+    public function get_by_event_id( ?int $event_id, ?int $season, ?int $team_id ): array {
+        $cache_key = 'event' . $event_id . '_' . $season . '_' . $team_id;
+        $teams = wp_cache_get( md5( $cache_key ), 'league_teams' );
+        if ( $teams ) {
+            return $teams;
+        }
+        $search = '';
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        if ( $season ) {
+            $search .= $this->wpdb->prepare( " AND `season`  = %d", $season );
+        }
+        if ( $team_id ) {
+            $search .= $this->wpdb->prepare( " AND `team_id`  = %d", $team_id );
+        }
+        $teams = $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                "SELECT t.* FROM $this->table_name t, $leagues_table l WHERE l.`event_id` = %d AND l.`id` = t.`league_id` $search ORDER BY `title`",
+                $event_id
+            )
+        );
+        $results = array_map(function($row) {
+            return new League_Team( $row );
+        }, $teams);
+        wp_cache_set( md5( $cache_key ), $results, 'league_teams' );
+        return $results;
+
+    }
+
+    /**
+     * Get clubs for an event and season
+     *
+     * @param int|null $event_id
+     * @param int|null $season
+     *
+     * @return array
+     */
+    public function get_clubs_by_event_id( ?int $event_id, ?int $season ): array {
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $clubs_table   = $this->wpdb->prefix . 'racketmanager_clubs';
+        $teams_table   = $this->wpdb->prefix . 'racketmanager_teams';
+        $cache_key = 'event_clubs_' . $event_id . '_' . $season;
+        $clubs = wp_cache_get( md5( $cache_key ), 'league_teams' );
+        if ( ! $clubs ) {
+            $search = '';
+            if ( $season ) {
+                $search = $this->wpdb->prepare( " AND `season`  = %d", $season );
+            }
+            $clubs = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                    "SELECT  t1.`club_id`, count(t1.`id`) as `team_count` FROM $this->table_name t, $leagues_table l, $teams_table t1, $clubs_table c WHERE l.`event_id` = %d AND l.`id` = t.`league_id` AND t.`team_id` = t1.`id` AND t1.`club_id` = c.`id` $search GROUP BY t1.`club_id`",
+                    $event_id
+                )
+            );
+            wp_cache_set( md5( $cache_key ), $clubs, 'league_teams' );
+        }
+        return $clubs;
+
+    }
+
+    /**
+     * Get clubs for a competition and season
+     *
+     * @param int|null $competition_id
+     * @param int|null $season
+     *
+     * @return array
+     */
+    public function get_clubs_by_competition_id( ?int $competition_id, ?int $season ): array {
+        $events_table = $this->wpdb->prefix . 'racketmanager_events';
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $clubs_table   = $this->wpdb->prefix . 'racketmanager_clubs';
+        $teams_table   = $this->wpdb->prefix . 'racketmanager_teams';
+        $cache_key = 'competition_clubs_' . $competition_id . '_' . $season;
+        $clubs = wp_cache_get( md5( $cache_key ), 'league_teams' );
+        if ( ! $clubs ) {
+            $search = '';
+            if ( $season ) {
+                $search = $this->wpdb->prepare( " AND `season`  = %d", $season );
+            }
+            $clubs = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                    "SELECT  t1.`club_id`, c.shortcode, count(t1.`id`) as `team_count` FROM $this->table_name t, $events_table e, $leagues_table l, $teams_table t1, $clubs_table c WHERE l.`event_id` = e.`id` AND e.`competition_id` = %d AND l.`id` = t.`league_id` AND t.`team_id` = t1.`id` AND t1.`club_id` = c.`id` AND t.profile = 1 $search GROUP BY t1.`club_id`, c.shortcode ORDER BY c.shortcode",
+                    $competition_id
+                )
+            );
+            wp_cache_set( md5( $cache_key ), $clubs, 'league_teams' );
+        }
+        return $clubs;
+
+    }
+
+    /**
+     * Marks specific teams as 'withdrawn' from their league registrations.
+     *
+     * @param int $club_id The ID of the club performing the withdrawal.
+     * @param string $season
+     * @param int $event_id
+     * @param array $team_ids
+     *
+     * @return League_Team[].
+     */
+    public function find_teams_to_withdraw_from_league( int $club_id, string $season, int $event_id, array $team_ids = array() ): array {
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+
+        $results = [];
+        $query = "
+                    SELECT lte.*
+                    FROM `$this->table_name` lte
+                        INNER JOIN `$teams_table` t ON lte.team_id = t.id
+                        INNER JOIN `$leagues_table` l ON lte.league_id = l.id
+                    WHERE t.club_id = %d
+                      AND l.event_id = %d
+                      AND lte.season = %s
+                    AND lte.profile != 3
+                      ";
+
+        $params = [ $club_id, $event_id, $season ];
+
+        if ( ! empty( $team_ids ) ) {
+            $placeholders = implode( ',', array_fill( 0, count( $team_ids ), '%d' ) );
+            $query .= " AND t.id IN ( $placeholders )";
+            $params = array_merge( $params, $team_ids );
+        }
+        $sql  = $this->wpdb->prepare( $query, $params );
+        $rows = $this->wpdb->get_results( $sql );
+
+        foreach ( $rows as $row ) {
+            // Map to the Domain Model
+            $results[] = new League_Team( $row );
+        }
+        return $results;
+    }
+
 }

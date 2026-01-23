@@ -8,15 +8,17 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Exceptions\Clubs_Not_Found_Exception;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use function Racketmanager\event_dropdown;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
-use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 use function Racketmanager\get_tournament;
 use function Racketmanager\league_dropdown;
@@ -221,51 +223,49 @@ class Ajax_Admin extends Ajax {
      * @see templates/email/competition-entry-open.php
      */
     public function notify_competition_entries_open(): void {
-        $return = $this->check_security_token();
-        if ( ! isset( $return->error ) ) {
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
             $competition_id = isset( $_POST['competitionId'] ) ? intval( $_POST['competitionId'] ) : null;
-            if ( ! $competition_id ) {
-                $return->error = true;
-                $return->msg   = __( 'Competition not specified', 'racketmanager' );
+            $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
+            $competition    = null;
+            try {
+                $competition = $this->competition_service->get_by_id( $competition_id );
+            } catch ( Competition_Not_Found_Exception $e ) {
+                wp_send_json_error( $e->getMessage(), '404' );
+            }
+            $competition_season = $competition->get_season_by_name( $season );
+            if ( empty( $competition_season ) ) {
+                $validator->error = true;
+                $validator->msg   = __( 'Season not found for competition', 'racketmanager' );
             } else {
-                $season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-                if ( ! $season ) {
-                    $return->error = true;
-                    $return->msg   = __( 'Season not specified', 'racketmanager' );
-                } else {
-                    $competition = get_competition( $competition_id );
-                    if ( ! $competition ) {
-                        $return->error = true;
-                        $return->msg   = __( 'Competition not found', 'racketmanager' );
-                    } elseif ( ! empty( $competition->get_season_by_name( $season ) ) ) {
-                        if ( 'team' === $competition->entry_type ) {
-                            $entry_found = $competition->get_clubs(
-                                array(
-                                    'count'   => true,
-                                    'season'  => $season,
-                                    'status'  => 1,
-                                )
-                            );
-                            if ( $entry_found ) {
-                                $return = $competition->notify_team_entry_reminder( $season );
-                            } else {
-                                $return = $competition->notify_team_entry_open( $season );
+                if ( 'team' === $competition->settings['entry_type'] ) {
+                    try {
+                        $entry_found = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
+                        if ( $entry_found ) {
+                            try {
+                                $validator = $this->competition_entry_service->notify_team_entry_reminder( $competition_id, $season );
+                            } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception|Clubs_Not_Found_Exception $e ) {
+                                $validator->error = true;
+                                $validator->msg   = $e->getMessage();
                             }
                         } else {
-                            $return->error = true;
-                            $return->msg   = __( 'Invalid competition entry type', 'racketmanager' );
+                            $validator = $this->competition_entry_service->notify_team_entry_open( $competition_id, $season );
                         }
-                    } else {
-                        $return->error = true;
-                        $return->msg   = __( 'Season not found for competition', 'racketmanager' );
+                    } catch ( Competition_Not_Found_Exception $e ) {
+                        $validator->error = true;
+                        $validator->msg = $e->getMessage();
                     }
+                } else {
+                    $validator->error = true;
+                    $validator->msg   = __( 'Invalid competition entry type', 'racketmanager' );
                 }
             }
         }
-        if ( isset( $return->error ) ) {
-            wp_send_json_error( $return->msg, 500 );
+        if ( empty( $validator->error ) ) {
+            wp_send_json_success( $validator->msg );
         } else {
-            wp_send_json_success( $return->msg );
+            wp_send_json_error( $validator->msg, 500 );
         }
     }
     /**

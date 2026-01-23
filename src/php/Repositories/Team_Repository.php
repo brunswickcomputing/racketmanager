@@ -219,4 +219,67 @@ class Team_Repository {
         return $count > 0;
     }
 
+    /**
+     * Gets all teams for a specific competition with associated details and active player counts.
+     *
+     * @param int $competition_id
+     * @param int $season
+     * @param int $min_fixtures Minimum fixtures played to be considered 'active'.
+     *
+     * @return Team_Competition_DTO[]
+     */
+    public function find_teams_by_competition_with_details( int $competition_id, int $season, int $min_fixtures = 1): array {
+        $clubs_table          = $this->wpdb->prefix . 'racketmanager_clubs';
+        $events_table         = $this->wpdb->prefix . 'racketmanager_events';
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
+        $league_teams_table   = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $teams_table          = $this->table_name;
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+        $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $matches_table        = $this->wpdb->prefix . 'racketmanager_matches';
+
+        $query = $this->wpdb->prepare(" SELECT t.id as team_id, t.title as team_name, c.id as club_id, c.shortcode as club_shortcode, l.title as league_name, (SELECT COUNT(DISTINCT rp.player_id) FROM `$rubber_players_table` rp INNER JOIN `$rubbers_table` r ON rp.rubber_id = r.id INNER JOIN `$matches_table` f ON r.match_id = f.id INNER JOIN `$leagues_table` l ON f.league_id = l.id INNER JOIN `$events_table` e_sub ON l.event_id = e_sub.id WHERE e_sub.competition_id = %d AND f.season = %d AND ( (rp.player_team = 'home' AND f.home_team = t.id) OR (rp.player_team = 'away' AND f.away_team = t.id) ) HAVING COUNT(rp.id) >= %d ) as num_players FROM  `$teams_table` t INNER JOIN `$clubs_table` c ON t.club_id = c.id INNER JOIN `$league_teams_table` lte ON t.id = lte.team_id INNER JOIN `$leagues_table` l ON lte.league_id = l.id INNER JOIN `$events_table` e ON l.event_id = e.id WHERE e.competition_id = %d AND lte.season = %d
+            ORDER BY c.shortcode, t.title",
+            $competition_id,
+            $season,
+            $min_fixtures,
+            $competition_id,
+            $season
+        );
+        $results = $this->wpdb->get_results($query);
+
+        return array_map(fn($row) => new Team_Competition_DTO($row), $results);
+    }
+
+    /**
+     * Retrieves full captain contact details and match settings.
+     */
+    public function find_team_settings_for_event( int $teamId, int $eventId): ?Team_Fixture_Settings_DTO {
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+        $users_table = $this->wpdb->base_prefix . 'users';
+        $usermeta_table = $this->wpdb->base_prefix . 'usermeta';
+
+        $phone_meta_key = 'contactno';
+
+        $query = $this->wpdb->prepare("
+        SELECT 
+            lte.captain as captain_id,
+            u.display_name as captain_name,
+            u.user_email as captain_email,
+            m.meta_value as captain_contact_no,
+            lte.match_day as match_day,
+            lte.match_time as match_time
+        FROM `$league_teams_table` lte
+            INNER JOIN `$leagues_table` l ON l.id = lte.league_id
+            LEFT JOIN `$users_table` u ON lte.captain = u.ID
+            LEFT JOIN `$usermeta_table` m ON u.ID = m.user_id AND m.meta_key = %s
+        WHERE lte.team_id = %d AND l.event_id = %d
+        ORDER BY lte.season DESC
+        LIMIT 1
+    ", $phone_meta_key, $teamId, $eventId);
+
+        $row = $this->wpdb->get_row( $query );
+        return $row ? new Team_Fixture_Settings_DTO( $row ) : null;
+    }
 }

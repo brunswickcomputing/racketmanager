@@ -323,12 +323,20 @@ class Ajax_Frontend extends Ajax {
                 $target_id = isset( $_POST['targetId'] ) ? intval( $_POST['targetId'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
                 switch ( $target_ref ) {
                     case 'competition':
-                        $target      = get_competition( $target_id );
-                        $target_name = 'competition';
+                        try {
+                            $target = $this->competition_service->get_by_id( $target_id );
+                        } catch ( Competition_Not_Found_Exception $e ) {
+                            $return->msg = $e->getMessage();
+                            $return->error = true;
+                        }
                         break;
                     case 'event':
-                        $target      = get_event( $target_id );
-                        $target_name = 'event';
+                        try {
+                            $target = $this->competition_service->get_event_by_id( $target_id );
+                        } catch ( Event_Not_Found_Exception $e ) {
+                            $return->msg = $e->getMessage();
+                            $return->error = true;
+                        }
                         break;
                     case 'league':
                         $target      = get_league( $target_id );

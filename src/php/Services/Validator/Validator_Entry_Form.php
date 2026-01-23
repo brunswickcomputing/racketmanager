@@ -83,22 +83,22 @@ final class Validator_Entry_Form extends Validator {
     }
 
     /**
-     * Validate teams
+     * Validate events missing teams
      *
-     * @param array|string|null $teams array of teams.
-     * @param string $field_ref field reference.
-     * @param string $field_name field name.
+     * @param array|null $events array of events with no teams.
      * @return object $validation updated validation object.
      */
-    public function teams( array|string|null $teams, string $field_ref, string $field_name ): object {
-        if ( empty( $teams ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'event-' . $field_ref;
-            /* translators: %s: competition name */
-            $this->err_msgs[] = sprintf( __( 'No teams selected for %s', 'racketmanager' ), $field_name );
+    public function events_missing_teams( array|null $events ): object {
+        if ( ! empty( $events ) ) {
+            foreach ( $events as $event_id ) {
+                $error_field   = 'event-' . $event_id;
+                $error_message = __( 'No teams selected for this event', 'racketmanager' );
+                $this->set_errors( $error_field, $error_message );
+            }
         }
         return $this;
     }
+
     /**
      * Validate number of courts available
      *

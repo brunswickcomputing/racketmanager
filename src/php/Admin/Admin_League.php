@@ -149,16 +149,17 @@ final class Admin_League extends Admin_Display {
         }
         $this->show_message();
         //contactTeam
-        $competition->events = $competition->get_events();
-        $tab                 = 'overview';
-        $current_season      = (object) ( $seasons[ $season ] ?? array() );
+        $competition_overview = $this->competition_service->get_competition_overview( $competition_id, $season );
+        $competition_events   = $this->competition_service->get_events_with_details_for_competition( $competition_id, $season );
+        $tab                  = 'overview';
+        $current_season       = (object) $competition->get_season_by_name( $season ) ?? array();
         if ( isset( $current_season->date_closing ) && $current_season->date_closing <= gmdate( 'Y-m-d' ) ) {
             $current_season->is_active = true;
         } else {
             $current_season->is_active = false;
         }
         $current_season->is_open = false;
-        $current_season->entries = $competition->get_clubs( array( 'status' => 1 ) );
+        $current_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
         require_once RACKETMANAGER_PATH . 'templates/admin/league/show-season.php';
     }
     /**
@@ -251,11 +252,12 @@ final class Admin_League extends Admin_Display {
             $valid          = true;
             $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
             $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-            $competition    = get_competition( $competition_id );
-            if ( $competition && $season ) {
-                $racketmanager->calculate_team_ratings( $competition->id, $season );
+            try {
+                $this->competition_service->calculate_team_ratings( $competition_id, $season );
+                $this->set_message( __( 'League ratings set', 'racketmanager' ) );
+            } catch ( Competition_Not_Found_Exception| Season_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), false );
             }
-            $this->set_message( __( 'League ratings set', 'racketmanager' ) );
         }
         $this->show_message();
         $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;

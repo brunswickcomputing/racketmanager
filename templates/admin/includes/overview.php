@@ -10,6 +10,7 @@ namespace Racketmanager;
 /** @var object $competition */
 /** @var string $season */
 /** @var object $current_season */
+/** @var object $competition_overview */
 $current_season = empty( $cup_season ) ? $current_season : $cup_season;
 ?>
     <div class="row mb-3">
@@ -28,19 +29,23 @@ $current_season = empty( $cup_season ) ? $current_season : $cup_season;
                     ?>
                     <tr>
                         <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Events', 'racketmanager' ); ?></th>
-                        <td class="col-auto"><?php echo esc_html( count( $competition->events ) ); ?></td>
+                        <td class="col-auto"><?php echo esc_html( $competition_overview->num_events ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Entries', 'racketmanager' ); ?></th>
-                        <td class="col-auto"><?php echo esc_html( count( $current_season->entries ) ); ?></td>
+                        <td class="col-auto"><?php echo esc_html( $competition_overview->num_clubs ); ?></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></th>
+                        <td class="col-auto"><?php echo esc_html( $competition_overview->num_teams ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Code', 'racketmanager' ); ?></th>
-                        <td class="col-auto"><?php echo esc_html( $competition->competition_code ); ?></td>
+                        <td class="col-auto"><?php echo esc_html( $competition_overview->competition_code ); ?></td>
                     </tr>
                     <tr>
                         <th scope="row" class="col-6 col-md-3"><?php esc_html_e( 'Grade', 'racketmanager' ); ?></th>
-                        <td class="col-auto"><?php echo isset( $current_season->grade ) ? esc_html( $current_season->grade ) : null; ?></td>
+                        <td class="col-auto"><?php echo isset( $competition_overview->grade ) ? esc_html( $competition_overview->grade ) : null; ?></td>
                     </tr>
                 </tbody>
             </table>
@@ -72,12 +77,12 @@ $current_season = empty( $cup_season ) ? $current_season : $cup_season;
         <div class="col-auto">
             <a role="button" class="btn btn-primary" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>"><?php esc_html_e( 'Edit season', 'racketmanager' ); ?></a>
             <?php
-            if ( $current_season->is_open ) {
+//            if ( $current_season->is_open ) {
                 ?>
                 <button class="btn btn-secondary" id="notifyOpen" data-competition-id="<?php echo esc_attr( $competition->id ); ?>" data-season="<?php echo esc_attr( $season ); ?>"><?php esc_html_e( 'Notify open', 'racketmanager' ); ?></button>
                 <?php
-            }
-            if ( ! empty( $competition->competition_code ) && $competition->is_complete ) {
+      //      }
+            if ( ! empty( $competition_overview->competition_code ) && $competition ->is_complete ) {
                 ?>
                 <a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $season ); ?>&racketmanager_export=report_results" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
                     <span class="nav-link__value">

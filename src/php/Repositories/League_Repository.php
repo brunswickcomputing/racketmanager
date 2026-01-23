@@ -101,4 +101,54 @@ class League_Repository {
         return $max_sequence + 1;
     }
 
+    /**
+     * Get leagues for an event
+     *
+     * @param int|null $event_id
+     * @param int|null $season
+     *
+     * @return array
+     */
+    public function get_by_event_id( ?int $event_id, ?int $season = null ): array {
+        $cache_key = $event_id . '_' . $season;
+        $leagues = wp_cache_get( md5( $cache_key ), 'leagues' );
+        if ( ! $leagues ) {
+            $search = '';
+            if ( $season ) {
+                $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
+                $search             = $this->wpdb->prepare( " AND `id` IN (SELECT DISTINCT `league_id` FROM $league_teams_table t, $this->table_name l WHERE t.`league_id` = l.`id` AND `season` = %d AND `event_id` = %d)", $season, $event_id);
+            }
+            $leagues = $this->wpdb->get_results(
+                $this->wpdb->prepare(
+                    "SELECT * FROM $this->table_name WHERE `event_id` = %d $search ORDER BY `title`",
+                    $event_id
+                )
+            );
+            wp_cache_set( md5( $cache_key ), $leagues, 'events' );
+        }
+        return $leagues;
+    }
+
+    /**
+     * Finds the lowest league (the highest rank) for a given event.
+     *
+     * @param int $event_id
+     * @return int|null
+     */
+    public function get_lowest_league_id_by_event( int $event_id ): ?int {
+        global $wpdb;
+
+        $query = $wpdb->prepare(
+            "SELECT id
+             FROM `$this->table_name`
+             WHERE event_id = %d
+             ORDER BY rank DESC, id DESC
+             LIMIT 1",
+            $event_id
+        );
+
+        $result = $wpdb->get_var($query);
+
+        return $result ? (int) $result : null;
+    }
 }

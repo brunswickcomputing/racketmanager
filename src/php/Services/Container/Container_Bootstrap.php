@@ -12,6 +12,7 @@ use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\League_Service;
@@ -78,6 +79,19 @@ final class Container_Bootstrap {
                 $c->get('team_repository'),
                 $c->get('player_service'),
                 $c->get('competition_service'),
+            );
+        });
+
+        $c->set('competition_entry_service', function(Simple_Container $c) use ($app) {
+            return new Competition_Entry_Service(
+                $app,
+                $c->get('club_repository'),
+                $c->get('league_repository'),
+                $c->get('league_team_repository'),
+                $c->get('team_repository'),
+                $c->get('club_service'),
+                $c->get('competition_service'),
+                $c->get('player_service'),
             );
         });
 

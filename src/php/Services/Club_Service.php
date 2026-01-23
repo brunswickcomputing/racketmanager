@@ -26,10 +26,6 @@ use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\get_competition;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 /**
  * Class to implement the Club Management Service

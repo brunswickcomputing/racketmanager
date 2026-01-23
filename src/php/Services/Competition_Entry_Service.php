@@ -312,7 +312,7 @@ class Competition_Entry_Service {
         if ( empty( $validator->error ) ) {
             $validator = $validator->season_set( $request->season, $competition->get_seasons() );
             $competition->set_current_season( $request->season );
-            $validator = $validator->competition_open( $competition );
+//            $validator = $validator->competition_open( $competition );
             $start_times = $this->get_start_times( $competition->settings );
             $validator = $validator->club( $request->club_id );
             $validator = $validator->events_entry( $request->events_entered );
@@ -609,7 +609,7 @@ class Competition_Entry_Service {
                 $match_day    = $team->match_day ?? null;
                 $match_time   = $team->match_time ?? null;
                 $field_ref    = $event_id;
-                $validator    = $validator->teams( $team_id, $field_ref );
+                $validator    = $validator->events_has_teams( $team_id, $event_id );
                 if ( empty( $team_id ) ) {
                     continue;
                 }

@@ -85,16 +85,34 @@ final class Validator_Entry_Form extends Validator {
     /**
      * Validate events missing teams
      *
-     * @param array|null $events array of events with no teams.
+     * @param array|int $events array of events with no teams.
+     *
      * @return object $validation updated validation object.
      */
-    public function events_missing_teams( array|null $events ): object {
+    public function events_missing_teams( array|null|int $events ): object {
         if ( ! empty( $events ) ) {
             foreach ( $events as $event_id ) {
                 $error_field   = 'event-' . $event_id;
                 $error_message = __( 'No teams selected for this event', 'racketmanager' );
                 $this->set_errors( $error_field, $error_message );
             }
+        }
+        return $this;
+    }
+
+    /**
+     * Validate events has teams
+     *
+     * @param int|null $team_id
+     * @param null $event_id
+     *
+     * @return object $validation updated validation object.
+     */
+    public function events_has_teams( ?int $team_id, $event_id = null ): object {
+        if ( empty( $team_id ) ) {
+            $error_field   = 'event-' . $event_id;
+            $error_message = __( 'No teams selected for this event', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }

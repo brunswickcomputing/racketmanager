@@ -152,7 +152,7 @@ class Ajax {
             foreach ( $player_clubs as $player_club ) {
                 if ( empty( $club_id ) || $club_id === $player_club->club_id ) {
                     $result             = new stdClass();
-                    $result->fullname   = $player->get_display_name();
+                    $result->fullname   = $player->get_fullname();
                     $result->user_email = $player->get_email();
                     $result->player_id  = $player->get_id();
                     $result->btm        = $player->get_btm();

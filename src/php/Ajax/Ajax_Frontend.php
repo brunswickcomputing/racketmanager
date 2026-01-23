@@ -10,8 +10,12 @@ namespace Racketmanager\Ajax;
 
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Domain\DTO\Cup_Entry_Request_DTO;
+use Racketmanager\Domain\DTO\League_Entry_Request_DTO;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
+use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
@@ -186,22 +190,23 @@ class Ajax_Frontend extends Ajax {
      * Get team event info
      */
     public function get_team_event_info(): void {
-        $return   = $this->check_security_token();
-        if ( empty( $return->error ) ) {
-            $event_id = empty( $_POST['event_id'] ) ? null : intval( $_POST['event_id'] );
-            $team_id  = empty( $_POST['team_id'] ) ? null : intval( $_POST['team_id'] );
-            $validator = new Validator();
-            $validator = $validator->event( $event_id );
-            $validator = $validator->team( $team_id );
-            if ( empty( $validator->error ) ) {
-                $team             = get_team( $team_id );
-                $team_event_info  = $team->get_event_info( $event_id );
-                $return->message  = __( 'Team information', 'racketmanager' );
-                $return->info     = $team_event_info;
+        $return    = new stdClass();
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $event_id = empty( $_POST['eventId'] ) ? null : intval( $_POST['eventId'] );
+            $team_id  = empty( $_POST['teamId'] ) ? null : intval( $_POST['teamId'] );
+
+            try {
+                $team_details    = $this->team_service->get_latest_team_details_for_event( $team_id, $event_id );
+                $return->message = __( 'Team information', 'racketmanager' );
+                $return->info    = $team_details;
                 wp_send_json_success( $return );
+            } catch ( Event_Not_Found_Exception|Team_Not_Found_Exception $e ) {
+                $validator->msg = $e->getMessage();
             }
-            $return = $validator->get_details();
         }
+        $return = $validator->get_details();
         wp_send_json_error( $return, $return->status );
     }
 

@@ -17,6 +17,8 @@ use Racketmanager\Ajax\Ajax_Match;
 use Racketmanager\Ajax\Ajax_Tournament;
 use Racketmanager\Domain\Message;
 use Racketmanager\Rest\Rest_Routes;
+use Racketmanager\Services\Competition_Entry_Service;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Login;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Rewrites;
@@ -132,11 +134,13 @@ class RacketManager {
     public object $shortcodes_message;
     public object $shortcodes_tournament;
     public object $rewrites;
-    private Player_Service $player_service;
     /**
      * Simple dependency injection container.
      */
     public Simple_Container $container;
+    private Competition_Service $competition_service;
+    private Competition_Entry_Service $competition_entry_service;
+    private Player_Service $player_service;
 
     /**
      * Constructor
@@ -152,6 +156,10 @@ class RacketManager {
 
             // Boot the dependency injection container and register services.
             $this->container = Container_Bootstrap::boot( $this );
+            // Resolve commonly used services from the container.
+            $this->player_service            = $this->container->get( 'player_service' );
+            $this->competition_entry_service = $this->container->get( 'competition_entry_service' );
+            $this->competition_service       = $this->container->get( 'competition_service' );
 
             add_action( 'widgets_init', array( &$this, 'register_widget' ) );
             add_action( 'init', array( &$this, 'racketmanager_locale' ) );
@@ -169,15 +177,13 @@ class RacketManager {
             add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999 );
             add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
             add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
-            add_action( 'rm_calculate_team_ratings', array( &$this, 'calculate_team_ratings' ), 10, 3 );
-            add_action( 'rm_notify_team_entry_open', array( &$this, 'notify_team_entry_open' ), 10, 2 );
-            add_action( 'rm_notify_team_entry_reminder', array( &$this, 'notify_team_entry_reminder' ), 10, 2 );
+            add_action( 'rm_calculate_team_ratings', array( $this->competition_service, 'calculate_team_ratings' ), 10, 3 );
+            add_action( 'rm_notify_team_entry_open', array( $this->competition_entry_service, 'notify_team_entry_open' ), 10, 2 );
+            add_action( 'rm_notify_team_entry_reminder', array( $this->competition_entry_service, 'notify_team_entry_reminder' ), 10, 2 );
             add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ) );
             add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
             add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ) );
-            // Resolve commonly used services from the container.
-            $this->player_service    = $this->container->get( 'player_service' );
         }
         self::$instance = $this;
     }

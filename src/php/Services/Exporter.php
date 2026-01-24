@@ -234,7 +234,7 @@ class Exporter {
                 $validator = $validator->event( $event );
             }
         } else {
-            $validator = $validator->event( null );
+            $validator = $validator->event();
         }
         if ( isset( $_GET['season'] ) ) {
             $season = sanitize_text_field( wp_unslash( $_GET['season'] ) );

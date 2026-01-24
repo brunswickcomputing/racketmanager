@@ -19,7 +19,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Messages;
 
 /**
  * Class to implement the Team Management Service
@@ -51,7 +51,7 @@ class Team_Service {
     public function get_team_by_id( null|string|int $team_id ): Team {
         $team = $this->team_repository->find_by_id( $team_id );
         if ( ! $team ) {
-            throw new Team_Not_Found_Exception( sprintf( __( 'Team %s not found', 'racketmanager' ), $team_id ) );
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
         }
         return $team;
     }
@@ -66,7 +66,7 @@ class Team_Service {
      */
     public function get_teams_for_club( ?int $club_id, $type = null ): array {
         if ( ! $this->club_repository->find( $club_id ) ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         return $this->team_repository->find_by_club( $club_id, $type );
     }
@@ -89,15 +89,15 @@ class Team_Service {
      */
     public function get_team_details( int|string|null $team_id ): Team_Details_DTO {
         if ( ! $team_id ) {
-            throw new Invalid_Argument_Exception( __( 'Invalid team ID', 'racketmanager' ) );
+            throw new Invalid_Argument_Exception( Util_Messages::invalid_team_id() );
         }
         $team = $this->team_repository->find_by_id( $team_id );
         if ( ! $team ) {
-            throw new Team_Not_Found_Exception( __( 'Team not found', 'racketmanager' ) );
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
         }
         $club = $this->club_repository->find( $team->club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $team->club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $team->club_id ) );
         }
         $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
         return new Team_Details_DTO( $team, $club, $match_secretary );
@@ -114,15 +114,15 @@ class Team_Service {
     public function get_latest_team_details_for_event( ?int $team_id, $event_id = null ): Team_Fixture_Settings_DTO {
         $team = $this->team_repository->find_by_id( $team_id );
         if ( ! $team ) {
-            throw new Team_Not_Found_Exception( __( 'Team not found', 'racketmanager' ) );
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
         }
         $event = $this->event_repository->find_by_id( $event_id );
         if ( ! $event ) {
-            throw new Event_Not_Found_Exception( __( 'Event not found', 'racketmanager' ) );
+            throw new Event_Not_Found_Exception( Util_Messages::event_not_found( $team->$event_id ) );
         }
         $team_info = $this->team_repository->find_team_settings_for_event( $team_id, $event_id );
         if ( ! $team_info ) {
-            throw new Team_Not_Found_Exception( __( 'Team not found', 'racketmanager' ) );
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
         }
         return $team_info;
     }

@@ -90,7 +90,7 @@ final class Admin_Competition extends Admin_Display {
                     }
                 } catch ( Competition_Not_Updated_Exception $e ) {
                     $this->set_message( $e->getMessage(), 'warning' );
-                } catch ( Competition_Not_Found_Exception|Exception $e ) {
+                } catch ( Competition_Not_Found_Exception $e ) {
                     $this->set_message( $e->getMessage(), true );
                 }
             }

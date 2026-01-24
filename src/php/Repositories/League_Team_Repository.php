@@ -18,10 +18,12 @@ use wpdb;
 class League_Team_Repository {
     private wpdb $wpdb;
     private string $table_name;
+    private string $season_compare;
 
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
+        $this->season_compare = ' AND `season` = %d';
         $this->table_name = $this->wpdb->prefix . 'racketmanager_league_teams';
     }
 
@@ -166,7 +168,7 @@ class League_Team_Repository {
         $search = '';
         $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
         if ( $season ) {
-            $search .= $this->wpdb->prepare( " AND `season`  = %d", $season );
+            $search .= $this->wpdb->prepare( $this->season_compare, $season );
         }
         if ( $team_id ) {
             $search .= $this->wpdb->prepare( " AND `team_id`  = %d", $team_id );
@@ -202,7 +204,7 @@ class League_Team_Repository {
         if ( ! $clubs ) {
             $search = '';
             if ( $season ) {
-                $search = $this->wpdb->prepare( " AND `season`  = %d", $season );
+                $search = $this->wpdb->prepare( $this->season_compare, $season );
             }
             $clubs = $this->wpdb->get_results(
                 $this->wpdb->prepare(
@@ -234,7 +236,7 @@ class League_Team_Repository {
         if ( ! $clubs ) {
             $search = '';
             if ( $season ) {
-                $search = $this->wpdb->prepare( " AND `season`  = %d", $season );
+                $search = $this->wpdb->prepare( $this->season_compare, $season );
             }
             $clubs = $this->wpdb->get_results(
                 $this->wpdb->prepare(

@@ -148,6 +148,7 @@ return array(
     'Racketmanager\\Services\\Widget' => $baseDir . '/src/php/Services/Widget.php',
     'Racketmanager\\Util\\Util' => $baseDir . '/src/php/Util/Util.php',
     'Racketmanager\\Util\\Util_Lookup' => $baseDir . '/src/php/Util/Util_Lookup.php',
+    'Racketmanager\\Util\\Util_Messages' => $baseDir . '/src/php/Util/Util_Messages.php',
     'Stripe\\Account' => $vendorDir . '/stripe/stripe-php/lib/Account.php',
     'Stripe\\AccountLink' => $vendorDir . '/stripe/stripe-php/lib/AccountLink.php',
     'Stripe\\AccountSession' => $vendorDir . '/stripe/stripe-php/lib/AccountSession.php',

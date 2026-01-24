@@ -171,6 +171,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Services\\Widget' => __DIR__ . '/../..' . '/src/php/Services/Widget.php',
         'Racketmanager\\Util\\Util' => __DIR__ . '/../..' . '/src/php/Util/Util.php',
         'Racketmanager\\Util\\Util_Lookup' => __DIR__ . '/../..' . '/src/php/Util/Util_Lookup.php',
+        'Racketmanager\\Util\\Util_Messages' => __DIR__ . '/../..' . '/src/php/Util/Util_Messages.php',
         'Stripe\\Account' => __DIR__ . '/..' . '/stripe/stripe-php/lib/Account.php',
         'Stripe\\AccountLink' => __DIR__ . '/..' . '/stripe/stripe-php/lib/AccountLink.php',
         'Stripe\\AccountSession' => __DIR__ . '/..' . '/stripe/stripe-php/lib/AccountSession.php',

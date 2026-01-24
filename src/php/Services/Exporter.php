@@ -298,18 +298,20 @@ class Exporter {
      */
     #[NoReturn]
     private function output_calendar(array $matches, string $filename ): void {
+        $date_format = 'Ymd\THis';
+
         $contents  = "BEGIN:VCALENDAR\n";
         $contents .= "VERSION:2.0\n";
         $contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
         $contents .= "CALSCALE:GREGORIAN\n";
-        $contents .= 'DTSTAMP:' . gmdate( 'Ymd\THis' ) . "\n";
+        $contents .= 'DTSTAMP:' . gmdate( $date_format ) . "\n";
         foreach ( $matches as $match ) {
             $match     = get_match( $match->id );
             $contents .= "BEGIN:VEVENT\n";
             $contents .= 'UID:' . $match->id . "\n";
-            $contents .= 'DTSTAMP:' . mysql2date( 'Ymd\THis', $match->date ) . "\n";
-            $contents .= 'DTSTART:' . mysql2date( 'Ymd\THis', $match->date ) . "\n";
-            $contents .= 'DTEND:' . gmdate( 'Ymd\THis', strtotime( '+2 hours', strtotime( $match->date ) ) ) . "\n";
+            $contents .= 'DTSTAMP:' . mysql2date( $date_format, $match->date ) . "\n";
+            $contents .= 'DTSTART:' . mysql2date( $date_format, $match->date ) . "\n";
+            $contents .= 'DTEND:' . gmdate( $date_format, strtotime( '+2 hours', strtotime( $match->date ) ) ) . "\n";
             $contents .= 'SUMMARY:' . $match->match_title . "\n";
             $contents .= 'LOCATION:' . $match->location . "\n";
             $contents .= "END:VEVENT\n";

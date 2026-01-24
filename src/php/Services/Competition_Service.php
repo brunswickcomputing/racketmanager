@@ -46,7 +46,6 @@ class Competition_Service {
     private RacketManager $racketmanager;
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
-    private Player_Service $player_service;
 
     /**
      * Constructor
@@ -58,9 +57,8 @@ class Competition_Service {
      * @param League_Repository $league_repository
      * @param League_Team_Repository $league_team_repository
      * @param Team_Repository $team_repository
-     * @param Player_Service $player_service
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Club_Repository $club_repository, Event_Repository $event_repository, League_Repository $league_repository , League_Team_Repository $league_team_repository, Team_Repository $team_repository, Player_Service $player_service ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Club_Repository $club_repository, Event_Repository $event_repository, League_Repository $league_repository , League_Team_Repository $league_team_repository, Team_Repository $team_repository ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->club_repository        = $club_repository;
@@ -68,7 +66,6 @@ class Competition_Service {
         $this->league_team_repository = $league_team_repository;
         $this->league_repository      = $league_repository;
         $this->team_repository        = $team_repository;
-        $this->player_service         = $player_service;
     }
 
     public function get_event_by_id( null|string|int $event_id ): Event {

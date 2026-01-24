@@ -26,8 +26,8 @@ use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
-use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
 use function Racketmanager\get_league;
@@ -481,7 +481,7 @@ class Competition_Entry_Service {
     public function league_entry_valid( int $club_id, object $club_entry ): bool {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         $club_entry->club_name = $club->get_name();
         $event_details         = array();
@@ -607,7 +607,7 @@ class Competition_Entry_Service {
     public function send_entry_form( int $club_id, array $template_args, object $club_entry, string $email_from, string $template, string $email_subject, array $headers ): void {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
         $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '> ';
@@ -722,7 +722,7 @@ class Competition_Entry_Service {
     public function cup_entry_valid( int $club_id, object $club_entry ): void {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         $club_entry->club_name = $club->get_name();
         $cup_entries           = array();

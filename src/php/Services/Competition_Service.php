@@ -29,6 +29,7 @@ use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
 use function Racketmanager\get_league;
@@ -71,7 +72,7 @@ class Competition_Service {
     public function get_event_by_id( null|string|int $event_id ): Event {
         $event = $this->event_repository->find_by_id( $event_id );
         if ( ! $event ) {
-            throw new Competition_Not_Found_Exception( sprintf( __( 'Event %s not found', 'racketmanager' ), $event_id ) );
+            throw new Competition_Not_Found_Exception( Util_Messages::event_not_found( $event_id ) );
         }
         return $event;
     }
@@ -106,7 +107,7 @@ class Competition_Service {
     public function get_by_id( null|string|int $competition_id ): Competition {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
         return $competition;
     }
@@ -261,7 +262,7 @@ class Competition_Service {
     public function amend_details( int $competition_id, stdClass $config ): int|WP_Error {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
         $competition_valid = $this->validate_config( $config, $competition->is_team_entry );
         if ( is_wp_error( $competition_valid ) ) {
@@ -273,7 +274,7 @@ class Competition_Service {
         $competition->set_settings( $settings );
         $result = $this->competition_repository->save( $competition );
         if ( false === $result ) {
-            throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+            throw new Database_Operation_Exception( Util_Messages::competition_not_updated() );
         }
         return ( int ) $result; // Returns 1 if updated, 0 if no change
     }
@@ -281,7 +282,7 @@ class Competition_Service {
     public function is_season_valid_for_competition( Competition $competition, int $season ): array {
         $current_season = $competition->get_season_by_name( $season );
         if ( ! $current_season ) {
-            throw new Season_Not_Found_Exception( sprintf( __( 'Season %s not found', 'racketmanager' ), $season ) );
+            throw new Season_Not_Found_Exception( Util_Messages::season_not_found( $season ) );
         }
         return $current_season;
     }
@@ -331,7 +332,7 @@ class Competition_Service {
     public function set_plan_config( ?int $competition_id, ?int $season, ?string $start_time, ?int $num_courts, ?string $time_increment ): int| WP_Error {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( sprintf( __( 'Competition %s not found', 'racketmanager' ), $competition_id ) );
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
         try {
             $current_season = $this->is_season_valid_for_competition( $competition, $season );
@@ -353,7 +354,7 @@ class Competition_Service {
         $competition->set_seasons( $seasons );
         $result = $this->competition_repository->save( $competition );
         if ( false === $result ) {
-            throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+            throw new Database_Operation_Exception( Util_Messages::competition_not_updated() );
         }
         return ( int ) $result;
     }
@@ -373,7 +374,7 @@ class Competition_Service {
     public function save_plan( ?int $competition_id, ?int $season, array $courts, array $start_times, array $matches, array $match_times ): int {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( __( 'Competition not found', 'racketmanager' ) );
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
         try {
             $current_season = $this->is_season_valid_for_competition( $competition, $season );
@@ -409,7 +410,7 @@ class Competition_Service {
         $competition->set_seasons( $seasons );
         $result = $this->competition_repository->save( $competition );
         if ( false === $result ) {
-            throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+            throw new Database_Operation_Exception( Util_Messages::competition_not_updated() );
         }
         return ( int ) $result;
     }
@@ -426,7 +427,7 @@ class Competition_Service {
     public function reset_plan( int $competition_id, int $season, array $matches ): int {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {
-            throw new Competition_Not_Found_Exception( __( 'Competition not found', 'racketmanager' ) );
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
         try {
             $current_season = $this->is_season_valid_for_competition( $competition, $season );
@@ -456,7 +457,7 @@ class Competition_Service {
             $competition->set_seasons( $seasons );
             $result = $this->competition_repository->save( $competition );
             if ( false === $result ) {
-                throw new Database_Operation_Exception( __( 'Failed to update competition', 'racketmanager' ) );
+                throw new Database_Operation_Exception( Util_Messages::competition_not_updated() );
             }
         }
         return ( int ) $result;

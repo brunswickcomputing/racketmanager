@@ -52,6 +52,21 @@ class Util_Messages {
     }
 
     /**
+     * Set the Player not found message
+     *
+     * @param $player_id
+     *
+     * @return string
+     */
+    public static function player_not_found( $player_id = null ): string {
+        if ( $player_id ) {
+            return sprintf( __( 'Player with ID %s not found', 'racketmanager' ), $player_id );
+        } else {
+            return __( 'Player not found', 'racketmanager' );
+        }
+    }
+
+    /**
      * Set the Competition not found message
      *
      * @param $competition_id

@@ -77,9 +77,9 @@ class Exporter {
      * Export results function
      *
      * Optional parameters:
-     *  club
-     *  days - defaults to 7
-     *  competition
+     *  - club
+     *  - days (defaults to 7)
+     *  - competition
      */
     #[NoReturn]
     public function results(): void {

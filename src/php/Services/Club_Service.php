@@ -23,8 +23,8 @@ use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Util\Util_Messages;
 use stdClass;
 
 /**
@@ -150,7 +150,7 @@ class Club_Service {
     public function get_club( $club_id ): Club {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
 
         return $club;
@@ -166,7 +166,7 @@ class Club_Service {
     public function get_club_by_shortcode( $club_id ): Club {
         $club = $this->club_repository->find( $club_id, 'shortcode' );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( sprintf( __( 'Club with shortcode %s not found', 'racketmanager' ), $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_shortcode_not_found( $club_id ) );
         }
         return $club;
     }
@@ -182,7 +182,7 @@ class Club_Service {
     public function remove_club( int $club_id ): void {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         if ( $this->team_repository->has_teams( $club_id ) ) {
             throw new Club_Has_Teams_Exception( sprintf( __( 'Unable to delete %s - still has teams', 'racketmanager' ), $club->get_name() ) );
@@ -346,7 +346,7 @@ class Club_Service {
     public function get_club_details( int $club_id ): Club_Details_DTO {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         $roles = $this->club_role_repository->get_roles_for_club( $club_id );
         try {
@@ -475,7 +475,7 @@ class Club_Service {
     public function create_team( ?int $club_id, string $type ): Team {
         $club = $this->club_repository->find( $club_id );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util::club_not_found( $club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
         $type_name = match( substr( $type, 0, 1 ) ) {
             'B' => __( 'Boys', 'racketmanager' ),
@@ -487,7 +487,7 @@ class Club_Service {
         };
 
         if ( empty( $type_name ) ) {
-            throw new Invalid_Argument_Exception( __( 'Invalid team type', 'racketmanager' ) );
+            throw new Invalid_Argument_Exception( Util_Messages::invalid_team_type() );
         }
 
         // 1. Get the next available sequence number

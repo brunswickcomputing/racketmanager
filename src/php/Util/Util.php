@@ -756,14 +756,5 @@ class Util {
         );
     }
 
-    /**
-     * Set the Club not found message
-     *
-     * @param $club_id
-     *
-     * @return string
-     */
-    public static function club_not_found( $club_id ): string {
-        return sprintf( __( 'Club with ID %s not found', 'racketmanager' ), $club_id );
-    }
+
 }

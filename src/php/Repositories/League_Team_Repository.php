@@ -157,7 +157,7 @@ class League_Team_Repository {
      *
      * @return array
      */
-    public function get_by_event_id( ?int $event_id, ?int $season, ?int $team_id ): array {
+    public function get_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null ): array {
         $cache_key = 'event' . $event_id . '_' . $season . '_' . $team_id;
         $teams = wp_cache_get( md5( $cache_key ), 'league_teams' );
         if ( $teams ) {

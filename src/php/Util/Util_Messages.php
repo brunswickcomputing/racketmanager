@@ -26,6 +26,17 @@ class Util_Messages {
     }
 
     /**
+     * Set the Club shortcode not found message
+     *
+     * @param $club_id
+     *
+     * @return string
+     */
+    public static function club_shortcode_not_found( $club_id = null ): string {
+        return sprintf( __( 'Club with shortcode %s not found', 'racketmanager' ), $club_id );
+    }
+
+    /**
      * Set the Team not found message
      *
      * @param $team_id
@@ -62,6 +73,15 @@ class Util_Messages {
      */
     public static function invalid_team_id(): string {
         return __( 'Invalid team ID', 'racketmanager' );
+    }
+
+    /**
+     * Set the invalid team type message
+     *
+     * @return string
+     */
+    public static function invalid_team_type(): string {
+        return __( 'Invalid team type', 'racketmanager' );
     }
 
 }

@@ -32,6 +32,7 @@ use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
 use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
 use function Racketmanager\get_club;
@@ -167,14 +168,14 @@ class Player_Service {
     /**
      * Get player by ID
      *
-     * @param int|null $id
+     * @param int|null $player_id
      *
      * @return Player
      */
-    public function get_player( ?int $id ): Player {
-        $player = $this->player_repository->find( $id );
+    public function get_player( ?int $player_id ): Player {
+        $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( sprintf( __( 'Player not found', 'racketmanager' ), $id ) );
+            throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
         return $player;
     }
@@ -241,7 +242,7 @@ class Player_Service {
     public function amend_player_details( ?int $player_id ): Player|WP_Error {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( sprintf( __( 'Player Id %d not found', 'racketmanager' ), $player_id ) );
+            throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
         $player = $this->validate_player();
         if ( is_wp_error( $player ) ) {
@@ -268,7 +269,7 @@ class Player_Service {
     public function update_player( int $player_id, object $updated_player ): Player|bool {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( sprintf( __( 'Player Id %d not found', 'racketmanager' ), $player_id ) );
+            throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
         $updates                      = array();
         $updated_player->display_name = $updated_player->firstname . ' ' . $updated_player->surname;
@@ -519,7 +520,7 @@ class Player_Service {
     public function get_latest_wtn( ?int $player_id ): void {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( sprintf( __( 'Player Id %d not found', 'racketmanager' ), $player_id ) );
+            throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
         if ( empty( $player->get_btm() ) ) {
             throw new LTA_Tennis_Number_Not_Found_Exception( sprintf( __( 'LTA Tennis number not found for %s', 'racketmanager' ), $player->display_name ) );
@@ -579,7 +580,7 @@ class Player_Service {
     public function get_titles_for_player( ?int $player_id ): array {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
-            throw new Player_Not_Found_Exception( sprintf( __( 'Player Id %d not found', 'racketmanager' ), $player_id ) );
+            throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
         return $this->player_repository->get_titles( $player_id );
     }
@@ -624,7 +625,7 @@ class Player_Service {
     public function find_all_associated_clubs( int $player_id, string $type, ?int $club_id ): array {
         // Ensure the player exists first
         if ( ! $this->player_repository->find( $player_id ) ) {
-            throw new Player_Not_Found_Exception( sprintf( __('Player ID %s not found', 'racketmanager'), $player_id ) );
+            throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
 
         if ( 'player' === $type ) {

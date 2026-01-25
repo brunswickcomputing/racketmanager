@@ -1448,17 +1448,7 @@ class Competition {
             if ( ! $competition ) {
                 return false;
             }
-            // Do not maybe_unserialize here; the domain constructor will normalize `settings`
-            // check if specific sports class exists.
-            if ( ! isset( $competition->sport ) ) {
-                $competition->sport = '';
-            }
-            $instance = 'Racketmanager\sports\Competition_' . ucfirst( $competition->sport );
-            if ( class_exists( $instance ) ) {
-                $competition = new $instance( $competition );
-            } else {
-                $competition = new Competition( $competition );
-            }
+            $competition = self::from_database( $competition );
 
             wp_cache_set( $competition->id, $competition, 'competitions' );
         }

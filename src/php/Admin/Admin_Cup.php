@@ -99,47 +99,45 @@ final class Admin_Cup extends Admin_Championship {
      */
     public function display_cup_overview_page(): void {
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+        $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         try {
-            $competition = $this->competition_service->get_by_id( $competition_id );
-            $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            if ( $season && ! empty( $competition->get_season_by_name( $season ) ) ) {
-                $competition->events = $competition->get_events();
-                $i                   = 0;
-                foreach ( $competition->events as $event ) {
-                    $leagues = $event->get_leagues();
-                    if ( $leagues ) {
-                        $competition->events[ $i ]->leagues = $leagues;
-                    }
-                    ++$i;
-                    $leagues = $event->get_leagues();
-                }
-                $tab        = 'overview';
-                $cup_season = (object) $competition->get_season_by_name( $season );
-                if ( isset( $cup_season->date_closing ) && $cup_season->date_closing <= gmdate( 'Y-m-d' ) ) {
-                    $cup_season->is_active = true;
-                } else {
-                    $cup_season->is_active = false;
-                }
-                $cup_season->is_open    = false;
-                $cup_season->venue_name = null;
-                if ( isset( $cup_season->venue ) ) {
-                    try {
-                        $venue_club             = $this->club_service->get_club( $cup_season->venue );
-                        $cup_season->venue_name = $venue_club->shortcode;
-                    } catch ( Club_Not_Found_Exception ) {
-                        $cup_season->venue_name = null;
-                    }
-                }
-                $cup_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
-                $competition_overview = $this->competition_service->get_competition_overview( $competition_id, $season );
-
-                require_once RACKETMANAGER_PATH . 'templates/admin/cup/show-season.php';
-
-            }
-        } catch ( Competition_Not_Found_Exception $e ) {
+            $competition = $this->competition_service->get_competition_by_season( $competition_id, $season );
+        } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
             $this->set_message( $e->getMessage(), true );
             $this->show_message();
+            return;
         }
+        $competition_events = $this->competition_service->get_events_for_competition( $competition_id, $season );
+        $i                   = 0;
+        foreach ( $competition_events as $event ) {
+            $leagues = $event->get_leagues();
+            if ( $leagues ) {
+                $competition_events[ $i ]->leagues = $leagues;
+            }
+            ++$i;
+            $leagues = $event->get_leagues();
+        }
+        $tab        = 'overview';
+        $cup_season = (object) $competition->get_season_by_name( $season );
+        if ( isset( $cup_season->date_closing ) && $cup_season->date_closing <= gmdate( 'Y-m-d' ) ) {
+            $cup_season->is_active = true;
+        } else {
+            $cup_season->is_active = false;
+        }
+        $cup_season->is_open    = false;
+        $cup_season->venue_name = null;
+        if ( isset( $cup_season->venue ) ) {
+            try {
+                $venue_club             = $this->club_service->get_club( $cup_season->venue );
+                $cup_season->venue_name = $venue_club->shortcode;
+            } catch ( Club_Not_Found_Exception ) {
+                $cup_season->venue_name = null;
+            }
+        }
+        $cup_season->entries = $this->competition_service->get_clubs_for_competition( $competition_id, $season );
+        $competition_overview = $this->competition_service->get_competition_overview( $competition_id, $season );
+
+        require_once RACKETMANAGER_PATH . 'templates/admin/cup/show-season.php';
     }
     /**
      * Display cup draw
@@ -504,42 +502,42 @@ final class Admin_Cup extends Admin_Championship {
         $this->show_message();
 
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+        $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
         try {
-            $competition = $this->competition_service->get_by_id( $competition_id );
-            $season = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-            if ( $season ) {
-                $competition->events    = $competition->get_events();
-                $cup_season             = (object) $competition->get_season_by_name( $season );
-                $cup_season->venue_name = null;
-                if ( isset( $cup_season->venue ) ) {
-                    $venue_club = get_club( $cup_season->venue );
-                    if ( $venue_club ) {
-                        $cup_season->venue_name = $venue_club->shortcode;
-                    }
-                }
-                if ( ! isset( $cup_season->orderofplay ) ) {
-                    $cup_season->orderofplay = array();
-                }
-                if ( ! isset( $cup_season->time_increment ) ) {
-                    $cup_season->time_increment = null;
-                }
-                if ( ! isset( $cup_season->num_courts ) ) {
-                    $cup_season->num_courts = null;
-                }
-                if ( ! isset( $cup_season->starttime ) ) {
-                    $cup_season->starttime = null;
-                }
-                $final_matches = $competition->get_matches(
-                    array(
-                        'season'         => $season,
-                        'final'          => 'final',
-                    )
-                );
-            }
-        } catch ( Competition_Not_Found_Exception $e ) {
+            $competition = $this->competition_service->get_competition_by_season( $competition_id, $season );
+        } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
             $this->set_message( $e->getMessage(), true );
             $this->show_message();
+            return;
         }
+        $competition_events     = $this->competition_service->get_events_for_competition( $competition_id, $season );
+        $num_events             = count( $competition_events );
+        $cup_season             = (object) $competition->get_season_by_name( $season );
+        $cup_season->venue_name = null;
+        if ( isset( $cup_season->venue ) ) {
+            $venue_club = get_club( $cup_season->venue );
+            if ( $venue_club ) {
+                $cup_season->venue_name = $venue_club->shortcode;
+            }
+        }
+        if ( ! isset( $cup_season->orderofplay ) ) {
+            $cup_season->orderofplay = array();
+        }
+        if ( ! isset( $cup_season->time_increment ) ) {
+            $cup_season->time_increment = null;
+        }
+        if ( ! isset( $cup_season->num_courts ) ) {
+            $cup_season->num_courts = null;
+        }
+        if ( ! isset( $cup_season->starttime ) ) {
+            $cup_season->starttime = null;
+        }
+        $final_matches = $competition->get_matches(
+            array(
+                'season'         => $season,
+                'final'          => 'final',
+            )
+        );
         if ( empty( $tab ) ) {
             $tab = 'matches';
         }

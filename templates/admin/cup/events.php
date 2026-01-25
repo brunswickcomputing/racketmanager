@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 /** @var object $competition */
 /** @var string $season */
+/** @var array $competition_events */
 ?>
     <div class="row">
         <div class="col-12 col-md-6">
@@ -30,7 +31,7 @@ namespace Racketmanager;
                 </thead>
                 <tbody>
                     <?php
-                    foreach ( $competition->events as $event ) {
+                    foreach ( $competition_events as $event ) {
                         foreach ( $event->leagues as $league ) {
                             $league = get_league( $league );
                             ?>

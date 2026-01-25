@@ -16,7 +16,6 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
-use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
@@ -78,29 +77,20 @@ class Competition_Service {
     }
 
     public function get_leagues_for_event( ?int $event_id, ?int $season = null ): array {
-        try {
-            $event = $this->get_event_by_id( $event_id );
-        } catch ( Event_Not_Found_Exception $e ) {
-            throw new Event_Not_Found_Exception( $e );
-        }
+        $event = $this->get_event_by_id( $event_id );
+
         return $this->league_repository->get_by_event_id( $event->get_id(), $season );
     }
 
     public function get_clubs_for_event( ?int $event_id, ?int $season = null ): array {
-        try {
-            $event = $this->get_event_by_id( $event_id );
-        } catch ( Event_Not_Found_Exception $e ) {
-            throw new Event_Not_Found_Exception( $e );
-        }
+        $event = $this->get_event_by_id( $event_id );
+
         return $this->league_team_repository->get_clubs_by_event_id( $event->get_id(), $season );
     }
 
     public function get_teams_for_event( ?int $event_id, ?int $season = null ): array {
-        try {
-            $event = $this->get_event_by_id( $event_id );
-        } catch ( Event_Not_Found_Exception $e ) {
-            throw new Event_Not_Found_Exception( $e );
-        }
+        $event = $this->get_event_by_id( $event_id );
+
         return $this->league_team_repository->get_by_event_id( $event->get_id(), $season );
     }
 
@@ -120,13 +110,9 @@ class Competition_Service {
         return $this->competition_repository->find_by( $criteria );
     }
 
-    public function get_events_for_competition( ?int $competition_id, ?int $season = null ): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        $events = $this->event_repository->find_by_competition_id( $competition->get_id() );
+    public function get_events_for_competition( null|int|string $competition_id, ?int $season = null ): array {
+        $competition = $this->get_by_id( $competition_id );
+        $events      = $this->event_repository->find_by_competition_id( $competition->get_id() );
         foreach ( $events as $i => $event ) {
             $event = $this->get_event_by_id( $event->id );
             if ( $season && empty( $event->get_season_by_name( $season ) ) ) {
@@ -139,11 +125,7 @@ class Competition_Service {
     }
 
     public function get_events_with_details_for_competition($competition_id, $season, $min_fixtures = 1): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
 
         return $this->event_repository->find_events_by_competition_with_counts($competition->get_id(), $season, $min_fixtures);
     }
@@ -161,31 +143,20 @@ class Competition_Service {
     }
 
     public function get_competition_overview(?int $competition_id, ?int $season, int $min_fixtures = 1): ?Competition_Overview_DTO {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
 
         return $this->competition_repository->get_competition_overview($competition->get_id(), $season, $min_fixtures);
     }
 
     public function get_teams_for_competition( ?int $competition_id, ?int $season, int $min_fixtures = 1): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
 
         return $this->team_repository->find_teams_by_competition_with_details($competition->get_id(), $season, $min_fixtures);
     }
 
     public function get_clubs_for_competition( ?int $competition_id, ?int $season = null ): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
+
         return $this->league_team_repository->get_clubs_by_competition_id( $competition->get_id(), $season );
     }
 
@@ -195,20 +166,14 @@ class Competition_Service {
         } catch ( Competition_Not_Found_Exception $e ) {
             throw new Competition_Not_Found_Exception( $e );
         }
+        $competition = $this->get_by_id( $competition_id );
+
         return $this->club_repository->find_clubs_by_competition_and_season( $competition->get_id(), $season );
     }
 
     public function get_winners_for_competition( ?int $competition_id, ?int $season ): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        try {
-            $this->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
+        $this->is_season_valid_for_competition( $competition, $season );
         if ( $competition->is_league ) {
             $winners = $this->competition_repository->get_league_winners( $competition_id, $season );
         } else {
@@ -288,25 +253,14 @@ class Competition_Service {
     }
 
     public function verify_club_entry($competition_id, $club_id, $season): bool {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
+
         return $this->competition_repository->is_club_participating($competition->get_id(), $club_id, $season);
     }
 
     public function get_active_events_for_competition( ?int $competition_id, ?int $season = null ): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        try {
-            $this->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
+        $this->is_season_valid_for_competition( $competition, $season );
         $events = $this->event_repository->find_by_competition_id( $competition->get_id() );
         foreach ( $events as $i => $event ) {
             if ( $season && empty( $event->get_season_by_name( $season ) ) ) {
@@ -334,11 +288,7 @@ class Competition_Service {
         if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
-        try {
-            $current_season = $this->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $current_season = $this->is_season_valid_for_competition( $competition, $season );
         $seasons   = $competition->get_seasons();
         $validator = new Validator_Plan();
         $validator = $validator->start_time( $start_time );
@@ -376,11 +326,7 @@ class Competition_Service {
         if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
-        try {
-            $current_season = $this->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $current_season = $this->is_season_valid_for_competition( $competition, $season );
         $seasons       = $competition->get_seasons();
         $order_of_play = array();
         $num_courts    = count( $courts );
@@ -429,11 +375,7 @@ class Competition_Service {
         if ( ! $competition ) {
             throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
         }
-        try {
-            $current_season = $this->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $current_season = $this->is_season_valid_for_competition( $competition, $season );
         $seasons   = $competition->get_seasons();
         $updates   = false;
         $result    = false;
@@ -628,11 +570,7 @@ class Competition_Service {
     }
 
     public function set_court_availability( int $competition_id, int $club_id, int $num_courts_available ): void {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
         if ( empty( $competition->settings['num_courts_available'] ) ) {
             $competition->settings['num_courts_available'] = array();
         }
@@ -650,18 +588,16 @@ class Competition_Service {
      * @return void
      */
     public function delete_seasons( ?int $competition_id, array $seasons ): void {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+
+        $competition = $this->get_by_id( $competition_id );
         $deleted = false;
         foreach ( $seasons as $season ) {
             $season_found = $competition->get_season_by_name( $season );
             if ( $season_found ) {
                 $deleted = true;
                 $seasons = $competition->seasons;
-                foreach ( $competition->get_events() as $event ) {
+                $competition_events = $this->get_events_for_competition( $competition_id, $season );
+                foreach ( $competition_events as $event ) {
                     $event->delete_season( $season );
                 }
                 unset( $seasons[ $season ] );
@@ -684,16 +620,8 @@ class Competition_Service {
     }
 
     public function calculate_team_ratings( ?int $competition_id, ?int $season ): void {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        try {
-            $this->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $competition = $this->get_by_id( $competition_id );
+        $this->is_season_valid_for_competition( $competition, $season );
         $teams = $competition->get_teams( array( 'season' => $season ) );
         foreach ( $teams as $team ) {
             $team_points = 0;

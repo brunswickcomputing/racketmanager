@@ -10,6 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\Util\Util;
@@ -928,7 +929,11 @@ final class Admin_Tournament extends Admin_Championship {
      * @return array|boolean
      */
     public function add_season_to_competition( string $season, int $competition_id, int $num_match_days = null ): bool|array {
-        $competition = get_competition( $competition_id );
+        try {
+            $competition = $this->competition_service->get_competition( $competition_id );
+        } catch ( Competition_Not_Found_Exception ) {
+            return false;
+        }
         if ( ! $num_match_days ) {
             $num_match_days = Util::get_default_match_days( $competition->type );
         }
@@ -944,7 +949,7 @@ final class Admin_Tournament extends Admin_Championship {
         );
         ksort( $seasons );
         $competition->update_seasons( $seasons );
-        $events = $competition->get_events();
+        $events = $this->competition_service->get_events_for_competition( $competition_id );
         foreach ( $events as $event ) {
             $event = get_event( $event );
             if ( empty( $event->get_season_by_name( $season ) ) ) {
@@ -964,13 +969,18 @@ final class Admin_Tournament extends Admin_Championship {
     private function edit_season( object $season_data ): void {
         $competition = null;
         $event       = null;
-        $object      = null;
         if ( 'competition' === $season_data->type ) {
-            $competition = get_competition( $season_data->object_id );
-            $object      = $competition;
+            try {
+                $competition = $this->competition_service->get_by_id( $season_data->object_id );
+                $object      = $competition;
+            } catch ( Competition_Not_Found_Exception ) {
+                $object = null;
+            }
         } elseif ( 'event' === $season_data->type ) {
             $event  = get_event( $season_data->object_id );
             $object = $event;
+        } else {
+            $object      = null;
         }
         $seasons                         = $object->seasons;
         $seasons[ $season_data->season ] = array(
@@ -997,7 +1007,7 @@ final class Admin_Tournament extends Admin_Championship {
             $event->update_seasons(  $seasons );
         }
         if ( 'competition' === $season_data->type ) {
-            $events = $competition->get_events();
+            $events = $this->competition_service->get_events_for_competition( $competition->id );
             foreach ( $events as $event ) {
                 $event_season                 = new stdClass();
                 $event_season->object_id      = $event->id;

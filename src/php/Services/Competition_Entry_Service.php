@@ -17,7 +17,6 @@ use Racketmanager\Exceptions\Clubs_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
-use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
@@ -70,16 +69,8 @@ class Competition_Entry_Service {
      * @return object
      */
     public function notify_team_entry_open( ?int $competition_id, ?int $season ): object {
-        try {
-            $competition = $this->competition_service->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        try {
-            $current_season = $this->competition_service->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $competition    = $this->competition_service->get_by_id( $competition_id );
+        $current_season = $this->competition_service->is_season_valid_for_competition( $competition, $season );
         $msg         = null;
         $return      = new stdClass();
         $season_dtls = (object) $current_season;
@@ -196,16 +187,8 @@ class Competition_Entry_Service {
      * @return Validator
      */
     public function notify_team_entry_reminder( ?int $competition_id, ?int $season ): object {
-        try {
-            $competition = $this->competition_service->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        try {
-            $clubs = $this->get_clubs_pending_entry( $competition_id, $season );
-        } catch ( Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
+        $competition = $this->competition_service->get_by_id( $competition_id );
+        $clubs       = $this->get_clubs_pending_entry( $competition_id, $season );
         if ( empty( $clubs ) ) {
             throw new Clubs_Not_Found_Exception( __( 'No clubs with outstanding entries', 'racketmanager' ) );
         }
@@ -271,16 +254,8 @@ class Competition_Entry_Service {
      * Get clubs missing from a specific competition.
      */
     public function get_clubs_pending_entry( ?int $competition_id, ?int $season ): array {
-        try {
-            $competition = $this->competition_service->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
-        try {
-            $this->competition_service->is_season_valid_for_competition( $competition, $season );
-        } catch ( Season_Not_Found_Exception $e ) {
-            throw new Season_Not_Found_Exception( $e );
-        }
+        $competition = $this->competition_service->get_by_id( $competition_id );
+        $this->competition_service->is_season_valid_for_competition( $competition, $season );
 
         return $this->club_repository->find_clubs_not_entered( $competition->get_id(), $season );
     }

@@ -710,7 +710,7 @@ class Competition {
     }
 
     /**
-     * Has specific season
+     * Has a specific season
      */
     public function has_season( string $name ): bool {
         return $this->get_season_by_name( $name ) !== null;
@@ -1176,10 +1176,8 @@ class Competition {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( ' `season` = %s ', $season );
         }
-        if ( $final ) {
-            if ( 'all' !== $final ) {
-                $search_terms[] = $wpdb->prepare( "`final` = %s", $final );
-            }
+        if ( $final && 'all' !== $final ) {
+            $search_terms[] = $wpdb->prepare( "`final` = %s", $final );
         }
         if ( $time_offset ) {
             $time_offset = intval( $time_offset ) . $this->time_zero;

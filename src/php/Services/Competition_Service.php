@@ -102,6 +102,16 @@ class Competition_Service {
         return $competition;
     }
 
+    public function get_competition_by_season( null|int $competition_id, ?int $season ): Competition {
+        $competition = $this->competition_repository->find_by_id( $competition_id );
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
+        }
+        $this->is_season_valid_for_competition( $competition, $season );
+
+        return $competition;
+    }
+
     public function get_all(): array {
         return $this->competition_repository->find_all();
     }

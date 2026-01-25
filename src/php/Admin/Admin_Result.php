@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Admin;
 
-use function Racketmanager\get_competition;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use function Racketmanager\get_result_check;
 
 /**
@@ -84,12 +84,13 @@ class Admin_Result extends Admin_Display {
             $competitions = $this->competition_service->get_leagues();
             $events       = array();
             foreach ( $competitions as $competition ) {
-                $competition = get_competition( $competition );
-                if ( $competition ) {
-                    $competition_events = $competition->get_events();
-                    foreach ( $competition_events as $event ) {
-                        $events[] = $event;
-                    }
+                try {
+                    $competition_events = $this->competition_service->get_events_for_competition( $competition->id );
+                } catch ( Competition_Not_Found_Exception ) {
+                    continue;
+                }
+                foreach ( $competition_events as $event ) {
+                    $events[] = $event;
                 }
             }
             include_once RACKETMANAGER_PATH . 'templates/admin/show-results.php';

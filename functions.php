@@ -158,8 +158,6 @@ function racketmanager_download(): void {
             $exporter->fixtures();
         } elseif ( 'results' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $exporter->results();
-        } elseif ( 'standings' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            $exporter->standings();
         } elseif ( 'report_results' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $exporter->report_results();
         } else {

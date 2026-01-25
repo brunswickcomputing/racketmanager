@@ -10,6 +10,7 @@
 namespace Racketmanager\Rest;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
@@ -188,15 +189,11 @@ class Rest_Resources extends WP_REST_Controller {
         $validator        = new Validator();
         if ( $competition_name ) {
             $competition_name = un_seo_url( $competition_name );
-            $validator        = $validator->competition( $competition_name );
-            if ( empty( $validator->error ) ) {
-                $competition = get_competition( $competition_name, 'name' );
-                if ( $competition ) {
-                    $validator = $validator->season_set( $season, $competition->get_seasons() );
-                    if ( empty( $validator->error ) ) {
-                        $events = $competition->get_events();
-                    }
-                }
+            try {
+                $events = $this->competition_service->get_events_for_competition( $competition_name, $season );
+            } catch ( Competition_Not_Found_Exception $e ) {
+                $validator->error      = true;
+                $validator->err_msgs[] = $e;
             }
         } elseif ( $event_name ) {
             $event_name = un_seo_url( $event_name );

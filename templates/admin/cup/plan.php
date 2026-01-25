@@ -15,11 +15,11 @@ namespace Racketmanager;
 /** @var array $order_of_play */
 /** @var object $validator */
 $num_matches = count( $final_matches );
-if ( 0 === count( $competition->events ) ) {
+if ( empty( $num_events ) ) {
     $num_courts    = 1;
     $max_schedules = 0;
 } else {
-    $num_courts    = count( $competition->events );
+    $num_courts    = $num_events;
     $max_schedules = ceil( $num_matches / $num_courts ) + 1;
 }
 if ( '01:00:00' === $cup_season->time_increment ) {

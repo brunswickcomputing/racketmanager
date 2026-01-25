@@ -161,11 +161,6 @@ class Competition_Service {
     }
 
     public function get_club_details_for_competition( ?int $competition_id, ?int $season = null ): array {
-        try {
-            $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
-            throw new Competition_Not_Found_Exception( $e );
-        }
         $competition = $this->get_by_id( $competition_id );
 
         return $this->club_repository->find_clubs_by_competition_and_season( $competition->get_id(), $season );

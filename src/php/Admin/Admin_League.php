@@ -217,7 +217,7 @@ final class Admin_League extends Admin_Display {
                             if ( $updates ) {
                                 $match_dates = array();
                                 $this->set_message( __( 'Match dates updated', 'racketmanager' ) );
-                                $events = $competition->get_events();
+                                $events = $this->competition_service->get_events_for_competition( $competition_id, $season );
                                 foreach ( $events as $competition_event ) {
                                     $seasons = $competition_event->get_seasons();
                                     if ( empty( $competition_event->offset ) ) {

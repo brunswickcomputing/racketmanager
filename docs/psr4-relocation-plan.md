@@ -26,7 +26,7 @@ Deliverable: `RacketManager` lives under `src/php/`; legacy include is a shim; s
 ---
 
 ### Phase B — Domain models (Batch 1)
-Classes: `Charges`, `Invoice`, `Club`, `Club_Player`, `Club_Role`, `Player`, `Team`, `Season`, `Competition`, `Event`, `Match`, `Rubber`, `Results_Report`, `Results_Checker`, `Tournament`, `Tournament_Entry`, `Message`, `User`.
+Classes: `Charge`, `Invoice`, `Club`, `Club_Player`, `Club_Role`, `Player`, `Team`, `Season`, `Competition`, `Event`, `Match`, `Rubber`, `Results_Report`, `Results_Checker`, `Tournament`, `Tournament_Entry`, `Message`, `User`.
 - For each:
   - Move to `src/php/<Class>.php` preserving namespace and API.
   - Convert `include/class-<name>.php` to a thin shim.

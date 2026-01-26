@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Charges;
+use Racketmanager\Domain\Charge;
 use Racketmanager\Services\Validator\Validator_Finance;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -272,7 +272,7 @@ final class Admin_Finances extends Admin_Display {
                     $charges   = $this->get_charge_input();
                     $validator = $this->validate_charge( $charges );
                     if ( empty( $validator->error ) ) {
-                        $charges = new Charges( $charges );
+                        $charges = new Charge( $charges );
                         $edit   = true;
                         ?>
                         <script>

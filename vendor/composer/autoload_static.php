@@ -56,7 +56,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Ajax\\Ajax_Frontend' => __DIR__ . '/../..' . '/src/php/Ajax/Ajax_Frontend.php',
         'Racketmanager\\Ajax\\Ajax_Match' => __DIR__ . '/../..' . '/src/php/Ajax/Ajax_Match.php',
         'Racketmanager\\Ajax\\Ajax_Tournament' => __DIR__ . '/../..' . '/src/php/Ajax/Ajax_Tournament.php',
-        'Racketmanager\\Domain\\Charges' => __DIR__ . '/../..' . '/src/php/Domain/Charges.php',
+        'Racketmanager\\Domain\\Charge' => __DIR__ . '/../..' . '/src/php/Domain/Charge.php',
         'Racketmanager\\Domain\\Club' => __DIR__ . '/../..' . '/src/php/Domain/Club.php',
         'Racketmanager\\Domain\\Club_Player' => __DIR__ . '/../..' . '/src/php/Domain/Club_Player.php',
         'Racketmanager\\Domain\\Club_Role' => __DIR__ . '/../..' . '/src/php/Domain/Club_Role.php',

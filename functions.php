@@ -8,7 +8,7 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Charges;
+use Racketmanager\Domain\Charge;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Player;
 use Racketmanager\Domain\Club_Role;
@@ -493,9 +493,9 @@ function get_user( object|int|string|null $user = null ): ?object {
 }
 
 /**
- * Get Charges object
+ * Get Charge object
  *
- * @param object|int|string|null $charges Charges ID or charges object. Defaults to global $charges.
+ * @param object|int|string|null $charges Charge ID or charges object. Defaults to global $charges.
  *
  * @return object|null charges|null
  */
@@ -504,12 +504,12 @@ function get_charge( object|int|string|null $charges = null ): ?object {
         $charges = $GLOBALS['charges'];
     }
 
-    if ( $charges instanceof Charges ) {
+    if ( $charges instanceof Charge ) {
         $_charges = $charges;
     } elseif ( is_object( $charges ) ) {
-        $_charges = new Charges( $charges );
+        $_charges = new Charge( $charges );
     } else {
-        $_charges = Charges::get_instance( $charges );
+        $_charges = Charge::get_instance( $charges );
     }
 
     if ( ! $_charges ) {

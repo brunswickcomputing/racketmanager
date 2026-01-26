@@ -33,7 +33,7 @@ return array(
     'Racketmanager\\Ajax\\Ajax_Frontend' => $baseDir . '/src/php/Ajax/Ajax_Frontend.php',
     'Racketmanager\\Ajax\\Ajax_Match' => $baseDir . '/src/php/Ajax/Ajax_Match.php',
     'Racketmanager\\Ajax\\Ajax_Tournament' => $baseDir . '/src/php/Ajax/Ajax_Tournament.php',
-    'Racketmanager\\Domain\\Charges' => $baseDir . '/src/php/Domain/Charges.php',
+    'Racketmanager\\Domain\\Charge' => $baseDir . '/src/php/Domain/Charge.php',
     'Racketmanager\\Domain\\Club' => $baseDir . '/src/php/Domain/Club.php',
     'Racketmanager\\Domain\\Club_Player' => $baseDir . '/src/php/Domain/Club_Player.php',
     'Racketmanager\\Domain\\Club_Role' => $baseDir . '/src/php/Domain/Club_Role.php',

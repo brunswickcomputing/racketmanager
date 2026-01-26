@@ -8,7 +8,7 @@ use function Racketmanager\get_event;
 /**
  * Class to implement the charges object (moved to PSR-4)
  */
-final class Charges {
+final class Charge {
     /**
      * Id
      *
@@ -99,7 +99,7 @@ final class Charges {
                 return false;
             }
 
-            $charge = new Charges( $charge );
+            $charge = new Charge( $charge );
 
             wp_cache_set( $charge->id, $charge, 'charges' );
         }

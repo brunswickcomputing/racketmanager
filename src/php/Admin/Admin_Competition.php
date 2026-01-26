@@ -10,7 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Exception;
-use Racketmanager\Domain\Charges;
+use Racketmanager\Domain\Charge;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Services\Validator\Validator;
@@ -554,7 +554,7 @@ final class Admin_Competition extends Admin_Display {
             $charge->date            = $fee_date;
             $charge->fee_competition = $current_season->fee_competition;
             $charge->fee_event       = $current_season->fee_event;
-            $charge                  = new Charges( $charge );
+            $charge                  = new Charge( $charge );
             $this->schedule_invoice_send( $charge->id );
             $updates = true;
         } elseif( ! empty( $charge_update ) ) {

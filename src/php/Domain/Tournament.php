@@ -613,7 +613,7 @@ final class Tournament {
             $charge->date            = $this->date_start;
             $charge->fee_competition = $fees->competition;
             $charge->fee_event       = $fees->event;
-            $this->charge            = new Charges( $charge );
+            $this->charge            = new Charge( $charge );
             $this->fees->competition = $fees->competition;
             $this->fees->event       = $fees->event;
         }

@@ -167,56 +167,6 @@ class Upgrade {
     }
 
     /**
-     * Upgrade to 10.0.9
-     * Convert racketmanager_competitions.settings from serialized PHP/array to JSON string
-     */
-    private function v10_0_9(): void {
-        $version = '10.0.9';
-        if ( version_compare( $this->installed, $version, '<' ) ) {
-            $this->show_upgrade_step( $version );
-            $table = $this->wpdb->prefix . 'racketmanager_competitions';
-            // Fetch id and settings for all rows
-            $rows = $this->wpdb->get_results( "SELECT id, settings FROM $table" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-            foreach ( $rows as $row ) {
-                $id       = (int) $row->id;
-                $settings = $row->settings;
-                $needs_update = false;
-                $json = '';
-                if ( is_string( $settings ) && $settings !== '' ) {
-                    // Check if already valid JSON
-                    $decoded = json_decode( $settings, true );
-                    if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded ) ) {
-                        $json = $settings; // already JSON
-                    } else {
-                        // Try to unserialize legacy PHP
-                        $maybe = @maybe_unserialize( $settings );
-                        if ( is_array( $maybe ) ) {
-                            $json = wp_json_encode( $maybe );
-                            $needs_update = true;
-                        }
-                    }
-                } elseif ( is_array( $settings ) ) {
-                    $json = wp_json_encode( $settings );
-                    $needs_update = true;
-                } else {
-                    // Empty or unknown; normalize to empty object
-                    $json = '{}';
-                    $needs_update = true;
-                }
-                if ( $needs_update && $json !== '' ) {
-                    $this->wpdb->update(
-                        $table,
-                        array( 'settings' => $json ),
-                        array( 'id' => $id ),
-                        array( '%s' ),
-                        array( '%d' )
-                    );
-                }
-            }
-        }
-    }
-
-    /**
      * Upgrade to 10.0.1
      * Change system `meta_key` to 'racketmanager_type'
      *

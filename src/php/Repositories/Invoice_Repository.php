@@ -172,7 +172,7 @@ class Invoice_Repository {
             'billable_type'     => $invoice->get_billable_type(),
             'invoice_number'    => $invoice->get_invoice_number(),
             'date'              => $invoice->get_date(),
-            'date_due'          => $invoice->date_due(),
+            'date_due'          => $invoice->get_date_due(),
             'status'            => $invoice->get_status(),
             'amount'            => $invoice->get_amount(),
             'payment_reference' => $invoice->get_payment_reference(),

@@ -23,19 +23,20 @@ class Team_Fixture_Settings_DTO {
     public $match_day;
     public int $match_day_num;
     public $match_time;
+
     /**
      * Team_Details_DTO constructor.
      *
      * @param stdClass $data
      */
     public function __construct( stdClass $data ) {
-        $this->captain_id = $data->captain_id;
-        $this->captain_name = $data->captain_name;
-        $this->captain_email = $data->captain_email;
+        $this->captain_id         = $data->captain_id;
+        $this->captain_name       = $data->captain_name;
+        $this->captain_email      = $data->captain_email;
         $this->captain_contact_no = $data->captain_contact_no;
-        $this->match_day = $data->match_day;
-        $this->match_day_num = Util_Lookup::get_match_day_number( $data->match_day );
-        $this->match_time = $data->match_time;
+        $this->match_day          = $data->match_day;
+        $this->match_day_num      = Util_Lookup::get_match_day_number( $data->match_day );
+        $this->match_time         = $data->match_time;
     }
 
 }

@@ -9,12 +9,13 @@
 namespace Racketmanager;
 
 /** @var object $club */
+/** @var array $current_season */
 $event          = $club->event;
-$season         = $event->current_season;
 $playerstats    = $club->player_stats;
 $rounds         = array();
 $primary_league = null;
 $header_level   = 1;
+$curr_season    = $current_season['name'];
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 $header_level = 2;
 require RACKETMANAGER_PATH . 'templates/includes/event-header.php';
@@ -31,7 +32,7 @@ if ( $event->is_championship ) {
         ++$i;
     }
 } else {
-    $num_cols = $season['num_match_days'] ?? 0;
+    $num_cols = $current_season['num_match_days'] ?? 0;
 }
 ?>
 <div class="module module--card">

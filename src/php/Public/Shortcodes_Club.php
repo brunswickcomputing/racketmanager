@@ -377,7 +377,9 @@ class Shortcodes_Club extends Shortcodes {
                 return $this->load_template(
                     $filename,
                     array(
-                        'club' => $club,
+                        'club'           => $club,
+                        'seasons'        => $event->get_seasons(),
+                        'current_season' => $event->current_season,
                     ),
                     'club'
                 );

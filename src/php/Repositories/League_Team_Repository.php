@@ -156,22 +156,27 @@ class League_Team_Repository {
      * @param int|null $event_id
      * @param int|null $season
      * @param int|null $team_id
+     * @param int|null $club_id
      *
      * @return array
      */
-    public function get_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null ): array {
-        $cache_key = 'event' . $event_id . '_' . $season . '_' . $team_id;
+    public function get_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null, ?int $club_id = null ): array {
+        $cache_key = 'event' . $event_id . '_' . $season . '_' . $team_id . '_' . $club_id;
         $teams = wp_cache_get( md5( $cache_key ), 'league_teams' );
         if ( $teams ) {
             return $teams;
         }
         $search = '';
         $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
         if ( $season ) {
             $search .= $this->wpdb->prepare( $this->season_compare, $season );
         }
         if ( $team_id ) {
             $search .= $this->wpdb->prepare( " AND `team_id`  = %d", $team_id );
+        }
+        if ( $club_id ) {
+            $search .= $this->wpdb->prepare( " AND `team_id` IN ( SELECT `id` FROM $teams_table WHERE `club_id` = %d)", $club_id );
         }
         $teams = $this->wpdb->get_results(
             $this->wpdb->prepare(

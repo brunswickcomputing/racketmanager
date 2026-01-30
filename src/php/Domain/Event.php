@@ -1037,11 +1037,7 @@ class Event {
             $sql3 .= $sql2 . ' AND ' . $sql4;
             $sql3 .= ' ORDER BY m.`season`, m.`match_day`';
 
-            $sql = $wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql3,
-                $search_terms2
-            );
+            $sql = $sql3;
             $stats = wp_cache_get( md5( $sql ), 'playerstats' );
             if ( ! $stats ) {
                 $stats = $wpdb->get_results(

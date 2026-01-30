@@ -35,7 +35,6 @@ import { initializeTelemetry } from './features/telemetry/index.js';
 import { initializePlayerSearch } from './features/player/player-search.js';
 import { initializePricing } from './features/pricing/pricing.js';
 import { initializeTournamentWithdrawal } from './features/withdrawals/tournament-withdrawal.js';
-import { initializePaymentStatus } from './features/payments/payment-status.js';
 import { initializeTournamentCheckout } from './features/payments/payment-checkout.js';
 import { initializeStripePaymentComplete } from './features/payments/payment-complete.js';
 import { initializeEntryRequest } from './features/entry/entry-request.js';
@@ -134,7 +133,6 @@ jQuery(function () {
 
     // Payments & Withdrawals (Phase 6)
     initializeTournamentWithdrawal();
-    initializePaymentStatus();
     // Stripe Checkout (Payment Element)
     initializeTournamentCheckout();
 

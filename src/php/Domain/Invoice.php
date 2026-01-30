@@ -9,25 +9,18 @@
 
 namespace Racketmanager\Domain;
 
-use DateInterval;
-use DateTime;
-use Racketmanager\DateMalformedIntervalStringException;
-use Racketmanager\DateMalformedStringException;
-use Racketmanager\RacketManager;
-use function Racketmanager\get_charge;
-use function Racketmanager\get_club;
-use function Racketmanager\get_player;
-
 /**
  * Class to implement the invoice object
+ *
+ * @Entity
  */
 final class Invoice {
     /**
      * Id
      *
-     * @var int
+     * @var ?int
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Invoice number
      *
@@ -41,23 +34,17 @@ final class Invoice {
      */
     public object $club;
     /**
-     * Club id
+     * Billable id
      *
      * @var int|null
      */
-    public ? int $club_id;
+    public ?int $billable_id;
     /**
-     * Player
+     * Billable type
      *
-     * @var object
+     * @var string|null
      */
-    public object $player;
-    /**
-     * Player id
-     *
-     * @var int|null
-     */
-    public int|null $player_id;
+    public ?string $billable_type;
     /**
      * Charge
      *
@@ -75,7 +62,7 @@ final class Invoice {
      *
      * @var string
      */
-    public string $status;
+    public string $status = 'draft';
     /**
      * Invoice date
      *
@@ -99,13 +86,13 @@ final class Invoice {
      *
      * @var string|null
      */
-    public string|null $payment_reference;
+    public string|null $payment_reference = null;
     /**
      * Purchase order
      *
      * @var string|null
      */
-    public string|null $purchase_order;
+    public string|null $purchase_order = null;
     /**
      * Details
      *
@@ -118,37 +105,6 @@ final class Invoice {
      * @var object
      */
     public object $racketmanager;
-    /**
-     * Get class instance
-     *
-     * @param int $invoice_id id.
-     */
-    public static function get_instance(int $invoice_id ) {
-        global $wpdb;
-        if ( ! $invoice_id ) {
-            return false;
-        }
-        $invoice = wp_cache_get( $invoice_id, 'invoice' );
-
-        if ( ! $invoice ) {
-            $invoice = $wpdb->get_row(
-                $wpdb->prepare(
-                    "SELECT `id`, `charge_id`, `club_id`, `player_id`, `status`, `invoiceNumber` as `invoice_number`, `date`, `date_due`, `amount`, `payment_reference`, `purchase_order`, `details` FROM $wpdb->racketmanager_invoices WHERE `id` = %d LIMIT 1",
-                    $invoice_id
-                )
-            );  // db call ok.
-
-            if ( ! $invoice ) {
-                return false;
-            }
-
-            $invoice = new Invoice( $invoice );
-
-            wp_cache_set( $invoice->id, $invoice, 'invoice' );
-        }
-
-        return $invoice;
-    }
 
     /**
      * Construct class instance
@@ -156,7 +112,6 @@ final class Invoice {
      * @param object|null $invoice invoice object.
      */
     public function __construct( ?object $invoice = null ) {
-        $this->racketmanager = RacketManager::get_instance();
         if ( ! is_null( $invoice ) ) {
             if ( isset( $invoice->details ) ) {
                 $invoice->details = json_decode( $invoice->details );
@@ -164,232 +119,127 @@ final class Invoice {
             foreach ( get_object_vars( $invoice ) as $key => $value ) {
                 $this->$key = $value;
             }
-
-            if ( ! isset( $this->id ) ) {
-                $this->add();
-            }
-            if ( !empty( $this->club_id ) ) {
-                $this->club   = get_club( $this->club_id );
-            }
-            if ( !empty( $this->player_id ) ) {
-                $this->player   = get_player( $this->player_id );
-            }
-            $this->charge = get_charge( $this->charge_id );
         }
     }
 
-    /**
-     * Add new invoice
-     */
-    private function add(): void {
-        global $racketmanager, $wpdb;
-        $this->status = 'new';
-        $billing      = $racketmanager->get_options( 'billing' );
-        if ( $billing ) {
-            try {
-                $date_due = new DateTime($this->date);
-            } catch ( DateMalformedStringException) {
-                $date_due = null;
-            }
-            if ( isset( $billing['paymentTerms'] ) && intval( $billing['paymentTerms'] ) !== 0 ) {
-                $date_interval = intval( $billing['paymentTerms'] );
-                $date_interval = 'P' . $date_interval . 'D';
-                try {
-                    $date_due->add(new DateInterval($date_interval));
-                } catch ( DateMalformedIntervalStringException) {
-                    $date_due = null;
-                }
-            }
-            $this->date_due       = $date_due->format( 'Y-m-d' );
-            $this->invoice_number = $billing['invoiceNumber'];
-        }
-        if ( ! empty( $this->invoice_number ) ) {
-            if ( empty( $this->player_id ) ) {
-                $result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $wpdb->prepare(
-                        "INSERT INTO $wpdb->racketmanager_invoices (`charge_id`, `club_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
-                        $this->charge_id,
-                        $this->club_id,
-                        $this->status,
-                        $this->invoice_number,
-                        $this->date,
-                        $this->date_due
-                    )
-                );
-            } else {
-                $result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $wpdb->prepare(
-                        "INSERT INTO $wpdb->racketmanager_invoices (`charge_id`, `player_id`, `status`, `invoiceNumber`, `date`, `date_due`) VALUES (%d, %d, %s, %d, %s, %s)",
-                        $this->charge_id,
-                        $this->player_id,
-                        $this->status,
-                        $this->invoice_number,
-                        $this->date,
-                        $this->date_due
-                    )
-                );
-            }
-            if ( $result ) {
-                $this->id                  = $wpdb->insert_id;
-                $billing['invoiceNumber'] += 1;
-                $racketmanager->set_options( 'billing', $billing );
-            }
-        }
+    public function set_id( int $insert_id ): void {
+        $this->id = $insert_id;
     }
-    /**
-     * Delete invoice
-     */
-    public function delete(): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_invoices WHERE `id` = %d",
-                $this->id
-            )
-        );
-        wp_cache_delete( $this->id, 'invoice' );
+
+    public function set_charge_id( ?int $charge_id ): void {
+        $this->charge_id = $charge_id;
     }
+
+    public function set_billable_id( int $billable_id ): void {
+        $this->billable_id = $billable_id;
+    }
+
+    public function set_billable_type( string $billable_type ): void {
+        $this->billable_type = $billable_type;
+    }
+
+    public function set_date( string $date ): void {
+        $this->date = $date;
+    }
+
+    public function set_date_due( ?string $date_due ): void {
+        $this->date_due = $date_due;
+    }
+
+    public function set_invoice_number( mixed $invoice_number ):void {
+        $this->invoice_number = $invoice_number;
+    }
+
     /**
-     * Set invoice amount
+     * Set the invoice amount
      *
      * @param string $amount amount value.
      */
-    public function set_amount(string $amount ):  bool {
-        global $wpdb;
+    public function set_amount(string $amount ):  void {
         $this->amount = $amount;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_invoices set `amount` = %d WHERE `id` = %d",
-                $this->amount,
-                $this->id
-            )
-        );  // db call ok.
-        wp_cache_set( $this->id, $this, 'invoice' );
-        return true;
     }
     /**
      * Set invoice status
      *
      * @param string $status status value.
      */
-    public function set_status(string $status ): bool {
-        global $wpdb;
-
-        if ( 'resent' === $status ) {
-            $email = $this->send( $status );
-            if ( ! $email ) {
-                return false;
-            }
+    public function set_status( string $status ): void {
+        if ( 'resend' === $status ) {
+            $status = 'sent';
         }
         $this->status = $status;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_invoices set `status` = %s WHERE `id` = %d",
-                $this->status,
-                $this->id
-            )
-        );  // db call ok.
-        wp_cache_set( $this->id, $this, 'invoice' );
-        return true;
     }
     /**
      * Set payment reference status
      *
      * @param string $reference reference value.
      */
-    public function set_payment_reference(string $reference ): bool {
-        global $wpdb;
-
+    public function set_payment_reference(string $reference ): void {
         $this->payment_reference = $reference;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_invoices set `payment_reference` = %s WHERE `id` = %d",
-                $this->payment_reference,
-                $this->id
-            )
-        );  // db call ok.
-        wp_cache_set( $this->id, $this, 'invoice' );
-        return true;
     }
     /**
      * Set purchase order
      *
      * @param string $purchase_order purchase order.
      */
-    public function set_purchase_order(string $purchase_order ): bool {
-        global $wpdb;
-
+    public function set_purchase_order(string $purchase_order ): void {
         $this->purchase_order = $purchase_order;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_invoices set `purchase_order` = %s WHERE `id` = %d",
-                $this->purchase_order,
-                $this->id
-            )
-        );  // db call ok.
-        wp_cache_set( $this->id, $this, 'invoice' );
-        return true;
     }
     /**
      * Set details
      *
      * @param object $details invoice details.
      */
-    public function set_details( object $details ): bool {
-        global $wpdb;
-
+    public function set_details( object $details ): void {
         $this->details = $details;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_invoices set `details` = %s WHERE `id` = %d",
-                wp_json_encode( $this->details ),
-                $this->id
-            )
-        );  // db call ok.
-        wp_cache_set( $this->id, $this, 'invoice' );
-        return true;
     }
-    /**
-     * Send invoice
-     *
-     * @param boolean $resend resend indicator.
-     * return boolean
-     */
-    public function send( bool $resend = false ): bool {
-        global $racketmanager;
-        if ( empty( $this->club_id ) ) {
-            $email_to = $this->player->display_name . ' <' . $this->player->email . '>';
-            $target   = $this->player->display_name;
-        } else {
-            $email_to = $this->club->match_secretary->display_name . ' <' . $this->club->match_secretary->email . '>';
-            $target   = $this->club->name;
-        }
-        $billing    = $racketmanager->get_options( 'billing' );
-        $headers    = array();
-        $from_email = $racketmanager->get_confirmation_email( $this->charge->competition->type );
-        if ( $from_email ) {
-            $headers[]         = 'From: ' . ucfirst( $this->charge->competition->type ) . 'Secretary <' . $from_email . '>';
-            $headers[]         = 'cc: ' . ucfirst( $this->charge->competition->type ) . 'Secretary <' . $from_email . '>';
-            $organisation_name = $racketmanager->site_name;
-            $headers[]         = 'cc: Treasurer <' . $billing['billingEmail'] . '>';
-            $action_url        = $racketmanager->site_url . '/invoice/' . $this->id . '/';
-            $email_subject     = $racketmanager->site_name . ' - ' . ucfirst( $this->charge->competition->name ) . ' ' . $this->charge->season . ' Entry Fees Invoice - ' . $target;
-            $email_message     = $racketmanager->shortcodes->load_template(
-                'send-invoice',
-                array(
-                    'email_subject' => $email_subject,
-                    'action_url'    => $action_url,
-                    'organisation'  => $organisation_name,
-                    'invoice'       => $this,
-                    'resend'        => $resend,
-                    'from_email'    => $from_email,
-                ),
-                'email'
-            );
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
-            return true;
-        } else {
-            return false;
-        }
+
+    public function get_id(): ?int {
+        return $this->id;
     }
+
+    public function get_charge_id(): int {
+        return $this->charge_id;
+    }
+
+    public function get_billable_id(): ?int {
+        return $this->billable_id;
+    }
+
+    public function get_billable_type(): ?string {
+        return $this->billable_type;
+    }
+
+    public function get_invoice_number(): int {
+        return $this->invoice_number;
+    }
+
+    public function get_date(): null|string {
+        return $this->date;
+    }
+
+    public function get_date_due(): null|string {
+        return $this->date_due;
+    }
+
+    public function get_status(): string {
+        return $this->status;
+    }
+
+    public function get_amount(): null|int {
+        return $this->amount;
+    }
+
+    public function get_payment_reference(): null|string {
+        return $this->payment_reference;
+    }
+
+    public function get_purchase_order(): null|string {
+        return $this->purchase_order;
+    }
+
+    public function get_details(): null|string {
+        return json_encode( $this->details );
+    }
+
 }

@@ -10,13 +10,13 @@
 namespace Racketmanager\Public;
 
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
-use function Racketmanager\get_invoice;
 use function Racketmanager\get_team;
 use function Racketmanager\show_invoice;
 use function Racketmanager\un_seo_url;
@@ -428,19 +428,19 @@ class Shortcodes_Club extends Shortcodes {
             // Get Invoice.
             $invoice_ref = get_query_var( 'invoice' );
             if ( $invoice_ref ) {
-                $invoice = get_invoice( $invoice_ref );
-                if ( $invoice ) {
-                    if ( $invoice->club_id === $club->id ) {
+                try {
+                    $invoice = $this->finance_service->get_invoice( $invoice_ref );
+                    if ( $invoice->billable_id === $club->id ) {
                         $invoice->details = show_invoice( $invoice->id );
                         $template_ref     = 'invoice';
                     } else {
                         $msg = __( 'Invoice not for this club', 'racketmanager' );
                     }
-                } else {
-                    $msg = __( 'Invoice not found', 'racketmanager' );
+                } catch ( Invoice_Not_Found_Exception $e ) {
+                    $msg = $e->getMessage();
                 }
             } else {
-                $invoices     = $racketmanager->get_invoices( array( 'club' => $club->id ));
+                $invoices     = $this->finance_service->get_invoices_by_criteria( array( 'billable' => $club->id ) );
                 $template_ref = 'invoices';
             }
         } catch ( Club_Not_Found_Exception $e ) {

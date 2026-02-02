@@ -2301,77 +2301,7 @@ class RacketManager {
         }
         return $charges;
     }
-    /**
-     * Get Invoices
-     *
-     * @param array $args query arguments.
-     */
-    public function get_invoices( array $args = array() ): array {
-        global $wpdb;
 
-        $defaults  = array(
-                'club'      => false,
-                'status'    => false,
-                'charge'    => false,
-                'player'    => false,
-                'reference' => false,
-                'type'      => false,
-                'before'    => false,
-        );
-        $args      = array_merge( $defaults, $args );
-        $club_id   = $args['club'];
-        $status    = $args['status'];
-        $charge_id = $args['charge'];
-        $player_id = $args['player'];
-        $reference = $args['reference'];
-        $type      = $args['type'];
-        $before    = $args['before'];
-
-        $search_terms = array();
-        if ( $club_id ) {
-            $search_terms[] = $wpdb->prepare( '`club_id` = %d', $club_id );
-        } elseif ( $player_id ) {
-            $search_terms[] = $wpdb->prepare( '`player_id` = %d', $player_id );
-        }
-        if ( $status ) {
-            if ( 'open' === $status ) {
-                $search_terms[] = "`status` != ('paid')";
-            } elseif ( 'overdue' === $status ) {
-                $search_terms[] = "(`status` != ('paid') AND `date_due` < CURDATE())";
-            } else {
-                $search_terms[] = $wpdb->prepare( '`status` = %s', $status );
-            }
-        }
-        if ( $charge_id ) {
-            $search_terms[] = $wpdb->prepare( '`charge_id` = %d', $charge_id );
-        }
-        if ( $reference ) {
-            $search_terms[] = $wpdb->prepare( '`payment_reference` = %s', $reference );
-        }
-        switch ( $type ) {
-            case 'club':
-                $search_terms[] = '`club_id` IS NOT NULL';
-                break;
-            case 'player':
-                $search_terms[] = '`player_id` IS NOT NULL';
-                break;
-            default:
-                break;
-        }
-        if ( $before ) {
-            $search_terms[] = $wpdb->prepare( '`id` < %d', $before );
-        }
-        $search = Util::search_string( $search_terms, true );
-        $invoices = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT `id` FROM $wpdb->racketmanager_invoices $search order by `invoiceNumber`"
-        );
-        foreach ( $invoices as $i => $invoice ) {
-            $invoice        = get_invoice( $invoice->id );
-            $invoices[ $i ] = $invoice;
-        }
-        return $invoices;
-    }
     /**
      * Get teams from database
      *

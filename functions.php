@@ -518,32 +518,7 @@ function get_charge( object|int|string|null $charges = null ): ?object {
 
     return $_charges;
 }
-/**
- * Get invoice object
- *
- * @param int|null $invoice invoice ID or invoice object. Defaults to global $invoice.
- *
- * @return object|null invoice|null
- */
-function get_invoice( ?int $invoice = null ): Invoice|null {
-    if ( empty( $invoice ) && isset( $GLOBALS['invoice'] ) ) {
-        $invoice = $GLOBALS['invoice'];
-    }
 
-    if ( $invoice instanceof Invoice ) {
-        $_invoice = $invoice;
-    } elseif ( is_object( $invoice ) ) {
-        $_invoice = new Invoice( $invoice );
-    } else {
-        $_invoice = Invoice::get_instance( $invoice );
-    }
-
-    if ( ! $_invoice ) {
-        return null;
-    }
-
-    return $_invoice;
-}
 /**
  * Get LeagueTeam object
  *

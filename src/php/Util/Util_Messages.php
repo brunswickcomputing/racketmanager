@@ -210,4 +210,8 @@ class Util_Messages {
         return __( 'PO not changedg', 'racketmanager' );
     }
 
+    public static function invalid_notification_type( string $type ): string {
+        return sprintf( __( '%s is not valid as a notification type', 'racketmanager' ), $type );
+    }
+
 }

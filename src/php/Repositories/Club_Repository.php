@@ -214,7 +214,7 @@ class Club_Repository {
      */
     public function find_all( array $args = array() ): array|int {
         $defaults = array(
-            'type'    => false,
+            'type'    => 'affiliated',
             'count'   => false,
             'orderby' => 'asc',
         );

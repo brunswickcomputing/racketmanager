@@ -604,7 +604,7 @@ class Rest_Resources extends WP_REST_Controller {
     public function stripe_event(): WP_Error|WP_REST_Response {
         $data           = null;
         $status         = 200;
-        $stripe_details = new Stripe_Settings();
+        $stripe_details = new Stripe_Settings( $this->racketmanager );
         Stripe::setApiKey( $stripe_details->api_secret_key );
         $payload = @file_get_contents('php://input');
         try {

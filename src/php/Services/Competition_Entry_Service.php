@@ -105,9 +105,7 @@ class Competition_Entry_Service {
         if ( empty( $return->error ) ) {
             $url              = $this->racketmanager->site_url . '/entry-form/' . seo_url( $competition->name ) . '/' . $season . '/';
             $competition_name = $competition->name . ' ' . $season;
-            $clubs            = $this->racketmanager->get_clubs( array(
-                    'type' => 'affiliated',
-                ) );
+            $clubs            = $this->racketmanager->get_clubs();
             $headers          = array();
             $from_email       = $this->racketmanager->get_confirmation_email( $competition->type );
             if ( $from_email ) {

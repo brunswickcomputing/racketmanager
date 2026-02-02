@@ -584,14 +584,14 @@ class Competition_Entry_Service {
         }
         $match_secretary = $this->player_service->get_match_secretary_details( $club_id );
         $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '> ';
-        global $racketmanager;
-        $template_args['organisation']     = $racketmanager->site_name;
+
+        $template_args['organisation']     = $this->racketmanager->site_name;
         $template_args['season']           = $club_entry->season;
         $template_args['competition_name'] = $club_entry->competition->name;
         $template_args['club']             = $club_entry->club_name;
         $template_args['contact_email']    = $email_from;
         $template_args['comments']         = $club_entry->comments;
-        $racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
+        $this->racketmanager->email_entry_form( $template, $template_args, $email_to, $email_subject, $headers );
     }
 
     /**

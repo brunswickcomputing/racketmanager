@@ -9,12 +9,15 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Charge;
+use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;
+use Racketmanager\Exceptions\Charge_Not_Found_Exception;
+use Racketmanager\Exceptions\Charge_Not_Updated_Exception;
+use Racketmanager\Exceptions\Invoice_Not_Created_Exception;
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
+use Racketmanager\Exceptions\Invoice_Not_Updated_Exception;
 use Racketmanager\Services\Validator\Validator_Finance;
-use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Messages;
 use stdClass;
-use function Racketmanager\get_charge;
-use function Racketmanager\get_invoice;
 use function Racketmanager\show_invoice;
 
 /**
@@ -79,7 +82,7 @@ final class Admin_Finances extends Admin_Display {
         $racketmanager_tab = 'club-invoices';
         $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
         $args['type']      = 'club';
-        $finance_invoices  = $this->racketmanager->get_invoices( $args );
+        $finance_invoices  = $this->finance_service->get_invoices_by_criteria( $args );
         $clubs             = $this->club_service->get_clubs();
         $charges           = $this->get_finance_charges_for_invoices( 'team' );
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
@@ -103,7 +106,7 @@ final class Admin_Finances extends Admin_Display {
         $racketmanager_tab = 'player-invoices';
         $args              = $this->get_invoice_actions( $status, $club_id, $charge_id );
         $args['type']      = 'player';
-        $finance_invoices  = $this->racketmanager->get_invoices( $args );
+        $finance_invoices  = $this->finance_service->get_invoices_by_criteria( $args );
         $charges           = $this->get_finance_charges_for_invoices( 'player' );
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-invoices.php';
     }
@@ -122,13 +125,14 @@ final class Admin_Finances extends Admin_Display {
                 'season'         => 'DESC',
                 'competition_id' => 'ASC',
         );
-        return $this->racketmanager->get_charges( $args );
+        return $this->finance_service->get_charges_by_criteria( $args );
 
     }
     /**
      * Display charges page
      */
-    public function display_charges_page(): void {
+    public
+    function display_charges_page(): void {
         $validator = new Validator_Finance();
         $validator = $validator->capability( 'edit_leagues' );
         if ( ! empty( $validator->error ) ) {
@@ -143,30 +147,7 @@ final class Admin_Finances extends Admin_Display {
         $charge_id         = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
         $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'open';
         $racketmanager_tab = 'charges';
-        if ( isset( $_POST['generateInvoices'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_charges-bulk' );
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->msg, 'error' );
-            } else {
-                if ( isset( $_POST['competition_id'] ) ) {
-                    $competition_id = intval( $_POST['competition_id'] );
-                }
-                if ( isset( $_POST['season'] ) ) {
-                    $season = sanitize_text_field( wp_unslash( $_POST['season'] ) );
-                }
-                $racketmanager_tab = 'racketmanager-invoices';
-                if ( isset( $_POST['charges_id'] ) ) {
-                    $charge_id = intval( $_POST['charges_id'] );
-                    $charge    = get_charge( $charge_id );
-                    if ( $charge ) {
-                        $schedule_name   = 'rm_send_invoices';
-                        $schedule_args[] = $charge_id;
-                        Util::clear_scheduled_event( $schedule_name, $schedule_args );
-                        $charge->send_invoices();
-                    }
-                }
-            }
-        } elseif ( isset( $_POST['doChargesDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+        if ( isset( $_POST['doChargesDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
             $racketmanager_tab = 'racketmanager-charges';
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_charges-bulk' );
             if ( empty( $validator->error ) ) {
@@ -174,24 +155,29 @@ final class Admin_Finances extends Admin_Display {
             }
             if ( ! empty( $validator->error ) ) {
                 $this->set_message( $validator->msg, 'error' );
-            } else {
-                $messages      = array();
-                $message_error = false;
-                if ( isset( $_POST['charge'] ) ) {
-                    foreach ( $_POST['charge'] as $charges_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $charge     = get_charge( $charges_id );
-                        $charge_ref = ucfirst( $charge->competition->name ) . ' ' . $charge->season;
-                        if ( $charge->has_invoices() ) {
-                            $messages[]    = $charge_ref . ' ' . __( 'not deleted - still has invoices attached', 'racketmanager' );
-                            $message_error = true;
+                $this->show_message();
+                return;
+            }
+            $messages      = array();
+            $message_error = false;
+            $charges = isset( $_POST['charge'] ) ? array_map( 'intval', $_POST['charge'] ) : array();
+            if ( ! empty( $charges ) ) {
+                foreach ( $charges as $charge_id ) {
+                    try {
+                        $deleted = $this->finance_service->remove_charge( $charge_id );
+                        if ( $deleted ) {
+                            $messages[] = Util_Messages::charge_deleted( $charge_id );
                         } else {
-                            $charge->delete();
-                            $messages[] = $charge_ref . ' ' . __( 'deleted', 'racketmanager' );
+                            $messages[] = Util_Messages::charge_not_deleted( $charge_id );
                         }
+
+                    } catch ( Charge_Not_Found_Exception|Charge_Not_Deleted_Exception $e ) {
+                        $messages[] = $e->getMessage();
+                        $message_error = true;
                     }
-                    $message = implode( '<br>', $messages );
-                    $this->set_message( $message, $message_error );
                 }
+                $message = implode( '<br>', $messages );
+                $this->set_message( $message, $message_error );
             }
         }
 
@@ -203,7 +189,7 @@ final class Admin_Finances extends Admin_Display {
         if ( $season ) {
             $args['season'] = $season;
         }
-        $finance_charges = $this->racketmanager->get_charges( $args );
+        $finance_charges = $this->finance_service->get_charges_by_criteria( $args );
         $competitions    = $this->competition_service->get_all();
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
     }
@@ -218,29 +204,81 @@ final class Admin_Finances extends Admin_Display {
             $this->show_message();
             return;
         }
-        $edit       = false;
-        $charges    = null;
-        $charges_id = isset( $_GET['charges'] ) ?  intval( $_GET['charges'] ) : null;
-        if ( $charges_id ) {
-            $edit      = true;
-            $validator = $validator->charge( $charges_id );
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->err_msgs[0], true );
+        $edit      = false;
+        $charge    = null;
+        $charge_id = isset( $_GET['charges'] ) ? intval( $_GET['charges'] ) : null;
+        if ( $charge_id ) {
+            try {
+                $charge = $this->finance_service->get_charge( $charge_id, true );
+                $edit   = true;
+            } catch( Charge_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), 'error' );
                 $this->show_message();
                 return;
             }
-            $charges = get_charge( $charges_id );
         }
-        if ( isset( $_POST['saveCharge'] ) ) {
+        if ( isset( $_POST['generateInvoices'] ) ) {
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_charges-bulk' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, 'error' );
+            } else {
+                $charge_id = isset( $_POST['charges_id'] ) ? intval( $_POST['charges_id'] ) : null;
+                try {
+                    $result = $this->finance_service->send_invoices_for_charge( $charge_id, true );
+                    if ( $result ) {
+                        $this->set_message( __( 'Invoices generated and sent', 'racketmanager' ) );
+                    } else {
+                        $this->set_message( __( 'Error on invoice sending', 'racketmanager' ), 'error' );
+                    }
+                } catch ( Charge_Not_Found_Exception|Invoice_Not_Created_Exception $e ) {
+                    $this->set_message( $e->getMessage(), 'error' );
+                }
+                $racketmanager_tab = 'racketmanager-invoices';
+            }
+        } elseif ( isset( $_POST['saveCharge'] ) ) {
             $update    = null;
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-charges' );
             if ( empty( $validator->error ) ) {
+                $charge_input = $this->get_charge_input();
                 if ( isset( $_POST['editCharge'] ) ) {
-                    $charges_id = isset( $_POST['charges_id'] ) ? intval( $_POST['charges_id'] ) : null;
-                    $validator  = $validator->compare( $charges_id, $charges_id );
-                    $update     = true;
+                    try {
+                        $edit   = true;
+                        $result = $this->finance_service->amend_charge( $charge_input, $charge_id );
+                        if ( is_wp_error( $result ) ) {
+                            $validator->error    = true;
+                            $validator->err_flds = $result->get_error_codes();
+                            $validator->err_msgs = $result->get_error_messages();
+                            $validator->msg = __( 'Error updating charge', 'racketmanager' );
+                        } else {
+                            $this->set_message( __( 'Charge updated', 'racketmanager' ) );
+                            $charge = $result;
+                        }
+                    } catch ( Charge_Not_Updated_Exception $e ) {
+                        $this->set_message( $e->getMessage(), 'warning' );
+                    } catch ( Charge_Not_Found_Exception $e ) {
+                        $this->set_message( $e->getMessage(), 'error' );
+                    }
                 } elseif ( isset( $_POST['addCharge'] ) ) {
-                    $update = false;
+                    $charge = $charge_input;
+                    $result = $this->finance_service->add_charge( $charge_input );
+                    if ( is_wp_error( $result ) ) {
+                        $validator->error    = true;
+                        $validator->err_flds = $result->get_error_codes();
+                        $validator->err_msgs = $result->get_error_messages();
+                        $validator->msg = __( 'Error adding charge', 'racketmanager' );
+                    } else {
+                        $this->set_message( __( 'Charge added', 'racketmanager' ) );
+                        $edit = true;
+                        $charge = $result;
+                        $charge_id = $charge->get_id();
+                        ?>
+                        <script>
+                            let url = new URL(window.location.href);
+                            url.searchParams.append('charges', <?php echo esc_attr( $charge_id ); ?>);
+                            history.pushState('', '', url.toString());
+                        </script>
+                        <?php
+                    }
                 } else {
                     $validator->error = true;
                     $validator->msg   = __( 'Invalid action', 'racketmanager' );
@@ -253,46 +291,13 @@ final class Admin_Finances extends Admin_Display {
                     $msg = $validator->msg;
                 }
                 $this->set_message( $msg, true );
-            } else {
-                if ( $update ) {
-                    $charge_input = $this->get_charge_input( $charges );
-                    $validator    = $this->validate_charge( $charge_input );
-                    if ( empty( $validator->error ) ) {
-                        $updates = $charges->update( $charge_input );
-                        if ( $updates ) {
-                            $this->set_message( __( 'Charge updated', 'racketmanager' ) );
-                        } else {
-                            $this->set_message( $this->no_updates, 'warning' );
-                        }
-                    } else {
-                        $charges = $charge_input;
-                        $this->set_message( __( 'Error updating charge', 'racketmanager' ), true );
-                    }
-                } else {
-                    $charges   = $this->get_charge_input();
-                    $validator = $this->validate_charge( $charges );
-                    if ( empty( $validator->error ) ) {
-                        $charges = new Charge( $charges );
-                        $edit   = true;
-                        ?>
-                        <script>
-                            let url = new URL(window.location.href);
-                            url.searchParams.append('charges', <?php echo esc_attr( $charges->id ); ?>);
-                            history.pushState('', '', url.toString());
-                        </script>
-                        <?php
-                        $this->set_message( __( 'Charge added', 'racketmanager' ) );
-                    } else {
-                        $this->set_message( __( 'Error with charge creation', 'racketmanager' ), 'error' );
-                    }
-                }
             }
         }
         $this->show_message();
         if ( $edit ) {
             $form_title   = __( 'Edit Charge', 'racketmanager' );
             $form_action  = __( 'Update', 'racketmanager' );
-            $club_charges = $charges->get_club_entries();
+            $club_charges = $this->finance_service->get_charges_for_clubs( $charge_id );
         } else {
             $form_title  = __( 'Add Charge', 'racketmanager' );
             $form_action = __( 'Add', 'racketmanager' );
@@ -304,16 +309,12 @@ final class Admin_Finances extends Admin_Display {
     /**
      * Function to get charge inout data from the screen
      *
-     * @param object|null $charge charge object.
-     *
      * @return object
      */
-    private function get_charge_input( ?object $charge = null ): object {
-        if ( empty( $charge ) ) {
-            $charge = new stdClass();
-        } else {
-            $charge = clone $charge;
-        }
+    private function get_charge_input(): object {
+        $charge = new stdClass();
+
+        $charge->id              = isset( $_POST['charges_id'] ) ? intval( $_POST['charges_id'] ) : null;
         $charge->competition_id  = empty( $_POST['competition_id'] ) ? null : intval( $_POST['competition_id'] );
         $charge->season          = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
         $charge->status          = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;
@@ -337,65 +338,48 @@ final class Admin_Finances extends Admin_Display {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-invoice' );
             if ( ! empty( $validator->error ) ) {
                 $this->set_message( $validator->msg, true );
-            } elseif ( isset( $_POST['invoice_id'] ) ) {
-                $invoice = get_invoice( intval( $_POST['invoice_id'] ) );
-                $updates = false;
-                if ( isset( $_POST['status'] ) && $invoice->status !== $_POST['status'] ) {
-                    $invoice_update = $invoice->set_status( sanitize_text_field( wp_unslash( $_POST['status'] ) ) );
-                    if ( $invoice_update ) {
-                        $updates = true;
+            } else {
+                $invoice_id = isset( $_POST['invoice_id'] ) ? intval( $_POST['invoice_id'] ) : null;
+                $status  = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : null;
+                $purchase_order = isset( $_POST['purchaseOrder'] ) ? sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) : null;
+                try {
+                    $result = $this->finance_service->amend_invoice( $invoice_id, $status, $purchase_order );
+                    if ( is_wp_error( $result ) ) {
+                        $validator->error = true;
+                        $validator->err_flds = $result->get_error_codes();
+                        $validator->err_msgs = $result->get_error_messages();
+                        $validator->msg = __( 'Error updating invoice', 'racketmanager' );
+                    } else {
+                        $this->set_message( __( 'Invoice updated', 'racketmanager' ) );
                     }
-                }
-                if ( isset( $_POST['purchaseOrder'] ) && $invoice->purchase_order !== $_POST['purchaseOrder'] ) {
-                    $invoice_update = $invoice->set_purchase_order( sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) );
-                    if ( $invoice_update ) {
-                        $updates = true;
-                    }
-                }
-                if ( $updates ) {
-                    $this->set_message( __( 'Invoice updated', 'racketmanager' ) );
-                } else {
-                    $this->set_message( $this->no_updates, true );
+                } catch ( Invoice_Not_Found_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
+                } catch ( Invoice_Not_Updated_Exception $e ) {
+                    $this->set_message( $e->getMessage(), 'warning' );
                 }
             }
         }
         $this->show_message();
-        if ( isset( $_GET['charge'] ) && isset( $_GET['club'] ) ) {
-            $invoice_id = $this->get_invoice( intval( $_GET['charge'] ), intval( $_GET['club'] ) );
-        } elseif ( isset( $_GET['invoice'] ) ) {
-            $invoice_id = intval( $_GET['invoice'] );
-        }
         $tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'racketmanager-invoices';
-        if ( isset( $invoice_id ) && $invoice_id ) {
-            $invoice = get_invoice( $invoice_id );
-        }
-        if ( isset( $invoice ) && $invoice ) {
-            $invoice_view = show_invoice( $invoice->id );
+
+        $charge_id  = isset( $_GET['charge'] ) ? intval( $_GET['charge'] ) : null;
+        $club_id    = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
+        $invoice_id = isset( $_GET['invoice'] ) ? intval( $_GET['invoice'] ) : null;
+        try {
+            if ( $charge_id && $club_id ) {
+                $invoice = $this->finance_service->get_invoice_by_charge_and_club( $charge_id, $club_id );
+            } elseif ( $invoice_id ) {
+                $invoice = $this->finance_service->get_full_invoice_details( $invoice_id );
+            } else {
+                throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found() );
+            }
+            $invoice_view = show_invoice( $invoice->invoice->get_id() );
             require_once RACKETMANAGER_PATH . 'templates/admin/finances/invoice.php';
-        } else {
-            $this->set_message( __( 'Invoice not found', 'racketmanager' ), true );
+        } catch( Invoice_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
             $this->show_message();
         }
     }
-    /**
-     * Get Invoice
-     *
-     * @param int $charge charge used by invoice.
-     * @param int $club club for whom invoice is created.
-     * @return null|int $invoice_id
-     */
-    private function get_invoice( int $charge, int $club ): ?int {
-        global $wpdb;
-
-        return $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "SELECT `id` FROM $wpdb->racketmanager_invoices WHERE `charge_id` = %d AND `club_id` = %d LIMIT 1",
-                $charge,
-                $club
-            )
-        );
-    }
-
     /**
      * Get invoice actions from the screen
      *
@@ -405,34 +389,32 @@ final class Admin_Finances extends Admin_Display {
      *
      * @return array
      */
-    public function get_invoice_actions( string $status, ?int $club_id, ?int $charge_id ): array {
+    public function get_invoice_actions( string $status, ?int $club_id, ?int $charge_id ): array|bool {
         $validator = new Validator_Finance();
         if ( isset( $_POST['doActionInvoices'] ) && isset( $_POST['action'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_invoices-bulk' );
             if ( ! empty( $validator->error ) ) {
                 $this->set_message( $validator->msg, true );
-            } else {
-                $messages = array();
-                if ( isset( $_POST['invoice'] ) ) {
-                    foreach ( $_POST['invoice'] as $invoice_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        $invoice = get_invoice( $invoice_id );
-                        if ( $invoice->status !== $_POST['action'] ) {
-                            $new_status = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-                            if ( $new_status ) {
-                                $invoice->set_status( $new_status );
-                                $messages[] = __( 'Invoice', 'racketmanager' ) . ' ' . $invoice->invoice_number . ' ' . __( 'updated', 'racketmanager' );
-                            }
-                        }
-                    }
-                    $message = implode( '<br>', $messages );
-                    $this->set_message( $message );
-                }
+                $this->show_message();
+                return false;
             }
         }
+        $messages = array();
+        $invoices = isset( $_POST['invoice'] ) ? array_map( 'intval', $_POST['invoice'] ) : array();
+        $action   = isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : null;
+        foreach ( $invoices as $invoice_id ) {
+            try {
+                $messages[] = $this->finance_service->action_invoice( $invoice_id, $action );
+            } catch ( Invoice_Not_Found_Exception $e ) {
+                $messages[] = $e->getMessage();
+            }
+        }
+        $message = implode( '<br>', $messages );
+        $this->set_message( $message );
         $this->show_message();
         $args = array();
         if ( $club_id ) {
-            $args['club'] = $club_id;
+            $args['billable'] = $club_id;
         }
         if ( $status ) {
             $args['status'] = $status;
@@ -444,20 +426,4 @@ final class Admin_Finances extends Admin_Display {
         return $args;
     }
 
-    /**
-     * Validate charge
-     *
-     * @param object $charge charge object.
-     *
-     * @return object
-     *
-     */
-    private function validate_charge( object $charge ): object {
-        $validator = new Validator_Finance();
-        $validator = $validator->competition( $charge->competition_id );
-        $validator = $validator->season( $charge->season );
-        $validator = $validator->status( $charge->status );
-        $validator = $validator->date( $charge->date );
-        return $validator->get_details();
-    }
 }

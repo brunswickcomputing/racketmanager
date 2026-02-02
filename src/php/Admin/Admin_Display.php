@@ -81,6 +81,7 @@ class Admin_Display {
     protected League_Service $league_service;
     protected Competition_Service $competition_service;
     protected Finance_Service $finance_service;
+    protected Tournament_Service $tournament_service;
 
     /**
      * Constructor
@@ -96,6 +97,7 @@ class Admin_Display {
         $this->league_service       = $c->get( 'league_service' );
         $this->competition_service  = $c->get( 'competition_service' );
         $this->finance_service      = $c->get( 'finance_service' );
+        $this->tournament_service   = $c->get( 'tournament_service' );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );

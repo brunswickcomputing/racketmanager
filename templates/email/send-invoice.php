@@ -39,7 +39,7 @@ require 'email-header.php';
                                                                             echo ' another copy of ';
                                                                         }
                                                                         ?>
-                                                                        your invoice for the <?php echo esc_html( ucfirst( $invoice->charge->competition->name ) ); ?> <?php echo esc_html( $invoice->charge->season ); ?> season.
+                                                                        your invoice for the <?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?>.
                                                                     </p>
                                                                     <p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
                                                                         Could you please check your details and notify me of errors?

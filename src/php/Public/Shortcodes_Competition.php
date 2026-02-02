@@ -737,7 +737,6 @@ class Shortcodes_Competition extends Shortcodes {
      * @return string the content
      */
     public function show_competition_entry_payment( array $atts ): string {
-        global $racketmanager;
         $args     = shortcode_atts(
             array(
                 'template'  => '',
@@ -768,7 +767,7 @@ class Shortcodes_Competition extends Shortcodes {
                             $args['charge']       = $charge->id;
                             $args['player']       = $player_id;
                             $args['status']       = 'open';
-                            $outstanding_payments = $racketmanager->get_invoices( $args );
+                            $outstanding_payments = $this->finance_service->get_invoices_by_criteria( $args );
                             $total_due            = 0;
                             foreach ( $outstanding_payments as $invoice ) {
                                 $total_due += $invoice->amount;

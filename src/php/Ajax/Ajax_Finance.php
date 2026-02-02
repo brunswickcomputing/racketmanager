@@ -1,6 +1,6 @@
 <?php
 /**
- * AJAX Finance response methods (PSR-4 relocated)
+ * AJAX Finance response methods
  *
  * @package    RacketManager
  * @subpackage RacketManager_Ajax_Finance
@@ -9,9 +9,10 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Finance;
 use stdClass;
-use function Racketmanager\get_invoice;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_invoice;
 use function Racketmanager\show_purchase_order_modal;
@@ -55,36 +56,33 @@ class Ajax_Finance extends Ajax {
         wp_die();
     }
     /**
-     * Set purchase order function
+     * Set the purchase order function
      *
      * @return void
      */
     public function set_purchase_order(): void {
-        $invoice_id     = null;
-        $modal          = null;
-        $purchase_order = null;
-        $invoice        = null;
-        $error_field    = 'purchaseOrder';
-        $validator      = new Validator_Finance();
-        $validator      = $validator->check_security_token( 'racketmanager_nonce', 'purchase-order-update' );
+        $modal       = null;
+        $error_field = 'purchaseOrder';
+        $validator   = new Validator_Finance();
+        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'purchase-order-update' );
         if ( empty( $validator->error ) ) {
-            $modal          = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $validator = $validator->modal( $modal, $error_field );
+        }
+        if ( empty( $validator->error ) ) {
             $invoice_id     = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;
             $purchase_order = isset( $_POST['purchaseOrder'] ) ? sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) : null;
-            $validator      = $validator->modal( $modal, $error_field );
-            $validator      = $validator->invoice( $invoice_id, $error_field );
-        }
-        if ( empty( $validator->error ) ) {
-            $invoice   = get_invoice( $invoice_id );
-            $validator = $validator->purchase_order( $purchase_order, $invoice->purchase_order );
-        }
-        if ( empty( $validator->error ) ) {
-            $invoice->set_purchase_order( $purchase_order );
-            $return          = new stdClass();
-            $return->msg     = __( 'Purchase order updated', 'racketmanager' );
-            $return->modal   = $modal;
-            $return->invoice = show_invoice( $invoice->id );
-            wp_send_json_success( $return );
+            try {
+                $validator       = $this->finance_service->set_invoice_purchase_order( $invoice_id, $purchase_order );
+                $return          = new stdClass();
+                $return->msg     = __( 'Purchase order updated', 'racketmanager' );
+                $return->modal   = $modal;
+                $return->invoice = show_invoice( $invoice_id );
+                wp_send_json_success( $return );
+            } catch ( Invoice_Not_Found_Exception|Invalid_Argument_Exception $e ) {
+                $validator->error = true;
+                $validator->msg = $e->getMessage();
+            }
         }
         $return = $validator->get_details();
         if ( empty( $return->msg ) ) {

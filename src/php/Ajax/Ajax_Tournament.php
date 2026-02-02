@@ -9,6 +9,10 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Exceptions\Stripe_API_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use Racketmanager\Services\Validator\Validator_Tournament;
@@ -17,7 +21,6 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 use function Racketmanager\event_partner_modal;
 use function Racketmanager\get_event;
-use function Racketmanager\get_invoice;
 use function Racketmanager\get_player;
 use function Racketmanager\get_tournament;
 use function Racketmanager\get_tournament_entry;
@@ -319,67 +322,13 @@ class Ajax_Tournament extends Ajax {
      * @return void
      */
     public function tournament_payment_create(): void {
-        global $racketmanager;
-        $msg = null;
-        $tournament_entry = null;
-        $invoice = null;
-        $valid               = true;
-        $tournament_entry_id = isset( $_POST['tournament_entry'] ) ? intval( $_POST['tournament_entry'] ) : null;
-        $invoice_id          = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;
-        if ( $tournament_entry_id ) {
-            $tournament_entry = get_tournament_entry( $tournament_entry_id );
-            if ( ! $tournament_entry ) {
-                $valid = false;
-                $msg   = __( 'Tournament entry not found', 'racketmanager' );
-            }
-        } else {
-            $valid = false;
-            $msg   = __( 'Tournament entry id not present', 'racketmanager' );
-        }
-        if ( $invoice_id ) {
-            $invoice = get_invoice( $invoice_id );
-            if ( ! $invoice ) {
-                $valid = false;
-                $msg   = __( 'Payment request not found', 'racketmanager' );
-            }
-        } else {
-            $valid = false;
-            $msg   = __( 'Payment request id not found', 'racketmanager' );
-        }
-        if ( ! $valid ) {
-            wp_send_json_error( $msg, '500' );
-        }
-        $args        = array();
-        $player      = get_player( $tournament_entry->player_id );
-        $description = $player?->display_name;
-        $tournament  = get_tournament( $tournament_entry->tournament_id );
-        if ( $tournament ) {
-            $description .= ' - ' . $tournament->name;
-        }
-        $args['description']                 = $description;
-        $args['amount']                      = $invoice->amount * 100;
-        $args['currency']                    = $racketmanager->currency_code;
-        $args['payment_method_types']        = array('card');
-        $args['statement_descriptor_suffix'] = $tournament->name;
-        $args['receipt_email']               = $player?->email;
-        $stripe_details                      = new Stripe_Settings();
-        // Ensure Stripe classes are available via Composer autoloading.
-        if ( ! class_exists( \Stripe\StripeClient::class ) ) {
-            wp_send_json_error( array(
-                'error' => 'Stripe SDK not available. Please run composer install in the Racketmanager plugin to install stripe/stripe-php.'
-            ), 500 );
-        }
-        $stripe                              = new StripeClient( $stripe_details->api_secret_key );
+        $invoice_id    = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;
+        $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
+        $player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
         try {
-            // Create a PaymentIntent with amount and currency
-            $paymentIntent = $stripe->paymentIntents->create( $args );
-            if ( $paymentIntent ) {
-                $reference = $paymentIntent->id;
-                $invoice?->set_payment_reference($reference);
-            }
-            $client_secret = $paymentIntent->client_secret;
+            $client_secret = $this->finance_service->create_tournament_payment_request( $tournament_id, $player_id, $invoice_id );
             wp_send_json_success( $client_secret );
-        } catch ( ApiErrorException $e ) {
+        } catch ( Tournament_Not_Found_Exception|Player_Not_Found_Exception|Stripe_API_Exception|Invoice_Not_Found_Exception $e) {
             wp_send_json_error( ['error' => $e->getMessage()], '500' );
         }
     }

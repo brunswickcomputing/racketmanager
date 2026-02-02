@@ -28,14 +28,19 @@ use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Updated_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
+use Racketmanager\Exceptions\Stripe_API_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Invoice_Repository;
+use Racketmanager\Repositories\Tournament_Repository;
 use Racketmanager\Services\Validator\Validator_Finance;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
+use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 use WP_Error;
 
 /**
@@ -48,18 +53,20 @@ class Finance_Service {
     private Club_Repository $club_repository;
     private Competition_Service $competition_service;
     private Player_Service $player_service;
+    private Tournament_Repository $tournament_repository;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Charge_Repository $charge_repository, Invoice_Repository $invoice_repository, Club_Repository $club_repository, Competition_Service $competition_service, Player_Service $player_service ) {
-        $this->racketmanager       = $plugin_instance;
-        $this->charge_repository   = $charge_repository;
-        $this->invoice_repository  = $invoice_repository;
-        $this->club_repository     = $club_repository;
-        $this->competition_service = $competition_service;
-        $this->player_service      = $player_service;
+    public function __construct( RacketManager $plugin_instance, Charge_Repository $charge_repository, Invoice_Repository $invoice_repository, Club_Repository $club_repository, Tournament_Repository $tournament_repository, Competition_Service $competition_service, Player_Service $player_service ) {
+        $this->racketmanager         = $plugin_instance;
+        $this->charge_repository     = $charge_repository;
+        $this->invoice_repository    = $invoice_repository;
+        $this->club_repository       = $club_repository;
+        $this->tournament_repository = $tournament_repository;
+        $this->competition_service   = $competition_service;
+        $this->player_service        = $player_service;
     }
 
     public function get_charge( $charge_id, bool $enhanced = false ): null|Charge|Charge_Details_DTO {
@@ -503,5 +510,47 @@ class Finance_Service {
         $invoice->set_purchase_order( $purchase_order );
         return $this->invoice_repository->save( $invoice );
     }
+
+    public function create_tournament_payment_request( ?int $tournament_id, ?int $player_id, ?int $invoice_id ): bool {
+        $invoice = $this->invoice_repository->find_by_id( $invoice_id );
+        if ( ! $invoice ) {
+            throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
+        }
+        $tournament = $this->tournament_repository->find_by_id( $tournament_id );
+        if ( ! $tournament ) {
+            throw new Tournament_Not_Found_Exception( Util_Messages::tournament_not_found( $tournament_id ) );
+        }
+        $tournament_name = $tournament->get_name();
+        try {
+            $player = $this->player_service->get_player( $player_id );
+        } catch ( Player_Not_Found_Exception $e ) {
+            throw new Player_Not_Found_Exception( $e->getMessage() );
+        }
+        $args['description']                 = $player->get_fullname() . ' - ' . $tournament_name;
+        $args['amount']                      = $invoice->amount * 100;
+        $args['currency']                    = $this->racketmanager->currency_code;
+        $args['payment_method_types']        = array('card');
+        $args['statement_descriptor_suffix'] = $tournament_name;
+        $args['receipt_email']               = $player->get_email();
+        $stripe_details                      = new Stripe_Settings( $this->racketmanager );
+        // Ensure Stripe classes are available via Composer autoloading.
+        if ( ! class_exists( StripeClient::class ) ) {
+            throw new Stripe_API_Exception( __( 'Stripe client is not installed', 'racketmanager' ) );
+        }
+        $stripe = new StripeClient( $stripe_details->api_secret_key );
+        try {
+            // Create a PaymentIntent with amount and currency
+            $payment_intent = $stripe->paymentIntents->create( $args );
+        } catch ( ApiErrorException $e ) {
+            throw new Stripe_API_Exception( $e->getMessage() );
+        }
+        if ( $payment_intent ) {
+            $reference = $payment_intent->id;
+            $invoice->set_payment_reference( $reference );
+            $this->invoice_repository->save( $invoice );
+        }
+        return $payment_intent->client_secret;
+    }
+
 
 }

@@ -71,9 +71,9 @@ class Competition_Entry_Service {
     public function notify_team_entry_open( ?int $competition_id, ?int $season ): object {
         $competition    = $this->competition_service->get_by_id( $competition_id );
         $current_season = $this->competition_service->is_season_valid_for_competition( $competition, $season );
-        $msg         = null;
-        $return      = new stdClass();
-        $season_dtls = (object) $current_season;
+        $msg            = null;
+        $return         = new stdClass();
+        $season_dtls    = (object) $current_season;
         if ( $competition->is_league ) {
             $events = $this->competition_service->get_events_for_competition( $competition->get_id(), $season );
             foreach ( $events as $event ) {
@@ -83,9 +83,9 @@ class Competition_Entry_Service {
                     $msg[]         = __( 'No leagues found for event', 'racketmanager' ) . ' ' . $event->name;
                 } elseif ( count( $event->get_seasons() ) > 1 ) {
                     $constitution = $event->get_constitution( array(
-                            'season' => $season,
-                            'count'  => true,
-                        ) );
+                        'season' => $season,
+                        'count'  => true,
+                    ) );
                     if ( ! $constitution ) {
                         $return->error = true;
                         $msg[]         = __( 'Constitution not set', 'racketmanager' ) . ' ' . $event->name;
@@ -121,15 +121,15 @@ class Competition_Entry_Service {
                     $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
                     $action_url      = $url . seo_url( $club->shortcode ) . '/';
                     $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
-                            'email_subject'   => $email_subject,
-                            'from_email'      => $from_email,
-                            'action_url'      => $action_url,
-                            'organisation'    => $organisation_name,
-                            'is_championship' => $is_championship,
-                            'competition'     => $competition_name,
-                            'addressee'       => $match_secretary->display_name,
-                            'season_dtls'     => $season_dtls,
-                        ), 'email' );
+                        'email_subject'   => $email_subject,
+                        'from_email'      => $from_email,
+                        'action_url'      => $action_url,
+                        'organisation'    => $organisation_name,
+                        'is_championship' => $is_championship,
+                        'competition'     => $competition_name,
+                        'addressee'       => $match_secretary->display_name,
+                        'season_dtls'     => $season_dtls,
+                    ), 'email' );
                     wp_mail( $email_to, $email_subject, $email_message, $headers );
                     ++ $messages_sent;
                 }
@@ -221,16 +221,16 @@ class Competition_Entry_Service {
                 $email_to        = $match_secretary->display_name . ' <' . $match_secretary->email . '>';
                 $action_url      = $url . seo_url( $club->shortcode ) . '/';
                 $email_message   = $this->racketmanager->shortcodes->load_template( 'competition-entry-open', array(
-                        'email_subject'   => $email_subject,
-                        'from_email'      => $from_email,
-                        'action_url'      => $action_url,
-                        'organisation'    => $organisation_name,
-                        'is_championship' => $is_championship,
-                        'competition'     => $competition_name,
-                        'addressee'       => $match_secretary->display_name,
-                        'season_dtls'     => $season_dtls,
-                        'days_remaining'  => $days_remaining,
-                    ), 'email' );
+                    'email_subject'   => $email_subject,
+                    'from_email'      => $from_email,
+                    'action_url'      => $action_url,
+                    'organisation'    => $organisation_name,
+                    'is_championship' => $is_championship,
+                    'competition'     => $competition_name,
+                    'addressee'       => $match_secretary->display_name,
+                    'season_dtls'     => $season_dtls,
+                    'days_remaining'  => $days_remaining,
+                ), 'email' );
                 wp_mail( $email_to, $email_subject, $email_message, $headers );
                 ++ $messages_sent;
             }

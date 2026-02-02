@@ -536,13 +536,15 @@ class Shortcodes {
         $age_groups  = Util_Lookup::get_age_groups();
         $filename    = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';
 
-        return $this->load_template( $filename, array(
-                                                      'clubs'  => $clubs,
-                                                      'events' => $events,
-                                                      'event_types' => $event_types,
-                                                      'age_groups'  => $age_groups,
-                                                      )
-                                    );
+        return $this->load_template(
+            $filename,
+            array(
+                'clubs'       => $clubs,
+                'events'      => $events,
+                'event_types' => $event_types,
+                'age_groups'  => $age_groups,
+                )
+        );
     }
     /**
      * Load template for user display. First, the current theme directory is checked for a template

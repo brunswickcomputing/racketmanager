@@ -15,10 +15,12 @@ import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
  *
  * @param {string|number} tournamentEntry
  * @param {string|number} invoiceId
+ * @param {string|number} tournamentId
+ * @param {string|number} playerId
  * @param {(output:string)=>void} [callback]
  * @returns {Promise<string>|void}
  */
-export async function createPaymentRequest(tournamentEntry, invoiceId, callback) {
+export async function createPaymentRequest(tournamentEntry, invoiceId, tournamentId, playerId, callback) {
   const hasCallback = typeof callback === 'function';
 
   // If using legacy-style callback, mirror racketmanager.legacy.js behavior closely.
@@ -35,6 +37,8 @@ export async function createPaymentRequest(tournamentEntry, invoiceId, callback)
       data: {
         tournament_entry: tournamentEntry,
         invoiceId: invoiceId,
+        playerId: playerId,
+        tournament_id: tournamentId,
         action: 'racketmanager_tournament_payment_create',
         security: getAjaxNonce(),
       },

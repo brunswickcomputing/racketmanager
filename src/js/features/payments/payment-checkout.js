@@ -55,8 +55,10 @@ export function initializeTournamentCheckout() {
 async function initialize(checkoutBtn) {
   try {
     const tournamentEntry = jQuery('#tournamentEntryId').val();
+    const tournamentId = jQuery('#tournamentId').val();
+    const playerId = jQuery('#playerId').val();
     const invoiceId = jQuery('#invoiceId').val();
-    const clientSecret = await createPaymentRequest(tournamentEntry, invoiceId);
+    const clientSecret = await createPaymentRequest(tournamentEntry, invoiceId, tournamentId, playerId);
     createPaymentBlock(clientSecret);
   } catch (err) {
     console.error(err);

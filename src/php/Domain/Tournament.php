@@ -1872,4 +1872,8 @@ final class Tournament {
         }
         return $return;
     }
+
+    public function get_name(): string {
+        return $this->name;
+    }
 }

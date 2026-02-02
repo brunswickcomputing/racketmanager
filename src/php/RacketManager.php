@@ -183,8 +183,8 @@ class RacketManager {
             add_action( 'rm_calculate_team_ratings', array( $this->competition_service, 'calculate_team_ratings' ), 10, 3 );
             add_action( 'rm_notify_team_entry_open', array( $this->competition_entry_service, 'notify_team_entry_open' ), 10, 2 );
             add_action( 'rm_notify_team_entry_reminder', array( $this->competition_entry_service, 'notify_team_entry_reminder' ), 10, 2 );
-            add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ) );
-            add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
+            add_action( 'rm_notify_tournament_entry_open', array( $this->competition_entry_service, 'notify_tournament_entry_open' ) );
+            add_action( 'rm_notify_tournament_entry_reminder', array( $this->competition_entry_service, 'notify_tournament_entry_open_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
             add_action( 'rm_send_invoices', array( $this->finance_service, 'send_invoices' ) );
         }
@@ -501,39 +501,7 @@ class RacketManager {
             $tournament?->calculate_player_team_ratings();
         }
     }
-    /**
-     * Notify tournament entry open and lock fees
-     *
-     * @param int $tournament_id tournament id.
-     *
-     * @return void
-     */
-    public function notify_tournament_entry_open( int $tournament_id ): void {
-        if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
-            if ( $tournament ) {
-                $tournament->notify_entry_open();
-                $tournament->fees = $tournament->get_fees();
-                if ( ! empty( $tournament->fees->id ) ) {
-                    $charge = get_charge( $tournament->fees->id );
-                    $charge?->set_status('final');
-                }
-            }
-        }
-    }
-    /**
-     * Notify tournament entry reminder
-     *
-     * @param int $tournament_id tournament id.
-     *
-     * @return void
-     */
-    public function notify_tournament_entry_reminder( int $tournament_id ): void {
-        if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
-            $tournament?->notify_entry_reminder();
-        }
-    }
+
     /**
      * Notify tournament finalists
      *

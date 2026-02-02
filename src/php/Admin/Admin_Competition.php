@@ -289,7 +289,7 @@ final class Admin_Competition extends Admin_Display {
                 $fee_event       = 0;
                 $fee_status      = null;
                 $fee_id          = null;
-                $charges         = $racketmanager->get_charges(
+                $charges         = $this->finance_service->get_charges_by_criteria(
                     array(
                         'competition' => $competition_id,
                         'season'      => $season,

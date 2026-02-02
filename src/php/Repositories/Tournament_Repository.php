@@ -72,4 +72,59 @@ class Tournament_Repository {
         return $tournament;
 
     }
+
+    public function get_previous_tournament_players_with_optin( int $tournament_id, int $limit = 1, bool $entered = false ): array {
+        $competitions_table       = $this->wpdb->prefix . 'racketmanager_competitions';
+        $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
+        $users_table              = $this->wpdb->prefix . 'users';
+        $usermeta_table           = $this->wpdb->prefix . 'usermeta';
+        $sql                      = "SELECT DISTINCT u.display_name as fullname, u.user_email as email
+         FROM `$users_table` u
+         JOIN `$tournament_entries_table` te ON u.ID = te.player_id
+         JOIN `$usermeta_table` um_optin ON u.ID = um_optin.user_id
+         JOIN `$this->table_name` t ON te.tournament_id = t.id
+         JOIN `$competitions_table` c ON t.competition_id = c.id
+         JOIN (
+               SELECT prev_t.id
+               FROM `$this->table_name` prev_t
+               JOIN `$competitions_table` prev_c ON prev_t.competition_id = prev_c.id
+               WHERE prev_c.age_group = (
+                   SELECT age_group
+                   FROM `$competitions_table` c2
+                   JOIN `$this->table_name` t2 ON c2.id = t2.competition_id
+                   WHERE t2.id = %d
+               )
+               AND prev_t.id < %d
+               ORDER BY prev_t.date_start DESC
+               LIMIT %d
+         ) AS last_two ON te.tournament_id = last_two.id
+         WHERE um_optin.meta_key = 'racketmanager_opt_in'
+           AND um_optin.meta_value = '1'
+        ";
+        if ( $entered ) {
+            $sql .= $this->wpdb->prepare( "
+            AND u.ID NOT IN (
+                SELECT player_id
+                FROM `$tournament_entries_table`
+                WHERE tournament_id = %d
+            )",
+                $tournament_id
+            );
+        }
+        $sql .= " ORDER BY u.display_name";
+
+        $query   = $this->wpdb->prepare(
+            $sql,
+            $tournament_id,
+            $tournament_id,
+            $limit
+        );
+        $players = wp_cache_get( md5( $sql ), 'tournament_players' );
+        if ( ! $players ) {
+            $players = $this->wpdb->get_results( $query );
+            wp_cache_set( md5( $sql ), $players, 'tournament_players' );
+        }
+
+        return $players;
+    }
 }

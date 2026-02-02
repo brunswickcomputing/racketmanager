@@ -51,7 +51,7 @@ require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
                             <a href="<?php echo esc_attr( $invoice->id ); ?>/"><?php echo esc_html( $invoice->invoice_number ); ?></a>
                         </div>
                         <div class="col-6 col-md-3">
-                            <span class=""><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season ); ?></span>
+                            <span class=""><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></span>
                         </div>
                         <div class="col-2 text-end">
                             <span class=""><?php the_currency_amount( $invoice->amount ); ?></span>

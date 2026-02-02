@@ -45,8 +45,6 @@ class Ajax_Tournament extends Ajax {
         add_action( 'wp_ajax_nopriv_racketmanager_tournament_entry', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_tournament_payment_create', array( &$this, 'tournament_payment_create' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_tournament_payment_create', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_update_payment', array( &$this, 'update_payment' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_update_payment', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_tournament_withdrawal', array( &$this, 'tournament_withdrawal' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_tournament_withdrawal', array( &$this, 'logged_out_modal' ) );
         add_action( 'wp_ajax_racketmanager_confirm_tournament_withdrawal', array( &$this, 'confirm_tournament_withdrawal' ) );
@@ -292,28 +290,6 @@ class Ajax_Tournament extends Ajax {
         }
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         wp_die();
-    }
-
-    /**
-     * Update payment information after payment attempt
-     *
-     * @return void
-     */
-    public function update_payment(): void {
-        $nonce     = 'racketmanager_nonce';
-        $action    = 'payment-update';
-        $validator = new Validator_Tournament();
-        $validator = $validator->check_security_token( $nonce, $action );
-        if ( empty( $validator->error ) ) {
-            $order_id          = $_POST['orderId'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $intent_id         = $_POST['paymentIntent'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $payment_reference = $_POST['paymentReference'] ?? null; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $invoice           = get_invoice( intval( $order_id ) );
-            $invoice->update_payment( $intent_id, $payment_reference );
-            wp_send_json_success();
-        } else {
-            wp_send_json_error( $validator->msg, $validator->status );
-        }
     }
 
     /**

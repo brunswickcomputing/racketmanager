@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\RacketManager;
+
 /**
  * Class to implement the Stripe_Settings object
  */

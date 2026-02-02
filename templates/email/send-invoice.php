@@ -12,9 +12,10 @@ namespace Racketmanager;
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */
+/** @var string $addressee */
 require 'email-header.php';
 ?>
-            <?php $salutation_link = __( 'Match Secretary', 'racketmanager' ); ?>
+            <?php $salutation_link = $addressee; ?>
             <?php require $salutation; ?>
             <!-- introduction -->
             <div style="font-size: 16px; color: #000; background-color: #fff; padding: 0 20px;">

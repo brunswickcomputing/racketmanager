@@ -10,7 +10,9 @@ namespace Racketmanager\Ajax;
 
 use Racketmanager\Exceptions\Clubs_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use function Racketmanager\event_dropdown;
@@ -274,22 +276,22 @@ class Ajax_Admin extends Ajax {
      * @see templates/email/competition-entry-open.php
      */
     public function notify_tournament_entries_open(): void {
-        $return = $this->check_security_token();
-        if ( ! isset( $return->error ) ) {
-            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : '';
-            $tournament    = get_tournament( $tournament_id );
-            if ( $tournament ) {
-                $return = $tournament->notify_entry_open();
-            } else {
-                $return->error = true;
-                $return->msg   = __( 'Tournament not found', 'racketmanager' );
+        $validator = new Validator();
+        $validator = $validator->check_security_token();
+        if ( ! $validator->error ) {
+            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
+            try {
+                $result = $this->competition_entry_service->notify_tournament_entry_open( $tournament_id );
+                if ( $result ) {
+                    wp_send_json_success( sprintf( __( '%d notifications sent', 'racketmanager' ), $result ) );
+                } else {
+                    $validator->msg = __( 'Notifications not sent', 'racketmanager' );
+                }
+            } catch ( Tournament_Not_Found_Exception|Invalid_Argument_Exception $e ) {
+                $validator->msg = $e->getMessage();
             }
         }
-        if ( isset( $return->error ) ) {
-            wp_send_json_error( $return->msg, 500 );
-        } else {
-            wp_send_json_success( $return->msg );
-        }
+        wp_send_json_error( $validator->msg, 500 );
     }
     /**
      * Notify teams of next match

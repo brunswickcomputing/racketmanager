@@ -54,7 +54,7 @@ if ( ! empty( $from_email ) ) {
 }
 require $closing;
 switch ( $type ) {
-    case 'player':
+    case 'open':
     case 'reminder':
     $paragraph_text       = sprintf(
             /* translators: %1$s: account link */

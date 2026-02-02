@@ -53,9 +53,10 @@ final class Validator_Finance extends Validator_Config {
      */
     public function status( ?string $status ): object {
         if ( ! $status ) {
-            $this->error      = true;
-            $this->err_flds[] = 'status';
-            $this->err_msgs[] = __( 'Status must be set', 'racketmanager' );
+            $error_field   = 'status';
+            $error_message = __( 'Status must be set', 'racketmanager' );
+            $status        = 400;
+            $this->set_errors( $error_field, $error_message, $status );
         }
 
         return $this;

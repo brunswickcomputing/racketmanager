@@ -314,9 +314,10 @@ class Validator {
      */
     public function season( ?string $season ): object {
         if ( empty( $season ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'season';
-            $this->err_msgs[] = __( 'Season is required', 'racketmanager' );
+            $error_field   = 'season';
+            $error_message = __( 'Season is required', 'racketmanager' );
+            $status        = 400;
+            $this->set_errors( $error_field, $error_message, $status );
         }
         return $this;
     }
@@ -376,10 +377,11 @@ class Validator {
      * @return object $validation updated validation object.
      */
     public function competition( int|string|null $competition, bool $exists = true ): object {
+        $error_field   = 'competition';
         if ( empty( $competition ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'competition';
-            $this->err_msgs[] = __( 'Competition not specified', 'racketmanager' );
+            $error_message = __( 'Competition not specified', 'racketmanager' );
+            $status        = 404;
+            $this->set_errors( $error_field, $error_message, $status );
         } else {
             if ( is_int( $competition ) ) {
                 $competition = $this->competition_service->get_by_id( $competition );
@@ -388,22 +390,21 @@ class Validator {
             }
             if ( ! $competition ) {
                 if ( $exists ) {
-                    $this->error      = true;
-                    $this->err_flds[] = 'event';
-                    $this->err_msgs[] = __( 'Competition not found', 'racketmanager' );
-                    $this->status     = 404;
+                    $error_message = __( 'Competition not found', 'racketmanager' );
+                    $status        = 404;
+                    $this->set_errors( $error_field, $error_message, $status );
                 }
             } else {
                 if ( ! $exists ) {
-                    $this->error      = true;
-                    $this->err_flds[] = 'competition';
-                    $this->err_msgs[] = __( 'Competition already found', 'racketmanager' );
-                    $this->status     = 404;
+                    $error_message = __( 'Competition already found', 'racketmanager' );
+                    $status        = 400;
+                    $this->set_errors( $error_field, $error_message, $status );
                 }
             }
         }
         return $this;
     }
+
     /**
      * Compare values
      *
@@ -411,16 +412,19 @@ class Validator {
      * @param int|string|null $original original value.
      * @return object $validation updated validation object.
      */
-    public function compare( int|string|null $passed, int|string|null $original ): object {
+    public function compare( int|string|null $passed, int|string|null $original, $error_field = 'compare' ): object {
         if ( empty( $passed ) ) {
-            $this->error      = true;
-            $this->err_msgs[] = __( 'New value not found', 'racketmanager' );
+            $error_message = __( 'New value not found', 'racketmanager' );
+            $status        = 400;
+            $this->set_errors( $error_field, $error_message, $status );
         } elseif ( empty( $original ) ) {
-            $this->error      = true;
-            $this->err_msgs[] = __( 'Original value not found', 'racketmanager' );
+            $error_message = __( 'Original value not found', 'racketmanager' );
+            $status        = 400;
+            $this->set_errors( $error_field, $error_message, $status );
         } elseif( $passed !== $original ) {
-            $this->error      = true;
-            $this->err_msgs[] = __( 'Passed values do not match', 'racketmanager' );
+            $error_message = __( 'Passed values do not match', 'racketmanager' );
+            $status        = 400;
+            $this->set_errors( $error_field, $error_message, $status );
         }
         return $this;
     }

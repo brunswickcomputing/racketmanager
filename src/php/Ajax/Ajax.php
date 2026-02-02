@@ -12,6 +12,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
@@ -30,6 +31,7 @@ class Ajax {
     protected Competition_Service $competition_service;
     protected Club_Service $club_service;
     protected Player_Service $player_service;
+    protected Finance_Service $finance_service;
     protected Registration_Service $registration_service;
     protected Team_Service $team_service;
     protected RacketManager $racketmanager;
@@ -44,6 +46,7 @@ class Ajax {
         $this->competition_entry_service = $c->get( 'competition_entry_service' );
         $this->competition_service       = $c->get( 'competition_service' );
         $this->club_service              = $c->get( 'club_service' );
+        $this->finance_service           = $c->get( 'finance_service' );
         $this->player_service            = $c->get( 'player_service' );
         $this->registration_service      = $c->get( 'registration_service' );
         $this->team_service              = $c->get( 'team_service' );

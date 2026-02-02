@@ -138,4 +138,76 @@ class Util_Messages {
         return __( 'Invalid team type', 'racketmanager' );
     }
 
+    public static function charge_not_found( ?int $charge_id = null ): string {
+        if ( $charge_id ) {
+            return sprintf( __( 'Charge %d not found', 'racketmanager' ), $charge_id );
+        } else {
+            return __( 'Charge not found', 'racketmanager' );
+        }
+    }
+
+    public static function charge_has_invoices( ?int $charge_id = null ): string {
+        if ( $charge_id ) {
+            return sprintf( __( 'Charge %d still has invoices', 'racketmanager' ), $charge_id );
+        } else {
+            return __( 'Charge still has invoices', 'racketmanager' );
+        }
+    }
+
+    public static function charge_deleted( ?int $charge_id = null ): string {
+        if ( $charge_id ) {
+            return sprintf( __( 'Charge %d deleted', 'racketmanager' ), $charge_id );
+        } else {
+            return __( 'Charge deleted', 'racketmanager' );
+        }
+    }
+
+    public static function charge_not_deleted( ?int $charge_id = null ): string {
+        if ( $charge_id ) {
+            return sprintf( __( 'Charge %d not deleted', 'racketmanager' ), $charge_id );
+        } else {
+            return __( 'Charge not deleted', 'racketmanager' );
+        }
+    }
+
+    public static function no_updates(): string {
+        return __( 'No updates', 'racketmanager' );
+    }
+
+    public static function invoice_not_found( ?int $invoice_id = null ): string {
+        if ( $invoice_id ) {
+            return sprintf( __( 'Invoice with ID %s not found', 'racketmanager' ), $invoice_id );
+        } else {
+            return __( 'Invoice not found', 'racketmanager' );
+        }
+    }
+
+    public static function no_billing_details(): string {
+        return __( 'No billing details', 'racketmanager' );
+    }
+
+    public static function missing_action_parameter(): string {
+        return __( 'Action parameter missing', 'racketmanager' );
+    }
+
+    public static function invalid_parameter( bool $status ): string {
+        return sprintf( __( 'Status %s is an invalid value', 'racketmanager' ), $status );
+    }
+
+    public static function tournament_not_found( ?int $tournament_id ): string {
+        if ( $tournament_id ) {
+            return sprintf( __( 'Tournament with ID %s not found', 'racketmanager' ), $tournament_id );
+        } else {
+            return __( 'Tournament not found', 'racketmanager' );
+        }
+    }
+
+    public static function secretary_email_not_found( string $string ): string {
+        return sprintf( __( '%s secretary email not found', 'racketmanager' ), ucfirst( $string ) );
+    }
+
+    public static function purchase_order_unchanged(): string {
+        return __( 'PO not changedg', 'racketmanager' );
+    }
+
 }

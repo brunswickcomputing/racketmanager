@@ -88,10 +88,10 @@ class Competition_Service {
         return $this->league_team_repository->get_clubs_by_event_id( $event->get_id(), $season );
     }
 
-    public function get_teams_for_event( ?int $event_id, ?int $season = null ): array {
+    public function get_teams_for_event( ?int $event_id, ?int $season = null, ?int $club_id = null ): array {
         $event = $this->get_event_by_id( $event_id );
 
-        return $this->league_team_repository->get_by_event_id( $event->get_id(), $season );
+        return $this->league_team_repository->get_by_event_id( $event->get_id(), $season, null, $club_id );
     }
 
     public function get_by_id( null|string|int $competition_id ): Competition {

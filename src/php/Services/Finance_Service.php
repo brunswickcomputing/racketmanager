@@ -491,4 +491,17 @@ class Finance_Service {
 
         return $this->charge_repository->save( $charge );
     }
+
+    public function set_purchase_order_for_invoice( ?int $invoice_id, ?string $purchase_order ): bool {
+        $invoice = $this->invoice_repository->find_by_id( $invoice_id );
+        if ( ! $invoice ) {
+            throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
+        }
+        if ( $purchase_order === $invoice->get_purchase_order() ) {
+            throw new Invalid_Argument_Exception( Util_Messages::purchase_order_unchanged() );
+        }
+        $invoice->set_purchase_order( $purchase_order );
+        return $this->invoice_repository->save( $invoice );
+    }
+
 }

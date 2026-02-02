@@ -19,6 +19,7 @@ use Racketmanager\Domain\Message;
 use Racketmanager\Rest\Rest_Routes;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Login;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Rewrites;
@@ -140,6 +141,7 @@ class RacketManager {
     public Simple_Container $container;
     private Competition_Service $competition_service;
     private Competition_Entry_Service $competition_entry_service;
+    private Finance_Service $finance_service;
     private Player_Service $player_service;
 
     /**
@@ -157,9 +159,10 @@ class RacketManager {
             // Boot the dependency injection container and register services.
             $this->container = Container_Bootstrap::boot( $this );
             // Resolve commonly used services from the container.
-            $this->player_service            = $this->container->get( 'player_service' );
             $this->competition_entry_service = $this->container->get( 'competition_entry_service' );
             $this->competition_service       = $this->container->get( 'competition_service' );
+            $this->finance_service           = $this->container->get( 'finance_service' );
+            $this->player_service            = $this->container->get( 'player_service' );
 
             add_action( 'widgets_init', array( &$this, 'register_widget' ) );
             add_action( 'init', array( &$this, 'racketmanager_locale' ) );
@@ -183,7 +186,7 @@ class RacketManager {
             add_action( 'rm_notify_tournament_entry_open', array( &$this, 'notify_tournament_entry_open' ) );
             add_action( 'rm_notify_tournament_entry_reminder', array( &$this, 'notify_tournament_entry_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
-            add_action( 'rm_send_invoices', array( &$this, 'send_invoices' ) );
+            add_action( 'rm_send_invoices', array( $this->finance_service, 'send_invoices' ) );
         }
         self::$instance = $this;
     }
@@ -544,19 +547,7 @@ class RacketManager {
             $tournament?->notify_finalists();
         }
     }
-    /**
-     * Send invoices
-     *
-     * @param int $charge_id charge id.
-     *
-     * @return void
-     */
-    public function send_invoices( int $charge_id ): void {
-        if ( $charge_id ) {
-            $charge = get_charge( $charge_id );
-            $charge?->send_invoices();
-        }
-    }
+
     /**
      * Get League standings function
      *

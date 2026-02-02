@@ -93,22 +93,14 @@ $charges = $finance_charges;
                         <?php
                         $total_amount = 0;
                         foreach ( $charges as $charge ) {
-                            $charge_amount = 0;
-                            if ( 'final' === $charge->status ) {
-                                $invoices = $charge->get_invoices();
-                                foreach ( $invoices as $invoice ) {
-                                    $charge_amount += $invoice->amount;
-                                }
-                            }
-                            $charge->total = $charge_amount;
-                            $total_amount += $charge_amount;
+                            $total_amount += $charge->total;
                             ?>
                             <tr>
                                 <td class="check-column">
                                     <label for="charge-<?php echo esc_html( $charge->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label>
                                     <input type="checkbox" value="<?php echo esc_html( $charge->id ); ?>" name="charge[<?php echo esc_html( $charge->id ); ?>]" id="charge-<?php echo esc_html( $charge->id ); ?>" />
                                 </td>
-                                <td class=""><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charge&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->season ) . ' ' . esc_html( ucfirst( $charge->competition->name ) ); ?></a></td>
+                                <td class=""><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=charge&amp;charges=<?php echo esc_html( $charge->id ); ?>"><?php echo esc_html( $charge->name ); ?></a></td>
                                 <td class=""><?php echo esc_html( $charge->status ); ?></td>
                                 <td class="text-end">
                                     <?php

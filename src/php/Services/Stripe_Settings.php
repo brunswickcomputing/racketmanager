@@ -44,12 +44,18 @@ final class Stripe_Settings {
      * @var string|null
      */
     public ?string $api_endpoint_key;
+    private RacketManager $racketmanager;
+    private Finance_Service $finance_service;
+
     /**
      * Constructor
      */
-    public function __construct() {
-        global $racketmanager;
-        $billing = $racketmanager->get_options( 'billing' );
+    public function __construct( $plugin_instance ) {
+        $this->racketmanager   = $plugin_instance;
+        $c                     = $this->racketmanager->container;
+        $this->finance_service = $c->get( 'finance_service' );
+
+        $billing = $this->racketmanager->get_options( 'billing' );
         if ( $billing ) {
             $this->currency = $billing['billingCurrency'] ?? null;
             $this->is_live  = $billing['stripe_is_live'] ?? false;
@@ -72,8 +78,7 @@ final class Stripe_Settings {
      * @return void
      */
     public function update_payment(string $payment_ref, string $status = 'paid' ): void {
-        global $racketmanager;
-        $invoices = $racketmanager->get_invoices( array( 'reference' => $payment_ref ) );
+        $invoices = $this->finance_service->get_invoices_by_criteria( array( 'reference' => $payment_ref ) );
         if ( 1 === count( $invoices ) ) {
             $invoice = $invoices[0];
             if ( $status !== $invoice->status ) {

@@ -793,7 +793,7 @@ class Shortcodes_Competition extends Shortcodes {
             }
         }
         if ( $valid ) {
-            $stripe_details = new Stripe_Settings();
+            $stripe_details = new Stripe_Settings( $this->racketmanager );
             $filename       = ( ! empty( $template ) ) ? 'tournament-payment-' . $template : 'tournament-payment';
 
             return $this->load_template(

@@ -28,7 +28,7 @@ $site_url .= '/';
 
 define( 'RACKETMANAGER', 'racketmanager' );
 define( 'RACKETMANAGER_VERSION', '10.0.0' );
-define( 'RACKETMANAGER_DBVERSION', '10.0.10' );
+define( 'RACKETMANAGER_DBVERSION', '10.0.11' );
 define( 'RACKETMANAGER_SITE', $site_url );
 define( 'RACKETMANAGER_URL', esc_url( plugin_dir_url( __FILE__ ) ) );
 define( 'RACKETMANAGER_PATH', plugin_dir_path( __FILE__ ) );

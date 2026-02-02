@@ -16,6 +16,11 @@ namespace Racketmanager;
 /** @var array  $clubs */
 /** @var array  $charges */
 $invoices = $finance_invoices;
+if ( 'club-invoices' === $racketmanager_tab ) {
+    $billable_type = __( 'Club', 'racketmanager' );
+} else {
+    $billable_type = __( 'Player', 'racketmanager' );
+}
 ?>
 <div class="container">
     <div class="row gx-3 align-items-center mb-3">
@@ -31,7 +36,7 @@ $invoices = $finance_invoices;
                             <?php
                             foreach ( $charges as $charge ) {
                                 ?>
-                                <option value="<?php echo esc_html( $charge->id ); ?>" <?php selected( $charge->id, $charge_id ); ?>><?php echo esc_html( $charge->season ) . ' ' . esc_html( ucfirst( $charge->competition->name ) ); ?></option>
+                                <option value="<?php echo esc_html( $charge->id ); ?>" <?php selected( $charge->id, $charge_id ); ?>><?php echo esc_html( $charge->name ); ?></option>
                                 <?php
                             }
                             ?>
@@ -86,8 +91,16 @@ $invoices = $finance_invoices;
                     <div class="col-auto">
                         <label>
                             <select class="form-select" name="action">
-                                <option value="" selected disabled><?php esc_html_e( 'Change Status', 'racketmanager' ); ?></option>
-                                <option value="paid"><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
+                                <option selected disabled><?php esc_html_e( 'Choose', 'racketmanager' ); ?></option>
+                                <optgroup label="<?php esc_html_e( 'Status', 'racketmanager' ); ?>">
+                                    <option value="draft"><?php esc_html_e( 'Draft', 'racketmanager' ); ?></option>
+                                    <option value="final"><?php esc_html_e( 'Final', 'racketmanager' ); ?></option>
+                                    <option value="paid"><?php esc_html_e( 'Paid', 'racketmanager' ); ?></option>
+                                    <option value="cancelled"><?php esc_html_e( 'Cancelled', 'racketmanager' ); ?></option>
+                                </optgroup>
+                                <optgroup label="<?php esc_html_e( 'Action', 'racketmanager' ); ?>">
+                                    <option value="delete"><?php esc_html_e( 'Delete', 'racketmanager' ); ?></option>
+                                </optgroup>
                             </select>
                         </label>
                     </div>
@@ -104,7 +117,7 @@ $invoices = $finance_invoices;
                             <th class="d-none d-lg-table-cell text-center"><?php esc_html_e( 'Invoice', 'racketmanager' ); ?></th>
                             <th class="d-table-cell d-lg-none text-center"><?php esc_html_e( 'Inv', 'racketmanager' ); ?></th>
                             <th class=""><?php esc_html_e( 'Charge', 'racketmanager' ); ?></th>
-                            <th class=""><?php esc_html_e( 'Club', 'racketmanager' ); ?></th>
+                            <th class=""><?php echo esc_html( $billable_type ); ?></th>
                             <th class="text-end"><?php esc_html_e( 'Amount', 'racketmanager' ); ?></th>
                             <th class="d-none d-lg-table-cell text-center"><?php esc_html_e( 'Status', 'racketmanager' ); ?></th>
                             <th class="d-none d-lg-table-cell text-center"><?php esc_html_e( 'Date Due', 'racketmanager' ); ?></th>
@@ -118,16 +131,8 @@ $invoices = $finance_invoices;
                             <tr>
                                 <td class="check-column"><label for="invoice-<?php echo esc_html( $invoice->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $invoice->id ); ?>" name="invoice[<?php echo esc_html( $invoice->id ); ?>]" id="invoice-<?php echo esc_html( $invoice->id ); ?>" /></td>
                                 <td class="text-center"><a href="/wp-admin/admin.php?page=racketmanager-finances&amp;view=invoice&amp;invoice=<?php echo esc_html( $invoice->id ); ?>"><?php echo esc_html( $invoice->invoice_number ); ?></a></td>
-                                <td class=""><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season ); ?></td>
-                                <td class="">
-                                    <?php
-                                    if ( empty( $invoice->player ) ) {
-                                        echo esc_html( $invoice->club->shortcode );
-                                    } else {
-                                        echo esc_html( $invoice->player->display_name );
-                                    }
-                                    ?>
-                                </td>
+                                <td class=""><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></td>
+                                <td class=""><?php echo esc_html( $invoice->billable_name ); ?></td>
                                 <td class="text-end"><?php the_currency_amount( $invoice->amount ); ?></td>
                                 <td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->status ); ?></td>
                                 <td class="d-none d-lg-table-cell text-center"><?php echo esc_html( $invoice->date_due ); ?></td>

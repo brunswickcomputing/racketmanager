@@ -175,12 +175,12 @@ if ( is_user_logged_in() ) {
             </div>
         </div>
         <div id="client-details">
-            <div class="org"><h2><?php echo esc_html( $target->name ); ?></h2></div>
+            <div class="org"><h2><?php echo esc_html( $invoice->billable_name ); ?></h2></div>
             <?php
-            if ( ! empty( $target->address ) ) {
+            if ( ! empty( $invoice->billable_address ) ) {
                 ?>
                 <div class="address">
-                    <div class="street-address"><?php echo str_replace( ',', '<br />', $target->address ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
+                    <div class="street-address"><?php echo str_replace( ',', '<br />', $invoice->billable_address ); // phpcs:ignore WordPress.Security.EscapeOutput ?></div>
                 </div>
                 <?php
             }
@@ -195,16 +195,16 @@ if ( is_user_logged_in() ) {
             </div>
             <div id="invoice-items">
                 <div id="invoice-item">
-                    <h2 class="invoice-item-detail"><?php echo esc_html( ucfirst( $invoice->charge->competition->name ) . ' ' . $invoice->charge->season ); ?></h2>
+                    <h2 class="invoice-item-detail"><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></h2>
                 </div>
                 <?php
-                if ( '0.00' !== $invoice->charge->fee_competition ) {
+                if ( '0.00' !== $invoice->details->fee_competition ) {
                     ?>
                     <div id="invoice-item">
                         <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'Competition entry fee', 'racketmanager' ) ) ); ?></div>
                         <div class="invoice-item-quantity"></div>
-                        <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->charge->fee_competition ); ?></div>
-                        <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->charge->fee_competition ); ?></div>
+                        <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
+                        <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
                     </div>
                     <?php
                 }
@@ -213,10 +213,10 @@ if ( is_user_logged_in() ) {
                 foreach ( $invoice->details->events as $racketmanager_event ) {
                     ?>
                     <div id="invoice-item">
-                    <div class="invoice-item-detail"><?php echo esc_html( Util_Lookup::get_event_type( $racketmanager_event->type ) ); ?></div>
-                    <div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
-                    <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->charge->fee_event ); ?></div>
-                    <div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
+                        <div class="invoice-item-detail"><?php echo esc_html( Util_Lookup::get_event_type( $racketmanager_event->type ) ); ?></div>
+                        <div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
+                        <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_events ); ?></div>
+                        <div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
                     </div>
                     <?php
                 }

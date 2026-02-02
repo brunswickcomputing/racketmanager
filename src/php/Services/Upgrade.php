@@ -60,6 +60,7 @@ class Upgrade {
         $this->v10_0_8();
         $this->v10_0_9();
         $this->v10_0_10();
+        $this->v10_0_11();
         /*
         * Update version and dbversion
         */
@@ -282,7 +283,7 @@ class Upgrade {
 
     /**
      * Upgrade to 10.0.7
-     * Make competition season json not array
+     * Make competition season a JSON object, not array
      *
      * @return void
      */
@@ -291,10 +292,10 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $table_name = $this->wpdb->prefix . 'racketmanager_competitions';
-            $this->wpdb->query( "ALTER TABLE {$table_name} CHANGE `seasons` `seasons` JSON NULL DEFAULT NULL" );
+            $this->wpdb->query( "ALTER TABLE `$table_name` CHANGE `seasons` `seasons` JSON NULL DEFAULT NULL" );
             $updated = 0;
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-            $rows = $this->wpdb->get_results( "SELECT `id`, `seasons` FROM {$table_name}" );
+            $rows = $this->wpdb->get_results( "SELECT `id`, `seasons` FROM `$table_name`" );
             if ( empty( $rows ) ) {
                 return;
             }
@@ -329,7 +330,7 @@ class Upgrade {
                         $updated += (int) $result;
                     }
                 }
-                echo '<p>' . sprintf( 'Updated %d competition row(s) to JSON seasons.', (int) $updated ) . '</p>';
+                echo '<p>' . sprintf( 'Updated %d competition row(s) to JSON seasons.', $updated ) . '</p>';
             }
         }
     }
@@ -343,13 +344,11 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $table = $this->wpdb->prefix . 'racketmanager_events';
-            $this->wpdb->query( "ALTER TABLE {$table} CHANGE `seasons` `seasons` JSON NULL DEFAULT NULL" );
+            $this->wpdb->query( "ALTER TABLE `$table` CHANGE `seasons` `seasons` JSON NULL DEFAULT NULL" );
             // Fetch id and seasons for migration
-            $rows = $this->wpdb->get_results( "SELECT id, seasons FROM {$table}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $rows = $this->wpdb->get_results( "SELECT id, seasons FROM `$table`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             foreach ( $rows as $row ) {
                 $raw = $row->seasons;
-                $needs_update = false;
-                $json = '';
                 if ( is_null( $raw ) || $raw === '' ) {
                     $json = '[]';
                     $needs_update = true;
@@ -370,12 +369,11 @@ class Upgrade {
                         if ( is_array( $maybe ) || is_object( $maybe ) ) {
                             if ( is_object( $maybe ) ) { $maybe = (array) $maybe; }
                             $json = wp_json_encode( $maybe );
-                            $needs_update = true;
                         } else {
-                            // Fallback: treat as string but wrap to valid JSON array
+                            // Fallback: treat as string but wrap to a valid JSON array
                             $json = '[]';
-                            $needs_update = true;
                         }
+                        $needs_update = true;
                     }
                 }
                 if ( $needs_update ) {
@@ -424,7 +422,7 @@ class Upgrade {
                     $json = wp_json_encode( $settings );
                     $needs_update = true;
                 } else {
-                    // Empty or unknown; normalize to empty object
+                    // Empty or unknown; normalize to an empty object
                     $json = '{}';
                     $needs_update = true;
                 }
@@ -452,6 +450,34 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_invoices CHANGE `invoiceNumber` `invoice_number` INT NOT NULL;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.11
+     * Convert invoice table to polymorphic association
+     *
+     * @return void
+     */
+    private function v10_0_11(): void {
+        $version = '10.0.11';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $table = $this->wpdb->prefix . 'racketmanager_invoices';
+
+            // 1. Add new columns
+            $this->wpdb->query( "ALTER TABLE $table ADD `billable_id` BIGINT(20) UNSIGNED NULL AFTER `charge_id`;" );
+            $this->wpdb->query( "ALTER TABLE $table ADD `billable_type` VARCHAR(50) NULL AFTER `billable_id`;" );
+
+            // 2. Migrate existing data
+            $this->wpdb->query( "UPDATE $table SET `billable_id` = `club_id`, `billable_type` = 'club' WHERE `club_id` IS NOT NULL AND `club_id` != 0;" );
+            $this->wpdb->query( "UPDATE $table SET `billable_id` = `player_id`, `billable_type` = 'player' WHERE `player_id` IS NOT NULL AND `player_id` != 0;" );
+
+            // 3. Add index for performance
+            $this->wpdb->query( "CREATE INDEX `billable` ON $table (`billable_id`, `billable_type`);" );
+
+            // 5. Drop old columns
+            $this->wpdb->query( "ALTER TABLE $table DROP `club_id`, DROP `player_id`;" );
         }
     }
 

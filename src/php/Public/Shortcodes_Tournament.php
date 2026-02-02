@@ -31,8 +31,8 @@ class Shortcodes_Tournament extends Shortcodes {
     /**
      * Initialize shortcodes
      */
-    public function __construct() {
-        parent::__construct();
+    public function __construct( $plugin_instance ) {
+        parent::__construct( $plugin_instance );
         $this->base_tournaments = '/tournaments/';
     }
     /**

@@ -209,10 +209,7 @@ class Competition_Entry_Service {
             $is_championship         = true;
             $season_dtls->venue_name = $this->get_venue_name( $season_dtls->venue );
         }
-        $date_closing     = date_create( $season_dtls->date_closing );
-        $now              = date_create();
-        $remaining_time   = date_diff( $date_closing, $now, true );
-        $days_remaining   = $remaining_time->days;
+        $days_remaining   = $this->get_remaining_days( $season_dtls->date_closing );
         $url              = $this->racketmanager->site_url . '/entry-form/' . seo_url( $competition->get_name() ) . '/' . $season . '/';
         $competition_name = $competition->get_name() . ' ' . $season;
         $headers          = array();

@@ -10,6 +10,7 @@
 namespace Racketmanager\Domain;
 
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -311,6 +312,7 @@ final class Tournament {
     private ?string $no_notification;
     private Player_Service $player_service;
     private Competition_Service $competition_service;
+    private Finance_Service $finance_service;
 
     /**
      * Retrieve tournament instance
@@ -377,6 +379,7 @@ final class Tournament {
     public function __construct( object $tournament = null ) {
         global $racketmanager, $wp;
         $c                         = $racketmanager->container;
+        $this->finance_service     = $c->get( 'finance_service' );
         $this->player_service      = $c->get( 'player_service' );
         $this->competition_service = $c->get( 'competition_service' );
 
@@ -1534,7 +1537,7 @@ final class Tournament {
             $args['charge'] = $this->charge->id;
             $args['status'] = 'paid';
             $args['before'] = $invoice->id;
-            $prev_invoices  = $racketmanager->get_invoices( $args );
+            $prev_invoices  = $this->finance_service->get_invoices_by_criteria( $args );
             foreach ( $prev_invoices as $prev_invoice ) {
                 $paid_amount += $prev_invoice->amount;
             }
@@ -1713,7 +1716,7 @@ final class Tournament {
             $args['charge'] = $this->charge->id;
             $args['player'] = $player;
             $args['status'] = $status;
-            $payments = $racketmanager->get_invoices( $args );
+            $payments       = $this->finance_service->get_invoices_by_criteria( $args );
         } else {
             $payments = null;
         }

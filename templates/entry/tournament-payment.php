@@ -40,11 +40,13 @@ if ( $tournament_entry ) {
 }
 if ( $payment_required ) {
     ?>
+    <input type="hidden" name="playerId" id="playerId" value="<?php echo esc_attr( $player->ID ); ?>" />
     <input type="hidden" name="playerName" id="playerName" value="<?php echo esc_attr( $player->display_name ); ?>" />
     <input type="hidden" name="playerEmail" id="playerEmail" value="<?php echo esc_attr( $player->email ); ?>" />
     <input type="hidden" name="playerContactNo" id="playerContactNo" value="<?php echo esc_attr( $player->contactno ); ?>" />
     <input type="hidden" name="paymentCompleteUrl" id="paymentCompleteUrl" value="<?php echo esc_url( $payment_complete_url ); ?>" />
     <input type="hidden" name="tournamentEntryId" id="tournamentEntryId" value="<?php echo esc_attr( $tournament_entry->id ); ?>" />
+    <input type="hidden" name="tournamentId" id="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
     <input type="hidden" name="invoiceId" id="invoiceId" value="<?php echo esc_attr( $invoice_id ); ?>" />
     <input type="hidden" name="api_publishable_key" id="api_publishable_key" value="<?php echo esc_attr( $stripe->api_publishable_key ); ?>" />
     <script src="https://js.stripe.com/v3/"></script>

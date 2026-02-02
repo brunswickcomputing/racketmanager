@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
@@ -21,7 +22,6 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_competition;
-use function Racketmanager\get_invoice;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
@@ -384,30 +384,22 @@ class Shortcodes {
         if ( ! $id ) {
             $id = get_query_var( 'id' );
         }
-        if ( $id ) {
-            $invoice = get_invoice( $id );
-            if ( $invoice ) {
-                if ( empty( $invoice->club ) ) {
-                    $target       = get_player( $invoice->player );
-                    $target->name = $invoice->player->display_name;
-                } else {
-                    $target = get_club( $invoice->club );
-                }
-                $billing  = $racketmanager->get_options( 'billing' );
-                $filename = ( ! empty( $template ) ) ? 'invoice-' . $template : 'invoice';
-                return $this->load_template(
-                    $filename,
-                    array(
-                        'organisation_name' => $racketmanager->site_name,
-                        'invoice'           => $invoice,
-                        'target'            => $target,
-                        'billing'           => $billing,
-                        'invoice_number'    => $invoice->invoice_number,
-                    )
-                );
-            }
+        try {
+            $invoice = $this->finance_service->get_full_invoice_details( $id );
+        } catch ( Invoice_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage() );
         }
-        return $this->return_error( __( 'No invoice found', 'racketmanager' ) );
+        $billing  = $racketmanager->get_options( 'billing' );
+        $filename = ( ! empty( $template ) ) ? 'invoice-' . $template : 'invoice';
+        return $this->load_template(
+            $filename,
+            array(
+                'organisation_name' => $racketmanager->site_name,
+                'invoice'           => $invoice,
+                'billing'           => $billing,
+                'invoice_number'    => $invoice->invoice->get_invoice_number(),
+            )
+        );
     }
     /**
      * Function to show purchase order
@@ -432,22 +424,20 @@ class Shortcodes {
         if ( ! $id ) {
             $id = get_query_var( 'id' );
         }
-        if ( $id ) {
-            $invoice = get_invoice( $id );
-            if ( $invoice ) {
-                $filename = ( ! empty( $template ) ) ? 'purchase-order-modal-' . $template : 'purchase-order-modal';
-                return $this->load_template(
-                    $filename,
-                    array(
-                        'invoice' => $invoice,
-                        'modal'   => $modal,
-                    ),
-                    'club'
-                );
-            }
+        try {
+            $invoice = $this->finance_service->get_invoice( $id );
+        } catch ( Invoice_Not_Found_Exception $e ) {
+            return $this->return_error( $e->getMessage(), 'modal' );
         }
-        $msg = __( 'Invoice not found', 'racketmanager' );
-        return $this->return_error( $msg, 'modal' );
+        $filename = ( ! empty( $template ) ) ? 'purchase-order-modal-' . $template : 'purchase-order-modal';
+        return $this->load_template(
+            $filename,
+            array(
+                'invoice' => $invoice,
+                'modal'   => $modal,
+            ),
+            'club'
+        );
     }
     /**
      * Function to show memberships

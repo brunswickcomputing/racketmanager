@@ -300,7 +300,7 @@ final class Tournament {
      *
      * @var string
      */
-    private string $entry_link;
+    public string $entry_link;
     /**
      * Information.
      *

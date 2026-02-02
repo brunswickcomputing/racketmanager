@@ -26,6 +26,7 @@ use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Tournament_Repository;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use Racketmanager\Util\Util_Lookup;
@@ -47,19 +48,23 @@ class Competition_Entry_Service {
     private Player_Service $player_service;
     private RacketManager $racketmanager;
     private Team_Repository $team_repository;
+    private Tournament_Repository $tournament_repository;
+    private Finance_Service $finance_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Club_Service $club_service, Competition_Service $competition_service, Player_Service $player_service ) {
+    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Tournament_Repository $tournament_repository, Club_Service $club_service, Competition_Service $competition_service, Finance_Service $finance_service, Player_Service $player_service ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_repository        = $club_repository;
         $this->club_service           = $club_service;
         $this->competition_service    = $competition_service;
         $this->league_repository      = $league_repository;
         $this->league_team_repository = $league_team_repository;
+        $this->tournament_repository  = $tournament_repository;
         $this->team_repository        = $team_repository;
+        $this->finance_service        = $finance_service;
         $this->player_service         = $player_service;
     }
 

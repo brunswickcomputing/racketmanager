@@ -73,8 +73,8 @@ if ( $event->is_championship ) {
                             <?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
                             <tr class="<?php echo esc_html( $class ); ?>">
                                 <th class="player-name" scope="row">
-                                    <a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $playerstat->get_fullname() ) ); ?>/">
-                                        <span class="nav__link"><?php echo esc_html( $playerstat->get_fullname() ); ?></span>
+                                    <a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $playerstat->fullname ) ); ?>/">
+                                        <span class="nav__link"><?php echo esc_html( $playerstat->fullname ); ?></span>
                                     </a>
                                 </th>
                                 <?php

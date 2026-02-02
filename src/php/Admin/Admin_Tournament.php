@@ -11,6 +11,7 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\Util\Util;
@@ -395,14 +396,12 @@ final class Admin_Tournament extends Admin_Championship {
         $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
         if ( $tournament_id ) {
             $edit      = true;
-            $validator = $validator->tournament( $tournament_id );
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->err_msgs[0], true );
-                $this->show_message();
-                return;
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_id );
+                $tournament->fees = $this->tournament_service->get_fees( $tournament_id );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
             }
-            $tournament       = get_tournament( $tournament_id );
-            $tournament->fees = $tournament->get_fees();
         } else {
             $edit       = false;
             $tournament = null;

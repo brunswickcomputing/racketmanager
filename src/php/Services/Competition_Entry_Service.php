@@ -793,7 +793,6 @@ class Competition_Entry_Service {
                 break;
             default:
                 throw new Invalid_Argument_Exception( Util_Messages::invalid_notification_type( $type ) );
-                break;
         }
         $limit   = 2;
         $players = $this->tournament_repository->get_previous_tournament_players_with_optin( $tournament_id, $limit, $entered );

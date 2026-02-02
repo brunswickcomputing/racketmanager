@@ -758,4 +758,121 @@ class Competition_Entry_Service {
         $template_args['cup_entries'] = $cup_entries;
         $this->send_entry_form( $club->get_id(), $template_args, $club_entry, $email_from, $template, $email_subject, $headers );
     }
+
+    public function notify_tournament_entry_open( int $tournament_id ): int {
+        return $this->notify_tournament_entry( $tournament_id );
+    }
+
+    public function notify_tournament_entry_open_reminder( int $tournament_id ): int {
+        return $this->notify_tournament_entry( $tournament_id, 'reminder' );
+    }
+
+    private function notify_tournament_entry( int $tournament_id, string $type = 'open' ): int {
+        $tournament = $this->tournament_repository->find_by_id( $tournament_id );
+        if ( ! $tournament ) {
+            throw new Tournament_Not_Found_Exception( Util_Messages::tournament_not_found( $tournament_id ) );
+        }
+        $from_email = $this->racketmanager->get_confirmation_email( 'tournament' );
+        if ( ! $from_email ) {
+            throw new Invalid_Argument_Exception( Util_Messages::secretary_email_not_found( 'tournament' ) );
+        }
+        $url              = $tournament->entry_link;
+        $competition_name = $tournament->name . ' ' . __( 'Tournament', 'racketmanager' );
+
+        switch ( $type ) {
+            case 'open':
+                $entered      = false;
+                $notify_clubs = true;
+                $confirm_fees = true;
+                $subject      = __( 'Entry Open', 'racketmanager' );
+                $remaining    = null;
+                break;
+            case 'reminder':
+                $entered      = true;
+                $notify_clubs = false;
+                $confirm_fees = false;
+                $subject      = __( 'Entry Reminder', 'racketmanager' );
+                $remaining    = $this->get_remaining_days( $tournament->date_closing );
+                break;
+            default:
+                throw new Invalid_Argument_Exception( Util_Messages::invalid_notification_type( $type ) );
+                break;
+        }
+        $limit   = 2;
+        $players = $this->tournament_repository->get_previous_tournament_players_with_optin( $tournament_id, $limit, $entered );
+
+        $tournament_secretary   = __( 'Tournament Secretary', 'racketmanager' ) . ' <' . $from_email . '>';
+
+        $headers           = array();
+        $messages_sent     = 0;
+        $headers[]         = RACKETMANAGER_FROM_EMAIL . $tournament_secretary;
+        $headers[]         = RACKETMANAGER_CC_EMAIL . $tournament_secretary;
+        $organisation_name = $this->racketmanager->site_name;
+        $account_link      = '<a href="' . $this->racketmanager->site_url . '/member-account/" style="text-decoration: none; color: #006800;">' . __( 'link', 'racketmanager' ) . '</a>';
+        $email_subject     = $this->racketmanager->site_name . ' - ' . ucwords( $competition_name ) . ' ' . $subject;
+        foreach ( $players as $player ) {
+            $email_to      = $player->fullname . ' <' . $player->email . '>';
+            $action_url    = $url;
+            $email_message = $this->racketmanager->shortcodes->load_template(
+                'tournament-entry-open',
+                array(
+                    'email_subject'  => $email_subject,
+                    'from_email'     => $from_email,
+                    'action_url'     => $action_url,
+                    'organisation'   => $organisation_name,
+                    'tournament'     => $tournament,
+                    'addressee'      => $player->fullname,
+                    'days_remaining' => $remaining,
+                    'type'           => $type,
+                    'account_link'   => $account_link,
+                ),
+                'email'
+            );
+            wp_mail( $email_to, $email_subject, $email_message, $headers );
+            ++$messages_sent;
+        }
+        if ( $notify_clubs ) {
+            $base_subject = $email_subject;
+            $clubs        = $this->club_service->get_clubs_with_details();
+            foreach ( $clubs as $club ) {
+                $email_subject = $base_subject . ' - ' . $club->name;
+                $email_to      = $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
+                $action_url    = $url . seo_url( $club->shortcode ) . '/';
+                $email_message = $this->racketmanager->shortcodes->load_template(
+                    'tournament-entry-open',
+                    array(
+                        'email_subject' => $email_subject,
+                        'from_email'    => $from_email,
+                        'action_url'    => $action_url,
+                        'organisation'  => $organisation_name,
+                        'tournament'    => $tournament,
+                        'addressee'     => $club->match_secretary->display_name,
+                        'type'          => 'club',
+                    ),
+                    'email'
+                );
+                wp_mail( $email_to, $email_subject, $email_message, $headers );
+                ++$messages_sent;
+            }
+        }
+        if ( $confirm_fees ) {
+            $key = $tournament->competition_id . '_' . $tournament->season;
+            try {
+                $this->finance_service->set_charge_used( $key );
+            } catch ( Charge_Not_Found_Exception $e ) {
+                error_log( $e->getMessage() );
+            }
+        }
+
+        return $messages_sent;
+
+    }
+
+    private function get_remaining_days( string $date ): int {
+        $date_closing   = date_create( $date );
+        $now            = date_create();
+        $remaining_time = date_diff( $now, $date_closing );
+        return $remaining_time->days;
+
+    }
 }

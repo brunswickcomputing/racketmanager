@@ -21,6 +21,7 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_club;

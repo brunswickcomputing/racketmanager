@@ -126,7 +126,7 @@ class Tournament_Repository {
         if ( ! $tournament ) {
             $tournament = $this->wpdb->get_row(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                    "SELECT `id`, `name`, `competition_id`, `season`, `venue`, date, `date_closing`, `date_start`, `date_open`, `date_withdrawal`, `grade`, `num_entries`, `numcourts` AS `num_courts`, `starttime` as `start_time`, `timeincrement` AS `time_increment`, `orderofplay` as `order_of_play`, `competition_code`, `information` FROM `$this->table_name` WHERE $search"
+                    "SELECT * FROM `$this->table_name` WHERE $search"
             );
             if ( ! $tournament ) {
                 return null;
@@ -134,9 +134,7 @@ class Tournament_Repository {
             $tournament = new Tournament( $tournament );
             wp_cache_set( $tournament_id, $tournament, 'tournaments' );
         }
-
         return $tournament;
-
     }
 
     public function get_previous_tournament_players_with_optin( int $tournament_id, int $limit = 1, bool $entered = false ): array {

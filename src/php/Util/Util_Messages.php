@@ -207,11 +207,27 @@ class Util_Messages {
     }
 
     public static function purchase_order_unchanged(): string {
-        return __( 'PO not changedg', 'racketmanager' );
+        return __( 'PO not changed', 'racketmanager' );
     }
 
     public static function invalid_notification_type( string $type ): string {
         return sprintf( __( '%s is not valid as a notification type', 'racketmanager' ), $type );
+    }
+
+    public static function tournament_deleted( int $tournament_id ):string {
+        return sprintf( __( 'Tournament id %s deleted', 'racketmanager' ), $tournament_id );
+    }
+
+    public static function tournament_not_deleted( int $tournament_id ):string {
+        return sprintf( __( 'Tournament id %s not deleted', 'racketmanager' ), $tournament_id );
+    }
+
+    public static function tournament_failed_to_save(): string {
+        return __( 'Tournament failed to save', 'racketmanager' );
+    }
+
+    public static function charge_failed_to_save():string {
+        return __( 'Charge failed to save', 'racketmanager' );
     }
 
 }

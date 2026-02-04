@@ -658,6 +658,9 @@ class Event {
         $this->id = $id;
     }
 
+    public function set_seasons( array $seasons ): void {
+        $this->seasons = $seasons;
+    }
     /**
      * Add new event
      *

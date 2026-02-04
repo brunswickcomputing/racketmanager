@@ -25,6 +25,72 @@ class Tournament_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_tournaments';
     }
 
+    public function save( Tournament $tournament ): bool|int {
+        $data        = array(
+            'name'             => $tournament->get_name(),
+            'competition_id'   => $tournament->get_competition_id(),
+            'season'           => $tournament->get_season(),
+            'venue'            => $tournament->get_venue(),
+            'date'             => $tournament->get_end_date(),
+            'date_closing'     => $tournament->get_closing_date(),
+            'date_withdrawal'  => $tournament->get_withdrawal_date(),
+            'date_open'        => $tournament->get_open_date(),
+            'date_start'       => $tournament->get_start_date(),
+            'competition_code' => $tournament->get_competition_code(),
+            'grade'            => $tournament->get_grade(),
+            'num_entries'      => $tournament->get_num_entries(),
+            'numcourts'        => $tournament->get_num_courts(),
+            'starttime'        => $tournament->get_start_time(),
+            'timeincrement'    => $tournament->get_time_increment(),
+            'orderofplay'      => maybe_serialize( $tournament->get_order_of_play() ),
+            'information'      => $tournament->get_information(),
+        );
+        $data_format = array(
+            '%s',
+            '%d',
+            '%d',
+            '%d',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%d',
+            '%d',
+            '%s',
+            '%s',
+            '%s',
+        );
+        if ( empty( $tournament->get_id() ) ) {
+            $result = $this->wpdb->insert(
+                $this->table_name,
+                $data,
+                $data_format,
+            );
+            $tournament->set_id( $this->wpdb->insert_id );
+            wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
+
+            return $result !== false;
+        } else {
+            wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
+
+            return $this->wpdb->update(
+                $this->table_name,
+                $data, // Data to update
+                array(
+                    'id' => $tournament->get_id()
+                ), // Where clause
+                $data_format,
+                array(
+                    '%d'
+                ) // Where format
+            );
+        }
+
+    }
+
     public function find_by_id( $tournament_id, $search_term = 'id' ): ?Tournament {
         if ( ! $tournament_id ) {
             return null;

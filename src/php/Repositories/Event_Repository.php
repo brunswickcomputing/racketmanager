@@ -111,11 +111,17 @@ class Event_Repository {
     public function find_by_competition_id( int $competition_id ): array {
         $events = wp_cache_get( md5( $competition_id ), 'events' );
         if ( ! $events ) {
-            $events = $this->wpdb->get_results(
+            $results = $this->wpdb->get_results(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE `competition_id` = %d ORDER BY `name`",
                     $competition_id
                 )
+            );
+            $events = array_map(
+                function( $row ) {
+                    return new Event( $row );
+                    },
+                $results
             );
             wp_cache_set( md5( $competition_id ), $events, 'events' );
         }

@@ -150,6 +150,7 @@ final class Container_Bootstrap {
                 $app,
                 $c->get('tournament_repository'),
                 $c->get('charge_repository'),
+                $c->get('competition_service'),
 //                $c->get('invoice_repository'),
             );
         });

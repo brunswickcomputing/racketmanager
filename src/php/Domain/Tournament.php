@@ -34,9 +34,9 @@ final class Tournament {
     /**
      * Id
      *
-     * @var int
+     * @var int|null
      */
-    public int $id;
+    public ?int $id = null;
     /**
      * Tournament name
      *
@@ -66,13 +66,13 @@ final class Tournament {
      *
      * @var int|null
      */
-    public ?int $num_courts;
+    public ?int $num_courts = null;
     /**
      * Start time
      *
      * @var string|null
      */
-    public ?string $start_time;
+    public ?string $start_time = null;
     /**
      * Date
      *
@@ -156,13 +156,13 @@ final class Tournament {
      *
      * @var string|array|null
      */
-    public string|array|null $order_of_play = array();
+    public string|array|null $order_of_play = null;
     /**
      * Time increment for finals day matches
      *
      * @var string|null
      */
-    public ?string $time_increment;
+    public ?string $time_increment = null;
     /**
      * Competitions variable
      *
@@ -228,7 +228,7 @@ final class Tournament {
      *
      * @var string|null
      */
-    public ?string $competition_code;
+    public ?string $competition_code = null;
     /**
      * Finals variable
      *
@@ -306,7 +306,7 @@ final class Tournament {
      *
      * @var string|object|null
      */
-    public string|null|object $information;
+    public string|null|object $information = null;
     private Player_Service $player_service;
     private Competition_Service $competition_service;
     private Finance_Service $finance_service;
@@ -374,7 +374,7 @@ final class Tournament {
      * @param object|null $tournament Tournament object.
      */
     public function __construct( object $tournament = null ) {
-        global $racketmanager, $wp;
+        global $racketmanager;
         $c                         = $racketmanager->container;
         $this->finance_service     = $c->get( 'finance_service' );
         $this->player_service      = $c->get( 'player_service' );
@@ -385,79 +385,18 @@ final class Tournament {
                 $tournament->information = json_decode( $tournament->information );
             }
             foreach ( $tournament as $key => $value ) {
+                if ( 'orderofplay' === $key ) {
+                    $key = 'order_of_play';
+                } elseif ( 'timeincrement' === $key ) {
+                    $key = 'time_increment';
+                } elseif ( 'starttime' === $key ) {
+                    $key = 'start_time';
+                } elseif ( 'numcourts' === $key ) {
+                    $key = 'num_courts';
+                }
                 $this->$key = $value;
             }
-
-            if ( ! isset( $this->id ) ) {
-                $this->add();
-            }
-            $dummy_time                    = '0000-00-00';
-            $this->link                    = '/tournament/' . seo_url( $this->name ) . '/';
-            $this->entry_link              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
-            $this->date_display            = ( str_starts_with( $this->date, $dummy_time ) ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
-            $this->date_closing_display    = ( str_starts_with( $this->date_closing, $dummy_time ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
-            $this->date_withdrawal_display = ( str_starts_with( $this->date_closing, $dummy_time ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
-            $this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
-            $this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
-            $today                         = gmdate( 'Y-m-d' );
-            if ( $today > $this->date ) {
-                $this->current_phase = 'end';
-                $this->is_complete   = true;
-            } else {
-                $this->current_phase = '';
-                if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
-                    $this->current_phase = 'start';
-                    $this->is_started    = true;
-                } elseif ( ! empty( $this->date_withdrawal ) && $today > $this->date_withdrawal ) {
-                    $this->current_phase = 'withdraw';
-                    $this->is_withdrawal = true;
-                } elseif ( ! empty( $this->date_closing ) && $today > $this->date_closing ) {
-                    $this->current_phase = 'close';
-                    $this->is_closed     = true;
-                } elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {
-                    $this->current_phase = 'open';
-                    $this->is_open       = true;
-                }
-            }
-            if ( empty( $this->venue ) ) {
-                $this->venue      = null;
-                $this->venue_name = 'TBC';
-            } else {
-                $this->venue_name = get_club( $tournament->venue )->shortcode;
-            }
-            if ( isset( $this->date_closing ) && $this->date_closing <= gmdate( 'Y-m-d' ) ) {
-                $this->is_active = true;
-            } else {
-                $this->is_active = false;
-            }
-            $this->order_of_play = (array) maybe_unserialize( $this->order_of_play );
-            if ( $this->competition_id ) {
-                $this->competition = $this->competition_service->get_by_id( $this->competition_id );
-            }
-            $finals     = array();
-            $max_rounds = 6;
-            $r          = $max_rounds;
-            for ( $round = 1; $round <= $max_rounds; ++$round ) {
-                $num_teams      = pow( 2, $round );
-                $num_matches    = $num_teams / 2;
-                $key            = Util::get_final_key( $num_teams );
-                $name           = Util::get_final_name( $key );
-                $finals[ $key ] = array(
-                    'key'         => $key,
-                    'name'        => $name,
-                    'num_matches' => $num_matches,
-                    'num_teams'   => $num_teams,
-                    'round'       => $r,
-                );
-                --$r;
-            }
-            $this->finals = $finals;
-            $wp->set_query_var( 'season', $this->season );
-            $charge_key = $this->competition_id . '_' . $this->season;
-            $charge     = get_charge( $charge_key );
-            if ( $charge ) {
-                $this->charge = $charge;
-            }
+            $this->set_tournament_info();
         }
         $this->notification_error = __( 'Notification error', 'racketmanager' );
         $this->no_secretary_email = __( 'No secretary email', 'racketmanager' );
@@ -1268,7 +1207,6 @@ final class Tournament {
      * @return void
      */
     private function create_player_invoice(int $player_id, string $fee ): void {
-        global $racketmanager;
         if ( empty( $player_id ) || empty( $fee ) ) {
             return;
         }
@@ -1456,7 +1394,6 @@ final class Tournament {
      * @return array|null payments or null
      */
     public function get_payments( array $args_input ): ?array {
-        global $racketmanager;
         $defaults = array(
             'status' => array(),
             'player' => false,
@@ -1628,7 +1565,241 @@ final class Tournament {
         return $return;
     }
 
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+
     public function get_name(): string {
         return $this->name;
     }
+
+    public function get_competition_id(): int {
+        return $this->competition_id;
+    }
+
+    public function get_season(): int {
+        return $this->season;
+    }
+
+    public function get_venue(): ?int {
+        return $this->venue;
+    }
+
+    public function get_end_date(): ?string {
+        return $this->date;
+    }
+
+    public function get_closing_date(): ?string {
+        return $this->date_closing;
+    }
+
+    public function get_withdrawal_date(): ?string {
+        return $this->date_withdrawal;
+    }
+
+    public function get_open_date(): ?string {
+        return $this->date_open;
+    }
+
+    public function get_start_date(): ?string {
+        return $this->date_start;
+    }
+
+    public function get_competition_code(): ?string {
+        return $this->competition_code;
+    }
+
+    public function get_grade(): ?string {
+        return $this->grade;
+    }
+
+    public function get_num_entries(): ?int {
+        return $this->num_entries;
+    }
+
+    public function get_num_courts(): ?int {
+        return $this->num_courts;
+    }
+
+    public function get_start_time(): ?string {
+        return $this->start_time;
+    }
+
+    public function get_time_increment(): ?string {
+        return $this->time_increment;
+    }
+
+    public function get_order_of_play(): ?array {
+        return $this->order_of_play;
+    }
+
+    public function get_information(): ?string {
+        return $this->information;
+    }
+
+    public function set_id( int $id ): void {
+        $this->id = $id;
+    }
+
+    public function set_name( string $name ): void {
+        $this->name = $name;
+    }
+
+    public function set_competition_id( int $competition_id ): void {
+        $this->competition_id = $competition_id;
+    }
+
+    public function set_season( ?string $season ): void {
+        $this->season = $season;
+    }
+
+    public function set_venue( ?int $venue ): void {
+        $this->venue = $venue;
+    }
+
+    public function set_end_date( ?string $date ): void {
+        $this->date = $date;
+    }
+
+    public function set_closing_date( ?string $date_closing ): void {
+        $this->date_closing = $date_closing;
+    }
+
+    public function set_withdrawal_date( ?string $date_withdrawal ): void {
+        $this->date_withdrawal = $date_withdrawal;
+    }
+
+    public function set_opening_date( ?string $date_open ): void {
+        $this->date_open = $date_open;
+    }
+
+    public function set_start_date( ?string $date_start ): void {
+        $this->date_start = $date_start;
+    }
+
+    public function set_competition_code( ?string $competition_code ): void {
+        $this->competition_code = $competition_code;
+    }
+
+    public function set_grade( ?string $grade ): void {
+        $this->grade = $grade;
+    }
+
+    public function set_num_entries( ?int $num_entries ): void {
+        $this->num_entries = $num_entries;
+    }
+
+    public function set_num_courts( ?int $num_courts ): void {
+        $this->num_courts = $num_courts;
+    }
+
+    public function set_start_time( ?string $start_time ): void {
+        $this->start_time = $start_time;
+    }
+
+    public function set_time_increment( ?string $start_time ): void {
+        $this->time_increment = $start_time;
+    }
+
+    public function set_order_of_play( ?array $order_of_play ): void {
+        $this->order_of_play = $order_of_play;
+    }
+
+
+    /**
+     * Set information
+     *
+     * @param object $information information.
+     */
+    public function set_information( object $information ): bool {
+        global $wpdb;
+        if ( $information != $this->information ) {
+            $this->information = $information;
+            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    "UPDATE $wpdb->racketmanager_tournaments set `information` = %s WHERE `id` = %d",
+                    wp_json_encode( $this->information ),
+                    $this->id
+                )
+            );  // db call ok.
+            wp_cache_set( $this->id, $this, 'tournament' );
+            $updates = true;
+        } else {
+            $updates = false;
+        }
+        return $updates;
+    }
+
+    public function set_tournament_info(): void {
+        global $racketmanager, $wp;
+        $dummy_time                    = '0000-00-00';
+        $this->link                    = '/tournament/' . seo_url( $this->name ) . '/';
+        $this->entry_link              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+        $this->date_display            = ( str_starts_with( $this->date, $dummy_time ) ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date );
+        $this->date_closing_display    = ( str_starts_with( $this->date_closing, $dummy_time ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
+        $this->date_withdrawal_display = ( str_starts_with( $this->date_closing, $dummy_time ) ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
+        $this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
+        $this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
+        $today                         = gmdate( 'Y-m-d' );
+        if ( $today > $this->date ) {
+            $this->current_phase = 'end';
+            $this->is_complete   = true;
+        } else {
+            $this->current_phase = '';
+            if ( ! empty( $this->date_start ) && $today >= $this->date_start ) {
+                $this->current_phase = 'start';
+                $this->is_started    = true;
+            } elseif ( ! empty( $this->date_withdrawal ) && $today > $this->date_withdrawal ) {
+                $this->current_phase = 'withdraw';
+                $this->is_withdrawal = true;
+            } elseif ( ! empty( $this->date_closing ) && $today > $this->date_closing ) {
+                $this->current_phase = 'close';
+                $this->is_closed     = true;
+            } elseif ( ! empty( $this->date_open ) && $today >= $this->date_open ) {
+                $this->current_phase = 'open';
+                $this->is_open       = true;
+            }
+        }
+        if ( empty( $this->venue ) ) {
+            $this->venue      = null;
+            $this->venue_name = 'TBC';
+        } else {
+            $this->venue_name = get_club( $this->venue )->shortcode;
+        }
+        if ( isset( $this->date_closing ) && $this->date_closing <= gmdate( 'Y-m-d' ) ) {
+            $this->is_active = true;
+        } else {
+            $this->is_active = false;
+        }
+        $this->order_of_play = (array) maybe_unserialize( $this->order_of_play );
+        if ( $this->competition_id ) {
+            $this->competition = $this->competition_service->get_by_id( $this->competition_id );
+        }
+        $finals     = array();
+        $max_rounds = 6;
+        $r          = $max_rounds;
+        for ( $round = 1; $round <= $max_rounds; ++$round ) {
+            $num_teams      = pow( 2, $round );
+            $num_matches    = $num_teams / 2;
+            $key            = Util::get_final_key( $num_teams );
+            $name           = Util::get_final_name( $key );
+            $finals[ $key ] = array(
+                'key'         => $key,
+                'name'        => $name,
+                'num_matches' => $num_matches,
+                'num_teams'   => $num_teams,
+                'round'       => $r,
+            );
+            --$r;
+        }
+        $this->finals = $finals;
+        $wp->set_query_var( 'season', $this->season );
+        $charge_key = $this->competition_id . '_' . $this->season;
+        $charge     = get_charge( $charge_key );
+        if ( $charge ) {
+            $this->charge = $charge;
+        }
+    }
+
 }

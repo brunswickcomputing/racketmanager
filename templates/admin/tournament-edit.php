@@ -51,8 +51,9 @@ use Racketmanager\Util\Util_Lookup;
                         $msg_id     = array_search( 'tournamentName', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
+                    $tournament_name = $_POST['tournamentName'] ?? $tournament->name ?? null;
                     ?>
-                    <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="tournamentName" name="tournamentName" value="<?php echo isset( $tournament->name ) ? esc_html( $tournament->name ) : null; ?>" placeholder="<?php esc_html_e( 'Add tournament', 'racketmanager' ); ?>" />
+                    <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" id="tournamentName" name="tournamentName" value="<?php echo esc_html( $tournament_name ); ?>" placeholder="<?php esc_html_e( 'Add tournament', 'racketmanager' ); ?>" />
                     <label class="form-label" for="tournamentName"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
                     <?php
                     if ( $is_invalid ) {
@@ -74,13 +75,14 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'competition', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $competition_id = $_POST['competition_id'] ?? $tournament->competition_id ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_id" id="competition_id" >
-                            <option disabled <?php selected( null, empty( $tournament->competition_id ) ? null : $tournament->competition_id ); ?>><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
+                            <option disabled <?php selected( null, $competition_id ); ?>><?php esc_html_e( 'Select competition', 'racketmanager' ); ?></option>
                             <?php
                             foreach ( $competitions as $competition ) {
                                 ?>
-                                <option value="<?php echo esc_attr( $competition->id ); ?>" <?php selected( $competition->id, $tournament->competition_id ?? null ); ?>><?php echo esc_html( $competition->name ); ?></option>
+                                <option value="<?php echo esc_attr( $competition->id ); ?>" <?php selected( $competition->id, $competition_id ); ?>><?php echo esc_html( $competition->name ); ?></option>
                                 <?php
                             }
                             ?>
@@ -105,13 +107,14 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'season', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $tournament_season = $_POST['season'] ?? $tournament->season ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="season" id="season" >
-                            <option disabled <?php selected( null, empty( $tournament->season ) ? null : $tournament->season ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
+                            <option disabled <?php selected( null, $tournament_season ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
                             <?php
                             foreach ( $seasons as $season ) {
                                 ?>
-                                <option value="<?php echo esc_html( $season->name ); ?>" <?php selected( $season->name, $tournament->season ?? ''); ?>><?php echo esc_html( $season->name ); ?></option>
+                                <option value="<?php echo esc_html( $season->name ); ?>" <?php selected( $season->name, $tournament_season ); ?>><?php echo esc_html( $season->name ); ?></option>
                                 <?php
                             }
                             ?>
@@ -138,13 +141,14 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'venue', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $tournament_venue = $_POST['venue'] ?? $tournament->venue ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="venue" id="venue" >
-                            <option disabled <?php selected( null, empty( $tournament->venue ) ? null : $tournament->venue ); ?>><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
+                            <option disabled <?php selected( null, $tournament_venue ); ?>><?php esc_html_e( 'Select venue', 'racketmanager' ); ?></option>
                             <?php
                             foreach ( $clubs as $club ) {
                                 ?>
-                                <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $tournament->venue ) ? null : $tournament->venue ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
+                                <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, $tournament_venue ); ?>><?php echo esc_html( $club->shortcode ); ?></option>
                                 <?php
                             }
                             ?>
@@ -169,8 +173,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'competition_code', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $competition_code = $_POST['competition_code'] ?? $tournament->competition_code ?? null;
                         ?>
-                        <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo isset( $tournament->competition_code ) ? esc_html( $tournament->competition_code ) : null; ?>" />
+                        <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo esc_html( $competition_code ); ?>" />
                         <label for="competition_code" class="form-label"><?php esc_html_e( 'Competition code', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -192,13 +197,14 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'grade', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $tournament_grade = $_POST['grade'] ?? $tournament->grade ?? null;
                         ?>
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="grade" id="grade" >
-                            <option disabled <?php selected( null, empty( $tournament->grade ) ? null : $tournament->grade ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>
+                            <option disabled <?php selected( null, $tournament_grade ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>
                             <?php
                             foreach ( $grades as $grade => $grade_desc ) {
                                 ?>
-                                <option value="<?php echo esc_html( $grade ); ?>" <?php selected( $grade, empty( $tournament->grade ) ? null : $tournament->grade ); ?>><?php echo esc_html__( 'Grade', 'racketmanager' ) . ' ' . esc_html( $grade ); ?></option>
+                                <option value="<?php echo esc_html( $grade ); ?>" <?php selected( $grade, $tournament_grade ); ?>><?php echo esc_html__( 'Grade', 'racketmanager' ) . ' ' . esc_html( $grade ); ?></option>
                                 <?php
                             }
                             ?>
@@ -217,7 +223,7 @@ use Racketmanager\Util\Util_Lookup;
         </fieldset>
         <fieldset class="form-control mb-3">
             <legend><?php esc_html_e( 'Fees', 'racketmanager' ); ?></legend>
-            <input type="hidden" name="feeId" value="<?php echo empty( $tournament->fees->id ) ? null : esc_attr( $tournament->fees->id ); ?>" />
+            <input type="hidden" name="feeId" value="<?php echo empty( $fees->id ) ? null : esc_attr( $fees->id ); ?>" />
             <div class="row mb-3 g-3">
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="form-floating">
@@ -229,8 +235,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'feeCompetition', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $fee_competition = $_POST['feeCompetition'] ?? $fees->competition ?? null;
                         ?>
-                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeCompetition" id="feeCompetition" value="<?php echo isset( $tournament->fees->competition ) ? esc_html( $tournament->fees->competition ) : null; ?>" <?php echo ( ! empty( $tournament->fees->status ) && 'final' === $tournament->fees->status ) ? 'readonly' : null; ?> />
+                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeCompetition" id="feeCompetition" value="<?php echo esc_html( $fee_competition ); ?>" <?php echo ( ! empty( $fees->status ) && 'final' === $fees->status ) ? 'readonly' : null; ?> />
                         <label for="feeCompetition"><?php esc_html_e( 'Tournament Fee', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -251,8 +258,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'feeEvent', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $fee_event = $_POST['feeEvent'] ?? $fees->event ?? null;
                         ?>
-                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeEvent" id="feeEvent" value="<?php echo isset( $tournament->fees->event ) ? esc_html( $tournament->fees->event ) : null; ?>" <?php echo ( ! empty( $tournament->fees->status ) && 'final' === $tournament->fees->status ) ? 'readonly' : null; ?> />
+                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="feeEvent" id="feeEvent" value="<?php echo esc_html( $fee_event ); ?>" <?php echo ( ! empty( $fees->status ) && 'final' === $fees->status ) ? 'readonly' : null; ?> />
                         <label for="feeEvent"><?php esc_html_e( 'Event Fee', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -273,18 +281,14 @@ use Racketmanager\Util\Util_Lookup;
                         <?php
                         $is_invalid = false;
                         $msg        = null;
-                        if ( empty( $tournament->competition->num_entries ) ) {
-                            $num_entries = empty( $tournament->num_entries ) ? null : $tournament->num_entries;
-                        } else {
-                            $num_entries = empty( $tournament->num_entries ) ? $tournament->competition->num_entries : $tournament->num_entries;
-                        }
+                        $tournament_num_entries = $_POST['num_entries'] ?? $tournament->num_entries ?? null;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'num_entries', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'num_entries', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
-                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" value="<?php echo isset( $num_entries ) ? esc_html( $num_entries ) : null; ?>" />
+                        <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_entries" id="num_entries" value="<?php echo esc_html( $tournament_num_entries ); ?>" />
                         <label for="num_entries"><?php esc_html_e( 'Maximum number of entries', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -308,10 +312,11 @@ use Racketmanager\Util\Util_Lookup;
                         if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'date_start', $validator->err_flds, true ) ) ) {
                             $is_invalid = true;
                             $msg_id     = array_search( 'date_start', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
+                            $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                         }
+                        $date_start = $_POST['dateStart'] ?? $tournament->date_start ?? null;
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo isset( $tournament->date_start ) ? esc_html( $tournament->date_start ) : null; ?>" onchange="Racketmanager.setTournamentOpenDate()" />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateStart" id="dateStart" value="<?php echo esc_html( $date_start ); ?>" onchange="Racketmanager.setTournamentOpenDate()" />
                         <label for="dateStart" class="form-label"><?php esc_html_e( 'Start Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -332,8 +337,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'date_end', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $date_end = $_POST['dateEnd'] ?? $tournament->date ?? null;
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateEnd" id="dateEnd" value="<?php echo isset( $tournament->date ) ? esc_html( $tournament->date ) : null; ?>" />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateEnd" id="dateEnd" value="<?php echo esc_html( $date_end ); ?>" />
                         <label for="dateEnd" class="form-label"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -356,8 +362,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'date_open', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $date_open = $_POST['dateOpen'] ?? $tournament->date_open ?? null;
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateOpen" id="dateOpen" value="<?php echo isset( $tournament->date_open ) ? esc_html( $tournament->date_open ) : null; ?>" readonly />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateOpen" id="dateOpen" value="<?php echo esc_html( $date_open ); ?>" readonly />
                         <label for="dateOpen" class="form-label"><?php esc_html_e( 'Opening Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -378,8 +385,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'date_closing', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $date_closing = $_POST['dateClose'] ?? $tournament->date_closing ?? null;
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateClose" id="dateClose" value="<?php echo isset( $tournament->date_closing ) ? esc_html( $tournament->date_closing ) : null; ?>" readonly />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateClose" id="dateClose" value="<?php echo esc_html( $date_closing ); ?>" readonly />
                         <label for="dateClose" class="form-label"><?php esc_html_e( 'Closing Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -400,8 +408,9 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'date_withdrawal', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
+                        $date_withdrawal = $_POST['dateWithdraw'] ?? $tournament->date_withdrawal ?? null;
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateWithdraw" id="dateWithdraw" value="<?php echo isset( $tournament->date_withdrawal ) ? esc_html( $tournament->date_withdrawal ) : null; ?>" readonly />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateWithdraw" id="dateWithdraw" value="<?php echo esc_html( $date_withdrawal ); ?>" readonly />
                         <label for="dateWithdraw" class="form-label"><?php esc_html_e( 'Withdrawal Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {

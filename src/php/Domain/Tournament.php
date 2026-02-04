@@ -398,166 +398,8 @@ final class Tournament {
             }
             $this->set_tournament_info();
         }
-        $this->notification_error = __( 'Notification error', 'racketmanager' );
-        $this->no_secretary_email = __( 'No secretary email', 'racketmanager' );
-        $this->no_notification    = __( 'No notification', 'racketmanager' );
-
     }
 
-    /**
-     * Add tournament
-     */
-    private function add(): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_tournaments (`name`, `competition_id`, `season`, `venue`, `date_open`, `date_closing`, `date_withdrawal`, `date_start`, `date`, `competition_code`, `grade`, `num_entries` ) VALUES (%s, %s, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d )",
-                $this->name,
-                $this->competition_id,
-                $this->season,
-                $this->venue,
-                $this->date_open,
-                $this->date_closing,
-                $this->date_withdrawal,
-                $this->date_start,
-                $this->date,
-                $this->competition_code,
-                $this->grade,
-                $this->num_entries,
-            )
-        );
-        $this->id            = $wpdb->insert_id;
-        $this->order_of_play = '';
-    }
-
-    /**
-     * Update tournament
-     *
-     * @param object $updated updated tournament values.
-     *
-     * @return bool
-     */
-    public function update( object $updated ): bool {
-        global $wpdb;
-        $updates = false;
-        if ( $this->name !== $updated->name ) {
-            $updates    = true;
-            $this->name = $updated->name;
-        }
-        if ( $this->competition_id !== $updated->competition_id ) {
-            $updates              = true;
-            $this->competition_id = $updated->competition_id;
-        }
-        if ( $this->season !== $updated->season ) {
-            $updates      = true;
-            $this->season = $updated->season;
-        }
-        if ( $this->venue !== $updated->venue ) {
-            $updates     = true;
-            $this->venue = $updated->venue;
-        }
-        if ( $this->date_open !== $updated->date_open ) {
-            $updates         = true;
-            $this->date_open = $updated->date_open;
-        }
-        if ( $this->date_closing !== $updated->date_closing ) {
-            $updates            = true;
-            $this->date_closing = $updated->date_closing;
-        }
-        if ( $this->date_withdrawal !== $updated->date_withdrawal ) {
-            $updates               = true;
-            $this->date_withdrawal = $updated->date_withdrawal;
-        }
-        if ( $this->date_start !== $updated->date_start ) {
-            $updates          = true;
-            $this->date_start = $updated->date_start;
-        }
-        if ( $this->date !== $updated->date ) {
-            $updates    = true;
-            $this->date = $updated->date;
-        }
-        if ( $this->competition_code !== $updated->competition_code ) {
-            $updates                = true;
-            $this->competition_code = $updated->competition_code;
-        }
-        if ( $this->grade !== $updated->grade ) {
-            $updates     = true;
-            $this->grade = $updated->grade;
-        }
-        if ( $this->num_entries !== $updated->num_entries ) {
-            $updates           = true;
-            $this->num_entries = $updated->num_entries;
-        }
-        if ( $updates ) {
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_tournaments SET `name` = %s, `competition_id` = %d, `season` = %s, `venue` = %d, `date_open` = %s, `date_closing` = %s, `date_withdrawal` = %s, `date_start` = %s, `date` = %s, `competition_code` = %s, `grade` = %s, `num_entries` = %d WHERE `id` = %d",
-                    $this->name,
-                    $this->competition_id,
-                    $this->season,
-                    $this->venue,
-                    $this->date_open,
-                    $this->date_closing,
-                    $this->date_withdrawal,
-                    $this->date_start,
-                    $this->date,
-                    $this->competition_code,
-                    $this->grade,
-                    $this->num_entries,
-                    $this->id
-                )
-            );
-            wp_cache_set( $this->id, $this, 'tournaments' );
-        }
-        $charge_updates = $this->update_charges( $updated->fees );
-        if ( $charge_updates ) {
-            $updates = true;
-        }
-        return $updates;
-    }
-
-    /**
-     * Function to update tournament fees
-     *
-     * @param object $fees tournament fees.
-     *
-     * @return bool
-     */
-    private function update_charges( object $fees ): bool {
-        $updates       = false;
-        $charge_create = false;
-        $charge_update = false;
-        if ( isset( $this->charge ) ) {
-            if ( floatval( $this->charge->fee_competition ) !== $fees->competition ) {
-                $this->charge->set_club_fee( $fees->competition );
-                $this->fees->competition = $fees->competition;
-                $charge_update = true;
-            }
-            if ( floatval( $this->charge->fee_event ) !== $fees->event ) {
-                $this->charge->set_team_fee( $fees->event );
-                $this->fees->event = $fees->event;
-                $charge_update = true;
-            }
-        } elseif ( ! empty( $fees->competition ) || ! empty( $fees->event ) ) {
-            $charge_create = true;
-        }
-        if ( $charge_update ) {
-            $updates = true;
-        }
-        if ( $charge_create ) {
-            $updates                 = true;
-            $charge                  = new stdClass();
-            $charge->competition_id  = $this->competition_id;
-            $charge->season          = $this->season;
-            $charge->date            = $this->date_start;
-            $charge->fee_competition = $fees->competition;
-            $charge->fee_event       = $fees->event;
-            $this->charge            = new Charge( $charge );
-            $this->fees->competition = $fees->competition;
-            $this->fees->event       = $fees->event;
-        }
-        return $updates;
-    }
     /**
      * Update tournament plan
      *
@@ -685,32 +527,7 @@ final class Tournament {
         }
         return $updates;
     }
-    /**
-     * Delete tournament
-     */
-    public function delete(): bool {
-        global $wpdb;
-        $schedule_name = 'rm_calculate_tournament_ratings';
-        $schedule_args = array( $this->id );
-        Util::clear_scheduled_event( $schedule_name, $schedule_args );
-        $schedule_name = 'rm_notify_tournament_entry_open';
-        Util::clear_scheduled_event( $schedule_name, $schedule_args );
-        $schedule_name = 'rm_notify_tournament_entry_reminder';
-        Util::clear_scheduled_event( $schedule_name, $schedule_args );
-        $schedule_name = 'rm_notify_tournament_finalists';
-        Util::clear_scheduled_event( $schedule_name, $schedule_args );
-        if ( isset( $this->charge ) ) {
-            $this->charge->delete();
-        }
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_tournaments WHERE `id` = %d",
-                $this->id
-            )
-        );
-        wp_cache_delete( $this->id, 'tournaments' );
-        return true;
-    }
+
     /**
      * Get events function
      *
@@ -935,27 +752,6 @@ final class Tournament {
         return $tournament_entries;
     }
     /**
-     * Schedule tournament ratings setting function
-     *
-     * @return void
-     */
-    public function schedule_tournament_ratings(): void {
-        global $racketmanager;
-        $date_schedule  = Util::amend_date( $this->date_closing, 1 );
-        $schedule_date  = strtotime( $date_schedule );
-        $day            = intval( gmdate( 'd', $schedule_date ) );
-        $month          = intval( gmdate( 'm', $schedule_date ) );
-        $year           = intval( gmdate( 'Y', $schedule_date ) );
-        $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
-        $schedule_name  = 'rm_calculate_tournament_ratings';
-        $schedule_args  = array( $this->id );
-        Util::clear_scheduled_event( $schedule_name, $schedule_args );
-        $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-        if ( ! $success ) {
-            $racketmanager->set_message( __( 'Error scheduling tournament ratings calculation', 'racketmanager' ), true );
-        }
-    }
-    /**
      * Get unique match dates function
      *
      * @return array
@@ -971,66 +767,6 @@ final class Tournament {
             )
         );
     }
-    /**
-     * Schedule tournament activities function
-     *
-     * @return void
-     */
-    public function schedule_activities(): void {
-        if ( ! $this->is_closed && ! $this->is_active ) {
-            $this->schedule_tournament_ratings();
-            $this->schedule_emails();
-        }
-    }
-    /**
-     * Schedule tournament emails function
-     *
-     * @return void
-     */
-    private function schedule_emails(): void {
-        $schedule_args = array();
-        if ( ! empty( $this->date_open ) ) {
-            $schedule_date   = strtotime( $this->date_open );
-            $day             = intval( gmdate( 'd', $schedule_date ) );
-            $month           = intval( gmdate( 'm', $schedule_date ) );
-            $year            = intval( gmdate( 'Y', $schedule_date ) );
-            $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
-            $schedule_name   = 'rm_notify_tournament_entry_open';
-            $schedule_args[] = $this->id;
-            Util::clear_scheduled_event( $schedule_name, $schedule_args );
-            $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-            if ( ! $success ) {
-                error_log( __( 'Error scheduling tournament open emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            }
-        }
-        if ( ! empty( $this->date_closing ) ) {
-            $chase_date     = Util::amend_date( $this->date_closing, 7, '-' );
-            $day            = substr( $chase_date, 8, 2 );
-            $month          = substr( $chase_date, 5, 2 );
-            $year           = substr( $chase_date, 0, 4 );
-            $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
-            $schedule_name  = 'rm_notify_tournament_entry_reminder';
-            Util::clear_scheduled_event( $schedule_name, $schedule_args );
-            $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-            if ( ! $success ) {
-                error_log( __( 'Error scheduling tournament reminder emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            }
-        }
-        if ( ! empty( $this->date ) ) {
-            $finalists_date = Util::amend_date( $this->date, 5, '-' );
-            $day            = substr( $finalists_date, 8, 2 );
-            $month          = substr( $finalists_date, 5, 2 );
-            $year           = substr( $finalists_date, 0, 4 );
-            $schedule_start = mktime( 00, 00, 01, $month, $day, $year );
-            $schedule_name  = 'rm_notify_tournament_finalists';
-            Util::clear_scheduled_event( $schedule_name, $schedule_args );
-            $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-            if ( ! $success ) {
-                error_log( __( 'Error scheduling tournament finalists emails', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            }
-        }
-    }
-
     /**
      * Set player entry function
      *
@@ -1459,29 +1195,6 @@ final class Tournament {
         wp_mail( $email_to, $email_subject, $email_message, $headers );
         $racketmanager->set_message( __( 'Message sent', 'racketmanager' ) );
         return true;
-    }
-    /**
-     * Set information
-     *
-     * @param object $information information.
-     */
-    public function set_information( object $information ): bool {
-        global $wpdb;
-        if ( $information != $this->information ) {
-            $this->information = $information;
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_tournaments set `information` = %s WHERE `id` = %d",
-                    wp_json_encode( $this->information ),
-                    $this->id
-                )
-            );  // db call ok.
-            wp_cache_set( $this->id, $this, 'tournament' );
-            $updates = true;
-        } else {
-            $updates = false;
-        }
-        return $updates;
     }
     /**
      * Notify finalists of final day details

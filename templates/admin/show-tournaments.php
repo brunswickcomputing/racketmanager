@@ -65,7 +65,7 @@ namespace Racketmanager;
     </div>
     <div class="form-control mb-3">
         <form id="tournaments-filter" method="post" action="">
-            <?php wp_nonce_field( 'tournaments-bulk' ); ?>
+            <?php wp_nonce_field( 'racketmanager_tournaments-bulk', 'racketmanager_nonce' ); ?>
             <div class="mb-2">
                 <!-- Bulk Actions -->
                 <label>

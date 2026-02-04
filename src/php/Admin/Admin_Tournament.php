@@ -9,13 +9,16 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Domain\DTO\Tournament_Request_DTO;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Util\Util_Messages;
 use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
@@ -81,31 +84,57 @@ final class Admin_Tournament extends Admin_Championship {
      */
     public function display_tournaments_page(): void {
         global $racketmanager;
-        if ( ! current_user_can( 'edit_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator_Tournament();
+        $validator = $validator->capability( 'edit_leagues' );
+        if ( $validator->error ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
             return;
+        }
+        if ( isset( $_POST['doTournamentDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
+            $validator = $validator->capability( 'del_teams' );
+            if ( empty( $validator->error ) ) {
+                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournaments-bulk' );
+            }
+            if ( $validator->error ) {
+                $this->set_message( $validator->msg, true );
+                $this->show_message();
+                return;
+            }
+            $tournaments = isset( $_POST['tournament'] ) ? array_map( 'absint', $_POST['tournament'] ) : array();
+            if ( $tournaments ) {
+                $messages      = array();
+                $message_error = false;
+                foreach ( $tournaments as $tournament_id ) {
+                    try {
+                        $deleted = $this->tournament_service->remove_tournament( $tournament_id );
+                        if ( $deleted ) {
+                            $messages[] = Util_Messages::tournament_deleted( $tournament_id );
+                        } else {
+                            $messages[] = Util_Messages::tournament_not_deleted( $tournament_id );
+                        }
+                    } catch ( Tournament_Not_Found_Exception $e ) {
+                        $messages[]    = $e->getMessage();
+                        $message_error = true;
+                    }
+                }
+                $message = implode( '<br>', $messages );
+                $this->set_message( $message, $message_error );
+            }
+            /**
+            $messages = array();
+            foreach ( $tournaments as $tournament_id ) {
+                $tournament = get_tournament( $tournament_id );
+                $tournament->delete();
+                $messages[] = $tournament->name . ' ' . __( 'deleted', 'racketmanager' );
+            }
+            $message = implode( '<br>', $messages );
+            $this->set_message( $message );
+             **/
         }
         $age_group_select   = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
         $season_select      = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
         $competition_select = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : '';
-        if ( isset( $_POST['doTournamentDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-            if ( ! current_user_can( 'del_teams' ) ) {
-                $this->set_message( $this->no_permission, true );
-            } else {
-                check_admin_referer( 'tournaments-bulk' );
-                $tournaments = $_POST['tournament'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $messages = array();
-                foreach ( $tournaments as $tournament_id ) {
-                    $tournament = get_tournament( $tournament_id );
-                    $tournament->delete();
-                    $messages[] = $tournament->name . ' ' . __( 'deleted', 'racketmanager' );
-                }
-                $message = implode( '<br>', $messages );
-                $this->set_message( $message );
-            }
-            $this->show_message();
-        }
         $club_id = 0;
         $this->show_message();
         $clubs       = $this->club_service->get_clubs();
@@ -397,8 +426,9 @@ final class Admin_Tournament extends Admin_Championship {
         if ( $tournament_id ) {
             $edit      = true;
             try {
-                $tournament = $this->tournament_service->get_tournament( $tournament_id );
-                $tournament->fees = $this->tournament_service->get_fees( $tournament_id );
+                $response = $this->tournament_service->get_tournament_and_fees( $tournament_id );
+                $tournament = $response['tournament'];
+                $fees       = $response['fees'];
             } catch ( Tournament_Not_Found_Exception $e ) {
                 $this->set_message( $e->getMessage(), true );
             }
@@ -410,25 +440,27 @@ final class Admin_Tournament extends Admin_Championship {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-tournament' );
             if ( ! empty( $validator->error ) ) {
                 $this->set_message( $validator->msg, true );
+                $this->show_message();
+                return;
+            }
+            $request  = new Tournament_Request_DTO( $_POST );
+            $response = $this->tournament_service->add_tournament( $request );
+            if ( is_wp_error( $response ) ) {
+                $validator->error    = true;
+                $validator->err_flds = $response->get_error_codes();
+                $validator->err_msgs = $response->get_error_messages();
+                $this->set_message( __( 'Error adding tournament', 'racketmanager' ), true );
             } else {
-                $tournament = $this->get_input();
-                $validator  = $this->validate_tournament( $tournament );
-                if ( empty( $validator->error ) ) {
-                    $tournament = new Tournament( $tournament );
-                    $this->set_competition_dates( $tournament );
-                    $tournament->schedule_activities();
-                    $edit = true;
-                    ?>
-                    <script>
-                        let url = new URL(window.location.href);
-                        url.searchParams.append('tournament', <?php echo esc_attr( $tournament->id ); ?>);
-                        history.pushState('', '', url.toString());
-                    </script>
-                    <?php
-                    $this->set_message( __( 'Tournament added', 'racketmanager' ) );
-                } else {
-                    $this->set_message( __( 'Error adding tournament', 'racketmanager' ), true );
-                }
+                $this->set_message( __( 'Tournament added', 'racketmanager' ) );
+                $tournament = $response;
+                $edit = true;
+                ?>
+                <script>
+                    let url = new URL(window.location.href);
+                    url.searchParams.append('tournament', <?php echo esc_attr( $tournament->id ); ?>);
+                    history.pushState('', '', url.toString());
+                </script>
+                <?php
             }
         } elseif ( isset( $_POST['editTournament'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-tournament' );
@@ -436,30 +468,51 @@ final class Admin_Tournament extends Admin_Championship {
                 $tournament_id_passed = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
                 $validator            = $validator->compare( $tournament_id_passed, $tournament_id );
             }
-            if ( ! empty( $validator->error ) ) {
+            if ( $validator->error ) {
                 if ( empty( $validator->msg ) ) {
                     $msg = $validator->err_msgs[0];
                 } else {
                     $msg = $validator->msg;
                 }
                 $this->set_message( $msg, true );
-            } else {
-                $tournament_input = $this->get_input( $tournament );
-                $validator  = $this->validate_tournament( $tournament_input );
-                if ( empty( $validator->error ) ) {
-                    $updates = $tournament->update( $tournament_input );
-                    if ( $updates ) {
-                        $this->set_message( __( 'Tournament updated', 'racketmanager' ) );
-                        $this->set_competition_dates( $tournament );
-                        $tournament->schedule_activities();
-                    } else {
-                        $this->set_message( $this->no_updates, 'warning' );
-                    }
-                } else {
-                    $tournament = $tournament_input;
-                    $this->set_message( __( 'Error updating tournament', 'racketmanager' ), true );
-                }
+                $this->show_message();
+                return;
             }
+            $request = new Tournament_Request_DTO( $_POST );
+            try {
+                $response = $this->tournament_service->update_tournament( $request );
+                if ( is_wp_error( $response ) ) {
+                    $validator->error    = true;
+                    $validator->err_flds = $response->get_error_codes();
+                    $validator->err_msgs = $response->get_error_messages();
+                    $this->set_message( __( 'Error updating tournament', 'racketmanager' ), true );
+                } else {
+                    $this->set_message( __( 'Tournament updated', 'racketmanager' ) );
+                    $tournament = $response;
+                    $edit = true;
+                }
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                $this->set_message( $e->getMessage(), true );
+            } catch ( Tournament_Not_Updated_Exception $e ) {
+                $this->set_message( $e->getMessage(), 'warning' );
+            }
+            /**
+            $tournament_input = $this->get_input( $tournament );
+            $validator  = $this->validate_tournament( $tournament_input );
+            if ( empty( $validator->error ) ) {
+                $updates = $tournament->update( $tournament_input );
+                if ( $updates ) {
+                    $this->set_message( __( 'Tournament updated', 'racketmanager' ) );
+                    $this->set_competition_dates( $tournament );
+                    $tournament->schedule_activities();
+                } else {
+                    $this->set_message( $this->no_updates, 'warning' );
+                }
+            } else {
+                $tournament = $tournament_input;
+                $this->set_message( __( 'Error updating tournament', 'racketmanager' ), true );
+            }
+             **/
         }
         $this->show_message();
         if ( empty( $edit ) ) {
@@ -505,21 +558,7 @@ final class Admin_Tournament extends Admin_Championship {
         $tournament->num_entries      = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
         return $tournament;
     }
-    private function validate_tournament( ?object $tournament = null ): stdClass {
-        $validator = new Validator_Tournament();
-        $validator = $validator->name( $tournament->name );
-        $validator = $validator->competition( $tournament->competition_id );
-        $validator = $validator->season( $tournament->season );
-        $validator = $validator->venue( $tournament->venue );
-        $validator = $validator->grade( $tournament->grade );
-        $validator = $validator->num_entries( $tournament->num_entries );
-        $validator = $validator->date( $tournament->date_open, 'open' );
-        $validator = $validator->date( $tournament->date_closing, 'closing', $tournament->date_open, 'open' );
-        $validator = $validator->date( $tournament->date_withdrawal, 'withdrawal', $tournament->date_closing, 'closing' );
-        $validator = $validator->date( $tournament->date_start, 'start', $tournament->date_withdrawal, 'withdrawal' );
-        $validator = $validator->date( $tournament->date, 'end', $tournament->date_start, 'start' );
-        return $validator->get_details();
-    }
+
     /**
      * Display tournament plan page
      */

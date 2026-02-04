@@ -702,4 +702,67 @@ class Competition_Service {
         }
     }
 
+    public function set_season_for_tournament_competition( ?int $competition_id, stdClass $season ): void {
+        $competition = $this->get_by_id( $competition_id );
+        $seasons     = $competition->get_seasons();
+        $competition_season = $competition->get_season_by_name( $season->name );
+        if ( $competition_season ) {
+            $season_data = (object) $competition_season;
+            $new_season  = false;
+        } else {
+            $season_data                   = new stdClass();
+            $season_data->season           = $season->name;
+            $season_data->num_match_days   = Util::get_default_match_days( $competition->get_type() );
+            $season_data->match_dates      = array();
+            $season_data->fixed_dates      = $competition->settings['fixed_dates'] ?? null;
+            $season_data->home_away        = $competition->settings['home_away'] ?? null;
+            $season_data->status           = 'live';
+            $new_season = true;
+        }
+        $season_data->date_open        = $season->date_open;
+        $season_data->date_closing     = $season->date_closing;
+        $season_data->date_start       = $season->date_start;
+        $season_data->date_end         = $season->date_end;
+        $season_data->competition_code = $season->competition_code;
+        $season_data->venue            = $season->venue;
+        $seasons[ $season->name ]      = $season_data;
+        if ( $new_season ) {
+            ksort( $seasons );
+        }
+        $competition->set_seasons( $seasons );
+        $this->competition_repository->save( $competition );
+        $events = $this->event_repository->find_by_competition_id( $competition->id );
+        foreach ( $events as $event ) {
+            $event_seasons = $event->get_seasons();
+            $event_season = $event->get_season_by_name( $season->name );
+            if ( ! $event_season ) {
+                $event_season_data = new stdClass();
+                $event_season_data->season           = $season->name;
+                $event_season_data->num_match_days   = $season_data->num_match_days;
+                $event_season_data->match_dates      = array();
+                $event_season_data->status           = $season_data->status;
+                $event_seasons[ $season->name ]      = $event_season_data;
+                ksort( $event_seasons );
+                $event->set_seasons( $event_seasons );
+                $this->event_repository->save( $event );
+            }
+        }
+    }
+
+    public function remove_season_for_competition( ?int $competition_id, ?string $season ): void {
+        try {
+            $competition = $this->get_by_id( $competition_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return;
+        }
+        $competition_season = $competition->get_season_by_name( $season );
+        if ( ! $competition_season ) {
+            return;
+        }
+        $seasons = $competition->get_seasons();
+        unset( $seasons[ $season ] );
+        $competition->set_seasons( $seasons );
+        $this->competition_repository->save( $competition );
+    }
+
 }

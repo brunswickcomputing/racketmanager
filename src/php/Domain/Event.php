@@ -643,7 +643,7 @@ class Event {
      *
      * @return int
      */
-    public function get_num_rubbers(): int {
+    public function get_num_rubbers(): ?int {
         return $this->num_rubbers;
     }
 

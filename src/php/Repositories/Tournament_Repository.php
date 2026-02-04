@@ -193,4 +193,9 @@ class Tournament_Repository {
 
         return $players;
     }
+
+    public function delete( int $tournament_id ): int|false {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $tournament_id ), array( '%d' ) );
+    }
+
 }

@@ -450,6 +450,22 @@ class Util {
             return $date;
         }
     }
+
+    /**
+     * Get a schedule date function
+     *
+     * @param $date
+     *
+     * @return string
+     */
+    public static function get_schedule_date( $date ): string {
+        $schedule_date  = strtotime( $date );
+        $day            = intval( gmdate( 'd', $schedule_date ) );
+        $month          = intval( gmdate( 'm', $schedule_date ) );
+        $year           = intval( gmdate( 'Y', $schedule_date ) );
+        return mktime( 00, 00, 01, $month, $day, $year );
+    }
+
     /**
      * Get sports
      *

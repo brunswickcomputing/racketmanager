@@ -194,7 +194,7 @@ class Util_Messages {
         return sprintf( __( 'Status %s is an invalid value', 'racketmanager' ), $status );
     }
 
-    public static function tournament_not_found( ?int $tournament_id ): string {
+    public static function tournament_not_found( null|int|string $tournament_id ): string {
         if ( $tournament_id ) {
             return sprintf( __( 'Tournament with ID %s not found', 'racketmanager' ), $tournament_id );
         } else {
@@ -228,6 +228,18 @@ class Util_Messages {
 
     public static function charge_failed_to_save():string {
         return __( 'Charge failed to save', 'racketmanager' );
+    }
+
+    public static function tournament_entry_not_found():string {
+        return __( 'Tournament entry not found', 'racketmanager' );
+    }
+
+    public static function date_missing():string {
+        return __( 'Date is missing', 'racketmanager' );
+    }
+
+    public static function fixture_not_found( ?int $fixture_id ): string {
+        return sprintf( __( 'Fixture %s not found', 'racketmanager' ), $fixture_id );
     }
 
 }

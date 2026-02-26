@@ -243,4 +243,33 @@ class Invoice_Repository {
 
     }
 
+    /**
+     * Retrieves the total amount paid by a player for a specific tournament.
+     *
+     * @param int $player_id
+     * @param int $tournament_id
+     *
+     * @return float
+     */
+    public function find_tournament_paid_total_by_player( int $player_id, int $tournament_id ): float {
+        $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
+        $charges_table     = $this->wpdb->prefix . 'racketmanager_charges';
+        global $wpdb;
+
+        $query = $this->wpdb->prepare(
+            "SELECT COALESCE(SUM(i.amount), 0)
+         FROM `$this->table_name` i
+         JOIN `$charges_table` c ON i.charge_id = c.id
+         JOIN `$tournaments_table` t ON t.competition_id = c.competition_id AND t.season = c.season
+         WHERE t.id = %d
+           AND i.billable_id = %d
+           AND i.billable_type = 'player'
+           AND i.status = 'paid'",
+            $tournament_id,
+            $player_id
+        );
+
+        return (float) $this->wpdb->get_var( $query );
+    }
+
 }

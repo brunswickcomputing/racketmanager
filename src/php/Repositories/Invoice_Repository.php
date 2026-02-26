@@ -61,21 +61,25 @@ class Invoice_Repository {
         $clubs_table        = $this->wpdb->prefix . 'racketmanager_clubs';
         $users_table        = $this->wpdb->prefix . 'users';
 
-        $defaults    = array(
-            'billable'  => false,
-            'status'    => false,
-            'charge'    => false,
-            'reference' => false,
-            'type'      => false,
-            'before'    => false,
+        $defaults       = array(
+            'billable'    => false,
+            'status'      => false,
+            'charge'      => false,
+            'reference'   => false,
+            'type'        => false,
+            'before'      => false,
+            'competition' => false,
+            'season'      => false,
         );
-        $args        = array_merge( $defaults, $criteria );
-        $billable_id = $args['billable'];
-        $status      = $args['status'];
-        $charge_id   = $args['charge'];
-        $reference   = $args['reference'];
-        $type        = $args['type'];
-        $before      = $args['before'];
+        $args           = array_merge( $defaults, $criteria );
+        $billable_id    = $args['billable'];
+        $status         = $args['status'];
+        $charge_id      = $args['charge'];
+        $reference      = $args['reference'];
+        $type           = $args['type'];
+        $before         = $args['before'];
+        $competition_id = $args['competition'];
+        $season         = $args['season'];
 
         $search_terms = array();
         if ( $billable_id ) {
@@ -108,6 +112,12 @@ class Invoice_Repository {
         }
         if ( $before ) {
             $search_terms[] = $this->wpdb->prepare( '`id` < %d', $before );
+        }
+        if ( $competition_id ) {
+            $search_terms[] = $this->wpdb->prepare( '`competition_id` = %d', $competition_id );
+        }
+        if ( $season ) {
+            $search_terms[] = $this->wpdb->prepare( '`season` = %s', $season );
         }
         $search  = Util::search_string( $search_terms, true );
         $results = $this->wpdb->get_results(

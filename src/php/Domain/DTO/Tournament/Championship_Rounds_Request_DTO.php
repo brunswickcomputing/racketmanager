@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain\DTO\Tournament;
 
+use Racketmanager\Domain\DTO\Competition\Round_Definition_DTO;
+
 /**
  * Class to implement the Championship Rounds Request Data Transfer Object
  */

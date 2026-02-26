@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain\DTO\Tournament;
 
+use Racketmanager\Domain\DTO\Fixture\Scheduled_Fixture_DTO;
+
 /**
  * Class to implement the Tournament Finals Request Data Transfer Object
  */

@@ -10,6 +10,7 @@
 namespace Racketmanager\Domain\DTO\Fixture;
 
 use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Event;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\League;
@@ -31,15 +32,6 @@ readonly class Fixture_Details_DTO {
     /**
      * Fixture_Details_DTO constructor.
      *
-     * @param Fixture $fixture
-     * @param League $league
-     * @param Event $event
-     * @param Competition $competition
-     * @param Team_Details_DTO|null $home_team
-     * @param Team_Details_DTO|null $away_team
-     * @param string|null $prev_home_match_title
-     * @param string|null $prev_away_match_title
-     * @param object|null $is_update_allowed
      */
     public function __construct( Fixture $fixture, League $league, Event $event, Competition $competition, ?Team_Details_DTO $home_team = null, ?Team_Details_DTO $away_team = null, ?string $prev_home_match_title = null, ?string $prev_away_match_title = null, ?object $is_update_allowed = null ) {
         $this->fixture                = $fixture;

@@ -18,29 +18,16 @@ use Racketmanager\Util\Util_Lookup;
  */
 final class Validator_Entry_Form extends Validator {
     /**
-     * Validate nonce
-     *
-     * @param string $nonce_key nonce key.
-     * @return object $validation updated validation object.
-     */
-    public function nonce( string $nonce_key ): object {
-        if ( !isset( $_POST['_wpnonce'] ) || !wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), $nonce_key ) ) {
-            $this->error      = true;
-            $this->err_flds[] = '';
-            $this->err_msgs[] = __( 'Form has expired. Please refresh the page and resubmit', 'racketmanager' );
-        }
-        return $this;
-    }
-
-    /**
      * Validate if user logged in
      *
      * @return object updated validation object.
      */
     public function logged_in_entry(): object {
-        $error_field   = 'clubId';
-        $error_message = __( 'You must be logged in to submit an entry', 'racketmanager' );
-        $this->set_errors( $error_field, $error_message );
+        if ( ! is_user_logged_in() ) {
+            $error_field   = 'clubId';
+            $error_message = __( 'You must be logged in to submit an entry', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
+        }
         return $this;
     }
 
@@ -187,7 +174,7 @@ final class Validator_Entry_Form extends Validator {
      * @return object $validation updated validation object.
      */
     public function tournament_open( object $tournament ): object {
-        $error_field = 'event';
+        $error_field = 'tournament';
         if ( empty( $tournament->date_closing ) ) {
             $error_message = __( 'Tournament close date not set', 'racketmanager' );
             $this->set_errors( $error_field, $error_message );

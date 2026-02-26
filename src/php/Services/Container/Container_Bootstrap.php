@@ -23,6 +23,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Fixture_Service;
@@ -108,6 +109,7 @@ final class Container_Bootstrap {
                 $c->get('competition_service'),
                 $c->get('finance_service'),
                 $c->get('player_service'),
+                $c->get('notify_service'),
             );
         });
 

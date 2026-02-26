@@ -571,5 +571,17 @@ class Finance_Service {
         return $payment_intent->client_secret;
     }
 
+    public function cancel_player_invoices_by_tournament( ?int $player_id, Tournament $tournament ): void {
+        $competition_id = $tournament->get_competition_id();
+        $season         = $tournament->get_season();
+        $invoices       = $this->invoice_repository->find_by( array( 'billable_type' => 'player', 'billable_id' => $player_id, 'status' => 'open', 'competition' => $competition_id, 'season' => $season ) );
+        foreach ( $invoices as $invoice ) {
+            $this->invoice_repository->delete( $invoice->id );
+        }
+    }
+
+    public function get_tournament_paid_total_for_player( ?int $player_id, ?int $tournament_id ): int {
+        return $this->invoice_repository->find_tournament_paid_total_by_player( $player_id, $tournament_id );
+    }
 
 }

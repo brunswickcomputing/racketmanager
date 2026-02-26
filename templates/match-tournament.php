@@ -11,10 +11,18 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Util\Util;
 
 /** @var object $is_update_allowed */
 /** @var object $match */
+/** @var Fixture_Details_DTO $fixture_details */
+$fixture = $fixture_details->fixture;
+$league  = $fixture_details->league;
+$event   = $fixture_details->event;
+$competition = $fixture_details->competition;
+$home_team = $fixture_details->home_team;
+$away_team = $fixture_details->away_team;
 global $racketmanager;
 $tournament_link    = empty( $tournament ) ? null : '/tournament/' . seo_url( $tournament->name ) . '/';
 $winner             = null;
@@ -34,12 +42,13 @@ if ( $user_can_update ) {
 $allow_schedule_match     = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
-$image = match ( $match->league->event->competition->type ) {
+$image = match ( $competition->type ) {
     'league'     => 'assets/icons/bootstrap-icons.svg#table',
     'cup'        => 'assets/icons/bootstrap-icons.svg#trophy-fill',
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
     default => null,
 };
+$match = $fixture;
 if ( $match ) {
     $match_status = null;
     if ( ! empty( $match->winner_id ) ) {
@@ -48,10 +57,10 @@ if ( $match ) {
             $show_menu                = true;
         }
         $match_complete = true;
-        if ( $match->winner_id === $match->teams['home']->id ) {
+        if ( $match->winner_id === $home_team->team->get_id() ) {
             $winner = 'home';
             $loser  = 'away';
-        } elseif ( $match->winner_id === $match->teams['away']->id ) {
+        } elseif ( $match->winner_id === $away_team->team->get_id() ) {
             $winner = 'away';
             $loser  = 'home';
         } elseif ( '-1' === $match->winner_id ) {
@@ -111,7 +120,7 @@ if ( $match ) {
                                         <li class="match__header-title-item">
                                             <span class="nav--link">
                                                 <span class="nav-link__value">
-                                                    <?php echo esc_html( $tournament->venue_name ); ?>
+                                                    <?php echo esc_html( $tournament->get_meta('venue_name') ); ?>
                                                 </span>
                                             </span>
                                         </li>
@@ -194,22 +203,22 @@ if ( $match ) {
                 <div class="col-6 col-sm-4">
                     <svg width="20" height="20" class="match-info-meta__icon">
                         <?php
-                        if ( $match->league->is_championship ) {
+                        if ( $league->is_championship ) {
                             $svg_link_text     = __( 'Draw', 'racketmanager' );
-                            $svg_link          = $match->league->event->name;
-                            $svg_link_location = $tournament_link . 'draw/' . seo_url( $match->league->event->name ) . '/';
+                            $svg_link          = $event->name;
+                            $svg_link_location = $tournament_link . 'draw/' . seo_url( $event->name ) . '/';
                             ?>
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/lta-icons.svg#icon-bracket' ); ?>"></use>
                             <?php
                         } else {
-                            if ( $match->league->event->is_box ) {
+                            if ( $event->is_box ) {
                                 $season_text = __( 'round', 'racketmanager' ) . '-' . $match->season;
                             } else {
                                 $season_text = $match->season;
                             }
                             $svg_link_text     = __( 'League', 'racketmanager' );
-                            $svg_link          = $match->league->title;
-                            $svg_link_location = '/league/' . seo_url( $match->league->title ) . '/' . $season_text . '/';
+                            $svg_link          = $league->title;
+                            $svg_link_location = '/league/' . seo_url( $league->title ) . '/' . $season_text . '/';
                             ?>
                             <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#table' ); ?>"></use>
                             <?php
@@ -267,9 +276,9 @@ if ( $match ) {
                 $location = $match->location;
                 if ( empty( $location ) && isset( $match->host ) ) {
                     if ( 'home' === $match->host ) {
-                        $location = empty( $match->teams['home']->club->shortcode ) ? null : $match->teams['home']->club->shortcode;
+                        $location = ( ! empty( $home_team->club ) && ! empty( $home_team->club->shortcode ) ) ? $home_team->club->shortcode : null;
                     } elseif ( 'away' === $match->host ) {
-                        $location = empty( $match->teams['away']->club->shortcode ) ? null : $match->teams['away']->club->shortcode;
+                        $location = ( ! empty( $away_team->club ) && ! empty( $away_team->club->shortcode ) ) ? $away_team->club->shortcode : null;
                     }
                 }
 
@@ -305,7 +314,7 @@ if ( $match ) {
                 <input type="hidden" name="home_team" value="<?php echo esc_html( $match->home_team ); ?>" />
                 <input type="hidden" name="away_team" value="<?php echo esc_html( $match->away_team ); ?>" />
                 <input type="hidden" name="match_type" value="tournament" />
-                <input type="hidden" name="match_round" value="<?php echo esc_html( $match->final_round ); ?>" />
+                <input type="hidden" name="match_round" value="<?php echo esc_html( $fixture->final ); ?>" />
                 <input type="hidden" name="updateMatch" id="updateMatch" value="results" />
                 <input name="match_status" type="hidden" id="match_status" value="<?php echo esc_attr( $match_status ); ?>" />
                 <?php
@@ -344,16 +353,16 @@ if ( $match ) {
                     <div class="match__header">
                         <ul class="match__header-title">
                             <?php
-                            if ( $match->league->is_championship ) {
+                            if ( $league->is_championship ) {
                                 ?>
                                 <li class="match__header-title-item">
-                                    <?php echo esc_html( Util::get_final_name( $match->final_round ) ); ?>
+                                    <?php echo esc_html( Util::get_final_name( $fixture->final ) ); ?>
                                 </li>
                                 <?php
                             }
                             ?>
                             <li class="match__header-title-item">
-                                <?php echo esc_html( $match->league->title ); ?>
+                                <?php echo esc_html( $league->title ); ?>
                             </li>
                         </ul>
                         <?php
@@ -377,8 +386,9 @@ if ( $match ) {
                     <div class="match__body">
                         <div class="match__row-wrapper">
                             <?php
-                            $opponents = array( 'home', 'away' );
-                            foreach ( $opponents as $opponent ) {
+                            $opponents = array( 'home' => $home_team, 'away' => $away_team );
+                            foreach ( $opponents as $opponent => $team_details ) {
+                                $team = $team_details->team;
                                 $is_winner    = false;
                                 $is_loser     = false;
                                 $winner_class = null;
@@ -392,33 +402,32 @@ if ( $match ) {
                                 <div class="match__row <?php echo esc_html( $winner_class ); ?>">
                                     <div class="match__row-title">
                                         <?php
-                                        $team = $match->teams[ $opponent ];
-                                        if ( empty( $team->player ) ) {
+                                        if ( empty( $team->players ) ) {
                                             ?>
                                             <div class="match__row-title-value">
-                                                <?php echo esc_html( $team->title ); ?>
+                                                <?php echo esc_html( $team->get_name() ); ?>
                                             </div>
                                             <?php
                                         } else {
-                                            foreach ( $team->player as $team_player ) {
+                                            foreach ( $team->players as $team_player ) {
                                                 ?>
                                                 <div class="match__row-title-value">
                                                     <?php
                                                     if ( ! empty( $tournament ) ) {
                                                         ?>
-                                                        <a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_html( seo_url( trim( $team_player ) ) ); ?>">
+                                                        <a href="/tournament/<?php echo esc_html( seo_url( $tournament->name ) ); ?>/player/<?php echo esc_html( seo_url( trim( $team_player->get_fullname() ) ) ); ?>">
                                                         <?php
                                                     }
                                                     ?>
                                                     <?php
                                                     if ( ! empty( $team->is_withdrawn ) ) {
-                                                        $title_text = $match->teams['home']->title . ' ' . __( 'has withdrawn', 'racketmanager' );
+                                                        $title_text = $team->get_name() . ' ' . __( 'has withdrawn', 'racketmanager' );
                                                         ?>
                                                         <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
                                                         <?php
                                                     }
                                                     ?>
-                                                    <?php echo esc_html( trim( $team_player ) ); ?>
+                                                    <?php echo esc_html( trim( $team_player->get_fullname() ) ); ?>
                                                     <?php
                                                     if ( ! empty( $team->is_withdrawn ) ) {
                                                         ?>
@@ -453,6 +462,8 @@ if ( $match ) {
                                         if ( 'loser' === $player_team_status ) {
                                             $match_status_class = 'loser';
                                             $match_status_text  = 'L';
+                                        } else {
+                                            $match_status_class = 'blank';
                                         }
                                         if ( $match->is_walkover ) {
                                             $match_message_class = 'match-warning';
@@ -468,10 +479,10 @@ if ( $match ) {
                                         $match_message_text  = __( 'Not played', 'racketmanager' );
                                     }
                                     ?>
-                                    <span class="match__message <?php echo esc_attr( $match_message_class ); ?>" id="match-message-<?php echo esc_attr( $match->teams[ $opponent ]->id ); ?>">
+                                    <span class="match__message <?php echo esc_attr( $match_message_class ); ?>" id="match-message-<?php echo esc_attr( $team->id ); ?>">
                                         <?php echo esc_html( $match_message_text ); ?>
                                     </span>
-                                    <span class="match__status <?php echo esc_attr( $match_status_class ); ?>" id="match-status-<?php echo esc_attr( $match->teams[ $opponent ]->id ); ?>">
+                                    <span class="match__status <?php echo esc_attr( $match_status_class ); ?>" id="match-status-<?php echo esc_attr( $team->id ); ?>">
                                         <?php echo esc_html( $match_status_text ); ?>
                                     </span>
                                 </div>
@@ -481,8 +492,8 @@ if ( $match ) {
                         </div>
                         <div class="match__result">
                             <?php
-                            $sets = $match->sets;
-                            for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
+                            $sets = $fixture->custom['sets'] ?? null;
+                            for ( $i = 1; $i <= $league->num_sets; $i++ ) {
                                 $set = ! empty( $sets[ $i ] ) ? $sets[ $i ] : array();
                                 if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
                                     if ( $set['player1'] > $set['player2'] ) {
@@ -498,7 +509,7 @@ if ( $match ) {
                                 ?>
                                 <?php
                                 if ( $match_editable || ( ! empty( $set['player1'] ) || ! empty( $set['player2'] ) ) ) {
-                                    $set_type = Util::get_set_type( $match->league->scoring, $match->final_round, $match->league->num_sets, $i, false, $match->num_rubbers, $match->leg );
+                                    $set_type = Util::get_set_type( $league->scoring, $fixture->final, $league->num_sets, $i, false, $league->num_rubbers, $match->leg );
                                     $set_info = Util::get_set_info( $set_type );
                                     ?>
                                     <span class="set-group" id="set_<?php echo esc_html( $i ); ?>" data-settype="<?php echo esc_attr( $set_type ); ?>" data-maxwin="<?php echo esc_attr( $set_info->max_win ); ?>" data-maxloss="<?php echo esc_attr( $set_info->max_loss ); ?>" data-minwin="<?php echo esc_attr( $set_info->min_win ); ?>" data-minloss="<?php echo esc_attr( $set_info->min_loss ); ?>" data-tiebreakset="<?php echo esc_attr( $set_info->tiebreak_set ); ?>">

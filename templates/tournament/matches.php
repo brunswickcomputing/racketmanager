@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 /** @var object $tournament */
 /** @var string $current_match_date */
+/** @var array  $match_dates */
 ?>
 <script>
     jQuery(document).ready(function() {
@@ -24,7 +25,7 @@ namespace Racketmanager;
                 <div class="container">
                     <input type="hidden" id="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
                     <?php
-                    if ( count( $tournament->match_dates ) > 8 ) {
+                    if ( count( $match_dates ) > 8 ) {
                         require RACKETMANAGER_PATH . 'templates/includes/tournament-date-selection.php';
                         ?>
                         <?php
@@ -35,7 +36,7 @@ namespace Racketmanager;
                         </div>
                         <ul class="d-none d-md-flex nav nav-tabs frontend match-date-list" id="match_date_tabs" role="tablist">
                             <?php
-                            foreach ( $tournament->match_dates as $match_date ) {
+                            foreach ( $match_dates as $match_date ) {
                                 if ( $current_match_date === $match_date ) {
                                     $selected_class = 'is_selected';
                                 } else {
@@ -71,7 +72,7 @@ namespace Racketmanager;
                     <?php require RACKETMANAGER_PATH . 'templates/includes/nav-pills.php'; ?>
                     <ul class="match-group">
                         <?php
-                        foreach ( $tournament_matches as $key => $matches ) {
+                        foreach ( $tournament_matches as $key => $fixtures ) {
                             if ( '99:99' === $key ) {
                                 $key = __( 'Unscheduled', 'racketmanager' );
                             }
@@ -81,7 +82,7 @@ namespace Racketmanager;
                                     <h5 class="match-group__header"><?php echo esc_html( $key ); ?></h5>
                                     <ul class="match-group">
                                         <?php
-                                        foreach ( $matches as $match ) {
+                                        foreach ( $fixtures as $fixture_detail ) {
                                             $match_display = 'list';
                                             require RACKETMANAGER_PATH . 'templates/tournament/match.php';
                                         }

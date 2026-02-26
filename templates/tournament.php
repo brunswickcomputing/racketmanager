@@ -14,9 +14,13 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
+use Racketmanager\Domain\Tournament;
 use function get_query_var;
 
-/** @var object $tournament */
+/** @var Tournament_Details_DTO $tournament_details */
+$tournament = $tournament_details->tournament;
+$competition = $tournament_details->competition;
 global $wp_query;
 $post_id   = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $match_day = get_query_var( 'match_day' );
@@ -67,13 +71,13 @@ $menu_options['players']     = array(
 $menu_options['order_of_play'] = array(
     'name'        => 'order_of_play',
     'selected'    => 'order_of_play' === $tab,
-    'available'   => ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) <= $tournament->date && ! empty( $tournament->order_of_play ),
+    'available'   => ! empty( $tournament->get_end_date() ) && gmdate( 'Y-m-d' ) <= $tournament->get_end_date() && ! empty( $tournament->order_of_play ),
     'description' => __( 'Order of play', 'racketmanager' ),
 );
 $menu_options['winners']     = array(
     'name'        => 'winners',
     'selected'    => 'winners' === $tab,
-    'available'   => ! empty( $tournament->date ) && gmdate( 'Y-m-d' ) >= $tournament->date,
+    'available'   => ! empty( $tournament->get_end_date() ) && gmdate( 'Y-m-d' ) >= $tournament->get_end_date(),
     'description' => __( 'Winners', 'racketmanager' ),
 );
 ?>

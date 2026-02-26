@@ -7,9 +7,13 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Tournament;
+
 /** @var int $post_id */
 /** @var array $tournaments */
-/** @var object $tournament */
+/** @var Tournament $tournament */
+/** @var Competition $competition */
 if ( empty( $selection_id ) ) {
     $selection_id = 'racketmanager_tournament';
 }
@@ -37,7 +41,7 @@ if ( empty( $selection_id ) ) {
                     }
                     ?>
                 </select>
-                <label for="tournament_id"><?php echo esc_html( ucfirst( $tournament->competition->age_group ) ) . ' ' . esc_html__( 'Tournaments', 'racketmanager' ); ?></label>
+                <label for="tournament_id"><?php echo esc_html( ucfirst( $competition->age_group ) ) . ' ' . esc_html__( 'Tournaments', 'racketmanager' ); ?></label>
             </div>
         </div>
     </form>

@@ -10,8 +10,9 @@ namespace Racketmanager;
 /** @var object $tournament_player */
 /** @var object $tournament */
 $player = $tournament_player;
-require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
 ?>
+<div class="container">
+    <?php require RACKETMANAGER_PATH . 'templates/includes/player-header.php'; ?>
     <div class="module module--card">
         <div class="module__content">
             <div class="module-container">
@@ -65,11 +66,11 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
                 <div class="module__content">
                     <div class="module-container">
                         <?php
-                        $matches = $tournament->matches;
+                        $fixtures = $player->matches;
                         ?>
                         <div class="tournament-matches">
                             <?php
-                            foreach ( $matches as $no => $match ) {
+                            foreach ( $fixtures as $fixture_detail ) {
                                 ?>
                                 <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
                                 <?php
@@ -102,7 +103,7 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
                                 </div>
                                 <?php
                                 foreach ( $tournament_player->teams as $entry ) {
-                                    $event_link = '/tournament/' . seo_url( $tournament->name ) . '/event/' . seo_url( $entry->event ) . '/';
+                                    $event_link = '/tournament/' . seo_url( $tournament->name ) . '/event/' . seo_url( $entry->event_name ) . '/';
                                     ?>
                                     <div class="row mb-2 row-list">
                                         <div class="col-1" name="<?php esc_html_e( 'Favourite', 'racketmanager' ); ?>">
@@ -110,22 +111,22 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
                                             $hidden         = true;
                                             $event          = $entry;
                                             $favourite_type = 'competition';
-                                            $favourite_id   = $event->id;
+                                            $favourite_id   = $entry->event_id;
                                             require RACKETMANAGER_PATH . 'templates/includes/favourite.php';
                                             ?>
                                         </div>
                                         <div class="col-6" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
                                             <a href="<?php echo esc_attr( $event_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $event_link ); ?>" data-link-id="<?php echo esc_attr( $entry->event_id ); ?>" data-link-type="events">
-                                                <?php echo esc_html( $entry->event ); ?>
+                                                <?php echo esc_html( $entry->event_name ); ?>
                                             </a>
                                         </div>
                                         <div class="col-5" name="<?php esc_html_e( 'Partner', 'racketmanager' ); ?>">
                                             <?php
-                                            if ( ! empty( $entry->partner ) ) {
-                                                $player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( $entry->partner->display_name ) . '/';
+                                            if ( ! empty( $entry->partner_name ) ) {
+                                                $player_link = '/tournament/' . seo_url( $tournament->name ) . '/player/' . seo_url( $entry->partner_name ) . '/';
                                                 ?>
-                                                <a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $entry->partner->id ); ?>" data-link-type="players">
-                                                    <?php echo esc_html( wp_unslash( $entry->partner->display_name ) ); ?>
+                                                <a href="<?php echo esc_attr( $player_link ); ?>" class="tabDataLink" data-type="tournament" data-type-id="<?php echo esc_attr( $tournament->id ); ?>" data-season="" data-link="<?php echo esc_attr( $player_link ); ?>" data-link-id="<?php echo esc_attr( $entry->partner_id ); ?>" data-link-type="players">
+                                                    <?php echo esc_html( wp_unslash( $entry->partner_name ) ); ?>
                                                 </a>
                                                 <?php
                                             }
@@ -151,3 +152,4 @@ require RACKETMANAGER_PATH . 'templates/includes/player-header.php';
             ?>
         </div>
     </div>
+</div>

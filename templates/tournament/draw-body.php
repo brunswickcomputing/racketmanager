@@ -8,7 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $draw */
-/** @var array $matches */
+/** @var array $fixtures */
 ?>
 <div class="module__content">
             <div class="module-container">
@@ -44,7 +44,7 @@ namespace Racketmanager;
                     <div class="tab-pane fade" id="draw-matches" role="tabpanel" aria-labelledby="draw-matches-tab">
                         <div class="container tournament-matches">
                             <?php
-                            foreach ( $matches as $no => $match ) {
+                            foreach ( $fixtures as $fixture_detail ) {
                                 ?>
                                 <?php require RACKETMANAGER_PATH . 'templates/tournament/match.php'; ?>
                                 <?php

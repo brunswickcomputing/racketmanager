@@ -7,7 +7,7 @@
  * @subpackage Domain/DTO
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Competition;
 
 use stdClass;
 

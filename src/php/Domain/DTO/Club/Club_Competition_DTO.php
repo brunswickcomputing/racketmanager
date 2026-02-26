@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Club;
 
 /**
  * Class to implement the Club Competition Data Transfer Object

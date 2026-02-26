@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Team;
 
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Player;
@@ -18,16 +18,17 @@ use Racketmanager\Domain\Team;
  */
 class Team_Details_DTO {
     public Team $team;
-    public Club $club;
+    public ?Club $club;
     public ?Player $match_secretary;
 
     /**
      * Team_Details_DTO constructor.
      *
      * @param Team $team
-     * @param Club $club
+     * @param Club|null $club
+     * @param Player|null $match_secretary
      */
-    public function __construct( Team $team, Club $club, ?Player $match_secretary ) {
+    public function __construct( Team $team, ?Club $club, ?Player $match_secretary ) {
         $this->team            = $team;
         $this->club            = $club;
         $this->match_secretary = $match_secretary;

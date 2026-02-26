@@ -7,7 +7,7 @@
  * @subpackage Domain\DTO
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Finance;
 
 /**
  * Class to implement the Invoice Details Data Transfer Object

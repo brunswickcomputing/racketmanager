@@ -7,7 +7,7 @@
  * @subpackage Domain/DTO
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Tournament;
 
 use stdClass;
 
@@ -32,7 +32,7 @@ readonly class Tournament_Request_DTO {
     public stdClass $fees;
 
     /**
-     * Cup_Entry_Request_DTO constructor.
+     * Tournament_Request_DTO constructor.
      *
      * @param array $data
      */
@@ -47,7 +47,7 @@ readonly class Tournament_Request_DTO {
         $this->date_withdrawal  = isset( $data['dateWithdraw'] ) ? sanitize_text_field( wp_unslash( $data['dateWithdraw'] ) ) : null;
         $this->date_start       = isset( $data['dateStart'] ) ? sanitize_text_field( wp_unslash( $data['dateStart'] ) ) : null;
         $this->date             = isset( $data['dateEnd'] ) ? sanitize_text_field( wp_unslash( $data['dateEnd'] ) ) : null;
-        $this->start_time       = isset( $data['startTime'] ) ? sanitize_text_field( wp_unslash( $data['startTime'] ) ) : null;
+        $this->start_time       = isset( $data['start_time'] ) ? sanitize_text_field( wp_unslash( $data['start_time'] ) ) : null;
         $this->competition_code = isset( $data['competition_code'] ) ? sanitize_text_field( wp_unslash( $data['competition_code'] ) ) : null;
         $this->grade            = isset( $data['grade'] ) ? sanitize_text_field( wp_unslash( $data['grade'] ) ) : null;
         $this->num_entries      = isset( $data['num_entries'] ) ? intval( $data['num_entries'] ) : null;

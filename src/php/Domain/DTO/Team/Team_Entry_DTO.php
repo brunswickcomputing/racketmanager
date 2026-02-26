@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Team;
 
 /**
  * Class to implement the Team Entry Data Transfer Object

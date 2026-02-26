@@ -7,7 +7,7 @@
  * @subpackage Domain\DTO
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Finance;
 
 use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Player;

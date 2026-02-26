@@ -7,7 +7,7 @@
  * @subpackage Domain\DTO
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Finance;
 
 use stdClass;
 
@@ -23,7 +23,7 @@ class Charges_With_Totals_DTO {
     public ?int $fee_event;
 
     /**
-     * Team_Details_DTO constructor.
+     * Charges_With_Totals_DTO constructor.
      *
      * @param stdClass $data
      */

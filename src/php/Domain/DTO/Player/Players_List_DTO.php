@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Player;
 
 /**
  * Class to implement the Players List Data Transfer Object
@@ -18,12 +18,17 @@ class Players_List_DTO {
     public string $surname;
     public string $display_name;
     public string $index;
+    /**
+     * @var mixed|string
+     */
+    public ?string $email;
 
     public function __construct( $data ) {
-        $this->id           = (int) $data->playerId;
+        $this->id           = (int) $data->player_id;
         $this->display_name = $data->display_name;
-        $this->firstname    = $data->firstName ? : '';
-        $this->surname      = $data->surname ? : '';
+        $this->firstname    = $data->firstName ?? '';
+        $this->surname      = $data->surname ?? '';
+        $this->email        = $data->email ?? '';
     }
 
 }

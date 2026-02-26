@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Competition;
 
 /**
  * Class to implement the Competition Overview Data Transfer Object

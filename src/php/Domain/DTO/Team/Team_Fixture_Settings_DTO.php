@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Team;
 
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -25,7 +25,7 @@ class Team_Fixture_Settings_DTO {
     public $match_time;
 
     /**
-     * Team_Details_DTO constructor.
+     * Team_Fixture_Settings_DTO constructor.
      *
      * @param stdClass $data
      */

@@ -7,7 +7,7 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain\DTO;
+namespace Racketmanager\Domain\DTO\Club;
 
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Player;

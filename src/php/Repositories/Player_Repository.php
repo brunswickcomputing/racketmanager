@@ -311,10 +311,10 @@ class Player_Repository {
      */
     public function find_by_btm( $player_id ): mixed {
         $players = get_users( array(
-                'meta_key'     => self::META_KEY_BTM, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-                'meta_value'   => $player_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-                'meta_compare' => '=',
-            ) );
+            'meta_key'     => self::META_KEY_BTM, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+            'meta_value'   => $player_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+            'meta_compare' => '=',
+        ) );
         if ( $players ) {
             return $players[0];
         } else {
@@ -454,7 +454,7 @@ class Player_Repository {
         if ( is_numeric( $max_age ) ) {
             // A player who is at most $maxAge must have a YOB >= ($currentYear - $maxAge)
             $min_year_of_birth = $current_year - (int) $max_age;
-            $search_terms[] = $this->wpdb->prepare( "CAST(um_yob.meta_value AS UNSIGNED) >= %d", $min_year_of_birth );
+            $search_terms[]    = $this->wpdb->prepare( "CAST(um_yob.meta_value AS UNSIGNED) >= %d", $min_year_of_birth );
         }
         $search = Util::search_string( $search_terms, true );
         $query  .= " $search GROUP BY u.ID, c.id, r.id ";
@@ -490,7 +490,7 @@ class Player_Repository {
         $competitions_table = $this->wpdb->prefix . 'racketmanager_competitions';
         $tournaments_table  = $this->wpdb->prefix . 'racketmanager_tournaments';
 
-        $sql = $this->wpdb->prepare(
+        $sql     = $this->wpdb->prepare(
             "SELECT m.`season`, t.`name` as `tournament`, e.`name` as `draw`, l.`title` as `title`, tp.`team_id`, m.`winner_id`, m.`loser_id` FROM $team_players_table tp, $matches_table m, $leagues_table l, $events_table e, $competitions_table c, $tournaments_table t WHERE tp.`player_id` = %d AND (tp.`team_id` = m.`winner_id` OR tp.`team_id` = m.`loser_id`) AND m.`final` = 'final' AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t.`competition_id` = c.`id` AND t.`season` = m.`season` ORDER BY m.`season` DESC, t.`name`",
             $player_id,
         );
@@ -511,6 +511,7 @@ class Player_Repository {
             }
             $seasons[ $season ][ $tournament ][] = $match;
         }
+
         return $seasons;
     }
 
@@ -522,26 +523,27 @@ class Player_Repository {
      *
      * @return Players_List_DTO[]
      */
-    public function find_active_players_by_competition_and_season( int $competition_id, string $season): array {
-        $user_table = $this->wpdb->base_prefix . 'users';
-        $usermeta_table = $this->wpdb->base_prefix . 'usermeta';
+    public function find_active_players_by_competition_and_season( int $competition_id, string $season ): array {
+        $user_table           = $this->wpdb->base_prefix . 'users';
+        $usermeta_table       = $this->wpdb->base_prefix . 'usermeta';
         $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
-        $rubbers_table = $this->wpdb->prefix . 'racketmanager_rubbers';
-        $fixtures_table = $this->wpdb->prefix . 'racketmanager_matches';
-        $events_table = $this->wpdb->prefix . 'racketmanager_events';
-        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
-        $registrations_table = $this->wpdb->prefix . 'racketmanager_club_players';
+        $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $fixtures_table       = $this->wpdb->prefix . 'racketmanager_matches';
+        $events_table         = $this->wpdb->prefix . 'racketmanager_events';
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
+        $registrations_table  = $this->wpdb->prefix . 'racketmanager_club_players';
 
-        $query = $this->wpdb->prepare(
+        $query   = $this->wpdb->prepare(
             "
                 SELECT
-                    base.playerId,
+                    base.player_id,
                     u.display_name,
+                    u.user_email as  email_address,
                     m1.meta_value AS firstName,
                     m2.meta_value AS surname
                 FROM (
                     -- Filter down to unique player IDs first to avoid joining meta for duplicates
-                    SELECT DISTINCT rp.player_id AS playerId
+                    SELECT DISTINCT rp.player_id AS player_id
                     FROM `$rubber_players_table` rp
                         JOIN `$registrations_table` rg ON rp.club_player_id = rg.id
                     JOIN `$rubbers_table` r ON rp.rubber_id = r.id
@@ -552,15 +554,16 @@ class Player_Repository {
                       AND e.competition_id = %d
                       AND rg.system_record IS NULL
                 ) AS base
-                    JOIN `$user_table` u ON base.playerId = u.id
-                LEFT JOIN `$usermeta_table` m1 ON base.playerId = m1.user_id AND m1.meta_key = 'first_name'
-                LEFT JOIN `$usermeta_table` m2 ON base.playerId = m2.user_id AND m2.meta_key = 'last_name'
+                    JOIN `$user_table` u ON base.player_id = u.id
+                LEFT JOIN `$usermeta_table` m1 ON base.player_id = m1.user_id AND m1.meta_key = 'first_name'
+                LEFT JOIN `$usermeta_table` m2 ON base.player_id = m2.user_id AND m2.meta_key = 'last_name'
                 ORDER BY surname, firstName;
                 ",
             $season,
             $competition_id,
         );
         $results = $this->wpdb->get_results( $query );
+
         return array_map(
             fn( $row ) => new Players_List_DTO( $row ),
             $results

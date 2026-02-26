@@ -9,10 +9,8 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Season;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Services\Validator\Validator;
-use stdClass;
-use function Racketmanager\get_season;
 
 /**
  * RacketManager Season Admin functions
@@ -45,27 +43,39 @@ class Admin_Season extends Admin_Display {
             return;
         }
         if ( isset( $_POST['addSeason'] ) ) {
-            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_add-season' ) ) {
-                $this->set_message( $this->invalid_security_token, true );
-                $this->show_message();
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-season' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
             } else {
-                $season    = isset( $_POST['seasonName'] ) ? sanitize_text_field( wp_unslash( $_POST['seasonName'] ) ) : null;
-                $validator = new Validator();
-                $validator = $validator->season( $season );
-                if ( empty( $validator->error ) ) {
-                    $this->add_season( $season );
-                    $this->set_message( __( 'Season added', 'racketmanager' ) );
-                } else {
-                    $this->set_message( __( 'Season not added', 'racketmanager' ), true );
+                $season = isset( $_POST['seasonName'] ) ? sanitize_text_field( wp_unslash( $_POST['seasonName'] ) ) : null;
+                try {
+                    $response = $this->season_service->create_season( $season );
+                    if ( is_wp_error( $response ) ) {
+                        $validator->err_flds = $response->get_error_codes();
+                        $validator->err_msgs = $response->get_error_messages();
+                        $validator->error    = true;
+                        $this->set_message( __( 'Error adding season', 'racketmanager' ), true );
+                    } else {
+                        $this->set_message( __( 'Season added', 'racketmanager' ) );
+                    }
+                } catch ( Invalid_Argument_Exception $e ) {
+                    $this->set_message( $e->getMessage(), true );
                 }
             }
         } elseif ( isset( $_POST['doSeasonDel'] ) && isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-            if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_seasons-bulk' ) ) {
-                $this->set_message( $this->invalid_security_token, true );
-                $this->show_message();
+            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_seasons-bulk' );
+            if ( ! empty( $validator->error ) ) {
+                $this->set_message( $validator->msg, true );
             } else {
-                $seasons = isset( $_POST['season'] ) ? wp_unslash( $_POST['season'] ) : array();
-                $deleted = $this->delete_seasons( $seasons );
+                $seasons = $_POST['season'] ?? array();
+                $deleted = 0;
+                foreach ( $seasons as $season_id ) {
+                    $season = sanitize_text_field( wp_unslash( $season_id ) );
+                    $response = $this->season_service->delete_season( $season );
+                    if ( $response ) {
+                        ++ $deleted;
+                    }
+                }
                 if ( $deleted ) {
                     $this->set_message( __( 'Season(s) deleted', 'racketmanager' ) );
                 } else {
@@ -74,39 +84,8 @@ class Admin_Season extends Admin_Display {
             }
         }
         $this->show_message();
-        $seasons = $racketmanager->get_seasons( 'DESC' );
+        $seasons = $this->season_service->get_all_seasons();
         require_once RACKETMANAGER_PATH . 'templates/admin/show-seasons.php';
     }
 
-    /**
-     * Add new Season
-     *
-     * @param string $name name of season.
-     *
-     * @return void
-     */
-    private function add_season( string $name ): void {
-        $season       = new stdClass();
-        $season->name = $name;
-        new Season( $season );
-    }
-
-    /**
-     * Delete seasons
-     *
-     * @param array $seasons seasons to be deleted.
-     *
-     * @return int
-     */
-    private function delete_seasons( array $seasons ): int {
-        $deleted = 0;
-        foreach ( $seasons as $season_id ) {
-            $season = get_season( intval( $season_id ) );
-            if ( $season ) {
-                $season->delete();
-                ++$deleted;
-            }
-        }
-        return $deleted;
-    }
 }

@@ -45,10 +45,10 @@ namespace Racketmanager;
                             ?>
                             <tr>
                                 <td class="check-column">
-                                    <label for="season-<?php echo esc_html( $season->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $season->id ); ?>" name="season[<?php echo esc_html( $season->id ); ?>]" id="season-<?php echo esc_html( $season->id ); ?>" />
+                                    <label for="season-<?php echo esc_html( $season->get_id() ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $season->get_id() ); ?>" name="season[<?php echo esc_html( $season->get_id() ); ?>]" id="season-<?php echo esc_html( $season->get_id() ); ?>" />
                                 </td>
-                                <td class="column-num"><?php echo esc_html( $season->id ); ?></td>
-                                <td class=""><?php echo esc_html( $season->name ); ?></td>
+                                <td class="column-num"><?php echo esc_html( $season->get_id() ); ?></td>
+                                <td class=""><?php echo esc_html( $season->get_name() ); ?></td>
                             </tr>
                             <?php
                         }
@@ -64,15 +64,16 @@ namespace Racketmanager;
         <?php wp_nonce_field( 'racketmanager_add-season', 'racketmanager_nonce' ); ?>
         <div class="form-floating mb-3">
             <?php
-            $is_invalid = false;
-            $msg        = null;
-            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'season', $validator->err_flds, true ) ) ) {
-                $is_invalid = true;
-                $msg_id     = array_search( 'season', $validator->err_flds, true );
-                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
+            $is_invalid  = false;
+            $msg         = null;
+            $season_name = $_POST['seasonName'] ?? null;
+            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'seasonName', $validator->err_flds, true ) ) ) {
+                $is_invalid  = true;
+                $msg_id      = array_search( 'season', $validator->err_flds, true );
+                $msg         = $validator->err_msgs[ $msg_id ] ?? null;
             }
             ?>
-            <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter season name', 'racketmanager' ); ?>" type="text" name="seasonName" id="seasonName" value=""  />
+            <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter season name', 'racketmanager' ); ?>" type="text" name="seasonName" id="seasonName" value="<?php echo esc_html( $season_name ); ?>"  />
             <label for="seasonName"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
             <?php
             if ( $is_invalid ) {

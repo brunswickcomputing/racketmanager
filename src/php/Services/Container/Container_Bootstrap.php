@@ -13,6 +13,7 @@ use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Repositories\Tournament_Repository;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -23,6 +24,7 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 
@@ -47,6 +49,7 @@ final class Container_Bootstrap {
         $c->set('charge_repository', fn() => new Charge_Repository());
         $c->set('invoice_repository', fn() => new Invoice_Repository());
         $c->set('tournament_repository', fn() => new Tournament_Repository());
+        $c->set('season_repository', fn() => new Season_Repository());
 
         // External clients
         $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
@@ -152,6 +155,19 @@ final class Container_Bootstrap {
                 $c->get('charge_repository'),
                 $c->get('competition_service'),
 //                $c->get('invoice_repository'),
+            );
+        });
+
+        $c->set('season_service', function(Simple_Container $c) use ($app) {
+            return new Season_Service(
+                $app,
+                $c->get('season_repository'),
+            );
+        });
+
+        $c->set('notify_service', function(Simple_Container $c) use ( $app ) {
+            return new Notify_Service(
+                $app,
             );
         });
 

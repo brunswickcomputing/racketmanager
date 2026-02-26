@@ -12,17 +12,30 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\Season;
 use wpdb;
 
+/**
+ * Class to implement the Season repository
+ */
 class Season_Repository {
 
     private wpdb $wpdb;
     private string $table_name;
 
+    /**
+     * Constructor
+     */
     public function __construct() {
         global $wpdb;
         $this->wpdb       = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_seasons';
     }
 
+    /**
+     * Save a season.
+     *
+     * @param Season $season
+     *
+     * @return bool|int
+     */
     public function save( Season $season ): bool|int {
         $data        = array(
             'name' => $season->get_name(),
@@ -58,11 +71,18 @@ class Season_Repository {
 
     }
 
-    public function find_by_id( null|int|string $season_id ): ?Season {
+    /**
+     * Find a season by its ID.
+     *
+     * @param int|string|null $season_id
+     *
+     * @return Season|null
+     */
+    public function find_by_id( null|int|string $season_id, string $type = 'id' ): ?Season {
         if ( ! $season_id ) {
             return null;
         }
-        if ( is_numeric( $season_id ) ) {
+        if ( 'id' === $type ) {
             $season_id = (int) $season_id;
             $search    = $this->wpdb->prepare(
                 '`id` = %d',
@@ -91,6 +111,11 @@ class Season_Repository {
         return $season;
     }
 
+    /**
+     * Find all seasons.
+     *
+     * @return Season[]
+     */
     public function find_all(): array {
         $query   = "SELECT * FROM `$this->table_name` ORDER BY `name` DESC";
         $results = $this->wpdb->get_results( $query );
@@ -103,6 +128,13 @@ class Season_Repository {
         );
     }
 
+    /**
+     * Delete a season by ID.
+     *
+     * @param int $id
+     *
+     * @return int|false
+     */
     public function delete( int $id ): int|false {
         return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }

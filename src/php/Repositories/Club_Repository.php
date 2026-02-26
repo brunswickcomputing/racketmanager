@@ -10,7 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\DTO\Club_Competition_DTO;
+use Racketmanager\Domain\DTO\Club\Club_Competition_DTO;
 use Racketmanager\Domain\Team;
 use Racketmanager\Util\Util;
 use wpdb;

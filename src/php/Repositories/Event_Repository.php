@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\DTO\Event_Details_DTO;
+use Racketmanager\Domain\DTO\Competition\Event_Details_DTO;
 use Racketmanager\Domain\Event;
 use wpdb;
 

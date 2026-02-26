@@ -10,8 +10,8 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Charge;
-use Racketmanager\Domain\DTO\Charge_Details_DTO;
-use Racketmanager\Domain\DTO\Charges_With_Totals_DTO;
+use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
+use Racketmanager\Domain\DTO\Finance\Charges_With_Totals_DTO;
 use Racketmanager\Util\Util;
 use wpdb;
 

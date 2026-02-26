@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Util;
 
+use function Racketmanager\un_seo_url;
+
 class Util_Lookup {
     /**
      * Get event types
@@ -45,6 +47,7 @@ class Util_Lookup {
             return $event_types[ $type ];
         }
     }
+
     /**
      * Get available league standing status
      *
@@ -137,7 +140,7 @@ class Util_Lookup {
         return $entry_types;
     }
     /**
-     * Get array of supported scoring rules
+     * Get an array of supported scoring rules
      *
      * @return array
      */
@@ -260,7 +263,7 @@ class Util_Lookup {
         return $match_days;
     }
     /**
-     * Get match day number from day name function
+     * Get the match day number from the match day name function
      *
      * @param string $match_day match day name.
      * @return int match day number
@@ -274,7 +277,7 @@ class Util_Lookup {
         return intval( $day );
     }
     /**
-     * Get match day name from day number function
+     * Get the match day name from the day number function
      *
      * @param string $match_day_num match day number.
      * @return string match day name
@@ -295,7 +298,7 @@ class Util_Lookup {
         return $match_types;
     }
     /**
-     * Get match type key from name function
+     * Get the match type key from the name function
      *
      * @param string $match_type match type name.
      * @return string $key match type key.
@@ -472,4 +475,57 @@ class Util_Lookup {
             'games'      => __( 'Games', 'racketmanager' ),
         );
     }
+
+    public static function get_number_of_seeds( ?int $num_teams ): int {
+        if ( empty( $num_teams ) ) {
+            return 0;
+        }
+        if ( $num_teams <= 10 ) {
+            $num_seeds = 2;
+        } elseif ( $num_teams <= 20 ) {
+            $num_seeds = 4;
+        } elseif ( $num_teams <= 40 ) {
+            $num_seeds = 8;
+        } elseif ( $num_teams <= 80 ) {
+            $num_seeds = 16;
+        } elseif ( $num_teams <= 132 ) {
+            $num_seeds = 32;
+        } else {
+            $num_seeds = 0;
+        }
+        return $num_seeds;
+    }
+
+    /**
+     * Get player id
+     *
+     */
+    public static function get_player_id( int|null|string $player_id = null ): ?string {
+        global $wp;
+        if ( $player_id ) {
+            return $player_id;
+        }
+        if ( ! empty( $_GET['player'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $player_id = un_seo_url( htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['player'] ) ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } elseif ( isset( $wp->query_vars['player'] ) ) {
+            $player_id = un_seo_url( get_query_var( 'player' ) );
+        } else {
+            $player_id = null;
+        }
+        return $player_id;
+    }
+
+    public static function get_tab(): ?string {
+        global $wp;
+        if ( ! empty( $_GET['tab'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $tab = wp_strip_all_tags( wp_unslash( $_GET['tab'] ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        } elseif ( isset( $wp->query_vars['tab'] ) ) {
+            $tab = get_query_var( 'tab' );
+        } else {
+            $tab = null;
+        }
+        return $tab;
+    }
+
+
 }

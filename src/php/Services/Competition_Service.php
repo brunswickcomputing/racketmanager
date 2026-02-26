@@ -765,4 +765,42 @@ class Competition_Service {
         $this->competition_repository->save( $competition );
     }
 
+    public function set_championship_round_dates_for_competition_season( ?int $competition_id, ?string $season, Championship_Rounds_Request_DTO $request ): bool|WP_Error {
+        try {
+            $competition = $this->get_competition_by_season( $competition_id, $season );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            throw new Competition_Not_Found_Exception( $e->getMessage() );
+        } catch ( Season_Not_Found_Exception $e ) {
+            throw new Season_Not_Found_Exception( $e->getMessage() );
+        }
+        $rounds = array();
+        $validator = new Validator();
+        foreach ( $request->rounds as $r => $round ) {
+            $err_field = 'rounds-' . $r . '-match_date';
+            if ( empty( $round->date ) ) {
+                $validator->set_errors( $err_field, Util_Messages::date_missing() );
+            } elseif ( ! empty( $next_round_date ) && $round->date >= $next_round_date ) {
+                $validator->set_errors( $err_field, __( 'Match date after next round date', 'racketmanager' ) );
+            } else {
+                $next_round_date = $round->date;
+                $rounds[] = $round->date;
+            }
+        }
+        if ( ! empty( $validator->error ) ) {
+            return $validator->err;
+        }
+        $season = $request->season;
+        $tournament_season = $competition->get_season_by_name( $season );
+        $tournament_season['match_dates'] = array();
+
+        foreach ( array_reverse( $rounds ) as $match_date ) {
+            $tournament_season['match_dates'][] = $match_date;
+        }
+        $tournament_season['num_match_days'] = count( $tournament_season['match_dates'] );
+        $seasons = $competition->get_seasons();
+        $seasons[ $season ] = $tournament_season;
+        $competition->set_seasons( $seasons );
+        return $this->competition_repository->save( $competition );
+    }
+
 }

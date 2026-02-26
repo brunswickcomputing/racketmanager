@@ -4445,6 +4445,13 @@ p.media__subheading {
 .player-row__score-badge .match__status, .player-row__score-badge span {
     margin: 0 0.25rem;
 }
+.match__status.blank {
+	border: 0;
+	margin: 0;
+	min-width: 0;
+	opacity: 0;
+	width: 0;
+}
 .player-row__tie-break {
 	position: absolute;
 	left: 0.75rem;

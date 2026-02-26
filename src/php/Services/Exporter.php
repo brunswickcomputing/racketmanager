@@ -10,6 +10,8 @@
 namespace Racketmanager\Services;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\RacketManager;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_club;
@@ -19,7 +21,6 @@ use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_results_report;
 use function Racketmanager\get_team;
-use function Racketmanager\get_tournament;
 use function Racketmanager\seo_url;
 use function Racketmanager\un_seo_url;
 
@@ -27,6 +28,15 @@ use function Racketmanager\un_seo_url;
  * Class to implement the Exporter object
  */
 class Exporter {
+
+    private RacketManager $racketmanager;
+    private Tournament_Service $tournament_service;
+
+    public function __construct( $plugin_instance ) {
+        $this->racketmanager      = $plugin_instance;
+        $c                        = $this->racketmanager->container;
+        $this->tournament_service = $c->get( 'tournament_service' );
+    }
     /**
      * Calendar export function
      */
@@ -331,8 +341,13 @@ class Exporter {
                 $filename              .= '-' . seo_url( $event->name );
             } elseif ( $tournament_id ) {
                 $match_args['tournament_id'] = $tournament_id;
-                $tournament                  = get_tournament( $tournament_id );
-                $filename                   .= '-' . seo_url( $tournament->name );
+                try {
+                    $tournament = $this->tournament_service->get_tournament( $tournament_id );
+                    $tournament_name = $tournament->get_name();
+                } catch ( Tournament_Not_Found_Exception ) {
+                    $tournament_name = __( 'unknown', 'racketmanager' );
+                }
+                $filename                   .= '-' . seo_url( $tournament_name );
             }
             if ( $season ) {
                 $match_args['season'] = $season;

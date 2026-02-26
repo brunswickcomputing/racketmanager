@@ -35,26 +35,11 @@ class Team_Service {
      * Constructor
      *
      */
-    public function __construct( Team_Repository $team_repository, Club_Repository $club_repository, Event_Repository $event_repository ,Player_Service $player_service ) {
+    public function __construct( Team_Repository $team_repository, Club_Repository $club_repository, Event_Repository $event_repository, Player_Service $player_service ) {
         $this->team_repository  = $team_repository;
         $this->club_repository  = $club_repository;
         $this->event_repository = $event_repository;
         $this->player_service   = $player_service;
-    }
-
-    /**
-     * Get a team by id
-     *
-     * @param string|int|null $team_id
-     *
-     * @return Team
-     */
-    public function get_team_by_id( null|string|int $team_id ): Team {
-        $team = $this->team_repository->find_by_id( $team_id );
-        if ( ! $team ) {
-            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
-        }
-        return $team;
     }
 
     /**
@@ -69,6 +54,7 @@ class Team_Service {
         if ( ! $this->club_repository->find( $club_id ) ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
+
         return $this->team_repository->find_by_club( $club_id, $type );
     }
 
@@ -94,13 +80,19 @@ class Team_Service {
         }
         $team = $this->team_repository->find_by_id( $team_id );
         if ( ! $team ) {
-            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( (string) $team_id ) );
         }
-        $club = $this->club_repository->find( $team->club_id );
+
+        if ( - 1 === (int) $team->get_id() ) {
+            return new Team_Details_DTO( $team, null, null );
+        }
+
+        $club = $this->club_repository->find( $team->get_club_id() );
         if ( ! $club ) {
-            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $team->club_id ) );
+            throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $team->get_club_id() ) );
         }
-        $match_secretary = $this->player_service->get_match_secretary_details( $club->id );
+        $match_secretary = $this->player_service->get_match_secretary_details( $club->get_id() );
+
         return new Team_Details_DTO( $team, $club, $match_secretary );
     }
 
@@ -125,6 +117,60 @@ class Team_Service {
         if ( ! $team_info ) {
             throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
         }
+
         return $team_info;
     }
+
+    public function amend_team_for_club( ?string $team_id, ?int $club_id, ?string $type ): bool|WP_Error {
+        try {
+            $club = $this->club_repository->find( $club_id );
+            $team = $this->get_team_by_id( $team_id );
+        } catch ( Club_Not_Found_Exception $e ) {
+            throw new Club_Not_Found_Exception( $e->getMessage() );
+        } catch ( Team_Not_Found_Exception $e ) {
+            throw new Team_Not_Found_Exception( $e->getMessage() );
+        }
+        $type_name = match ( substr( $type, 0, 1 ) ) {
+            'B' => __( 'Boys', 'racketmanager' ),
+            'G' => __( 'Girls', 'racketmanager' ),
+            'W' => __( 'Ladies', 'racketmanager' ),
+            'M' => __( 'Mens', 'racketmanager' ),
+            'X' => __( 'Mixed', 'racketmanager' ),
+            default => null,
+        };
+        if ( empty( $type_name ) ) {
+            throw new Invalid_Argument_Exception( Util_Messages::invalid_team_type() );
+        }
+        $name_parts = explode( ' ', $team->get_name() );
+        if ( $type === $team->get_type() ) {
+            $sequence_number = end( $name_parts );
+        } else {
+            $sequence_number = $this->team_repository->find_next_sequence_number( $club->get_shortcode(), $type_name );
+        }
+        $name = $club->get_shortcode() . ' ' . $type_name . ' ' . $sequence_number;
+        $team->set_name( $name );
+        $team->set_type( $type );
+        $team->set_club_id( $club_id );
+        $team->set_stadium( $club->get_shortcode() );
+
+        return $this->team_repository->save( $team );
+    }
+
+    /**
+     * Get a team by id
+     *
+     * @param string|int|null $team_id
+     *
+     * @return Team
+     */
+    public function get_team_by_id( null|string|int $team_id ): Team {
+        $team = $this->team_repository->find_by_id( $team_id );
+        if ( ! $team ) {
+            throw new Team_Not_Found_Exception( Util_Messages::team_not_found( $team->$team_id ) );
+        }
+
+        return $team;
+    }
+
+
 }

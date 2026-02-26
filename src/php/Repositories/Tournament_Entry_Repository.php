@@ -1,0 +1,188 @@
+<?php
+/**
+ * Tournament_Entry_Repository class
+ *
+ * @author Paul Moffat
+ * @package RacketManager
+ * @subpackage Repositories
+ */
+
+namespace Racketmanager\Repositories;
+
+use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Util\Util;
+use wpdb;
+
+/**
+ * Class to implement the Tournament Entry repository
+ */
+class Tournament_Entry_Repository {
+
+    private wpdb $wpdb;
+    private string $table_name;
+
+    public function __construct() {
+        global $wpdb;
+        $this->wpdb       = $wpdb;
+        $this->table_name = $this->wpdb->prefix . 'racketmanager_tournament_entries';
+    }
+
+    public function find_by_id( null|int $tournament_entry_id ): ?Tournament_Entry {
+        if ( ! $tournament_entry_id ) {
+            return null;
+        }
+        $tournament_entry = wp_cache_get( $tournament_entry_id, 'tournament_entries' );
+
+        if ( ! $tournament_entry ) {
+            $tournament_entry = $this->wpdb->get_row(
+                $this->wpdb->prepare(
+                    "SELECT * FROM `$this->table_name` WHERE `id` = %d LIMIT 1",
+                    $tournament_entry_id
+                )
+            );
+
+            if ( ! $tournament_entry ) {
+                return null;
+            }
+
+            $tournament_entry = new Tournament_Entry( $tournament_entry );
+
+            wp_cache_set( $tournament_entry_id, $tournament_entry, 'tournament_entries' );
+        }
+
+        return $tournament_entry;
+
+    }
+
+    public function find_by_tournament_and_player( $tournament_id, $player_id ): ?Tournament_Entry {
+        $tournament_entry_key = $tournament_id . '_' . $player_id;
+        $tournament_entry     = wp_cache_get( $tournament_entry_key, 'tournament_entries' );
+
+        if ( ! $tournament_entry ) {
+            $tournament_entry = $this->wpdb->get_row(
+                $this->wpdb->prepare(
+                    "SELECT * FROM `$this->table_name` WHERE `tournament_id` = %d AND `player_id` = %d LIMIT 1",
+                    $tournament_id,
+                    $player_id
+                )
+            );
+
+            if ( ! $tournament_entry ) {
+                return null;
+            }
+
+            $tournament_entry = new Tournament_Entry( $tournament_entry );
+
+            wp_cache_set( $tournament_entry_key, $tournament_entry, 'tournament_entries' );
+        }
+
+        return $tournament_entry;
+
+    }
+
+    public function save( Tournament_Entry $tournament_entry ): int|bool {
+        $data        = array(
+            'tournament_id' => $tournament_entry->get_tournament_id(),
+            'player_id'     => $tournament_entry->get_player_id(),
+            'status'        => $tournament_entry->get_status(),
+            'fee'           => $tournament_entry->get_fee(),
+            'club_id'       => $tournament_entry->get_club_id(),
+        );
+        $data_format = array(
+            '%d',
+            '%d',
+            '%d',
+            '%d',
+            '%d',
+        );
+        if ( empty( $tournament_entry->get_id() ) ) {
+            $result = $this->wpdb->insert(
+                $this->table_name,
+                $data,
+                $data_format,
+            );
+            if ( false === $result ) {
+                return false;
+            }
+            $insert_id = $this->wpdb->insert_id;
+            $tournament_entry->set_id( $insert_id );
+            wp_cache_set( $insert_id, $tournament_entry, 'tournament_entries' );
+
+            return $insert_id;
+        } else {
+            wp_cache_set( $tournament_entry->get_id(), $tournament_entry, 'tournament_entries' );
+
+            return $this->wpdb->update(
+                $this->table_name,
+                $data, // Data to update
+                array(
+                    'id' => $tournament_entry->get_id()
+                ), // Where clause
+                $data_format,
+                array(
+                    '%d'
+                ) // Where format
+            );
+        }
+    }
+
+    public function delete( int $id ): int|bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
+    }
+
+    public function find_by_tournament( int $tournament_id, ?string $status = null ): array {
+        $players_table            = $this->wpdb->prefix . 'users';
+        $clubs_table              = $this->wpdb->prefix . 'racketmanager_clubs';
+        $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
+        $usermeta_table           = $this->wpdb->prefix . 'usermeta';
+        $invoice_table            = $this->wpdb->prefix . 'racketmanager_invoices';
+        $charge_table             = $this->wpdb->prefix . 'racketmanager_charges';
+        $tournament_table         = $this->wpdb->prefix . 'racketmanager_tournaments';
+        $search_terms             = array();
+        $search_args              = array();
+        $search_args[]            = $tournament_id;
+        if ( $status ) {
+            if ( 'pending' === $status ) {
+                $search_terms[] = '`status` = 0';
+            } elseif ( 'unpaid' === $status ) {
+                $search_terms[] = '`status` = 2';
+                $search_terms[] = "`player_id` IN (SELECT `player_id` FROM `$invoice_table` i join `$charge_table` c ON i.charge_id = c.id JOIN `$tournament_table` t ON t.competition_id = c.competition_id AND t.season = c.season WHERE t.`id` = %d AND i.`status` != 'paid')";
+                $search_args[]  = $tournament_id;
+            } elseif ( 'confirmed' === $status ) {
+                $search_terms[] = '`status` = 2';
+                $search_terms[] = "`player_id` NOT IN (SELECT `player_id` FROM `$invoice_table` i join `$charge_table` c ON i.charge_id = c.id JOIN `$tournament_table` t ON t.competition_id = c.competition_id AND t.season = c.season WHERE t.`id` = %d AND i.`status` != 'paid')";
+                $search_args[]  = $tournament_id;
+            } elseif ( 'withdrawn' === $status ) {
+                $search_terms[] = '`status` = 3';
+            }
+        }
+        $search = Util::search_string( $search_terms );
+        $query  = $this->wpdb->prepare(
+            "SELECT
+            p.ID as id,
+            te.player_id AS player_id,
+            p.display_name AS player_name,
+            p.display_name AS display_name,
+            p.user_email AS email,
+            um_first.meta_value AS firstname,
+            um_last.meta_value AS surname,
+            te.club_id AS club_id,
+            c.shortcode AS club_name,
+            te.status
+         FROM `$tournament_entries_table` te
+             JOIN `$players_table` p ON p.ID = te.player_id
+             JOIN `$usermeta_table` um_first ON p.ID = um_first.user_id
+             JOIN `$usermeta_table` um_last ON p.ID = um_last.user_id
+             LEFT JOIN `$clubs_table` c ON c.id = te.club_id
+         WHERE te.tournament_id = %d
+           AND um_first.meta_key = 'first_name'
+           AND um_last.meta_key = 'last_name'
+         $search
+         ORDER BY p.display_name",
+            $search_args,
+        );
+
+        return $this->wpdb->get_results( $query );
+    }
+
+}

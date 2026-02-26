@@ -7,18 +7,18 @@
 
 namespace Racketmanager;
 
-/** @var object $tournament */
+/** @var int $tournament_id */
 /** @var string $modal */
-/** @var object $player */
+/** @var int $player_id */
 /** @var string $msg */
 /** @var int    $events_entered */
 ?>
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
         <form id="tournament-withdrawal" class="" action="#" method="post">
-            <?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
-            <input type="hidden" name="tournamentId" value="<?php echo esc_attr( $tournament->id ); ?>" />
-            <input type="hidden" name="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
+            <?php wp_nonce_field( 'racketmanager_team-partner', 'racketmanager_nonce' ); ?>
+            <input type="hidden" name="tournamentId" value="<?php echo esc_attr( $tournament_id ); ?>" />
+            <input type="hidden" name="playerId" value="<?php echo esc_attr( $player_id ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php esc_html_e( 'Withdraw', 'racketmanager' ) ; ?></h4>

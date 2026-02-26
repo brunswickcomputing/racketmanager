@@ -14,7 +14,7 @@ export function initializeTournamentDate() {
             '/matches/' + match_date + '/';
         let linkId = match_date;
         let linkType = 'matches';
-        let tournamentId = jQuery('#tournamentId').val();
+        let tournamentId = jQuery('#tournament_id').val();
 
         tabDataLink(e, 'tournament', tournamentId, null,
             tournamentLink, linkId, linkType);

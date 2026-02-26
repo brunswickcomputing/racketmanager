@@ -27,7 +27,7 @@ export function openWithdrawalModal(event) {
   jQuery(LIST_CONTAINER).addClass('is-loading');
 
   const eventsEntered = jQuery('#eventsEntered').val();
-  const tournamentId = jQuery('#tournamentId').val();
+  const tournamentId = jQuery('#tournament_id').val();
   const playerId = jQuery('#playerId').val();
 
   // Clear previous content/errors
@@ -63,7 +63,7 @@ export function openWithdrawalModal(event) {
  */
 export function confirmTournamentWithdraw() {
   const modal = WITHDRAW_MODAL;
-  const tournamentId = jQuery('#tournamentId').val();
+  const tournamentId = jQuery('#tournament_id').val();
   const playerId = jQuery('#playerId').val();
 
   // Reset alerts

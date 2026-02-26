@@ -6,7 +6,6 @@
  */
 
 import { getAjaxUrl, getAjaxNonce } from '../../config/ajax-config.js';
-import { LOADING_MODAL } from '../../config/constants.js';
 import { handleAjaxError } from '../ajax/handle-ajax-error.js';
 import { setEventPrice } from '../pricing/pricing.js';
 
@@ -17,7 +16,7 @@ const ALERT_TEXT = '#partnerResponseText';
 
 /**
  * Open the Partner selection modal for a given event ID.
- * Mirrors legacy behavior, but uses modular utilities.
+ * Mirrors legacy behaviour but uses modular utilities.
  * @param {Event} event
  * @param {number|string} eventId
  */
@@ -41,6 +40,7 @@ export function openPartnerModal(event, eventId) {
   const gender = jQuery('#playerGender').val();
   const season = jQuery('#season').val();
   const dateEnd = jQuery('#tournamentDateEnd').val();
+  const tournamentId = jQuery('#tournament_id').val();
 
   // Clear prior content/errors
   jQuery(ALERT_ID).hide();
@@ -57,13 +57,14 @@ export function openPartnerModal(event, eventId) {
       season: season,
       partnerId: jQuery(`#partnerId-${eventId}`).val(),
       dateEnd: dateEnd,
+      tournamentId: tournamentId,
       action: 'racketmanager_team_partner',
       security: getAjaxNonce(),
     },
     function (response, status, xhr) {
       jQuery(LIST_CONTAINER).removeClass('is-loading');
       if (status === 'error') {
-        // Render error inside modal area using legacy-like formatting
+        // Render an error inside the modal area using legacy-like formatting
         handleAjaxError(xhr, ALERT_TEXT, ALERT_ID);
         jQuery(ALERT_ID).show();
       } else {
@@ -116,28 +117,13 @@ export function savePartner(link) {
 
       // Update pricing for the event using modular pricing
       try { setEventPrice(eventId); } catch (_) { /* no-op */ }
+
+      // Ensure the corresponding event checkbox is checked
+      const eventRef = `#event-${eventId}`;
+      try { jQuery(eventRef).prop('checked', true); } catch (_) { /* no-op */ }
     },
     error: function (response) {
-      // Server may return [message, errorMsgs[], errorFlds[]]
-      if (response && response.responseJSON) {
-        const data = response.responseJSON.data;
-        const message = Array.isArray(data) ? data[0] : (data && (data.msg || data.message));
-        // Field errors
-        if (Array.isArray(data?.[1]) && Array.isArray(data?.[2])) {
-          const errorMsg = data[1];
-          const errorField = data[2];
-          for (let i = 0; i < errorField.length; i++) {
-            let formField = `#${errorField[i]}`;
-            jQuery(formField).addClass('is-invalid');
-            const feedback = `${formField}Feedback`;
-            jQuery(feedback).html(errorMsg[i]);
-          }
-        }
-        jQuery(ALERT_TEXT).html(message || 'An error occurred');
-      } else {
-        jQuery(ALERT_TEXT).text(response?.statusText || 'Request failed');
-      }
-      jQuery(ALERT_ID).addClass('alert--danger').show();
+      handleAjaxError(response, ALERT_TEXT, ALERT_ID);
     },
   });
 }

@@ -24,7 +24,9 @@ use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
+use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
@@ -47,25 +49,20 @@ class Competition_Service {
     private RacketManager $racketmanager;
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
+    private Season_Repository $season_repository;
 
     /**
      * Constructor
      *
-     * @param RacketManager $plugin_instance
-     * @param Competition_Repository $competition_repository
-     * @param Club_Repository $club_repository
-     * @param Event_Repository $event_repository
-     * @param League_Repository $league_repository
-     * @param League_Team_Repository $league_team_repository
-     * @param Team_Repository $team_repository
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Club_Repository $club_repository, Event_Repository $event_repository, League_Repository $league_repository , League_Team_Repository $league_team_repository, Team_Repository $team_repository ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Club_Repository $club_repository, Event_Repository $event_repository, League_Repository $league_repository , League_Team_Repository $league_team_repository, Season_Repository $season_repository , Team_Repository $team_repository ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->club_repository        = $club_repository;
         $this->event_repository       = $event_repository;
         $this->league_team_repository = $league_team_repository;
         $this->league_repository      = $league_repository;
+        $this->season_repository       = $season_repository;
         $this->team_repository        = $team_repository;
     }
 
@@ -92,7 +89,7 @@ class Competition_Service {
     public function get_teams_for_event( ?int $event_id, ?int $season = null, ?int $club_id = null ): array {
         $event = $this->get_event_by_id( $event_id );
 
-        return $this->league_team_repository->get_by_event_id( $event->get_id(), $season, null, $club_id );
+        return $this->league_team_repository->find_by_event_id( $event->get_id(), $season, null, $club_id );
     }
 
     public function get_by_id( null|string|int $competition_id ): Competition {
@@ -141,11 +138,11 @@ class Competition_Service {
         return $this->event_repository->find_events_by_competition_with_counts($competition->get_id(), $season, $min_fixtures);
     }
 
-    public function get_leagues(): array {
+    public function get_league_competitions(): array {
         return $this->competition_repository->find_by( array( 'type' => 'league' ) );
     }
 
-    public function get_tournaments(): array {
+    public function get_tournament_competitions(): array {
         return $this->competition_repository->find_by( array( 'type' => 'tournament' ) );
     }
 
@@ -726,6 +723,8 @@ class Competition_Service {
         $season_data->date_end         = $season->date_end;
         $season_data->competition_code = $season->competition_code;
         $season_data->venue            = $season->venue;
+        $season_data->num_match_days   = $season->num_match_days ?? Util::get_default_match_days( $competition->get_type() );
+        $season_data->match_dates      = $season->match_dates ?? array();
         $seasons[ $season->name ]      = $season_data;
         if ( $new_season ) {
             ksort( $seasons );
@@ -753,7 +752,7 @@ class Competition_Service {
     public function remove_season_for_competition( ?int $competition_id, ?string $season ): void {
         try {
             $competition = $this->get_by_id( $competition_id );
-        } catch ( Competition_Not_Found_Exception $e ) {
+        } catch ( Competition_Not_Found_Exception ) {
             return;
         }
         $competition_season = $competition->get_season_by_name( $season );

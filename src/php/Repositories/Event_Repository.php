@@ -90,9 +90,14 @@ class Event_Repository {
         $event = wp_cache_get( $event_id, 'events' );
 
         if ( ! $event ) {
+            if ( is_numeric( $event_id ) ) {
+                $search = "`id` = %d";
+            } else {
+                $search = "`name` = %s";
+            }
             $event = $this->wpdb->get_row(
                 $this->wpdb->prepare(
-                    "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
+                    "SELECT * FROM $this->table_name WHERE $search LIMIT 1",
                     $event_id
                 )
             );
@@ -108,6 +113,13 @@ class Event_Repository {
         return $event;
     }
 
+    /**
+     * Find all events for a competition.
+     *
+     * @param int $competition_id
+     *
+     * @return Event[]
+     */
     public function find_by_competition_id( int $competition_id ): array {
         $events = wp_cache_get( md5( $competition_id ), 'events' );
         if ( ! $events ) {
@@ -168,4 +180,5 @@ class Event_Repository {
             return new Event_Details_DTO( $row );
         }, $results);
     }
+
 }

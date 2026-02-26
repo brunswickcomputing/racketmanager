@@ -21,7 +21,6 @@ use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_player;
 use function Racketmanager\get_team;
-use function Racketmanager\get_tournament;
 use function Racketmanager\is_lta_number_required;
 
 /**
@@ -456,32 +455,7 @@ class Validator {
         }
         return $this;
     }
-    /**
-     * Validate tournament
-     *
-     * @param string|null $tournament tournament.
-     *
-     * @return object $validation updated validation object.
-     */
-    public function tournament( ?string $tournament ): object {
-        if ( empty( $tournament ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'tournament';
-            $this->err_msgs[] = __( 'Tournament not found', 'racketmanager' );
-        } else {
-            if ( is_numeric( $tournament ) ) {
-                $tournament = get_tournament( $tournament );
-            } else {
-                $tournament = get_tournament( $tournament, 'name' );
-            }
-            if ( ! $tournament ) {
-                $this->error      = true;
-                $this->err_flds[] = 'tournament';
-                $this->err_msgs[] = __( 'Tournament not valid', 'racketmanager' );
-            }
-        }
-        return $this;
-    }
+
     /**
      * Validate a competition type
      *

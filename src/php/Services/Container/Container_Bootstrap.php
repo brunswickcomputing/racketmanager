@@ -49,6 +49,7 @@ final class Container_Bootstrap {
         $c->set('charge_repository', fn() => new Charge_Repository());
         $c->set('invoice_repository', fn() => new Invoice_Repository());
         $c->set('tournament_repository', fn() => new Tournament_Repository());
+        $c->set('tournament_entry_repository', fn() => new Tournament_Entry_Repository());
         $c->set('season_repository', fn() => new Season_Repository());
 
         // External clients

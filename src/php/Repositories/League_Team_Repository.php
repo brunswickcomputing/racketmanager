@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\League_Team;
+use stdClass;
 use wpdb;
 
 /**
@@ -303,4 +304,55 @@ class League_Team_Repository {
         return $results;
     }
 
+    public function player_already_entered_league( int $player_id, int $league_id, int $season ): stdClass|null {
+        $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+
+        $query = $this->wpdb->prepare(
+            "SELECT DISTINCT t.id as team_id, lt.id as league_team_id
+         FROM `$team_players_table` tp
+         JOIN `$teams_table` t ON tp.team_id = t.id
+         JOIN `$this->table_name` lt ON t.id = lt.team_id
+         WHERE tp.player_id = %d
+           AND lt.league_id = %d
+           AND lt.season = %d
+           AND lt.profile != 3",
+            $player_id,
+            $league_id,
+            $season
+        );
+
+        return $this->wpdb->get_row( $query );
+    }
+
+    public function find_player_teams_by_player_for_events( int $player_id, array $event_ids, int $season ): array {
+        $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
+        $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
+        // Prepare placeholders for the IN clause
+        $placeholders = implode( ',', array_fill( 0, count( $event_ids ), '%d' ) );
+        $results      = array();
+
+        // We update the status for teams where the player is a member
+        // and that team is linked to one of the missed events.
+        $query = $this->wpdb->prepare(
+            "SELECT lt.*
+             FROM `$this->table_name` lt
+         JOIN `$team_players_table` tp ON lt.team_id = tp.team_id
+         JOIN `$leagues_table` l ON lt.league_id = l.id
+         WHERE tp.player_id = %d
+           and lt.season = %d
+           AND l.event_id IN ($placeholders)
+           AND lt.profile != 3",
+            $player_id,
+            $season,
+            ...$event_ids
+        );
+        $rows = $this->wpdb->get_results( $query );
+        foreach ( $rows as $row ) {
+            // Map to the Domain Model
+            $results[] = new League_Team( $row );
+        }
+        return $results;
+
+    }
 }

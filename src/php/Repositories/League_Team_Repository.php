@@ -101,6 +101,10 @@ class League_Team_Repository {
         }
     }
 
+    public function delete( int $id ): int|bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
+    }
+
     public function find_by_id( $league_team_id ): ?League_Team {
         if ( empty( $league_team_id ) ) {
             return null;

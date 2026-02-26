@@ -673,4 +673,8 @@ class Player_Service {
         );
     }
 
+    public function get_players_for_team( ?int $team_id ): array {
+        return $this->player_repository->find_by_team( $team_id );
+    }
+
 }

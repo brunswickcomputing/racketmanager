@@ -14,6 +14,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Lookup;
@@ -56,11 +57,9 @@ class Rest_Resources extends WP_REST_Controller {
      * @var RacketManager
      */
     private RacketManager $racketmanager;
-    /**
-     * @var callable|object
-     */
     private Competition_Service $competition_service;
     private Club_Service $club_service;
+    private Season_Service $season_service;
 
     /**
      * Constructor
@@ -72,6 +71,7 @@ class Rest_Resources extends WP_REST_Controller {
         $c                          = $this->racketmanager->container;
         $this->competition_service  = $c->get( 'competition_service' );
         $this->club_service         = $c->get( 'club_service' );
+        $this->season_service       = $c->get( 'season_service' );
 
         $this->version   = '1';
         $this->namespace = 'racketmanager/v' . $this->version;
@@ -589,9 +589,9 @@ class Rest_Resources extends WP_REST_Controller {
      * @return array
      */
     private function get_seasons(): array {
-        $seasons = $this->racketmanager->get_seasons();
+        $seasons = $this->season_service->get_all_seasons();
         foreach ( $seasons as $i => $season ) {
-            $seasons[ $i ] = seo_url( $season->name );
+            $seasons[ $i ] = seo_url( $season->get_name() );
         }
         return $seasons;
     }

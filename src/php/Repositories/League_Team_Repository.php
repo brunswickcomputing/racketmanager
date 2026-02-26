@@ -162,9 +162,9 @@ class League_Team_Repository {
      * @param int|null $team_id
      * @param int|null $club_id
      *
-     * @return array
+     * @return League_Team[]
      */
-    public function get_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null, ?int $club_id = null ): array {
+    public function find_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null, ?int $club_id = null ): array {
         $cache_key = 'event' . $event_id . '_' . $season . '_' . $team_id . '_' . $club_id;
         $teams = wp_cache_get( md5( $cache_key ), 'league_teams' );
         if ( $teams ) {
@@ -188,9 +188,10 @@ class League_Team_Repository {
                 $event_id
             )
         );
-        $results = array_map(function($row) {
-            return new League_Team( $row );
-        }, $teams);
+        $results = array_map(
+            fn( $row ) => new League_Team( $row ),
+            $teams
+        );
         wp_cache_set( md5( $cache_key ), $results, 'league_teams' );
         return $results;
 

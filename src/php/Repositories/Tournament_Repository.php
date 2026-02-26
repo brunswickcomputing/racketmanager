@@ -121,7 +121,7 @@ class Tournament_Repository {
         return $tournament;
     }
 
-    public function get_tournament_overview( int $tournament_id ): ?stdclass {
+    public function find_tournament_overview( int $tournament_id ): ?stdclass {
         $clubs_table              = $this->wpdb->prefix . 'racketmanager_clubs';
         $events_table             = $this->wpdb->prefix . 'racketmanager_events';
         $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
@@ -231,7 +231,7 @@ class Tournament_Repository {
         return $tournaments;
     }
 
-    public function get_previous_tournament_players_with_optin( int $tournament_id, int $limit = 1, bool $entered = false ): array {
+    public function find_previous_tournament_players_with_optin( int $tournament_id, int $limit = 1, bool $entered = false ): array {
         $competitions_table       = $this->wpdb->prefix . 'racketmanager_competitions';
         $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';
         $users_table              = $this->wpdb->prefix . 'users';
@@ -284,7 +284,7 @@ class Tournament_Repository {
         return $this->wpdb->delete( $this->table_name, array( 'id' => $tournament_id ), array( '%d' ) );
     }
 
-    public function get_events_by_tournament_with_details( int $tournament_id ): array {
+    public function find_events_by_tournament_with_details( int $tournament_id ): array {
         $tournaments_table  = $this->wpdb->prefix . 'racketmanager_tournaments';
         $events_table       = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
@@ -316,7 +316,7 @@ class Tournament_Repository {
      *
      * @return stdClass|null
      */
-    public function get_event_details_for_player( int $player_id, int $event_id, int $season ): ?stdClass {
+    public function find_event_details_for_player( int $player_id, int $event_id, int $season ): ?stdClass {
         $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
         $leagues_table      = $this->wpdb->prefix . 'racketmanager_leagues';
         $league_teams_table = $this->wpdb->prefix . 'racketmanager_league_teams';
@@ -412,7 +412,7 @@ class Tournament_Repository {
         return $this->wpdb->get_results( $query );
     }
 
-    public function get_event_for_tournament( int $tournament_id, int|string $event_id ): ?Event {
+    public function find_event_for_tournament( int $tournament_id, int|string $event_id ): ?Event {
         $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
         $events_table      = $this->wpdb->prefix . 'racketmanager_events';
 
@@ -586,7 +586,7 @@ class Tournament_Repository {
                 WHERE f.season = t.season
                   AND t.id = %d
                   AND e.id = %d
-                ORDER BY f.`date` ASC
+                ORDER BY f.`date`
             ", $tournament_id, $event_id );
         $results           = $this->wpdb->get_results( $query );
 
@@ -681,12 +681,12 @@ class Tournament_Repository {
                 JOIN `$tournament_entries_table` te ON t.id = te.tournament_id
             WHERE te.player_id = %d
             ORDER BY t.date DESC
-            ", $player_id, );
+            ",
+            $player_id
+        );
         $results = $this->wpdb->get_results( $query );
 
-        return array_map( function ( $row ) {
-            return new Tournament( $row );
-        }, $results );
+        return array_map( fn( $row ) => new Tournament( $row ), $results );
     }
 
 }

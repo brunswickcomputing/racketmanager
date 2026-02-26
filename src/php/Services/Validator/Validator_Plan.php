@@ -22,9 +22,9 @@ final class Validator_Plan extends Validator {
      */
     public function start_time( ?string $start_time ): object {
         if ( ! $start_time ) {
-            $this->error      = true;
-            $this->err_flds[] = 'startTime';
-            $this->err_msgs[] = __( 'Start time must be specified', 'racketmanager' );
+            $error_field   = 'start_time';
+            $error_message = __( 'Start time must be specified', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }
@@ -37,9 +37,9 @@ final class Validator_Plan extends Validator {
      */
     public function time_increment( ?string $time_increment ): object {
         if ( ! $time_increment ) {
-            $this->error      = true;
-            $this->err_flds[] = 'timeIncrement';
-            $this->err_msgs[] = __( 'Time increment must be specified', 'racketmanager' );
+            $error_field   = 'timeIncrement';
+            $error_message = __( 'Time increment must be specified', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }

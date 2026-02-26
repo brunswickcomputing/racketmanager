@@ -176,7 +176,13 @@ final class Container_Bootstrap {
                 $app,
                 $c->get('tournament_repository'),
                 $c->get('charge_repository'),
+                $c->get('event_repository'),
+                $c->get('fixture_service'),
+                $c->get('league_team_repository'),
+                $c->get('tournament_entry_repository'),
                 $c->get('competition_service'),
+                $c->get('player_service'),
+                $c->get('club_service'),
 //                $c->get('invoice_repository'),
             );
         });

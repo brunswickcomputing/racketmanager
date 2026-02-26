@@ -87,7 +87,7 @@ class Util {
         return null;
     }
     /**
-     * Get list of players by initial function
+     * Get a list of players by surname initial
      *
      * @param array $players list of players.
      * @return array list of players by initial
@@ -772,5 +772,42 @@ class Util {
         );
     }
 
+    public static function get_formatted_date( $date ): string {
+        if ( empty( $date ) ) {
+            return __( 'N/A', 'racketmanager' );
+        }
+        return date_i18n( 'j M Y', strtotime( $date ) );
+    }
+
+    /**
+     * Create SEO friendly string
+     *
+     * @param string $string_field query string.
+     */
+    public static function seo_url( string $string_field ): string {
+        // Lower case everything.
+        $string_field = strtolower( $string_field );
+        // Make alphanumeric (removes all other characters).
+        $string_field = preg_replace( '/[^a-z0-9_\s-]/', '', $string_field );
+        // Clean up multiple whitespaces.
+        $string_field = preg_replace( '/\s+/', ' ', $string_field );
+        // Convert dash to underscore.
+        $string_field = str_replace( '-', '_', $string_field );
+        // Convert whitespaces to dash.
+        return preg_replace( '/\s/', '-', $string_field );
+    }
+    /**
+     * Reverses SEO friendly string
+     *
+     * @param string $string_field query string.
+     */
+    public static function un_seo_url( string $string_field ): string {
+        // Convert dash to whitespaces.
+        $string_field = str_replace( '-', ' ', $string_field );
+        // Convert underscore to dash.
+        $string_field = str_replace( '_', '-', $string_field );
+        // Lower case everything.
+        return strtolower( $string_field );
+    }
 
 }

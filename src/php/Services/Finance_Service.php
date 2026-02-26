@@ -19,6 +19,7 @@ use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Invoice_Full_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Domain\Invoice;
+use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Charge_Not_Deleted_Exception;
 use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Charge_Not_Updated_Exception;
@@ -176,7 +177,7 @@ class Finance_Service {
         $club_charges = $this->get_charges_for_clubs( $charge_id );
         foreach ( $club_charges as $entry ) {
             try {
-                $invoice = $this->add_invoice( $charge, $entry, 'club' );
+                $invoice = $this->add_club_invoice( $charge, $entry );
             } catch ( Invoice_Not_Created_Exception $e ) {
                 throw new Invoice_Not_Created_Exception( $e->getMessage() );
             }
@@ -251,13 +252,13 @@ class Finance_Service {
         }
     }
 
-    public function add_invoice( Charge $charge, stdClass $entry, string $type ): Invoice|bool {
+    public function add_invoice( string $type, int $charge_id, string $invoice_date, stdClass|Tournament_Invoice_Details_DTO $entry, string $status = 'draft' ): Invoice|bool {
         $billing = $this->racketmanager->get_options( 'billing' );
         if ( ! $billing ) {
             throw new Invoice_Not_Created_Exception( Util_Messages::no_billing_details() );
         }
         try {
-            $date_due = new DateTime( $charge->get_date() );
+            $date_due = new DateTime( $invoice_date );
         } catch ( DateMalformedStringException ) {
             $date_due = null;
         }
@@ -271,16 +272,17 @@ class Finance_Service {
             }
         }
         $invoice = new Invoice();
-        $invoice->set_charge_id( $charge->get_id() );
+        $invoice->set_charge_id( $charge_id );
         $invoice->set_billable_id( $entry->id );
         $invoice->set_billable_type( $type );
-        $invoice->set_date( $charge->get_date() );
-        $invoice->set_amount( $entry->fee );
+        $invoice->set_date( $invoice_date );
+        $invoice->set_amount( $entry->total );
+        $invoice->set_status( $status );
         $invoice->set_details( $entry );
         if ( $date_due ) {
             $invoice->set_date_due( $date_due->format( 'Y-m-d' ) );
         } else {
-            $invoice->set_date_due( $invoice->get_date() );
+            $invoice->set_date_due( $invoice_date );
         }
         $invoice->set_invoice_number( $billing['invoiceNumber'] );
         $updates = $this->invoice_repository->save( $invoice );
@@ -294,6 +296,22 @@ class Finance_Service {
         }
     }
 
+    public function add_player_invoice_for_tournament( Tournament $tournament, Tournament_Invoice_Details_DTO $entry ): Invoice|bool {
+        $date      = gmdate( 'Y-m-d' );
+        $charge_id = $tournament->get_competition_id() . '_' . $tournament->get_season();
+        try {
+            $charge = $this->charge_repository->find_by_id( $charge_id );
+        } catch ( Charge_Not_Found_Exception ) {
+            return false;
+        }
+        return $this->add_invoice( 'player', $charge->get_id(), $date, $entry, 'final' );
+    }
+
+    public function add_club_invoice( Charge $charge, stdclass $entry ): Invoice|bool {
+        $charge_id = $charge->get_id();
+        $date = $charge->get_date();
+        return $this->add_invoice( 'club', $charge_id, $date, $entry );
+    }
     public function send_invoice( int $invoice_id, $resend = false ): bool {
         $invoice = $this->get_full_invoice_details( $invoice_id );
         if ( ! $invoice ) {

@@ -25,6 +25,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
@@ -45,6 +46,7 @@ final class Container_Bootstrap {
         $c->set('player_error_repository', fn() => new Player_Error_Repository());
         $c->set('team_repository', fn() => new Team_Repository());
         $c->set('event_repository', fn() => new Event_Repository());
+        $c->set('fixture_repository', fn() => new Fixture_Repository());
         $c->set('league_repository', fn() => new League_Repository());
         $c->set('league_team_repository', fn() => new League_Team_Repository());
         $c->set('competition_repository', fn() => new Competition_Repository());
@@ -136,6 +138,19 @@ final class Container_Bootstrap {
                 $c->get('event_repository'),
                 $c->get('league_team_repository'),
                 $c->get('team_repository'),
+            );
+        });
+
+        $c->set('fixture_service', function(Simple_Container $c) use ($app) {
+            return new Fixture_Service(
+                $app,
+                $c->get('fixture_repository'),
+                $c->get('registration_service'),
+                $c->get('league_repository'),
+                $c->get('team_repository'),
+                $c->get('club_repository'),
+                $c->get('competition_service'),
+                $c->get('team_service'),
             );
         });
 

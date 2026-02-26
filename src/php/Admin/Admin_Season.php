@@ -36,10 +36,11 @@ class Admin_Season extends Admin_Display {
     /**
      * Display seasons page
      */
-    private function display_seasons_page(): void {
-        global $racketmanager;
-        if ( ! current_user_can( 'edit_seasons' ) ) {
-            $this->set_message( $this->no_permission, true );
+    public function display_seasons_page(): void {
+        $validator = new Validator();
+        $validator = $validator->capability( 'edit_seasons' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
             return;
         }

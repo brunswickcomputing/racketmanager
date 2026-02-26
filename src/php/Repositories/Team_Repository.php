@@ -256,4 +256,37 @@ class Team_Repository {
 
         return $row ? new Team_Fixture_Settings_DTO( $row ) : null;
     }
+
+    public function find_team_by_players( array $player_ids ): ?int {
+        // Ensure IDs are unique and sorted for consistent matching
+        sort( $player_ids );
+        $count        = count( $player_ids );
+        $placeholders = implode( ',', array_fill( 0, $count, '%d' ) );
+
+        $query          = "
+        SELECT team_id
+        FROM `$this->team_players_table`
+        GROUP BY team_id
+        HAVING COUNT(DISTINCT player_id) = %d
+           AND COUNT(CASE WHEN player_id IN ($placeholders) THEN 1 END) = %d
+           AND COUNT(player_id) = %d
+        LIMIT 1";
+        $args           = array_merge( [ $count ], $player_ids, [ $count, $count ] );
+        $prepared_query = $this->wpdb->prepare( $query, ...$args );
+        $id             = $this->wpdb->get_var( $prepared_query );
+
+        return $id ? (int) $id : null;
+    }
+
+    /**
+     * Saves a team using the existing upsert and handles player assignments.
+     */
+    public function save_team_players( int $team_id, array $player_ids ): void {
+        foreach ( $player_ids as $player_id ) {
+            $this->wpdb->insert( $this->team_players_table, [
+                    'team_id'   => $team_id,
+                    'player_id' => absint( $player_id )
+                ], [ '%d', '%d' ] );
+        }
+    }
 }

@@ -570,4 +570,32 @@ class Player_Repository {
         );
     }
 
+    /**
+     * Finds players associated with a specific team.
+     *
+     * @param int $team_id
+     *
+     * @return Player[]
+     */
+    public function find_by_team( int $team_id ): array {
+        $team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
+
+        $player_ids = $this->wpdb->get_col(
+            $this->wpdb->prepare(
+                "SELECT player_id FROM $team_players_table WHERE team_id = %d",
+                $team_id
+            )
+        );
+
+        $players = [];
+        foreach ( $player_ids as $player_id ) {
+            $player = $this->find( $player_id );
+            if ( $player ) {
+                $players[] = $player;
+            }
+        }
+
+        return $players;
+    }
+
 }

@@ -11,13 +11,17 @@ namespace Racketmanager\Public;
 
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
@@ -25,7 +29,6 @@ use function Racketmanager\get_competition;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
-use function Racketmanager\get_tournament;
 use function Racketmanager\get_user;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
@@ -61,6 +64,9 @@ class Shortcodes {
     protected Registration_Service $registration_service;
     protected Team_Service $team_service;
     protected RacketManager $racketmanager;
+    protected Tournament_Service $tournament_service;
+    protected Competition_Entry_Service $competition_entry_service;
+    protected Fixture_Service $fixture_service;
 
     /**
      * Initialise shortcodes
@@ -94,6 +100,9 @@ class Shortcodes {
         $this->player_service       = $c->get( 'player_service' );
         $this->registration_service = $c->get( 'registration_service' );
         $this->team_service         = $c->get( 'team_service' );
+        $this->tournament_service   = $c->get( 'tournament_service' );
+        $this->competition_entry_service = $c->get( 'competition_entry_service' );
+        $this->fixture_service      = $c->get( 'fixture_service' );
     }
     /**
      * Display Daily Matches
@@ -765,11 +774,11 @@ class Shortcodes {
         $template       = $args['template'];
         $msg            = null;
         if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
-            if ( $tournament ) {
-                $finals_order = $tournament->order_of_play;
-            } else {
-                $msg = $this->tournament_not_found;
+            try {
+                $tournament   = $this->tournament_service->get_tournament( $tournament_id );
+                $finals_order = $tournament->get_order_of_play();
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                return $this->return_error( $e->getMessage() );
             }
         } elseif ( $competition_id ) {
             $competition = get_competition( $competition_id );

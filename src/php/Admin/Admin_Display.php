@@ -13,6 +13,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
@@ -20,6 +21,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
@@ -30,7 +32,6 @@ use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
-use function Racketmanager\get_tournament;
 use function Racketmanager\show_alert;
 
 /**
@@ -82,6 +83,7 @@ class Admin_Display {
     protected League_Service $league_service;
     protected Competition_Service $competition_service;
     protected Finance_Service $finance_service;
+    protected Season_Service $season_service;
     protected Tournament_Service $tournament_service;
 
     /**
@@ -98,6 +100,7 @@ class Admin_Display {
         $this->league_service       = $c->get( 'league_service' );
         $this->competition_service  = $c->get( 'competition_service' );
         $this->finance_service      = $c->get( 'finance_service' );
+        $this->season_service       = $c->get( 'season_service' );
         $this->tournament_service   = $c->get( 'tournament_service' );
     }
     public function load_translations(): void {
@@ -208,7 +211,12 @@ class Admin_Display {
                 $object_name = 'competition_id';
                 $object_id   = $competition->id;
             } elseif ( isset( $_GET['tournament_id'] ) ) {
-                $tournament = get_tournament( intval( $_GET['tournament_id'] ) );
+                $tournament_id = intval( $_GET['tournament_id'] );
+                try {
+                    $tournament = $this->tournament_service->get_tournament( $tournament_id );
+                } catch ( Tournament_Not_Found_Exception $e ) {
+                    throw new Tournament_Not_Found_Exception( $e->getMessage() );
+                }
                 $object_type = 'tournament';
                 $object_name = 'tournament_id';
                 $object_id   = $tournament->id;
@@ -254,7 +262,12 @@ class Admin_Display {
             $object_name = 'competition_id';
             $object_id   = $competition->id;
         } elseif ( isset( $_POST['tournament_id'] ) ) {
-            $tournament = get_tournament( intval( $_POST['tournament_id'] ) );
+            $tournament_id = intval( $_POST['tournament_id'] );
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_id );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                throw new Tournament_Not_Found_Exception( $e->getMessage() );
+            }
             $title       = $tournament->name;
             $object_type = 'tournament';
             $object      = $tournament;
@@ -445,7 +458,11 @@ class Admin_Display {
         $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
         $type          = isset( $_GET['type'] ) ? sanitize_text_field( wp_unslash( $_GET['type'] ) ) : null;
         if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_id );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                throw new Tournament_Not_Found_Exception( $e->getMessage() );
+            }
         }
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams-list.php';

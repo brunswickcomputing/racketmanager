@@ -150,8 +150,9 @@ add_action( 'init', 'Racketmanager\create_new_url_querystring' );
  * Create calendar download
  */
 function racketmanager_download(): void {
+    global $racketmanager;
     if ( isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $exporter = new Exporter();
+        $exporter = new Exporter( $racketmanager );
         if ( 'calendar' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $exporter->calendar();
         } elseif ( 'fixtures' === $_GET['racketmanager_export'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

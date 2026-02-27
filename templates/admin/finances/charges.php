@@ -7,12 +7,11 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var array  $finance_charges */
 /** @var int    $competition_id */
 /** @var string $season */
 /** @var array  $competitions */
-$seasons = $racketmanager->get_seasons( 'DESC' );
+/** @var Season[]  $seasons */
 $charges = $finance_charges;
 ?>
 <div class="container">

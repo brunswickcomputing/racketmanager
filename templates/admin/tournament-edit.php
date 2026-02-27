@@ -337,7 +337,7 @@ use Racketmanager\Util\Util_Lookup;
                             $msg_id     = array_search( 'date_end', $validator->err_flds, true );
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
-                        $date_end = $_POST['dateEnd'] ?? $tournament->date ?? null;
+                        $date_end = $_POST['dateEnd'] ?? $tournament->date_end ?? null;
                         ?>
                         <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateEnd" id="dateEnd" value="<?php echo esc_html( $date_end ); ?>" />
                         <label for="dateEnd" class="form-label"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>

@@ -8,19 +8,19 @@
 namespace Racketmanager;
 
 /** @var array $withdrawn_entries */
-/** @var array $pay_due_entries */
+/** @var array $unpaid_entries */
 /** @var array $pending_entries */
 /** @var array $confirmed_entries */
 ?>
 <?php
-if ( ! empty( $entries_withdrawn ) ) {
+if ( ! empty( $withdrawn_entries ) ) {
     ?>
     <div class="row">
         <div class="col-12 col-md-6">
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th><?php esc_html_e( 'Withdrawn Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_withdrawn ) . ')'; ?></th>
+                        <th><?php esc_html_e( 'Withdrawn Entries', 'racketmanager' ); ?> <?php echo '(' . count( $withdrawn_entries ) . ')'; ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,19 +35,19 @@ if ( ! empty( $entries_withdrawn ) ) {
     </div>
     <?php
 }
-if ( ! empty( $entries_pay_due ) ) {
+if ( ! empty( $unpaid_entries ) ) {
     ?>
     <div class="row">
         <div class="col-12 col-md-6">
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $entries_pay_due ) . ')'; ?></th>
+                        <th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $unpaid_entries ) . ')'; ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
-                    $player_list = $pay_due_entries;
+                    $player_list = $unpaid_entries;
                     $entered     = true;
                     require 'player-list.php';
                     ?>

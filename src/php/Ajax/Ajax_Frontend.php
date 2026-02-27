@@ -10,8 +10,8 @@ namespace Racketmanager\Ajax;
 
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Domain\DTO\Cup_Entry_Request_DTO;
-use Racketmanager\Domain\DTO\League_Entry_Request_DTO;
+use Racketmanager\Domain\DTO\Competition\Cup_Entry_Request_DTO;
+use Racketmanager\Domain\DTO\Competition\League_Entry_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;

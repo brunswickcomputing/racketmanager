@@ -16,7 +16,6 @@ use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
-use function Racketmanager\get_tournament;
 
 /**
  * Class to implement the Competition object
@@ -1369,21 +1368,7 @@ class Competition {
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->type ) . ' Secretary <' . $email_from . '>';
         $email_subject = $racketmanager->site_name . ' - ' . $this->name . ' ' . $season . ' - Important Message';
         $email_to      = array();
-        if ( $this->is_player_entry ) {
-            if ( $this->is_tournament ) {
-                $tournament_key = $this->id . ',' . $this->current_season['name'];
-                $tournament     = get_tournament( $tournament_key, 'shortcode' );
-                if ( $tournament ) {
-                    $players = $tournament->get_players();
-                    foreach ( $players as $player_name ) {
-                        $player = get_player( $player_name, 'name' );
-                        if ( $player && ! empty( $player->email ) ) {
-                            $headers[] = RACKETMANAGER_BCC_EMAIL . $player->display_name . ' <' . $player->email . '>';
-                        }
-                    }
-                }
-            }
-        } else {
+        if ( ! $this->is_player_entry ) {
             $teams  = array();
             $events = $this->get_events();
             foreach ( $events as $event ) {

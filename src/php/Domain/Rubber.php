@@ -369,6 +369,254 @@ final class Rubber {
     }
 
     /**
+     * Get rubber id.
+     *
+     * @return int|false
+     */
+    public function get_id(): int|false {
+        return $this->id;
+    }
+
+    /**
+     * Set rubber id.
+     *
+     * @param int|false $id
+     * @return void
+     */
+    public function set_id( int|false $id ): void {
+        $this->id = $id;
+    }
+
+    /**
+     * Get match id.
+     *
+     * @return int
+     */
+    public function get_match_id(): int {
+        return $this->match_id;
+    }
+
+    /**
+     * Set match id.
+     *
+     * @param int $match_id
+     * @return void
+     */
+    public function set_match_id( int $match_id ): void {
+        $this->match_id = $match_id;
+    }
+
+    /**
+     * Get rubber date (DB format string).
+     *
+     * @return string
+     */
+    public function get_date(): string {
+        return $this->date;
+    }
+
+    /**
+     * Set rubber date (DB format string).
+     *
+     * @param string $date
+     * @return void
+     */
+    public function set_date( string $date ): void {
+        $this->date = $date;
+    }
+
+    /**
+     * Get rubber group.
+     *
+     * @return string
+     */
+    public function get_group(): string {
+        return $this->group;
+    }
+
+    /**
+     * Set rubber group.
+     *
+     * @param string $group
+     * @return void
+     */
+    public function set_group( string $group ): void {
+        $this->group = $group;
+    }
+
+    /**
+     * Get rubber type.
+     *
+     * @return string
+     */
+    public function get_type(): string {
+        return $this->type;
+    }
+
+    /**
+     * Set rubber type.
+     *
+     * @param string $type
+     * @return void
+     */
+    public function set_type( string $type ): void {
+        $this->type = $type;
+    }
+
+    /**
+     * Get rubber number.
+     *
+     * @return int
+     */
+    public function get_rubber_number(): int {
+        return $this->rubber_number;
+    }
+
+    /**
+     * Set rubber number.
+     *
+     * @param int $rubber_number
+     * @return void
+     */
+    public function set_rubber_number( int $rubber_number ): void {
+        $this->rubber_number = $rubber_number;
+    }
+
+    /**
+     * Get status.
+     *
+     * @return int|null
+     */
+    public function get_status(): ?int {
+        return $this->status;
+    }
+
+    /**
+     * Set status.
+     *
+     * @param int|null $status
+     * @return void
+     */
+    public function set_status( ?int $status ): void {
+        $this->status = $status;
+    }
+
+    /**
+     * Get home points.
+     *
+     * @return float|null
+     */
+    public function get_home_points(): ?float {
+        return $this->home_points;
+    }
+
+    /**
+     * Set home points.
+     *
+     * @param float|null $home_points
+     * @return void
+     */
+    public function set_home_points( ?float $home_points ): void {
+        $this->home_points = $home_points;
+    }
+
+    /**
+     * Get away points.
+     *
+     * @return float|null
+     */
+    public function get_away_points(): ?float {
+        return $this->away_points;
+    }
+
+    /**
+     * Set away points.
+     *
+     * @param float|null $away_points
+     * @return void
+     */
+    public function set_away_points( ?float $away_points ): void {
+        $this->away_points = $away_points;
+    }
+
+    /**
+     * Get winner id.
+     *
+     * @return string
+     */
+    public function get_winner_id(): string {
+        return $this->winner_id;
+    }
+
+    /**
+     * Set winner id.
+     *
+     * @param string $winner_id
+     * @return void
+     */
+    public function set_winner_id( string $winner_id ): void {
+        $this->winner_id = $winner_id;
+    }
+
+    /**
+     * Get loser id.
+     *
+     * @return string
+     */
+    public function get_loser_id(): string {
+        return $this->loser_id;
+    }
+
+    /**
+     * Set loser id.
+     *
+     * @param string $loser_id
+     * @return void
+     */
+    public function set_loser_id( string $loser_id ): void {
+        $this->loser_id = $loser_id;
+    }
+
+    /**
+     * Get post id.
+     *
+     * @return int
+     */
+    public function get_post_id(): int {
+        return $this->post_id;
+    }
+
+    /**
+     * Set post id.
+     *
+     * @param int $post_id
+     * @return void
+     */
+    public function set_post_id( int $post_id ): void {
+        $this->post_id = $post_id;
+    }
+
+    /**
+     * Get custom data.
+     *
+     * @return array
+     */
+    public function get_custom(): array {
+        $custom = $this->custom;
+        return is_array( $custom ) ? $custom : array();
+    }
+
+    /**
+     * Set custom data.
+     *
+     * @param array $custom
+     * @return void
+     */
+    public function set_custom( array $custom ): void {
+        $this->custom = $custom;
+    }
+
+    /**
      * Add rubber function
      *
      * @return false|int id of rubber inserted

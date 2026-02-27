@@ -10,6 +10,7 @@
 namespace Racketmanager\Public;
 
 use Racketmanager\Domain\Player;
+use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
@@ -414,6 +415,7 @@ class Shortcodes_Event extends Shortcodes {
                 'date_end'   => null,
                 'modal'      => null,
                 'partner_id' => null,
+                'tournament_id' => null,
                 'template'   => '',
             ),
             $atts
@@ -425,6 +427,7 @@ class Shortcodes_Event extends Shortcodes {
         $date_end   = $args['date_end'];
         $modal      = $args['modal'];
         $partner_id = $args['partner_id'];
+        $tournament_id = $args['tournament_id'];
         $template   = $args['template'];
         $event      = get_event( $event_id );
         if ( $event ) {
@@ -439,11 +442,11 @@ class Shortcodes_Event extends Shortcodes {
             } else {
                 $partner_gender = 'M';
             }
-            $partner      = get_player( $partner_id );
-            if ( $partner ) {
+            try {
+                $partner = $this->player_service->get_player( $partner_id );
                 $partner_name = $partner->display_name;
                 $partner_btm  = $partner->btm;
-            } else {
+            } catch ( Player_Not_Found_Exception ) {
                 $partner_name = null;
                 $partner_btm  = null;
             }
@@ -460,6 +463,7 @@ class Shortcodes_Event extends Shortcodes {
                     'date_end'     => $date_end,
                     'season'       => $season,
                     'modal'        => $modal,
+                    'tournament_id' => $tournament_id,
                 ),
                 'event'
             );

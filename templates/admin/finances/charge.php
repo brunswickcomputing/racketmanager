@@ -15,6 +15,7 @@ use Racketmanager\Util\Util_Lookup;
 /** @var string $form_action */
 /** @var array  $club_charges */
 /** @var array  $competitions */
+/** @var Season[] $racketmanager_seasons */
 global $racketmanager;
 $is_invalid = false;
 $msg        = null;
@@ -74,7 +75,6 @@ $msg        = null;
                         <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" size="1" name="season" id="season" >
                             <option disabled <?php selected( null, empty( $charge->season ) ? null : $charge->season ); ?>><?php esc_html_e( 'Select season', 'racketmanager' ); ?></option>
                             <?php
-                            $racketmanager_seasons = $racketmanager->get_seasons( 'DESC' );
                             foreach ( $racketmanager_seasons as $racketmanager_season ) {
                                 ?>
                                 <option value="<?php echo esc_html( $racketmanager_season->name ); ?>" <?php selected( $racketmanager_season->name, $charge->season ?? ''); ?>><?php echo esc_html( $racketmanager_season->name ); ?></option>

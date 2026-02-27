@@ -18,8 +18,8 @@ use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
@@ -93,17 +93,18 @@ class Shortcodes {
         $this->retired_player                   = __( 'Retired - %s', 'racketmanager' );
         $this->not_played_no_opponent           = __( 'Match not played - %s did not show', 'racketmanager' );
 
-        $c                          = $this->racketmanager->container;
-        $this->competition_service  = $c->get( 'competition_service' );
-        $this->club_service         = $c->get( 'club_service' );
-        $this->finance_service      = $c->get( 'finance_service' );
-        $this->player_service       = $c->get( 'player_service' );
-        $this->registration_service = $c->get( 'registration_service' );
-        $this->team_service         = $c->get( 'team_service' );
-        $this->tournament_service   = $c->get( 'tournament_service' );
+        $c                               = $this->racketmanager->container;
+        $this->competition_service       = $c->get( 'competition_service' );
+        $this->club_service              = $c->get( 'club_service' );
+        $this->finance_service           = $c->get( 'finance_service' );
+        $this->player_service            = $c->get( 'player_service' );
+        $this->registration_service      = $c->get( 'registration_service' );
+        $this->team_service              = $c->get( 'team_service' );
+        $this->tournament_service        = $c->get( 'tournament_service' );
         $this->competition_entry_service = $c->get( 'competition_entry_service' );
-        $this->fixture_service      = $c->get( 'fixture_service' );
+        $this->fixture_service           = $c->get( 'fixture_service' );
     }
+
     /**
      * Display Daily Matches
      *
@@ -115,19 +116,17 @@ class Shortcodes {
      * - template is the template used for displaying. Replace the template name appropriately. Templates must be named "matches-template.php" (optional)
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string
      */
     public function show_daily_matches( array $atts ): string {
         global $racketmanager, $wp;
         wp_verify_nonce( 'matches-daily' );
-        $args             = shortcode_atts(
-            array(
+        $args             = shortcode_atts( array(
                 'competition_type' => 'league',
                 'template'         => 'daily',
                 'match_date'       => false,
-            ),
-            $atts
-        );
+            ), $atts );
         $competition_type = $args['competition_type'];
         $template         = $args['template'];
         $match_date       = $args['match_date'];
@@ -143,12 +142,10 @@ class Shortcodes {
         if ( isset( $wp->query_vars['competition_type'] ) ) {
             $competition_type = un_seo_url( get_query_var( 'competition_type' ) );
         }
-        $matches      = $racketmanager->get_matches(
-            array(
+        $matches      = $racketmanager->get_matches( array(
                 'match_date'       => $match_date,
                 'competition_type' => $competition_type,
-            )
-        );
+            ) );
         $matches_list = array();
         foreach ( $matches as $match ) {
             $key = $match->league->title;
@@ -160,14 +157,62 @@ class Shortcodes {
 
         $filename = ( ! empty( $template ) ) ? 'matches-' . $template : 'matches-daily';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'matches_list' => $matches_list,
                 'match_date'   => $match_date,
-            )
-        );
+            ) );
     }
+
+    /**
+     * Load template for user display. First, the current theme directory is checked for a template
+     * before defaulting to the plugin
+     *
+     * @param string $template Name of the template file (without extension).
+     * @param array $vars Array of variables name=>value available to display code (optional).
+     * @param false|string $template_type Type of content template (email, page).
+     *
+     * @return string the content
+     */
+    public function load_template( string $template, array $vars = array(), false|string $template_type = false ): string {
+        if ( $template_type ) {
+            $template_dir = match ( $template_type ) {
+                'competition' => 'templates/competition',
+                'event' => 'templates/event',
+                'email' => 'templates/email',
+                'entry' => 'templates/entry',
+                'form' => 'templates/forms',
+                'includes' => 'templates/includes',
+                'page' => 'templates/page',
+                'tournament' => 'templates/tournament',
+                'account' => 'templates/account',
+                'league' => 'templates/league',
+                'match' => 'templates/match',
+                'club' => 'templates/club',
+                default => 'templates',
+            };
+        } else {
+            $template_dir = 'templates';
+        }
+        extract( $vars ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+        ob_start();
+
+        if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) ) {
+            require get_stylesheet_directory() . "/racketmanager/$template.php";
+        } elseif ( file_exists( get_template_directory() . "/racketmanager/$template.php" ) ) {
+            require get_template_directory() . "/racketmanager/$template.php";
+        } elseif ( file_exists( RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php' ) ) {
+            require RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php';
+        } else {
+            /* translators: %1$s: template %2$s: directory */
+            $msg = sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $template, $template_dir );
+            echo show_alert( $msg, 'danger' );
+        }
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        return $output;
+    }
+
     /**
      * Display Latest Match results
      *
@@ -179,13 +224,13 @@ class Shortcodes {
      * - template is the template used for displaying. Replace the template name appropriately. Templates must be named "matches-template.php" (optional)
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string
      */
     public function show_latest_results( array $atts ): string {
         global $racketmanager, $wp;
 
-        $args             = shortcode_atts(
-            array(
+        $args             = shortcode_atts( array(
                 'competition_type' => 'league',
                 'template'         => 'results',
                 'days'             => 7,
@@ -193,9 +238,7 @@ class Shortcodes {
                 'competition_id'   => '',
                 'header_level'     => 1,
                 'age_group'        => false,
-            ),
-            $atts
-        );
+            ), $atts );
         $competition_type = $args['competition_type'];
         $template         = $args['template'];
         $days             = $args['days'];
@@ -225,8 +268,7 @@ class Shortcodes {
             $age_group = get_query_var( 'age_group' );
         }
         $time         = 'latest';
-        $matches      = $racketmanager->get_matches(
-            array(
+        $matches      = $racketmanager->get_matches( array(
                 'days'             => $days,
                 'competition_type' => $competition_type,
                 'time'             => $time,
@@ -234,8 +276,7 @@ class Shortcodes {
                 'club'             => $club_id,
                 'competition_id'   => $competition_id,
                 'age_group'        => $age_group,
-            )
-        );
+            ) );
         $matches_list = array();
         foreach ( $matches as $match ) {
             $key = $match->league->title;
@@ -251,29 +292,43 @@ class Shortcodes {
         } else {
             $filename = 'matches-' . $template;
         }
-        return $this->load_template(
-            $filename,
-            array(
+
+        return $this->load_template( $filename, array(
                 'matches_list' => $matches_list,
                 'header_level' => $header_level,
-            )
-        );
+            ) );
     }
+
+    /**
+     * Check if template exists
+     *
+     * @param string $template template name.
+     * @param string|null $directory optional directory name.
+     *
+     * @return boolean
+     */
+    public function check_template( string $template, ?string $directory = null ): bool {
+        $template_dir = 'templates/';
+        if ( $directory ) {
+            $template_dir .= $directory . '/';
+        }
+
+        return file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) || file_exists( get_template_directory() . "/racketmanager/$template.php" ) || file_exists( RACKETMANAGER_PATH . $template_dir . $template . '.php' );
+    }
+
     /**
      * Function to display Players
      *
      *  [players template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_players( array $atts ): string {
-        $args           = shortcode_atts(
-            array(
+        $args           = shortcode_atts( array(
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $template       = $args['template'];
         $search_string  = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $search_results = null;
@@ -287,30 +342,27 @@ class Shortcodes {
             $favourites = $user->get_favourites( 'player' );
         }
         $filename = ( ! empty( $template ) ) ? 'players-' . $template : 'players';
-        return $this->load_template(
-            $filename,
-            array(
+
+        return $this->load_template( $filename, array(
                 'favourites'     => $favourites,
                 'search_string'  => $search_string,
                 'search_results' => $search_results,
-            )
-        );
+            ) );
     }
+
     /**
      * Function to display Player
      *
      *  [player template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_player( array $atts ): string {
-        $args     = shortcode_atts(
-            array(
+        $args     = shortcode_atts( array(
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $template = $args['template'];
         // Get Player by Name.
         $player_name = get_query_var( 'player_id' );
@@ -327,41 +379,40 @@ class Shortcodes {
         $player_clubs = $this->registration_service->get_clubs_for_player( $player->get_id() );
         $titles       = $this->player_service->get_titles_for_player( $player->get_id() );
 
-        $player->stats        = $player->get_career_stats();
-        $player->competitions = array( 'cup', 'league', 'tournament' );
-        foreach ( $player->competitions as $competition_type ) {
+        $player->stats       = $player->get_career_stats();
+        $player_competitions = array();
+        $competitions_types  = array( 'cup', 'league', 'tournament' );
+        foreach ( $competitions_types as $competition_type ) {
             if ( 'tournament' === $competition_type ) {
-                $player->$competition_type = $player->get_tournaments( array( 'type' => $competition_type ) );
+                $player_competitions[ $competition_type ] = $this->tournament_service->get_tournaments_for_player( $player->get_id() );
             } else {
-                $player->$competition_type = $player->get_competitions( array( 'type' => $competition_type ) );
+                $player_competitions[ $competition_type ] = $player->get_competitions( array( 'type' => $competition_type ) );
             }
         }
 
         $filename = ( ! empty( $template ) ) ? 'player-' . $template : 'player';
-        return $this->load_template(
-            $filename,
-            array(
-                'player' => $player,
-                'clubs'  => $player_clubs,
-                'titles' => $titles,
-            )
-        );
+
+        return $this->load_template( $filename, array(
+                'player'               => $player,
+                'clubs'                => $player_clubs,
+                'titles'               => $titles,
+                'player_competitions' => $player_competitions,
+            ) );
     }
+
     /**
      * Function to show favourites
      *
      *    [favourites template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_favourites( array $atts ): string {
-        $args = shortcode_atts(
-            array(
+        $args = shortcode_atts( array(
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         if ( ! is_user_logged_in() ) {
             return $this->return_error( __( 'You must be logged in to view favourites', 'racketmanager' ) );
         }
@@ -369,25 +420,42 @@ class Shortcodes {
         $user       = get_user( get_current_user_id() );
         $favourites = $user->get_favourites();
         $filename   = ( ! empty( $template ) ) ? 'form-favourites-' . $template : 'form-favourites';
+
         return $this->load_template( $filename, array( 'favourite_types' => $favourites ), 'form' );
     }
+
+    /**
+     * Return error function
+     *
+     * @param string $msg message to display.
+     * @param string|null $template template suffix (modal or null).
+     *
+     * @return string output HTML
+     */
+    public function return_error( string $msg, ?string $template = null ): string {
+        $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
+
+        return $this->load_template( $filename, array(
+                'msg'   => $msg,
+                'class' => 'danger',
+            ) );
+    }
+
     /**
      * Function to show invoice
      *
      *    [invoice template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_invoice( array $atts ): string {
         global $racketmanager;
-        $args = shortcode_atts(
-            array(
+        $args     = shortcode_atts( array(
                 'id'       => 0,
                 'template' => null,
-            ),
-            $atts
-        );
+            ), $atts );
         $id       = $args['id'];
         $template = $args['template'];
         if ( ! $id ) {
@@ -400,33 +468,30 @@ class Shortcodes {
         }
         $billing  = $racketmanager->get_options( 'billing' );
         $filename = ( ! empty( $template ) ) ? 'invoice-' . $template : 'invoice';
-        return $this->load_template(
-            $filename,
-            array(
+
+        return $this->load_template( $filename, array(
                 'organisation_name' => $racketmanager->site_name,
                 'invoice'           => $invoice,
                 'billing'           => $billing,
                 'invoice_number'    => $invoice->invoice->get_invoice_number(),
-            )
-        );
+            ) );
     }
+
     /**
      * Function to show purchase order
      *
      *    [purchase-order id=X template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_purchase_order( array $atts ): string {
-        $args = shortcode_atts(
-            array(
+        $args     = shortcode_atts( array(
                 'id'       => 0,
                 'modal'    => null,
                 'template' => null,
-            ),
-            $atts
-        );
+            ), $atts );
         $id       = $args['id'];
         $modal    = $args['modal'];
         $template = $args['template'];
@@ -439,30 +504,26 @@ class Shortcodes {
             return $this->return_error( $e->getMessage(), 'modal' );
         }
         $filename = ( ! empty( $template ) ) ? 'purchase-order-modal-' . $template : 'purchase-order-modal';
-        return $this->load_template(
-            $filename,
-            array(
+
+        return $this->load_template( $filename, array(
                 'invoice' => $invoice,
                 'modal'   => $modal,
-            ),
-            'club'
-        );
+            ), 'club' );
     }
+
     /**
      * Function to show memberships
      *
      *    [memberships template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_memberships( array $atts ): string {
-        $args = shortcode_atts(
-            array(
+        $args = shortcode_atts( array(
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         if ( ! is_user_logged_in() ) {
             return $this->return_error( __( 'You must be logged in to view memberships', 'racketmanager' ) );
         }
@@ -472,28 +533,28 @@ class Shortcodes {
             $template_args['clubs']         = $this->registration_service->get_clubs_for_player( $player->get_id() );
             $template_args['clubs_archive'] = $this->registration_service->get_clubs_for_player( $player->get_id(), 'removed' );
             $filename                       = ( ! empty( $template ) ) ? 'player-clubs-' . $template : 'player-clubs';
+
             return $this->load_template( $filename, $template_args, 'account' );
-        } catch ( Player_Not_Found_Exception $e) {
+        } catch ( Player_Not_Found_Exception $e ) {
             return $this->return_error( $e->getMessage() );
         }
     }
+
     /**
      * Function to search players
      *
      *    [search-players search=x template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_player_search( array $atts ): string {
         global $racketmanager;
-        $args          = shortcode_atts(
-            array(
+        $args          = shortcode_atts( array(
                 'search'   => null,
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $template      = $args['template'];
         $search_string = $args['search'];
         $players       = $racketmanager->get_all_players( array( 'name' => $search_string ) );
@@ -501,22 +562,21 @@ class Shortcodes {
 
         return $this->load_template( $filename, array( 'players' => $players ) );
     }
+
     /**
      * Function to show team order
      *
      *    [team-order]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string content
      */
     public function show_team_order( array $atts ): string {
         global $racketmanager;
-        $args     = shortcode_atts(
-            array(
+        $args              = shortcode_atts( array(
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $template          = $args['template'];
         $club_args         = array();
         $club_args['type'] = 'affiliated';
@@ -535,81 +595,19 @@ class Shortcodes {
         $age_groups  = Util_Lookup::get_age_groups();
         $filename    = ( ! empty( $template ) ) ? 'team-order-' . $template : 'team-order';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'clubs'       => $clubs,
                 'events'      => $events,
                 'event_types' => $event_types,
                 'age_groups'  => $age_groups,
-                )
-        );
+            ) );
     }
-    /**
-     * Load template for user display. First, the current theme directory is checked for a template
-     * before defaulting to the plugin
-     *
-     * @param string $template Name of the template file (without extension).
-     * @param array $vars Array of variables name=>value available to display code (optional).
-     * @param false|string $template_type Type of content template (email, page).
-     * @return string the content
-     */
-    public function load_template( string $template, array $vars = array(), false|string $template_type = false ): string {
-        if ( $template_type ) {
-            $template_dir = match ($template_type) {
-                'competition' => 'templates/competition',
-                'event'       => 'templates/event',
-                'email'       => 'templates/email',
-                'entry'       => 'templates/entry',
-                'form'        => 'templates/forms',
-                'includes'    => 'templates/includes',
-                'page'        => 'templates/page',
-                'tournament'  => 'templates/tournament',
-                'account'     => 'templates/account',
-                'league'      => 'templates/league',
-                'match'       => 'templates/match',
-                'club'        => 'templates/club',
-                default       => 'templates',
-            };
-        } else {
-            $template_dir = 'templates';
-        }
-        extract( $vars ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
-        ob_start();
 
-        if ( file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) ) {
-            require get_stylesheet_directory() . "/racketmanager/$template.php";
-        } elseif ( file_exists( get_template_directory() . "/racketmanager/$template.php" ) ) {
-            require get_template_directory() . "/racketmanager/$template.php";
-        } elseif ( file_exists( RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php' ) ) {
-            require RACKETMANAGER_PATH . $template_dir . '/' . $template . '.php';
-        } else {
-            /* translators: %1$s: template %2$s: directory */
-            $msg = sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $template, $template_dir );
-            echo show_alert( $msg, 'danger');
-        }
-        $output = ob_get_contents();
-        ob_end_clean();
-        return $output;
-    }
-    /**
-     * Check if template exists
-     *
-     * @param string $template template name.
-     * @param string|null $directory optional directory name.
-     * @return boolean
-     */
-    public function check_template( string $template, ?string $directory = null ): bool {
-        $template_dir = 'templates/';
-        if ( $directory ) {
-            $template_dir .= $directory . '/';
-        }
-        return file_exists( get_stylesheet_directory() . "/racketmanager/$template.php" ) || file_exists( get_template_directory() . "/racketmanager/$template.php" ) || file_exists( RACKETMANAGER_PATH . $template_dir . $template . '.php' );
-    }
     /**
      * Get league
      *
      * @param int $league_id league id.
+     *
      * @return object
      */
     public function get_league( int $league_id ): object {
@@ -620,13 +618,16 @@ class Shortcodes {
         } else {
             $league = get_league( $league_id );
         }
+
         return $league;
     }
+
     /**
      * Get draws for event function
      *
      * @param object $event event object.
      * @param string $season season.
+     *
      * @return array of leagues with draws.
      */
     public function get_draw( object $event, string $season ): array {
@@ -635,15 +636,13 @@ class Shortcodes {
             $league = get_league( $league->id );
             $finals = array_reverse( $league->championship->get_finals() );
             foreach ( $finals as $f => $final ) {
-                $matches = $league->get_matches(
-                    array(
+                $matches = $league->get_matches( array(
                         'season'  => $season,
                         'final'   => $final['key'],
                         'orderby' => array(
                             'id' => 'ASC',
                         ),
-                    )
-                );
+                    ) );
                 if ( count( $matches ) ) {
                     $final['matches'] = $matches;
                     $finals[ $f ]     = (object) $final;
@@ -654,25 +653,10 @@ class Shortcodes {
             $league->finals = $finals;
             $leagues[ $l ]  = $league;
         }
+
         return $leagues;
     }
 
-    /**
-     * Return error function
-     *
-     * @param string $msg message to display.
-     * @param string|null $template template suffix (modal or null).
-     *
-     * @return string output HTML
-     */
-    public function return_error( string $msg, ?string $template = null ): string {
-        $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
-        return $this->load_template( $filename, array(
-                'msg'   => $msg,
-                'class' => 'danger',
-            )
-        );
-    }
     /**
      * Show alert function
      *
@@ -683,91 +667,39 @@ class Shortcodes {
      * @return string output HTML
      */
     public function show_alert( array $atts ): string {
-        $args     = shortcode_atts(
-            array(
-                'msg'  => '',
-                'type' => '',
+        $args     = shortcode_atts( array(
+                'msg'      => '',
+                'type'     => '',
                 'template' => null,
-            ),
-            $atts
-        );
+            ), $atts );
         $msg      = $args['msg'];
         $type     = $args['type'];
         $template = $args['template'];
         $filename = ! empty( $template ) ? 'alert-' . $template : 'alert';
-        return $this->load_template(
-                $filename,
-                array(
-                        'msg'   => $msg,
-                        'class' => $type,
-                    )
-        );
-    }
-    /**
-     * Get players for a club by event type and age
-     *
-     * @param object $event event.
-     * @param object $club club.
-     *
-     * @return array
-     */
-    protected function get_club_players( object $event, object $club ): array {
-        $max_age = null;
-        $min_age = null;
-        $min_age_female = null;
-        $options   = $this->racketmanager->get_options( 'rosters' );
-        $age_limit = $event->age_limit ?? null;
-        if ( $age_limit ) {
-            $age_offset = $event->age_offset ?? 0;
-        }
-        if ( ! empty( $options['ageLimitCheck'] ) && $age_limit && 'open' !== $age_limit ) {
-            if ( $age_limit < 30 ) {
-                $max_age = $age_limit;
-            } else {
-                $min_age        = $age_limit;
-                $min_age_female = $min_age - $age_offset;
-            }
-        }
 
-        switch ( $event->type ) {
-            case 'BD':
-            case 'MD':
-                $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
-                break;
-            case 'GD':
-            case 'WD':
-                $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age );
-                break;
-            case 'XD':
-            case 'LD':
-                $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
-                $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age_female );
-                break;
-            default:
-                $club_players['m'] = array();
-                $club_players['f'] = array();
-        }
-        return $club_players;
+        return $this->load_template( $filename, array(
+                'msg'   => $msg,
+                'class' => $type,
+            ) );
     }
+
     /**
      * Function to display the finals' order of play
      *
      *    [orderofplay id=ID template=X]
      *
      * @param array $atts shortcode attributes.
+     *
      * @return string the content
      */
     public function show_order_of_play( array $atts ): string {
         wp_verify_nonce( 'order-of-play' );
-        $args          = shortcode_atts(
-            array(
+        $args           = shortcode_atts( array(
                 'id'             => '',
                 'competition_id' => null,
                 'season'         => null,
                 'template'       => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $tournament_id  = $args['id'];
         $competition_id = $args['competition_id'];
         $season         = $args['season'];
@@ -787,7 +719,7 @@ class Shortcodes {
                     $competition_season = $competition->get_season_by_name( $season );
                     if ( $competition_season ) {
                         $finals_order = $competition_season['orderofplay'] ?? array();
-                    } else{
+                    } else {
                         $msg = $this->season_not_found_for_competition;
                     }
                 } else {
@@ -803,10 +735,10 @@ class Shortcodes {
             return $this->return_error( $msg );
         }
         $order_of_play = array();
-        $times  = array();
-        $courts = array();
+        $times         = array();
+        $courts        = array();
         foreach ( $finals_order as $final_courts ) {
-            $court = $final_courts['court'];
+            $court            = $final_courts['court'];
             $courts[ $court ] = array();
             foreach ( $final_courts['matches'] as $match_id ) {
                 if ( $match_id ) {
@@ -840,13 +772,58 @@ class Shortcodes {
         }
         $order_of_play['courts'] = $courts;
         $order_of_play['times']  = $times;
-        $filename = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
+        $filename                = ( ! empty( $template ) ) ? 'orderofplay-' . $template : 'orderofplay';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'order_of_play' => $order_of_play,
-            )
-        );
+            ) );
+    }
+
+    /**
+     * Get players for a club by event type and age
+     *
+     * @param object $event event.
+     * @param object $club club.
+     *
+     * @return array
+     */
+    protected function get_club_players( object $event, object $club ): array {
+        $max_age        = null;
+        $min_age        = null;
+        $min_age_female = null;
+        $options        = $this->racketmanager->get_options( 'rosters' );
+        $age_limit      = $event->age_limit ?? null;
+        if ( $age_limit ) {
+            $age_offset = $event->age_offset ?? 0;
+        }
+        if ( ! empty( $options['ageLimitCheck'] ) && $age_limit && 'open' !== $age_limit ) {
+            if ( $age_limit < 30 ) {
+                $max_age = $age_limit;
+            } else {
+                $min_age        = $age_limit;
+                $min_age_female = $min_age - $age_offset;
+            }
+        }
+
+        switch ( $event->type ) {
+            case 'BD':
+            case 'MD':
+                $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
+                break;
+            case 'GD':
+            case 'WD':
+                $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age );
+                break;
+            case 'XD':
+            case 'LD':
+                $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
+                $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age_female );
+                break;
+            default:
+                $club_players['m'] = array();
+                $club_players['f'] = array();
+        }
+
+        return $club_players;
     }
 }

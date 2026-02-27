@@ -62,12 +62,13 @@ class Tournament_Service {
     private Competition_Service $competition_service;
     private Player_Service $player_service;
     private Club_Service $club_service;
+    private Finance_Service $finance_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Tournament_Repository $tournament_repository, Charge_Repository $charge_repository, Event_Repository $event_repository, Fixture_Service $fixture_service, League_Team_Repository $league_team_repository, Tournament_Entry_Repository $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service ) {
+    public function __construct( RacketManager $plugin_instance, Tournament_Repository $tournament_repository, Charge_Repository $charge_repository, Event_Repository $event_repository, Fixture_Service $fixture_service, League_Team_Repository $league_team_repository, Tournament_Entry_Repository $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service, Finance_Service $finance_service ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
         $this->charge_repository           = $charge_repository;
@@ -78,6 +79,7 @@ class Tournament_Service {
         $this->competition_service         = $competition_service;
         $this->player_service              = $player_service;
         $this->club_service                = $club_service;
+        $this->finance_service             = $finance_service;
     }
 
     public function get_tournaments( array $criteria = array() ): array {
@@ -189,7 +191,7 @@ class Tournament_Service {
         $args                = array();
         $args['competition'] = $tournament->competition_id;
         $args['season']      = $tournament->season;
-        $charges             = $this->racketmanager->get_charges( $args );
+        $charges             = $this->finance_service->get_charges_by_criteria( $args );
         $competition_fee     = null;
         $event_fee           = null;
         $fee_id              = null;

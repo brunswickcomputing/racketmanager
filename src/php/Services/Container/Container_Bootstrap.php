@@ -183,7 +183,7 @@ final class Container_Bootstrap {
                 $c->get('competition_service'),
                 $c->get('player_service'),
                 $c->get('club_service'),
-//                $c->get('invoice_repository'),
+                $c->get('finance_service'),
             );
         });
 

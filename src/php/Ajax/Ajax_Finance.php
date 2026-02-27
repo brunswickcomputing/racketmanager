@@ -73,7 +73,7 @@ class Ajax_Finance extends Ajax {
             $invoice_id     = isset( $_POST['invoiceId'] ) ? intval( $_POST['invoiceId'] ) : null;
             $purchase_order = isset( $_POST['purchaseOrder'] ) ? sanitize_text_field( wp_unslash( $_POST['purchaseOrder'] ) ) : null;
             try {
-                $validator       = $this->finance_service->set_invoice_purchase_order( $invoice_id, $purchase_order );
+                $validator       = $this->finance_service->set_purchase_order_for_invoice( $invoice_id, $purchase_order );
                 $return          = new stdClass();
                 $return->msg     = __( 'Purchase order updated', 'racketmanager' );
                 $return->modal   = $modal;

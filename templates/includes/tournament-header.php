@@ -9,7 +9,10 @@
 namespace Racketmanager;
 
 global $racketmanager;
-/** @var object $tournament */
+
+use Racketmanager\Domain\Tournament;
+
+/** @var Tournament $tournament */
 ?>
     <div class="page-subhead competition">
         <div class="media tournament-head">
@@ -25,7 +28,7 @@ global $racketmanager;
                         <small class="media__subheading">
                             <span class="nav--link">
                                 <span class="nav-link__value">
-                                    <?php echo esc_html( $tournament->venue_name ); ?>
+                                    <?php echo esc_html( $tournament->get_meta('venue_name' ) ); ?>
                                 </span>
                             </span>
                         </small>

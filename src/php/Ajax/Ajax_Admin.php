@@ -22,7 +22,6 @@ use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
-use function Racketmanager\get_tournament;
 use function Racketmanager\league_dropdown;
 use function Racketmanager\match_dropdown;
 use function Racketmanager\season_dropdown;

@@ -9,18 +9,17 @@
 
 namespace Racketmanager\Admin;
 
-use Exception;
-use Racketmanager\Domain\Charge;
+use Racketmanager\Domain\Competition;
+use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_charge;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
-use function Racketmanager\get_tournament;
 
 /**
  * RacketManager administration functions
@@ -57,9 +56,13 @@ final class Admin_Competition extends Admin_Display {
             $this->show_message();
             return;
         }
-        $tournament = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        if ( $tournament ) {
-            $tournament = get_tournament( $tournament );
+        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
+        if ( $tournament_id ) {
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_id );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                throw new Tournament_Not_Found_Exception( $e->getMessage() );
+            }
         }
         if ( isset( $_POST['updateCompetitionConfig'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-competition-config' );
@@ -323,12 +326,8 @@ final class Admin_Competition extends Admin_Display {
             $this->set_message( __( 'New season', 'racketmanager' ), 'info' );
         }
         $this->show_message();
-        $seasons = $racketmanager->get_seasons( 'DESC' );
-        $clubs   = $this->club_service->get_clubs(
-            array(
-                'type' => 'affiliated',
-            )
-        );
+        $seasons = $this->season_service->get_all_seasons();
+        $clubs   = $this->club_service->get_clubs();
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/season-edit.php';
     }
 
@@ -413,7 +412,7 @@ final class Admin_Competition extends Admin_Display {
      *
      * @return bool
      */
-    private function update_competition_season_settings( object $current_season, object $competition ): bool {
+    private function update_competition_season_settings( object $current_season, Competition $competition ): bool {
         $updates = false;
         if ( ! empty( $current_season->fee_lead_time ) ) {
             $fee_lead_time = $current_season->fee_lead_time * 7;
@@ -422,15 +421,15 @@ final class Admin_Competition extends Admin_Display {
             $fee_date = $current_season->date_start;
         }
         if ( ! empty( $current_season->fee_id ) ) {
-            $charge = get_charge( $current_season->fee_id );
-            if ( $charge ) {
+            try {
+                $charge = $this->finance_service->get_charge( $current_season->fee_id );
                 $charge_update = false;
                 if ( floatval( $charge->fee_competition ) !== $current_season->fee_competition ) {
-                    $charge->set_club_fee( $current_season->fee_competition );
+                    $charge->set_fee_competition( $current_season->fee_competition );
                     $charge_update = true;
                 }
                 if ( floatval( $charge->fee_event ) !== $current_season->fee_event ) {
-                    $charge->set_team_fee( $current_season->fee_event );
+                    $charge->set_fee_event( $current_season->fee_event );
                     $charge_update = true;
                 }
                 if ( $charge->date !== $fee_date ) {
@@ -440,7 +439,7 @@ final class Admin_Competition extends Admin_Display {
                 if ( $charge_update ) {
                     $this->schedule_invoice_send( $charge->id );
                 }
-            } elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
+            } catch ( Charge_Not_Found_Exception ) {
                 $charge_create = true;
             }
         } elseif ( ! empty( $current_season->fee_competition ) || ! empty( $current_season->fee_event ) ) {
@@ -554,7 +553,7 @@ final class Admin_Competition extends Admin_Display {
             $charge->date            = $fee_date;
             $charge->fee_competition = $current_season->fee_competition;
             $charge->fee_event       = $current_season->fee_event;
-            $charge                  = new Charge( $charge );
+            $charge                  = $this->finance_service->add_charge( $charge );
             $this->schedule_invoice_send( $charge->id );
             $updates = true;
         } elseif( ! empty( $charge_update ) ) {
@@ -678,23 +677,26 @@ final class Admin_Competition extends Admin_Display {
      * @return void
      */
     private function schedule_invoice_send( int $charge_id ): void {
-        $charge = get_charge( $charge_id );
-        if ( $charge ) {
-            $today = gmdate( 'Y-m-d' );
-            if ( $today < $charge->date ) {
-                $schedule_date   = strtotime( $charge->date );
-                $day             = intval( gmdate( 'd', $schedule_date ) );
-                $month           = intval( gmdate( 'm', $schedule_date ) );
-                $year            = intval( gmdate( 'Y', $schedule_date ) );
-                $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
-                $schedule_name   = 'rm_send_invoices';
-                $schedule_args[] = $charge_id;
-                Util::clear_scheduled_event( $schedule_name, $schedule_args );
-                $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
-                if ( ! $success ) {
-                    error_log( __( 'Error scheduling invoice sending', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                }
-            }
+        try {
+            $charge = $this->finance_service->get_charge( $charge_id );
+        } catch ( Charge_Not_Found_Exception ) {
+            return;
+        }
+        $today = gmdate( 'Y-m-d' );
+        if ( $today >= $charge->date ) {
+            return;
+        }
+        $schedule_date   = strtotime( $charge->date );
+        $day             = intval( gmdate( 'd', $schedule_date ) );
+        $month           = intval( gmdate( 'm', $schedule_date ) );
+        $year            = intval( gmdate( 'Y', $schedule_date ) );
+        $schedule_start  = mktime( 00, 00, 01, $month, $day, $year );
+        $schedule_name   = 'rm_send_invoices';
+        $schedule_args[] = $charge_id;
+        Util::clear_scheduled_event( $schedule_name, $schedule_args );
+        $success = wp_schedule_single_event( $schedule_start, $schedule_name, $schedule_args );
+        if ( ! $success ) {
+            error_log( __( 'Error scheduling invoice sending', 'racketmanager' ) ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
         }
     }
 }

@@ -26,6 +26,9 @@ if ( is_user_logged_in() ) {
         width: 40%;
         display: inline;
     }
+    h2.invoice-item-detail {
+        width: 100%;
+    }
     .invoice-item-quantity {
         width: 20%;
         text-align: right;
@@ -38,7 +41,7 @@ if ( is_user_logged_in() ) {
         width: 20%;
         text-align: right;
     }
-    div#invoice-item {
+    div.invoice-item {
         display: flex;
         line-height: 2em;
     }
@@ -46,7 +49,7 @@ if ( is_user_logged_in() ) {
         width: 80%;
         text-align: right;
     }
-    div#invoice-totals {
+    div#invoice-totals, .invoice-totals {
         display: flex;
         font-weight: bold;
     }
@@ -94,10 +97,10 @@ if ( is_user_logged_in() ) {
         font-weight: normal;
         margin: 0;
     }
-    #invoice-header h2, #client-details h2, #invoice-item h2 {
+    #invoice-header h2, #client-details h2, .invoice-item h2 {
         margin: 0;
     }
-    #invoice #invoice-info h2, #invoice #company-address div.email, #invoice #client-details h2, #invoice #invoice-header h2, #invoice #payment-details h2, #invoice #invoice-item h2 {
+    #invoice #invoice-info h2, #invoice #company-address div.email, #invoice #client-details h2, #invoice #invoice-header h2, #invoice #payment-details h2, #invoice .invoice-item h2 {
         color: #006800;
     }
     #invoice {
@@ -187,54 +190,74 @@ if ( is_user_logged_in() ) {
             ?>
         </div>
         <div id="invoice-amount">
-            <div id="header-row">
-                <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'description', 'racketmanager' ) ) ); ?></div>
-                <div class="invoice-item-quantity"><?php echo esc_html( ucwords( __( 'quantity', 'racketmanager' ) ) ); ?></div>
-                <div class="invoice-item-unit-price"><?php echo esc_html( ucwords( __( 'unit price', 'racketmanager' ) ) ); ?></div>
-                <div class="invoice-item-net-price"><?php echo esc_html( ucwords( __( 'net total', 'racketmanager' ) ) ); ?></div>
-            </div>
-            <div id="invoice-items">
-                <div id="invoice-item">
-                    <h2 class="invoice-item-detail"><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></h2>
+            <?php
+            if ( isset( $invoice->details->events ) || isset( $invoice->details->fee_competition ) ) {
+                ?>
+                <div id="header-row">
+                    <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'description', 'racketmanager' ) ) ); ?></div>
+                    <div class="invoice-item-quantity"><?php echo esc_html( ucwords( __( 'quantity', 'racketmanager' ) ) ); ?></div>
+                    <div class="invoice-item-unit-price"><?php echo esc_html( ucwords( __( 'unit price', 'racketmanager' ) ) ); ?></div>
+                    <div class="invoice-item-net-price"><?php echo esc_html( ucwords( __( 'net total', 'racketmanager' ) ) ); ?></div>
+                </div>
+                <div id="invoice-items">
+                    <div class="invoice-item">
+                        <h2 class="invoice-item-detail"><?php echo esc_html( ucfirst( $invoice->charge_name ) ); ?></h2>
+                    </div>
+                    <?php
+                    if ( ! empty( $invoice->details->fee_competition ) ) {
+                        ?>
+                        <div class="invoice-item">
+                            <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'Competition entry fee', 'racketmanager' ) ) ); ?></div>
+                            <div class="invoice-item-quantity"></div>
+                            <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
+                            <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
+                        </div>
+                        <?php
+                    }
+                    ?>
+                    <?php
+                    foreach ( $invoice->details->events as $racketmanager_event ) {
+                        ?>
+                        <div class="invoice-item">
+                            <?php
+                            if ( isset( $racketmanager_event->name ) ) {
+                                ?>
+                                <div class="invoice-item-detail"><?php echo esc_html( $racketmanager_event->name ); ?></div>
+                                <?php
+                            } else {
+                                ?>
+                                <div class="invoice-item-detail"><?php echo esc_html( Util_Lookup::get_event_type( $racketmanager_event->type ) ); ?></div>
+                                <?php
+                            }
+                            ?>
+                            <div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
+                            <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_events ); ?></div>
+                            <div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
+                        </div>
+                        <?php
+                    }
+                    ?>
                 </div>
                 <?php
-                if ( '0.00' !== $invoice->details->fee_competition ) {
-                    ?>
-                    <div id="invoice-item">
-                        <div class="invoice-item-detail"><?php echo esc_html( ucwords( __( 'Competition entry fee', 'racketmanager' ) ) ); ?></div>
-                        <div class="invoice-item-quantity"></div>
-                        <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
-                        <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee_competition ); ?></div>
-                    </div>
-                    <?php
-                }
-                ?>
-                <?php
-                foreach ( $invoice->details->events as $racketmanager_event ) {
-                    ?>
-                    <div id="invoice-item">
-                        <div class="invoice-item-detail"><?php echo esc_html( Util_Lookup::get_event_type( $racketmanager_event->type ) ); ?></div>
-                        <div class="invoice-item-quantity"><?php echo esc_html( $racketmanager_event->count ); ?></div>
-                        <div class="invoice-item-unit-price"><?php the_currency_amount( $invoice->details->fee_events ); ?></div>
-                        <div class="invoice-item-net-price"><?php the_currency_amount( $racketmanager_event->fee ); ?></div>
-                    </div>
-                    <?php
-                }
-                ?>
-            </div>
+            }
+            ?>
             <div id="invoice-totals">
                 <div class="invoice-total-desc">Total</div>
                 <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->fee ); ?></div>
             </div>
             <?php
             if ( ! empty( $invoice->details->paid ) ) {
-                $amount_due = $invoice->details->fee - $invoice->details->paid;
+                if ( empty( $invoice->details->total ) ) {
+                    $amount_due = $invoice->details->fee - $invoice->details->paid;
+                } else {
+                    $amount_due = $invoice->details->total;
+                }
                 ?>
-                <div id="invoice-totals">
+                <div class="invoice-totals">
                     <div class="invoice-total-desc">Paid</div>
                     <div class="invoice-item-net-price"><?php the_currency_amount( $invoice->details->paid ); ?></div>
                 </div>
-                <div id="invoice-totals">
+                <div class="invoice-totals">
                 <div class="invoice-total-desc"><?php esc_html_e( 'Due', 'racketmanager' ); ?></div>
                     <div class="invoice-item-net-price"><?php the_currency_amount( $amount_due ); ?></div>
                 </div>

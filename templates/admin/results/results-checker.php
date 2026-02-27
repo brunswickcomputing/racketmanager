@@ -7,7 +7,6 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var string $season_select */
 /** @var string $competition_select */
 /** @var string $event_select */
@@ -15,7 +14,7 @@ global $racketmanager;
 /** @var array  $results_checkers */
 /** @var array  $competitions */
 /** @var array  $events */
-$seasons = $racketmanager->get_seasons( 'DESC' );
+/** @var Season[]  $seasons */
 ?>
 <!-- Results Checker -->
 

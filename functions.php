@@ -367,33 +367,7 @@ function get_rubber( object|int|null $rubber = null ): Rubber|null {
     return $_rubber;
 }
 
-/**
- * Get Tournament object
- *
- * @param object|int|string|null $tournament Tournament ID or tournament object. Defaults to global $tournament.
- * @param string $search_term search term - defaults to id.
- *
- * @return Tournament|null tournament|null
- */
-function get_tournament( object|int|string|null $tournament = null, string $search_term = 'id' ): Tournament|null {
-    if ( empty( $tournament ) && isset( $GLOBALS['tournament'] ) ) {
-        $tournament = $GLOBALS['tournament'];
-    }
 
-    if ( $tournament instanceof Tournament ) {
-        $_tournament = $tournament;
-    } elseif ( is_object( $tournament ) ) {
-        $_tournament = new Tournament( $tournament );
-    } else {
-        $_tournament = Tournament::get_instance( $tournament, $search_term );
-    }
-
-    if ( ! $_tournament ) {
-        return null;
-    }
-
-    return $_tournament;
-}
 /**
  * Get Tournament Entry object
  *

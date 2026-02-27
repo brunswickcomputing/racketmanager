@@ -79,7 +79,7 @@ if ( empty( $is_page_header ) ) {
                                     foreach ( $clubs as $club ) {
                                         ?>
                                         <li class="media__subheading-info-item">
-                                            <a href="<?php echo esc_html( $club->link ); ?>">
+                                            <a href="/clubs/<?php echo esc_attr( seo_url( $club->club_name ) ); ?>/">
                                                 <span class="nav--link">
                                                     <span class="nav-link__value"><?php echo esc_html( $club->club_name ); ?></span>
                                                 </span>

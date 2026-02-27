@@ -43,7 +43,7 @@ jQuery(document).ready(function(){
                 &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
                 <?php
             } elseif( ! empty( $tournament ) ) {
-                $entry_type   = $tournament->competition->entry_type;
+                $entry_type   = $tournament->competition->settings['entry_type'];
                 $action_link  = $admin_page . $tournament->competition->type . 's&amp;view=tournament&tournament=' . $object_id;
                 $preview_link = $admin_page . $tournament->competition->type . $and_view . $object_name . '=' . $object_id;
                 ?>

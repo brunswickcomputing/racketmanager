@@ -16,6 +16,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\show_alert;
@@ -34,6 +35,7 @@ class Ajax {
     protected Finance_Service $finance_service;
     protected Registration_Service $registration_service;
     protected Team_Service $team_service;
+    protected Tournament_Service $tournament_service;
     protected RacketManager $racketmanager;
 
     /**
@@ -50,6 +52,7 @@ class Ajax {
         $this->player_service            = $c->get( 'player_service' );
         $this->registration_service      = $c->get( 'registration_service' );
         $this->team_service              = $c->get( 'team_service' );
+        $this->tournament_service        = $c->get( 'tournament_service' );
     }
 
     /**

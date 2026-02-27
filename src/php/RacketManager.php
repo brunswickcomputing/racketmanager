@@ -1182,32 +1182,6 @@ class RacketManager {
         }
         $this->message = $message;
     }
-    /**
-     * Get seasons
-     *
-     * @param string $order sort order.
-     *
-     * @return array
-     */
-    public function get_seasons( string $order = 'ASC' ): array {
-        global $wpdb;
-
-        $order_by_string = '`name` ' . $order;
-        $order_by        = $order_by_string;
-        $seasons         = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT `name`, `id` FROM $wpdb->racketmanager_seasons ORDER BY $order_by"
-        );
-        $i = 0;
-        foreach ( $seasons as $season ) {
-            $seasons[ $i ]->id   = $season->id;
-            $seasons[ $i ]->name = stripslashes( $season->name );
-
-            $this->seasons[ $season->id ] = $seasons[ $i ];
-            ++$i;
-        }
-        return $seasons;
-    }
 
     /**
      * Get season

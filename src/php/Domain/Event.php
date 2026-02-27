@@ -421,12 +421,9 @@ class Event {
      * @var string
      */
     public string $status;
-    /**
-     * Draw size
-     *
-     * @var int
-     */
-    public int $draw_size;
+    /** @var array<string, mixed> Storage for non-table data */
+    private array $meta = [];
+
     /**
      * Config
      *
@@ -478,7 +475,7 @@ class Event {
      *
      * @param object $event Event object.
      */
-    public function __construct(object $event ) {
+    public function __construct( object $event ) {
         if ( ! isset( $event->id ) ) {
             $this->add( $event );
         }
@@ -699,6 +696,20 @@ class Event {
                 $this->id
             )
         );
+    }
+
+    /**
+     * Set a transient metadata property.
+     */
+    public function set_meta( string $key, mixed $value ): void {
+        $this->meta[ $key ] = $value;
+    }
+
+    /**
+     * Retrieve a transient metadata property.
+     */
+    public function get_meta( string $key, mixed $default = null ): mixed {
+        return $this->meta[ $key ] ?? $default;
     }
 
     /**

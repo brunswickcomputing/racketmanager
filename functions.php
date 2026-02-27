@@ -468,33 +468,6 @@ function get_user( object|int|string|null $user = null ): ?object {
 }
 
 /**
- * Get Charge object
- *
- * @param object|int|string|null $charges Charge ID or charges object. Defaults to global $charges.
- *
- * @return object|null charges|null
- */
-function get_charge( object|int|string|null $charges = null ): ?object {
-    if ( empty( $charges ) && isset( $GLOBALS['charges'] ) ) {
-        $charges = $GLOBALS['charges'];
-    }
-
-    if ( $charges instanceof Charge ) {
-        $_charges = $charges;
-    } elseif ( is_object( $charges ) ) {
-        $_charges = new Charge( $charges );
-    } else {
-        $_charges = Charge::get_instance( $charges );
-    }
-
-    if ( ! $_charges ) {
-        return null;
-    }
-
-    return $_charges;
-}
-
-/**
  * Get LeagueTeam object
  *
  * @param object|int|null $league_team LeagueTeam ID or LeagueTeam object. Defaults to global $league_team.

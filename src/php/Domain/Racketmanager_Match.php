@@ -132,11 +132,11 @@ final class Racketmanager_Match {
      */
     public int $post_id;
     /**
-     * Round for championship
+     * Round for a championship
      *
-     * @var string
+     * @var string|null
      */
-    public string $final;
+    public ?string $final;
     /**
      * Custom
      *
@@ -602,6 +602,11 @@ final class Racketmanager_Match {
                 $match->custom = array();
             }
             foreach ( get_object_vars( $match ) as $key => $value ) {
+                if ( 'final_round' === $key ) {
+                    $this->final = $value;
+                } elseif ( 'final' === $key ) {
+                    $this->final_round = $value;
+                }
                 $this->$key = $value;
             }
             if ( isset( $this->season ) ) {

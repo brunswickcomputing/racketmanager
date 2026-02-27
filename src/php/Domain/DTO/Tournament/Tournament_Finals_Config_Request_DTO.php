@@ -27,7 +27,7 @@ readonly class Tournament_Finals_Config_Request_DTO {
      */
     public function __construct( array $data ) {
         $this->num_courts     = isset( $data['numCourtsAvailable'] ) ? intval( $data['numCourtsAvailable'] ) : null;
-        $this->start_time     = isset( $data['start_time'] ) ? sanitize_text_field( wp_unslash( $data['start_time'] ) ) : null;
+        $this->start_time     = isset( $data['startTime'] ) ? sanitize_text_field( wp_unslash( $data['startTime'] ) ) : null;
         $this->time_increment = isset( $data['timeIncrement'] ) ? sanitize_text_field( wp_unslash( $data['timeIncrement'] ) ) : null;
     }
 

@@ -1,9 +1,9 @@
 <?php
 /**
- * Tournament Modify Page ViewModel
+ * Tournament Modify Page View Model
  *
  * @package RacketManager
- * @subpackage Admin/ViewModels
+ * @subpackage Admin/View_Models
  */
 
 namespace Racketmanager\Admin\View_Models;

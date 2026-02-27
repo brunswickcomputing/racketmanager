@@ -36,7 +36,7 @@ final readonly class Tournament_Admin_Controller {
      * @param array $query Typically $_GET
      * @param array $post  Typically $_POST
      *
-     * @return array{redirect?:string, viewModel?:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
+     * @return array{redirect?:string, view_model?:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
@@ -71,7 +71,7 @@ final readonly class Tournament_Admin_Controller {
      * @param string $message
      * @param bool|string $message_type
      *
-     * @return array{viewModel:Tournament_Modify_Page_View_Model, message:string, message_type:bool|string}
+     * @return array{view_model:Tournament_Modify_Page_View_Model, message:string, message_type:bool|string}
      */
     private function render_with_message(
         bool $edit,
@@ -82,7 +82,7 @@ final readonly class Tournament_Admin_Controller {
         bool|string $message_type = true
     ): array {
         return array(
-            'viewModel'    => $this->build_view_model(
+            'view_model'    => $this->build_view_model(
                 edit: $edit,
                 tournament: $tournament,
                 fees: $fees,
@@ -123,7 +123,7 @@ final readonly class Tournament_Admin_Controller {
      * @param array $post
      * @param Validator_Tournament $validator
      *
-     * @return array{redirect?:string, viewModel?:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
+     * @return array{redirect?:string, view_model?:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
      */
     private function handle_add_post( array $post, Validator_Tournament $validator ): array {
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-tournament' );
@@ -163,7 +163,7 @@ final readonly class Tournament_Admin_Controller {
      * @param Validator_Tournament $validator
      * @param int|null $tournament_id
      *
-     * @return array{redirect?:string, viewModel?:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
+     * @return array{redirect?:string, view_model?:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
      *
      * @throws Tournament_Not_Found_Exception
      */
@@ -236,7 +236,7 @@ final readonly class Tournament_Admin_Controller {
      * @param Validator_Tournament $validator
      * @param int|null $tournament_id
      *
-     * @return array{viewModel:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
+     * @return array{view_model:Tournament_Modify_Page_View_Model, message?:string, message_type?:bool|string}
      *
      * @throws Tournament_Not_Found_Exception
      */
@@ -274,7 +274,7 @@ final readonly class Tournament_Admin_Controller {
         }
 
         return array(
-            'viewModel' => $vm,
+            'view_model' => $vm,
         );
     }
 

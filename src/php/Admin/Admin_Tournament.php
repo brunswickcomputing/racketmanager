@@ -11,6 +11,8 @@ namespace Racketmanager\Admin;
 
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
+use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
@@ -299,7 +301,7 @@ final class Admin_Tournament extends Admin_Championship {
                     $match_date = Util::amend_date( $match_date, $round_length, '-' );
                 }
                 $match_dates[ $r ] = $match_date;
-                ++ $i;
+                ++$i;
             }
         }
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
@@ -390,7 +392,7 @@ final class Admin_Tournament extends Admin_Championship {
 
         $this->show_message();
 
-        $vm = $result['viewModel'] ?? null;
+        $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof Tournament_Modify_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( __( 'Invalid view model', 'racketmanager' ) );
         }
@@ -407,91 +409,48 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament plan page
      */
     public function display_plan_page(): void {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
+        $controller = $this->racketmanager->container->get( 'tournament_plan_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Plan_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( __( 'Controller not available', 'racketmanager' ) );
         }
-        if ( isset( $_POST['saveTournamentPlan'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournament-planner' );
-            if ( ! empty( $validator->error ) ) {
-                throw new Invalid_Status_Exception( $validator->msg );
+
+        $result = $controller->plan_page( $_GET, $_POST );
+
+        if ( ! empty( $result['redirect'] ) ) {
+            $redirect_url = strval( $result['redirect'] );
+
+            if ( headers_sent() ) {
+                $js_url   = esc_url_raw( $redirect_url );
+                $html_url = esc_url( $redirect_url );
+
+                echo '<script>window.location.replace(' . wp_json_encode( $js_url ) . ');</script>';
+                echo '<noscript><meta http-equiv="refresh" content="0;url=' . esc_attr( $html_url ) . '"></noscript>';
+                exit;
             }
-            $request = new Tournament_Finals_Request_DTO( $_POST );
-            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
-            try {
-                $response = $this->tournament_service->save_finals_plan_for_tournament( $tournament_id, $request );
-                if ( is_wp_error( $response ) ) {
-                    $validator->error    = true;
-                    $validator->err_flds = $response->get_error_codes();
-                    $validator->err_msgs = $response->get_error_messages();
-                    $this->set_message( __( 'Error updating tournament finals', 'racketmanager' ), true );
-                } else {
-                    if ( $response ) {
-                        $this->set_message( __( 'Tournament finals updated', 'racketmanager' ) );
-                    } else {
-                        $this->set_message( __( 'No changes made', 'racketmanager' ), 'warning' );
-                    }
-                }
-            } catch ( Tournament_Not_Found_Exception $e ) {
-                throw new Tournament_Not_Found_Exception( $e->getMessage() );
-            }
-            $tab = 'matches';
-        } elseif ( isset( $_POST['resetTournamentPlan'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournament-planner' );
-            if ( ! empty( $validator->error ) ) {
-                throw new Invalid_Status_Exception( $validator->msg );
-            }
-            $tournament_id = isset( $_POST['tournamentId'] ) ? intval( $_POST['tournamentId'] ) : null;
-            try {
-                $response = $this->tournament_service->reset_plan_for_tournament( $tournament_id );
-                if ( $response ) {
-                    $this->set_message( __( 'Plan reset', 'racketmanager' ) );
-                } else {
-                    $this->set_message( __( 'No plan to reset', 'racketmanager' ), 'warning' );
-                }
-            } catch ( Tournament_Not_Found_Exception $e ) {
-                throw new Tournament_Not_Found_Exception( $e->getMessage() );
-            }
-            $tab = 'matches';
-        } elseif ( isset( $_POST['saveTournamentFinalsConfig'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournament-finals-config' );
-            $tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
-            if ( isset( $_POST['tournament_id'] ) ) {
-                $config = new Tournament_Finals_Config_Request_DTO( $_POST );
-                try {
-                    $response = $this->tournament_service->set_finals_config_for_tournament( $tournament_id, $config );
-                    if ( is_wp_error( $response ) ) {
-                        $validator->error    = true;
-                        $validator->err_flds = $response->get_error_codes();
-                        $validator->err_msgs = $response->get_error_messages();
-                        $this->set_message( __( 'Error updating tournament finals config', 'racketmanager' ), true );
-                    } else {
-                        if ( $response ) {
-                            $this->set_message( __( 'Tournament finals config updated', 'racketmanager' ) );
-                        } else {
-                            $this->set_message( __( 'No changes made', 'racketmanager' ), 'warning' );
-                        }
-                    }
-                } catch ( Tournament_Not_Found_Exception $e ) {
-                    $this->set_message( $e->getMessage(), true );
-                }
-            }
-            $tab = 'config';
+
+            wp_safe_redirect( $redirect_url );
+            exit;
         }
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+            );
+        }
+
         $this->show_message();
 
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        try {
-            $tournament_details = $this->tournament_service->get_tournament_with_details( $tournament_id );
-            $tournament         = $tournament_details->tournament;
-            $final_matches      = $this->tournament_service->get_finals_matches_for_tournament( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Plan_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( __( 'Invalid view model', 'racketmanager' ) );
         }
-        if ( empty( $tab ) ) {
-            $tab = 'matches';
+
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
         }
+
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/plan.php';
     }
 

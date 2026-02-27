@@ -1,6 +1,6 @@
 <?php
 /**
- * Template for competition list
+ * Template for a competition list
  *
  * @package Racketmanager/Templates
  */
@@ -8,19 +8,20 @@
 namespace Racketmanager;
 
 /** @var array $competition_list */
+/** @var string $competition_type */
 foreach ($competition_list as $competition ) {
-    $image = match ($competition->type) {
+    $image = match ($competition_type) {
         'league'     => 'assets/icons/bootstrap-icons.svg#table',
         'tournament',
         'cup'        => 'assets/icons/lta-icons.svg#icon-bracket',
         default      => null,
     };
-    if ( 'tournament' === $competition->type ) {
+    if ( 'tournament' === $competition_type ) {
         $competition_link = '/tournament/' . seo_url( $competition->name ) . '/';
     } else {
         $competition_link = '/' . seo_url( $competition->name ) . '/';
     }
-    if ( 'tournament' === $competition->type ) {
+    if ( 'tournament' === $competition_type ) {
         $competition_name = $competition->name;
     } elseif ( empty( $competition->season ) ) {
         $competition_name = $competition->name;
@@ -81,8 +82,8 @@ foreach ($competition_list as $competition ) {
                 <div class="media__aside">
                     <?php
                     if ( $competition->is_open ) {
-                        $open_link = '/' . seo_url( $competition->type ) . '/entry-form/' . seo_url( $competition_name ) . '/';
-                        if ( 'tournament' !== $competition->type ) {
+                        $open_link = '/' . seo_url( $competition_type ) . '/entry-form/' . seo_url( $competition_name ) . '/';
+                        if ( 'tournament' !== $competition_type ) {
                             $open_link .= $competition->current_season['name'] . '/';
                         }
                         ?>

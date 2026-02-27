@@ -2059,64 +2059,6 @@ class RacketManager {
         }
         return $results_checkers;
     }
-    /**
-     * Get Charges
-     *
-     * @param array $args query arguments.
-     *
-     * @return array $charges
-     */
-    public function get_charges( array $args = array() ): array {
-        global $wpdb;
-        $defaults     = array(
-                'competition' => false,
-                'season'      => false,
-                'status'      => false,
-                'entry'       => false,
-                'orderby'     => array(
-                        'season'         => 'ASC',
-                        'competition_id' => 'ASC',
-                ),
-        );
-        $args         = array_merge( $defaults, $args );
-        $competition  = $args['competition'];
-        $season       = $args['season'];
-        $status       = $args['status'];
-        $entry        = $args['entry'];
-        $orderby      = $args['orderby'];
-        $search_terms = array();
-        if ( $competition ) {
-            $search_terms[] = $wpdb->prepare( '`competition_id` = %d', $competition );
-        }
-        if ( $season ) {
-            $search_terms[] = $wpdb->prepare( '`season` = %d', $season );
-        }
-        if ( $status ) {
-            $search_terms[] = $wpdb->prepare( '`status` = %s', $status );
-        }
-        switch ( $entry ) {
-            case 'team':
-                $search_terms[] = "`competition_id` IN (SELECT `id` FROM $wpdb->racketmanager_competitions WHERE type IN ('league','cup'))";
-                break;
-            case 'player':
-                $search_terms[] = "`competition_id` IN (SELECT `id` FROM $wpdb->racketmanager_competitions WHERE type IN ('tournament'))";
-                break;
-            default:
-                break;
-        }
-        $search  = Util::search_string( $search_terms, true );
-        $order   = Util::order_by_string( $orderby );
-        $charges = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                "SELECT `id` FROM $wpdb->racketmanager_charges $search $order" //phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        );
-        $i       = 0;
-        foreach ( $charges as $charge ) {
-            $charge        = get_charge( $charge->id );
-            $charges[ $i ] = $charge;
-            ++$i;
-        }
-        return $charges;
-    }
 
     /**
      * Get teams from database

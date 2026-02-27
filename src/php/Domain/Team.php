@@ -57,7 +57,7 @@ final class Team {
      *
      * @var int|null
      */
-    public ?int $club_id;
+    public ?int $club_id = null;
     /**
      * Club object variable
      *
@@ -292,109 +292,19 @@ final class Team {
             }
         }
     }
-    /**
-     * Add new Team
-     */
-    private function add(): void {
-        global $wpdb, $racketmanager;
-        if ( isset( $this->team_type ) && 'P' === $this->team_type ) {
-            $result = $this->add_player_team();
-        } else {
-            $result = $this->add_team();
-        }
-        if ( $result ) {
-            $racketmanager->set_message( $this->msg_team_added );
-        } else {
-            $racketmanager->set_message( $this->msg_team_add_error, true );
-            error_log( 'error with team creation' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            error_log( $wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-        }
+
+    public function set_name( string $name ):void {
+        $this->title = $name;
     }
-    /**
-     * Add player team
-     *
-     * @return bool
-     *
-     */
-    private function add_player_team(): bool {
-        global $wpdb;
-        if ( 'LD' === $this->type ) {
-            $this->type = 'XD';
-        }
-        $players = array();
-        if ( empty( $this->title ) ) {
-            $this->title = $this->player_1;
-            $players[]   = $this->player_1_id;
-            if ( substr( $this->type, 1, 1 ) === 'D' ) {
-                $this->title .= ' / ' . $this->player_2;
-                $players[]    = $this->player_2_id;
-            }
-            $this->roster = $players;
-        }
-        if ( empty( $this->club_id ) ) {
-            $this->club_id = null;
-        }
-        $this->stadium = '';
-        $this->profile = '';
-        if ( ! isset( $this->status ) ) {
-            $this->status  = '';
-        }
-        $result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_teams (`title`, `club_id`, `roster`, `status`, `type`, `team_type` ) VALUES (%s, %d, %s, %s, %s, %s)",
-                $this->title,
-                $this->club_id,
-                maybe_serialize( $players ),
-                $this->status,
-                $this->type,
-                $this->team_type,
-            )
-        );
-        if ( $result ) {
-            $this->id      = $wpdb->insert_id;
-            foreach ( $players as $player ) {
-                $this->add_team_player( $player );
-            }
-            return true;
-        } else {
-            return false;
-        }
+
+    public function set_type( string $type ): void {
+        $this->type = $type;
     }
-    /**
-     * Add non player team
-     * @return bool
-     */
-    private function add_team(): bool {
-        global $wpdb;
-        if ( empty( $this->team_type ) ) {
-            $this->team_type = null;
-        }
-        if ( empty( $this->club_id ) ) {
-            $this->club_id = null;
-        }
-        if ( empty( $this->stadium ) ) {
-            $this->stadium = null;
-        }
-        $this->roster  = '';
-        $this->profile = '';
-        $this->status  = '';
-        $result        = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "INSERT INTO $wpdb->racketmanager_teams (`title`, `stadium`, `club_id`, `type`, `team_type`) VALUES (%s, %s, %d, %s, %s)",
-                $this->title,
-                $this->stadium,
-                $this->club_id,
-                $this->type,
-                $this->team_type,
-            )
-        );
-        if ( $result ) {
-            $this->id = $wpdb->insert_id;
-            return true;
-        } else {
-            return false;
-        }
+
+    public function set_team_type( string $team_type ): void {
+        $this->team_type = $team_type;
     }
+
     /**
      * Update team
      *
@@ -675,21 +585,6 @@ final class Team {
     }
 
     /**
-     * Update title
-     *
-     * @param string $title title.
-     */
-    public function update_title( string $title ): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_teams SET `title` = %s WHERE `id` = %d",
-                $title,
-                $this->id
-            )
-        );
-    }
-    /**
      * Add team player
      *
      * @param int $player player id.
@@ -729,6 +624,27 @@ final class Team {
         }
         $this->players = $players;
         return $players;
+    }
+
+    /**
+     * Check if team has player
+     *
+     * @param int $player_id
+     * @return bool
+     */
+    public function has_player( int $player_id ): bool {
+        if ( -1 === $this->id ) {
+            return false;
+        }
+        if ( empty( $this->players ) ) {
+            $this->get_players();
+        }
+        foreach ( $this->players as $player ) {
+            if ( (int) $player->get_id() === $player_id ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -794,6 +710,14 @@ final class Team {
      */
     public function set_id( int $insert_id ): void {
         $this->id = $insert_id;
+    }
+
+    public function set_club_id( ?int $club_id ): void {
+        $this->club_id = $club_id;
+    }
+
+    public function set_stadium( ?string $club ): void {
+        $this->stadium = $club;
     }
 
 }

@@ -9,6 +9,7 @@ namespace Racketmanager;
 
 /** @var object $tournament */
 /** @var string $current_match_date */
+/** @var array  $match_dates */
 ?>
 <div class="form-wrapper">
     <div class="col-12">

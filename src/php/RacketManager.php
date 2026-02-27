@@ -1968,23 +1968,6 @@ class RacketManager {
         return false;
     }
     /**
-     * Email entry form
-     *
-     * @param string $template email template to use.
-     * @param array $template_args template arguments.
-     * @param string $email_to email address to send.
-     * @param string $email_subject email subject.
-     * @param array $headers email headers.
-     */
-    public function email_entry_form( string $template, array $template_args, string $email_to, string $email_subject, array $headers ): void {
-        $email_message = $this->shortcodes->load_template(
-                $template,
-                $template_args,
-                'email'
-        );
-        wp_mail( $email_to, $email_subject, $email_message, $headers );
-    }
-    /**
      * Gets results checker from database
      *
      * @param array $args query arguments.

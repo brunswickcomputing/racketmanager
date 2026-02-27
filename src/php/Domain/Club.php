@@ -76,12 +76,6 @@ final class Club {
      */
     public string $address;
     /**
-     * Url link.
-     *
-     * @var string
-     */
-    public string $link;
-    /**
      * Team count
      *
      * @var int
@@ -178,24 +172,23 @@ final class Club {
      */
     public array $player_stats;
     /**
-     * Player club player id
-     *
-     * @var int
-     */
-    public int $club_player_id;
-    /**
      * Constructor
      *
      * @param object|null $club Club object.
      */
     public function __construct( ?object $club = null ) {
-        if ( ! is_null( $club ) ) {
-            foreach ( get_object_vars( $club ) as $key => $value ) {
-                $this->$key = $value;
-            }
-
-            $this->link = '/clubs/' . seo_url( $this->shortcode ) . '/';
+        if ( is_null( $club ) ) {
+            return;
         }
+        $this->id         = $club->id;
+        $this->name       = $club->name;
+        $this->website    = $club->website;
+        $this->type       = $club->type;
+        $this->address    = $club->address;
+        $this->contactno  = $club->contactno;
+        $this->founded    = $club->founded;
+        $this->facilities = $club->facilities;
+        $this->shortcode  = $club->shortcode;
     }
 
     /**
@@ -271,14 +264,6 @@ final class Club {
         return $this->shortcode;
     }
 
-    /**
-     * Get link
-     *
-     * @return string|null
-     */
-    public function get_link(): ?string{
-        return $this->link;
-    }
     /**
      * Set id
      *

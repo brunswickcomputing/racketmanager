@@ -8,7 +8,10 @@
 
 namespace Racketmanager;
 
-/** @var object $player */
+use Racketmanager\Domain\Player;
+
+/** @var Player $player */
+/** @var array  $player_competitions */
 ?>
 <div class="container">
     <?php
@@ -19,8 +22,8 @@ namespace Racketmanager;
         <div class="page-content__main col-12 col-lg-8">
             <?php
             require RACKETMANAGER_PATH . 'templates/player/statistics.php';
-            foreach ( $player->competitions as $competition_type ) {
-                if ( ! empty( $player->$competition_type ) ) {
+            foreach ( $player_competitions as $competition_type => $competitions ) {
+                if ( ! empty( $competitions ) ) {
                     ?>
                     <div class="module module--card">
                         <div class="module__banner">
@@ -30,7 +33,7 @@ namespace Racketmanager;
                             <div class="module-container">
                                 <ul class="list list--bordered">
                                     <?php
-                                    $competition_list = $player->$competition_type;
+                                    $competition_list = $competitions;
                                     $full_width       = true;
                                     require 'includes/competition-list.php';
                                     ?>

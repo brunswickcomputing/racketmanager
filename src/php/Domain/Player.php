@@ -14,7 +14,6 @@ use stdClass;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_tournament;
 use function Racketmanager\seo_url;
 
 /**
@@ -1017,52 +1016,7 @@ final class Player {
         }
         return $competitions;
     }
-    /**
-     * Get tournaments for player function
-     *
-     * @param array|string $args search parameters.
-     * @return array
-     */
-    public function get_tournaments( array|string $args = array() ): array {
-        global $wpdb;
-        $defaults     = array(
-            'type'   => false,
-            'season' => false,
-        );
-        $args         = array_merge( $defaults, (array) $args );
-        $type         = $args['type'];
-        $season       = $args['season'];
-        $search_terms = array();
-        if ( $type ) {
-            $search_terms[] = $wpdb->prepare( 'c.`type` = %s', $type );
-        }
-        if ( $season ) {
-            $search_terms[] = $wpdb->prepare( 't.`season` = %s', $season );
-        }
-        $sql         = "SELECT t3.id FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_league_teams t, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c, $wpdb->racketmanager_tournaments t3 WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`team_id` AND t.`league_id` = l.`id` AND l.`event_id` = e.`id` AND e.competition_id = c.`id` AND t3.`competition_id` = c.`id` AND t3.`season` = t.`season`";
-        $sql        .= Util::search_string( $search_terms );
-        $sql        .= " GROUP BY t3.`id`";
-        $sql        .= " ORDER BY t3.`season` DESC, t3.`name` ASC";
-        $tournaments = wp_cache_get( md5( $sql ), 'player_tournaments' );
-        if ( ! $tournaments ) {
-            $tournaments = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
-            wp_cache_set( md5( $sql ), $tournaments, 'player_tournaments' );
-        }
-        $i = 0;
-        foreach ( $tournaments as $tournament ) {
-            $tournament_dtl = get_tournament( $tournament->id );
-            if ( $tournament_dtl ) {
-                $tournament_dtl->type     = $type;
-                $tournament_dtl->date_end = $tournament_dtl->date;
-                $tournaments[ $i ]        = $tournament_dtl;
-            }
-            ++$i;
-        }
-        return $tournaments;
-    }
+
     /**
      * Get player career statistics function
      *

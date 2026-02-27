@@ -971,14 +971,7 @@ final class League_Team {
      * @param float $rating rating.
      */
     public function set_rating( float $rating ): void {
-        global $wpdb;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `rating` = %f WHERE `id` = %d",
-                $rating,
-                $this->table_id
-            )
-        );
+        $this->rating = $rating;
     }
     /**
      * Update constitution settings
@@ -1078,5 +1071,19 @@ final class League_Team {
      */
     public function set_team_details( $player_id ) {
 
+    }
+
+    public function set_team_id( ?int $team_id ): void {
+        $this->team_id = $team_id;
+    }
+    public function set_season( ?int $season ): void {
+        $this->season = $season;
+    }
+    public function set_league_id( ?int $league_id ): void {
+        $this->league_id = $league_id;
+    }
+
+    public function set_profile( int $profile ): void {
+        $this->profile = $profile;
     }
 }

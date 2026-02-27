@@ -9,12 +9,12 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
-use function Racketmanager\get_tournament;
 use function Racketmanager\seo_url;
 
 /**
@@ -67,7 +67,11 @@ class Shortcodes_Email extends Shortcodes {
         $draw_link       = '';
         $rules_link      = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
         if ( 'tournament' === $competition_type ) {
-            $tournament      = get_tournament( $tournament );
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                return $this->return_error( $e->getMessage() );
+            }
             $tournament_link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
             $draw_link       = '<a href="' . $racketmanager->site_url .  $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
             $match_link      = $racketmanager->site_url . $tournament->link . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
@@ -328,10 +332,12 @@ class Shortcodes_Email extends Shortcodes {
             $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
         } elseif ( $match->league->event->competition->is_tournament ) {
             $tournament_code = $match->league->event->competition->id . ',' . $match->season;
-            $tournament      = get_tournament( $tournament_code, 'shortcode' );
-            if ( $tournament ) {
-                $action_url .= '/' . __( 'tournament', 'racketmanager' ) . '/' . sanitize_title( $tournament->name ) . '/' . __( 'match', 'racketmanager' ) . '/' . $match->id . '/';
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_code, 'shortcode' );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                return $this->return_error( $e->getMessage() );
             }
+            $action_url .= '/' . __( 'tournament', 'racketmanager' ) . '/' . sanitize_title( $tournament->name ) . '/' . __( 'match', 'racketmanager' ) . '/' . $match->id . '/';
         } else {
             $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title );
         }
@@ -449,7 +455,11 @@ class Shortcodes_Email extends Shortcodes {
         $draw_link        = '';
         $rules_link       = $racketmanager->site_url . '/rules/' . $competition_type . '-rules/';
         if ( 'tournament' === $competition_type ) {
-            $tournament       = get_tournament( $tournament );
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                return $this->return_error( $e->getMessage() );
+            }
             $tournament->link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
             $draw_link        = '<a href="' . $racketmanager->site_url . $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
             $match_link       = $racketmanager->site_url . $tournament->link . 'match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';

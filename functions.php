@@ -617,25 +617,3 @@ function get_club_role( object|int|null $club_role = null ): ?Club_Role {
     }
     return $_club_role;
 }
-/**
- * Get season object
- *
- * @param int|null $season season ID or season object. Defaults to global $season.
- * @return Season|null season|null
- */
-function get_season( ?int $season = null ): Season|null {
-    if ( empty( $season ) && isset( $GLOBALS['season'] ) ) {
-        $season = $GLOBALS['season'];
-    }
-    if ( $season instanceof Season ) {
-        $_season = $season;
-    } elseif ( is_object( $season ) ) {
-        $_season = new Season( $season );
-    } else {
-        $_season = Season::get_instance( $season );
-    }
-    if ( ! $_season ) {
-        return null;
-    }
-    return $_season;
-}

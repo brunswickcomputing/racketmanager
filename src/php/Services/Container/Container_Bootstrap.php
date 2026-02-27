@@ -14,6 +14,7 @@ use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
@@ -56,6 +57,7 @@ final class Container_Bootstrap {
         $c->set('tournament_repository', fn() => new Tournament_Repository());
         $c->set('tournament_entry_repository', fn() => new Tournament_Entry_Repository());
         $c->set('season_repository', fn() => new Season_Repository());
+        $c->set('rubber_repository', fn() => new Rubber_Repository());
 
         // External clients
         $c->set('wtn_api_client', fn() => new Wtn_Api_Client());

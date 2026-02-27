@@ -14,8 +14,6 @@ use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;

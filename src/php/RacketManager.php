@@ -23,6 +23,7 @@ use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Login;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Rewrites;
+use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
@@ -143,6 +144,7 @@ class RacketManager {
     private Competition_Entry_Service $competition_entry_service;
     private Finance_Service $finance_service;
     private Player_Service $player_service;
+    private Tournament_Service $tournament_service;
 
     /**
      * Constructor
@@ -163,6 +165,7 @@ class RacketManager {
             $this->competition_service       = $this->container->get( 'competition_service' );
             $this->finance_service           = $this->container->get( 'finance_service' );
             $this->player_service            = $this->container->get( 'player_service' );
+            $this->tournament_service        = $this->container->get( 'tournament_service' );
 
             add_action( 'widgets_init', array( &$this, 'register_widget' ) );
             add_action( 'init', array( &$this, 'racketmanager_locale' ) );
@@ -179,13 +182,13 @@ class RacketManager {
             add_filter( 'email_change_email', array( &$this, 'racketmanager_change_email_address' ), 10, 3 );
             add_filter( 'pre_get_document_title', array( &$this, 'set_page_title' ), 999 );
             add_action( 'rm_calculate_player_ratings', array( &$this, 'calculate_player_ratings' ), 1 );
-            add_action( 'rm_calculate_tournament_ratings', array( &$this, 'calculate_tournament_ratings' ), 1 );
+            add_action( 'rm_calculate_tournament_ratings', array( $this->tournament_service, 'calculate_player_team_rating_for_tournament' ), 1 );
             add_action( 'rm_calculate_team_ratings', array( $this->competition_service, 'calculate_team_ratings' ), 10, 3 );
             add_action( 'rm_notify_team_entry_open', array( $this->competition_entry_service, 'notify_team_entry_open' ), 10, 2 );
             add_action( 'rm_notify_team_entry_reminder', array( $this->competition_entry_service, 'notify_team_entry_reminder' ), 10, 2 );
             add_action( 'rm_notify_tournament_entry_open', array( $this->competition_entry_service, 'notify_tournament_entry_open' ) );
             add_action( 'rm_notify_tournament_entry_reminder', array( $this->competition_entry_service, 'notify_tournament_entry_open_reminder' ) );
-            add_action( 'rm_notify_tournament_finalists', array( &$this, 'notify_tournament_finalists' ) );
+            add_action( 'rm_notify_tournament_finalists', array( $this->tournament_service, 'notify_finalists_for_tournament' ) );
             add_action( 'rm_send_invoices', array( $this->finance_service, 'send_invoices' ) );
         }
         self::$instance = $this;
@@ -486,34 +489,6 @@ class RacketManager {
     public function calculate_player_ratings( int $club_id = null ): void {
         // Delegate to the Player__Service implementation.
         $this->player_service->calculate_player_ratings( $club_id );
-    }
-
-    /**
-     * Calculate tournament ratings
-     *
-     * @param int $tournament_id tournament id.
-     *
-     * @return void
-     */
-    public function calculate_tournament_ratings( int $tournament_id ): void {
-        if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
-            $tournament?->calculate_player_team_ratings();
-        }
-    }
-
-    /**
-     * Notify tournament finalists
-     *
-     * @param int $tournament_id tournament id.
-     *
-     * @return void
-     */
-    public function notify_tournament_finalists( int $tournament_id ): void {
-        if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
-            $tournament?->notify_finalists();
-        }
     }
 
     /**

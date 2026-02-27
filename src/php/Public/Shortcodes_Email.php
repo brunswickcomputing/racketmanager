@@ -32,18 +32,15 @@ class Shortcodes_Email extends Shortcodes {
      */
     public function show_match_notification( array $atts ): string {
         global $racketmanager;
-        $args            = shortcode_atts(
-            array(
-                'match'           => '',
-                'template'        => '',
-                'tournament'      => false,
-                'competition'     => '',
-                'emailfrom'       => '',
-                'round'           => '',
+        $args             = shortcode_atts( array(
+                'match'            => '',
+                'template'         => '',
+                'tournament'       => false,
+                'competition'      => '',
+                'emailfrom'        => '',
+                'round'            => '',
                 'competition_type' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $match            = $args['match'];
         $template         = $args['template'];
         $tournament       = $args['tournament'];
@@ -73,7 +70,7 @@ class Shortcodes_Email extends Shortcodes {
                 return $this->return_error( $e->getMessage() );
             }
             $tournament_link = '<a href="' . $racketmanager->site_url . $tournament->link . '">' . $tournament->name . '</a>';
-            $draw_link       = '<a href="' . $racketmanager->site_url .  $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
+            $draw_link       = '<a href="' . $racketmanager->site_url . $tournament->link . 'draw/' . seo_url( $match->league->event->name ) . '/">' . $match->league->event->name . '</a>';
             $match_link      = $racketmanager->site_url . $tournament->link . '/match/' . seo_url( $match->league->title ) . '/' . seo_url( $match->teams['home']->title ) . '-vs-' . seo_url( $match->teams['away']->title ) . '/' . $match->id . '/';
             if ( substr( $match->league->type, 1, 1 ) === 'D' ) {
                 $teams['home']->title = __( 'Home Players', 'racketmanager' );
@@ -141,9 +138,7 @@ class Shortcodes_Email extends Shortcodes {
 
         $filename = ( ! empty( $template ) ) ? 'match-notification-' . $template : 'match-notification';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'tournament'      => $tournament,
                 'competition'     => $competition,
                 'match'           => $match,
@@ -158,9 +153,7 @@ class Shortcodes_Email extends Shortcodes {
                 'action_url'      => $match_link,
                 'rules_link'      => $rules_link,
                 'cup_link'        => $cup_link,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
 
     /**
@@ -174,20 +167,17 @@ class Shortcodes_Email extends Shortcodes {
      */
     public function show_result_notification( array $atts ): string {
         global $racketmanager;
-        $args       = shortcode_atts(
-            array(
-                'match'            => '',
-                'template'         => '',
-                'league'           => false,
-                'round'            => false,
-                'complete'         => false,
-                'errors'           => false,
-                'match_day'        => '',
-                'from_email'       => false,
-                'challenge'        => false,
-            ),
-            $atts
-        );
+        $args       = shortcode_atts( array(
+                'match'      => '',
+                'template'   => '',
+                'league'     => false,
+                'round'      => false,
+                'complete'   => false,
+                'errors'     => false,
+                'match_day'  => '',
+                'from_email' => false,
+                'challenge'  => false,
+            ), $atts );
         $match      = $args['match'];
         $template   = $args['template'];
         $league     = $args['league'];
@@ -212,9 +202,7 @@ class Shortcodes_Email extends Shortcodes {
 
         $filename = ( ! empty( $template ) ) ? 'result-notification-' . $template : 'result-notification';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'match'        => $match,
                 'organisation' => $racketmanager->site_name,
                 'action_url'   => $action_url,
@@ -222,9 +210,7 @@ class Shortcodes_Email extends Shortcodes {
                 'errors'       => $errors,
                 'challenge'    => $challenge,
                 'from_email'   => $from_email,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
 
     /**
@@ -239,8 +225,7 @@ class Shortcodes_Email extends Shortcodes {
     public function show_captain_result_notification( array $atts ): string {
         global $racketmanager;
 
-        $args        = shortcode_atts(
-            array(
+        $args                  = shortcode_atts( array(
                 'match'                 => '',
                 'template'              => '',
                 'outstanding'           => false,
@@ -251,9 +236,7 @@ class Shortcodes_Email extends Shortcodes {
                 'confirmation_timeout'  => false,
                 'timeout'               => false,
                 'penalty'               => false,
-            ),
-            $atts
-        );
+            ), $atts );
         $match_id              = $args['match'];
         $template              = $args['template'];
         $outstanding           = $args['outstanding'];
@@ -275,11 +258,9 @@ class Shortcodes_Email extends Shortcodes {
             $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
         }
         $action_url .= 'result/';
-        $filename    = ( ! empty( $template ) ) ? 'result-notification-' . $template : 'result-notification';
+        $filename   = ( ! empty( $template ) ) ? 'result-notification-' . $template : 'result-notification';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'match'                 => $match,
                 'organisation'          => $racketmanager->site_name,
                 'action_url'            => $action_url,
@@ -291,9 +272,7 @@ class Shortcodes_Email extends Shortcodes {
                 'confirmation_timeout'  => $confirmation_timeout,
                 'timeout'               => $timeout,
                 'penalty'               => $penalty,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
 
     /**
@@ -308,17 +287,14 @@ class Shortcodes_Email extends Shortcodes {
     public function show_result_outstanding_notification( array $atts ): string {
         global $racketmanager;
 
-        $args        = shortcode_atts(
-            array(
+        $args        = shortcode_atts( array(
                 'match'       => '',
                 'template'    => '',
                 'time_period' => false,
                 'timeout'     => false,
                 'penalty'     => false,
                 'from_email'  => null,
-            ),
-            $atts
-        );
+            ), $atts );
         $match       = $args['match'];
         $template    = $args['template'];
         $time_period = $args['time_period'];
@@ -347,9 +323,7 @@ class Shortcodes_Email extends Shortcodes {
         }
         $filename = ( ! empty( $template ) ) ? 'match-result-pending-' . $template : 'match-result-pending';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'match'        => $match,
                 'organisation' => $racketmanager->site_name,
                 'action_url'   => $action_url,
@@ -357,9 +331,7 @@ class Shortcodes_Email extends Shortcodes {
                 'timeout'      => $timeout,
                 'penalty'      => $penalty,
                 'from_email'   => $from_email,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
 
     /**
@@ -374,17 +346,14 @@ class Shortcodes_Email extends Shortcodes {
     public function show_club_player_notification( array $atts ): string {
         global $racketmanager;
 
-        $args       = shortcode_atts(
-            array(
+        $args       = shortcode_atts( array(
                 'club'      => '',
                 'action'    => false,
                 'player'    => false,
                 'requestor' => false,
                 'btm'       => false,
                 'template'  => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $club       = $args['club'];
         $action     = $args['action'];
         $player     = $args['player'];
@@ -395,9 +364,7 @@ class Shortcodes_Email extends Shortcodes {
 
         $filename = ( ! empty( $template ) ) ? 'club-player-notification-' . $template : 'club-player-notification';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'action'        => $action,
                 'club'          => $club,
                 'player'        => $player,
@@ -406,10 +373,9 @@ class Shortcodes_Email extends Shortcodes {
                 'requestor'     => $requestor,
                 'btm'           => $btm,
                 'email_subject' => $racketmanager->site_name . ' - ' . __( 'Club Player Request', 'racketmanager' ) . ' - ' . $club,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
+
     /**
      * Function to show match date change notification
      *
@@ -421,22 +387,19 @@ class Shortcodes_Email extends Shortcodes {
      */
     public function show_match_date_change_notification( array $atts ): string {
         global $racketmanager;
-        $args            = shortcode_atts(
-            array(
-                'match'           => '',
-                'template'        => '',
-                'tournament'      => false,
-                'competition'     => '',
-                'emailfrom'       => '',
-                'round'           => '',
+        $args             = shortcode_atts( array(
+                'match'            => '',
+                'template'         => '',
+                'tournament'       => false,
+                'competition'      => '',
+                'emailfrom'        => '',
+                'round'            => '',
                 'competition_type' => '',
-                'original_date'   => '',
-                'new_date'        => '',
-                'delay'           => false,
-                'email_subject'   => '',
-            ),
-            $atts
-        );
+                'original_date'    => '',
+                'new_date'         => '',
+                'delay'            => false,
+                'email_subject'    => '',
+            ), $atts );
         $match            = $args['match'];
         $template         = $args['template'];
         $tournament       = $args['tournament'];
@@ -476,9 +439,7 @@ class Shortcodes_Email extends Shortcodes {
 
         $filename = ( ! empty( $template ) ) ? 'match-date-change-notification-' . $template : 'match-date-change-notification';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'tournament'       => $tournament,
                 'competition'      => $competition,
                 'match'            => $match,
@@ -493,10 +454,9 @@ class Shortcodes_Email extends Shortcodes {
                 'original_date'    => $original_date,
                 'delay'            => $delay,
                 'email_subject'    => $email_subject,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
+
     /**
      * Function to show team withdrawn email
      *
@@ -508,17 +468,14 @@ class Shortcodes_Email extends Shortcodes {
      */
     public function show_team_withdrawn( array $atts ): string {
         global $racketmanager;
-        $args      = shortcode_atts(
-            array(
+        $args      = shortcode_atts( array(
                 'team'     => false,
                 'league'   => false,
                 'season'   => false,
                 'subject'  => false,
                 'from'     => false,
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $team_id   = $args['team'];
         $league_id = $args['league'];
         $season    = $args['season'];
@@ -559,22 +516,20 @@ class Shortcodes_Email extends Shortcodes {
         }
         if ( $valid ) {
             $filename = ( ! empty( $template ) ) ? 'team-withdrawn-' . $template : 'team-withdrawn';
-            return $this->load_template(
-                $filename,
-                array(
+
+            return $this->load_template( $filename, array(
                     'team'          => $team,
                     'league'        => $league,
                     'season'        => $season,
                     'organisation'  => $racketmanager->site_name,
                     'email_subject' => $subject,
                     'email_from'    => $from,
-                ),
-                'email'
-            );
+                ), 'email' );
         } else {
             return $this->return_error( $msg );
         }
     }
+
     /**
      * Function to show match notification
      *
@@ -586,8 +541,7 @@ class Shortcodes_Email extends Shortcodes {
      */
     public function show_withdrawn_team_match( array $atts ): string {
         global $racketmanager;
-        $args            = shortcode_atts(
-            array(
+        $args          = shortcode_atts( array(
                 'id'            => '',
                 'template'      => '',
                 'is_tournament' => false,
@@ -595,32 +549,27 @@ class Shortcodes_Email extends Shortcodes {
                 'emailfrom'     => '',
                 'round'         => '',
                 'subject'       => null,
-            ),
-            $atts
-        );
-        $template         = $args['template'];
-        $is_tournament    = $args['is_tournament'];
-        $event            = $args['event'];
-        $email_from       = $args['emailfrom'];
-        $round            = $args['round'];
-        $subject          = $args['subject'];
-        $organisation     = $racketmanager->site_name;
+            ), $atts );
+        $template      = $args['template'];
+        $is_tournament = $args['is_tournament'];
+        $event         = $args['event'];
+        $email_from    = $args['emailfrom'];
+        $round         = $args['round'];
+        $subject       = $args['subject'];
+        $organisation  = $racketmanager->site_name;
 
         $filename = ( ! empty( $template ) ) ? 'match-team-withdrawn-' . $template : 'match-team-withdrawn';
 
-        return $this->load_template(
-            $filename,
-            array(
+        return $this->load_template( $filename, array(
                 'is_tournament' => $is_tournament,
                 'event'         => $event,
                 'round'         => $round,
                 'organisation'  => $organisation,
                 'email_from'    => $email_from,
                 'email_subject' => $subject,
-            ),
-            'email'
-        );
+            ), 'email' );
     }
+
     /**
      * Function to show event constitution email
      *
@@ -632,32 +581,27 @@ class Shortcodes_Email extends Shortcodes {
      */
     public function show_event_constitution( array $atts ): string {
         global $racketmanager;
-        $args     = shortcode_atts(
-            array(
+        $args     = shortcode_atts( array(
                 'id'       => false,
                 'season'   => null,
                 'template' => '',
-            ),
-            $atts
-        );
+            ), $atts );
         $event_id = $args['id'];
         $season   = $args['season'];
         $template = $args['template'];
         $event    = get_event( $event_id );
         if ( ! $event ) {
             $msg = $this->event_not_found;
+
             return $this->return_error( $msg );
         }
         $event->leagues = $event->get_leagues();
         $event->set_season( $season );
         $filename = ( ! empty( $template ) ) ? 'constitution-' . $template : 'constitution';
-        return $this->load_template(
-            $filename,
-            array(
+
+        return $this->load_template( $filename, array(
                 'event'        => $event,
                 'organisation' => $racketmanager->site_name,
-            ),
-            'event'
-        );
+            ), 'event' );
     }
 }

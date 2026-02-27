@@ -71,12 +71,17 @@ class Finance_Service {
         $this->player_service        = $player_service;
     }
 
-    public function get_charge( $charge_id, bool $enhanced = false ): null|Charge|Charge_Details_DTO {
-        if ( $enhanced ) {
-            $charge = $this->charge_repository->find_by_id_with_details( $charge_id );
-        } else {
-            $charge = $this->charge_repository->find_by_id( $charge_id );
+    public function get_charge( $charge_id ): Charge {
+        $charge = $this->charge_repository->find_by_id( $charge_id );
+        if ( ! $charge ) {
+            throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }
+
+        return $charge;
+    }
+
+    public function get_charge_with_details( $charge_id ): Charge_Details_DTO {
+        $charge = $this->charge_repository->find_by_id_with_details( $charge_id );
         if ( ! $charge ) {
             throw new Charge_Not_Found_Exception( Util_Messages::charge_not_found( $charge_id ) );
         }

@@ -61,6 +61,7 @@ class Upgrade {
         $this->v10_0_9();
         $this->v10_0_10();
         $this->v10_0_11();
+        $this->v10_0_12();
         /*
         * Update version and dbversion
         */
@@ -478,6 +479,22 @@ class Upgrade {
 
             // 5. Drop old columns
             $this->wpdb->query( "ALTER TABLE $table DROP `club_id`, DROP `player_id`;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.12
+     * Drop unused tables
+     *
+     * @return void
+     */
+    private function v10_0_12 ():void {
+        $version = '10.0.12';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "DROP TABLE {$this->wpdb->prefix}racketmanager_team_competition;" );
+            $this->wpdb->query( "DROP TABLE {$this->wpdb->prefix}racketmanager_team_events;" );
+            $this->wpdb->query( "DROP TABLE {$this->wpdb->prefix}racketmanager_club_player_requests;" );
         }
     }
 

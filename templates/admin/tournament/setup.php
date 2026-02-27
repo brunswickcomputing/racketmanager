@@ -87,10 +87,20 @@ if ( empty( $league ) ) {
             $object = $league->championship;
         }
         foreach ( $object->finals as $final ) {
-            if ( ! empty( $match_dates[ $match_date_index ] ) ) {
+            if ( isset( $_POST['rounds'][ $round ]['match_date'] ) ) {
+                $round_date = $_POST['rounds'][ $round ]['match_date'];
+            } elseif( ! empty( $match_dates[ $match_date_index ] ) ) {
                 $round_date = $match_dates[ $match_date_index ];
             } else {
                 $round_date = '';
+            }
+            $field_id = 'rounds-' . $round . '-match_date';
+            $is_invalid = false;
+            $msg        = null;
+            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( $field_id, $validator->err_flds, true ) ) ) {
+                $is_invalid = true;
+                $msg_id     = array_search( $field_id, $validator->err_flds, true );
+                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             ?>
             <div class="row mb-3">
@@ -99,7 +109,14 @@ if ( empty( $league ) ) {
                 <input type="hidden" name="rounds[<?php echo esc_attr( $round ); ?>][round]" value="<?php echo esc_attr( $final['round'] ); ?>" />
                 <div class="col-4"><?php echo esc_html( $final['name'] ); ?></div>
                 <div class="col-4">
-                    <label class="visually-hidden" for="rounds-<?php echo esc_attr( $round ); ?>-match_date" class="visually-hidden"><?php esc_html_e( 'Round date', 'racketmanager' ); ?></label><input type="date" class="form-control" value="<?php echo esc_html( $round_date ); ?>" name="rounds[<?php echo esc_attr( $round ); ?>][match_date]" id="rounds-<?php echo esc_attr( $round ); ?>-match_date" />
+                    <label class="visually-hidden" for="<?php echo esc_attr( $field_id ); ?>" class="visually-hidden"><?php esc_html_e( 'Round date', 'racketmanager' ); ?></label><input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" value="<?php echo esc_html( $round_date ); ?>" name="rounds[<?php echo esc_attr( $round ); ?>][match_date]" id="<?php echo esc_attr( $field_id ); ?>" />
+                    <?php
+                    if ( $is_invalid ) {
+                        ?>
+                        <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                        <?php
+                    }
+                    ?>
                 </div>
             </div>
             <?php

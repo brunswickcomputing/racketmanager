@@ -45,7 +45,7 @@ if ( get_current_user_id() !== intval( $player->id ) && ! current_user_can( 'man
     $changes_allowed    = true;
     $withdrawal_allowed = true;
 }
-if ( ! empty( $player->entry ) ) {
+if ( ! empty( $player_entries ) ) {
     $entered    = true;
     $form_title = __( 'Entry details', 'racketmanager' );
 } else {
@@ -56,9 +56,9 @@ if ( ! empty( $player->entry ) ) {
 <div class="container">
     <?php require_once RACKETMANAGER_PATH . 'templates/includes/tournament-header.php'; ?>
     <form id="form-entry" action="" method="post">
-        <?php wp_nonce_field( 'tournament-entry' ); ?>
+        <?php wp_nonce_field( 'racketmanager_tournament-entry', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="tournamentId" id="tournamentId" value="<?php echo esc_html( $tournament->id ); ?>" />
-        <input type="hidden" name="tournamentDateEnd" id="tournamentDateEnd" value="<?php echo esc_html( $tournament->date ); ?>" />
+        <input type="hidden" name="tournamentDateEnd" id="tournamentDateEnd" value="<?php echo esc_html( $tournament->date_end ); ?>" />
         <input type="hidden" name="season" id="season" value="<?php echo esc_html( $tournament->season ); ?>" />
         <input type="hidden" name="playerId" id="playerId" value="<?php echo esc_attr( $player->id ); ?>" />
         <input type="hidden" id="playerGender" value="<?php echo esc_attr( $player->gender ); ?>" />
@@ -233,12 +233,12 @@ if ( ! empty( $player->entry ) ) {
                                                                     ?>
                                                                     <label for="clubId" class="visually-hidden"><?php esc_html_e( 'Club', 'racketmanager' ); ?></label>
                                                                         <select class="form-select" size="1" name="clubId" id="clubId" <?php echo $changes_allowed ? null : 'readonly'; ?>>
-                                                                            <option value="0"><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
+                                                                            <option disabled <?php selected( 1, empty( $tournament_entry->club_id ) ? 1 : 0 ) ?>><?php esc_html_e( 'Select club', 'racketmanager' ); ?></option>
                                                                             <?php
                                                                             foreach ( $club_memberships as $club_player ) {
                                                                                 $club = get_club( $club_player->club_id );
                                                                                 ?>
-                                                                                <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $player->tournament_entry->club_id ) ? null : $player->tournament_entry->club_id );  ?>><?php echo esc_html( $club->name ); ?></option>
+                                                                                <option value="<?php echo esc_html( $club->id ); ?>" <?php selected( $club->id, empty( $tournament_entry->club_id ) ? null : $tournament_entry->club_id );  ?>><?php echo esc_html( $club->name ); ?></option>
                                                                                 <?php
                                                                             }
                                                                             ?>
@@ -321,16 +321,16 @@ if ( ! empty( $player->entry ) ) {
                                             $entered      = false;
                                             $partner_id   = null;
                                             $partner_name = null;
-                                            if ( isset( $player->entry[ $event->id ] ) ) {
+                                            if ( isset( $player_entries[ $event->id ] ) ) {
                                                 if ( $withdrawal_allowed ) {
                                                     $disabled = false;
                                                 }
                                                 ++$events_entered;
                                                 $entered         = true;
                                                 $fee_total      += $tournament->fees->event;
-                                                $player_entry    = $player->entry[ $event->id ];
-                                                $partner_id      = ! empty( $player_entry->partner->id ) ? $player_entry->partner->id : null;
-                                                $partner_name    = ! empty( $player_entry->partner->display_name ) ? $player_entry->partner->display_name : null;
+                                                $player_entry    = $player_entries[ $event->id ];
+                                                $partner_id      = ! empty( $player_entry->partner_id ) ? $player_entry->partner_id : null;
+                                                $partner_name    = ! empty( $player_entry->partner_name ) ? $player_entry->partner_name : null;
                                             }
                                             ?>
                                             <div class="row">
@@ -378,9 +378,15 @@ if ( ! empty( $player->entry ) ) {
                                                                 ?>
                                                             </div>
                                                             <div class="col-6">
-                                                                <span class="event-price" id="event-price-fmt-<?php echo esc_html( $event->id ); ?>"><?php /** @noinspection PhpExpressionResultUnusedInspection */
-                                                                    $entered ? the_currency_amount( $tournament->fees->event ) : null; ?></span>
-                                                                <input type="hidden" class="event-price-amt" name="event-price[<?php echo esc_html( $event->id ); ?>]" id="event-price-<?php echo esc_html( $event->id ); ?>" value="<?php echo $entered ? esc_html( $tournament->fees->event ) : null; ?>" />
+                                                                <?php
+                                                                if ( $tournament->fees->event > '' ) {
+                                                                    ?>
+                                                                    <span class="event-price" id="event-price-fmt-<?php echo esc_html( $event->id ); ?>"><?php /** @noinspection PhpExpressionResultUnusedInspection */
+                                                                        $entered ? the_currency_amount( $tournament->fees->event ) : null; ?></span>
+                                                                    <input type="hidden" class="event-price-amt" name="event-price[<?php echo esc_html( $event->id ); ?>]" id="event-price-<?php echo esc_html( $event->id ); ?>" value="<?php echo $entered ? esc_html( $tournament->fees->event ) : null; ?>" />
+                                                                    <?php
+                                                                }
+                                                                ?>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -443,14 +449,10 @@ if ( ! empty( $player->entry ) ) {
                         </div>
                         <?php
                         if ( ! empty( $tournament->payments) ) {
-                            $total_pay = 0;
-                            foreach ( $tournament->payments as $payment ) {
-                                $total_pay += $payment->amount;
-                            }
                             ?>
                             <div class="price-row">
-                                <div class="price-cost" id="pricePaidTotalFmt"><?php echo empty( $total_pay ) ? null : esc_html__( 'Paid:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $total_pay ); ?></div>
-                                <input type="hidden" name="pricePaidTotal" id="pricePaidTotal" value=<?php echo esc_attr( $total_pay ); ?> />
+                                <div class="price-cost" id="pricePaidTotalFmt"><?php echo esc_html__( 'Paid:', 'racketmanager' ) . ' '; ?><?php the_currency_amount( $tournament->payments ); ?></div>
+                                <input type="hidden" name="pricePaidTotal" id="pricePaidTotal" value=<?php echo esc_attr( $tournament->payments ); ?> />
                             </div>
                             <?php
                         }

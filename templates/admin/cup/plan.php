@@ -89,9 +89,9 @@ jQuery(document).ready(function(){
                             <?php
                             $is_invalid = false;
                             $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'startTime', $validator->err_flds, true ) ) ) {
+                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'start_time', $validator->err_flds, true ) ) ) {
                                 $is_invalid = true;
-                                $msg_id     = array_search( 'startTime', $validator->err_flds, true );
+                                $msg_id     = array_search( 'start_time', $validator->err_flds, true );
                                 $msg        = $validator->err_msgs[ $msg_id ] ?? null;
                             }
                             ?>

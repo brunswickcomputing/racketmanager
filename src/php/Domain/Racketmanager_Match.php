@@ -559,12 +559,12 @@ final class Racketmanager_Match {
      *
      * @param int $match_id match id.
      */
-    public static function get_instance( int $match_id ) {
+    public static function get_instance( int $match_id ): Racketmanager_Match|bool {
         global $wpdb;
         if ( ! $match_id ) {
             return false;
         }
-        $match = wp_cache_get( $match_id, 'matches' );
+        $match = wp_cache_get( $match_id, 'matches-old' );
         if ( ! $match ) {
             $match = $wpdb->get_row(
                 $wpdb->prepare(
@@ -578,7 +578,7 @@ final class Racketmanager_Match {
             }
             $match = new Racketmanager_Match( $match );
 
-            wp_cache_set( $match->id, $match, 'matches' );
+            wp_cache_set( $match->id, $match, 'matches-old' );
         }
 
         return $match;

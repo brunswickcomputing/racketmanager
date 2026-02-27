@@ -1916,17 +1916,18 @@ final class Racketmanager_Match {
      *
      * @return void
      */
-    public function set_location( string $location ): void {
+    public function set_location( string $location ): int {
         global $wpdb;
-        $wpdb->query(
+        $this->location = $location;
+        $updates = $wpdb->query(
             $wpdb->prepare(
                 "UPDATE $wpdb->racketmanager_matches SET `location` = %s WHERE `id` = %d",
                 $location,
                 $this->id
             )
         );
-        $this->location = $location;
         wp_cache_set( $this->id, $this, 'matches' );
+        return $updates;
     }
 
     /**

@@ -531,9 +531,6 @@ final class Tournament {
             $this->is_active = false;
         }
         $this->order_of_play = (array) maybe_unserialize( $this->order_of_play );
-        if ( $this->competition_id ) {
-            $this->competition = $this->competition_service->get_by_id( $this->competition_id );
-        }
         $finals     = array();
         $max_rounds = 6;
         $r          = $max_rounds;

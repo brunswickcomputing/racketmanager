@@ -191,6 +191,7 @@ final class Admin_Finances extends Admin_Display {
         }
         $finance_charges = $this->finance_service->get_charges_by_criteria( $args );
         $competitions    = $this->competition_service->get_all();
+        $seasons         = $this->season_service->get_all_seasons();
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/show-charges.php';
     }
     /**
@@ -209,7 +210,7 @@ final class Admin_Finances extends Admin_Display {
         $charge_id = isset( $_GET['charges'] ) ? intval( $_GET['charges'] ) : null;
         if ( $charge_id ) {
             try {
-                $charge = $this->finance_service->get_charge( $charge_id, true );
+                $charge = $this->finance_service->get_charge_with_details( $charge_id );
                 $edit   = true;
             } catch( Charge_Not_Found_Exception $e ) {
                 $this->set_message( $e->getMessage(), 'error' );
@@ -303,6 +304,7 @@ final class Admin_Finances extends Admin_Display {
             $form_action = __( 'Add', 'racketmanager' );
         }
         $competitions    = $this->competition_service->get_all();
+        $racketmanager_seasons = $this->season_service->get_all_seasons();
         require_once RACKETMANAGER_PATH . 'templates/admin/finances/charge.php';
     }
 

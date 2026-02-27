@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $tournament */
+/** @var array  $events */
 ?>
     <div class="row">
         <div class="col-12 col-md-6">
@@ -29,26 +30,20 @@ namespace Racketmanager;
                 </thead>
                 <tbody>
                     <?php
-                    foreach ( $tournament->events as $event ) {
+                    foreach ( $events as $name => $event ) {
                         ?>
                         <tr>
-                            <td colspan=3><?php echo esc_html( $event->name ); ?></td>
+                            <td colspan=3><?php echo esc_html( $name ); ?></td>
                         </tr>
                         <?php
-                        foreach ( $event->leagues as $league ) {
-                            $league = get_league( $league );
+                        foreach ( $event as $league ) {
                             ?>
                             <tr>
-                                <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&view=draw&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $league->title ); ?></a></td>
-                                <td><?php echo esc_html( $league->num_teams_total ); ?></td>
+                                <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&view=draw&tournament=<?php echo esc_attr( $tournament->id ); ?>&league=<?php echo esc_attr( $league->league_id ); ?>&season=<?php echo esc_attr( $tournament->season ); ?>"><?php echo esc_html( $league->league_name ); ?></a></td>
+                                <td><?php echo esc_html( $league->total_entries ); ?></td>
                                 <td>
                                     <?php
-                                    if ( $league->is_championship ) {
-                                        echo esc_html( $league->championship->num_teams_first_round );
-                                    } else {
-                                        $league->set_num_matches( true );
-                                        echo esc_html( $league->num_matches_total );
-                                    }
+                                    echo esc_html( $league->draw_size );
                                     ?>
                                 </td>
                             </tr>

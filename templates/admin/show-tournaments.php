@@ -88,14 +88,15 @@ namespace Racketmanager;
                 </thead>
                 <tbody>
                     <?php
-                    foreach ( $tournaments as $tournament ) {
+                    foreach ( $tournaments as $tournament_details ) {
+                        $tournament = $tournament_details->tournament;
                         ?>
                         <tr>
                             <td class="check-column"><label for="tournament-<?php echo esc_html( $tournament->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $tournament->id ); ?>" name="tournament[<?php echo esc_html( $tournament->id ); ?>]" id="tournament-<?php echo esc_html( $tournament->id ); ?>" /></td>
                             <td><a href="/wp-admin/admin.php?page=racketmanager-tournaments&amp;view=tournament&amp;tournament=<?php echo esc_html( $tournament->id ); ?>&amp;season=<?php echo esc_attr( $tournament->season ); ?> "><?php echo esc_html( $tournament->name ); ?></a></td>
                             <td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->season ); ?></td>
-                            <td><?php echo esc_html( $tournament->venue_name ); ?></td>
-                            <td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->date ); ?></td>
+                            <td><?php echo esc_html( $tournament->get_meta( 'venue_name' ) ); ?></td>
+                            <td class="d-none d-md-table-cell"><?php echo esc_html( $tournament->date_end ); ?></td>
                         </tr>
                         <?php
                     }

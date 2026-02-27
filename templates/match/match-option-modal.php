@@ -95,7 +95,7 @@ namespace Racketmanager;
                             $data_action = 'reset-match-result';
                         }
                     ?>
-                    <button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $data_action ); ?>" data-is-tournament="<?php echo esc_attr( $match->league->event->competition->is_tournament ); ?>"><?php echo esc_html( $button ); ?></button>
+                    <button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $data_action ); ?>" data-is-tournament="<?php echo empty( $match->league->event->competition->is_tournament ) ? 'false' : 'true'; ?>"><?php echo esc_html( $button ); ?></button>
                     <?php
                 }
                 ?>

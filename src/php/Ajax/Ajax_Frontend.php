@@ -20,13 +20,13 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Entry_Form;
 use stdClass;
 use function Racketmanager\event_team_match_dropdown;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
-use function Racketmanager\get_tournament;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_team_edit_modal;
@@ -339,7 +339,12 @@ class Ajax_Frontend extends Ajax {
                         $target      = get_league( $target_id );
                         break;
                     case 'tournament':
-                        $target      = get_tournament( $target_id );
+                        try {
+                            $target = $this->tournament_service->get_tournament( $target_id );
+                        } catch ( Tournament_Not_Found_Exception $e ) {
+                            $return->msg = $e->getMessage();
+                            $return->error = true;
+                        }
                         break;
                     default:
                         $return->error = true;

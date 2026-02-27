@@ -1902,10 +1902,10 @@ final class Racketmanager_Match {
      *
      * @param string $match_date match date.
      */
-    public function set_match_date_in_db( string $match_date ): void {
+    public function set_match_date_in_db( string $match_date ): int {
         global $wpdb;
         $this->date = $match_date;
-        $wpdb->query(
+        $updates = $wpdb->query(
             $wpdb->prepare(
                 "UPDATE $wpdb->racketmanager_matches SET `date` = %s WHERE `id` = %d",
                 $this->date,
@@ -1913,6 +1913,7 @@ final class Racketmanager_Match {
             )
         );
         wp_cache_set( $this->id, $this, 'matches' );
+        return $updates;
     }
     /**
      * Set location function

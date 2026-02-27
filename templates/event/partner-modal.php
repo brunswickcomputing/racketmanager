@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var int    $player_id */
+/** @var int    $tournament_id */
 /** @var object $event */
 /** @var string $modal */
 /** @var string $date_end */
@@ -20,7 +21,8 @@ namespace Racketmanager;
 <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
         <form id="team-partner" class="" action="#" method="post">
-            <?php wp_nonce_field( 'team-partner', 'racketmanager_nonce' ); ?>
+            <?php wp_nonce_field( 'racketmanager_team-partner', 'racketmanager_nonce' ); ?>
+            <input type="hidden" name="tournamentId" value="<?php echo esc_attr( $tournament_id ); ?>" />
             <input type="hidden" name="playerId" value="<?php echo esc_attr( $player_id ); ?>" />
             <input type="hidden" name="eventId" value="<?php echo esc_attr( $event->id ); ?>" />
             <input type="hidden" name="dateEnd" value="<?php echo esc_attr( $date_end ); ?>" />

@@ -375,7 +375,7 @@ final class Admin_League extends Admin_Display {
                         $this->delete_matches_from_league();
                         $tab = 'matches';
                     } elseif ( isset( $_POST['updateLeague'] ) && 'team' === $_POST['updateLeague'] ) {
-                        $this->league_manage_team( $league );
+                        // TODO: handle update of team captain/contact/match day/match time
                         if ( $league->is_championship ) {
                             $tab = 'preliminary';
                         }
@@ -1508,33 +1508,6 @@ final class Admin_League extends Admin_Display {
                 $messages[] = ( sprintf( __( 'Match id %d deleted', 'racketmanager' ), $match_id ) );
                 $message    = implode( '<br>', $messages );
                 $this->set_message( $message );
-            }
-        }
-    }
-    /**
-     * Add team to league in admin screen
-     *
-     * @param object $league league object.
-     */
-    private function league_manage_team( object $league ): void {
-        $validator = new Validator();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-teams' );
-        if ( empty( $validator->error ) ) {
-            $validator = $validator->capability( 'edit_teams' );
-        }
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            return;
-        }
-        if ( isset( $_POST['action'] ) && 'Add' === $_POST['action'] ) {
-            $this->set_message( __( 'New team cannot be added to a league', 'racketmanager' ), true );
-            return;
-        }
-        $team_id = isset( $_POST['team_id'] ) ? intval( $_POST['team_id'] ) : null;
-        if ( $team_id ) {
-            $team = get_team( intval( $_POST['team_id'] ) );
-            if ( isset( $_POST['team'] ) && isset( $_POST['clubId'] ) && isset( $_POST['team_type'] ) ) {
-                $team->update( sanitize_text_field( wp_unslash( $_POST['team'] ) ), intval( $_POST['clubId'] ), sanitize_text_field( wp_unslash( $_POST['team_type'] ) ) );
             }
         }
     }

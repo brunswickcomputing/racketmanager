@@ -12,6 +12,7 @@ namespace Racketmanager\Public;
 
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Exceptions\Charge_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
@@ -20,7 +21,6 @@ use Racketmanager\Services\Stripe_Settings;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\get_charge;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
 use function Racketmanager\get_player;
@@ -752,8 +752,6 @@ class Shortcodes_Competition extends Shortcodes {
             $atts
         );
         $template = $args['template'];
-        $valid            = true;
-        $msg              = null;
         $invoice_id       = null;
         $total_due        = null;
         $tournament_entry = null;
@@ -762,56 +760,42 @@ class Shortcodes_Competition extends Shortcodes {
         $type             = get_query_var( 'competition_type' );
         if ( 'tournament' === $type ) {
             $tournament_name = get_query_var( 'tournament' );
+            $player_id       = wp_get_current_user()->ID;
             try {
+                $player     = $this->player_service->get_player( $player_id );
                 $tournament = $this->tournament_service->get_tournament_by_name( $tournament_name );
-            } catch ( Tournament_Not_Found_Exception $e ) {
+                $charge_key = $tournament->competition_id . '_' . $tournament->season;
+                $charge     = $this->finance_service->get_charge( $charge_key );
+            } catch ( Tournament_Not_Found_Exception|Charge_Not_Found_Exception|Player_Not_Found_Exception $e ) {
                 return $this->return_error( $e->getMessage() );
             }
-            $charge_key = $tournament->competition_id . '_' . $tournament->season;
-            $charge     = get_charge( $charge_key );
-            if ( $charge ) {
-                $player_id = wp_get_current_user()->ID;
-                $player    = get_player( $player_id );
-                if ( $player ) {
-                    $args['charge']       = $charge->id;
-                    $args['player']       = $player_id;
-                    $args['status']       = 'open';
-                    $outstanding_payments = $this->finance_service->get_invoices_by_criteria( $args );
-                    $total_due            = 0;
-                    foreach ( $outstanding_payments as $invoice ) {
-                        $total_due += $invoice->amount;
-                        $invoice_id = $invoice->id;
-                    }
-                    $search           = $tournament->id . '_' . $player->id;
-                    $tournament_entry = get_tournament_entry( $search, 'key' );
-                } else {
-                    $valid = false;
-                    $msg   = $this->player_not_found;
-                }
-            } else {
-                $valid = false;
-                $msg   = __( 'Charge not found', 'racketmanager' );
+            $args['charge']       = $charge->id;
+            $args['player']       = $player_id;
+            $args['status']       = 'open';
+            $outstanding_payments = $this->finance_service->get_invoices_by_criteria( $args );
+            $total_due            = 0;
+            foreach ( $outstanding_payments as $invoice ) {
+                $total_due += $invoice->amount;
+                $invoice_id = $invoice->id;
             }
+            $search           = $tournament->id . '_' . $player->id;
+            $tournament_entry = get_tournament_entry( $search, 'key' );
         }
-        if ( $valid ) {
-            $stripe_details = new Stripe_Settings( $this->racketmanager );
-            $filename       = ( ! empty( $template ) ) ? 'tournament-payment-' . $template : 'tournament-payment';
+        $stripe_details = new Stripe_Settings( $this->racketmanager );
+        $filename       = ( ! empty( $template ) ) ? 'tournament-payment-' . $template : 'tournament-payment';
 
-            return $this->load_template(
-                $filename,
-                array(
-                    'tournament'       => $tournament,
-                    'player'           => $player,
-                    'tournament_entry' => $tournament_entry,
-                    'total_due'        => $total_due,
-                    'invoice_id'       => $invoice_id,
-                    'stripe'           => $stripe_details,
-                ),
-                'entry'
-            );
-        } else {
-            return $this->return_error( $msg );
-        }
+        return $this->load_template(
+            $filename,
+            array(
+                'tournament'       => $tournament,
+                'player'           => $player,
+                'tournament_entry' => $tournament_entry,
+                'total_due'        => $total_due,
+                'invoice_id'       => $invoice_id,
+                'stripe'           => $stripe_details,
+            ),
+            'entry'
+        );
     }
     /**
      * Function to display competition payment completion Page

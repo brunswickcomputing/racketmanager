@@ -9,8 +9,10 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Championship;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Match;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -21,7 +23,6 @@ use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_rubber;
-use function Racketmanager\get_tournament;
 use function Racketmanager\match_date_change_notification;
 use function Racketmanager\match_notification;
 use function Racketmanager\match_team_withdrawn_notification;
@@ -551,6 +552,7 @@ final class Racketmanager_Match {
      */
     public ?int $num_sets;
     private Registration_Service $registration_service;
+    private Tournament_Service $tournament_service;
 
     /**
      * Retrieve match instance
@@ -591,6 +593,7 @@ final class Racketmanager_Match {
         global $wp, $racketmanager;
         $c                          = $racketmanager->container;
         $this->registration_service = $c->get( 'registration_service' );
+        $this->tournament_service   = $c->get( 'tournament_service' );
         if ( ! is_null( $match ) ) {
             if ( ! empty( $match->custom ) ) {
                 $match->custom = stripslashes_deep( (array) maybe_unserialize( $match->custom ) );
@@ -740,12 +743,12 @@ final class Racketmanager_Match {
             $this->link = $league_url_string . seo_url( $this->league->title ) . $match_url_string . $this->id . '/';
         } elseif ( 'tournament' === $this->league->event->competition->type ) {
             $tournament_code = $this->league->event->competition->id . ',' . $this->season;
-            $tournament      = get_tournament( $tournament_code, 'shortcode' );
-            if ( $tournament ) {
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_code, 'shortcode' );
                 if ( ! empty( $this->teams['home']->title ) && ! empty( $this->teams['away']->title ) ) {
                     $this->link = $tournament_url_string . seo_url( $tournament->name ) . $match_url_string . seo_url( $this->league->title ) . '/' . seo_url( $this->teams['home']->title ) . '-vs-' . seo_url( $this->teams['away']->title ) . '/' . $this->id . '/';
                 }
-            } else {
+            } catch ( Tournament_Not_Found_Exception ) {
                 $this->link = $league_url_string . seo_url( $this->league->title ) . $match_url_string . $this->id . '/';
             }
         } elseif ( ! empty( $this->teams['home']->title ) && ! empty( $this->teams['away']->title ) ) {
@@ -1978,13 +1981,12 @@ final class Racketmanager_Match {
         $headers[]    = RACKETMANAGER_CC_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
         $message_args = array();
         if ( 'tournament' === $this->league->event->competition->type ) {
-            $tournaments                = $racketmanager->get_tournaments(
-                array(
-                    'competition_id' => $this->league->event->competition_id,
-                    'season'         => $this->season,
-                )
-            );
-            $tournament                 = $tournaments[0];
+            try {
+                $key = $this->league->event->competition_id . ',' . $this->season;
+                $tournament = $this->tournament_service->get_tournament( $key, 'shortcode' );
+            } catch ( Tournament_Not_Found_Exception ) {
+                return false;
+            }
             $message_args['tournament'] = $tournament->id;
         } elseif ( 'cup' === $this->league->event->competition->type ) {
             $message_args['competition'] = $this->league->event->competition->name;
@@ -2283,13 +2285,12 @@ final class Racketmanager_Match {
         $headers[]    = RACKETMANAGER_CC_EMAIL . ucfirst( $this->league->event->competition->type ) . ' Secretary <' . $email_from . '>';
         $message_args = array();
         if ( 'tournament' === $this->league->event->competition->type ) {
-            $tournaments                = $racketmanager->get_tournaments(
-                array(
-                    'competition_id' => $this->league->event->competition_id,
-                    'season'         => $this->season,
-                )
-            );
-            $tournament                 = $tournaments[0];
+            try {
+                $key = $this->league->event->competition_id . ',' . $this->season;
+                $tournament = $this->tournament_service->get_tournament( $key, 'shortcode' );
+            } catch ( Tournament_Not_Found_Exception ) {
+                return false;
+            }
             $message_args['tournament'] = $tournament->id;
         } elseif ( 'cup' === $this->league->event->competition->type ) {
             $message_args['competition'] = $this->league->event->competition->name;

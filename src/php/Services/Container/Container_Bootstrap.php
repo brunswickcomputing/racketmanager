@@ -32,6 +32,7 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 
 /**
  * Registers core services in the Simple_Container.
@@ -199,6 +200,15 @@ final class Container_Bootstrap {
         $c->set('notify_service', function(Simple_Container $c) use ( $app ) {
             return new Notify_Service(
                 $app,
+            );
+        });
+
+        $c->set('tournament_admin_controller', function(Simple_Container $c) {
+            return new Tournament_Admin_Controller(
+                $c->get('tournament_service'),
+                $c->get('club_service'),
+                $c->get('competition_service'),
+                $c->get('season_service'),
             );
         });
 

@@ -360,7 +360,6 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament page
      */
     public function display_tournament_page(): void {
-        global $racketmanager;
         $validator = new Validator_Tournament();
         $validator = $validator->capability( 'edit_teams' );
         if ( ! empty( $validator->error ) ) {

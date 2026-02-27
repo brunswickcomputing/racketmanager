@@ -10,11 +10,11 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Event;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Event_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator_Config;
 use stdClass;
-use function Racketmanager\get_competition;
-use function Racketmanager\get_event;
-use function Racketmanager\get_tournament;
 
 /**
  * RacketManager administration functions
@@ -33,62 +33,37 @@ final class Admin_Event extends Admin_Display {
     public function display_config_page(): void {
         $validator = new Validator_Config();
         $validator->capability( 'edit_leagues' );
-        if ( empty( $validator->error ) ) {
-            $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
-            $validator->competition( $competition_id );
-        }
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->err_msgs[0], true );
             $this->show_message();
             return;
         }
-        $competition = get_competition( $competition_id );
+        $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
+        try {
+            $competition = $this->competition_service->get_by_id( $competition_id );
+        }  catch ( Competition_Not_Found_Exception $e ) {
+            $this->set_message( $e->getMessage(), true );
+            $this->show_message();
+            return;
+        }
         global $racketmanager;
         $season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
         $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
         if ( $tournament_id ) {
-            $tournament = get_tournament( $tournament_id );
+            try {
+                $tournament = $this->tournament_service->get_tournament( $tournament_id );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                throw new Tournament_Not_Found_Exception( $e->getMessage() );
+            }
         }
         $event_id = isset( $_GET['event_id'] ) ? intval( $_GET['event_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        if ( $event_id ) {
+        try {
+            $event     = $this->competition_service->get_event_by_id( $event_id );
             $new_event = false;
-            $validator = $validator->event( $event_id );
-            if ( empty( $validator->error ) ) {
-                $event                      = get_event( $event_id );
-                $event->config              = (object) $event->settings;
-                $event->config->num_sets    = $event->num_sets;
-                $event->config->num_rubbers = $event->num_rubbers;
-                if ( isset( $_POST['updateEventConfig'] ) ) {
-                    $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-event-config' );
-                    if ( empty( $validator->error ) ) {
-                        $event_id_passed = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
-                        $validator       = $validator->compare( $event_id_passed, $event->id );
-                    }
-                    if ( empty( $validator->error ) ) {
-                        $event->config = $this->get_config_input();
-                        $validator     = $this->handle_config_update( $event->config, $competition );
-                        if ( empty( $validator->error ) ) {
-                            $updates       = $event->set_config( $event->config );
-                            if ( $updates ) {
-                                $this->set_message( __( 'Event config updated', 'racketmanager' ) );
-                            } else {
-                                $this->set_message( $this->no_updates, 'warning' );
-                            }
-                        }
-                    }
-                    if ( ! empty( $validator->error ) ) {
-                        if ( empty( $validator->msg ) ) {
-                            $this->set_message( $this->errors_found, true );
-                        } else {
-                            $this->set_message( $validator->msg, true );
-                        }
-                    }
-                }
-            } else {
-                $this->set_message( $validator->err_msgs[0], true );
-            }
-        } else {
+        } catch( Event_Not_Found_Exception ) {
             $new_event = true;
+        }
+        if ( $new_event ) {
             if ( isset( $_POST['addEventConfig'] ) ) {
                 $event     = new stdClass();
                 $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-event-config' );
@@ -153,6 +128,36 @@ final class Admin_Event extends Admin_Display {
                     }
                 }
             }
+        } else {
+            $event->config              = (object) $event->settings;
+            $event->config->num_sets    = $event->num_sets;
+            $event->config->num_rubbers = $event->num_rubbers;
+            if ( isset( $_POST['updateEventConfig'] ) ) {
+                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-event-config' );
+                if ( empty( $validator->error ) ) {
+                    $event_id_passed = isset( $_POST['event_id'] ) ? intval( $_POST['event_id'] ) : null;
+                    $validator       = $validator->compare( $event_id_passed, $event->id );
+                }
+                if ( empty( $validator->error ) ) {
+                    $event->config = $this->get_config_input();
+                    $validator     = $this->handle_config_update( $event->config, $competition );
+                    if ( empty( $validator->error ) ) {
+                        $updates       = $event->set_config( $event->config );
+                        if ( $updates ) {
+                            $this->set_message( __( 'Event config updated', 'racketmanager' ) );
+                        } else {
+                            $this->set_message( $this->no_updates, 'warning' );
+                        }
+                    }
+                }
+                if ( ! empty( $validator->error ) ) {
+                    if ( empty( $validator->msg ) ) {
+                        $this->set_message( $this->errors_found, true );
+                    } else {
+                        $this->set_message( $validator->msg, true );
+                    }
+                }
+            }
         }
         $this->show_message();
         $tab        = 'general';
@@ -188,7 +193,7 @@ final class Admin_Event extends Admin_Display {
      * @param object $competition
      * @param bool $new
      *
-     * @return object|stdClass
+     * @return object
      */
     private function handle_config_update( object $config, object $competition, bool $new = false ): object {
         $validator = new Validator_Config();

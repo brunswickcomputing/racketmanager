@@ -567,7 +567,7 @@ final class Admin_League extends Admin_Display {
                 $event_season = $event->current_season['name'] ?? '';
                 $season       = ( isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : $event_season );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             }
-            $seasons = $racketmanager->get_seasons( 'DESC' );
+            $seasons = $this->season_service->get_all_seasons();
             require_once RACKETMANAGER_PATH . 'templates/admin/league/show-constitution.php';
         }
     }

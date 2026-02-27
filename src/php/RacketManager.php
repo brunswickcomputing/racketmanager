@@ -811,7 +811,7 @@ class RacketManager {
 
         add_shortcode( 'tournament', array( $this->shortcodes_tournament, 'show_tournament' ) );
         add_shortcode( 'tournament-overview', array( $this->shortcodes_tournament, 'show_tournament_overview' ) );
-        add_shortcode( 'tournament-events', array( $this->shortcodes_tournament, 'show_events' ) );
+        add_shortcode( 'tournament-events', array( $this->shortcodes_tournament, 'show_tournament_events' ) );
         add_shortcode( 'tournament-draws', array( $this->shortcodes_tournament, 'show_draws' ) );
         add_shortcode( 'tournament-players', array( $this->shortcodes_tournament, 'show_tournament_players' ) );
         add_shortcode( 'tournament-winners', array( $this->shortcodes_tournament, 'show_tournament_winners' ) );

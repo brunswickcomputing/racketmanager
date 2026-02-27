@@ -81,7 +81,8 @@ class Admin_Result extends Admin_Display {
                     'status'      => $results_check_filter,
                 )
             );
-            $competitions = $this->competition_service->get_leagues();
+            $competitions = $this->competition_service->get_league_competitions();
+            $seasons      = $this->season_service->get_all_seasons();
             $events       = array();
             foreach ( $competitions as $competition ) {
                 try {

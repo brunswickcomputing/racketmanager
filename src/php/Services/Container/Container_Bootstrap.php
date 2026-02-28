@@ -20,6 +20,7 @@ use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Repositories\Tournament_Entry_Repository;
 use Racketmanager\Repositories\Tournament_Repository;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
@@ -217,6 +218,14 @@ final class Container_Bootstrap {
         $c->set('tournament_plan_admin_controller', function(Simple_Container $c) {
             return new Tournament_Plan_Admin_Controller(
                 $c->get('tournament_service'),
+            );
+        });
+
+        $c->set('tournament_tournaments_admin_controller', function(Simple_Container $c) {
+            return new Tournament_Tournaments_Admin_Controller(
+                $c->get('tournament_service'),
+                $c->get('competition_service'),
+                $c->get('season_service'),
             );
         });
 

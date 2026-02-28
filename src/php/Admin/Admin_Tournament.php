@@ -16,6 +16,8 @@ use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
+use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -158,23 +160,32 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament overview
      */
     public function display_tournament_overview_page(): void {
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_id );
-            $overview   = $this->tournament_service->get_tournament_overview( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+        $controller = $this->racketmanager->container->get( 'tournament_overview_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Overview_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
-        if ( isset( $_POST['contactTeam'] ) || isset( $_POST['contactTeamActive'] ) ) {
-            $this->contact_tournament_teams();
-            $this->show_message();
+
+        $result = $controller->overview_page( $_GET, $_POST );
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
         }
-        $events = $this->tournament_service->get_leagues_by_event_for_tournament( $tournament_id );
-        $tab               = 'overview';
-        $confirmed_entries = $this->tournament_service->get_players_for_tournament( $tournament_id, 'confirmed' );
-        $unpaid_entries    = $this->tournament_service->get_players_for_tournament( $tournament_id, 'unpaid' );
-        $pending_entries   = $this->tournament_service->get_players_for_tournament( $tournament_id, 'pending' );
-        $withdrawn_entries = $this->tournament_service->get_players_for_tournament( $tournament_id, 'withdrawn' );
+
+        $this->show_message();
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Overview_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
+
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
+        }
+
         require_once RACKETMANAGER_PATH . 'templates/admin/show-tournament.php';
     }
 
@@ -370,19 +381,7 @@ final class Admin_Tournament extends Admin_Championship {
         $result = $controller->modify_page( $_GET, $_POST );
 
         if ( ! empty( $result['redirect'] ) ) {
-            $redirect_url = strval( $result['redirect'] );
-
-            if ( headers_sent() ) {
-                $js_url   = esc_url_raw( $redirect_url );
-                $html_url = esc_url( $redirect_url );
-
-                echo '<script>window.location.replace(' . wp_json_encode( $js_url ) . ');</script>';
-                echo '<noscript><meta http-equiv="refresh" content="0;url=' . esc_attr( $html_url ) . '"></noscript>';
-                exit;
-            }
-
-            wp_safe_redirect( $redirect_url );
-            exit;
+            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
         }
 
         if ( ! empty( $result['message'] ) ) {
@@ -396,7 +395,7 @@ final class Admin_Tournament extends Admin_Championship {
 
         $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof Tournament_Modify_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( __( 'Invalid view model', 'racketmanager' ) );
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
         $vars = $vm->to_template_vars();
@@ -413,7 +412,7 @@ final class Admin_Tournament extends Admin_Championship {
     public function display_plan_page(): void {
         $controller = $this->racketmanager->container->get( 'tournament_plan_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Plan_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( __( 'Controller not available', 'racketmanager' ) );
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
 
         $result = $controller->plan_page( $_GET, $_POST );
@@ -425,7 +424,8 @@ final class Admin_Tournament extends Admin_Championship {
                 $js_url   = esc_url_raw( $redirect_url );
                 $html_url = esc_url( $redirect_url );
 
-                echo '<script>window.location.replace(' . wp_json_encode( $js_url ) . ');</script>';
+                $js = 'window.location.replace(' . wp_json_encode( $js_url ) . ');';
+                echo '<script>' . $js . '</script>';
                 echo '<noscript><meta http-equiv="refresh" content="0;url=' . esc_attr( $html_url ) . '"></noscript>';
                 exit;
             }
@@ -445,7 +445,7 @@ final class Admin_Tournament extends Admin_Championship {
 
         $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof Tournament_Plan_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( __( 'Invalid view model', 'racketmanager' ) );
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
         $vars = $vm->to_template_vars();

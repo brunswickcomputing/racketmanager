@@ -18,12 +18,12 @@ use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
-use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
+use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
-use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Tournament;
@@ -245,78 +245,32 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament setup
      */
     public function display_setup_page(): void {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_matches' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
+        $controller = $this->racketmanager->container->get( 'tournament_setup_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Setup_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
-        if ( isset( $_POST['action'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
-            if ( ! empty( $validator->error ) ) {
-                throw new Invalid_Status_Exception( $validator->msg );
-            }
-            $tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
-            $request = new Championship_Rounds_Request_DTO( $_POST );
-            try {
-                $response = $this->tournament_service->set_round_dates_for_tournament( $tournament_id, $request );
-                if ( is_wp_error( $response ) ) {
-                    $validator->error    = true;
-                    $validator->err_flds = $response->get_error_codes();
-                    $validator->err_msgs = $response->get_error_messages();
-                    $this->set_message( __( 'Error setting tournament round dates', 'racketmanager' ), true );
-                } else {
-                    $this->set_message( __( 'Tournament round dates updated', 'racketmanager' ) );
-                }
-            } catch ( Tournament_Not_Found_Exception|Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
-                throw new Tournament_Not_Found_Exception( $e->getMessage() );
-            }
-        } elseif ( isset( $_POST['rank'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_calculate_ratings' );
-            if ( ! empty( $validator->error ) ) {
-                throw new Invalid_Status_Exception( $validator->msg );
-            }
-            $tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
-            try {
-                $updates = $this->tournament_service->calculate_player_team_rating_for_tournament( $tournament_id );
-                if ( $updates ) {
-                    $this->set_message( __( 'Tournament ratings set', 'racketmanager' ) );
-                } else {
-                    $this->set_message( __( 'No ratings to set', 'racketmanager' ), 'warning' );
-                }
-            } catch ( Tournament_Not_Found_Exception $e ) {
-                throw new Tournament_Not_Found_Exception( $e->getMessage() );
-            }
+
+        $result = $controller->setup_page( $_GET, $_POST );
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
         }
+
         $this->show_message();
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        try {
-            $tournament_details = $this->tournament_service->get_tournament_with_details( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Setup_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
-        $tournament = $tournament_details->tournament;
-        $competition = $tournament_details->competition;
-        $season        = $tournament->get_season();
-        $tournament_season = $competition->get_season_by_name( $season );
-        $match_dates       = $tournament_season['match_dates'] ?? null;
-        if ( empty( $match_dates ) ) {
-            $match_dates  = array();
-            $match_date   = null;
-            $round_length = $competition->settings['round_length'] ?? 7;
-            $i            = 0;
-            foreach ( $tournament->finals as $final ) {
-                $r = $final['round'] - 1;
-                if ( 0 === $i ) {
-                    $match_date = $tournament->date_end;
-                } elseif ( 1 === $i ) {
-                    $match_date = Util::amend_date( $tournament->date_end, 7, '-' );
-                } else {
-                    $match_date = Util::amend_date( $match_date, $round_length, '-' );
-                }
-                $match_dates[ $r ] = $match_date;
-                ++$i;
-            }
+
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
         }
+
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
     }
 

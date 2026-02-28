@@ -1,6 +1,7 @@
 <?php
 namespace Racketmanager\Services\Container;
 
+use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Club_Repository;
@@ -232,6 +233,13 @@ final class Container_Bootstrap {
 
         $c->set('tournament_overview_admin_controller', function(Simple_Container $c) {
             return new Tournament_Overview_Admin_Controller(
+                $c->get('tournament_service'),
+            );
+        });
+
+
+        $c->set('tournament_setup_admin_controller', function(Simple_Container $c) {
+            return new Tournament_Setup_Admin_Controller(
                 $c->get('tournament_service'),
             );
         });

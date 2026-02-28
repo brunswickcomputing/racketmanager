@@ -89,18 +89,17 @@ readonly final class Tournament_Tournaments_Admin_Controller {
      *
      * @param array $post
      * @param Validator_Tournament $validator
-     * @return array{message:?string, message_type:bool|string}
+     * @return array{message:string|null, message_type:bool|string}
      *
      * @throws Invalid_Status_Exception
      */
     private function handle_bulk_delete( array $post, Validator_Tournament $validator ): array {
-        $message      = null;
-        $message_type = false;
+        $message = null;
 
         if ( ! ( isset( $post['doTournamentDel'], $post['action'] ) && 'delete' === strval( $post['action'] ) ) ) {
             return array(
                 'message'      => $message,
-                'message_type' => $message_type,
+                'message_type' => false,
             );
         }
 
@@ -115,8 +114,8 @@ readonly final class Tournament_Tournaments_Admin_Controller {
         $tournament_ids = isset( $post['tournament'] ) ? array_map( 'absint', (array) $post['tournament'] ) : array();
         if ( empty( $tournament_ids ) ) {
             return array(
-                'message'      => $message,
-                'message_type' => $message_type,
+                'message'      => null,
+                'message_type' => false,
             );
         }
 

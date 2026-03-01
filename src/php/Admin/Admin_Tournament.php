@@ -617,7 +617,7 @@ final class Admin_Tournament extends Admin_Championship {
 
     }
     /**
-     * Add new season to competition
+     * Add a new season to competition
      *
      * @param string $season season.
      * @param int $competition_id competition id.

@@ -20,6 +20,8 @@ use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
+use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -194,51 +196,57 @@ final class Admin_Tournament extends Admin_Championship {
      */
     public function display_draw_page(): void {
         global $tab;
-        //phpcs:disable WordPress.Security.NonceVerification.Recommended
-        $season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        $league_id     = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-        $tab           = isset( $_GET['league-tab'] ) ? sanitize_text_field( wp_unslash( $_GET['league-tab'] ) ) : null;
-        //phpcs:enable WordPress.Security.NonceVerification.Recommended
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+        $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
-        $league = get_league( $league_id );
-        if ( $league ) {
-            $updates = $this->handle_league_teams_action( $league );
-            if ( $updates ) {
-                $tab = 'preliminary';
-            }
-            if ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                $this->manage_matches_in_league( $league );
-                $tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-            } elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                $this->league_add_teams( $league );
-                $this->set_message( __( 'Teams added', 'racketmanager' ) );
+
+        $result = $controller->draw_page_context( $_GET );
+        $vm     = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Draw_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
+
+        // Expose $tournament, $league, $tab to the existing action handlers/templates.
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
+        }
+
+        // Keep existing mutation/action handling here (for now).
+        $updates = $this->handle_league_teams_action( $league );
+        if ( $updates ) {
+            $tab = 'preliminary';
+        }
+
+        if ( isset( $_POST['updateLeague'] ) && 'match' === $_POST['updateLeague'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $this->manage_matches_in_league( $league );
+            $tab = 'matches'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+        } elseif ( isset( $_POST['action'] ) && 'addTeamsToLeague' === $_POST['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $this->league_add_teams( $league );
+            $this->set_message( __( 'Teams added', 'racketmanager' ) );
+            $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+        } elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
+            $this->edit_player_team( $league );
+            $tab = 'preliminary';
+        } elseif ( empty( $tab ) ) {
+            $tab = $this->handle_championship_admin_page( $league ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+            if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $this->rank_teams( $league, 'manual' );
                 $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-            } elseif ( isset( $_POST['updateLeague'] ) && 'teamPlayer' === $_POST['updateLeague'] ) {
-                $this->edit_player_team( $league );
-                $tab = 'preliminary';
+            } elseif ( isset( $_POST['randomRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $this->rank_teams( $league, 'random' );
+                $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+            } elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+                $this->rank_teams( $league, 'ratings' );
+                $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
             } elseif ( empty( $tab ) ) {
-                $tab = $this->handle_championship_admin_page( $league ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                if ( isset( $_POST['saveRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                    $this->rank_teams( $league, 'manual' );
-                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                } elseif ( isset( $_POST['randomRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                    $this->rank_teams( $league, 'random' );
-                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                } elseif ( isset( $_POST['ratingPointsRanking'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                    $this->rank_teams( $league, 'ratings' );
-                    $tab = 'preliminary'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                } elseif ( empty( $tab ) ) {
-                    $tab = 'finalResults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-                }
+                $tab = 'finalResults'; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
             }
-            $this->show_message();
-            require_once RACKETMANAGER_PATH . 'templates/admin/tournament/draw.php';
         }
+
+        $this->show_message();
+        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/draw.php';
     }
 
     /**

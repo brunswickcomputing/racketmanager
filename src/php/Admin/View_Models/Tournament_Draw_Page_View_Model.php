@@ -10,11 +10,6 @@ namespace Racketmanager\Admin\View_Models;
 
 readonly final class Tournament_Draw_Page_View_Model {
 
-    /**
-     * @param object $tournament
-     * @param object $league
-     * @param string $tab
-     */
     public function __construct(
         public object $tournament,
         public object $league,

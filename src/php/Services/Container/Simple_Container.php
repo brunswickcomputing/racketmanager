@@ -2,6 +2,7 @@
 namespace Racketmanager\Services\Container;
 
 use InvalidArgumentException;
+use ReflectionFunction;
 
 /**
  * Very small service container supporting shared services and lazy factories.
@@ -37,7 +38,20 @@ class Simple_Container {
             throw new InvalidArgumentException("Service '$id' is not defined");
         }
         $def = $this->definitions[$id];
-        $obj = is_callable($def) ? $def($this) : $def;
+        if ( is_callable( $def ) ) {
+            // Backwards-compatible: support both fn(Simple_Container $c) and fn()
+            // to avoid unused-parameter warnings in factories that don't need the container.
+            try {
+                $ref = new ReflectionFunction( $def );
+                $obj = ( $ref->getNumberOfParameters() > 0 ) ? $def( $this ) : $def();
+            } catch ( \Throwable ) {
+                // Fallback: preserve previous behaviour
+                $obj = $def( $this );
+            }
+        } else {
+            $obj = $def;
+        }
+
         // Share instances by default
         $this->instances[$id] = $obj;
         return $obj;

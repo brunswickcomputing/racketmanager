@@ -3,6 +3,7 @@ namespace Racketmanager\Services\Container;
 
 use InvalidArgumentException;
 use ReflectionFunction;
+use Throwable as ThrowableAlias;
 
 /**
  * Very small service container supporting shared services and lazy factories.
@@ -17,10 +18,11 @@ class Simple_Container {
      * Register a service or factory.
      *
      * @param string $id
-     * @param callable|object $concrete If callable, it will be invoked as function(Simple_Container $c): object
+     * @param callable|object $concrete If callable, it will be invoked as a function(Simple_Container $c): object
+     *
      * @return void
      */
-    public function set(string $id, $concrete): void {
+    public function set(string $id, callable|object $concrete): void {
         $this->definitions[$id] = $concrete;
     }
 
@@ -44,7 +46,7 @@ class Simple_Container {
             try {
                 $ref = new ReflectionFunction( $def );
                 $obj = ( $ref->getNumberOfParameters() > 0 ) ? $def( $this ) : $def();
-            } catch ( \Throwable ) {
+            } catch ( ThrowableAlias ) {
                 // Fallback: preserve previous behaviour
                 $obj = $def( $this );
             }

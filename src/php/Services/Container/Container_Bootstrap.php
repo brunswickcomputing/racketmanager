@@ -202,11 +202,7 @@ final class Container_Bootstrap {
             );
         });
 
-        $c->set('notify_service', function(Simple_Container $c) use ( $app ) {
-            return new Notify_Service(
-                $app,
-            );
-        });
+        $c->set('notify_service', fn() => new Notify_Service( $app ) );
 
         // Admin Controllers
         $c->set('tournament_admin_controller', function(Simple_Container $c) {
@@ -245,12 +241,9 @@ final class Container_Bootstrap {
             );
         });
 
-        $c->set('tournament_draw_admin_controller', function(Simple_Container $c) use ( $app ) {
-            return new Tournament_Draw_Admin_Controller(
-                $app,
-            );
-        });
+        $c->set('tournament_draw_admin_controller', fn() => new Tournament_Draw_Admin_Controller( $app ) );
 
         return $c;
     }
+
 }

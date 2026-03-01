@@ -1,4 +1,5 @@
 <?php
+
 namespace Racketmanager\Services\Container;
 
 use Racketmanager\RacketManager;
@@ -43,207 +44,111 @@ use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
  * Registers core services in the Simple_Container.
  */
 final class Container_Bootstrap {
-    public static function boot(RacketManager $app): Simple_Container {
+    public static function boot( RacketManager $app ): Simple_Container {
         $c = new Simple_Container();
 
-        // Repositories
-        $c->set('club_repository', fn() => new Club_Repository());
-        $c->set('registration_repository', fn() => new Registration_Repository());
-        $c->set('club_role_repository', fn() => new Club_Role_Repository());
-        $c->set('player_repository', fn() => new Player_Repository());
-        $c->set('player_error_repository', fn() => new Player_Error_Repository());
-        $c->set('team_repository', fn() => new Team_Repository());
-        $c->set('event_repository', fn() => new Event_Repository());
-        $c->set('fixture_repository', fn() => new Fixture_Repository());
-        $c->set('league_repository', fn() => new League_Repository());
-        $c->set('league_team_repository', fn() => new League_Team_Repository());
-        $c->set('competition_repository', fn() => new Competition_Repository());
-        $c->set('charge_repository', fn() => new Charge_Repository());
-        $c->set('invoice_repository', fn() => new Invoice_Repository());
-        $c->set('tournament_repository', fn() => new Tournament_Repository());
-        $c->set('tournament_entry_repository', fn() => new Tournament_Entry_Repository());
-        $c->set('season_repository', fn() => new Season_Repository());
-        $c->set('rubber_repository', fn() => new Rubber_Repository());
-
-        // External clients
-        $c->set('wtn_api_client', fn() => new Wtn_Api_Client());
-
-        // Services
-        $c->set('player_service', function(Simple_Container $c) use ($app) {
-            return new Player_Service(
-                $app,
-                $c->get('player_repository'),
-                $c->get('player_error_repository'),
-                $c->get('club_role_repository'),
-                $c->get('wtn_api_client'),
-                $c->get('league_team_repository'),
-                $c->get('club_repository'),
-                $c->get('registration_repository'),
-            );
-        });
-
-        $c->set('competition_service', function(Simple_Container $c) use ($app) {
-            return new Competition_Service(
-                $app,
-                $c->get('competition_repository'),
-                $c->get('club_repository'),
-                $c->get('event_repository'),
-                $c->get('league_repository'),
-                $c->get('league_team_repository'),
-                $c->get('season_repository'),
-                $c->get('team_repository'),
-            );
-        });
-
-        $c->set('club_service', function(Simple_Container $c) {
-            return new Club_Service(
-                $c->get('club_repository'),
-                $c->get('registration_repository'),
-                $c->get('club_role_repository'),
-                $c->get('player_repository'),
-                $c->get('team_repository'),
-                $c->get('player_service'),
-            );
-        });
-
-        $c->set('competition_entry_service', function(Simple_Container $c) use ($app) {
-            return new Competition_Entry_Service(
-                $app,
-                $c->get('club_repository'),
-                $c->get('league_repository'),
-                $c->get('league_team_repository'),
-                $c->get('team_repository'),
-                $c->get('tournament_repository'),
-                $c->get('tournament_entry_repository'),
-                $c->get('club_service'),
-                $c->get('competition_service'),
-                $c->get('finance_service'),
-                $c->get('player_service'),
-                $c->get('tournament_service'),
-                $c->get('notify_service'),
-            );
-        });
-
-        $c->set('team_service', function(Simple_Container $c) {
-            return new Team_Service(
-                $c->get('team_repository'),
-                $c->get('club_repository'),
-                $c->get('event_repository'),
-                $c->get('player_service'),
-            );
-        });
-
-        $c->set('registration_service', function(Simple_Container $c) use ($app) {
-            // Depends on player_service
-            return new Registration_Service(
-                $app,
-                $c->get('registration_repository'),
-                $c->get('player_repository'),
-                $c->get('club_repository'),
-                $c->get('player_service')
-            );
-        });
-
-        $c->set('league_service', function(Simple_Container $c) use ($app) {
-            return new League_Service(
-                $app,
-                $c->get('league_repository'),
-                $c->get('event_repository'),
-                $c->get('league_team_repository'),
-                $c->get('team_repository'),
-            );
-        });
-
-        $c->set('fixture_service', function(Simple_Container $c) use ($app) {
-            return new Fixture_Service(
-                $app,
-                $c->get('fixture_repository'),
-                $c->get('registration_service'),
-                $c->get('league_repository'),
-                $c->get('team_repository'),
-                $c->get('club_repository'),
-                $c->get('competition_service'),
-                $c->get('team_service'),
-            );
-        });
-
-        $c->set('finance_service', function(Simple_Container $c) use ( $app ) {
-            return new Finance_Service(
-                $app,
-                $c->get('charge_repository'),
-                $c->get('invoice_repository'),
-                $c->get('club_repository'),
-                $c->get('tournament_repository'),
-                $c->get('competition_service'),
-                $c->get('player_service')
-            );
-        });
-
-        $c->set('tournament_service', function(Simple_Container $c) use ( $app ) {
-            return new Tournament_Service(
-                $app,
-                $c->get('tournament_repository'),
-                $c->get('charge_repository'),
-                $c->get('event_repository'),
-                $c->get('fixture_service'),
-                $c->get('league_team_repository'),
-                $c->get('tournament_entry_repository'),
-                $c->get('competition_service'),
-                $c->get('player_service'),
-                $c->get('club_service'),
-                $c->get('finance_service'),
-            );
-        });
-
-        $c->set('season_service', function(Simple_Container $c) use ($app) {
-            return new Season_Service(
-                $app,
-                $c->get('season_repository'),
-            );
-        });
-
-        $c->set('notify_service', fn() => new Notify_Service( $app ) );
-
-        // Admin Controllers
-        $c->set('tournament_admin_controller', function(Simple_Container $c) {
-            return new Tournament_Admin_Controller(
-                $c->get('tournament_service'),
-                $c->get('club_service'),
-                $c->get('competition_service'),
-                $c->get('season_service'),
-            );
-        });
-
-        $c->set('tournament_plan_admin_controller', function(Simple_Container $c) {
-            return new Tournament_Plan_Admin_Controller(
-                $c->get('tournament_service'),
-            );
-        });
-
-        $c->set('tournament_tournaments_admin_controller', function(Simple_Container $c) {
-            return new Tournament_Tournaments_Admin_Controller(
-                $c->get('tournament_service'),
-                $c->get('competition_service'),
-                $c->get('season_service'),
-            );
-        });
-
-        $c->set('tournament_overview_admin_controller', function(Simple_Container $c) {
-            return new Tournament_Overview_Admin_Controller(
-                $c->get('tournament_service'),
-            );
-        });
-
-
-        $c->set('tournament_setup_admin_controller', function(Simple_Container $c) {
-            return new Tournament_Setup_Admin_Controller(
-                $c->get('tournament_service'),
-            );
-        });
-
-        $c->set('tournament_draw_admin_controller', fn() => new Tournament_Draw_Admin_Controller( $app ) );
+        self::register_repositories( $c );
+        self::register_external_clients( $c );
+        self::register_services( $c, $app );
+        self::register_admin_controllers( $c, $app );
 
         return $c;
+    }
+
+    private static function register_repositories( Simple_Container $c ): void {
+        $c->set( 'club_repository', fn() => new Club_Repository() );
+        $c->set( 'registration_repository', fn() => new Registration_Repository() );
+        $c->set( 'club_role_repository', fn() => new Club_Role_Repository() );
+        $c->set( 'player_repository', fn() => new Player_Repository() );
+        $c->set( 'player_error_repository', fn() => new Player_Error_Repository() );
+        $c->set( 'team_repository', fn() => new Team_Repository() );
+        $c->set( 'event_repository', fn() => new Event_Repository() );
+        $c->set( 'fixture_repository', fn() => new Fixture_Repository() );
+        $c->set( 'league_repository', fn() => new League_Repository() );
+        $c->set( 'league_team_repository', fn() => new League_Team_Repository() );
+        $c->set( 'competition_repository', fn() => new Competition_Repository() );
+        $c->set( 'charge_repository', fn() => new Charge_Repository() );
+        $c->set( 'invoice_repository', fn() => new Invoice_Repository() );
+        $c->set( 'tournament_repository', fn() => new Tournament_Repository() );
+        $c->set( 'tournament_entry_repository', fn() => new Tournament_Entry_Repository() );
+        $c->set( 'season_repository', fn() => new Season_Repository() );
+        $c->set( 'rubber_repository', fn() => new Rubber_Repository() );
+    }
+
+    private static function register_external_clients( Simple_Container $c ): void {
+        $c->set( 'wtn_api_client', fn() => new Wtn_Api_Client() );
+    }
+
+    private static function register_services( Simple_Container $c, RacketManager $app ): void {
+        $c->set( 'player_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Player_Service( $app, $c->get( 'player_repository' ), $c->get( 'player_error_repository' ), $c->get( 'club_role_repository' ), $c->get( 'wtn_api_client' ), $c->get( 'league_team_repository' ), $c->get( 'club_repository' ), $c->get( 'registration_repository' ), );
+        } );
+
+        $c->set( 'competition_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Competition_Service( $app, $c->get( 'competition_repository' ), $c->get( 'club_repository' ), $c->get( 'event_repository' ), $c->get( 'league_repository' ), $c->get( 'league_team_repository' ), $c->get( 'season_repository' ), $c->get( 'team_repository' ), );
+        } );
+
+        $c->set( 'club_service', function ( Simple_Container $c ) {
+            return new Club_Service( $c->get( 'club_repository' ), $c->get( 'registration_repository' ), $c->get( 'club_role_repository' ), $c->get( 'player_repository' ), $c->get( 'team_repository' ), $c->get( 'player_service' ), );
+        } );
+
+        $c->set( 'competition_entry_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Competition_Entry_Service( $app, $c->get( 'club_repository' ), $c->get( 'league_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), $c->get( 'tournament_repository' ), $c->get( 'tournament_entry_repository' ), $c->get( 'club_service' ), $c->get( 'competition_service' ), $c->get( 'finance_service' ), $c->get( 'player_service' ), $c->get( 'tournament_service' ), $c->get( 'notify_service' ), );
+        } );
+
+        $c->set( 'team_service', function ( Simple_Container $c ) {
+            return new Team_Service( $c->get( 'team_repository' ), $c->get( 'club_repository' ), $c->get( 'event_repository' ), $c->get( 'player_service' ), );
+        } );
+
+        $c->set( 'registration_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Registration_Service( $app, $c->get( 'registration_repository' ), $c->get( 'player_repository' ), $c->get( 'club_repository' ), $c->get( 'player_service' ) );
+        } );
+
+        $c->set( 'league_service', function ( Simple_Container $c ) use ( $app ) {
+            return new League_Service( $app, $c->get( 'league_repository' ), $c->get( 'event_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), );
+        } );
+
+        $c->set( 'fixture_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Fixture_Service( $app, $c->get( 'fixture_repository' ), $c->get( 'registration_service' ), $c->get( 'league_repository' ), $c->get( 'team_repository' ), $c->get( 'club_repository' ), $c->get( 'competition_service' ), $c->get( 'team_service' ), );
+        } );
+
+        $c->set( 'finance_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Finance_Service( $app, $c->get( 'charge_repository' ), $c->get( 'invoice_repository' ), $c->get( 'club_repository' ), $c->get( 'tournament_repository' ), $c->get( 'competition_service' ), $c->get( 'player_service' ) );
+        } );
+
+        $c->set( 'tournament_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Tournament_Service( $app, $c->get( 'tournament_repository' ), $c->get( 'charge_repository' ), $c->get( 'event_repository' ), $c->get( 'fixture_service' ), $c->get( 'league_team_repository' ), $c->get( 'tournament_entry_repository' ), $c->get( 'competition_service' ), $c->get( 'player_service' ), $c->get( 'club_service' ), $c->get( 'finance_service' ), );
+        } );
+
+        $c->set( 'season_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Season_Service( $app, $c->get( 'season_repository' ), );
+        } );
+
+        $c->set( 'notify_service', fn() => new Notify_Service( $app ) );
+    }
+
+    private static function register_admin_controllers( Simple_Container $c, RacketManager $app ): void {
+        $c->set( 'tournament_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Admin_Controller( $c->get( 'tournament_service' ), $c->get( 'club_service' ), $c->get( 'competition_service' ), $c->get( 'season_service' ), );
+        } );
+
+        $c->set( 'tournament_plan_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Plan_Admin_Controller( $c->get( 'tournament_service' ), );
+        } );
+
+        $c->set( 'tournament_tournaments_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Tournaments_Admin_Controller( $c->get( 'tournament_service' ), $c->get( 'competition_service' ), $c->get( 'season_service' ), );
+        } );
+
+        $c->set( 'tournament_overview_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Overview_Admin_Controller( $c->get( 'tournament_service' ), );
+        } );
+
+        $c->set( 'tournament_setup_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Setup_Admin_Controller( $c->get( 'tournament_service' ), );
+        } );
+
+        $c->set( 'tournament_draw_admin_controller', fn() => new Tournament_Draw_Admin_Controller( $app ) );
     }
 
 }

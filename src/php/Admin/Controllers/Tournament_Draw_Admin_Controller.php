@@ -34,7 +34,7 @@ readonly final class Tournament_Draw_Admin_Controller {
      *
      * @param array $query Typically $_GET
      * @param array $post  Typically $_POST
-     * @return array{view_model:Tournament_Draw_Page_View_Model, message?:string, message_type?:bool|string}
+     * @return array{view_model:Tournament_Draw_Page_View_Model, redirect_tab:string, message?:string, message_type?:bool|string}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
@@ -79,6 +79,8 @@ readonly final class Tournament_Draw_Admin_Controller {
 
         $result = array(
             'view_model' => $vm,
+            // For PRG redirects: the tab the user should land on after POST.
+            'redirect_tab' => $vm->tab ?: 'finalResults',
         );
 
         if ( null !== $response->message ) {

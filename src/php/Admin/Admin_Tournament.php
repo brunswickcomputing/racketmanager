@@ -220,8 +220,7 @@ final class Admin_Tournament extends Admin_Championship {
                 );
             }
 
-            $vm = $result['view_model'] ?? null;
-            $tab = ( $vm instanceof Tournament_Draw_Page_View_Model ) ? strval( $vm->tab ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
+            $tab = isset( $result['redirect_tab'] ) ? strval( $result['redirect_tab'] ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
             
             $redirect_url = add_query_arg(
                     array(
@@ -319,13 +318,12 @@ final class Admin_Tournament extends Admin_Championship {
                 );
             }
 
-            $vm = $result['view_model'] ?? null;
-            $tab = ( $vm instanceof Tournament_Draw_Page_View_Model ) ? strval( $vm->tab ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
+            $tab = isset( $result['redirect_tab'] ) ? strval( $result['redirect_tab'] ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
             
             $redirect_url = add_query_arg(
                     array(
                             'page'       => isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['page'] ) ) ) : 'racketmanager-tournaments',
-                            'view'       => isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['view'] ) ) ) : 'draw',
+                            'view'       => isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['view'] ) ) ) : 'setup-event',
                             'tournament' => isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
                             'league'     => isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
                             'league-tab' => $tab,

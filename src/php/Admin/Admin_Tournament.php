@@ -11,6 +11,7 @@ namespace Racketmanager\Admin;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
+use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
@@ -195,6 +196,14 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament draw
      */
     public function display_draw_page(): void {
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
+        }
+
         $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
@@ -202,6 +211,31 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->draw_page( $_GET, $_POST );
 
+        // PRG: if this request is a POST, store the message (if any) and redirect to GET.
+        if ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+                );
+            }
+
+            $vm = $result['view_model'] ?? null;
+            $tab = ( $vm instanceof Tournament_Draw_Page_View_Model ) ? strval( $vm->tab ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
+            
+            $redirect_url = add_query_arg(
+                    array(
+                            'page'       => isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['page'] ) ) ) : 'racketmanager-tournaments',
+                            'view'       => isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['view'] ) ) ) : 'draw',
+                            'tournament' => isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
+                            'league'     => isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
+                            'league-tab' => $tab,
+                        ),
+                    admin_url( 'admin.php' )
+                );
+            $this->redirect_or_js_fallback( $redirect_url );
+        }
+        
         if ( ! empty( $result['message'] ) ) {
             $this->set_message(
                 strval( $result['message'] ),
@@ -261,12 +295,46 @@ final class Admin_Tournament extends Admin_Championship {
      * Display event setup
      */
     public function display_setup_event_page(): void {
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
+        }
+
         $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
 
         $result = $controller->draw_page( $_GET, $_POST );
+
+        // PRG: if this request is a POST, store the message (if any) and redirect to GET.
+        if ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+                );
+            }
+
+            $vm = $result['view_model'] ?? null;
+            $tab = ( $vm instanceof Tournament_Draw_Page_View_Model ) ? strval( $vm->tab ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
+            
+            $redirect_url = add_query_arg(
+                    array(
+                            'page'       => isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['page'] ) ) ) : 'racketmanager-tournaments',
+                            'view'       => isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['view'] ) ) ) : 'draw',
+                            'tournament' => isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
+                            'league'     => isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
+                            'league-tab' => $tab,
+                        ),
+                    admin_url( 'admin.php' )
+                );
+            $this->redirect_or_js_fallback( $redirect_url );
+        }
+        
 
         if ( ! empty( $result['message'] ) ) {
             $this->set_message(

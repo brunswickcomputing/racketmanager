@@ -237,13 +237,6 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_or_js_fallback( $redirect_url );
         }
         
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
@@ -337,14 +330,6 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_or_js_fallback( $redirect_url );
         }
         
-
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;

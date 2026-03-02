@@ -6,6 +6,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
+use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
@@ -158,6 +159,15 @@ final class Container_Bootstrap {
             );
         } );
 
+        // Register draw action handler under an interface-ish name for consumers.
+        $c->set( 'draw_action_handler', function ( Simple_Container $c ) {
+            $handler = $c->get( 'championship_admin_service' );
+            if ( ! ( $handler instanceof Draw_Action_Handler_Interface ) ) {
+                throw new \RuntimeException( 'Draw action handler must implement Draw_Action_Handler_Interface' );
+            }
+            return $handler;
+        } );
+
         // Register the concrete implementation (optional alias).
         $c->set( 'wp_action_guard', function ( Simple_Container $c ) {
             return new Wp_Action_Guard();
@@ -175,7 +185,7 @@ final class Container_Bootstrap {
 
         $c->set( 'draw_action_dispatcher', function ( Simple_Container $c ) {
             return new Draw_Action_Dispatcher(
-                $c->get( 'championship_admin_service' ),
+                $c->get( 'draw_action_handler' ),
                 $c->get( 'action_guard' ),
             );
         } );

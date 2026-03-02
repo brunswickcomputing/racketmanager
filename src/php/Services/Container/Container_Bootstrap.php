@@ -158,14 +158,25 @@ final class Container_Bootstrap {
             );
         } );
 
+        // Register the concrete implementation (optional alias).
         $c->set( 'wp_action_guard', function ( Simple_Container $c ) {
             return new Wp_Action_Guard();
+        } );
+
+        // Register under an interface-ish name for consumers.
+        // (Simple_Container is string-keyed, so we keep it as a convention.)
+        $c->set( 'action_guard', function ( Simple_Container $c ) {
+            $guard = $c->get( 'wp_action_guard' );
+            if ( ! ( $guard instanceof Action_Guard_Interface ) ) {
+                throw new \RuntimeException( 'Action guard must implement Action_Guard_Interface' );
+            }
+            return $guard;
         } );
 
         $c->set( 'draw_action_dispatcher', function ( Simple_Container $c ) {
             return new Draw_Action_Dispatcher(
                 $c->get( 'championship_admin_service' ),
-                $c->get( 'wp_action_guard' ), // implements Action_Guard_Interface
+                $c->get( 'action_guard' ),
             );
         } );
 

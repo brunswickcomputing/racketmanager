@@ -60,7 +60,7 @@ readonly final class Tournament_Setup_Admin_Controller {
     }
 
     /**
-     * Handle POST actions for setup page.
+     * Handle POST actions for the setup page.
      *
      * @param array $post
      * @param Validator_Tournament $validator
@@ -71,7 +71,6 @@ readonly final class Tournament_Setup_Admin_Controller {
      */
     private function handle_post_actions( array $post, Validator_Tournament $validator ): array {
         $message      = null;
-        $message_type = false;
 
         if ( isset( $post['action'] ) ) {
             return $this->handle_round_dates_post( $post, $validator );
@@ -83,7 +82,7 @@ readonly final class Tournament_Setup_Admin_Controller {
 
         return array(
             'message'      => $message,
-            'message_type' => $message_type,
+            'message_type' => false,
         );
     }
 
@@ -165,7 +164,7 @@ readonly final class Tournament_Setup_Admin_Controller {
     }
 
     /**
-     * Build view model for setup page.
+     * Build view model for the setup page.
      *
      * @param int|null $tournament_id
      * @param Validator_Tournament $validator

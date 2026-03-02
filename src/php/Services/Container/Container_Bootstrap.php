@@ -6,6 +6,7 @@ use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
+use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Competition_Repository;
@@ -155,10 +156,16 @@ final class Container_Bootstrap {
             );
         } );
 
+        $c->set( 'draw_action_dispatcher', function ( Simple_Container $c ) {
+            return new Draw_Action_Dispatcher(
+                $c->get( 'championship_admin_service' ),
+            );
+        } );
+
         $c->set( 'tournament_draw_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Draw_Admin_Controller(
                 $c->get( 'tournament_service' ),
-                $c->get( 'championship_admin_service' ),
+                $c->get( 'draw_action_dispatcher' ),
             );
         } );
 

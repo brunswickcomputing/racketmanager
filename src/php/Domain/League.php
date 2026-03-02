@@ -1492,7 +1492,6 @@ class League {
                 $team->custom  = stripslashes_deep( maybe_unserialize( $team->custom ) );
                 $team->roster  = maybe_unserialize( $team->roster );
                 $team->title   = htmlspecialchars( stripslashes( $team->title ), ENT_QUOTES );
-                $team->stadium = stripslashes( $team->stadium );
                 $team->class   = implode( ' ', $class );
                 $team->points_formatted = array(
                     'primary'   => sprintf( $this->point_format, $team->points_plus, $team->points_minus ),

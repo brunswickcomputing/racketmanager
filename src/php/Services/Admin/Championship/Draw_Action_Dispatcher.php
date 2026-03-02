@@ -16,14 +16,14 @@ namespace Racketmanager\Services\Admin\Championship;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
-use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
-use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 
 readonly final class Draw_Action_Dispatcher {
 
     public function __construct(
         private Championship_Admin_Service $championship_admin_service,
+        private Wp_Action_Guard $action_guard,
     ) {
     }
 
@@ -41,7 +41,7 @@ readonly final class Draw_Action_Dispatcher {
                 continue;
             }
 
-            $this->assert_allowed( $policy['nonce_field'], $policy['nonce_action'], $policy['capability'] );
+            $this->action_guard->assert_allowed( $policy['nonce_field'], $policy['nonce_action'], $policy['capability'] );
 
             $action_result = ( $policy['handle'] )( $dto, is_array( $context ) ? $context : array() );
             $tab_override  = ( $policy['tab_override'] )( $action_result, is_array( $context ) ? $context : array() );

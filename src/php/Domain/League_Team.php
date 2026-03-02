@@ -263,7 +263,7 @@ final class League_Team {
      *
      * @var ?int
      */
-    public ?int $captain;
+    public ?int $captain = null;
     /**
      * Formatted points variable
      *

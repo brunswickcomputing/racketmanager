@@ -2,7 +2,7 @@
 /**
  * Draw page action request DTO
  *
- * NOTE: Controller is responsible for capability + nonce validation.
+ * NOTE: Controller is responsible for capability and nonce validation.
  *
  * @package RacketManager
  * @subpackage Domain/DTO/Admin/Championship
@@ -10,18 +10,18 @@
 
 namespace Racketmanager\Domain\DTO\Admin\Championship;
 
-final class Draw_Action_Request_DTO {
+final readonly class Draw_Action_Request_DTO {
     /**
      * @param int $tournament_id
      * @param int $league_id
      * @param string|null $season
-     * @param array $post Sanitized/unslashed POST payload (controller-owned)
+     * @param array $post Sanitised/unslashed POST payload (controller-owned)
      */
     public function __construct(
-        public readonly int $tournament_id,
-        public readonly int $league_id,
-        public readonly ?string $season,
-        public readonly array $post,
+        public int $tournament_id,
+        public int $league_id,
+        public ?string $season,
+        public array $post,
     ) {
     }
 }

@@ -261,47 +261,44 @@ final class Admin_Tournament extends Admin_Championship {
      * Display event setup
      */
     public function display_setup_event_page(): void {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_matches' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
+        $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
-        if ( isset( $_POST['action'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
-            if ( ! empty( $validator->error ) ) {
-                throw new Invalid_Status_Exception( $validator->msg );
-            }
-            $valid     = true;
-            $action    = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-            $league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-            $season    = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-            $rounds    = $_POST['rounds'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-            $league    = get_league( $league_id );
-            if ( $league ) {
-                $this->set_championship_matches( $league, $season, $rounds, $action );
-            }
+
+        $result = $controller->draw_page( $_GET, $_POST );
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
         }
-        $season        = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        $league_id     = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-        //phpcs:enable WordPress.Security.NonceVerification.Recommended
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+
+        $this->show_message();
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Draw_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
-        $league = get_league( $league_id );
+
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
+        }
+
+        $league = $vm->league;
         if ( $league ) {
             $match_count = $league->get_matches(
-                    array(
-                            'count' => true,
-                            'final' => 'all',
-                    )
+                array(
+                    'count' => true,
+                    'final' => 'all',
+                )
             );
-            $tab              = 'matches';
-            $event_dtls       = $league->event->get_season_by_name( $season );
-            $competition_dtls = $league->event->competition->get_season_by_name( $season );
-            $match_dates      = empty( $event_dtls['match_dates'] ) ? $competition_dtls['match_dates'] : $event_dtls['match_dates'];
+            $event_dtls       = $league->event->get_season_by_name( $vm->season );
+            $competition_dtls = $league->event->competition->get_season_by_name( $vm->season );
+            $match_dates      = empty( $event_dtls['match_dates'] ) ? ( $competition_dtls['match_dates'] ?? array() ) : $event_dtls['match_dates'];
+
             require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
         }
     }
@@ -608,7 +605,7 @@ final class Admin_Tournament extends Admin_Championship {
      *
      * @return array|boolean
      */
-    public function add_season_to_competition( string $season, int $competition_id, int $num_match_days = null ): bool|array {
+    public function add_season_to_competition( string $season, int $competition_id, ?int $num_match_days = null ): bool|array {
         try {
             $competition = $this->competition_service->get_competition( $competition_id );
         } catch ( Competition_Not_Found_Exception ) {

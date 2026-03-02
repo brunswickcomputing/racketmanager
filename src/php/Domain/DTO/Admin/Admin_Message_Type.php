@@ -12,3 +12,5 @@ enum Admin_Message_Type: string {
     case SUCCESS = 'success';
     case WARNING = 'warning';
     case ERROR   = 'error';
+    case INFO    = 'info';
+}

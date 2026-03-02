@@ -14,6 +14,7 @@ readonly final class Tournament_Draw_Page_View_Model {
         public object $tournament,
         public object $league,
         public string $tab,
+        public string $season,
     ) {
     }
 
@@ -27,6 +28,7 @@ readonly final class Tournament_Draw_Page_View_Model {
             'tournament' => $this->tournament,
             'league'     => $this->league,
             'tab'        => $this->tab,
+            'season'     => $this->season,
         );
     }
 }

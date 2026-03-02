@@ -8,11 +8,11 @@
 
 namespace Racketmanager\Domain\DTO\Admin;
 
-final class Action_Result_DTO {
+final readonly class Action_Result_DTO {
     public function __construct(
-        public readonly ?string $message = null,
-        public readonly ?Admin_Message_Type $message_type = null,
-        public readonly ?string $tab_override = null,
+        public ?string $message = null,
+        public ?Admin_Message_Type $message_type = null,
+        public ?string $tab_override = null,
     ) {
     }
 }

@@ -168,6 +168,21 @@ readonly final class Tournament_Draw_Admin_Controller {
             $result_message_type = $action_result->message_type;
         }
 
+        // 6) set championship matches (setup-event)
+        if ( isset( $post['action'] ) && in_array( strval( $post['action'] ), array( 'add', 'replace' ), true ) && isset( $post['rounds'] ) ) {
+            $v = new Validator();
+            $v = $v->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
+            $v = $v->capability( 'edit_matches' );
+            if ( ! empty( $v->error ) ) {
+                throw new Invalid_Status_Exception( $v->msg );
+            }
+
+            $action_result = $this->championship_admin_service->set_championship_matches( $dto );
+            $result_message = $action_result->message;
+            $result_message_type = $action_result->message_type;
+            $tab_override = 'matches';
+        }
+
         if ( ! empty( $tab_override ) ) {
             $tab = $tab_override;
         }
@@ -176,6 +191,7 @@ readonly final class Tournament_Draw_Admin_Controller {
             tournament: $tournament,
             league: $league,
             tab: $tab ?: 'finalResults',
+            season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : ( $query['season'] ?? $tournament->get_season() ),
         );
 
         $result = array(

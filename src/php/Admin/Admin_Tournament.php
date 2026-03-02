@@ -196,6 +196,8 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament draw
      */
     public function display_draw_page(): void {
+        $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
+
         $flash = ( new Admin_Flash_Message_Store() )->pop();
         if ( ! empty( $flash['message'] ) ) {
             $this->set_message(
@@ -294,6 +296,8 @@ final class Admin_Tournament extends Admin_Championship {
      * Display event setup
      */
     public function display_setup_event_page(): void {
+        $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
+
         $flash = ( new Admin_Flash_Message_Store() )->pop();
         if ( ! empty( $flash['message'] ) ) {
             $this->set_message(

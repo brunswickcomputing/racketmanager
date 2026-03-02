@@ -234,7 +234,7 @@ final class Admin_Tournament extends Admin_Championship {
         $result = $controller->draw_page( $_GET, $_POST );
 
         // PRG: if this request is a POST, store the message (if any) and redirect to GET.
-        if ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
+        if ( $is_post ) {
             if ( ! empty( $result['message'] ) ) {
                 ( new Admin_Flash_Message_Store() )->set(
                     strval( $result['message'] ),
@@ -316,7 +316,7 @@ final class Admin_Tournament extends Admin_Championship {
         $result = $controller->draw_page( $_GET, $_POST );
 
         // PRG: if this request is a POST, store the message (if any) and redirect to GET.
-        if ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) ) {
+        if ( $is_post ) {
             if ( ! empty( $result['message'] ) ) {
                 ( new Admin_Flash_Message_Store() )->set(
                     strval( $result['message'] ),

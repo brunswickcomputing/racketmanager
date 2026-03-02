@@ -3,7 +3,7 @@
         'name' => 'racketmanager/racketmanager',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'daa00da9e5715444e843abf9c9cf963c9994be4d',
+        'reference' => '8596200b7542527854e9c00eb60c1af6cbc05380',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -103,7 +103,7 @@
         'racketmanager/racketmanager' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'daa00da9e5715444e843abf9c9cf963c9994be4d',
+            'reference' => '8596200b7542527854e9c00eb60c1af6cbc05380',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

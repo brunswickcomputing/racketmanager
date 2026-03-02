@@ -66,7 +66,10 @@ readonly final class Championship_Admin_Service {
         $any_error = false;
 
         foreach ( $post['team'] as $team_id ) {
-            $team_id = intval( $team_id );
+            $team_id = sanitize_text_field( wp_unslash( $team_id ) );
+            if ( ! is_numeric( $team_id) ) {
+                //TODO: handle team in format 2_round_match number
+            }
             try {
                 $this->league_service->add_team_to_league( $team_id, $league->get_id(), $season );
                 $messages[] = __( 'Team added', 'racketmanager' );

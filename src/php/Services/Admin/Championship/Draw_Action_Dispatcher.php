@@ -16,8 +16,7 @@ namespace Racketmanager\Services\Admin\Championship;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
-use Racketmanager\Services\Admin\Championship_Admin_Service;
-use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 
 readonly final class Draw_Action_Dispatcher {
 
@@ -28,8 +27,8 @@ readonly final class Draw_Action_Dispatcher {
     private const string TAB_FROM_RESULT_OR_DEFAULT   = 'from_result_or_default';
 
     public function __construct(
-        private Championship_Admin_Service $championship_admin_service,
-        private Wp_Action_Guard $action_guard,
+        private Draw_Action_Handler_Interface $championship_admin_service,
+        private Action_Guard_Interface $action_guard,
     ) {
     }
 
@@ -42,10 +41,11 @@ readonly final class Draw_Action_Dispatcher {
         }
 
         foreach ( $this->policies() as $policy ) {
-            $context = $this->detect_context( $policy, $post );
-            if ( false === $context ) {
+            $resolved = Draw_Action_Resolver::resolve( $post, $policy );
+            if ( null === $resolved ) {
                 continue;
             }
+            $context = $resolved;
 
             $this->action_guard->assert_allowed( $policy['nonce_field'], $policy['nonce_action'], $policy['capability'] );
 
@@ -67,7 +67,7 @@ readonly final class Draw_Action_Dispatcher {
         return array(
             array(
                 'key'          => 'league_team_action',
-                'detect'       => self::DETECT_POST_ACTION_IN,
+                'detect'       => Draw_Action_Resolver::DETECT_POST_ACTION_IN,
                 'detect_args'  => array( 'delete', 'withdraw' ),
                 'nonce_field'  => 'racketmanager_nonce',
                 'nonce_action' => 'racketmanager_teams-bulk',
@@ -77,7 +77,7 @@ readonly final class Draw_Action_Dispatcher {
             ),
             array(
                 'key'          => 'add_teams',
-                'detect'       => self::DETECT_POST_ACTION_EQUALS,
+                'detect'       => Draw_Action_Resolver::DETECT_POST_ACTION_EQUALS,
                 'detect_args'  => array( 'addTeamsToLeague' ),
                 'nonce_field'  => 'racketmanager_nonce',
                 'nonce_action' => 'racketmanager_add-teams-bulk',

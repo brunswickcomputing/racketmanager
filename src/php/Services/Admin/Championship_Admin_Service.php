@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\League_Service;
 use stdClass;
 
@@ -24,7 +25,7 @@ use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 
-readonly final class Championship_Admin_Service {
+readonly final class Championship_Admin_Service implements Draw_Action_Handler_Interface {
 
     public function __construct(
         private League_Service $league_service,

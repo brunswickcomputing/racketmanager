@@ -588,7 +588,7 @@ class Competition {
         $this->seasons = $seasons ?? array();
         $this->settings = $settings ?? array();
         // Championship.
-        if ( 'championship' === $this->mode ) {
+        if ( 'championship' === $this->settings['mode'] ) {
             $this->is_championship = true;
         } else {
             $this->is_championship = false;

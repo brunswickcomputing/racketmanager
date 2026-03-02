@@ -303,9 +303,9 @@ final class League_Team {
     /**
      * Old rank
      *
-     * @var int
+     * @var ?int
      */
-    public int $old_rank;
+    public ?int $old_rank;
     /**
      * Team ref variable
      *

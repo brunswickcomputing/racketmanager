@@ -51,12 +51,8 @@ dist/
 build/
 coverage/
 .cache/
+.phpunit.cache/
 .tmp/
-
-# Local test scratch areas (keep if used locally only)
-/tests
-/my-tests
-*phpunit.*
 
 # Local binaries/output
 /bin/*

@@ -11,6 +11,8 @@ namespace Racketmanager\Admin;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
@@ -23,9 +25,7 @@ use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
-use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Validator\Validator;
@@ -601,50 +601,49 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament information page
      */
     public function display_information_page(): void {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            $this->show_message();
-            return;
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
         }
-        $tournament_id = isset( $_GET['tournament_id'] ) ? intval( $_GET['tournament_id'] ) : null;
-        if ( isset( $_POST['setInformation'] ) ) {
-            $tournament_information = new Tournament_Information_Request_DTO( $_POST );
-            try {
-                $response = $this->tournament_service->set_tournament_information( $tournament_id, $tournament_information );
-                if ( is_WP_Error( $response ) ) {
-                    $this->set_message( $response->get_error_message(), true );
-                } elseif ( $response ) {
-                    $this->set_message( __( 'Information updated', 'racketmanager' ) );
-                } else {
-                    $this->set_message( __( 'No updates', 'racketmanager' ), 'warning' );
-                }
-            } catch ( Tournament_Not_Found_Exception $e ) {
-                $this->set_message( $e->getMessage(), true );
-            }
-        } else {
-            if ( isset( $_POST['notifyFinalists'] ) ) {
-                try {
-                    $response = $this->tournament_service->notify_finalists_for_tournament( $tournament_id );
-                    if ( $response ) {
-                        $this->set_message( __( 'Finalists notified', 'racketmanager' ) );
-                    } else {
-                        $this->set_message( __( 'No notification', 'racketmanager' ), true );
-                    }
-                } catch ( Tournament_Not_Found_Exception|Invalid_Argument_Exception $e ) {
-                    $this->set_message( $e->getMessage(), true );
-                }
-            }
+
+        $controller = $this->racketmanager->container->get( 'tournament_information_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Information_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
+
+        $result = $controller->information_page( $_GET, $_POST );
+
+        if ( ! empty( $result['redirect'] ) ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+                );
+            }
+
+            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
+        }
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
+        }
+
         $this->show_message();
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            $this->set_message( $e->getMessage(), true );
-            $this->show_message();
-            return;
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Information_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
+
+        $tournament = $vm->tournament;
+        $validator  = $vm->validator;
+
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
     }
     /**

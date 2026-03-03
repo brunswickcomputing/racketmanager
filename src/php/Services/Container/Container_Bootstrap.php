@@ -4,12 +4,14 @@ namespace Racketmanager\Services\Container;
 
 use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Competition_Repository;
@@ -44,6 +46,7 @@ use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
+use RuntimeException;
 
 /**
  * Registers core services in the Simple_Container.
@@ -163,7 +166,7 @@ final class Container_Bootstrap {
         $c->set( 'draw_action_handler', function ( Simple_Container $c ) {
             $handler = $c->get( 'championship_admin_service' );
             if ( ! ( $handler instanceof Draw_Action_Handler_Interface ) ) {
-                throw new \RuntimeException( 'Draw action handler must implement Draw_Action_Handler_Interface' );
+                throw new RuntimeException( 'Draw action handler must implement Draw_Action_Handler_Interface' );
             }
             return $handler;
         } );
@@ -178,7 +181,7 @@ final class Container_Bootstrap {
         $c->set( 'action_guard', function ( Simple_Container $c ) {
             $guard = $c->get( 'wp_action_guard' );
             if ( ! ( $guard instanceof Action_Guard_Interface ) ) {
-                throw new \RuntimeException( 'Action guard must implement Action_Guard_Interface' );
+                throw new RuntimeException( 'Action guard must implement Action_Guard_Interface' );
             }
             return $guard;
         } );
@@ -187,6 +190,20 @@ final class Container_Bootstrap {
             return new Draw_Action_Dispatcher(
                 $c->get( 'draw_action_handler' ),
                 $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_information_action_dispatcher', function ( Simple_Container $c ) {
+            return new Tournament_Information_Action_Dispatcher(
+                $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_information_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Information_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'tournament_information_action_dispatcher' ),
             );
         } );
 

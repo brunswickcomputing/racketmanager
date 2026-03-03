@@ -9,11 +9,11 @@
 namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
+use Racketmanager\Admin\View_Models\Error_Bag;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
 use Racketmanager\Services\Tournament_Service;
-use stdClass;
 
 readonly final class Tournament_Information_Admin_Controller {
 
@@ -68,14 +68,9 @@ readonly final class Tournament_Information_Admin_Controller {
         // GET: render.
         $tournament = $this->tournament_service->get_tournament( $tournament_id );
 
-        // Template expects $validator->err_flds / $validator->err_msgs.
-        $validator = new stdClass();
-        $validator->err_flds = array();
-        $validator->err_msgs = array();
-
         $vm = new Tournament_Information_Page_View_Model(
             tournament: $tournament,
-            validator: $validator,
+            errors: new Error_Bag(),
         );
 
         return array(

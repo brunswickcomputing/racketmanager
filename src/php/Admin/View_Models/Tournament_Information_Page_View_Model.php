@@ -12,7 +12,7 @@ final readonly class Tournament_Information_Page_View_Model {
 
     public function __construct(
         public object $tournament,
-        public object $validator,
+        public Error_Bag $errors,
     ) {
     }
 

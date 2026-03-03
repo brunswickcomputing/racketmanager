@@ -14,6 +14,7 @@ namespace Racketmanager;
 /** @var string  $form_action */
 /** @var object  $tournament */
 /** @var array   $seasons */
+/** @var \Racketmanager\Admin\View_Models\Error_Bag $errors */
 ?>
 <div class='container'>
     <div class='row justify-content-end'>
@@ -28,21 +29,13 @@ namespace Racketmanager;
         ?>
         <div class="row">
             <div class="mb-3">
-                <?php
-                $is_invalid = false;
-                $msg        = null;
-                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'parking', $validator->err_flds, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'parking', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                }
-                ?>
+                <?php $is_invalid = $errors->has( 'parking' ); ?>
                 <label for="parking"><?php esc_html_e( 'Parking', 'racketmanager' ); ?></label>
                 <textarea class="form-control" rows="3" name="parking" id="parking" placeholder="Enter parking information"><?php echo empty( $tournament->information->parking ) ? null : esc_html( $tournament->information->parking ); ?></textarea>
                 <?php
                 if ( $is_invalid ) {
                     ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                    <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( 'parking' ) ) ); ?></div>
                     <?php
                 }
                 ?>

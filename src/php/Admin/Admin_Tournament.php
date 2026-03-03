@@ -642,7 +642,7 @@ final class Admin_Tournament extends Admin_Championship {
         }
 
         $tournament = $vm->tournament;
-        $validator  = $vm->validator;
+        $errors     = $vm->errors;
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
     }

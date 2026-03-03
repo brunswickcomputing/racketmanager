@@ -29,33 +29,6 @@ readonly final class Tournament_Match_Admin_Controller {
     ) {
     }
 
-    /**
-     * Preserve optional context params that affect rendering.
-     *
-     * @param array $query
-     * @param array $post
-     * @return array<string,mixed>
-     */
-    private function preserve_optional_context_params( array $query, array $post ): array {
-        $optional = array();
-
-        // Keep these if present so PRG returns to the same "shape" of the screen.
-        $keys = array( 'leg', 'match_day', 'mode' );
-
-        foreach ( $keys as $key ) {
-            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
-                $optional[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
-                continue;
-            }
-
-            if ( isset( $post[ $key ] ) && '' !== strval( $post[ $key ] ) ) {
-                $optional[ $key ] = sanitize_text_field( wp_unslash( strval( $post[ $key ] ) ) );
-            }
-        }
-
-        return $optional;
-    }
-
     private function build_match_redirect_url( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $match_id ): string {
         $args = array(
             'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
@@ -66,7 +39,7 @@ readonly final class Tournament_Match_Admin_Controller {
             'edit'       => $match_id,
         );
 
-        $args = array_merge( $args, $this->preserve_optional_context_params( $query, $post ) );
+        $args = array_merge( $args, Redirect_Context_Params::from( $query, $post ) );
 
         return add_query_arg( $args, admin_url( 'admin.php' ) );
     }
@@ -100,8 +73,8 @@ readonly final class Tournament_Match_Admin_Controller {
         // POST: reuse the existing match-management action (updateLeague=match).
         if ( $is_post ) {
             $dto = new Draw_Action_Request_DTO(
-                tournament_id: intval( $tournament_id ?? 0 ),
-                league_id: intval( $league_id ?? 0 ),
+                tournament_id: $tournament_id ?? 0,
+                league_id: $league_id ?? 0,
                 season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null,
                 post: $post
             );
@@ -136,10 +109,6 @@ readonly final class Tournament_Match_Admin_Controller {
             throw new Invalid_Status_Exception( __( 'Match not found', 'racketmanager' ) );
         }
 
-        $single_cup_game = true;
-        $bulk            = false;
-        $mode            = 'edit';
-        $edit            = true;
         $form_title      = __( 'Edit Match', 'racketmanager' );
         $submit_title    = $form_title;
         $matches         = array( $match );
@@ -176,16 +145,16 @@ readonly final class Tournament_Match_Admin_Controller {
             form_title: $form_title,
             submit_title: $submit_title,
             matches: $matches,
-            edit: $edit,
-            bulk: $bulk,
+            edit: true,
+            bulk: false,
             is_finals: true,
-            mode: $mode,
+            mode: 'edit',
             home_title: strval( $home_title ?? '' ),
             away_title: strval( $away_title ?? '' ),
             teams: $teams,
-            single_cup_game: $single_cup_game,
+            single_cup_game: true,
             max_matches: $max_matches,
-            final_key: strval( $final_key ?? '' ),
+            final_key: $final_key ?? '',
             match_day: $match_day,
         );
 

@@ -28,33 +28,6 @@ readonly final class Tournament_Matches_Admin_Controller {
     ) {
     }
 
-    /**
-     * Preserve optional context params that affect rendering.
-     *
-     * @param array $query
-     * @param array $post
-     * @return array<string,mixed>
-     */
-    private function preserve_optional_context_params( array $query, array $post ): array {
-        $optional = array();
-
-        // Keep these if present so PRG returns to the same "shape" of the screen.
-        $keys = array( 'leg', 'match_day', 'mode' );
-
-        foreach ( $keys as $key ) {
-            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
-                $optional[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
-                continue;
-            }
-
-            if ( isset( $post[ $key ] ) && '' !== strval( $post[ $key ] ) ) {
-                $optional[ $key ] = sanitize_text_field( wp_unslash( strval( $post[ $key ] ) ) );
-            }
-        }
-
-        return $optional;
-    }
-
     private function build_matches_redirect_url( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key ): string {
         $args = array(
             'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
@@ -64,7 +37,7 @@ readonly final class Tournament_Matches_Admin_Controller {
             'final'      => $final_key,
         );
 
-        $args = array_merge( $args, $this->preserve_optional_context_params( $query, $post ) );
+        $args = array_merge( $args, Redirect_Context_Params::from( $query, $post ) );
 
         return add_query_arg( $args, admin_url( 'admin.php' ) );
     }

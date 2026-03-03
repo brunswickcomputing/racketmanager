@@ -20,12 +20,6 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 
 readonly final class Draw_Action_Dispatcher {
 
-    private const string DETECT_POST_ACTION_IN        = 'post_action_in';
-    private const string DETECT_POST_ACTION_EQUALS    = 'post_action_equals';
-    private const string DETECT_POST_FIELD_EQUALS     = 'post_field_equals';
-    private const string DETECT_RANKING_MODE          = 'ranking_mode';
-    private const string TAB_FROM_RESULT_OR_DEFAULT   = 'from_result_or_default';
-
     public function __construct(
         private Draw_Action_Handler_Interface $championship_admin_service,
         private Action_Guard_Interface $action_guard,
@@ -87,7 +81,7 @@ readonly final class Draw_Action_Dispatcher {
             ),
             array(
                 'key'          => 'manage_matches',
-                'detect'       => self::DETECT_POST_FIELD_EQUALS,
+                'detect'       => Draw_Action_Resolver::DETECT_POST_FIELD_EQUALS,
                 'detect_args'  => array( 'updateLeague', 'match' ),
                 'nonce_field'  => 'racketmanager_nonce',
                 'nonce_action' => 'racketmanager_manage-matches',
@@ -97,7 +91,7 @@ readonly final class Draw_Action_Dispatcher {
             ),
             array(
                 'key'          => 'rankings',
-                'detect'       => self::DETECT_RANKING_MODE,
+                'detect'       => Draw_Action_Resolver::DETECT_RANKING_MODE,
                 'nonce_field'  => 'racketmanager_nonce',
                 'nonce_action' => 'racketmanager_teams-bulk',
                 'capability'   => 'update_results',
@@ -106,17 +100,17 @@ readonly final class Draw_Action_Dispatcher {
             ),
             array(
                 'key'          => 'start_finals',
-                'detect'       => self::DETECT_POST_ACTION_EQUALS,
+                'detect'       => Draw_Action_Resolver::DETECT_POST_ACTION_EQUALS,
                 'detect_args'  => array( 'startFinals' ),
                 'nonce_field'  => 'racketmanager_proceed_nonce',
                 'nonce_action' => 'racketmanager_championship_proceed',
                 'capability'   => 'update_results',
                 'handler'      => array( 'method' => 'start_finals' ),
-                'tab_override' => array( 'strategy' => self::TAB_FROM_RESULT_OR_DEFAULT, 'default' => 'preliminary' ),
+                'tab_override' => array( 'strategy' => Draw_Action_Resolver::TAB_FROM_RESULT_OR_DEFAULT, 'default' => 'preliminary' ),
             ),
             array(
                 'key'          => 'update_final_results',
-                'detect'       => self::DETECT_POST_ACTION_EQUALS,
+                'detect'       => Draw_Action_Resolver::DETECT_POST_ACTION_EQUALS,
                 'detect_args'  => array( 'updateFinalResults' ),
                 'nonce_field'  => 'racketmanager_nonce',
                 'nonce_action' => 'racketmanager_update-finals',
@@ -126,7 +120,7 @@ readonly final class Draw_Action_Dispatcher {
             ),
             array(
                 'key'          => 'set_championship_matches',
-                'detect'       => self::DETECT_POST_ACTION_IN,
+                'detect'       => Draw_Action_Resolver::DETECT_POST_ACTION_IN,
                 'detect_args'  => array( 'add', 'replace' ),
                 'detect_requires' => array( 'rounds' ),
                 'nonce_field'  => 'racketmanager_nonce',
@@ -150,10 +144,10 @@ readonly final class Draw_Action_Dispatcher {
         $args     = $policy['detect_args'] ?? array();
 
         return match ( $detector ) {
-                        self::DETECT_POST_ACTION_IN => $this->detect_post_action_in( $post, (array) $args ),
-                        self::DETECT_POST_ACTION_EQUALS => $this->detect_post_action_equals( $post, strval( $args[0] ?? '' ) ),
-                        self::DETECT_POST_FIELD_EQUALS => $this->detect_post_field_equals( $post, strval( $args[0] ?? '' ), strval( $args[1] ?? '' ) ),
-                        self::DETECT_RANKING_MODE => $this->detect_ranking_mode( $post ),
+            Draw_Action_Resolver::DETECT_POST_ACTION_IN => $this->detect_post_action_in( $post, (array) $args ),
+            Draw_Action_Resolver::DETECT_POST_ACTION_EQUALS => $this->detect_post_action_equals( $post, strval( $args[0] ?? '' ) ),
+            Draw_Action_Resolver::DETECT_POST_FIELD_EQUALS => $this->detect_post_field_equals( $post, strval( $args[0] ?? '' ), strval( $args[1] ?? '' ) ),
+            Draw_Action_Resolver::DETECT_RANKING_MODE => $this->detect_ranking_mode( $post ),
                         default => false,
         };
     }
@@ -218,7 +212,7 @@ readonly final class Draw_Action_Dispatcher {
         if ( null === $tab_override ) {
                     return null;
         }
-        if ( is_array( $tab_override ) && ( $tab_override['strategy'] ?? null ) === self::TAB_FROM_RESULT_OR_DEFAULT ) {
+        if ( is_array( $tab_override ) && ( $tab_override['strategy'] ?? null ) === Draw_Action_Resolver::TAB_FROM_RESULT_OR_DEFAULT ) {
                     $default = isset( $tab_override['default'] ) ? strval( $tab_override['default'] ) : null;
                     return $result->tab_override ?? $default;
         }

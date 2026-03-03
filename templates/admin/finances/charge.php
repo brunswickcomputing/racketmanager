@@ -251,7 +251,7 @@ $msg        = null;
                     }
                     ?>
                     <div class="mt-3 mb-3">
-                        <input type="hidden" name="charges_id" id="charges_id" value="<?php echo esc_html( $charge->id ); ?>" />
+                        <input type="hidden" name="chargesId" id="chargesId" value="<?php echo esc_html( $charge->id ); ?>" />
                         <button type="submit" name="generateInvoices" class="btn btn-primary"><?php esc_html_e( 'Generate Invoices', 'racketmanager' ); ?></button>
                     </div>
                 </form>

@@ -223,7 +223,7 @@ final class Admin_Finances extends Admin_Display {
             if ( ! empty( $validator->error ) ) {
                 $this->set_message( $validator->msg, 'error' );
             } else {
-                $charge_id = isset( $_POST['charges_id'] ) ? intval( $_POST['charges_id'] ) : null;
+                $charge_id = isset( $_POST['chargesId'] ) ? intval( $_POST['chargesId'] ) : null;
                 try {
                     $result = $this->finance_service->send_invoices_for_charge( $charge_id, true );
                     if ( $result ) {

@@ -44,7 +44,7 @@ readonly final class Draw_Action_Dispatcher {
             $this->action_guard->assert_allowed( $policy['nonce_field'], $policy['nonce_action'], $policy['capability'] );
 
             $action_result = $this->invoke_handler( $policy['handler'], $dto, $context );
-            $tab_override  = $this->resolve_tab_override( $policy['tab_override'], $action_result, $context );
+            $tab_override  = $this->resolve_tab_override( $policy['tab_override'], $action_result );
 
             return new Draw_Action_Response_DTO(
                 $action_result->message,
@@ -132,59 +132,6 @@ readonly final class Draw_Action_Dispatcher {
         );
     }
 
-    private function detect_context( array $policy, array $post ): false|array {
-        $requires = $policy['detect_requires'] ?? array();
-                foreach ( (array) $requires as $required_key ) {
-                        if ( ! array_key_exists( strval( $required_key ), $post ) ) {
-                                return false;
-            }
-        }
-
-        $detector = strval( $policy['detect'] ?? '' );
-        $args     = $policy['detect_args'] ?? array();
-
-        return match ( $detector ) {
-            Draw_Action_Resolver::DETECT_POST_ACTION_IN => $this->detect_post_action_in( $post, (array) $args ),
-            Draw_Action_Resolver::DETECT_POST_ACTION_EQUALS => $this->detect_post_action_equals( $post, strval( $args[0] ?? '' ) ),
-            Draw_Action_Resolver::DETECT_POST_FIELD_EQUALS => $this->detect_post_field_equals( $post, strval( $args[0] ?? '' ), strval( $args[1] ?? '' ) ),
-            Draw_Action_Resolver::DETECT_RANKING_MODE => $this->detect_ranking_mode( $post ),
-                        default => false,
-        };
-    }
-
-    private function detect_post_action_in( array $post, array $allowed ): false|array {
-            if ( ! isset( $post['action'] ) ) {
-                    return false;
-        }
-        $action = strval( $post['action'] );
-        if ( in_array( $action, array_map( 'strval', $allowed ), true ) ) {
-                    return array();
-        }
-        return false;
-    }
-
-    private function detect_post_action_equals( array $post, string $expected ): false|array {
-            if ( ! isset( $post['action'] ) ) {
-                    return false;
-        }
-        return ( strval( $post['action'] ) === $expected ) ? array() : false;
-    }
-
-    private function detect_post_field_equals( array $post, string $field, string $expected ): false|array {
-            if ( '' === $field || ! isset( $post[ $field ] ) ) {
-                    return false;
-        }
-        return ( strval( $post[ $field ] ) === $expected ) ? array() : false;
-    }
-
-    private function detect_ranking_mode( array $post ): false|array {
-            $mode = $this->ranking_mode_from_post( $post );
-            if ( null === $mode ) {
-                    return false;
-        }
-        return array( 'mode' => $mode );
-    }
-
     private function invoke_handler( array $handler, Draw_Action_Request_DTO $dto, array $context ): Action_Result_DTO {
             $method = strval( $handler['method'] ?? '' );
             $args   = $handler['args'] ?? array();
@@ -201,43 +148,29 @@ readonly final class Draw_Action_Dispatcher {
         }
 
         /** @var Action_Result_DTO $result */
-        $result = $this->championship_admin_service->{$method}( ...$call_args );
-        return $result;
+        return $this->championship_admin_service->{$method}( ...$call_args );
     }
 
-    private function resolve_tab_override( mixed $tab_override, Action_Result_DTO $result, array $context ): ?string {
-            if ( is_string( $tab_override ) ) {
-                    return $tab_override;
+    private function resolve_tab_override( mixed $tab_override, Action_Result_DTO $result ): ?string {
+        if ( is_string( $tab_override ) ) {
+            $resolved = $tab_override;
+        } elseif ( is_array( $tab_override ) && ( $tab_override['strategy'] ?? null ) === Draw_Action_Resolver::TAB_FROM_RESULT_OR_DEFAULT ) {
+            $default  = isset( $tab_override['default'] ) ? strval( $tab_override['default'] ) : null;
+            $resolved = $result->tab_override ?? $default;
+        } else {
+            $resolved = null;
         }
-        if ( null === $tab_override ) {
-                    return null;
-        }
-        if ( is_array( $tab_override ) && ( $tab_override['strategy'] ?? null ) === Draw_Action_Resolver::TAB_FROM_RESULT_OR_DEFAULT ) {
-                    $default = isset( $tab_override['default'] ) ? strval( $tab_override['default'] ) : null;
-                    return $result->tab_override ?? $default;
-        }
-        return null;
+
+        return $resolved;
     }
 
-
-    private function ranking_mode_from_post( array $post ): ?string {
-        if ( isset( $post['saveRanking'] ) ) {
-            return 'manual';
-        }
-        if ( isset( $post['randomRanking'] ) ) {
-            return 'random';
-        }
-        if ( isset( $post['ratingPointsRanking'] ) ) {
-            return 'ratings';
-        }
-        return null;
-    }
 
     private function has_any_action( array $post ): bool {
         return isset( $post['action'] )
-            || isset( $post['updateLeague'] )
-            || isset( $post['saveRanking'] )
-            || isset( $post['randomRanking'] )
-            || isset( $post['ratingPointsRanking'] );
+           || isset( $post['updateLeague'] )
+           || isset( $post['saveRanking'] )
+           || isset( $post['randomRanking'] )
+           || isset( $post['ratingPointsRanking']
+           );
     }
 }

@@ -13,12 +13,12 @@ namespace Racketmanager\Services\Admin\Championship;
 
 final class Draw_Action_Resolver {
 
-    public const DETECT_POST_ACTION_IN     = 'post_action_in';
-    public const DETECT_POST_ACTION_EQUALS = 'post_action_equals';
-    public const DETECT_POST_FIELD_EQUALS  = 'post_field_equals';
-    public const DETECT_RANKING_MODE       = 'ranking_mode';
+    public const string DETECT_POST_ACTION_IN     = 'post_action_in';
+    public const string DETECT_POST_ACTION_EQUALS = 'post_action_equals';
+    public const string DETECT_POST_FIELD_EQUALS  = 'post_field_equals';
+    public const string DETECT_RANKING_MODE       = 'ranking_mode';
 
-    public const TAB_FROM_RESULT_OR_DEFAULT = 'from_result_or_default';
+    public const string TAB_FROM_RESULT_OR_DEFAULT = 'from_result_or_default';
 
     /**
      * @param array $post Typically sanitised/unslashed POST payload (controller-owned)
@@ -36,15 +36,13 @@ final class Draw_Action_Resolver {
         $detector = strval( $policy['detect'] ?? '' );
         $args     = $policy['detect_args'] ?? array();
 
-        $context = match ( $detector ) {
+        return match ( $detector ) {
             self::DETECT_POST_ACTION_IN => self::detect_post_action_in( $post, (array) $args ),
             self::DETECT_POST_ACTION_EQUALS => self::detect_post_action_equals( $post, strval( $args[0] ?? '' ) ),
             self::DETECT_POST_FIELD_EQUALS => self::detect_post_field_equals( $post, strval( $args[0] ?? '' ), strval( $args[1] ?? '' ) ),
             self::DETECT_RANKING_MODE => self::detect_ranking_mode( $post ),
             default => null,
         };
-
-        return $context;
     }
 
     private static function detect_post_action_in( array $post, array $allowed ): ?array {

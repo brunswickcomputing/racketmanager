@@ -55,6 +55,13 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     /**
+     * @return bool True when the current request is a POST.
+     */
+    private function is_post_request(): bool {
+        return ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
+    }
+
+    /**
      * Build a safe redirect URL back to admin.php for draw-like pages.
      *
      * @param string $default_view 'draw'|'setup-event' etc.
@@ -217,7 +224,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament draw
      */
     public function display_draw_page(): void {
-        $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
+        $is_post = $this->is_post_request();
 
         $flash = ( new Admin_Flash_Message_Store() )->pop();
         if ( ! empty( $flash['message'] ) ) {
@@ -299,7 +306,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display event setup
      */
     public function display_setup_event_page(): void {
-        $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
+        $is_post = $this->is_post_request();
 
         $flash = ( new Admin_Flash_Message_Store() )->pop();
         if ( ! empty( $flash['message'] ) ) {

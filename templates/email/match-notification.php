@@ -19,10 +19,7 @@ namespace Racketmanager;
 /** @var string $closing */
 /** @var string $title */
 /** @var string $hr */
-$competition_name = $match->league->title;
 $tournament_name  = $tournament->name;
-$tournament_date  = $tournament->date;
-$tournament_venue = $tournament->venue_name;
 $match_date       = $match->match_date;
 $email_subject    = __( 'Next match confirmation', 'racketmanager' ) . ' - ' . ucfirst( $tournament_name );
 require 'email-header.php';
@@ -76,7 +73,7 @@ foreach ( $opponents as $opponent ) {
                                                 foreach ( $teams[ $opponent ]->player as $player ) {
                                                     ?>
                                                     <tr style="line-height: 22px;">
-                                                        <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->get_fullname() ); ?></td>
+                                                        <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->display_name ); ?></td>
                                                         <td><?php echo esc_html( $teams[ $opponent ]->club ); ?></td>
                                                     </tr>
                                                     <?php
@@ -121,7 +118,7 @@ foreach ( $opponents as $opponent ) {
                                                     if ( $player->contactno ) {
                                                         ?>
                                                         <tr style="line-height: 22px;">
-                                                            <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->get_fullname() ); ?></td>
+                                                            <td style="width: 50%; font-weight: normal;"><?php echo esc_html( $player->display_name ); ?></td>
                                                             <td><a href="tel:<?php echo esc_html( $player->contactno ); ?>"><?php echo esc_html( $player->contactno ); ?></a></td>
                                                         </tr>
                                                         <?php

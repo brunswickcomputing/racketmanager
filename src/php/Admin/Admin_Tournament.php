@@ -14,6 +14,7 @@ use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
+use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
@@ -59,27 +60,6 @@ final class Admin_Tournament extends Admin_Championship {
      */
     private function is_post_request(): bool {
         return 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) );
-    }
-
-    /**
-     * Build a safe redirect URL back to admin.php for draw-like pages.
-     *
-     * @param string $default_view 'draw'|'setup-event' etc.
-     * @param string $tab
-     * @return string
-     */
-    private function build_draw_redirect_url( string $default_view, string $tab ): string {
-        return add_query_arg(
-            array(
-                'page'       => isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['page'] ) ) ) : 'racketmanager-tournaments',
-                // For PRG, force the target view explicitly (do not carry over a stale $_GET['view']).
-                'view'       => $default_view,
-                'tournament' => isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
-                'league'     => isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
-                'league-tab' => $tab,
-            ),
-            admin_url( 'admin.php' )
-        );
     }
 
     /**
@@ -251,7 +231,16 @@ final class Admin_Tournament extends Admin_Championship {
             }
 
             $tab = isset( $result['redirect_tab'] ) ? strval( $result['redirect_tab'] ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
-            $this->redirect_or_js_fallback( $this->build_draw_redirect_url( 'draw', $tab ) );
+            $this->redirect_or_js_fallback(
+                Admin_Redirect_Url_Builder::tournament_draw_view(
+                    $_GET,
+                    $_POST,
+                    'draw',
+                    isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
+                    isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
+                    $tab
+                )
+            );
         }
         
         $this->show_message();
@@ -333,7 +322,16 @@ final class Admin_Tournament extends Admin_Championship {
             }
 
             $tab = isset( $result['redirect_tab'] ) ? strval( $result['redirect_tab'] ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
-            $this->redirect_or_js_fallback( $this->build_draw_redirect_url( 'setup-event', $tab ) );
+            $this->redirect_or_js_fallback(
+                Admin_Redirect_Url_Builder::tournament_draw_view(
+                    $_GET,
+                    $_POST,
+                    'setup-event',
+                    isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
+                    isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
+                    $tab
+                )
+            );
         }
         
         $this->show_message();

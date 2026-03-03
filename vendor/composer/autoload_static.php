@@ -1333,6 +1333,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Admin\\Admin_Season' => __DIR__ . '/../..' . '/src/php/Admin/Admin_Season.php',
         'Racketmanager\\Admin\\Admin_Tournament' => __DIR__ . '/../..' . '/src/php/Admin/Admin_Tournament.php',
         'Racketmanager\\Admin\\Admin_Upgrade' => __DIR__ . '/../..' . '/src/php/Admin/Admin_Upgrade.php',
+        'Racketmanager\\Admin\\Controllers\\Admin_Redirect_Url_Builder' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Admin_Redirect_Url_Builder.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Draw_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Draw_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Information_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Information_Admin_Controller.php',

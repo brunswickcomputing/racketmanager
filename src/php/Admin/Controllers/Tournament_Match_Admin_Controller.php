@@ -29,21 +29,6 @@ readonly final class Tournament_Match_Admin_Controller {
     ) {
     }
 
-    private function build_match_redirect_url( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $match_id ): string {
-        $args = array(
-            'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
-            'view'       => 'match',
-            'tournament' => $tournament_id,
-            'league'     => $league_id,
-            'final'      => $final_key,
-            'edit'       => $match_id,
-        );
-
-        $args = array_merge( $args, Redirect_Context_Params::from( $query, $post ) );
-
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
-    }
-
     /**
      * Controller for admin.php?page=racketmanager-tournaments&view=match
      *
@@ -81,7 +66,7 @@ readonly final class Tournament_Match_Admin_Controller {
 
             $response = $this->draw_action_dispatcher->handle( $dto );
 
-            $redirect_url = $this->build_match_redirect_url( $query, $post, $tournament_id, $league_id, $final_key, $match_id );
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_match( $query, $post, $tournament_id, $league_id, $final_key, $match_id );
 
             $result = array(
                 'redirect' => $redirect_url,
@@ -134,7 +119,7 @@ readonly final class Tournament_Match_Admin_Controller {
             $away_title = $away_team ? $away_team->title : null;
         }
 
-        // Template expects $teams list too; for single cup game it isn't used for selects, but keep it defined.
+        // Template expects $teams list too; for a single cup game it isn't used for select, but keep it defined.
         $teams = $final_teams;
 
         $vm = new Tournament_Match_Page_View_Model(

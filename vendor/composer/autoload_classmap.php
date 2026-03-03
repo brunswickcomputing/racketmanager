@@ -1284,6 +1284,7 @@ return array(
     'Racketmanager\\Admin\\Admin_Season' => $baseDir . '/src/php/Admin/Admin_Season.php',
     'Racketmanager\\Admin\\Admin_Tournament' => $baseDir . '/src/php/Admin/Admin_Tournament.php',
     'Racketmanager\\Admin\\Admin_Upgrade' => $baseDir . '/src/php/Admin/Admin_Upgrade.php',
+    'Racketmanager\\Admin\\Controllers\\Admin_Redirect_Url_Builder' => $baseDir . '/src/php/Admin/Controllers/Admin_Redirect_Url_Builder.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Draw_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Draw_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Information_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Information_Admin_Controller.php',

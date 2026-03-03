@@ -28,20 +28,6 @@ readonly final class Tournament_Matches_Admin_Controller {
     ) {
     }
 
-    private function build_matches_redirect_url( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key ): string {
-        $args = array(
-            'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
-            'view'       => 'matches',
-            'tournament' => $tournament_id,
-            'league_id'  => $league_id,
-            'final'      => $final_key,
-        );
-
-        $args = array_merge( $args, Redirect_Context_Params::from( $query, $post ) );
-
-        return add_query_arg( $args, admin_url( 'admin.php' ) );
-    }
-
     /**
      * Controller for admin.php?page=racketmanager-tournaments&view=matches
      *
@@ -78,7 +64,7 @@ readonly final class Tournament_Matches_Admin_Controller {
 
             $response = $this->matches_action_dispatcher->handle( $dto );
 
-            $redirect_url = $this->build_matches_redirect_url( $query, $post, $tournament_id, $league_id, $final_key );
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_matches( $query, $post, $tournament_id, $league_id, $final_key );
 
             $result = array(
                 'redirect' => $redirect_url,

@@ -18,14 +18,14 @@ final readonly class Error_Bag {
     }
 
     public function has( string $field ): bool {
-        return array_key_exists( $field, $this->messages_by_field ) && '' !== strval( $this->messages_by_field[ $field ] );
+        return array_key_exists( $field, $this->messages_by_field ) && '' !== $this->messages_by_field[ $field ];
     }
 
     public function message( string $field ): ?string {
         if ( ! $this->has( $field ) ) {
             return null;
         }
-        return strval( $this->messages_by_field[ $field ] );
+        return $this->messages_by_field[ $field ];
     }
 
     /**

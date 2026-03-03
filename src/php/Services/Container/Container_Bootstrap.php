@@ -6,12 +6,14 @@ use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Admin\Tournament\Matches_Action_Dispatcher;
 use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Club_Repository;
@@ -173,9 +175,7 @@ final class Container_Bootstrap {
         } );
 
         // Register the concrete implementation (optional alias).
-        $c->set( 'wp_action_guard', function ( Simple_Container $c ) {
-            return new Wp_Action_Guard();
-        } );
+        $c->set( 'wp_action_guard', fn () => new Wp_Action_Guard() );
 
         // Register under an interface-ish name for consumers.
         // (Simple_Container is string-keyed, so we keep it as a convention.)
@@ -205,6 +205,19 @@ final class Container_Bootstrap {
             return new Tournament_Information_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'tournament_information_action_dispatcher' ),
+            );
+        } );
+
+        $c->set( 'matches_action_dispatcher', function ( Simple_Container $c ) {
+            return new Matches_Action_Dispatcher(
+                $c->get( 'draw_action_dispatcher' ),
+            );
+        } );
+
+        $c->set( 'tournament_matches_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Matches_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'matches_action_dispatcher' ),
             );
         } );
 

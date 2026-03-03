@@ -17,6 +17,7 @@ use Racketmanager\Services\Admin\Tournament\Matches_Action_Dispatcher;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Tournament;
 
+use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
 
 readonly final class Tournament_Matches_Admin_Controller {
@@ -55,8 +56,8 @@ readonly final class Tournament_Matches_Admin_Controller {
         // POST: manage matches (updateLeague=match) -> PRG redirect back to GET.
         if ( $is_post ) {
             $dto = new Draw_Action_Request_DTO(
-                tournament_id: intval( $tournament_id ?? 0 ),
-                league_id: intval( $league_id ?? 0 ),
+                tournament_id: $tournament_id ?? 0,
+                league_id: $league_id ?? 0,
                 season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null,
                 post: $post
             );
@@ -97,4 +98,55 @@ readonly final class Tournament_Matches_Admin_Controller {
 
         $competition = $league->event->competition;
 
-        $
+        $mode            = 'edit';
+        $is_finals       = ! empty( $final_key );
+
+        $matches      = array();
+        $teams        = array();
+        $max_matches  = 0;
+        $form_title   = __( 'Matches', 'racketmanager' );
+        $submit_title = $form_title;
+
+        if ( $is_finals ) {
+            $final = $league->championship->get_finals( $final_key );
+            $max_matches = intval( $final['num_matches'] ?? 0 );
+
+            /* translators: %s: round name */
+            $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
+            $submit_title = $form_title;
+
+            $match_args = array(
+                'final'   => $final_key,
+                'orderby' => array( 'id' => 'ASC' ),
+            );
+            if ( 'final' !== $final_key && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
+                $match_args['leg'] = 1;
+            }
+
+            $matches = $league->get_matches( $match_args );
+            $teams   = $league->championship->get_final_teams( $final_key );
+        }
+
+        $vm = new Tournament_Matches_Page_View_Model(
+            league: $league,
+            tournament: $tournament,
+            competition: $competition,
+            season: strval( $season ),
+            form_title: $form_title,
+            submit_title: $submit_title,
+            matches: $matches,
+            edit: true,
+            bulk: false,
+            is_finals: $is_finals,
+            mode: $mode,
+            teams: $teams,
+            single_cup_game: false,
+            max_matches: $max_matches,
+            final_key: strval( $final_key ?? '' ),
+        );
+
+        return array(
+            'view_model' => $vm,
+        );
+    }
+}

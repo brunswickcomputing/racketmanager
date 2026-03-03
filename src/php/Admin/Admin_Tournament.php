@@ -578,6 +578,39 @@ final class Admin_Tournament extends Admin_Championship {
         } catch ( Tournament_Not_Found_Exception $e ) {
             $this->set_message( $e->getMessage(), true );
         }
+
+        $result = $controller->matches_page( $_GET, $_POST );
+
+        if ( ! empty( $result['redirect'] ) ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+                );
+            }
+            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
+        }
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
+        }
+
+        $this->show_message();
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Matches_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
+
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
+        }
+
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
     }
     /**
      * Display tournament information page

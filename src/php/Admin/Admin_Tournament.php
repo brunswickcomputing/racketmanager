@@ -13,6 +13,7 @@ use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
@@ -455,57 +456,51 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament matches page
      */
     public function display_matches_page(): void {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_matches' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
         }
-        //phpcs:disable WordPress.Security.NonceVerification.Recommended
-        $final_key     = isset( $_GET['final'] ) ? intval( $_GET['final'] ) : null;
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
-        $league_id     = isset( $_GET['league_id'] ) ? intval( $_GET['league_id'] ) : null;
-        $final_key     = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
-        //phpcs:enable WordPress.Security.NonceVerification.Recommended
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_id );
-            $season     = $tournament->get_season();
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+
+        $controller = $this->racketmanager->container->get( 'tournament_matches_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Matches_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
-        $league = get_league( $league_id );
-        if ( $league ) {
-            $is_finals       = false;
-            $single_cup_game = false;
-            $bulk            = false;
-            $matches         = array();
-            if ( $final_key ) {
-                $is_finals = true;
-                $mode      = 'edit';
-                $edit      = true;
 
-                $final           = $league->championship->get_finals( $final_key );
-                $num_first_round = $league->championship->num_teams_first_round;
+        $result = $controller->matches_page( $_GET, $_POST );
 
-                $max_matches = $final['num_matches'];
-
-                /* translators: %s: round name */
-                $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
-                $match_args = array(
-                        'final'   => $final_key,
-                        'orderby' => array(
-                                'id' => 'ASC',
-                        ),
+        if ( ! empty( $result['redirect'] ) ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
                 );
-                if ( 'final' !== $final_key && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
-                    $match_args['leg'] = 1;
-                }
-                $matches      = $league->get_matches( $match_args );
-                $teams        = $league->championship->get_final_teams( $final_key );
-                $submit_title = $form_title;
             }
-            //phpcs:enable WordPress.Security.NonceVerification.Recommended
-            require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
+            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
         }
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
+        }
+
+        $this->show_message();
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Matches_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
+
+        $vars = $vm->to_template_vars();
+        foreach ( $vars as $key => $value ) {
+            ${$key} = $value;
+        }
+
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
     }
 
     /**

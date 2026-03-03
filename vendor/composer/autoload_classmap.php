@@ -1288,6 +1288,7 @@ return array(
     'Racketmanager\\Admin\\Controllers\\Tournament_Draw_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Draw_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Information_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Information_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Match_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Match_Admin_Controller.php',
+    'Racketmanager\\Admin\\Controllers\\Tournament_Matches_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Matches_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Overview_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Overview_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Plan_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Plan_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Setup_Admin_Controller.php',

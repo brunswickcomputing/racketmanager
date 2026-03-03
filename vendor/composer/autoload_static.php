@@ -1337,6 +1337,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Admin\\Controllers\\Tournament_Draw_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Draw_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Information_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Information_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Match_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Match_Admin_Controller.php',
+        'Racketmanager\\Admin\\Controllers\\Tournament_Matches_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Matches_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Overview_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Overview_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Plan_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Plan_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Setup_Admin_Controller.php',

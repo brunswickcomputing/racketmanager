@@ -65,7 +65,8 @@ final class Admin_Tournament extends Admin_Championship {
         return add_query_arg(
             array(
                 'page'       => isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['page'] ) ) ) : 'racketmanager-tournaments',
-                'view'       => isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['view'] ) ) ) : $default_view,
+                // For PRG, force the target view explicitly (do not carry over a stale $_GET['view']).
+                'view'       => $default_view,
                 'tournament' => isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
                 'league'     => isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
                 'league-tab' => $tab,

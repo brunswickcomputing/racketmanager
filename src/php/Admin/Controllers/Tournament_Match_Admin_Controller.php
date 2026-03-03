@@ -30,6 +30,48 @@ readonly final class Tournament_Match_Admin_Controller {
     }
 
     /**
+     * Preserve optional context params that affect rendering.
+     *
+     * @param array $query
+     * @param array $post
+     * @return array<string,mixed>
+     */
+    private function preserve_optional_context_params( array $query, array $post ): array {
+        $optional = array();
+
+        // Keep these if present so PRG returns to the same "shape" of the screen.
+        $keys = array( 'leg', 'match_day', 'mode' );
+
+        foreach ( $keys as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $optional[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+                continue;
+            }
+
+            if ( isset( $post[ $key ] ) && '' !== strval( $post[ $key ] ) ) {
+                $optional[ $key ] = sanitize_text_field( wp_unslash( strval( $post[ $key ] ) ) );
+            }
+        }
+
+        return $optional;
+    }
+
+    private function build_match_redirect_url( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $match_id ): string {
+        $args = array(
+            'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
+            'view'       => 'match',
+            'tournament' => $tournament_id,
+            'league'     => $league_id,
+            'final'      => $final_key,
+            'edit'       => $match_id,
+        );
+
+        $args = array_merge( $args, $this->preserve_optional_context_params( $query, $post ) );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
      * Controller for admin.php?page=racketmanager-tournaments&view=match
      *
      * @param array $query Typically $_GET
@@ -66,17 +108,7 @@ readonly final class Tournament_Match_Admin_Controller {
 
             $response = $this->draw_action_dispatcher->handle( $dto );
 
-            $redirect_url = add_query_arg(
-                array(
-                    'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
-                    'view'       => 'match',
-                    'tournament' => $tournament_id,
-                    'league'     => $league_id,
-                    'final'      => $final_key,
-                    'edit'       => $match_id,
-                ),
-                admin_url( 'admin.php' )
-            );
+            $redirect_url = $this->build_match_redirect_url( $query, $post, $tournament_id, $league_id, $final_key, $match_id );
 
             $result = array(
                 'redirect' => $redirect_url,

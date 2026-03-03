@@ -2025,7 +2025,7 @@ final class Racketmanager_Match {
             $competition_season = empty( $this->league->event->competition->get_season_by_name( $this->season ) ) ? null : $this->league->event->competition->get_season_by_name( $this->season );
             $competition_code   = empty( $competition_season['competition_code'] ) ? $this->league->event->competition->competition_code : $competition_season['competition_code'];
             $event_season       = empty( $this->league->event->get_season_by_name( $this->season ) ) ? null : $this->league->event->get_season( $this->season );
-            $grade              = $event_season['grade'] ?? $this->league->event->competition->grade;
+            $grade              = $event_season['grade'] ?? $this->league->event->competition->settings['grade'];
         }
         if ( ! empty( $competition_code ) ) {
             $result                   = new stdClass();

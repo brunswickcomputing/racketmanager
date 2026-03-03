@@ -82,9 +82,8 @@ class Shortcodes_Competition extends Shortcodes {
             $tournaments           = $this->tournament_service->get_tournaments( $query_args );
             $competitions          = array();
             foreach ( $tournaments as $tournament ) {
-                $tournament->type     = $type;
-                $tournament->date_end = $tournament->date_end;
-                $competitions[]       = $tournament;
+                $tournament->type = $type;
+                $competitions[]   = $tournament;
             }
             if ( $player ) {
                 $user_competitions = $this->tournament_service->get_tournaments_for_player( $player->get_id() );

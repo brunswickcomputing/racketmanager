@@ -1531,6 +1531,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Services\\Validator\\Validator_Plan' => __DIR__ . '/../..' . '/src/php/Services/Validator/Validator_Plan.php',
         'Racketmanager\\Services\\Validator\\Validator_Tournament' => __DIR__ . '/../..' . '/src/php/Services/Validator/Validator_Tournament.php',
         'Racketmanager\\Services\\Widget' => __DIR__ . '/../..' . '/src/php/Services/Widget.php',
+        'Racketmanager\\Tests\\Unit\\Admin_Redirect_Url_Builder_Test' => __DIR__ . '/../..' . '/tests/Unit/Admin_Redirect_Url_Builder_Test.php',
         'Racketmanager\\Tests\\Unit\\Draw_Action_Dispatcher_Test' => __DIR__ . '/../..' . '/tests/Unit/Draw_Action_Dispatcher_Test.php',
         'Racketmanager\\Tests\\Unit\\Draw_Action_Resolver_Test' => __DIR__ . '/../..' . '/tests/Unit/Draw_Action_Resolver_Test.php',
         'Racketmanager\\Util\\Util' => __DIR__ . '/../..' . '/src/php/Util/Util.php',

@@ -1482,6 +1482,7 @@ return array(
     'Racketmanager\\Services\\Validator\\Validator_Plan' => $baseDir . '/src/php/Services/Validator/Validator_Plan.php',
     'Racketmanager\\Services\\Validator\\Validator_Tournament' => $baseDir . '/src/php/Services/Validator/Validator_Tournament.php',
     'Racketmanager\\Services\\Widget' => $baseDir . '/src/php/Services/Widget.php',
+    'Racketmanager\\Tests\\Unit\\Admin_Redirect_Url_Builder_Test' => $baseDir . '/tests/Unit/Admin_Redirect_Url_Builder_Test.php',
     'Racketmanager\\Tests\\Unit\\Draw_Action_Dispatcher_Test' => $baseDir . '/tests/Unit/Draw_Action_Dispatcher_Test.php',
     'Racketmanager\\Tests\\Unit\\Draw_Action_Resolver_Test' => $baseDir . '/tests/Unit/Draw_Action_Resolver_Test.php',
     'Racketmanager\\Util\\Util' => $baseDir . '/src/php/Util/Util.php',

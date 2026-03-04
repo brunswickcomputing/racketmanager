@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\Season;
 use Racketmanager\Util\Util_Lookup;
 
 /** @var object $charge */

@@ -37,6 +37,8 @@ if ( ! function_exists( 'add_query_arg' ) ) {
      * @param array<string,mixed>|string $arg1
      * @param mixed $arg2
      * @param string $arg3
+     *
+     * @return string
      */
     function add_query_arg( array|string $arg1, mixed $arg2 = '', string $arg3 = '' ): string {
         if ( is_array( $arg1 ) ) {

@@ -620,10 +620,9 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        // Template variables.
+        // Template variables (bridge remains a thin delegate; no legacy branches).
         $tournament = $vm->tournament;
         $errors     = $vm->errors;
-        unset( $tournament, $errors );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
     }

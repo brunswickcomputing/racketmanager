@@ -412,19 +412,7 @@ final class Admin_Tournament extends Admin_Championship {
 
         if ( ! empty( $result['redirect'] ) ) {
             $redirect_url = strval( $result['redirect'] );
-
-            if ( headers_sent() ) {
-                $js_url   = esc_url_raw( $redirect_url );
-                $html_url = esc_url( $redirect_url );
-
-                $js = 'window.location.replace(' . wp_json_encode( $js_url ) . ');';
-                echo '<script>' . $js . '</script>';
-                echo '<noscript><meta http-equiv="refresh" content="0;url=' . esc_attr( $html_url ) . '"></noscript>';
-                exit;
-            }
-
-            wp_safe_redirect( $redirect_url );
-            exit;
+            $this->redirect_or_js_fallback( $redirect_url );
         }
 
         if ( ! empty( $result['message'] ) ) {

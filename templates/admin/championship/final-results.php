@@ -7,7 +7,21 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+
+// Preferred input (when included from tournament draw): $vm.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+
+// BC fallback: if $vm isn't present, rely on locals set by the parent template.
+if ( $vm ) {
+    $league     = $vm->league;
+    $tournament = $vm->tournament;
+    $season     = $vm->season;
+}
+
 /** @var object $league */
+/** @var object|null $tournament */
+/** @var string|null $season */
 ?>
 <div class="championship-block">
     <div class="container draw">

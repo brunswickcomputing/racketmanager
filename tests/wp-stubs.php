@@ -30,10 +30,25 @@ if ( ! function_exists( 'add_query_arg' ) ) {
     /**
      * Very small subset of WP's add_query_arg behavior.
      *
-     * @param array<string,mixed> $args
-     * @param string $url
+     * Supports the common WP signatures:
+     * - add_query_arg( array $args, string $url = '' )
+     * - add_query_arg( string $key, string $value, string $url = '' )
+     *
+     * @param array<string,mixed>|string $arg1
+     * @param mixed $arg2
+     * @param string $arg3
      */
-    function add_query_arg( array $args, string $url ): string {
+    function add_query_arg( array|string $arg1, mixed $arg2 = '', string $arg3 = '' ): string {
+        if ( is_array( $arg1 ) ) {
+            $args = $arg1;
+            $url  = is_string( $arg2 ) ? $arg2 : '';
+        } else {
+            $args = array(
+                (string) $arg1 => $arg2,
+            );
+            $url = $arg3;
+        }
+
         $pairs = array();
         foreach ( $args as $k => $v ) {
             if ( null === $v || '' === $v ) {

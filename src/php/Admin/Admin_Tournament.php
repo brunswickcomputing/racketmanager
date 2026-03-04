@@ -262,6 +262,16 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament setup
      */
     public function display_setup_page(): void {
+        $is_post = $this->is_post_request();
+
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
+        }
+
         $controller = $this->racketmanager->container->get( 'tournament_setup_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Setup_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
@@ -269,10 +279,26 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->setup_page( $_GET, $_POST );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
+        // PRG: if this request is a POST, store the message (if any) and redirect to GET.
+        if ( $is_post ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+                );
+            }
+
+            // Preserve context and redirect back to setup screen.
+            // phpcs:disable WordPress.Security.NonceVerification.Recommended
+            $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : ( isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null );
+            // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+            $this->redirect_or_js_fallback(
+                Admin_Redirect_Url_Builder::tournament_setup_view(
+                    $_GET,
+                    $_POST,
+                    $tournament_id
+                )
             );
         }
 
@@ -283,6 +309,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;

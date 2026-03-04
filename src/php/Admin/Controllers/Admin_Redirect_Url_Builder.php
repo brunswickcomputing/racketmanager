@@ -19,7 +19,7 @@ final class Admin_Redirect_Url_Builder {
      * @return array<string,string>
      */
     private static function preserve_optional_context_params( array $query, array $post ): array {
-        $keys     = array( 'leg', 'match_day', 'mode' );
+        $keys     = array( 'leg', 'match_day', 'mode', 'season' );
         $optional = array();
 
         foreach ( $keys as $key ) {
@@ -62,6 +62,28 @@ final class Admin_Redirect_Url_Builder {
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
 
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL for tournament setup view (admin.php?page=racketmanager-tournaments&view=setup).
+     *
+     * @param array $query Typically $_GET
+     * @param array $post  Typically $_POST
+     */
+    public static function tournament_setup_view(
+        array $query,
+        array $post,
+        ?int $tournament_id
+    ): string {
+        $args = array(
+            'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
+            // For PRG, force the target view explicitly (do not carry over a stale query value).
+            'view'       => 'setup',
+            'tournament' => $tournament_id,
+        );
+
+        $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
         return add_query_arg( $args, admin_url( 'admin.php' ) );
     }
 

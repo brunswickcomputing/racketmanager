@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+// ... existing code ...
+
 namespace Racketmanager\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
@@ -38,6 +40,10 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
         $guard = new class implements Action_Guard_Interface {
             public function assert_allowed( string $nonce_field, string $nonce_action, string $capability ): void {
                 // no-op for unit test
+            }
+
+            public function assert_capability( string $capability ): void {
+                // no-op for unit tests
             }
         };
 
@@ -85,6 +91,9 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
             public int $guard_calls;
             public function __construct( int &$guard_calls ) { $this->guard_calls = &$guard_calls; }
             public function assert_allowed( string $nonce_field, string $nonce_action, string $capability ): void {
+                ++$this->guard_calls;
+            }
+            public function assert_capability( string $capability ): void {
                 ++$this->guard_calls;
             }
         };

@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Tournament;
 
@@ -21,6 +22,7 @@ readonly final class Tournament_Plan_Admin_Controller {
 
     public function __construct(
         private Tournament_Service $tournament_service,
+        private Action_Guard_Interface $action_guard,
     ) {
     }
 
@@ -36,12 +38,9 @@ readonly final class Tournament_Plan_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     public function plan_page( array $query, array $post ): array {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_capability( 'edit_teams' );
 
+        $validator = new Validator_Tournament(); // Kept for field-level validation + error mapping.
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
         $tab           = ( isset( $query['tab'] ) ) ? sanitize_text_field( wp_unslash( $query['tab'] ) ) : 'matches';
 
@@ -91,10 +90,7 @@ readonly final class Tournament_Plan_Admin_Controller {
      * POST handler: Save plan
      */
     private function handle_save_tournament_plan( array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournament-planner' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_tournament-planner', 'edit_teams' );
 
         $request              = new Tournament_Finals_Request_DTO( $post );
         $tournament_id_posted = isset( $post['tournamentId'] ) ? intval( $post['tournamentId'] ) : null;
@@ -133,10 +129,7 @@ readonly final class Tournament_Plan_Admin_Controller {
      * POST handler: Reset plan
      */
     private function handle_reset_tournament_plan( array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournament-planner' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_tournament-planner', 'edit_teams' );
 
         $tournament_id_posted = isset( $post['tournamentId'] ) ? intval( $post['tournamentId'] ) : null;
 
@@ -161,10 +154,7 @@ readonly final class Tournament_Plan_Admin_Controller {
      * POST handler: Save finals config
      */
     private function handle_save_tournament_finals_config( array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_tournament-finals-config' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_tournament-finals-config', 'edit_teams' );
 
         $tournament_id_posted = null;
         if ( isset( $post['tournamentId'] ) ) {

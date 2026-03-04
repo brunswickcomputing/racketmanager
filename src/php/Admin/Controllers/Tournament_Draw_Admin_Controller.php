@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 
 use function Racketmanager\get_league;
@@ -26,6 +27,7 @@ readonly final class Tournament_Draw_Admin_Controller {
     public function __construct(
         private Tournament_Service $tournament_service,
         private Draw_Action_Dispatcher $draw_action_dispatcher,
+        private Action_Guard_Interface $action_guard,
     ) {
     }
 
@@ -40,6 +42,8 @@ readonly final class Tournament_Draw_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     public function draw_page( array $query, array $post ): array {
+        $this->action_guard->assert_capability( 'edit_matches' );
+
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
         $league_id     = isset( $query['league'] ) ? intval( $query['league'] ) : null;
         $tab           = isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( $query['league-tab'] ) ) : null;

@@ -144,7 +144,10 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'tournament_plan_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Plan_Admin_Controller( $c->get( 'tournament_service' ), );
+            return new Tournament_Plan_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
         } );
 
         $c->set( 'tournament_tournaments_admin_controller', function ( Simple_Container $c ) {
@@ -156,7 +159,10 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'tournament_setup_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Setup_Admin_Controller( $c->get( 'tournament_service' ), );
+            return new Tournament_Setup_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
         } );
 
         $c->set( 'championship_admin_service', function ( Simple_Container $c ) {
@@ -218,6 +224,7 @@ final class Container_Bootstrap {
             return new Tournament_Matches_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'matches_action_dispatcher' ),
+                $c->get( 'action_guard' ),
             );
         } );
 
@@ -225,6 +232,7 @@ final class Container_Bootstrap {
             return new Tournament_Match_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'draw_action_dispatcher' ),
+                $c->get( 'action_guard' ),
             );
         } );
 
@@ -232,6 +240,7 @@ final class Container_Bootstrap {
             return new Tournament_Draw_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'draw_action_dispatcher' ),
+                $c->get( 'action_guard' ),
             );
         } );
 

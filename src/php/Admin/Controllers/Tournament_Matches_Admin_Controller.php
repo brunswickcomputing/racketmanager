@@ -14,8 +14,8 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Tournament\Matches_Action_Dispatcher;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Services\Validator\Validator_Tournament;
 
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
@@ -25,6 +25,7 @@ readonly final class Tournament_Matches_Admin_Controller {
     public function __construct(
         private Tournament_Service $tournament_service,
         private Matches_Action_Dispatcher $matches_action_dispatcher,
+        private Action_Guard_Interface $action_guard,
     ) {
     }
 
@@ -39,11 +40,7 @@ readonly final class Tournament_Matches_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     public function matches_page( array $query, array $post ): array {
-        $v = new Validator_Tournament();
-        $v = $v->capability( 'edit_matches' );
-        if ( ! empty( $v->error ) ) {
-            throw new Invalid_Status_Exception( $v->msg );
-        }
+        $this->action_guard->assert_capability( 'edit_matches' );
 
         $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
 
@@ -55,6 +52,9 @@ readonly final class Tournament_Matches_Admin_Controller {
 
         // POST: manage matches (updateLeague=match) -> PRG redirect back to GET.
         if ( $is_post ) {
+            // Nonce + capability must flow through Action_Guard_Interface.
+            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_manage-matches', 'edit_matches' );
+
             $dto = new Draw_Action_Request_DTO(
                 tournament_id: $tournament_id ?? 0,
                 league_id: $league_id ?? 0,

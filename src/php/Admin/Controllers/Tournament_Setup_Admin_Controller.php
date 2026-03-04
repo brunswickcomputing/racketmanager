@@ -15,6 +15,7 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\Util\Util;
@@ -23,6 +24,7 @@ readonly final class Tournament_Setup_Admin_Controller {
 
     public function __construct(
         private Tournament_Service $tournament_service,
+        private Action_Guard_Interface $action_guard,
     ) {
     }
 
@@ -37,12 +39,9 @@ readonly final class Tournament_Setup_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     public function setup_page( array $query, array $post ): array {
-        $validator = new Validator_Tournament();
-        $validator = $validator->capability( 'edit_matches' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_capability( 'edit_matches' );
 
+        $validator = new Validator_Tournament(); // Kept for field-level validation + error mapping.
         $result = array();
 
         $message_info = $this->handle_post_actions( $post, $validator );
@@ -110,10 +109,7 @@ readonly final class Tournament_Setup_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     private function handle_round_dates_post( array $post, Validator_Tournament $validator ): array {
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add_championship-matches' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
 
         $tournament_id = isset( $post['tournament_id'] ) ? intval( $post['tournament_id'] ) : null;
         $request       = new Championship_Rounds_Request_DTO( $post );
@@ -151,10 +147,7 @@ readonly final class Tournament_Setup_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     private function handle_generate_ratings_post( array $post, Validator_Tournament $validator ): array {
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_calculate_ratings' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_calculate_ratings', 'edit_matches' );
 
         $tournament_id = isset( $post['tournament_id'] ) ? intval( $post['tournament_id'] ) : null;
 

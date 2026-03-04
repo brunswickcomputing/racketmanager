@@ -159,6 +159,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -192,6 +193,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -250,6 +252,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -341,6 +344,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -391,6 +395,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -429,6 +434,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -480,6 +486,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;
@@ -531,6 +538,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
+        $vm = $vm; // Pass-through for templates that prefer a single $vm.
         $vars = $vm->to_template_vars();
         foreach ( $vars as $key => $value ) {
             ${$key} = $value;

@@ -7,9 +7,23 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $tab        = $vm->tab;
+    $tournament = $vm->tournament;
+    $league     = $vm->league;
+    $season     = $vm->season;
+}
+
 /** @var string $tab */
 /** @var object $tournament */
 /** @var object $league */
+/** @var string $season */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){

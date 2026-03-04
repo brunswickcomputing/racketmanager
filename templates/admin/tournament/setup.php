@@ -7,6 +7,40 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Setup_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $match_dates = $vm->match_dates;
+    $match_count = $vm->match_count;
+    $tournament  = $vm->tournament;
+    $season      = $vm->season;
+    $league      = $vm->league;
+    $validator   = $vm->validator;
+}
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Setup_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $match_dates = $vm->match_dates;
+    $match_count = $vm->match_count;
+    $tournament  = $vm->tournament;
+    $season      = $vm->season;
+    $league      = $vm->league;
+    $errors      = $vm->errors;
+}
+
+// Safety: ensure $errors always exists.
+if ( ! isset( $errors ) || ! ( $errors instanceof Error_Bag ) ) {
+    $errors = new Error_Bag();
+}
+
 /** @var array  $match_dates */
 /** @var int    $match_count */
 /** @var object $tournament */
@@ -95,13 +129,7 @@ if ( empty( $league ) ) {
                 $round_date = '';
             }
             $field_id = 'rounds-' . $round . '-match_date';
-            $is_invalid = false;
-            $msg        = null;
-            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( $field_id, $validator->err_flds, true ) ) ) {
-                $is_invalid = true;
-                $msg_id     = array_search( $field_id, $validator->err_flds, true );
-                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-            }
+            $is_invalid = $errors->has( $field_id );
             ?>
             <div class="row mb-3">
                 <input type="hidden" name="rounds[<?php echo esc_attr( $round ); ?>][key]" value="<?php echo esc_attr( $final['key'] ); ?>" />
@@ -113,7 +141,7 @@ if ( empty( $league ) ) {
                     <?php
                     if ( $is_invalid ) {
                         ?>
-                        <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                        <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( $field_id ) ) ); ?></div>
                         <?php
                     }
                     ?>

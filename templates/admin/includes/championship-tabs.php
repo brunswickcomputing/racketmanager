@@ -8,9 +8,21 @@
 namespace Racketmanager;
 
 use Racketmanager\Util\Util;
+use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+
+// Preferred input (when included from draw template).
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Draw_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $league     = $vm->league;
+    $season     = $vm->season;
+    $tournament = $vm->tournament;
+}
 
 /** @var object $league */
 /** @var string $season */
+/** @var object|null $tournament */
 ?>
 <!-- Nav tabs -->
     <ul class="nav nav-pills" id="myTab" role="tablist">

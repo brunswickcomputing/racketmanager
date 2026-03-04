@@ -18,7 +18,7 @@ readonly final class Tournament_Setup_Page_View_Model {
      * @param array $match_dates
      * @param int|null $match_count
      * @param object|null $league
-     * @param Validator_Tournament $validator
+     * @param Validator_Tournament|null $validator Legacy/BC only
      */
     public function __construct(
         public object $tournament,
@@ -26,7 +26,8 @@ readonly final class Tournament_Setup_Page_View_Model {
         public array $match_dates,
         public ?int $match_count,
         public ?object $league,
-        public Validator_Tournament $validator,
+        public Error_Bag $errors,
+        public ?Validator_Tournament $validator = null,
     ) {
     }
 
@@ -42,6 +43,7 @@ readonly final class Tournament_Setup_Page_View_Model {
             'match_dates' => $this->match_dates,
             'match_count' => $this->match_count,
             'league'      => $this->league,
+            'errors'      => $this->errors,
             'validator'   => $this->validator,
         );
     }

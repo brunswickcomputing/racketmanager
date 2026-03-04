@@ -17,14 +17,15 @@ final readonly class Tournament_Plan_Page_View_Model {
      * @param array $final_matches
      * @param string $tab
      * @param array $order_of_play
-     * @param Validator_Tournament $validator
+     * @param Validator_Tournament|null $validator Legacy/BC only
      */
     public function __construct(
         public object $tournament,
         public array $final_matches,
         public string $tab,
         public array $order_of_play,
-        public Validator_Tournament $validator,
+        public Error_Bag $errors,
+        public ?Validator_Tournament $validator = null,
     ) {
     }
 
@@ -39,6 +40,7 @@ final readonly class Tournament_Plan_Page_View_Model {
             'final_matches' => $this->final_matches,
             'tab'           => $this->tab,
             'order_of_play' => $this->order_of_play,
+            'errors'        => $this->errors,
             'validator'     => $this->validator,
         );
     }

@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Admin\Controllers;
 
+use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Config_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
@@ -236,7 +237,16 @@ readonly final class Tournament_Plan_Admin_Controller {
             throw new Tournament_Not_Found_Exception( $e->getMessage() );
         }
 
-        $vm = new Tournament_Plan_Page_View_Model( tournament: $tournament, final_matches: $final_matches, tab: $tab, order_of_play: array(), validator: $validator );
+        $errors = Admin_Error_Bag_Mapper::from_validator( $validator );
+
+        $vm = new Tournament_Plan_Page_View_Model(
+            tournament: $tournament,
+            final_matches: $final_matches,
+            tab: $tab,
+            order_of_play: array(),
+            errors: $errors,
+            validator: $validator
+        );
 
         $result = array(
             'view_model' => $vm,

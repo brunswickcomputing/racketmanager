@@ -8,9 +8,26 @@
 namespace Racketmanager;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Plan_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $final_matches = $vm->final_matches;
+    $order_of_play = $vm->order_of_play;
+    $tournament    = $vm->tournament;
+    $tab           = $vm->tab;
+    $errors        = $vm->errors;
+}
+if ( ! isset( $errors ) || ! ( $errors instanceof Error_Bag ) ) {
+    $errors = new Error_Bag();
+}
 
 /** @var Fixture_Details_DTO[] $final_matches */
-/** @var array  $order_of_play */
+/** @var array $order_of_play */
 /** @var object $tournament */
 /** @var string $tab */
 $num_matches = count( $final_matches );
@@ -85,21 +102,16 @@ jQuery(document).ready(function(){
                     <div class="col">
                         <div class="form-floating mb-3">
                             <?php
-                            $start_time = $_POST['start_time'] ?? $tournament->get_start_time();
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'start_time', $validator->err_flds, true ) ) ) {
-                                $is_invalid = true;
-                                $msg_id     = array_search( 'start_time', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                            }
+                            $start_time = $_POST['startTime'] ?? $tournament->get_start_time();
+                            $field_key  = 'start_time';
+                            $is_invalid = $errors->has( $field_key );
                             ?>
                             <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="startTime" id="startTime" value="<?php echo esc_html( $start_time ); ?>" />
                             <label for="startTime"><?php esc_html_e( 'Start Time', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
                                 ?>
-                                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                                <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( $field_key ) ) ); ?></div>
                                 <?php
                             }
                             ?>
@@ -109,20 +121,15 @@ jQuery(document).ready(function(){
                         <div class="form-floating mb-3">
                             <?php
                             $time_increment = $_POST['timeIncrement'] ?? $tournament->get_time_increment();
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'timeIncrement', $validator->err_flds, true ) ) ) {
-                                $is_invalid = true;
-                                $msg_id     = array_search( 'timeIncrement', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                            }
+                            $field_key  = 'timeIncrement';
+                            $is_invalid = $errors->has( $field_key );
                             ?>
                             <input type="time" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="timeIncrement" id="timeIncrement" value="<?php echo esc_html( $time_increment ); ?>" />
                             <label for="timeIncrement"><?php esc_html_e( 'Time Increment', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
                                 ?>
-                                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                                <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( $field_key ) ) ); ?></div>
                                 <?php
                             }
                             ?>
@@ -134,20 +141,15 @@ jQuery(document).ready(function(){
                         <div class="form-floating mb-3">
                             <?php
                             $num_courts = $_POST['numCourtsAvailable'] ?? $tournament->get_num_courts();
-                            $is_invalid = false;
-                            $msg        = null;
-                            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'numCourtsAvailable', $validator->err_flds, true ) ) ) {
-                                $is_invalid = true;
-                                $msg_id     = array_search( 'numCourtsAvailable', $validator->err_flds, true );
-                                $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                            }
+                            $field_key  = 'numCourtsAvailable';
+                            $is_invalid = $errors->has( $field_key );
                             ?>
                             <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="numCourtsAvailable" id="numCourtsAvailable" value="<?php echo esc_html( $num_courts ); ?>" />
                             <label for="numCourtsAvailable"><?php esc_html_e( 'Number of courts', 'racketmanager' ); ?></label>
                             <?php
                             if ( $is_invalid ) {
                                 ?>
-                                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                                <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( $field_key ) ) ); ?></div>
                                 <?php
                             }
                             ?>

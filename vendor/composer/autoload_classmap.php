@@ -1295,6 +1295,7 @@ return array(
     'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Setup_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Tournaments_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Tournaments_Admin_Controller.php',
     'Racketmanager\\Admin\\Flash\\Admin_Flash_Message_Store' => $baseDir . '/src/php/Admin/Flash/Admin_Flash_Message_Store.php',
+    'Racketmanager\\Admin\\Presenters\\Admin_Error_Bag_Mapper' => $baseDir . '/src/php/Admin/Presenters/Admin_Error_Bag_Mapper.php',
     'Racketmanager\\Admin\\Presenters\\Admin_Message_Mapper' => $baseDir . '/src/php/Admin/Presenters/Admin_Message_Mapper.php',
     'Racketmanager\\Admin\\View_Models\\Error_Bag' => $baseDir . '/src/php/Admin/View_Models/Error_Bag.php',
     'Racketmanager\\Admin\\View_Models\\Tournament_Draw_Page_View_Model' => $baseDir . '/src/php/Admin/View_Models/Tournament_Draw_Page_View_Model.php',

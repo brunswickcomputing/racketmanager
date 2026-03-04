@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Admin\Controllers;
 
+use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -47,9 +48,21 @@ readonly final class Tournament_Setup_Admin_Controller {
         $message_info = $this->handle_post_actions( $post, $validator );
 
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
+
+        $errors = Admin_Error_Bag_Mapper::from_validator( $validator );
+
         $vm            = $this->build_view_model( $tournament_id, $validator );
 
-        $result['view_model'] = $vm;
+        // Prefer Error_Bag for templates; keep validator for BC.
+        $result['view_model'] = new Tournament_Setup_Page_View_Model(
+            tournament: $vm->tournament,
+            season: $vm->season,
+            match_dates: $vm->match_dates,
+            match_count: $vm->match_count,
+            league: $vm->league,
+            errors: $errors,
+            validator: $validator
+        );
 
         if ( null !== $message_info['message'] ) {
             $result['message']      = $message_info['message'];
@@ -206,12 +219,15 @@ readonly final class Tournament_Setup_Admin_Controller {
             }
         }
 
+        $errors = Admin_Error_Bag_Mapper::from_validator( $validator );
+
         return new Tournament_Setup_Page_View_Model(
             tournament: $tournament,
             season: $season,
             match_dates: is_array( $match_dates ) ? $match_dates : array(),
             match_count: null,
             league: null,
+            errors: $errors,
             validator: $validator
         );
     }

@@ -608,7 +608,7 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        // Template variables (bridge remains a thin delegate; no legacy branches).
+        // Preferred: templates use $vm. Kept locals for BC with older templates/includes.
         $tournament = $vm->tournament;
         $errors     = $vm->errors;
 

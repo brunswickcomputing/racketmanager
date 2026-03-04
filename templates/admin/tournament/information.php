@@ -7,13 +7,18 @@
 
 namespace Racketmanager;
 
-/** @var string  $form_title */
-/** @var boolean $edit */
-/** @var array   $competitions */
-/** @var array   $clubs */
-/** @var string  $form_action */
-/** @var object  $tournament */
-/** @var array   $seasons */
+use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Information_Page_View_Model ) ? $vm : null;
+
+// Back-compat: allow legacy locals if $vm isn't provided.
+if ( $vm ) {
+    $tournament = $vm->tournament;
+    $errors     = $vm->errors;
+}
+
+/** @var object $tournament */
 /** @var \Racketmanager\Admin\View_Models\Error_Bag $errors */
 ?>
 <div class='container'>
@@ -43,21 +48,13 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <div class="mb-3">
-                <?php
-                $is_invalid = false;
-                $msg        = null;
-                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'catering', $validator->err_flds, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'catering', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                }
-                ?>
+                <?php $is_invalid = $errors->has( 'catering' ); ?>
                 <label for="catering"><?php esc_html_e( 'Catering', 'racketmanager' ); ?></label>
                 <textarea class="form-control" rows="3" name="catering" id="catering" placeholder="Enter catering information"><?php echo empty( $tournament->information->catering ) ? null : esc_html( $tournament->information->catering ); ?></textarea>
                 <?php
                 if ( $is_invalid ) {
                     ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                    <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( 'catering' ) ) ); ?></div>
                     <?php
                 }
                 ?>
@@ -65,21 +62,13 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <div class="mb-3">
-                <?php
-                $is_invalid = false;
-                $msg        = null;
-                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'photography', $validator->err_flds, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'photography', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                }
-                ?>
+                <?php $is_invalid = $errors->has( 'photography' ); ?>
                 <label for="photography"><?php esc_html_e( 'Photography', 'racketmanager' ); ?></label>
                 <textarea class="form-control" rows="3" name="photography" id="photography" placeholder="Enter photography information"><?php echo empty( $tournament->information->photography ) ? null : esc_html( $tournament->information->photography ); ?></textarea>
                 <?php
                 if ( $is_invalid ) {
                     ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                    <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( 'photography' ) ) ); ?></div>
                     <?php
                 }
                 ?>
@@ -87,21 +76,13 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <div class="mb-3">
-                <?php
-                $is_invalid = false;
-                $msg        = null;
-                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'spectators', $validator->err_flds, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'spectators', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                }
-                ?>
+                <?php $is_invalid = $errors->has( 'spectators' ); ?>
                 <label for="spectators"><?php esc_html_e( 'Spectators', 'racketmanager' ); ?></label>
                 <textarea class="form-control" rows="3" name="spectators" id="spectators" placeholder="Enter spectators information"><?php echo empty( $tournament->information->spectators ) ? null : esc_html( $tournament->information->spectators ); ?></textarea>
                 <?php
                 if ( $is_invalid ) {
                     ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                    <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( 'spectators' ) ) ); ?></div>
                     <?php
                 }
                 ?>
@@ -109,15 +90,7 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <div class="col-md-3 mb-3">
-                <?php
-                $is_invalid = false;
-                $msg        = null;
-                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'Referee', $validator->err_flds, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'referee', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                }
-                ?>
+                <?php $is_invalid = $errors->has( 'referee' ); ?>
                 <div class="form-floating">
                     <input type="text" class="form-control" name="referee" id="referee" placeholder="<?php esc_html_e( 'Enter referee', 'racketmanager' ); ?>" value="<?php echo empty( $tournament->information->referee ) ? null : esc_html( $tournament->information->referee ); ?>" />
                     <label for="referee"><?php esc_html_e( 'Referee', 'racketmanager' ); ?></label>
@@ -125,7 +98,7 @@ namespace Racketmanager;
                 <?php
                 if ( $is_invalid ) {
                     ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                    <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( 'referee' ) ) ); ?></div>
                     <?php
                 }
                 ?>
@@ -133,21 +106,13 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <div class="form-floating mb-3">
-                <?php
-                $is_invalid = false;
-                $msg        = null;
-                if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'matchFormat', $validator->err_flds, true ) ) ) {
-                    $is_invalid = true;
-                    $msg_id     = array_search( 'matchFormat', $validator->err_flds, true );
-                    $msg        = $validator->err_msgs[ $msg_id ] ?? null;
-                }
-                ?>
+                <?php $is_invalid = $errors->has( 'matchFormat' ); ?>
                 <input type="text" class="form-control" name="matchFormat" id="matchFormat" placeholder="<?php esc_html_e( 'Enter match format', 'racketmanager' ); ?>" value="<?php echo empty( $tournament->information->match_format ) ? null : esc_html( $tournament->information->match_format ); ?>" />
                 <label for="matchFormat"><?php esc_html_e( 'Match format', 'racketmanager' ); ?></label>
                 <?php
                 if ( $is_invalid ) {
                     ?>
-                    <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                    <div class="invalid-feedback"><?php echo esc_html( strval( $errors->message( 'matchFormat' ) ) ); ?></div>
                     <?php
                 }
                 ?>

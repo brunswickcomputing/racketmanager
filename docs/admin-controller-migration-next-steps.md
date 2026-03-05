@@ -112,6 +112,60 @@ Approach:
 - Introduce dispatcher only if the view has multiple POST intents.
 - Use PRG for any action that triggers an email, notification, or mutation.
 
+#### 6a) Next candidate: `view=contact`
+
+The tournament contact page is a good next migration target because it already has distinct POST intents and should use PRG after any send action.
+
+Proposed target shape:
+
+1. **Admin bridge** (`Admin_Tournament::display_contact_page`) should:
+   - pop flash message
+   - delegate to a `Tournament_Contact_Admin_Controller`
+   - if controller returns `redirect`, store flash + redirect
+   - render the contact template from a contact view model
+
+2. **Controller-service** should:
+   - parse GET context for the contact target
+   - detect whether the request is:
+     - initial compose GET
+     - preview POST
+     - send POST
+     - send-active POST
+   - build a single request DTO for the page
+   - return either:
+     - `view_model` for compose/preview rendering, or
+     - `redirect` + flash message for send actions
+
+3. **Dispatcher** should be introduced for `view=contact` because the page has multiple POST intents:
+   - preview
+   - send
+   - send active recipients
+
+4. **Guarding**:
+   - all capability and nonce checks should move behind `Action_Guard_Interface`
+   - controller/template should not perform direct nonce/capability logic
+
+Implementation notes:
+- Keep **preview** as a rendered response (`view_model`) so the user stays on the contact screen and sees the generated email preview.
+- Use **PRG** for all send actions so refresh does not resend email.
+- Redirect should return the user to the same tournament contact screen context.
+- Redirect builder should explicitly set `page=racketmanager-tournaments` and `view=contact` and preserve the tournament identifier without inheriting stale query args.
+
+Suggested acceptance criteria:
+- **GET** opens the compose screen for the same tournament context.
+- **Preview POST** renders preview content without sending email.
+- **Send POST** sends once, redirects to GET, and shows the flash message once.
+- **Send active POST** follows the same PRG flow.
+- Refresh after a send does not resend the email.
+- Invalid nonce/capability failures surface through the normal message flow and do not partially perform the action.
+
+Suggested unit-test minimum:
+- Dispatcher resolves preview/send/send-active correctly from POST payload.
+- Unknown POST payload is a no-op.
+- Controller returns `view_model` for GET.
+- Controller returns `view_model` for preview POST.
+- Controller returns `redirect` for send/send-active POST.
+
 ## Notes / conventions
 
 - All nonce + capability checks must flow through `Action_Guard_Interface`.
@@ -127,5 +181,6 @@ After changes:
 - `matches`: bulk edit finals matches → redirect back to same finals list
 - `match`: edit one match → redirect back to same match edit screen
 - `information`: update and notify finalists → redirect and show flash message once
+- `contact`: preview renders correctly; send actions redirect back to the same contact screen and show flash once
 
 See also: `docs/tests.md`.

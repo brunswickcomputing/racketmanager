@@ -1293,6 +1293,7 @@ return array(
     'Racketmanager\\Admin\\Controllers\\Tournament_Overview_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Overview_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Plan_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Plan_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Setup_Admin_Controller.php',
+    'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Event_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Setup_Event_Admin_Controller.php',
     'Racketmanager\\Admin\\Controllers\\Tournament_Tournaments_Admin_Controller' => $baseDir . '/src/php/Admin/Controllers/Tournament_Tournaments_Admin_Controller.php',
     'Racketmanager\\Admin\\Flash\\Admin_Flash_Message_Store' => $baseDir . '/src/php/Admin/Flash/Admin_Flash_Message_Store.php',
     'Racketmanager\\Admin\\Presenters\\Admin_Error_Bag_Mapper' => $baseDir . '/src/php/Admin/Presenters/Admin_Error_Bag_Mapper.php',

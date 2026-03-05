@@ -15,6 +15,7 @@ use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
+use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
@@ -316,12 +317,12 @@ final class Admin_Tournament extends Admin_Championship {
             );
         }
 
-        $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
+        $controller = $this->racketmanager->container->get( 'tournament_setup_event_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Setup_Event_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
 
-        $result = $controller->draw_page( $_GET, $_POST );
+        $result = $controller->setup_event_page( $_GET, $_POST );
 
         // PRG: if this request is a POST, store the message (if any) and redirect to GET.
         if ( $is_post ) {
@@ -332,40 +333,19 @@ final class Admin_Tournament extends Admin_Championship {
                 );
             }
 
-            $tab = isset( $result['redirect_tab'] ) ? strval( $result['redirect_tab'] ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
-            $this->redirect_or_js_fallback(
-                Admin_Redirect_Url_Builder::tournament_draw_view(
-                    $_GET,
-                    $_POST,
-                    'setup-event',
-                    isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
-                    isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
-                    $tab
-                )
-            );
+            if ( ! empty( $result['redirect'] ) ) {
+                $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
+            }
         }
         
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Draw_Page_View_Model ) ) {
+        if ( ! ( $vm instanceof Tournament_Setup_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        $league = $vm->league;
-        if ( $league ) {
-            $match_count = $league->get_matches(
-                array(
-                    'count' => true,
-                    'final' => 'all',
-                )
-            );
-            $event_dtls       = $league->event->get_season_by_name( $vm->season );
-            $competition_dtls = $league->event->competition->get_season_by_name( $vm->season );
-            $match_dates      = empty( $event_dtls['match_dates'] ) ? ( $competition_dtls['match_dates'] ?? array() ) : $event_dtls['match_dates'];
-
-            require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
-        }
+        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
     }
 
     /**

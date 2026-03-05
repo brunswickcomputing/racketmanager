@@ -1342,6 +1342,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Admin\\Controllers\\Tournament_Overview_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Overview_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Plan_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Plan_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Setup_Admin_Controller.php',
+        'Racketmanager\\Admin\\Controllers\\Tournament_Setup_Event_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Setup_Event_Admin_Controller.php',
         'Racketmanager\\Admin\\Controllers\\Tournament_Tournaments_Admin_Controller' => __DIR__ . '/../..' . '/src/php/Admin/Controllers/Tournament_Tournaments_Admin_Controller.php',
         'Racketmanager\\Admin\\Flash\\Admin_Flash_Message_Store' => __DIR__ . '/../..' . '/src/php/Admin/Flash/Admin_Flash_Message_Store.php',
         'Racketmanager\\Admin\\Presenters\\Admin_Error_Bag_Mapper' => __DIR__ . '/../..' . '/src/php/Admin/Presenters/Admin_Error_Bag_Mapper.php',

@@ -7,6 +7,7 @@ use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
@@ -161,6 +162,14 @@ final class Container_Bootstrap {
         $c->set( 'tournament_setup_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Setup_Admin_Controller(
                 $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_setup_event_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Setup_Event_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'draw_action_dispatcher' ),
                 $c->get( 'action_guard' ),
             );
         } );

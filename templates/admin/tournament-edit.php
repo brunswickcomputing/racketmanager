@@ -7,7 +7,24 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Modify_Page_View_Model ) ? $vm : null;
+
+// BC fallback: allow legacy locals if $vm isn't provided.
+if ( $vm ) {
+    $form_title   = $vm->form_title;
+    $edit         = $vm->edit;
+    $competitions = $vm->competitions;
+    $clubs        = $vm->clubs;
+    $form_action  = $vm->form_action;
+    $tournament   = $vm->tournament;
+    $seasons      = $vm->seasons;
+    $fees         = $vm->fees;
+    $validator    = $vm->validator;
+}
 
 /** @var string  $form_title */
 /** @var boolean $edit */

@@ -192,11 +192,6 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
-        }
-
         require_once RACKETMANAGER_PATH . 'templates/admin/show-tournament.php';
     }
 
@@ -248,11 +243,6 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof Tournament_Draw_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
-
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
         }
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/draw.php';
@@ -309,11 +299,6 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
-        }
-
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
     }
 
@@ -367,11 +352,6 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
-        }
-
         $league = $vm->league;
         if ( $league ) {
             $match_count = $league->get_matches(
@@ -405,8 +385,8 @@ final class Admin_Tournament extends Admin_Championship {
 
         if ( ! empty( $result['message'] ) ) {
             $this->set_message(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
             );
         }
 
@@ -443,8 +423,8 @@ final class Admin_Tournament extends Admin_Championship {
 
         if ( ! empty( $result['message'] ) ) {
             $this->set_message(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
             );
         }
 
@@ -453,11 +433,6 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof Tournament_Plan_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
-
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
         }
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/plan.php';
@@ -506,11 +481,6 @@ final class Admin_Tournament extends Admin_Championship {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
-        }
-
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
     }
 
@@ -555,11 +525,6 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         if ( ! ( $vm instanceof Tournament_Match_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
-
-        $vars = $vm->to_template_vars();
-        foreach ( $vars as $key => $value ) {
-            ${$key} = $value;
         }
 
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';

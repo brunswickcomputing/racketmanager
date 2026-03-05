@@ -7,6 +7,23 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
+
+// BC fallback: allow legacy locals if $vm isn't provided.
+if ( $vm ) {
+    $tab               = $vm->tab;
+    $tournament        = $vm->tournament;
+    $overview          = $vm->overview;
+    $events            = $vm->events;
+    $confirmed_entries = $vm->confirmed_entries;
+    $unpaid_entries    = $vm->unpaid_entries;
+    $pending_entries   = $vm->pending_entries;
+    $withdrawn_entries = $vm->withdrawn_entries;
+}
+
 /** @var string $tab */
 /** @var object $tournament */
 ?>

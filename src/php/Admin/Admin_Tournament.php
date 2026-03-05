@@ -25,6 +25,7 @@ use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
@@ -165,11 +166,10 @@ final class Admin_Tournament extends Admin_Championship {
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof \Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model ) ) {
+        if ( ! ( $vm instanceof Tournament_Teams_List_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 
-        $vm = $vm;
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams-list.php';
     }
 

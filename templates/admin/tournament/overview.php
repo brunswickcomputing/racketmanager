@@ -7,7 +7,18 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Overview_DTO;
+
+// Preferred input: $vm from the overview page.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
+
+// BC fallback: allow legacy locals if $vm isn't provided.
+if ( $vm ) {
+    $overview   = $vm->overview;
+    $tournament = $vm->tournament;
+    $tab        = $vm->tab;
+}
 
 /** @var Tournament_Overview_DTO $overview */
 ?>

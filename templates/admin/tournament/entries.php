@@ -7,6 +7,19 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
+
+// Preferred input: $vm from the overview page.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
+
+// BC fallback: allow legacy locals if $vm isn't provided.
+if ( $vm ) {
+    $withdrawn_entries = $vm->withdrawn_entries;
+    $unpaid_entries    = $vm->unpaid_entries;
+    $pending_entries   = $vm->pending_entries;
+    $confirmed_entries = $vm->confirmed_entries;
+}
+
 /** @var array $withdrawn_entries */
 /** @var array $unpaid_entries */
 /** @var array $pending_entries */
@@ -20,7 +33,7 @@ if ( ! empty( $withdrawn_entries ) ) {
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th><?php esc_html_e( 'Withdrawn Entries', 'racketmanager' ); ?> <?php echo '(' . count( $withdrawn_entries ) . ')'; ?></th>
+                        <th><?php esc_html_e( 'Withdrawn Entries', 'racketmanager' ); ?> <?php echo '(' . array_sum( array_map( "count", $withdrawn_entries ) ) . ')'; ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,7 +55,7 @@ if ( ! empty( $unpaid_entries ) ) {
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
-                        <th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . count( $unpaid_entries ) . ')'; ?></th>
+                        <th><?php esc_html_e( 'Unpaid Entries', 'racketmanager' ); ?> <?php echo '(' . array_sum( array_map( "count", $unpaid_entries ) ) . ')'; ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,7 +76,7 @@ if ( ! empty( $unpaid_entries ) ) {
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th><?php esc_html_e( 'Pending Entries', 'racketmanager' ); ?> <?php echo empty( $entries_pending ) ? null : '(' . count( $entries_pending ) . ')'; ?></th>
+                    <th><?php esc_html_e( 'Pending Entries', 'racketmanager' ); ?> <?php echo empty( $pending_entries ) ? null : '(' . array_sum( array_map( "count", $pending_entries ) ) . ')'; ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -79,7 +92,7 @@ if ( ! empty( $unpaid_entries ) ) {
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>
-                    <th><?php esc_html_e( 'Confirmed Entries', 'racketmanager' ); ?> <?php echo empty( $entries_confirmed ) ? null : '(' . count( $entries_confirmed ) . ')'; ?></th>
+                    <th><?php esc_html_e( 'Confirmed Entries', 'racketmanager' ); ?> <?php echo empty( $confirmed_entries ) ? null : '(' . array_sum( array_map( "count", $confirmed_entries ) ) . ')'; ?></th>
                 </tr>
             </thead>
             <tbody>

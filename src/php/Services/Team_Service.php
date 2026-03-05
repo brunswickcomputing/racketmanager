@@ -19,6 +19,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use WP_Error;
 
@@ -61,10 +62,16 @@ class Team_Service {
     /**
      * Get player teams
      *
+     * @param string|null $type
+     *
      * @return array
      */
-    public function get_player_teams(): array {
-        return $this->team_repository->find_for_players();
+    public function get_player_teams( ?string $type ): array {
+        $team_types = Util_Lookup::get_event_types();
+        if ( empty( $team_types[ $type ] ) ) {
+            throw new Invalid_Argument_Exception( __( 'Team type not found', 'racketmanager' ) );
+        }
+        return $this->team_repository->find_for_players( $type );
     }
 
     /**

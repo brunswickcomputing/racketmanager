@@ -16,6 +16,7 @@ use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
@@ -121,6 +122,55 @@ final class Admin_Tournament extends Admin_Championship {
             $this->set_message( $e->getMessage(), true );
             $this->show_message();
         }
+    }
+
+    /**
+     * Tournament teams list (add teams) — PRG + flash + controller-service.
+     */
+    public function display_teams_list(): void {
+        $is_post = $this->is_post_request();
+
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
+        }
+
+        $controller = $this->racketmanager->container->get( 'tournament_teams_admin_controller' );
+        if ( ! ( $controller instanceof Tournament_Teams_Admin_Controller ) ) {
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
+        }
+
+        $result = $controller->teams_page( $_GET, $_POST );
+
+        if ( ! empty( $result['redirect'] ) ) {
+            if ( ! empty( $result['message'] ) ) {
+                ( new Admin_Flash_Message_Store() )->set(
+                    strval( $result['message'] ),
+                    $result['message_type'] ?? false
+                );
+            }
+            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
+        }
+
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
+        }
+
+        $this->show_message();
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof \Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
+
+        $vm = $vm;
+        require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams-list.php';
     }
 
     private function get_admin_competition(): Admin_Competition {

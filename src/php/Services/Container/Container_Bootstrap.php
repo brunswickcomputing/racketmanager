@@ -3,6 +3,7 @@
 namespace Racketmanager\Services\Container;
 
 use Racketmanager\RacketManager;
+use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
@@ -249,6 +250,16 @@ final class Container_Bootstrap {
             return new Tournament_Draw_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'draw_action_dispatcher' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_teams_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Teams_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'team_service' ),
+                $c->get( 'club_service' ),
                 $c->get( 'action_guard' ),
             );
         } );

@@ -95,10 +95,21 @@ class Team_Repository {
     /**
      * Find all teams that are used for players
      *
+     * @param string $type
+     *
      * @return array
      */
-    public function find_for_players(): array {
-        $results = $this->wpdb->get_results( "SELECT * FROM $this->team_table WHERE team_type = 'P' ORDER BY title" );
+    public function find_for_players( string $type ): array {
+        $results = $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                "SELECT * 
+                        FROM $this->team_table 
+                        WHERE team_type = 'P' 
+                          AND type = %s 
+                        ORDER BY title",
+                $type
+            )
+        );
 
         return array_map( fn ( $row ) => new Team( $row ), $results );
     }

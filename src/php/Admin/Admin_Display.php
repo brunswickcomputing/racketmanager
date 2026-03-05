@@ -446,7 +446,7 @@ class Admin_Display {
         }
         if ( empty( $league->championship->is_consolation ) ) {
             if ( $league->event->competition->is_player_entry ) {
-                $teams = $this->team_service->get_player_teams();
+                $teams = $this->team_service->get_player_teams( $league_type );
             } else {
                 $teams = $this->get_club_teams( $league_type );
             }

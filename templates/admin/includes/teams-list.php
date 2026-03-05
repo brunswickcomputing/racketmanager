@@ -7,7 +7,22 @@
 
 namespace Racketmanager;
 
-/** @var string $view */
+use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
+
+// Preferred input.
+$vm = isset( $vm ) && ( $vm instanceof Tournament_Teams_List_Page_View_Model ) ? $vm : null;
+
+// BC fallback.
+if ( $vm ) {
+    $league        = $vm->league;
+    $league_id     = $vm->league_id;
+    $season        = $vm->season;
+    $tournament_id = $vm->tournament_id ?? 0;
+    $tournament    = $vm->tournament;
+    $teams         = $vm->teams;
+    $type          = $vm->type;
+}
+
 /** @var object $league */
 /** @var int $league_id */
 /** @var string $season */

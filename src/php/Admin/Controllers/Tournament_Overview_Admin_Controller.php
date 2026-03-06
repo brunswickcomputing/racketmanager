@@ -11,13 +11,14 @@ namespace Racketmanager\Admin\Controllers;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Services\Validator\Validator;
 
 readonly final class Tournament_Overview_Admin_Controller {
 
     public function __construct(
         private Tournament_Service $tournament_service,
+        private Action_Guard_Interface $action_guard,
     ) {
     }
 
@@ -90,12 +91,7 @@ readonly final class Tournament_Overview_Admin_Controller {
      * @throws Invalid_Status_Exception
      */
     private function handle_contact_teams_post( array $post ): array {
-        $validator = new Validator();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            throw new Invalid_Status_Exception( $validator->msg );
-        }
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_contact-teams-preview', 'edit_teams' );
 
         $tournament_id = isset( $post['tournament_id'] ) ? intval( $post['tournament_id'] ) : null;
         $message       = isset( $post['emailMessage'] ) ? htmlspecialchars_decode( strval( $post['emailMessage'] ) ) : null;

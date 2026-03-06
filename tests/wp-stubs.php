@@ -8,6 +8,12 @@ declare(strict_types=1);
  * Keep intentionally tiny: only add functions as tests require them.
  */
 
+if ( ! function_exists( 'absint' ) ) {
+    function absint( $x ) {
+        return abs( intval( $x ) );
+    }
+}
+
 if ( ! function_exists( 'wp_unslash' ) ) {
     function wp_unslash( $value ) {
         return $value;

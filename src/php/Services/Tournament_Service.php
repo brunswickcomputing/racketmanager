@@ -469,7 +469,7 @@ class Tournament_Service {
      * Remove season for competition
      * Remove tournament emails scheduled events
      * Remove tournament charge
-     * Remove tournament record from the database
+     * Delete tournament
      *
      * @param int|null $tournament_id
      *
@@ -496,6 +496,34 @@ class Tournament_Service {
         }
 
         return $this->tournament_repository->delete( $tournament->get_id() );
+    }
+
+    /**
+     * Bulk remove tournaments.
+     *
+     * @param array $tournament_ids
+     * @return array{message:string, message_type:bool}
+     */
+    public function bulk_remove_tournaments( array $tournament_ids ): array {
+        $messages      = array();
+        $message_error = false;
+
+        foreach ( $tournament_ids as $tournament_id ) {
+            try {
+                $deleted    = $this->remove_tournament( $tournament_id );
+                $messages[] = $deleted
+                    ? Util_Messages::tournament_deleted( $tournament_id )
+                    : Util_Messages::tournament_not_deleted( $tournament_id );
+            } catch ( Tournament_Not_Found_Exception $e ) {
+                $messages[]    = $e->getMessage();
+                $message_error = true;
+            }
+        }
+
+        return array(
+            'message'      => implode( '<br>', $messages ),
+            'message_type' => $message_error,
+        );
     }
 
     /**

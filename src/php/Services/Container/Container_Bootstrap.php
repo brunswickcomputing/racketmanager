@@ -172,11 +172,19 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'tournament_tournaments_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Tournaments_Admin_Controller( $c->get( 'tournament_service' ), $c->get( 'competition_service' ), $c->get( 'season_service' ), );
+            return new Tournament_Tournaments_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'competition_service' ),
+                $c->get( 'season_service' ),
+                $c->get( 'action_guard' ),
+            );
         } );
 
         $c->set( 'tournament_overview_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Overview_Admin_Controller( $c->get( 'tournament_service' ), );
+            return new Tournament_Overview_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
         } );
 
         $c->set( 'tournament_setup_admin_controller', function ( Simple_Container $c ) {

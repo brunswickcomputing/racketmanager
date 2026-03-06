@@ -63,4 +63,19 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
         self::assertStringContainsString( 'league_id=8', $url );
         self::assertStringContainsString( 'final=final', $url );
     }
+
+    public function test_information_view_forces_view_and_preserves_tournament(): void {
+        $url = Admin_Redirect_Url_Builder::tournament_information_view(
+            array(
+                'page' => 'racketmanager-tournaments',
+                'view' => 'something-else',
+            ),
+            array(),
+            44
+        );
+
+        self::assertStringContainsString( 'admin.php?', $url );
+        self::assertStringContainsString( 'view=information', $url );
+        self::assertStringContainsString( 'tournament=44', $url );
+    }
 }

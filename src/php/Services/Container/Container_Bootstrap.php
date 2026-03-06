@@ -255,6 +255,7 @@ final class Container_Bootstrap {
             return new Tournament_Information_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'tournament_information_action_dispatcher' ),
+                $c->get( 'action_guard' ),
             );
         } );
 

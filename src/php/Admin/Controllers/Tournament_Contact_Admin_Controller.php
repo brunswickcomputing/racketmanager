@@ -50,8 +50,8 @@ final readonly class Tournament_Contact_Admin_Controller {
     }
 
     private function extract_tournament_id( array $query, array $post ): ?int {
-        if ( isset( $query['tournament_id'] ) ) {
-            return intval( $query['tournament_id'] );
+        if ( isset( $query['tournament'] ) ) {
+            return intval( $query['tournament'] );
         }
 
         if ( isset( $post['tournament_id'] ) ) {
@@ -88,9 +88,9 @@ final readonly class Tournament_Contact_Admin_Controller {
         $result = array(
             'redirect' => add_query_arg(
                 array(
-                    'page'          => 'racketmanager-tournaments',
-                    'view'          => 'contact',
-                    'tournament_id' => $tournament_id,
+                    'page'       => 'racketmanager-tournaments',
+                    'view'       => 'contact',
+                    'tournament' => $tournament_id,
                 ),
                 admin_url( 'admin.php' )
             ),

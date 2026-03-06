@@ -58,9 +58,9 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
 
         $result = $controller->contact_page(
             array(
-                'page' => 'racketmanager-tournaments',
-                'view' => 'contact',
-                'tournament_id' => '15',
+                'page'       => 'racketmanager-tournaments',
+                'view'       => 'contact',
+                'tournament' => '15',
             ),
             array()
         );
@@ -127,21 +127,21 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
 
         $result = $controller->contact_page(
             array(
-                'page' => 'racketmanager-tournaments',
-                'view' => 'contact',
-                'tournament_id' => '19',
+                'page'       => 'racketmanager-tournaments',
+                'view'       => 'contact',
+                'tournament' => '19',
             ),
             array(
-                'tournament_id' => '19',
+                'tournament_id'      => '19',
                 'contactTeamPreview' => '1',
-                'season' => '2025',
-                'contactTitle' => 'Final reminder',
-                'contactIntro' => 'Hello players',
-                'contactBody' => array(
+                'season'             => '2025',
+                'contactTitle'       => 'Final reminder',
+                'contactIntro'       => 'Hello players',
+                'contactBody'        => array(
                     1 => 'Paragraph 1',
                     2 => 'Paragraph 2',
                 ),
-                'contactClose' => 'Regards',
+                'contactClose'       => 'Regards',
             )
         );
 
@@ -192,20 +192,20 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
 
         $result = $controller->contact_page(
             array(
-                'page' => 'racketmanager-tournaments',
-                'view' => 'contact',
-                'tournament_id' => '27',
+                'page'       => 'racketmanager-tournaments',
+                'view'       => 'contact',
+                'tournament' => '27',
             ),
             array(
                 'tournament_id' => '27',
-                'contactTeam' => '1',
-                'emailMessage' => '<p>Rendered preview</p>',
+                'contactTeam'   => '1',
+                'emailMessage'  => '<p>Rendered preview</p>',
             )
         );
 
         self::assertArrayHasKey( 'redirect', $result );
         self::assertSame(
-            'https://example.test/wp-admin/admin.php?page=racketmanager-tournaments&view=contact&tournament_id=27',
+            'https://example.test/wp-admin/admin.php?page=racketmanager-tournaments&view=contact&tournament=27',
             $result['redirect']
         );
         self::assertSame( 'Email sent to players', $result['message'] );

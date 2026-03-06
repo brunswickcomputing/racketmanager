@@ -283,6 +283,7 @@ final class Container_Bootstrap {
         $c->set( 'tournament_draw_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Draw_Admin_Controller(
                 $c->get( 'tournament_service' ),
+                $c->get( 'league_service' ),
                 $c->get( 'draw_action_dispatcher' ),
                 $c->get( 'action_guard' ),
             );

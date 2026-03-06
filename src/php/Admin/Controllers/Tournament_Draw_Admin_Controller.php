@@ -16,8 +16,7 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
-
-use function Racketmanager\get_league;
+use Racketmanager\Services\League_Service;
 
 /**
  * Handles draw-page orchestration and tab selection.
@@ -26,6 +25,7 @@ readonly final class Tournament_Draw_Admin_Controller {
 
     public function __construct(
         private Tournament_Service $tournament_service,
+        private League_Service $league_service,
         private Draw_Action_Dispatcher $draw_action_dispatcher,
         private Action_Guard_Interface $action_guard,
     ) {
@@ -53,49 +53,26 @@ readonly final class Tournament_Draw_Admin_Controller {
 
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
         $league_id     = isset( $query['league'] ) ? intval( $query['league'] ) : null;
-        $tab           = isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( $query['league-tab'] ) ) : null;
 
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_id );
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            throw new Tournament_Not_Found_Exception( $e->getMessage() );
-        }
+        $tournament = $this->tournament_service->get_tournament( $tournament_id );
 
-        $league = get_league( $league_id );
+        $league = $this->league_service->get_league( $league_id );
         if ( ! $league ) {
             throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
         }
 
-        // Default tab if none supplied
-        if ( empty( $tab ) ) {
-            $tab = 'finalResults';
-        }
+        $response = $this->dispatch_action( $tournament_id, $league_id, $post );
 
-        $dto = new Draw_Action_Request_DTO(
-            tournament_id: $tournament_id,
-            league_id: $league_id,
-            season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null,
-            post: $post
-        );
-
-        $response = $this->draw_action_dispatcher->handle( $dto );
-        $tab = $response->tab_override ?: $tab;
-
-        $vm = new Tournament_Draw_Page_View_Model(
-            tournament: $tournament,
-            league: $league,
-            tab: $tab ?: 'finalResults',
-            season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : ( $query['season'] ?? $tournament->get_season() ),
-        );
+        $vm = $this->build_view_model( $tournament, $league, $query, $post, $response->tab_override );
 
         $result = array(
-            'view_model' => $vm,
+            'view_model'   => $vm,
             // For PRG redirects: the tab the user should land on after POST.
-            'redirect_tab' => $vm->tab ?: 'finalResults',
+            'redirect_tab' => $vm->tab,
         );
 
         if ( null !== $response->message ) {
-            $result['message'] = $response->message;
+            $result['message']      = $response->message;
             $result['message_type'] = Admin_Message_Mapper::to_legacy( $response->message_type );
         }
 
@@ -111,5 +88,50 @@ readonly final class Tournament_Draw_Admin_Controller {
         }
 
         return $result;
+    }
+
+    private function dispatch_action( ?int $tournament_id, ?int $league_id, array $post ): object {
+        $dto = new Draw_Action_Request_DTO(
+            tournament_id: $tournament_id,
+            league_id: $league_id,
+            season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null,
+            post: $post
+        );
+
+        return $this->draw_action_dispatcher->handle( $dto );
+    }
+
+    private function build_view_model( object $tournament, object $league, array $query, array $post, ?string $tab_override ): Tournament_Draw_Page_View_Model {
+        return new Tournament_Draw_Page_View_Model(
+            tournament: $tournament,
+            league: $league,
+            tab: $this->extract_tab( $query, $tab_override ),
+            season: $this->extract_season( $query, $post, $tournament->get_season() ),
+        );
+    }
+
+    /**
+     * @param array $query Typically $_GET
+     * @param string|null $override Optional tab override.
+     */
+    private function extract_tab( array $query, ?string $override ): string {
+        if ( ! empty( $override ) ) {
+            return $override;
+        }
+
+        return isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( $query['league-tab'] ) ) : 'finalResults';
+    }
+
+    /**
+     * @param array $query  Typically $_GET
+     * @param array $post   Typically $_POST
+     * @param string|null $fallback Fallback season value.
+     */
+    private function extract_season( array $query, array $post, ?string $fallback ): string {
+        if ( isset( $post['season'] ) ) {
+            return sanitize_text_field( wp_unslash( strval( $post['season'] ) ) );
+        }
+
+        return strval( $query['season'] ?? $fallback );
     }
 }

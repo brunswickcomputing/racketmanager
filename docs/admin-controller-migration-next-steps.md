@@ -16,25 +16,25 @@ Applies to these admin views:
 For each view:
 
 1. **Admin bridge** (`Admin_Tournament`) is a thin router:
-   - Pop flash messages
-   - Delegate to controller-service
-   - If controller returns `redirect`, store message to flash + redirect (PRG)
-   - Render template from view model
+    - Pop flash messages
+    - Delegate to controller-service
+    - If controller returns `redirect`, store message to flash + redirect (PRG)
+    - Render template from view model
 
 2. **Controller-service** parses request + orchestrates:
-   - Build DTOs
-   - Call dispatcher(s)
-   - Create view model for GET rendering
+    - Build DTOs
+    - Call dispatcher(s)
+    - Create view model for GET rendering
 
 3. **Action dispatcher** performs:
-   - Action detection (policy / resolver)
-   - Security checks via `Action_Guard_Interface`
-   - Calls application services
-   - Returns response DTO
+    - Action detection (policy / resolver)
+    - Security checks via `Action_Guard_Interface`
+    - Calls application services
+    - Returns response DTO
 
 4. **PRG + user-meta flash**:
-   - POST → redirect to GET
-   - Message shown once
+    - POST → redirect to GET
+    - Message shown once
 
 
 
@@ -48,9 +48,9 @@ The match editing template posts with:
 Verify:
 
 - **`view=match` POST** redirects back to *the same match* edit URL:
-  - preserves `tournament`, `league`, `final`, `edit`
+    - preserves `tournament`, `league`, `final`, `edit`
 - **`view=matches` POST** redirects back to the correct finals context:
-  - preserves `tournament`, `league_id`, `final`
+    - preserves `tournament`, `league_id`, `final`
 
 If there are additional query params that affect rendering (e.g. `leg`, `match_day`, `mode`), ensure redirects preserve them as well.
 
@@ -76,13 +76,15 @@ Add a minimal set of PHPUnit unit tests that:
 
 Guideline:
 - Prefer interface injection (handler + guard) to avoid WordPress runtime dependencies in unit tests.
+
 ## Next steps (ordered)
+
 ### 4) Remove legacy code paths after parity is confirmed
 
 Once the new controllers are confirmed in staging:
 
 - Delete or disable the old in-method legacy branches in `Admin_Tournament` for:
-  - match/matches/information
+    - match/matches/information
 - Keep the bridge methods as thin delegates only.
 
 Acceptance:
@@ -119,31 +121,31 @@ The tournament contact page is a good next migration target because it already h
 Proposed target shape:
 
 1. **Admin bridge** (`Admin_Tournament::display_contact_page`) should:
-   - pop flash message
-   - delegate to a `Tournament_Contact_Admin_Controller`
-   - if controller returns `redirect`, store flash + redirect
-   - render the contact template from a contact view model
+    - pop flash message
+    - delegate to a `Tournament_Contact_Admin_Controller`
+    - if controller returns `redirect`, store flash + redirect
+    - render the contact template from a contact view model
 
 2. **Controller-service** should:
-   - parse GET context for the contact target
-   - detect whether the request is:
-     - initial compose GET
-     - preview POST
-     - send POST
-     - send-active POST
-   - build a single request DTO for the page
-   - return either:
-     - `view_model` for compose/preview rendering, or
-     - `redirect` + flash message for send actions
+    - parse GET context for the contact target
+    - detect whether the request is:
+        - initial compose GET
+        - preview POST
+        - send POST
+        - send-active POST
+    - build a single request DTO for the page
+    - return either:
+        - `view_model` for compose/preview rendering, or
+        - `redirect` + flash message for send actions
 
 3. **Dispatcher** should be introduced for `view=contact` because the page has multiple POST intents:
-   - preview
-   - send
-   - send active recipients
+    - preview
+    - send
+    - send active recipients
 
 4. **Guarding**:
-   - all capability and nonce checks should move behind `Action_Guard_Interface`
-   - controller/template should not perform direct nonce/capability logic
+    - all capability and nonce checks should move behind `Action_Guard_Interface`
+    - controller/template should not perform direct nonce/capability logic
 
 Implementation notes:
 - Keep **preview** as a rendered response (`view_model`) so the user stays on the contact screen and sees the generated email preview.
@@ -165,6 +167,58 @@ Suggested unit-test minimum:
 - Controller returns `view_model` for GET.
 - Controller returns `view_model` for preview POST.
 - Controller returns `redirect` for send/send-active POST.
+
+### 7) `Admin_Tournament` PSR / cleanup checklist
+
+#### Responsibility and structure
+- [ ] Keep `Admin_Tournament` as a thin admin bridge/router only.
+- [ ] Ensure each view method only pops flash, delegates to a controller, redirects when needed, and renders a template.
+- [ ] Remove mixed legacy business logic from bridge methods after parity is confirmed.
+
+#### Request handling
+- [ ] Localize direct request-array access to bridge/controller entrypoints only.
+- [ ] Pass normalized arrays or DTOs deeper into controllers/services.
+- [ ] Prefer one request DTO per migrated view where multiple POST intents exist.
+
+#### PRG consistency
+- [ ] Ensure every mutating POST flow uses PRG consistently.
+- [ ] Allow non-mutating preview-style POSTs to render without redirect only where intentional.
+- [ ] Audit remaining tournament admin views for POST flows that still render after mutation.
+
+#### Redirect handling
+- [ ] Centralize redirect URL construction for all migrated tournament views.
+- [ ] Ensure redirects explicitly set `page`, `view`, and required context parameters.
+- [ ] Avoid inheriting stale or unrelated query parameters in redirects.
+
+#### Flash/message handling
+- [ ] Standardize controller result handling to one message flow.
+- [ ] Store flash only on redirect responses.
+- [ ] Show inline messages only for non-redirect render responses.
+
+#### Template contracts
+- [ ] Standardize migrated templates on a single `$vm` variable.
+- [ ] Remove legacy local-variable unpacking once a template is view-model based.
+- [ ] Use `Error_Bag` for field-level template errors instead of validator-shaped objects.
+
+#### Security boundaries
+- [ ] Route all nonce and capability checks through `Action_Guard_Interface`.
+- [ ] Keep controllers/templates free of direct nonce/capability checks.
+- [ ] Keep application services free of security, output, and redirect concerns.
+
+#### Legacy removal
+- [ ] Delete old in-method implementations once staging parity is confirmed.
+- [ ] Ensure no migrated view keeps both legacy and controller-based implementations.
+- [ ] Reduce `Admin_Tournament` size over time by extracting remaining view-specific logic.
+
+#### Testability
+- [ ] Add controller tests for GET / preview POST / mutation POST behavior per migrated view.
+- [ ] Add dispatcher tests for known intents and unknown-payload no-op behavior.
+- [ ] Verify redirect URL correctness with PHPUnit where possible.
+
+#### Consistency / style
+- [ ] Keep new controller and DTO code style consistent across tournament views.
+- [ ] Prefer typed view models / DTOs over loose arrays where practical.
+- [ ] Normalize message, redirect, and render result shapes across migrated controllers.
 
 ## Notes / conventions
 

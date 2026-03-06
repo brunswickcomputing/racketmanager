@@ -29,11 +29,35 @@ readonly final class Tournament_Setup_Admin_Controller {
     }
 
     /**
+     * @return bool True when the current request is a POST.
+     */
+    private function is_post_request(): bool {
+        return 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) );
+    }
+
+    /**
+     * @param array $query
+     * @param array $post
+     * @return int|null
+     */
+    private function resolve_tournament_id( array $query, array $post ): ?int {
+        if ( isset( $query['tournament'] ) ) {
+            return intval( $query['tournament'] );
+        }
+
+        if ( isset( $post['tournament_id'] ) ) {
+            return intval( $post['tournament_id'] );
+        }
+
+        return null;
+    }
+
+    /**
      * Controller for admin.php?page=racketmanager-tournaments&view=setup
      *
      * @param array $query Typically $_GET
      * @param array $post  Typically $_POST
-     * @return array{view_model:Tournament_Setup_Page_View_Model, message?:string, message_type?:bool|string}
+     * @return array{view_model:Tournament_Setup_Page_View_Model, message?:string, message_type?:bool|string, redirect?:string}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
@@ -41,15 +65,11 @@ readonly final class Tournament_Setup_Admin_Controller {
     public function setup_page( array $query, array $post ): array {
         $this->action_guard->assert_capability( 'edit_matches' );
 
-        $validator = new Validator_Tournament(); // Kept for field-level validation + error mapping.
-        $result = array();
-
-        $message_info = $this->handle_post_actions( $post, $validator );
-
-        $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
-
-        $errors = Admin_Error_Bag_Mapper::from_validator( $validator );
-
+        $validator     = new Validator_Tournament(); // Kept for field-level validation + error mapping.
+        $result        = array();
+        $message_info  = $this->handle_post_actions( $post, $validator );
+        $tournament_id = $this->resolve_tournament_id( $query, $post );
+        $errors        = Admin_Error_Bag_Mapper::from_validator( $validator );
         $vm            = $this->build_view_model( $tournament_id, $validator );
 
         // Prefer Error_Bag for templates; keep validator for BC.
@@ -66,6 +86,14 @@ readonly final class Tournament_Setup_Admin_Controller {
         if ( null !== $message_info['message'] ) {
             $result['message']      = $message_info['message'];
             $result['message_type'] = $message_info['message_type'];
+        }
+
+        if ( $this->is_post_request() ) {
+            $result['redirect'] = Admin_Redirect_Url_Builder::tournament_setup_view(
+                $query,
+                $post,
+                $tournament_id
+            );
         }
 
         return $result;

@@ -10,38 +10,33 @@
 namespace Racketmanager\Admin;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
+use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
-use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
+use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
-use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
+use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
-use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
-use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
+use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
-use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
-use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
-use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
-use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
-use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
-use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
-use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Validator\Validator;
-use Racketmanager\Util\Util;
-use stdClass;
-use function Racketmanager\get_event;
 
 /**
  * RacketManager administration functions
@@ -90,6 +85,80 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     /**
+     * @param array $result
+     * @return void
+     */
+    private function redirect_with_flash_if_needed( array $result ): void {
+        if ( empty( $result['redirect'] ) ) {
+            return;
+        }
+
+        $this->store_flash_message( $result );
+        $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
+    }
+
+    /**
+     * @param string $redirect_url
+     * @param array $result
+     * @return void
+     */
+    private function redirect_on_post( string $redirect_url, array $result = [] ): void {
+        if ( ! $this->is_post_request() ) {
+            return;
+        }
+
+        $this->store_flash_message( $result );
+        $this->redirect_or_js_fallback( $redirect_url );
+    }
+
+    private function apply_flash_message(): void {
+        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message(
+                strval( $flash['message'] ),
+                $flash['message_type'] ?? false
+            );
+        }
+    }
+
+    /**
+     * @param array $result
+     * @return void
+     */
+    private function apply_result_message( array $result ): void {
+        if ( ! empty( $result['message'] ) ) {
+            $this->set_message(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
+        }
+    }
+
+    /**
+     * @param array $result
+     * @return void
+     */
+    private function store_flash_message( array $result ): void {
+        if ( ! empty( $result['message'] ) ) {
+            ( new Admin_Flash_Message_Store() )->set(
+                strval( $result['message'] ),
+                $result['message_type'] ?? false
+            );
+        }
+    }
+
+    /**
+     * @param mixed $view_model
+     * @param string $expected_class
+     * @return void
+     */
+    private function assert_view_model_instance( mixed $view_model, string $expected_class ): void {
+        if ( ! ( $view_model instanceof $expected_class ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
+    }
+
+    /**
      * Function to handle administration tournament displays
      *
      * @param string|null $view
@@ -98,29 +167,26 @@ final class Admin_Tournament extends Admin_Championship {
      */
     public function handle_display( ?string $view ): void {
         $view_map = [
-                'modify'       => [ $this, 'display_tournament_page' ],
-                'plan'         => [ $this, 'display_plan_page' ],
-                'tournament'   => [ $this, 'display_tournament_overview_page' ],
-                'draw'         => [ $this, 'display_draw_page' ],
-                'setup'        => [ $this, 'display_setup_page' ],
-                'setup-event'  => [ $this, 'display_setup_event_page' ],
-                'matches'      => [ $this, 'display_matches_page' ],
-                'match'        => [ $this, 'display_match_page' ],
-                'teams'        => [ $this, 'display_teams_list' ],
-                'contact'      => [ $this, 'display_contact_page' ],
-                'information'  => [ $this, 'display_information_page' ],
+            'tournament'   => [ $this, 'display_tournament_overview_page' ],
+            'modify'       => [ $this, 'display_tournament_page' ],
+            'plan'         => [ $this, 'display_plan_page' ],
+            'draw'         => [ $this, 'display_draw_page' ],
+            'setup'        => [ $this, 'display_setup_page' ],
+            'setup-event'  => [ $this, 'display_setup_event_page' ],
+            'matches'      => [ $this, 'display_matches_page' ],
+            'match'        => [ $this, 'display_match_page' ],
+            'teams'        => [ $this, 'display_teams_list' ],
+            'contact'      => [ $this, 'display_contact_page' ],
+            'information'  => [ $this, 'display_information_page' ],
             // Views handled by external sub-controllers
-                'config'       => [ $this->get_admin_competition(), 'display_config_page' ],
-                'event-config' => [ $this->get_admin_event(), 'display_config_page' ],
-                'team'         => [ $this->get_admin_club(), 'display_team_page' ],
+            'config'       => [ $this->get_admin_competition(), 'display_config_page' ],
+            'event-config' => [ $this->get_admin_event(), 'display_config_page' ],
+            'team'         => [ $this->get_admin_club(), 'display_team_page' ],
         ];
 
         try {
-            // Resolve the callback or fall back to default
             $callback = $view_map[ $view ] ?? [ $this, 'display_tournaments_page' ];
-
-            call_user_func( $callback );
-
+            $callback();
         } catch ( Tournament_Not_Found_Exception | Invalid_Status_Exception $e ) {
             $this->set_message( $e->getMessage(), true );
             $this->show_message();
@@ -131,13 +197,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Tournament teams list (add teams) — PRG + flash + controller-service.
      */
     public function display_teams_list(): void {
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_teams_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Teams_Admin_Controller ) ) {
@@ -147,28 +207,15 @@ final class Admin_Tournament extends Admin_Championship {
         $result = $controller->teams_page( $_GET, $_POST );
 
         if ( ! empty( $result['redirect'] ) ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
+            $this->store_flash_message( $result );
             $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
         }
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Teams_List_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Teams_List_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams-list.php';
     }
@@ -196,19 +243,11 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->tournaments_page( $_GET, $_POST );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Tournaments_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Tournaments_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/show-tournaments.php';
     }
@@ -224,19 +263,11 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->overview_page( $_GET, $_POST );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Overview_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Overview_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/show-tournament.php';
     }
@@ -245,15 +276,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament draw
      */
     public function display_draw_page(): void {
-        $is_post = $this->is_post_request();
-
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
@@ -262,34 +285,24 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->draw_page( $_GET, $_POST );
 
-        // PRG: if this request is a POST, store the message (if any) and redirect to GET.
-        if ( $is_post ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
+        $this->redirect_on_post(
+            Admin_Redirect_Url_Builder::tournament_draw_view(
+                $_GET,
+                $_POST,
+                'draw',
+                isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
+                isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
+                isset( $result['redirect_tab'] )
+                    ? strval( $result['redirect_tab'] )
+                    : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' )
+            ),
+            $result
+        );
 
-            $tab = isset( $result['redirect_tab'] ) ? strval( $result['redirect_tab'] ) : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' );
-            $this->redirect_or_js_fallback(
-                Admin_Redirect_Url_Builder::tournament_draw_view(
-                    $_GET,
-                    $_POST,
-                    'draw',
-                    isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
-                    isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
-                    $tab
-                )
-            );
-        }
-        
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Draw_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Draw_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/draw.php';
     }
@@ -298,15 +311,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament setup
      */
     public function display_setup_page(): void {
-        $is_post = $this->is_post_request();
-
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_setup_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Setup_Admin_Controller ) ) {
@@ -315,35 +320,14 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->setup_page( $_GET, $_POST );
 
-        // PRG: if this request is a POST, store the message (if any) and redirect to GET.
-        if ( $is_post ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
-
-            // Preserve context and redirect back to setup screen.
-            // phpcs:disable WordPress.Security.NonceVerification.Recommended
-            $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : ( isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null );
-            // phpcs:enable WordPress.Security.NonceVerification.Recommended
-
-            $this->redirect_or_js_fallback(
-                Admin_Redirect_Url_Builder::tournament_setup_view(
-                    $_GET,
-                    $_POST,
-                    $tournament_id
-                )
-            );
+        if ( $this->is_post_request() ) {
+            $this->redirect_with_flash_if_needed( $result );
         }
 
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Setup_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
     }
@@ -352,15 +336,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display event setup
      */
     public function display_setup_event_page(): void {
-        $is_post = $this->is_post_request();
-
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_setup_event_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Setup_Event_Admin_Controller ) ) {
@@ -369,26 +345,14 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->setup_event_page( $_GET, $_POST );
 
-        // PRG: if this request is a POST, store the message (if any) and redirect to GET.
-        if ( $is_post ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
-
-            if ( ! empty( $result['redirect'] ) ) {
-                $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-            }
+        if ( $this->is_post_request() ) {
+            $this->redirect_with_flash_if_needed( $result );
         }
-        
+
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Setup_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
     }
@@ -399,28 +363,18 @@ final class Admin_Tournament extends Admin_Championship {
     public function display_tournament_page(): void {
         $controller = $this->racketmanager->container->get( 'tournament_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( __( 'Controller not available', 'racketmanager' ) );
+            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
         }
 
         $result = $controller->modify_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-        }
+        $this->redirect_with_flash_if_needed( $result );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Modify_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Modify_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament-edit.php';
     }
@@ -436,24 +390,13 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->plan_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            $redirect_url = strval( $result['redirect'] );
-            $this->redirect_or_js_fallback( $redirect_url );
-        }
+        $this->redirect_with_flash_if_needed( $result );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Plan_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Plan_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/plan.php';
     }
@@ -462,13 +405,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament matches page
      */
     public function display_matches_page(): void {
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_matches_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Matches_Admin_Controller ) ) {
@@ -477,29 +414,13 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->matches_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
-            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-        }
+        $this->redirect_with_flash_if_needed( $result );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Matches_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Matches_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
     }
@@ -508,13 +429,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament match page
      */
     public function display_match_page(): void {
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_match_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Match_Admin_Controller ) ) {
@@ -523,29 +438,13 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->match_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
-            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-        }
+        $this->redirect_with_flash_if_needed( $result );
 
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Match_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Match_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
     }
@@ -554,13 +453,7 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament contact page
      */
     public function display_contact_page(): void {
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_contact_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Contact_Admin_Controller ) ) {
@@ -569,69 +462,22 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->contact_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
+        $this->redirect_with_flash_if_needed( $result );
 
-            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-        }
-
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Contact_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
+        $this->assert_view_model_instance( $vm, Tournament_Contact_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/contact.php';
     }
-    /**
-     * Contact teams in tournament in admin screen
-     */
-    private function contact_tournament_teams(): void {
-        $validator = new Validator();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
-        $validator = $validator->capability( 'edit_teams' );
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->error, true );
-            return;
-        }
-        $tournament_id = isset( $_POST['tournament_id'] ) ? intval( $_POST['tournament_id'] ) : null;
-        $message       = isset( $_POST['emailMessage'] ) ? htmlspecialchars_decode( $_POST['emailMessage'] ) : null;
-        $active        = isset( $_POST['contactTeamActive'] );
-        try {
-            $sent = $this->tournament_service->contact_teams( $tournament_id, $message, $active );
-            if ( $sent ) {
-                $this->set_message( __( 'Email sent to players', 'racketmanager' ) );
-            } else {
-                $this->set_message( __( 'Unable to send email', 'racketmanager' ), true );
-            }
-        } catch ( Tournament_Not_Found_Exception $e ) {
-            $this->set_message( $e->getMessage(), true );
-        }
-    }
+
     /**
      * Display tournament information page
      */
     public function display_information_page(): void {
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
-        if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
-                strval( $flash['message'] ),
-                $flash['message_type'] ?? false
-            );
-        }
+        $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_information_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Information_Admin_Controller ) ) {
@@ -640,190 +486,15 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->information_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            if ( ! empty( $result['message'] ) ) {
-                ( new Admin_Flash_Message_Store() )->set(
-                    strval( $result['message'] ),
-                    $result['message_type'] ?? false
-                );
-            }
+        $this->redirect_with_flash_if_needed( $result );
 
-            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-        }
-
-        if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
-                strval( $result['message'] ),
-                $result['message_type'] ?? false
-            );
-        }
-
+        $this->apply_result_message( $result );
         $this->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Information_Page_View_Model ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
-        }
-
-        // Preferred: templates use $vm. Kept locals for BC with older templates/includes.
-        $tournament = $vm->tournament;
-        $errors     = $vm->errors;
+        $this->assert_view_model_instance( $vm, Tournament_Information_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
     }
-    /**
-     * Calculate team ratings function
-     *
-     * @param object $league league object.
-     *
-     * @return void
-     */
-    private function edit_player_team( object $league ): void {
-
-    }
-    /**
-     * Add a new season to competition
-     *
-     * @param string $season season.
-     * @param int $competition_id competition id.
-     * @param int|null $num_match_days number of match days.
-     *
-     * @return array|boolean
-     */
-    public function add_season_to_competition( string $season, int $competition_id, ?int $num_match_days = null ): bool|array {
-        try {
-            $competition = $this->competition_service->get_competition( $competition_id );
-        } catch ( Competition_Not_Found_Exception ) {
-            return false;
-        }
-        if ( ! $num_match_days ) {
-            $num_match_days = Util::get_default_match_days( $competition->type );
-        }
-        if ( ! $num_match_days ) {
-            $this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
-            return false;
-        }
-        $seasons            = empty( $competition->get_seasons() ) ? array() : $competition->get_seasons();
-        $seasons[ $season ] = array(
-            'name'           => $season,
-            'num_match_days' => $num_match_days,
-            'status'         => 'draft',
-        );
-        ksort( $seasons );
-        $competition->update_seasons( $seasons );
-        $events = $this->competition_service->get_events_for_competition( $competition_id );
-        foreach ( $events as $event ) {
-            if ( empty( $event->get_season_by_name( $season ) ) ) {
-                $this->add_season_to_event( $season, $event->id, $num_match_days );
-            }
-        }
-        /* translators: %s: season name */
-        $this->set_message( sprintf( __( 'Season %s added', 'racketmanager' ), $season ) );
-
-        return $competition->get_season_by_name( $season );
-    }
-    /**
-     * Edit season in object - competition or event
-     *
-     * @param object $season_data season data.
-     */
-    private function edit_season( object $season_data ): void {
-        $competition = null;
-        $event       = null;
-        if ( 'competition' === $season_data->type ) {
-            try {
-                $competition = $this->competition_service->get_by_id( $season_data->object_id );
-                $object      = $competition;
-            } catch ( Competition_Not_Found_Exception ) {
-                $object = null;
-            }
-        } elseif ( 'event' === $season_data->type ) {
-            $event  = get_event( $season_data->object_id );
-            $object = $event;
-        } else {
-            $object      = null;
-        }
-        $seasons                         = $object->seasons;
-        $seasons[ $season_data->season ] = array(
-            'name'              => $season_data->season,
-            'num_match_days'    => $season_data->num_match_days,
-            'match_dates'       => $season_data->match_dates,
-            'home_away'         => $season_data->home_away,
-            'fixed_match_dates' => $season_data->fixed_dates,
-            'status'            => $season_data->status,
-            'date_closing'      => $season_data->date_closing,
-        );
-        if ( 'competition' === $season_data->type ) {
-            $seasons[ $season_data->season ]['date_open']        = $season_data->date_open;
-            $seasons[ $season_data->season ]['date_start']       = $season_data->date_start;
-            $seasons[ $season_data->season ]['date_end']         = $season_data->date_end;
-            $seasons[ $season_data->season ]['competition_code'] = $season_data->competition_code;
-            $seasons[ $season_data->season ]['venue']            = $season_data->venue ?? null;
-            $seasons[ $season_data->season ]['grade']            = $season_data->grade ?? null;
-        }
-        ksort( $seasons );
-        if ( 'competition' === $season_data->type ) {
-            $competition->update_seasons( $seasons );
-        } elseif ( 'event' === $season_data->type ) {
-            $event->update_seasons(  $seasons );
-        }
-        if ( 'competition' === $season_data->type ) {
-            $events = $this->competition_service->get_events_for_competition( $competition->id );
-            foreach ( $events as $event ) {
-                $event_season                 = new stdClass();
-                $event_season->object_id      = $event->id;
-                $event_season->type           = 'event';
-                $event_season->season         = $season_data->season;
-                $event_season->num_match_days = $season_data->num_match_days;
-                $event_season->match_dates    = $season_data->match_dates;
-                $event_season->home_away      = $season_data->home_away;
-                $event_season->fixed_dates    = $season_data->fixed_dates;
-                $event_season->status         = $season_data->status;
-                $event_season->date_closing   = $season_data->date_closing;
-                $this->edit_season( $event_season );
-            }
-        }
-    }
-    /**
-     * Add a new season to event
-     *
-     * @param string $season season.
-     * @param int $event_id event_id.
-     * @param int|null $num_match_days number of match days.
-     *
-     * @return void
-     */
-    private function add_season_to_event( string $season, int $event_id, ?int $num_match_days ): void {
-        global $event;
-
-        $event = get_event( $event_id );
-        if ( empty( $event->get_seasons() ) ) {
-            $event_seasons = array();
-        } else {
-            $event_seasons = $event->get_seasons();
-        }
-        if ( $event->is_box ) {
-            $event_seasons[ $season ] = array(
-                'name'           => $season,
-                'num_match_days' => 0,
-                'status'         => 'draft',
-            );
-        } else {
-            if ( ! $num_match_days ) {
-                $num_match_days = Util::get_default_match_days( $event->competition->type );
-            }
-            if ( ! $num_match_days ) {
-                $this->set_message( __( 'Number of match days not specified', 'racketmanager' ), 'error' );
-                return;
-            }
-            $event_seasons[ $season ] = array(
-                'name'           => $season,
-                'num_match_days' => $num_match_days,
-                'status'         => 'draft',
-            );
-        }
-        $seasons = $event->get_seasons();
-        ksort( $seasons );
-        $event->update_seasons( $seasons );
-    }
 }
+

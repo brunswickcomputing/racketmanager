@@ -34,11 +34,11 @@ if ( ! function_exists( 'admin_url' ) ) {
 
 if ( ! function_exists( 'add_query_arg' ) ) {
     /**
-     * Very small subset of WP's add_query_arg behavior.
+     * Very small subset of WP's add_query_arg behaviour.
      *
      * Supports the common WP signatures:
-     * - add_query_arg( array $args, string $url = '' )
-     * - add_query_arg( string $key, string $value, string $url = '' )
+     * - add_query_arg( array $args, string $url = '')
+     * - add_query_arg( string $key, string $value, string $url = '')
      *
      * @param array<string,mixed>|string $arg1
      * @param mixed $arg2
@@ -52,7 +52,7 @@ if ( ! function_exists( 'add_query_arg' ) ) {
             $url  = is_string( $arg2 ) ? $arg2 : '';
         } else {
             $args = array(
-                (string) $arg1 => $arg2,
+                $arg1 => $arg2,
             );
             $url = $arg3;
         }
@@ -81,7 +81,7 @@ if ( ! isset( $GLOBALS['racketmanager'] ) ) {
         public $container;
         public function __construct() {
             $this->container = new class {
-                public function get( string $id ) {
+                public function get( string $id ): stdClass {
                     $reflection = null;
                     try {
                         switch ( $id ) {
@@ -123,7 +123,7 @@ if ( ! class_exists( 'WP_Error' ) ) {
             }
         }
 
-        public function add( $code, $message, $data = '' ) {
+        public function add( $code, $message, $data = '' ): void {
             $this->errors[ $code ][] = $message;
         }
 
@@ -138,17 +138,17 @@ if ( ! class_exists( 'WP_Error' ) ) {
             return $this->errors[ $code ] ?? array();
         }
 
-        public function get_error_codes() {
+        public function get_error_codes(): array {
             return array_keys( $this->errors );
         }
 
-        public function get_error_message( $code = '' ) {
+        public function get_error_message( $code = '' ): mixed {
             $messages = $this->get_error_messages( $code );
             return $messages[0] ?? '';
         }
     }
 
-    function is_wp_error( $thing ) {
+    function is_wp_error( $thing ): bool {
         return $thing instanceof WP_Error;
     }
 }

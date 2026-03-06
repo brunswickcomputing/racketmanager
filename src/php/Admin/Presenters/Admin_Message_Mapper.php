@@ -27,7 +27,7 @@ final class Admin_Message_Mapper {
             Admin_Message_Type::ERROR   => true,
             Admin_Message_Type::WARNING => 'warning',
             Admin_Message_Type::INFO    => 'info',
-            Admin_Message_Type::SUCCESS => 'success',
+            Admin_Message_Type::SUCCESS => false,
             default => false,
         };
     }

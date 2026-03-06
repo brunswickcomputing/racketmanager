@@ -16,11 +16,11 @@ use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 
-readonly final class Tournament_Action_Dispatcher {
+class Tournament_Action_Dispatcher {
 
     public function __construct(
-        private Tournament_Service $tournament_service,
-        private Action_Guard_Interface $action_guard,
+        private readonly Tournament_Service $tournament_service,
+        private readonly Action_Guard_Interface $action_guard,
     ) {
     }
 

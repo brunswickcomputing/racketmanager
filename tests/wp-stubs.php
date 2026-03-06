@@ -75,3 +75,80 @@ if ( ! function_exists( '__' ) ) {
         return $text;
     }
 }
+
+if ( ! isset( $GLOBALS['racketmanager'] ) ) {
+    $GLOBALS['racketmanager'] = new class {
+        public $container;
+        public function __construct() {
+            $this->container = new class {
+                public function get( string $id ) {
+                    $reflection = null;
+                    try {
+                        switch ( $id ) {
+                            case 'competition_service':
+                                $reflection = new ReflectionClass( 'Racketmanager\Services\Competition_Service' );
+                                break;
+                            case 'club_service':
+                                $reflection = new ReflectionClass( 'Racketmanager\Services\Club_Service' );
+                                break;
+                            case 'player_service':
+                                $reflection = new ReflectionClass( 'Racketmanager\Services\Player_Service' );
+                                break;
+                            case 'registration_service':
+                                $reflection = new ReflectionClass( 'Racketmanager\Services\Registration_Service' );
+                                break;
+                        }
+                    } catch ( ReflectionException ) {
+                        return new stdClass();
+                    }
+
+                    if ( $reflection ) {
+                        return $reflection->newInstanceWithoutConstructor();
+                    }
+
+                    return new stdClass();
+                }
+            };
+        }
+    };
+}
+
+if ( ! class_exists( 'WP_Error' ) ) {
+    class WP_Error {
+        public array $errors = array();
+
+        public function __construct( $code = '', $message = '', $data = '' ) {
+            if ( ! empty( $code ) ) {
+                $this->add( $code, $message, $data );
+            }
+        }
+
+        public function add( $code, $message, $data = '' ) {
+            $this->errors[ $code ][] = $message;
+        }
+
+        public function get_error_messages( $code = '' ) {
+            if ( empty( $code ) ) {
+                $all = array();
+                foreach ( $this->errors as $messages ) {
+                    $all = array_merge( $all, $messages );
+                }
+                return $all;
+            }
+            return $this->errors[ $code ] ?? array();
+        }
+
+        public function get_error_codes() {
+            return array_keys( $this->errors );
+        }
+
+        public function get_error_message( $code = '' ) {
+            $messages = $this->get_error_messages( $code );
+            return $messages[0] ?? '';
+        }
+    }
+
+    function is_wp_error( $thing ) {
+        return $thing instanceof WP_Error;
+    }
+}

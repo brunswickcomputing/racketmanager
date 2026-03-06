@@ -15,6 +15,8 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
 
+require_once __DIR__ . '/../wp-stubs.php';
+
 final class Tournament_Contact_Admin_Controller_Test extends TestCase {
 
     protected function tearDown(): void {
@@ -29,7 +31,6 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
         $tournament = $this->create_tournament_instance( 15, 'Spring Open', '2026' );
-        $app = $this->create_app_double( '<html lang="">preview</html>' );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service
@@ -50,7 +51,6 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
         $dispatcher = new Tournament_Contact_Action_Dispatcher( $tournament_service, $guard );
 
         $controller = new Tournament_Contact_Admin_Controller(
-            $app,
             $tournament_service,
             $dispatcher,
             $guard
@@ -80,7 +80,7 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         $tournament = $this->create_tournament_instance( 19, 'Autumn Open', '2025' );
-        $app = $this->create_app_double( '<html lang=""><body>Preview body</body></html>' );
+        $rendered_preview = '<html lang=""><body>Preview body</body></html>';
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service
@@ -88,6 +88,21 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
             ->method( 'get_tournament' )
             ->with( 19 )
             ->willReturn( $tournament );
+        $tournament_service
+            ->expects( self::once() )
+            ->method( 'get_contact_preview' )
+            ->with(
+                19,
+                '2025',
+                'Final reminder',
+                'Hello players',
+                array(
+                    1 => 'Paragraph 1',
+                    2 => 'Paragraph 2',
+                ),
+                'Regards'
+            )
+            ->willReturn( $rendered_preview );
         $tournament_service
             ->expects( self::never() )
             ->method( 'contact_teams' );
@@ -105,7 +120,6 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
         $dispatcher = new Tournament_Contact_Action_Dispatcher( $tournament_service, $guard );
 
         $controller = new Tournament_Contact_Admin_Controller(
-            $app,
             $tournament_service,
             $dispatcher,
             $guard
@@ -148,8 +162,6 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
     public function test_send_post_returns_redirect_result(): void {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $app = $this->create_app_double( '<html lang="">unused</html>' );
-
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service
             ->expects( self::once() )
@@ -173,7 +185,6 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
         $dispatcher = new Tournament_Contact_Action_Dispatcher( $tournament_service, $guard );
 
         $controller = new Tournament_Contact_Admin_Controller(
-            $app,
             $tournament_service,
             $dispatcher,
             $guard
@@ -198,7 +209,7 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
             $result['redirect']
         );
         self::assertSame( 'Email sent to players', $result['message'] );
-        self::assertSame( 'success', $result['message_type'] );
+        self::assertFalse( $result['message_type'] );
         self::assertArrayNotHasKey( 'view_model', $result );
     }
 
@@ -265,34 +276,5 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
         }
 
         self::fail( sprintf( 'Property "%s" not found on %s', $property_name, $object::class ) );
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    private function create_app_double( string $rendered_preview ): RacketManager {
-        $reflection = new ReflectionClass( RacketManager::class );
-
-        /** @var RacketManager $app */
-        $app = $reflection->newInstanceWithoutConstructor();
-
-        $this->set_property( $app, 'site_name', 'Example Club' );
-        $this->set_property(
-            $app,
-            'shortcodes',
-            new class( $rendered_preview ) {
-                private string $rendered_preview;
-
-                public function __construct( string $rendered_preview ) {
-                    $this->rendered_preview = $rendered_preview;
-                }
-
-                public function load_template( string $template, array $args, string $context ): string {
-                    return $this->rendered_preview;
-                }
-            }
-        );
-
-        return $app;
     }
 }

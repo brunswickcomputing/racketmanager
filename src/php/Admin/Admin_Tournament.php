@@ -10,7 +10,6 @@
 namespace Racketmanager\Admin;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
@@ -85,7 +84,7 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     /**
-     * @param array $result
+     * @param array{redirect?:string,message?:string,message_type?:bool|string} $result
      * @return void
      */
     private function redirect_with_flash_if_needed( array $result ): void {
@@ -95,20 +94,6 @@ final class Admin_Tournament extends Admin_Championship {
 
         $this->store_flash_message( $result );
         $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-    }
-
-    /**
-     * @param string $redirect_url
-     * @param array $result
-     * @return void
-     */
-    private function redirect_on_post( string $redirect_url, array $result = [] ): void {
-        if ( ! $this->is_post_request() ) {
-            return;
-        }
-
-        $this->store_flash_message( $result );
-        $this->redirect_or_js_fallback( $redirect_url );
     }
 
     private function apply_flash_message(): void {
@@ -122,7 +107,7 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     /**
-     * @param array $result
+     * @param array{message?:string,message_type?:bool|string} $result
      * @return void
      */
     private function apply_result_message( array $result ): void {
@@ -135,7 +120,7 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     /**
-     * @param array $result
+     * @param array{message?:string,message_type?:bool|string} $result
      * @return void
      */
     private function store_flash_message( array $result ): void {
@@ -206,10 +191,7 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->teams_page( $_GET, $_POST );
 
-        if ( ! empty( $result['redirect'] ) ) {
-            $this->store_flash_message( $result );
-            $this->redirect_or_js_fallback( strval( $result['redirect'] ) );
-        }
+        $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
         $this->show_message();

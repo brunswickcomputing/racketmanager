@@ -20,6 +20,12 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
     }
 }
 
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+    function sanitize_textarea_field( $value ) {
+        return is_string( $value ) ? trim( $value ) : $value;
+    }
+}
+
 if ( ! function_exists( 'admin_url' ) ) {
     function admin_url( string $path = '' ): string {
         return 'https://example.test/wp-admin/' . ltrim( $path, '/' );
@@ -59,6 +65,7 @@ if ( ! function_exists( 'add_query_arg' ) ) {
             $pairs[] = rawurlencode( (string) $k ) . '=' . rawurlencode( (string) $v );
         }
         $qs = implode( '&', $pairs );
+
         return $url . ( $qs ? ( str_contains( $url, '?' ) ? '&' : '?' ) . $qs : '' );
     }
 }

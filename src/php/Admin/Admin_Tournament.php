@@ -285,19 +285,9 @@ final class Admin_Tournament extends Admin_Championship {
 
         $result = $controller->draw_page( $_GET, $_POST );
 
-        $this->redirect_on_post(
-            Admin_Redirect_Url_Builder::tournament_draw_view(
-                $_GET,
-                $_POST,
-                'draw',
-                isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null,
-                isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null,
-                isset( $result['redirect_tab'] )
-                    ? strval( $result['redirect_tab'] )
-                    : ( isset( $_GET['league-tab'] ) ? strval( $_GET['league-tab'] ) : 'finalResults' )
-            ),
-            $result
-        );
+        if ( $this->is_post_request() ) {
+            $this->redirect_with_flash_if_needed( $result );
+        }
 
         $this->show_message();
 
@@ -497,4 +487,3 @@ final class Admin_Tournament extends Admin_Championship {
         require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
     }
 }
-

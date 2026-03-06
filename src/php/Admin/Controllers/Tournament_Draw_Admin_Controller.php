@@ -32,11 +32,18 @@ readonly final class Tournament_Draw_Admin_Controller {
     }
 
     /**
+     * @return bool True when the current request is a POST.
+     */
+    private function is_post_request(): bool {
+        return 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) );
+    }
+
+    /**
      * Controller for admin.php?page=racketmanager-tournaments&view=draw
      *
      * @param array $query Typically $_GET
      * @param array $post  Typically $_POST
-     * @return array{view_model:Tournament_Draw_Page_View_Model, redirect_tab:string, message?:string, message_type?:bool|string}
+     * @return array{view_model:Tournament_Draw_Page_View_Model, redirect_tab:string, redirect?:string, message?:string, message_type?:bool|string}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
@@ -90,6 +97,17 @@ readonly final class Tournament_Draw_Admin_Controller {
         if ( null !== $response->message ) {
             $result['message'] = $response->message;
             $result['message_type'] = Admin_Message_Mapper::to_legacy( $response->message_type );
+        }
+
+        if ( $this->is_post_request() ) {
+            $result['redirect'] = Admin_Redirect_Url_Builder::tournament_draw_view(
+                $query,
+                $post,
+                'draw',
+                $tournament_id,
+                $league_id,
+                $result['redirect_tab']
+            );
         }
 
         return $result;

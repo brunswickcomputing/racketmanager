@@ -81,7 +81,7 @@ if ( ! isset( $GLOBALS['racketmanager'] ) ) {
         public $container;
         public function __construct() {
             $this->container = new class {
-                public function get( string $id ): stdClass {
+                public function get( string $id ): object {
                     $reflection = null;
                     try {
                         switch ( $id ) {

@@ -36,7 +36,6 @@ use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use function Racketmanager\debug_to_console;
 
 /**
  * RacketManager administration functions

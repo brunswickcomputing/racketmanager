@@ -906,6 +906,32 @@ class Tournament_Service {
         return $send;
     }
 
+    /**
+     * @throws Tournament_Not_Found_Exception
+     */
+    public function get_contact_preview( ?int $tournament_id, string $season, string $email_title, string $email_intro, array $email_body, string $email_close ): string {
+        $tournament = $this->get_tournament( $tournament_id );
+
+        $email_subject = $this->racketmanager->site_name . ' - ' . $tournament->get_name() . ' ' . $season . ' - ' . __( 'Important Message', 'racketmanager' );
+
+        return strval(
+            $this->racketmanager->shortcodes->load_template(
+                'contact-teams',
+                array(
+                    'tournament'    => $tournament,
+                    'organisation'  => $this->racketmanager->site_name,
+                    'season'        => $season,
+                    'title_text'    => $email_title,
+                    'intro'         => $email_intro,
+                    'body'          => $email_body,
+                    'closing_text'  => $email_close,
+                    'email_subject' => $email_subject,
+                ),
+                'email'
+            )
+        );
+    }
+
     public function calculate_player_team_rating_for_tournament( ?int $tournament_id ): bool {
         try {
             $events = $this->get_events_for_tournament( $tournament_id );

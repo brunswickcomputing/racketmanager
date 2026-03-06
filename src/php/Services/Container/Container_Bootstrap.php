@@ -238,7 +238,6 @@ final class Container_Bootstrap {
 
         $c->set( 'tournament_contact_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Contact_Admin_Controller(
-                $c->get( 'racketmanager_app' ),
                 $c->get( 'tournament_service' ),
                 $c->get( 'tournament_contact_action_dispatcher' ),
                 $c->get( 'action_guard' ),

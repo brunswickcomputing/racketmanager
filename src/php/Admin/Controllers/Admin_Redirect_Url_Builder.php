@@ -66,7 +66,7 @@ final class Admin_Redirect_Url_Builder {
     }
 
     /**
-     * Build redirect URL for tournament setup view (admin.php?page=racketmanager-tournaments&view=setup).
+     * Build redirect URL for the tournament setup view (admin.php?page=racketmanager-tournaments&view=setup).
      *
      * @param array $query Typically $_GET
      * @param array $post  Typically $_POST
@@ -118,6 +118,22 @@ final class Admin_Redirect_Url_Builder {
         );
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL for tournament modify view.
+     */
+    public static function tournament_modify( array $query, array $post, ?int $tournament_id, array $flags = array() ): string {
+        $args = array_merge(
+            array(
+                'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
+                'view'       => 'modify',
+                'tournament' => $tournament_id,
+            ),
+            $flags
+        );
 
         return add_query_arg( $args, admin_url( 'admin.php' ) );
     }

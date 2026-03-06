@@ -608,9 +608,9 @@ class Validator {
      */
     public function venue( ?int $venue ): object {
         if ( empty( $venue ) ) {
-            $this->error      = true;
-            $this->err_flds[] = 'venue';
-            $this->err_msgs[] = __( 'Venue is required', 'racketmanager' );
+            $error_field   = 'venue';
+            $error_message = __( 'Venue is required', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
         }
         return $this;
     }

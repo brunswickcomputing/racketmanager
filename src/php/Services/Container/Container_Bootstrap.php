@@ -18,6 +18,7 @@ use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 use Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Admin\Tournament\Matches_Action_Dispatcher;
+use Racketmanager\Services\Admin\Tournament\Tournament_Action_Dispatcher;
 use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
 use Racketmanager\Repositories\Charge_Repository;
 use Racketmanager\Repositories\Club_Repository;
@@ -145,8 +146,22 @@ final class Container_Bootstrap {
     }
 
     private static function register_admin_controllers( Simple_Container $c ): void {
+        $c->set( 'tournament_action_dispatcher', function ( Simple_Container $c ) {
+            return new Tournament_Action_Dispatcher(
+                $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
         $c->set( 'tournament_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Admin_Controller( $c->get( 'tournament_service' ), $c->get( 'club_service' ), $c->get( 'competition_service' ), $c->get( 'season_service' ), );
+            return new Tournament_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'club_service' ),
+                $c->get( 'competition_service' ),
+                $c->get( 'season_service' ),
+                $c->get( 'tournament_action_dispatcher' ),
+                $c->get( 'action_guard' ),
+            );
         } );
 
         $c->set( 'tournament_plan_admin_controller', function ( Simple_Container $c ) {

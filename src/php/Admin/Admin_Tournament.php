@@ -36,6 +36,7 @@ use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use function Racketmanager\debug_to_console;
 
 /**
  * RacketManager administration functions
@@ -238,6 +239,8 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament overview
      */
     public function display_tournament_overview_page(): void {
+        $this->apply_flash_message();
+
         $controller = $this->racketmanager->container->get( 'tournament_overview_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Overview_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
@@ -333,6 +336,8 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament page
      */
     public function display_tournament_page(): void {
+        $this->apply_flash_message();
+
         $controller = $this->racketmanager->container->get( 'tournament_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
@@ -355,6 +360,8 @@ final class Admin_Tournament extends Admin_Championship {
      * Display tournament plan page
      */
     public function display_plan_page(): void {
+        $this->apply_flash_message();
+
         $controller = $this->racketmanager->container->get( 'tournament_plan_admin_controller' );
         if ( ! ( $controller instanceof Tournament_Plan_Admin_Controller ) ) {
             throw new Invalid_Status_Exception( $this->msg_controller_not_available() );

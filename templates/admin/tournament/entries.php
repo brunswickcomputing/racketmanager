@@ -25,11 +25,11 @@ if ( $vm ) {
 /** @var array $pending_entries */
 /** @var array $confirmed_entries */
 ?>
-<?php
-if ( ! empty( $withdrawn_entries ) ) {
-    ?>
-    <div class="row">
-        <div class="col-12 col-md-6">
+<div class="row">
+    <div class="col-12 col-md-6">
+        <?php
+        if ( ! empty( $withdrawn_entries ) ) {
+            ?>
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
@@ -44,14 +44,10 @@ if ( ! empty( $withdrawn_entries ) ) {
                     ?>
                 </tbody>
             </table>
-        </div>
-    </div>
-    <?php
-}
-if ( ! empty( $unpaid_entries ) ) {
-    ?>
-    <div class="row">
-        <div class="col-12 col-md-6">
+            <?php
+        }
+        if ( ! empty( $unpaid_entries ) ) {
+            ?>
             <table class="table table-striped">
                 <thead class="table-dark">
                     <tr>
@@ -66,13 +62,9 @@ if ( ! empty( $unpaid_entries ) ) {
                     ?>
                 </tbody>
             </table>
-        </div>
-    </div>
-    <?php
-}
-?>
-<div class="row">
-    <div class="col-12 col-md-6">
+            <?php
+        }
+        ?>
         <table class="table table-striped">
             <thead class="table-dark">
                 <tr>

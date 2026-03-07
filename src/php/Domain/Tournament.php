@@ -296,7 +296,6 @@ final class Tournament {
      * @var object|null
      */
     public null|object $information = null;
-    private Competition_Service $competition_service;
 
     /**
      * Constructor
@@ -304,12 +303,9 @@ final class Tournament {
      * @param object|null $tournament Tournament object.
      */
     public function __construct( object $tournament = null ) {
-        global $racketmanager;
         if ( is_null( $tournament ) ) {
             return;
         }
-        $c                         = $racketmanager->container;
-        $this->competition_service = $c->get( 'competition_service' );
 
         $this->id               = $tournament->id;
         $this->name             = $tournament->name;

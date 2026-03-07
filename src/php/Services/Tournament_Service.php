@@ -720,6 +720,48 @@ class Tournament_Service {
         return Util::get_players_list( $players );
     }
 
+    /**
+     * @param int|null $tournament_id
+     * @return array{confirmed: array, unpaid: array, pending: array, withdrawn: array}
+     * @throws Tournament_Not_Found_Exception
+     */
+    public function get_categorized_players_for_tournament( ?int $tournament_id ): array {
+        try {
+            $tournament = $this->get_tournament( $tournament_id );
+        } catch ( Tournament_Not_Found_Exception $e ) {
+            throw new Tournament_Not_Found_Exception( $e->getMessage() );
+        }
+
+        $all_entries = $this->tournament_entry_repository->find_by_tournament( $tournament->get_id() );
+
+        $confirmed = array();
+        $unpaid    = array();
+        $pending   = array();
+        $withdrawn = array();
+
+        foreach ( $all_entries as $entry ) {
+            $status = (int) $entry->status;
+            if ( 0 === $status ) {
+                $pending[] = $entry;
+            } elseif ( 3 === $status ) {
+                $withdrawn[] = $entry;
+            } elseif ( 2 === $status ) {
+                if ( 'paid' === $entry->invoice_status ) {
+                    $confirmed[] = $entry;
+                } else {
+                    $unpaid[] = $entry;
+                }
+            }
+        }
+
+        return array(
+            'confirmed' => Util::get_players_list( $confirmed ),
+            'unpaid'    => Util::get_players_list( $unpaid ),
+            'pending'   => Util::get_players_list( $pending ),
+            'withdrawn' => Util::get_players_list( $withdrawn ),
+        );
+    }
+
     public function get_player_details_for_tournament( Tournament $tournament, null|int|string $player_input ): ?Player {
         try {
             if ( is_numeric( $player_input ) ) {

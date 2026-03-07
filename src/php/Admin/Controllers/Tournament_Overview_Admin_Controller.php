@@ -56,20 +56,17 @@ readonly final class Tournament_Overview_Admin_Controller {
         $events = $this->tournament_service->get_leagues_by_event_for_tournament( $tournament_id );
         $tab    = 'overview';
 
-        $confirmed_entries = $this->tournament_service->get_players_for_tournament( $tournament_id, 'confirmed' );
-        $unpaid_entries    = $this->tournament_service->get_players_for_tournament( $tournament_id, 'unpaid' );
-        $pending_entries   = $this->tournament_service->get_players_for_tournament( $tournament_id, 'pending' );
-        $withdrawn_entries = $this->tournament_service->get_players_for_tournament( $tournament_id, 'withdrawn' );
+        $categorized_entries = $this->tournament_service->get_categorized_players_for_tournament( $tournament_id );
 
         $vm = new Tournament_Overview_Page_View_Model(
             tournament: $tournament,
             overview: $overview,
             events: $events,
             tab: $tab,
-            confirmed_entries: is_array( $confirmed_entries ) ? $confirmed_entries : array(),
-            unpaid_entries: is_array( $unpaid_entries ) ? $unpaid_entries : array(),
-            pending_entries: is_array( $pending_entries ) ? $pending_entries : array(),
-            withdrawn_entries: is_array( $withdrawn_entries ) ? $withdrawn_entries : array(),
+            confirmed_entries: $categorized_entries['confirmed'],
+            unpaid_entries: $categorized_entries['unpaid'],
+            pending_entries: $categorized_entries['pending'],
+            withdrawn_entries: $categorized_entries['withdrawn'],
         );
 
         $result = array(

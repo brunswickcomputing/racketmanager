@@ -8,6 +8,8 @@ declare(strict_types=1);
  * Keep intentionally tiny: only add functions as tests require them.
  */
 
+define( 'ABSPATH', __DIR__ . '/' );
+
 if ( ! function_exists( 'absint' ) ) {
     function absint( $x ) {
         return abs( intval( $x ) );
@@ -76,15 +78,68 @@ if ( ! function_exists( 'add_query_arg' ) ) {
     }
 }
 
+if ( ! function_exists( 'mysql2date' ) ) {
+    function mysql2date( string $format, string $date_string, bool $translate = true ): string|int|false {
+        return date( $format, strtotime( $date_string ) );
+    }
+}
+
+if ( ! function_exists( 'maybe_unserialize' ) ) {
+    function maybe_unserialize( $data ) {
+        if ( is_serialized( $data ) ) {
+            return unserialize( $data );
+        }
+        return $data;
+    }
+}
+
+if ( ! function_exists( 'is_serialized' ) ) {
+    function is_serialized( $data ): bool {
+        return is_string( $data ) && preg_match( '/^([adObis]):/', $data );
+    }
+}
+
+if ( ! function_exists( 'esc_url_raw' ) ) {
+    function esc_url_raw( $url ) {
+        return $url;
+    }
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+    function esc_url( $url ) {
+        return $url;
+    }
+}
+
+if ( ! function_exists( 'esc_attr' ) ) {
+    function esc_attr( $text ) {
+        return $text;
+    }
+}
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+    function wp_json_encode( $data ) {
+        return json_encode( $data );
+    }
+}
+
 if ( ! function_exists( '__' ) ) {
     function __( string $text, string $domain = '' ): string {
         return $text;
     }
 }
 
+if ( ! isset( $GLOBALS['wp'] ) ) {
+    $GLOBALS['wp'] = new class {
+        public function set_query_var( $key, $value ) {}
+    };
+}
+
 if ( ! isset( $GLOBALS['racketmanager'] ) ) {
     $GLOBALS['racketmanager'] = new class {
         public $container;
+        public string $date_format = 'Y-m-d';
+        public string $site_url = 'https://example.test';
         public function __construct() {
             $this->container = new class {
                 public function get( string $id ): object {

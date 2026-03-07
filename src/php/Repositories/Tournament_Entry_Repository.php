@@ -141,19 +141,29 @@ class Tournament_Entry_Repository {
         $search_terms             = array();
         $search_args              = array();
         $search_args[]            = $tournament_id;
+
+        $invoice_status_subquery = $this->wpdb->prepare(
+            "SELECT i.`status`
+             FROM `$invoice_table` i
+             JOIN `$charge_table` c ON i.charge_id = c.id
+             JOIN `$tournament_table` t ON t.competition_id = c.competition_id AND t.season = c.season
+             WHERE t.`id` = %d AND i.`billable_id` = te.`player_id`
+               AND i.`billable_type` = 'player'
+             LIMIT 1",
+            $tournament_id
+        );
+
         if ( $status ) {
             if ( 'pending' === $status ) {
-                $search_terms[] = '`status` = 0';
+                $search_terms[] = 'te.`status` = 0';
             } elseif ( 'unpaid' === $status ) {
-                $search_terms[] = '`status` = 2';
-                $search_terms[] = "`player_id` IN (SELECT `player_id` FROM `$invoice_table` i join `$charge_table` c ON i.charge_id = c.id JOIN `$tournament_table` t ON t.competition_id = c.competition_id AND t.season = c.season WHERE t.`id` = %d AND i.`status` != 'paid')";
-                $search_args[]  = $tournament_id;
+                $search_terms[] = 'te.`status` = 2';
+                $search_terms[] = "($invoice_status_subquery) != 'paid'";
             } elseif ( 'confirmed' === $status ) {
-                $search_terms[] = '`status` = 2';
-                $search_terms[] = "`player_id` NOT IN (SELECT `player_id` FROM `$invoice_table` i join `$charge_table` c ON i.charge_id = c.id JOIN `$tournament_table` t ON t.competition_id = c.competition_id AND t.season = c.season WHERE t.`id` = %d AND i.`status` != 'paid')";
-                $search_args[]  = $tournament_id;
+                $search_terms[] = 'te.`status` = 2';
+                $search_terms[] = "($invoice_status_subquery) = 'paid'";
             } elseif ( 'withdrawn' === $status ) {
-                $search_terms[] = '`status` = 3';
+                $search_terms[] = 'te.`status` = 3';
             }
         }
         $search = Util::search_string( $search_terms );
@@ -168,7 +178,8 @@ class Tournament_Entry_Repository {
             um_last.meta_value AS surname,
             te.club_id AS club_id,
             c.shortcode AS club_name,
-            te.status
+            te.status,
+            ($invoice_status_subquery) AS invoice_status
          FROM `$tournament_entries_table` te
              JOIN `$players_table` p ON p.ID = te.player_id
              JOIN `$usermeta_table` um_first ON p.ID = um_first.user_id
@@ -179,7 +190,7 @@ class Tournament_Entry_Repository {
            AND um_last.meta_key = 'last_name'
          $search
          ORDER BY p.display_name",
-            $search_args,
+            $tournament_id
         );
 
         return $this->wpdb->get_results( $query );

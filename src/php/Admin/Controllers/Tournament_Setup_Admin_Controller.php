@@ -8,6 +8,8 @@
 
 namespace Racketmanager\Admin\Controllers;
 
+use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Tournament;
 use Racketmanager\Admin\Presenters\Admin_Error_Bag_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
@@ -55,9 +57,10 @@ readonly final class Tournament_Setup_Admin_Controller {
     /**
      * Controller for admin.php?page=racketmanager-tournaments&view=setup
      *
-     * @param array $query Typically $_GET
-     * @param array $post  Typically $_POST
-     * @return array{view_model:Tournament_Setup_Page_View_Model, message?:string, message_type?:bool|string, redirect?:string}
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $post  Typically $_POST
+     *
+     * @return array{view_model?:Tournament_Setup_Page_View_Model, message?:string, message_type?:bool|string, redirect?:string}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
@@ -65,35 +68,51 @@ readonly final class Tournament_Setup_Admin_Controller {
     public function setup_page( array $query, array $post ): array {
         $this->action_guard->assert_capability( 'edit_matches' );
 
-        $validator     = new Validator_Tournament(); // Kept for field-level validation + error mapping.
-        $result        = array();
-        $message_info  = $this->handle_post_actions( $post, $validator );
+        $validator     = new Validator_Tournament();
         $tournament_id = $this->resolve_tournament_id( $query, $post );
-        $errors        = Admin_Error_Bag_Mapper::from_validator( $validator );
-        $vm            = $this->build_view_model( $tournament_id, $validator );
-
-        // Prefer Error_Bag for templates; keep validator for BC.
-        $result['view_model'] = new Tournament_Setup_Page_View_Model(
-            tournament: $vm->tournament,
-            season: $vm->season,
-            match_dates: $vm->match_dates,
-            match_count: $vm->match_count,
-            league: $vm->league,
-            errors: $errors,
-            validator: $validator
-        );
-
-        if ( null !== $message_info['message'] ) {
-            $result['message']      = $message_info['message'];
-            $result['message_type'] = $message_info['message_type'];
-        }
 
         if ( $this->is_post_request() ) {
-            $result['redirect'] = Admin_Redirect_Url_Builder::tournament_setup_view(
-                $query,
-                $post,
-                $tournament_id
-            );
+            $result = $this->handle_post_actions( $query, $post, $validator, $tournament_id );
+            if ( isset( $result['redirect'] ) || isset( $result['view_model'] ) ) {
+                return $result;
+            }
+        }
+
+        return $this->handle_get( $query, $validator, $tournament_id );
+    }
+
+    /**
+     * Handle GET rendering.
+     *
+     * @param array<string, mixed> $query
+     * @param Validator_Tournament $validator
+     * @param int|null             $tournament_id
+     *
+     * @return array{view_model:Tournament_Setup_Page_View_Model, message?:string, message_type?:bool|string}
+     *
+     * @throws Tournament_Not_Found_Exception
+     */
+    private function handle_get( array $query, Validator_Tournament $validator, ?int $tournament_id ): array {
+        $message      = null;
+        $message_type = false;
+
+        if ( isset( $query['updated'] ) ) {
+            $message = __( 'Tournament round dates updated', 'racketmanager' );
+        } elseif ( isset( $query['ratings_set'] ) ) {
+            $did_set      = ( '1' === strval( $query['ratings_set'] ) );
+            $message      = $did_set ? __( 'Tournament ratings set', 'racketmanager' ) : __( 'No ratings to set', 'racketmanager' );
+            $message_type = $did_set ? false : 'warning';
+        }
+
+        $vm = $this->build_view_model( $tournament_id, $validator );
+
+        $result = array(
+            'view_model' => $vm,
+        );
+
+        if ( null !== $message ) {
+            $result['message']      = $message;
+            $result['message_type'] = $message_type;
         }
 
         return $result;
@@ -102,45 +121,45 @@ readonly final class Tournament_Setup_Admin_Controller {
     /**
      * Handle POST actions for the setup page.
      *
-     * @param array $post
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
      * @param Validator_Tournament $validator
-     * @return array{message:string|null, message_type:bool|string}
+     * @param int|null             $tournament_id
+     *
+     * @return array{message?:string, message_type?:bool|string, redirect?:string, view_model?:Tournament_Setup_Page_View_Model}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
      */
-    private function handle_post_actions( array $post, Validator_Tournament $validator ): array {
-        $message      = null;
-
+    private function handle_post_actions( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
         if ( isset( $post['action'] ) ) {
-            return $this->handle_round_dates_post( $post, $validator );
+            return $this->handle_round_dates_post( $query, $post, $validator, $tournament_id );
         }
 
         if ( isset( $post['rank'] ) ) {
-            return $this->handle_generate_ratings_post( $post, $validator );
+            return $this->handle_generate_ratings_post( $query, $post, $validator, $tournament_id );
         }
 
-        return array(
-            'message'      => $message,
-            'message_type' => false,
-        );
+        return array();
     }
 
     /**
      * POST: set round dates / add/replace matches.
      *
-     * @param array $post
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
      * @param Validator_Tournament $validator
-     * @return array{message:string|null, message_type:bool|string}
+     * @param int|null             $tournament_id
+     *
+     * @return array{message?:string, message_type?:bool|string, redirect?:string, view_model?:Tournament_Setup_Page_View_Model}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
      */
-    private function handle_round_dates_post( array $post, Validator_Tournament $validator ): array {
+    private function handle_round_dates_post( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
         $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
 
-        $tournament_id = isset( $post['tournament_id'] ) ? intval( $post['tournament_id'] ) : null;
-        $request       = new Championship_Rounds_Request_DTO( $post );
+        $request = new Championship_Rounds_Request_DTO( $post );
 
         try {
             $response = $this->tournament_service->set_round_dates_for_tournament( $tournament_id, $request );
@@ -149,16 +168,23 @@ readonly final class Tournament_Setup_Admin_Controller {
                 $validator->err_flds = $response->get_error_codes();
                 $validator->err_msgs = $response->get_error_messages();
 
+                $vm = $this->build_view_model( $tournament_id, $validator );
+
                 return array(
+                    'view_model'   => $vm,
                     'message'      => __( 'Error setting tournament round dates', 'racketmanager' ),
                     'message_type' => true,
                 );
             }
 
-            return array(
-                'message'      => __( 'Tournament round dates updated', 'racketmanager' ),
-                'message_type' => false,
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_setup_view(
+                $query,
+                $post,
+                $tournament_id
             );
+            $redirect_url = add_query_arg( 'updated', 1, $redirect_url );
+
+            return array( 'redirect' => $redirect_url );
         } catch ( Tournament_Not_Found_Exception|Competition_Not_Found_Exception|Season_Not_Found_Exception $e ) {
             throw new Tournament_Not_Found_Exception( $e->getMessage() );
         }
@@ -167,31 +193,30 @@ readonly final class Tournament_Setup_Admin_Controller {
     /**
      * POST: generate ratings.
      *
-     * @param array $post
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
      * @param Validator_Tournament $validator
-     * @return array{message:string|null, message_type:bool|string}
+     * @param int|null             $tournament_id
+     *
+     * @return array{redirect:string}
      *
      * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
      */
-    private function handle_generate_ratings_post( array $post, Validator_Tournament $validator ): array {
+    private function handle_generate_ratings_post( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
         $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_calculate_ratings', 'edit_matches' );
-
-        $tournament_id = isset( $post['tournament_id'] ) ? intval( $post['tournament_id'] ) : null;
 
         try {
             $updates = $this->tournament_service->calculate_player_team_rating_for_tournament( $tournament_id );
-            if ( $updates ) {
-                return array(
-                    'message'      => __( 'Tournament ratings set', 'racketmanager' ),
-                    'message_type' => false,
-                );
-            }
 
-            return array(
-                'message'      => __( 'No ratings to set', 'racketmanager' ),
-                'message_type' => 'warning',
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_setup_view(
+                $query,
+                $post,
+                $tournament_id
             );
+            $redirect_url = add_query_arg( 'ratings_set', $updates ? 1 : 0, $redirect_url );
+
+            return array( 'redirect' => $redirect_url );
         } catch ( Tournament_Not_Found_Exception $e ) {
             throw new Tournament_Not_Found_Exception( $e->getMessage() );
         }
@@ -221,23 +246,7 @@ readonly final class Tournament_Setup_Admin_Controller {
         $match_dates       = $tournament_season['match_dates'] ?? array();
 
         if ( empty( $match_dates ) ) {
-            $match_dates  = array();
-            $match_date   = null;
-            $round_length = $competition->settings['round_length'] ?? 7;
-            $i            = 0;
-
-            foreach ( $tournament->finals as $final ) {
-                $r = $final['round'] - 1;
-                if ( 0 === $i ) {
-                    $match_date = $tournament->date_end;
-                } elseif ( 1 === $i ) {
-                    $match_date = Util::amend_date( $tournament->date_end, 7, '-' );
-                } else {
-                    $match_date = Util::amend_date( $match_date, $round_length, '-' );
-                }
-                $match_dates[ $r ] = $match_date;
-                ++$i;
-            }
+            $match_dates = $this->tournament_service->calculate_default_match_dates( $tournament, $competition );
         }
 
         $errors = Admin_Error_Bag_Mapper::from_validator( $validator );

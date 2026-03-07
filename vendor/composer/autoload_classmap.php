@@ -1503,6 +1503,8 @@ return array(
     'Racketmanager\\Tests\\Unit\\Tournament_Overview_Admin_Controller_Test' => $baseDir . '/tests/Unit/Tournament_Overview_Admin_Controller_Test.php',
     'Racketmanager\\Tests\\Unit\\Tournament_Plan_Admin_Controller_Test' => $baseDir . '/tests/Unit/Tournament_Plan_Admin_Controller_Test.php',
     'Racketmanager\\Tests\\Unit\\Tournament_Service_Test' => $baseDir . '/tests/Unit/Tournament_Service_Test.php',
+    'Racketmanager\\Tests\\Unit\\Tournament_Setup_Admin_Controller_Test' => $baseDir . '/tests/Unit/Tournament_Setup_Admin_Controller_Test.php',
+    'Racketmanager\\Tests\\Unit\\Tournament_Test' => $baseDir . '/tests/Unit/Tournament_Test.php',
     'Racketmanager\\Tests\\Unit\\Tournament_Tournaments_Admin_Controller_Test' => $baseDir . '/tests/Unit/Tournament_Tournaments_Admin_Controller_Test.php',
     'Racketmanager\\Tests\\Unit\\Wp_Action_Guard_Test' => $baseDir . '/tests/Unit/Wp_Action_Guard_Test.php',
     'Racketmanager\\Util\\Util' => $baseDir . '/src/php/Util/Util.php',

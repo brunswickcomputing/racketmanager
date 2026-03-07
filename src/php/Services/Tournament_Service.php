@@ -10,6 +10,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Charge;
+use Racketmanager\Domain\Competition;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
@@ -1157,5 +1158,35 @@ class Tournament_Service {
         } catch ( Competition_Not_Found_Exception $e ) {
             throw new Competition_Not_Found_Exception( $e->getMessage() );
         }
+    }
+
+    /**
+     * Calculate default match dates for the tournament rounds.
+     *
+     * @param Tournament  $tournament
+     * @param Competition $competition
+     *
+     * @return array<int, string>
+     */
+    public function calculate_default_match_dates( Tournament $tournament, Competition $competition ): array {
+        $match_dates  = array();
+        $match_date   = null;
+        $round_length = $competition->settings['round_length'] ?? 7;
+        $i            = 0;
+
+        foreach ( $tournament->finals as $final ) {
+            $r = $final['round'] - 1;
+            if ( 0 === $i ) {
+                $match_date = $tournament->date_end;
+            } elseif ( 1 === $i ) {
+                $match_date = Util::amend_date( $tournament->date_end, 7, '-' );
+            } else {
+                $match_date = Util::amend_date( $match_date, $round_length, '-' );
+            }
+            $match_dates[ $r ] = $match_date;
+            ++$i;
+        }
+
+        return $match_dates;
     }
 }

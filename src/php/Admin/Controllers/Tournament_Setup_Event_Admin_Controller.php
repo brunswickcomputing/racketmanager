@@ -109,6 +109,10 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
             ? ( $competition_dtls['match_dates'] ?? array() )
             : $event_dtls['match_dates'];
 
+        if ( empty( $match_dates ) ) {
+            $match_dates = $this->tournament_service->calculate_default_match_dates( $tournament, $league->event->competition );
+        }
+
         $vm = new Tournament_Setup_Page_View_Model(
             tournament: $tournament,
             season: strval( $season ),

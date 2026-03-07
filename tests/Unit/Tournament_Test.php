@@ -1,12 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager;
-function seo_url(string $name): string {
-    return strtolower(str_replace(' ', '-', $name));
+namespace Racketmanager {
+    if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
+        function seo_url( string $name ): string {
+            return strtolower( str_replace( ' ', '-', $name ) );
+        }
+    }
 }
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit {
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Tournament;
@@ -46,4 +49,5 @@ final class Tournament_Test extends TestCase {
         $this->assertIsArray($tournament->finals);
         $this->assertCount(6, $tournament->finals);
     }
+}
 }

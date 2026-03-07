@@ -14,7 +14,6 @@ use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
@@ -26,7 +25,6 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
@@ -159,7 +157,7 @@ final class Admin_Tournament extends Admin_Championship {
             'setup'        => [ $this, 'display_setup_page' ],
             'setup-event'  => [ $this, 'display_setup_event_page' ],
             'matches'      => [ $this, 'display_matches_page' ],
-            'match'        => [ $this, 'display_match_page' ],
+            'match'        => [ $this, 'display_matches_page' ],
             'teams'        => [ $this, 'display_teams_list' ],
             'contact'      => [ $this, 'display_contact_page' ],
             'information'  => [ $this, 'display_information_page' ],
@@ -380,7 +378,7 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     /**
-     * Display tournament matches page
+     * Display tournament matches or single match page
      */
     public function display_matches_page(): void {
         $this->apply_flash_message();
@@ -399,30 +397,6 @@ final class Admin_Tournament extends Admin_Championship {
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Matches_Page_View_Model::class );
-
-        require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
-    }
-
-    /**
-     * Display tournament match page
-     */
-    public function display_match_page(): void {
-        $this->apply_flash_message();
-
-        $controller = $this->racketmanager->container->get( 'tournament_match_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Match_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
-
-        $result = $controller->match_page( $_GET, $_POST );
-
-        $this->redirect_with_flash_if_needed( $result );
-
-        $this->apply_result_message( $result );
-        $this->show_message();
-
-        $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Match_Page_View_Model::class );
 
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
     }

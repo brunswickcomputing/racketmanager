@@ -30,6 +30,9 @@ final readonly class Tournament_Matches_Page_View_Model {
         public bool $single_cup_game,
         public int $max_matches,
         public string $final_key,
+        public string $home_title = '',
+        public string $away_title = '',
+        public mixed $match_day = null,
     ) {
     }
 
@@ -53,6 +56,9 @@ final readonly class Tournament_Matches_Page_View_Model {
             'single_cup_game' => $this->single_cup_game,
             'max_matches'     => $this->max_matches,
             'final_key'       => $this->final_key,
+            'home_title'      => $this->home_title,
+            'away_title'      => $this->away_title,
+            'match_day'       => $this->match_day,
         );
     }
 }

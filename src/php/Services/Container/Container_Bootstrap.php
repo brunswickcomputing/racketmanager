@@ -7,7 +7,6 @@ use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Match_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
@@ -17,7 +16,6 @@ use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Wp_Action_Guard;
 use Racketmanager\Services\Admin\Tournament\Tournament_Contact_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
-use Racketmanager\Services\Admin\Tournament\Matches_Action_Dispatcher;
 use Racketmanager\Services\Admin\Tournament\Tournament_Action_Dispatcher;
 use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispatcher;
 use Racketmanager\Repositories\Charge_Repository;
@@ -267,22 +265,8 @@ final class Container_Bootstrap {
             );
         } );
 
-        $c->set( 'matches_action_dispatcher', function ( Simple_Container $c ) {
-            return new Matches_Action_Dispatcher(
-                $c->get( 'draw_action_dispatcher' ),
-            );
-        } );
-
         $c->set( 'tournament_matches_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Matches_Admin_Controller(
-                $c->get( 'tournament_service' ),
-                $c->get( 'matches_action_dispatcher' ),
-                $c->get( 'action_guard' ),
-            );
-        } );
-
-        $c->set( 'tournament_match_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Match_Admin_Controller(
                 $c->get( 'tournament_service' ),
                 $c->get( 'draw_action_dispatcher' ),
                 $c->get( 'action_guard' ),

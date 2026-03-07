@@ -13,24 +13,26 @@ use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Admin\Tournament\Matches_Action_Dispatcher;
+use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
+use function Racketmanager\get_match;
+use function Racketmanager\get_team;
 
-readonly final class Tournament_Matches_Admin_Controller {
+class Tournament_Matches_Admin_Controller {
 
     public function __construct(
         private Tournament_Service $tournament_service,
-        private Matches_Action_Dispatcher $matches_action_dispatcher,
+        private Draw_Action_Dispatcher $draw_action_dispatcher,
         private Action_Guard_Interface $action_guard,
     ) {
     }
 
     /**
-     * Controller for admin.php?page=racketmanager-tournaments&view=matches
+     * Controller for admin.php?page=racketmanager-tournaments&view=matches or &view=match
      *
      * @param array $query Typically $_GET
      * @param array $post  Typically $_POST
@@ -46,8 +48,10 @@ readonly final class Tournament_Matches_Admin_Controller {
 
         //phpcs:disable WordPress.Security.NonceVerification.Recommended
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
-        $league_id     = isset( $query['league_id'] ) ? intval( $query['league_id'] ) : ( isset( $post['league_id'] ) ? intval( $post['league_id'] ) : null );
+        $league_id     = isset( $query['league_id'] ) ? intval( $query['league_id'] ) : ( isset( $query['league'] ) ? intval( $query['league'] ) : ( isset( $post['league_id'] ) ? intval( $post['league_id'] ) : null ) );
         $final_key     = isset( $query['final'] ) ? sanitize_text_field( wp_unslash( $query['final'] ) ) : ( isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null );
+        $match_id      = isset( $query['edit'] ) ? intval( $query['edit'] ) : ( isset( $post['match'][0] ) ? intval( $post['match'][0] ) : null );
+        $view          = isset( $query['view'] ) ? sanitize_text_field( wp_unslash( $query['view'] ) ) : 'matches';
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         // POST: manage matches (updateLeague=match) -> PRG redirect back to GET.
@@ -62,9 +66,13 @@ readonly final class Tournament_Matches_Admin_Controller {
                 post: $post
             );
 
-            $response = $this->matches_action_dispatcher->handle( $dto );
+            $response = $this->draw_action_dispatcher->handle( $dto );
 
-            $redirect_url = Admin_Redirect_Url_Builder::tournament_matches( $query, $post, $tournament_id, $league_id, $final_key );
+            if ( 'match' === $view ) {
+                $redirect_url = Admin_Redirect_Url_Builder::tournament_match( $query, $post, $tournament_id, $league_id, $final_key, $match_id );
+            } else {
+                $redirect_url = Admin_Redirect_Url_Builder::tournament_matches( $query, $post, $tournament_id, $league_id, $final_key );
+            }
 
             $result = array(
                 'redirect' => $redirect_url,
@@ -78,7 +86,7 @@ readonly final class Tournament_Matches_Admin_Controller {
             return $result;
         }
 
-        // GET: render page (same variables expected by templates/admin/includes/match.php).
+        // GET: render page
         $tournament = $this->tournament_service->get_tournament( $tournament_id );
         $season     = $tournament->get_season();
 
@@ -97,8 +105,47 @@ readonly final class Tournament_Matches_Admin_Controller {
         $max_matches  = 0;
         $form_title   = __( 'Matches', 'racketmanager' );
         $submit_title = $form_title;
+        $home_title   = '';
+        $away_title   = '';
+        $match_day    = null;
 
-        if ( $is_finals ) {
+        if ( 'match' === $view ) {
+            if ( ! $match_id ) {
+                throw new Invalid_Status_Exception( __( 'Match not found', 'racketmanager' ) );
+            }
+
+            $match = get_match( $match_id );
+            if ( ! $match ) {
+                throw new Invalid_Status_Exception( __( 'Match not found', 'racketmanager' ) );
+            }
+
+            $form_title   = __( 'Edit Match', 'racketmanager' );
+            $submit_title = $form_title;
+            $matches      = array( $match );
+            $match_day    = $match->match_day;
+            $max_matches  = 1;
+
+            $final       = $league->championship->get_finals( $final_key );
+            $final_teams = $league->championship->get_final_teams( $final['key'] );
+
+            if ( is_numeric( $match->home_team ) ) {
+                $home_team  = get_team( intval( $match->home_team ) );
+                $home_title = strval( $home_team?->title ?? '' );
+            } else {
+                $home_team  = $final_teams[ $match->home_team ] ?? null;
+                $home_title = strval( $home_team ? $home_team->title : '' );
+            }
+
+            if ( is_numeric( $match->away_team ) ) {
+                $away_team  = get_team( intval( $match->away_team ) );
+                $away_title = strval( $away_team?->title ?? '' );
+            } else {
+                $away_team  = $final_teams[ $match->away_team ] ?? null;
+                $away_title = strval( $away_team ? $away_team->title : '' );
+            }
+
+            $teams = $final_teams;
+        } elseif ( $is_finals ) {
             $final = $league->championship->get_finals( $final_key );
             $max_matches = intval( $final['num_matches'] ?? 0 );
 
@@ -131,9 +178,12 @@ readonly final class Tournament_Matches_Admin_Controller {
             is_finals: $is_finals,
             mode: $mode,
             teams: $teams,
-            single_cup_game: false,
+            single_cup_game: ( 'match' === $view ),
             max_matches: $max_matches,
             final_key: strval( $final_key ?? '' ),
+            home_title: $home_title,
+            away_title: $away_title,
+            match_day: $match_day,
         );
 
         return array(

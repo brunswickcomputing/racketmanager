@@ -7,14 +7,13 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Admin\View_Models\Tournament_Match_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
 
 // Preferred input: a single $vm (view model).
 // BC fallback: if $vm isn't provided, this template continues using legacy locals.
 $vm = isset( $vm ) ? $vm : null;
 
-if ( $vm instanceof Tournament_Match_Page_View_Model || $vm instanceof Tournament_Matches_Page_View_Model ) {
+if ( $vm instanceof Tournament_Matches_Page_View_Model ) {
     $league          = $vm->league;
     $tournament      = $vm->tournament;
     $competition     = $vm->competition;
@@ -31,12 +30,10 @@ if ( $vm instanceof Tournament_Match_Page_View_Model || $vm instanceof Tournamen
     $max_matches     = $vm->max_matches;
     $final_key       = $vm->final_key;
 
-    // Only present on the single-match VM (edit screen).
-    if ( $vm instanceof Tournament_Match_Page_View_Model ) {
-        $home_title = $vm->home_title;
-        $away_title = $vm->away_title;
-        $match_day  = $vm->match_day;
-    }
+    // Optional fields
+    $home_title = $vm->home_title;
+    $away_title = $vm->away_title;
+    $match_day  = $vm->match_day;
 }
 
 /** @var object $league */

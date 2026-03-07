@@ -18,7 +18,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 
-readonly final class Draw_Action_Dispatcher {
+class Draw_Action_Dispatcher {
 
     public function __construct(
         private Draw_Action_Handler_Interface $championship_admin_service,

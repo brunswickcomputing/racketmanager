@@ -179,5 +179,39 @@ class Team_Service {
         return $team;
     }
 
+    /**
+     * Get club teams for a given league type.
+     *
+     * @param string $league_type
+     * @return array<int,object>
+     */
+    public function get_club_teams( string $league_type ): array {
+        $teams = array();
+
+        $clubs = $this->club_repository->find_all(
+            array(
+                'type' => 'affiliated',
+            )
+        );
+
+        if ( is_array( $clubs ) ) {
+            foreach ( $clubs as $club_id ) {
+                $club_obj = $this->club_repository->find( $club_id );
+                if ( ! $club_obj ) {
+                    continue;
+                }
+
+                $club_teams = $this->team_repository->find_by_club( $club_obj->get_id(), $league_type );
+                if ( $club_teams ) {
+                    foreach ( $club_teams as $team ) {
+                        $teams[] = $team;
+                    }
+                }
+            }
+        }
+
+        return $teams;
+    }
+
 
 }

@@ -1553,6 +1553,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Tests\\Unit\\Tournament_Plan_Admin_Controller_Test' => __DIR__ . '/../..' . '/tests/Unit/Tournament_Plan_Admin_Controller_Test.php',
         'Racketmanager\\Tests\\Unit\\Tournament_Service_Test' => __DIR__ . '/../..' . '/tests/Unit/Tournament_Service_Test.php',
         'Racketmanager\\Tests\\Unit\\Tournament_Setup_Admin_Controller_Test' => __DIR__ . '/../..' . '/tests/Unit/Tournament_Setup_Admin_Controller_Test.php',
+        'Racketmanager\\Tests\\Unit\\Tournament_Teams_Admin_Controller_Test' => __DIR__ . '/../..' . '/tests/Unit/Tournament_Teams_Admin_Controller_Test.php',
         'Racketmanager\\Tests\\Unit\\Tournament_Test' => __DIR__ . '/../..' . '/tests/Unit/Tournament_Test.php',
         'Racketmanager\\Tests\\Unit\\Tournament_Tournaments_Admin_Controller_Test' => __DIR__ . '/../..' . '/tests/Unit/Tournament_Tournaments_Admin_Controller_Test.php',
         'Racketmanager\\Tests\\Unit\\Wp_Action_Guard_Test' => __DIR__ . '/../..' . '/tests/Unit/Wp_Action_Guard_Test.php',

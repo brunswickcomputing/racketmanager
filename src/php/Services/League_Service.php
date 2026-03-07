@@ -75,4 +75,127 @@ class League_Service {
         return $this->league_repository->find_by_id( $league_id );
     }
 
+    /**
+     * Get an eligible consolation teams list.
+     *
+     * @param League $league
+     * @return array<int,object>
+     */
+    public function get_consolation_teams( League $league ): array {
+        $primary_league_id = $league->event->primary_league ?? null;
+        if ( ! $primary_league_id ) {
+            return array();
+        }
+
+        $primary_league = $this->get_league( (int) $primary_league_id );
+        if ( ! $primary_league ) {
+            return array();
+        }
+
+        $teams = $primary_league->get_league_teams();
+        if ( ! is_array( $teams ) ) {
+            $teams = array();
+        }
+
+        foreach ( $teams as $key => $team ) {
+            $match_array                     = array();
+            $match_array['loser_id']         = $team->id;
+            $match_array['count']            = true;
+            $match_array['final']            = 'all';
+            $match_array['reset_query_args'] = true;
+            $matches_count                   = $primary_league->get_matches( $match_array );
+
+            if ( ! $matches_count ) {
+                unset( $teams[ $key ] );
+                continue;
+            }
+
+            $match_array['loser_id'] = null;
+            $match_array['team_id']  = $team->id;
+            $matches_count           = $primary_league->get_matches( $match_array );
+            $last_match              = null;
+
+            if ( $matches_count > 2 ) {
+                unset( $teams[ $key ] );
+                continue;
+            }
+
+            if ( 2 === $matches_count ) {
+                $match_array['count'] = false;
+                $matches              = $primary_league->get_matches( $match_array );
+                if ( is_array( $matches ) && count( $matches ) >= 2 ) {
+                    $first_match = $matches[0];
+                    if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) {
+                        unset( $teams[ $key ] );
+                        continue;
+                    }
+                    $last_match = $matches[1];
+                }
+            } elseif ( 1 === $matches_count ) {
+                $match_array['count'] = false;
+                $matches              = $primary_league->get_matches( $match_array );
+                if ( is_array( $matches ) && count( $matches ) >= 1 ) {
+                    $last_match = $matches[0];
+                }
+            }
+
+            if ( $last_match && ! empty( $last_match->is_walkover ) ) {
+                unset( $teams[ $key ] );
+            }
+        }
+
+        $match_array                     = array();
+        $match_array['reset_query_args'] = true;
+        $final_name                      = $primary_league->championship->get_final_keys( 1 );
+        $match_array['final']            = $final_name;
+        $match_array['pending']          = true;
+        $matches                         = $primary_league->get_matches( $match_array );
+
+        if ( is_array( $matches ) ) {
+            foreach ( $matches as $match ) {
+                $teams[] = $this->build_loser_team( $final_name, $match );
+            }
+        }
+
+        $final_name           = $primary_league->championship->get_final_keys( 2 );
+        $match_array['final'] = $final_name;
+        $matches              = $primary_league->get_matches( $match_array );
+
+        if ( is_array( $matches ) ) {
+            foreach ( $matches as $match ) {
+                $possible   = 0;
+                $team_types = array( 'home', 'away' );
+                foreach ( $team_types as $team_type ) {
+                    $team_ref = $team_type . '_team';
+                    if ( is_numeric( $match->$team_ref ) ) {
+                        $match_array['pending']   = false;
+                        $match_array['final']     = 'all';
+                        $match_array['winner_id'] = $match->$team_ref;
+                        $team_matches             = $primary_league->get_matches( $match_array );
+                        if ( is_array( $team_matches ) ) {
+                            foreach ( $team_matches as $team_match ) {
+                                if ( '-1' === $team_match->home_team || '-1' === $team_match->away_team ) {
+                                    ++$possible;
+                                }
+                            }
+                        }
+                    }
+                }
+                if ( $possible ) {
+                    $teams[] = $this->build_loser_team( $final_name, $match );
+                }
+            }
+        }
+
+        return $teams;
+    }
+
+    private function build_loser_team( string $final_name, object $match ): object {
+        $team          = new stdClass();
+        $team->id      = '2_' . $final_name . '_' . $match->id;
+        $team->title   = __( 'Loser of ', 'racketmanager' ) . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
+        $team->stadium = '';
+        return $team;
+    }
+
 }

@@ -129,6 +129,12 @@ if ( ! function_exists( '__' ) ) {
     }
 }
 
+if ( ! function_exists( '_n' ) ) {
+    function _n( string $single, string $plural, $number, string $domain = '' ): string {
+        return $number == 1 ? $single : $plural;
+    }
+}
+
 if ( ! isset( $GLOBALS['wp'] ) ) {
     $GLOBALS['wp'] = new class {
         public function set_query_var( $key, $value ) {}

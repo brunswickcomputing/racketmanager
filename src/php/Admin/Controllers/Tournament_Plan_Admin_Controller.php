@@ -29,8 +29,8 @@ readonly final class Tournament_Plan_Admin_Controller {
     /**
      * Controller for admin.php?page=racketmanager-tournaments&view=plan
      *
-     * @param array $query Typically $_GET
-     * @param array $post Typically $_POST
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $post  Typically $_POST
      *
      * @return array{redirect?:string, view_model?:Tournament_Plan_Page_View_Model, message?:string, message_type?:bool|string}
      *
@@ -40,16 +40,16 @@ readonly final class Tournament_Plan_Admin_Controller {
     public function plan_page( array $query, array $post ): array {
         $this->action_guard->assert_capability( 'edit_teams' );
 
-        $validator = new Validator_Tournament(); // Kept for field-level validation + error mapping.
+        $validator     = new Validator_Tournament();
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
         $tab           = ( isset( $query['tab'] ) ) ? sanitize_text_field( wp_unslash( $query['tab'] ) ) : 'matches';
 
         if ( isset( $post['saveTournamentPlan'] ) ) {
-            $result = $this->handle_save_tournament_plan( $post, $validator, $tournament_id );
+            $result = $this->handle_save_tournament_plan( $query, $post, $validator, $tournament_id );
         } elseif ( isset( $post['resetTournamentPlan'] ) ) {
-            $result = $this->handle_reset_tournament_plan( $post, $validator, $tournament_id );
+            $result = $this->handle_reset_tournament_plan( $query, $post, $tournament_id );
         } elseif ( isset( $post['saveTournamentFinalsConfig'] ) ) {
-            $result = $this->handle_save_tournament_finals_config( $post, $validator, $tournament_id );
+            $result = $this->handle_save_tournament_finals_config( $query, $post, $validator, $tournament_id );
         } else {
             $result = $this->handle_get( $query, $validator, $tournament_id, $tab );
         }
@@ -59,6 +59,15 @@ readonly final class Tournament_Plan_Admin_Controller {
 
     /**
      * Handle GET rendering and post-redirect messages.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param Validator_Tournament $validator
+     * @param int|null             $tournament_id
+     * @param string               $tab
+     *
+     * @return array{view_model:Tournament_Plan_Page_View_Model, message?:string, message_type?:bool|string}
+     *
+     * @throws Tournament_Not_Found_Exception
      */
     private function handle_get( array $query, Validator_Tournament $validator, ?int $tournament_id, string $tab ): array {
         $message      = null;
@@ -88,12 +97,21 @@ readonly final class Tournament_Plan_Admin_Controller {
 
     /**
      * POST handler: Save plan
+     *
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     * @param Validator_Tournament $validator
+     * @param int|null             $tournament_id
+     *
+     * @return array{redirect?:string, view_model?:Tournament_Plan_Page_View_Model, message?:string, message_type?:bool|string}
+     *
+     * @throws Tournament_Not_Found_Exception
      */
-    private function handle_save_tournament_plan( array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
+    private function handle_save_tournament_plan( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
         $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_tournament-planner', 'edit_teams' );
 
         $request              = new Tournament_Finals_Request_DTO( $post );
-        $tournament_id_posted = isset( $post['tournamentId'] ) ? intval( $post['tournamentId'] ) : null;
+        $tournament_id_posted = isset( $post['tournamentId'] ) ? intval( $post['tournamentId'] ) : $tournament_id;
 
         try {
             $response = $this->tournament_service->save_finals_plan_for_tournament( $tournament_id_posted, $request );
@@ -103,7 +121,7 @@ readonly final class Tournament_Plan_Admin_Controller {
                 $validator->err_msgs = $response->get_error_messages();
 
                 return $this->render(
-                    tournament_id: $tournament_id_posted ?? $tournament_id,
+                    tournament_id: $tournament_id_posted,
                     tab: 'matches',
                     validator: $validator,
                     message: __( 'Error updating tournament finals', 'racketmanager' ),
@@ -111,9 +129,11 @@ readonly final class Tournament_Plan_Admin_Controller {
                 );
             }
 
-            $redirect_url = $this->build_plan_url(
-                tournament_id: $tournament_id_posted ?? $tournament_id,
-                flags: array(
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_plan_view(
+                $query,
+                $post,
+                $tournament_id_posted,
+                array(
                     'plan_saved' => 1,
                     'tab'        => 'matches',
                 )
@@ -127,18 +147,28 @@ readonly final class Tournament_Plan_Admin_Controller {
 
     /**
      * POST handler: Reset plan
+     *
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     * @param int|null             $tournament_id
+     *
+     * @return array{redirect:string}
+     *
+     * @throws Tournament_Not_Found_Exception
      */
-    private function handle_reset_tournament_plan( array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
+    private function handle_reset_tournament_plan( array $query, array $post, ?int $tournament_id ): array {
         $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_tournament-planner', 'edit_teams' );
 
-        $tournament_id_posted = isset( $post['tournamentId'] ) ? intval( $post['tournamentId'] ) : null;
+        $tournament_id_posted = isset( $post['tournamentId'] ) ? intval( $post['tournamentId'] ) : $tournament_id;
 
         try {
             $response = $this->tournament_service->reset_plan_for_tournament( $tournament_id_posted );
 
-            $redirect_url = $this->build_plan_url(
-                tournament_id: $tournament_id_posted ?? $tournament_id,
-                flags: array(
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_plan_view(
+                $query,
+                $post,
+                $tournament_id_posted,
+                array(
                     'plan_reset' => $response ? 1 : 0,
                     'tab'        => 'matches',
                 )
@@ -152,11 +182,20 @@ readonly final class Tournament_Plan_Admin_Controller {
 
     /**
      * POST handler: Save finals config
+     *
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $post
+     * @param Validator_Tournament $validator
+     * @param int|null             $tournament_id
+     *
+     * @return array{redirect?:string, view_model?:Tournament_Plan_Page_View_Model, message?:string, message_type?:bool|string}
+     *
+     * @throws Tournament_Not_Found_Exception
      */
-    private function handle_save_tournament_finals_config( array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
+    private function handle_save_tournament_finals_config( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
         $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_tournament-finals-config', 'edit_teams' );
 
-        $tournament_id_posted = null;
+        $tournament_id_posted = $tournament_id;
         if ( isset( $post['tournamentId'] ) ) {
             $tournament_id_posted = intval( $post['tournamentId'] );
         } elseif ( isset( $post['tournament_id'] ) ) {
@@ -191,9 +230,11 @@ readonly final class Tournament_Plan_Admin_Controller {
                 );
             }
 
-            $redirect_url = $this->build_plan_url(
-                tournament_id: $tournament_id_posted,
-                flags: array(
+            $redirect_url = Admin_Redirect_Url_Builder::tournament_plan_view(
+                $query,
+                $post,
+                $tournament_id_posted,
+                array(
                     'config_saved' => $response ? 1 : 0,
                     'tab'          => 'config',
                 )
@@ -206,11 +247,11 @@ readonly final class Tournament_Plan_Admin_Controller {
     }
 
     /**
-     * @param int|null $tournament_id
-     * @param string $tab
+     * @param int|null             $tournament_id
+     * @param string               $tab
      * @param Validator_Tournament $validator
-     * @param string|null $message
-     * @param bool|string $message_type
+     * @param string|null          $message
+     * @param bool|string          $message_type
      *
      * @return array{view_model:Tournament_Plan_Page_View_Model, message?:string, message_type?:bool|string}
      *
@@ -248,21 +289,5 @@ readonly final class Tournament_Plan_Admin_Controller {
         }
 
         return $result;
-    }
-
-    /**
-     * @param int|null $tournament_id
-     * @param array<string,int|string> $flags
-     *
-     * @return string
-     */
-    private function build_plan_url( ?int $tournament_id, array $flags = array() ): string {
-        $args = array_merge( array(
-                'page'       => 'racketmanager-tournaments',
-                'view'       => 'plan',
-                'tournament' => $tournament_id,
-            ), $flags );
-
-        return admin_url( 'admin.php?' . http_build_query( $args ) );
     }
 }

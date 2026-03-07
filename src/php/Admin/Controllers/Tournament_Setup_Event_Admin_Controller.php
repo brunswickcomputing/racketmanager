@@ -43,53 +43,74 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
     public function setup_event_page( array $query, array $post ): array {
         $this->action_guard->assert_capability( 'edit_matches' );
 
-        $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
-
-        //phpcs:disable WordPress.Security.NonceVerification.Recommended
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
         $league_id     = isset( $query['league'] ) ? intval( $query['league'] ) : ( isset( $post['league_id'] ) ? intval( $post['league_id'] ) : null );
-        $season        = isset( $query['season'] ) ? sanitize_text_field( wp_unslash( strval( $query['season'] ) ) ) : null;
-        //phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-        // POST: reuse existing action pipeline (same as draw/setup-event legacy) and PRG back to GET.
-        if ( $is_post ) {
-            // Security: setup template posts with this nonce.
-            $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
-
-            $dto = new Draw_Action_Request_DTO(
-                tournament_id: $tournament_id ?? 0,
-                league_id: $league_id ?? 0,
-                season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null,
-                post: $post
-            );
-
-            $response = $this->draw_action_dispatcher->handle( $dto );
-
-            $redirect_url = Admin_Redirect_Url_Builder::tournament_draw_view(
-                $query,
-                $post,
-                'setup-event',
-                $tournament_id,
-                $league_id,
-                // setup-event uses the same league-tab pattern as draw for context; default is fine.
-                isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( strval( $query['league-tab'] ) ) ) : 'finalResults'
-            );
-
-            $result = array(
-                'redirect' => $redirect_url,
-            );
-
-            if ( null !== $response->message ) {
-                $result['message'] = $response->message;
-                $result['message_type'] = Admin_Message_Mapper::to_legacy( $response->message_type );
-            }
-
-            return $result;
+        if ( $this->is_post_request() ) {
+            return $this->handle_post_request( $tournament_id, $league_id, $query, $post );
         }
 
-        // GET: build setup view model.
+        return $this->handle_get_request( $tournament_id, $league_id, $query );
+    }
+
+    private function is_post_request(): bool {
+        return 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) );
+    }
+
+    /**
+     * @param int|null $tournament_id
+     * @param int|null $league_id
+     * @param array $query
+     * @param array $post
+     * @return array{redirect:string, message?:string, message_type?:bool|string}
+     */
+    private function handle_post_request( ?int $tournament_id, ?int $league_id, array $query, array $post ): array {
+        // Security: setup template posts with this nonce.
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+
+        $dto = new Draw_Action_Request_DTO(
+            tournament_id: $tournament_id ?? 0,
+            league_id: $league_id ?? 0,
+            season: isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null,
+            post: $post
+        );
+
+        $response = $this->draw_action_dispatcher->handle( $dto );
+
+        $redirect_url = Admin_Redirect_Url_Builder::tournament_draw_view(
+            $query,
+            $post,
+            'setup-event',
+            $tournament_id,
+            $league_id,
+            // setup-event uses the same league-tab pattern as draw for context; default is fine.
+            isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( strval( $query['league-tab'] ) ) ) : 'finalResults'
+        );
+
+        $result = array(
+            'redirect' => $redirect_url,
+        );
+
+        if ( null !== $response->message ) {
+            $result['message']      = $response->message;
+            $result['message_type'] = Admin_Message_Mapper::to_legacy( $response->message_type );
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int|null $tournament_id
+     * @param int|null $league_id
+     * @param array $query
+     * @return array{view_model:Tournament_Setup_Page_View_Model}
+     *
+     * @throws Invalid_Status_Exception
+     * @throws Tournament_Not_Found_Exception
+     */
+    private function handle_get_request( ?int $tournament_id, ?int $league_id, array $query ): array {
         $tournament = $this->tournament_service->get_tournament( $tournament_id );
-        $season     = $season ?: $tournament->get_season();
+        $season     = isset( $query['season'] ) ? sanitize_text_field( wp_unslash( strval( $query['season'] ) ) ) : $tournament->get_season();
 
         $league = get_league( $league_id );
         if ( ! $league ) {

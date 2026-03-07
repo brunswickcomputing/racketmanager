@@ -301,7 +301,7 @@ final class Tournament {
      *
      * @param object|null $tournament Tournament object.
      */
-    public function __construct( object $tournament = null ) {
+    public function __construct( ?object $tournament = null ) {
         if ( is_null( $tournament ) ) {
             return;
         }
@@ -492,15 +492,30 @@ final class Tournament {
     }
 
     public function set_tournament_info(): void {
-        global $racketmanager, $wp;
-        $this->link                    = '/tournament/' . seo_url( $this->name ) . '/';
-        $this->entry_link              = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+        $this->set_tournament_links();
+        $this->set_tournament_display_dates();
+        $this->set_tournament_phase();
+        $this->set_tournament_finals_config();
+    }
+
+    private function set_tournament_links(): void {
+        global $racketmanager;
+        $this->link       = '/tournament/' . seo_url( $this->name ) . '/';
+        $this->entry_link = $racketmanager->site_url . '/entry-form/' . seo_url( $this->name ) . '-tournament/';
+    }
+
+    private function set_tournament_display_dates(): void {
+        global $racketmanager;
         $this->date_display            = empty( $this->date_end ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date_end );
         $this->date_closing_display    = empty( $this->date_closing ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
         $this->date_withdrawal_display = empty( $this->date_withdrawal ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
         $this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
         $this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
-        $today                         = gmdate( 'Y-m-d' );
+    }
+
+    private function set_tournament_phase(): void {
+        global $wp;
+        $today = gmdate( 'Y-m-d' );
         if ( $today > $this->date_end ) {
             $this->current_phase = 'end';
             $this->is_complete   = true;
@@ -520,15 +535,15 @@ final class Tournament {
                 $this->is_open       = true;
             }
         }
-        if ( isset( $this->date_closing ) && $this->date_closing <= gmdate( 'Y-m-d' ) ) {
-            $this->is_active = true;
-        } else {
-            $this->is_active = false;
-        }
+        $this->is_active = ( isset( $this->date_closing ) && $this->date_closing <= $today );
+        $wp->set_query_var( 'season', $this->season );
+    }
+
+    private function set_tournament_finals_config(): void {
         $this->order_of_play = (array) maybe_unserialize( $this->order_of_play );
-        $finals     = array();
-        $max_rounds = 6;
-        $r          = $max_rounds;
+        $finals              = array();
+        $max_rounds          = 6;
+        $r                   = $max_rounds;
         for ( $round = 1; $round <= $max_rounds; ++$round ) {
             $num_teams      = pow( 2, $round );
             $num_matches    = $num_teams / 2;
@@ -544,7 +559,6 @@ final class Tournament {
             --$r;
         }
         $this->finals = $finals;
-        $wp->set_query_var( 'season', $this->season );
     }
 
 }

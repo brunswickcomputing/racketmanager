@@ -9,7 +9,6 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util;
 use function Racketmanager\seo_url;
 

@@ -24,7 +24,7 @@ readonly class Tournament_Request_DTO {
     public ?string $date_closing;
     public ?string $date_withdrawal;
     public ?string $date_start;
-    public ?string $date;
+    public ?string $date_end;
     public ?string $start_time;
     public ?string $competition_code;
     public ?string $grade;
@@ -46,7 +46,7 @@ readonly class Tournament_Request_DTO {
         $this->date_closing     = isset( $data['dateClose'] ) ? sanitize_text_field( wp_unslash( $data['dateClose'] ) ) : null;
         $this->date_withdrawal  = isset( $data['dateWithdraw'] ) ? sanitize_text_field( wp_unslash( $data['dateWithdraw'] ) ) : null;
         $this->date_start       = isset( $data['dateStart'] ) ? sanitize_text_field( wp_unslash( $data['dateStart'] ) ) : null;
-        $this->date             = isset( $data['dateEnd'] ) ? sanitize_text_field( wp_unslash( $data['dateEnd'] ) ) : null;
+        $this->date_end         = isset( $data['dateEnd'] ) ? sanitize_text_field( wp_unslash( $data['dateEnd'] ) ) : null;
         $this->start_time       = isset( $data['start_time'] ) ? sanitize_text_field( wp_unslash( $data['start_time'] ) ) : null;
         $this->competition_code = isset( $data['competition_code'] ) ? sanitize_text_field( wp_unslash( $data['competition_code'] ) ) : null;
         $this->grade            = isset( $data['grade'] ) ? sanitize_text_field( wp_unslash( $data['grade'] ) ) : null;

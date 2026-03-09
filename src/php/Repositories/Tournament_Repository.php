@@ -38,7 +38,7 @@ class Tournament_Repository {
             'competition_id'   => $tournament->get_competition_id(),
             'season'           => $tournament->get_season(),
             'venue'            => $tournament->get_venue(),
-            'date'             => $tournament->get_end_date(),
+            'date_end'         => $tournament->get_end_date(),
             'date_closing'     => $tournament->get_closing_date(),
             'date_withdrawal'  => $tournament->get_withdrawal_date(),
             'date_open'        => $tournament->get_open_date(),
@@ -66,6 +66,7 @@ class Tournament_Repository {
             '%s',
             '%d',
             '%d',
+            '%s',
             '%s',
             '%s',
             '%s',
@@ -133,14 +134,14 @@ class Tournament_Repository {
                     c2.name as competition_name,
                     c2.age_group,
                     t.competition_code,
-                    t.date as date_end,
+                    t.date_end,
                     t.date_closing,
                     t.date_withdrawal,
                     t.date_open,
                     t.date_start,
                     c.shortcode as venue_name,
                     CASE
-                        WHEN CURDATE() > t.date THEN 'end'
+                        WHEN CURDATE() > t.date_end THEN 'end'
                         WHEN CURDATE() > t.date_start THEN 'in_progress'
                         WHEN CURDATE() > t.date_withdrawal THEN 'withdraw'
                         WHEN CURDATE() > t.date_closing THEN 'closed'

@@ -60,11 +60,11 @@ final class Tournament {
      */
     public ?string $start_time = null;
     /**
-     * Date
+     * Date end
      *
      * @var string
      */
-    public string $date;
+    public string $date_end;
     /**
      * Date display
      *
@@ -252,12 +252,6 @@ final class Tournament {
      */
     public string $type;
     /**
-     * Date end
-     *
-     * @var string
-     */
-    public string $date_end;
-    /**
      * Matches
      *
      * @var array
@@ -420,8 +414,8 @@ final class Tournament {
         $this->venue = $venue;
     }
 
-    public function set_end_date( ?string $date ): void {
-        $this->date_end = $date;
+    public function set_end_date( ?string $date_end ): void {
+        $this->date_end = $date_end;
     }
 
     public function set_closing_date( ?string $date_closing ): void {

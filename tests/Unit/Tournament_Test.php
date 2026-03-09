@@ -13,6 +13,7 @@ namespace Racketmanager\Tests\Unit {
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
 use stdClass;
 
 require_once __DIR__ . '/../wp-stubs.php';
@@ -36,14 +37,15 @@ final class Tournament_Test extends TestCase {
         $data->season = '2026';
 
         $tournament = new Tournament($data);
+        $view_model = new Tournament_Email_View_Model($tournament);
 
         $this->assertEquals('/tournament/test-tournament/', $tournament->link);
         $this->assertEquals('http://example.com/entry-form/test-tournament-tournament/', $tournament->entry_link);
-        $this->assertEquals('2026-12-31', $tournament->date_display);
-        $this->assertEquals('2026-11-30', $tournament->date_closing_display);
-        $this->assertEquals('2026-12-05', $tournament->date_withdrawal_display);
-        $this->assertEquals('2026-11-01', $tournament->date_open_display);
-        $this->assertEquals('2026-12-01', $tournament->date_start_display);
+        $this->assertEquals('2026-12-31', $view_model->date_display);
+        $this->assertEquals('2026-11-30', $view_model->date_closing_display);
+        $this->assertEquals('2026-12-05', $view_model->date_withdrawal_display);
+        $this->assertEquals('2026-11-01', $view_model->date_open_display);
+        $this->assertEquals('2026-12-01', $view_model->date_start_display);
         
         // $this->assertNotEmpty($tournament->current_phase);
         $this->assertIsArray($tournament->finals);

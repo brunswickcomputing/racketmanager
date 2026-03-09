@@ -23,6 +23,7 @@ use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
+use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
@@ -48,7 +49,8 @@ use Racketmanager\Services\View\View_Renderer_Interface;
 final class Admin_Tournament extends Admin_Championship {
     public function __construct(
         RacketManager $racketmanager,
-        private readonly View_Renderer_Interface $renderer
+        private readonly View_Renderer_Interface $renderer,
+        private readonly Admin_Message_Service $message_service
     ) {
         parent::__construct( $racketmanager );
     }
@@ -104,9 +106,9 @@ final class Admin_Tournament extends Admin_Championship {
     }
 
     private function apply_flash_message(): void {
-        $flash = ( new Admin_Flash_Message_Store() )->pop();
+        $flash = $this->message_service->pop_flash_message();
         if ( ! empty( $flash['message'] ) ) {
-            $this->set_message(
+            $this->message_service->set_message(
                 strval( $flash['message'] ),
                 $flash['message_type'] ?? false
             );
@@ -119,7 +121,7 @@ final class Admin_Tournament extends Admin_Championship {
      */
     private function apply_result_message( array $result ): void {
         if ( ! empty( $result['message'] ) ) {
-            $this->set_message(
+            $this->message_service->set_message(
                 strval( $result['message'] ),
                 $result['message_type'] ?? false
             );
@@ -132,7 +134,7 @@ final class Admin_Tournament extends Admin_Championship {
      */
     private function store_flash_message( array $result ): void {
         if ( ! empty( $result['message'] ) ) {
-            ( new Admin_Flash_Message_Store() )->set(
+            $this->message_service->set_flash_message(
                 strval( $result['message'] ),
                 $result['message_type'] ?? false
             );
@@ -180,8 +182,8 @@ final class Admin_Tournament extends Admin_Championship {
             $callback = $view_map[ $view ] ?? [ $this, 'display_tournaments_page' ];
             $callback();
         } catch ( Tournament_Not_Found_Exception | Invalid_Status_Exception $e ) {
-            $this->set_message( $e->getMessage(), true );
-            $this->show_message();
+            $this->message_service->set_message( $e->getMessage(), true );
+            $this->message_service->show_message();
         }
     }
 
@@ -201,7 +203,7 @@ final class Admin_Tournament extends Admin_Championship {
         $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Teams_List_Page_View_Model::class );
@@ -233,7 +235,7 @@ final class Admin_Tournament extends Admin_Championship {
         $result = $controller->tournaments_page( $_GET, $_POST );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Tournaments_Page_View_Model::class );
@@ -255,7 +257,7 @@ final class Admin_Tournament extends Admin_Championship {
         $result = $controller->overview_page( $_GET, $_POST );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Overview_Page_View_Model::class );
@@ -280,7 +282,7 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_with_flash_if_needed( $result );
         }
 
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Draw_Page_View_Model::class );
@@ -305,7 +307,7 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_with_flash_if_needed( $result );
         }
 
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
@@ -330,7 +332,7 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_with_flash_if_needed( $result );
         }
 
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
@@ -354,7 +356,7 @@ final class Admin_Tournament extends Admin_Championship {
         $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Modify_Page_View_Model::class );
@@ -378,7 +380,7 @@ final class Admin_Tournament extends Admin_Championship {
         $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Plan_Page_View_Model::class );
@@ -402,7 +404,7 @@ final class Admin_Tournament extends Admin_Championship {
         $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Matches_Page_View_Model::class );
@@ -426,7 +428,7 @@ final class Admin_Tournament extends Admin_Championship {
         $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Contact_Page_View_Model::class );
@@ -450,7 +452,7 @@ final class Admin_Tournament extends Admin_Championship {
         $this->redirect_with_flash_if_needed( $result );
 
         $this->apply_result_message( $result );
-        $this->show_message();
+        $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Information_Page_View_Model::class );

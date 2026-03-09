@@ -10,6 +10,8 @@ use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
+use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
+use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
@@ -143,6 +145,12 @@ final class Container_Bootstrap {
 
         $c->set( 'view_renderer', function () {
             return new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        } );
+
+        $c->set( 'admin_flash_message_store', fn() => new Admin_Flash_Message_Store() );
+
+        $c->set( 'admin_message_service', function ( Simple_Container $c ) {
+            return new Admin_Message_Service( $c->get( 'admin_flash_message_store' ) );
         } );
 
         $c->set( 'notify_service', fn() => new Notify_Service( $app ) );

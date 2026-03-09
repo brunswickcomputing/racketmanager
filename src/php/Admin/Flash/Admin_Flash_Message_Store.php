@@ -8,7 +8,7 @@
 
 namespace Racketmanager\Admin\Flash;
 
-final class Admin_Flash_Message_Store {
+class Admin_Flash_Message_Store {
     private const string META_KEY = 'racketmanager_admin_flash_message';
 
     /**

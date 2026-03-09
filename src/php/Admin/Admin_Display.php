@@ -146,7 +146,8 @@ class Admin_Display {
             case 'racketmanager-tournaments':
                 $this->admin_tournament = new Admin_Tournament(
                     $this->racketmanager,
-                    $this->racketmanager->container->get( 'view_renderer' )
+                    $this->racketmanager->container->get( 'view_renderer' ),
+                    $this->racketmanager->container->get( 'admin_message_service' )
                 );
                 $this->admin_tournament->handle_display( $view );
                 break;

@@ -43,7 +43,7 @@ readonly class Tournament_Matches_Admin_Controller {
         $tournament_id = $this->extract_tournament_id( $query );
         $league_id     = $this->extract_league_id( $query, $post );
         $final_key     = $this->extract_final_key( $query, $post );
-        $match_id      = $this->extract_match_id( $query, $post );
+        $fixture_id      = $this->extract_fixture_id( $query, $post );
         $view          = $this->extract_view( $query );
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
 
@@ -62,7 +62,7 @@ readonly class Tournament_Matches_Admin_Controller {
             $response = $this->draw_action_dispatcher->handle( $dto );
 
             if ( 'match' === $view ) {
-                $redirect_url = Admin_Redirect_Url_Builder::tournament_match( $query, $post, $tournament_id, $league_id, $final_key, $match_id );
+                $redirect_url = Admin_Redirect_Url_Builder::tournament_match( $query, $post, $tournament_id, $league_id, $final_key, $fixture_id );
             } else {
                 $redirect_url = Admin_Redirect_Url_Builder::tournament_matches( $query, $post, $tournament_id, $league_id, $final_key );
             }
@@ -80,7 +80,7 @@ readonly class Tournament_Matches_Admin_Controller {
         }
 
         // GET: render page
-        $vm = $this->matches_admin_service->prepare_matches_view_model( $tournament_id, $league_id, $final_key, $match_id, $view );
+        $vm = $this->matches_admin_service->prepare_matches_view_model( $tournament_id, $league_id, $final_key, $fixture_id, $view );
 
         return array(
             'view_model' => $vm,
@@ -117,7 +117,7 @@ readonly class Tournament_Matches_Admin_Controller {
         return null;
     }
 
-    private function extract_match_id( array $query, array $post ): ?int {
+    private function extract_fixture_id( array $query, array $post ): ?int {
         if ( isset( $query['edit'] ) ) {
             return intval( $query['edit'] );
         }

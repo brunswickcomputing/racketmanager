@@ -62,6 +62,7 @@ class Upgrade {
         $this->v10_0_10();
         $this->v10_0_11();
         $this->v10_0_12();
+        $this->v10_0_13();
         /*
         * Update version and dbversion
         */
@@ -495,6 +496,20 @@ class Upgrade {
             $this->wpdb->query( "DROP TABLE {$this->wpdb->prefix}racketmanager_team_competition;" );
             $this->wpdb->query( "DROP TABLE {$this->wpdb->prefix}racketmanager_team_events;" );
             $this->wpdb->query( "DROP TABLE {$this->wpdb->prefix}racketmanager_club_player_requests;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.13
+     * Change date column to date_end
+     *
+     * @return void
+     */
+    private function v10_0_13 ():void {
+        $version = '10.0.13';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_tournaments CHANGE `date` `date_end` DATE NULL DEFAULT NULL;" );
         }
     }
 

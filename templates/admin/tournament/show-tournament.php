@@ -85,7 +85,7 @@ jQuery(document).ready(function(){
     <div class="tab-content">
         <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="overview-tab">
             <h2><?php esc_html_e( 'Overview', 'racketmanager' ); ?></h2>
-            $renderer->render( 'admin/tournament/overview', $vm ); ?>
+            <?php $renderer->render( 'admin/tournament/overview', $vm ); ?>
         </div>
         <div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
             <h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>

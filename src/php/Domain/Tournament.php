@@ -35,19 +35,13 @@ final class Tournament {
      *
      * @var int|null
      */
-    public ? int $competition_id;
-    /**
-     * Competition
-     *
-     * @var object|null
-     */
-    public null|object $competition;
+    public ?int $competition_id;
     /**
      * Tournament season
      *
      * @var string|null
      */
-    public ? string $season;
+    public ?string $season;
     /**
      * Number of courts available for matches
      *
@@ -125,7 +119,7 @@ final class Tournament {
      *
      * @var int|null
      */
-    public ? int $venue;
+    public ?int $venue;
     /**
      * Venue name
      *
@@ -235,12 +229,6 @@ final class Tournament {
      */
     public object $fees;
     /**
-     * Charge object
-     *
-     * @var object
-     */
-    public object $charge;
-    /**
      * Number of entries
      *
      * @var int|null
@@ -282,14 +270,14 @@ final class Tournament {
      * @var string
      */
     public string $entry_link;
-    /** @var array<string, mixed> Storage for non-table data */
-    private array $meta = [];
     /**
      * Information.
      *
      * @var object|null
      */
     public null|object $information = null;
+    /** @var array<string, mixed> Storage for non-table data */
+    private array $meta = [];
 
     /**
      * Constructor
@@ -320,170 +308,6 @@ final class Tournament {
         $this->num_courts       = $tournament->numcourts ?? null;
         $this->start_time       = $tournament->starttime ?? null;
         $this->set_tournament_info();
-    }
-
-    public function get_id(): ?int {
-        return $this->id;
-    }
-
-
-    public function get_name(): string {
-        return $this->name;
-    }
-
-    public function get_competition_id(): int {
-        return $this->competition_id;
-    }
-
-    public function get_season(): int {
-        return $this->season;
-    }
-
-    public function get_venue(): ?int {
-        return $this->venue;
-    }
-
-    public function get_end_date(): ?string {
-        return $this->date_end;
-    }
-
-    public function get_closing_date(): ?string {
-        return $this->date_closing;
-    }
-
-    public function get_withdrawal_date(): ?string {
-        return $this->date_withdrawal;
-    }
-
-    public function get_open_date(): ?string {
-        return $this->date_open;
-    }
-
-    public function get_start_date(): ?string {
-        return $this->date_start;
-    }
-
-    public function get_competition_code(): ?string {
-        return $this->competition_code;
-    }
-
-    public function get_grade(): ?string {
-        return $this->grade;
-    }
-
-    public function get_num_entries(): ?int {
-        return $this->num_entries;
-    }
-
-    public function get_num_courts(): ?int {
-        return $this->num_courts;
-    }
-
-    public function get_start_time(): ?string {
-        return $this->start_time;
-    }
-
-    public function get_time_increment(): ?string {
-        return $this->time_increment;
-    }
-
-    public function get_order_of_play(): ?array {
-        return $this->order_of_play;
-    }
-
-    public function get_information(): ?object {
-        return $this->information;
-    }
-
-    public function set_id( int $id ): void {
-        $this->id = $id;
-    }
-
-    public function set_name( string $name ): void {
-        $this->name = $name;
-    }
-
-    public function set_competition_id( int $competition_id ): void {
-        $this->competition_id = $competition_id;
-    }
-
-    public function set_season( ?string $season ): void {
-        $this->season = $season;
-    }
-
-    public function set_venue( ?int $venue ): void {
-        $this->venue = $venue;
-    }
-
-    public function set_end_date( ?string $date_end ): void {
-        $this->date_end = $date_end;
-    }
-
-    public function set_closing_date( ?string $date_closing ): void {
-        $this->date_closing = $date_closing;
-    }
-
-    public function set_withdrawal_date( ?string $date_withdrawal ): void {
-        $this->date_withdrawal = $date_withdrawal;
-    }
-
-    public function set_opening_date( ?string $date_open ): void {
-        $this->date_open = $date_open;
-    }
-
-    public function set_start_date( ?string $date_start ): void {
-        $this->date_start = $date_start;
-    }
-
-    public function set_competition_code( ?string $competition_code ): void {
-        $this->competition_code = $competition_code;
-    }
-
-    public function set_grade( ?string $grade ): void {
-        $this->grade = $grade;
-    }
-
-    public function set_num_entries( ?int $num_entries ): void {
-        $this->num_entries = $num_entries;
-    }
-
-    public function set_num_courts( ?int $num_courts ): void {
-        $this->num_courts = $num_courts;
-    }
-
-    public function set_start_time( ?string $start_time ): void {
-        $this->start_time = $start_time;
-    }
-
-    public function set_time_increment( ?string $start_time ): void {        $this->time_increment = $start_time;
-    }
-
-    public function set_order_of_play( ?array $order_of_play= null ): void {
-        $this->order_of_play = $order_of_play;
-    }
-
-
-    /**
-     * Set information
-     *
-     * @param object|null $information information.
-     */
-    public function set_information( ?object $information ): void {
-        $this->information = $information;
-    }
-
-    /**
-     * Set a transient metadata property.
-     */
-    public function set_meta( string $key, mixed $value ): void {
-        $this->meta[ $key ] = $value;
-    }
-
-    /**
-     * Retrieve a transient metadata property.
-     */
-    public function get_meta( string $key, mixed $default = null ): mixed {
-        return $this->meta[ $key ] ?? $default;
     }
 
     public function set_tournament_info(): void {
@@ -539,7 +363,7 @@ final class Tournament {
         $finals              = array();
         $max_rounds          = 6;
         $r                   = $max_rounds;
-        for ( $round = 1; $round <= $max_rounds; ++$round ) {
+        for ( $round = 1; $round <= $max_rounds; ++ $round ) {
             $num_teams      = pow( 2, $round );
             $num_matches    = $num_teams / 2;
             $key            = Util::get_final_key( $num_teams );
@@ -551,15 +375,159 @@ final class Tournament {
                 'num_teams'   => $num_teams,
                 'round'       => $r,
             );
-            --$r;
+            -- $r;
         }
         $this->finals = $finals;
+    }
+
+    public function get_id(): ?int {
+        return $this->id;
+    }
+
+    public function set_id( int $id ): void {
+        $this->id = $id;
+    }
+
+    public function get_name(): string {
+        return $this->name;
+    }
+
+    public function set_name( string $name ): void {
+        $this->name = $name;
+    }
+
+    public function get_competition_id(): int {
+        return $this->competition_id;
+    }
+
+    public function set_competition_id( int $competition_id ): void {
+        $this->competition_id = $competition_id;
+    }
+
+    public function get_season(): int {
+        return $this->season;
+    }
+
+    public function set_season( ?string $season ): void {
+        $this->season = $season;
+    }
+
+    public function get_venue(): ?int {
+        return $this->venue;
+    }
+
+    public function set_venue( ?int $venue ): void {
+        $this->venue = $venue;
+    }
+
+    public function get_end_date(): ?string {
+        return $this->date_end;
+    }
+
+    public function get_closing_date(): ?string {
+        return $this->date_closing;
+    }
+
+    public function get_withdrawal_date(): ?string {
+        return $this->date_withdrawal;
+    }
+
+    public function get_open_date(): ?string {
+        return $this->date_open;
+    }
+
+    public function get_start_date(): ?string {
+        return $this->date_start;
+    }
+
+    public function get_competition_code(): ?string {
+        return $this->competition_code;
+    }
+
+    public function set_competition_code( ?string $competition_code ): void {
+        $this->competition_code = $competition_code;
+    }
+
+    public function get_grade(): ?string {
+        return $this->grade;
+    }
+
+    public function set_grade( ?string $grade ): void {
+        $this->grade = $grade;
+    }
+
+    public function get_num_entries(): ?int {
+        return $this->num_entries;
+    }
+
+    public function set_num_entries( ?int $num_entries ): void {
+        $this->num_entries = $num_entries;
+    }
+
+    public function get_num_courts(): ?int {
+        return $this->num_courts;
+    }
+
+    public function set_num_courts( ?int $num_courts ): void {
+        $this->num_courts = $num_courts;
+    }
+
+    public function get_start_time(): ?string {
+        return $this->start_time;
+    }
+
+    public function set_start_time( ?string $start_time ): void {
+        $this->start_time = $start_time;
+    }
+
+    public function get_time_increment(): ?string {
+        return $this->time_increment;
+    }
+
+    public function set_time_increment( ?string $start_time ): void {
+        $this->time_increment = $start_time;
+    }
+
+    public function get_order_of_play(): ?array {
+        return $this->order_of_play;
+    }
+
+    public function set_order_of_play( ?array $order_of_play = null ): void {
+        $this->order_of_play = $order_of_play;
+    }
+
+    public function get_information(): ?object {
+        return $this->information;
+    }
+
+    /**
+     * Set information
+     *
+     * @param object|null $information information.
+     */
+    public function set_information( ?object $information ): void {
+        $this->information = $information;
+    }
+
+    /**
+     * Retrieve a transient metadata property.
+     */
+    public function get_meta( string $key, mixed $default = null ): mixed {
+        return $this->meta[ $key ] ?? $default;
+    }
+
+    /**
+     * Set a transient metadata property.
+     */
+    public function set_meta( string $key, mixed $value ): void {
+        $this->meta[ $key ] = $value;
     }
 
     /**
      * Update tournament state from a Request DTO.
      *
      * @param Tournament_Request_DTO $request The request DTO containing updated data.
+     *
      * @return self
      */
     public function update_from_request( Tournament_Request_DTO $request ): self {
@@ -579,10 +547,31 @@ final class Tournament {
         return $this;
     }
 
+    public function set_end_date( ?string $date_end ): void {
+        $this->date_end = $date_end;
+    }
+
+    public function set_closing_date( ?string $date_closing ): void {
+        $this->date_closing = $date_closing;
+    }
+
+    public function set_withdrawal_date( ?string $date_withdrawal ): void {
+        $this->date_withdrawal = $date_withdrawal;
+    }
+
+    public function set_opening_date( ?string $date_open ): void {
+        $this->date_open = $date_open;
+    }
+
+    public function set_start_date( ?string $date_start ): void {
+        $this->date_start = $date_start;
+    }
+
     /**
      * Calculate default match dates for the tournament rounds.
      *
      * @param int $round_length The length of each round in days.
+     *
      * @return array<int, string>
      */
     public function calculate_default_match_dates( int $round_length = 7 ): array {
@@ -608,7 +597,7 @@ final class Tournament {
                 $match_date = Util::amend_date( $match_date, $round_length, '-' );
             }
             $match_dates[ $r ] = $match_date;
-            ++$i;
+            ++ $i;
         }
 
         return $match_dates;

@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 // Preferred input: $vm from the overview page.
 $vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
@@ -25,6 +26,7 @@ $player_list_base = 'admin/tournament/player-list';
 /** @var array $unpaid_entries */
 /** @var array $pending_entries */
 /** @var array $confirmed_entries */
+/** @var View_Renderer_Interface $renderer */
 ?>
 <div class="row">
     <div class="col-12 col-md-6">

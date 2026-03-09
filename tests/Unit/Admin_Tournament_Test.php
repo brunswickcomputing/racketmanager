@@ -33,7 +33,9 @@ final class Admin_Tournament_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->racketmanager = $this->createMock( RacketManager::class );
-        $this->renderer = $this->createMock( View_Renderer_Interface::class );
+        $this->renderer = $this->getMockBuilder( View_Renderer_Interface::class )
+            ->onlyMethods( [ 'render' ] )
+            ->getMock();
         $this->flash_store = $this->createMock( Admin_Flash_Message_Store::class );
         $this->message_service = new Admin_Message_Service( $this->flash_store );
         $this->container = new Simple_Container();
@@ -73,6 +75,56 @@ final class Admin_Tournament_Test extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString( 'Test message', $output );
+    }
+
+    public function test_display_competition_config_page_routes_correctly(): void {
+        $controller = $this->getMockBuilder( \stdClass::class )
+            ->addMethods( [ 'handle' ] )
+            ->getMock();
+
+        $this->container->set( 'tournament_competition_config_admin_controller', $controller );
+
+        $comp_ser = sprintf( 'O:%d:"Racketmanager\Domain\Competition":0:{}', strlen( 'Racketmanager\Domain\Competition' ) );
+        $vm = unserialize( sprintf( 'O:%d:"Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model":5:{s:11:"competition";%ss:10:"tournament";N;s:13:"rules_options";a:0:{}s:5:"clubs";a:0:{}s:3:"tab";s:7:"general";}', strlen( 'Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model' ), $comp_ser ) );
+
+        $controller->expects( self::once() )
+            ->method( 'handle' )
+            ->willReturn( [ 'view_model' => $vm ] );
+
+        $this->admin_tournament->display_competition_config_page();
+    }
+
+    public function test_display_event_config_page_routes_correctly(): void {
+        $controller = $this->getMockBuilder( \stdClass::class )
+            ->addMethods( [ 'handle' ] )
+            ->getMock();
+
+        $this->container->set( 'tournament_event_config_admin_controller', $controller );
+
+        $comp_ser = sprintf( 'O:%d:"Racketmanager\Domain\Competition":0:{}', strlen( 'Racketmanager\Domain\Competition' ) );
+        $vm = unserialize( sprintf( 'O:%d:"Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model":4:{s:11:"competition";%ss:5:"event";O:8:"stdClass":0:{}s:10:"tournament";N;s:9:"new_event";b:0;}', strlen( 'Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model' ), $comp_ser ) );
+
+        $controller->expects( self::once() )
+            ->method( 'handle' )
+            ->willReturn( [ 'view_model' => $vm ] );
+
+        $this->admin_tournament->display_event_config_page();
+    }
+
+    public function test_display_team_page_routes_correctly(): void {
+        $controller = $this->getMockBuilder( \stdClass::class )
+            ->addMethods( [ 'handle' ] )
+            ->getMock();
+
+        $this->container->set( 'tournament_team_admin_controller', $controller );
+
+        $vm = unserialize( sprintf( 'O:%d:"Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model":9:{s:4:"team";O:8:"stdClass":0:{}s:6:"league";N;s:10:"tournament";N;s:5:"clubs";a:0:{}s:10:"form_title";s:0:""s:11:"form_action";s:0:""s:4:"file";s:8:"team.php"s:6:"season";s:0:""s:10:"match_days";a:0:{}}', strlen( 'Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model' ) ) );
+
+        $controller->expects( self::once() )
+            ->method( 'handle' )
+            ->willReturn( [ 'view_model' => $vm ] );
+
+        $this->admin_tournament->display_team_page();
     }
 }
 }

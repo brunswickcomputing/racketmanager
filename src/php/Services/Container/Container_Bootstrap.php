@@ -9,6 +9,9 @@ use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Event_Config_Admin_Controller;
+use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
@@ -201,6 +204,31 @@ final class Container_Bootstrap {
         $c->set( 'tournament_setup_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Setup_Admin_Controller(
                 $c->get( 'tournament_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_competition_config_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Competition_Config_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'competition_service' ),
+                $c->get( 'club_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_event_config_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Event_Config_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'competition_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_team_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Team_Admin_Controller(
+                $c->get( 'tournament_service' ),
+                $c->get( 'club_service' ),
                 $c->get( 'action_guard' ),
             );
         } );

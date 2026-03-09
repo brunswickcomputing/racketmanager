@@ -19,6 +19,9 @@ use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
@@ -35,9 +38,6 @@ use Racketmanager\Services\View\View_Renderer_Interface;
  * @subpackage RacketManagerAdmin
  */
 final class Admin_Tournament {
-    private Admin_Competition $admin_competition;
-    private Admin_Event $admin_event;
-    private Admin_Club $admin_club;
 
     public function __construct(
         private readonly RacketManager $racketmanager,
@@ -148,10 +148,10 @@ final class Admin_Tournament {
             'teams'        => [ $this, 'display_teams_list' ],
             'contact'      => [ $this, 'display_contact_page' ],
             'information'  => [ $this, 'display_information_page' ],
-            // Views handled by external sub-controllers
-            'config'       => [ $this->get_admin_competition(), 'display_config_page' ],
-            'event-config' => [ $this->get_admin_event(), 'display_config_page' ],
-            'team'         => [ $this->get_admin_club(), 'display_team_page' ],
+            // Views handled by new dedicated controllers
+            'config'       => [ $this, 'display_competition_config_page' ],
+            'event-config' => [ $this, 'display_event_config_page' ],
+            'team'         => [ $this, 'display_team_page' ],
         ];
 
         try {
@@ -186,16 +186,67 @@ final class Admin_Tournament {
         $this->renderer->render( 'admin/includes/teams-list', $vm );
     }
 
-    private function get_admin_competition(): Admin_Competition {
-        return $this->admin_competition ??= new Admin_Competition( $this->racketmanager );
+    /**
+     * Display competition config page.
+     *
+     * @return void
+     */
+    public function display_competition_config_page(): void {
+        $controller = $this->racketmanager->container->get( 'tournament_competition_config_admin_controller' );
+        $result     = $controller->handle();
+
+        $this->redirect_with_flash_if_needed( $result );
+        $this->apply_result_message( $result );
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Competition_Config_Page_View_Model ) ) {
+            $this->message_service->show_message();
+            return;
+        }
+
+        $this->renderer->render( 'admin/includes/competition-config.php', $vm );
     }
 
-    private function get_admin_event(): Admin_Event {
-        return $this->admin_event ??= new Admin_Event( $this->racketmanager );
+    /**
+     * Display event config page.
+     *
+     * @return void
+     */
+    public function display_event_config_page(): void {
+        $controller = $this->racketmanager->container->get( 'tournament_event_config_admin_controller' );
+        $result     = $controller->handle();
+
+        $this->redirect_with_flash_if_needed( $result );
+        $this->apply_result_message( $result );
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Event_Config_Page_View_Model ) ) {
+            $this->message_service->show_message();
+            return;
+        }
+
+        $this->renderer->render( 'admin/includes/event-config.php', $vm );
     }
 
-    private function get_admin_club(): Admin_Club {
-        return $this->admin_club ??= new Admin_Club( $this->racketmanager );
+    /**
+     * Display team page.
+     *
+     * @return void
+     */
+    public function display_team_page(): void {
+        $controller = $this->racketmanager->container->get( 'tournament_team_admin_controller' );
+        $result     = $controller->handle();
+
+        $this->redirect_with_flash_if_needed( $result );
+        $this->apply_result_message( $result );
+
+        $vm = $result['view_model'] ?? null;
+        if ( ! ( $vm instanceof Tournament_Team_Page_View_Model ) ) {
+            $this->message_service->show_message();
+            return;
+        }
+
+        $this->renderer->render( 'admin/includes/teams/' . $vm->file, $vm );
     }
 
     /**

@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Util\Util;
 use function Racketmanager\seo_url;
 
@@ -553,6 +554,64 @@ final class Tournament {
             --$r;
         }
         $this->finals = $finals;
+    }
+
+    /**
+     * Update tournament state from a Request DTO.
+     *
+     * @param Tournament_Request_DTO $request The request DTO containing updated data.
+     * @return self
+     */
+    public function update_from_request( Tournament_Request_DTO $request ): self {
+        $this->set_name( $request->name );
+        $this->set_competition_id( $request->competition_id );
+        $this->set_season( $request->season );
+        $this->set_venue( $request->venue );
+        $this->set_end_date( $request->date_end );
+        $this->set_closing_date( $request->date_closing );
+        $this->set_withdrawal_date( $request->date_withdrawal );
+        $this->set_opening_date( $request->date_open );
+        $this->set_start_date( $request->date_start );
+        $this->set_competition_code( $request->competition_code );
+        $this->set_grade( $request->grade );
+        $this->set_num_entries( $request->num_entries );
+
+        return $this;
+    }
+
+    /**
+     * Calculate default match dates for the tournament rounds.
+     *
+     * @param int $round_length The length of each round in days.
+     * @return array<int, string>
+     */
+    public function calculate_default_match_dates( int $round_length = 7 ): array {
+        $match_dates = array();
+        $match_date  = null;
+        $i           = 0;
+
+        $finals = $this->finals;
+        uasort(
+            $finals,
+            function ( $a, $b ) {
+                return $a['round'] <=> $b['round'];
+            }
+        );
+
+        foreach ( $finals as $final ) {
+            $r = $final['round'] - 1;
+            if ( 0 === $i ) {
+                $match_date = $this->date_end;
+            } elseif ( 1 === $i ) {
+                $match_date = Util::amend_date( $this->date_end, 7, '-' );
+            } else {
+                $match_date = Util::amend_date( $match_date, $round_length, '-' );
+            }
+            $match_dates[ $r ] = $match_date;
+            ++$i;
+        }
+
+        return $match_dates;
     }
 
 }

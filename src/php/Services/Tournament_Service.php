@@ -245,8 +245,8 @@ class Tournament_Service {
         if ( is_wp_error( $validator ) ) {
             return $validator;
         }
-        $tournament = $this->set_tournament_attributes( $tournament, $tournament_request );
-        $charge     = $this->set_tournament_fees( $tournament_request );
+        $tournament->update_from_request( $tournament_request );
+        $charge = $this->set_tournament_fees( $tournament_request );
         try {
             $updates = $this->save_tournament_and_fees( $tournament, $charge );
         } catch ( Database_Operation_Exception $e ) {
@@ -285,22 +285,6 @@ class Tournament_Service {
         return true;
     }
 
-    private function set_tournament_attributes( Tournament $tournament, Tournament_Request_DTO $tournament_request ): Tournament {
-        $tournament->set_name( $tournament_request->name );
-        $tournament->set_competition_id( $tournament_request->competition_id );
-        $tournament->set_season( $tournament_request->season );
-        $tournament->set_venue( $tournament_request->venue );
-        $tournament->set_end_date( $tournament_request->date );
-        $tournament->set_closing_date( $tournament_request->date_closing );
-        $tournament->set_withdrawal_date( $tournament_request->date_withdrawal );
-        $tournament->set_opening_date( $tournament_request->date_open );
-        $tournament->set_start_date( $tournament_request->date_start );
-        $tournament->set_competition_code( $tournament_request->competition_code );
-        $tournament->set_grade( $tournament_request->grade );
-        $tournament->set_num_entries( $tournament_request->num_entries );
-
-        return $tournament;
-    }
 
     /**
      * Set tournament fees
@@ -1161,24 +1145,7 @@ class Tournament_Service {
      * @return array<int, string>
      */
     public function calculate_default_match_dates( Tournament $tournament, Competition $competition ): array {
-        $match_dates  = array();
-        $match_date   = null;
         $round_length = $competition->settings['round_length'] ?? 7;
-        $i            = 0;
-
-        foreach ( $tournament->finals as $final ) {
-            $r = $final['round'] - 1;
-            if ( 0 === $i ) {
-                $match_date = $tournament->date_end;
-            } elseif ( 1 === $i ) {
-                $match_date = Util::amend_date( $tournament->date_end, 7, '-' );
-            } else {
-                $match_date = Util::amend_date( $match_date, $round_length, '-' );
-            }
-            $match_dates[ $r ] = $match_date;
-            ++$i;
-        }
-
-        return $match_dates;
+        return $tournament->calculate_default_match_dates( $round_length );
     }
 }

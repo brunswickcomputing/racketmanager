@@ -17,7 +17,6 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
-use stdClass;
 
 readonly final class Tournament_Teams_Admin_Controller {
 

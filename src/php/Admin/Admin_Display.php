@@ -81,6 +81,7 @@ class Admin_Display {
     protected Finance_Service $finance_service;
     protected Season_Service $season_service;
     protected Tournament_Service $tournament_service;
+    protected Admin_Club $admin_club;
 
     /**
      * Constructor

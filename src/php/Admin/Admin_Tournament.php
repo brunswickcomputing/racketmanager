@@ -10,18 +10,6 @@
 namespace Racketmanager\Admin;
 
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Setup_Event_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Tournaments_Admin_Controller;
-use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
@@ -56,10 +44,6 @@ final class Admin_Tournament {
         private readonly View_Renderer_Interface $renderer,
         private readonly Admin_Message_Service $message_service
     ) {
-    }
-
-    private function msg_controller_not_available(): string {
-        return __( 'Controller not available', 'racketmanager' );
     }
 
     private function msg_invalid_view_model(): string {
@@ -141,17 +125,6 @@ final class Admin_Tournament {
                 strval( $result['message'] ),
                 $result['message_type'] ?? false
             );
-        }
-    }
-
-    /**
-     * @param mixed $view_model
-     * @param string $expected_class
-     * @return void
-     */
-    private function assert_view_model_instance( mixed $view_model, string $expected_class ): void {
-        if ( ! ( $view_model instanceof $expected_class ) ) {
-            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
     }
 

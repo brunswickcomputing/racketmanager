@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Services\Container;
 
+use Racketmanager\Exceptions\Interface_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
@@ -55,7 +56,6 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Services\View\Php_View_Renderer;
-use RuntimeException;
 
 /**
  * Registers core services in the Simple_Container.
@@ -223,7 +223,7 @@ final class Container_Bootstrap {
         $c->set( 'draw_action_handler', function ( Simple_Container $c ) {
             $handler = $c->get( 'championship_admin_service' );
             if ( ! ( $handler instanceof Draw_Action_Handler_Interface ) ) {
-                throw new RuntimeException( 'Draw action handler must implement Draw_Action_Handler_Interface' );
+                throw new Interface_Exception( __( 'Draw action handler must implement Draw_Action_Handler_Interface', 'racketmanager' ) );
             }
             return $handler;
         } );
@@ -236,7 +236,7 @@ final class Container_Bootstrap {
         $c->set( 'action_guard', function ( Simple_Container $c ) {
             $guard = $c->get( 'wp_action_guard' );
             if ( ! ( $guard instanceof Action_Guard_Interface ) ) {
-                throw new RuntimeException( 'Action guard must implement Action_Guard_Interface' );
+                throw new Interface_Exception( __( 'Action guard must implement Action_Guard_Interface', 'racketmanager' ) );
             }
             return $guard;
         } );

@@ -21,14 +21,12 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Player_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\Event;
-use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
-use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
@@ -935,15 +933,6 @@ class Tournament_Service {
 
         return $tournament_matches;
 
-    }
-
-    public function get_tournament_match( int $fixture_id ): ?Fixture {
-        $fixture = $this->fixture_service->get_fixture( $fixture_id );
-        if ( ! $fixture ) {
-            throw new Fixture_Not_Found_Exception( Util_Messages::fixture_not_found( $fixture_id ) );
-        }
-
-        return $fixture;
     }
 
     public function contact_teams( ?int $tournament_id, ?string $message, bool $active = false ): bool {

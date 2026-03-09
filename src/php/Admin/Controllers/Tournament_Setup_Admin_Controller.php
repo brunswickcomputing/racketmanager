@@ -216,7 +216,11 @@ readonly final class Tournament_Setup_Admin_Controller {
             );
             $redirect_url = add_query_arg( 'ratings_set', $updates ? 1 : 0, $redirect_url );
 
-            return array( 'redirect' => $redirect_url );
+            return array(
+                'redirect'     => $redirect_url,
+                'message'      => $updates ? __( 'Tournament ratings set', 'racketmanager' ) : __( 'No ratings to set', 'racketmanager' ),
+                'message_type' => $updates ? false : 'warning',
+            );
         } catch ( Tournament_Not_Found_Exception $e ) {
             throw new Tournament_Not_Found_Exception( $e->getMessage() );
         }

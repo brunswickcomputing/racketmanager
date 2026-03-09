@@ -172,6 +172,58 @@ final class Tournament_Setup_Admin_Controller_Test extends TestCase {
 
         self::assertArrayHasKey( 'redirect', $result );
         self::assertStringContainsString( 'ratings_set=1', $result['redirect'] );
+        self::assertSame( 'Tournament ratings set', $result['message'] );
+        self::assertFalse( $result['message_type'] );
+    }
+
+    public function test_setup_page_get_with_ratings_set_flag(): void {
+        $tournament_id = 123;
+        $query = [ 'tournament' => (string) $tournament_id, 'ratings_set' => '1' ];
+        $post = [];
+
+        $reflectionTournament = new \ReflectionClass( Tournament::class );
+        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
+        $tournament->season = '2023';
+        $tournament->finals = [];
+
+        $competition = $this->createMock( Competition::class );
+        $competition->method( 'get_season_by_name' )->willReturn( [] );
+
+        $reflectionClub = new \ReflectionClass( Club::class );
+        $club = $reflectionClub->newInstanceWithoutConstructor();
+
+        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
+        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+
+        $result = $this->controller->setup_page( $query, $post );
+
+        self::assertSame( 'Tournament ratings set', $result['message'] );
+        self::assertFalse( $result['message_type'] );
+    }
+
+    public function test_setup_page_get_with_ratings_not_set_flag(): void {
+        $tournament_id = 123;
+        $query = [ 'tournament' => (string) $tournament_id, 'ratings_set' => '0' ];
+        $post = [];
+
+        $reflectionTournament = new \ReflectionClass( Tournament::class );
+        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
+        $tournament->season = '2023';
+        $tournament->finals = [];
+
+        $competition = $this->createMock( Competition::class );
+        $competition->method( 'get_season_by_name' )->willReturn( [] );
+
+        $reflectionClub = new \ReflectionClass( Club::class );
+        $club = $reflectionClub->newInstanceWithoutConstructor();
+
+        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
+        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+
+        $result = $this->controller->setup_page( $query, $post );
+
+        self::assertSame( 'No ratings to set', $result['message'] );
+        self::assertSame( 'warning', $result['message_type'] );
     }
 
     public function test_setup_page_post_round_dates_error_re_renders(): void {

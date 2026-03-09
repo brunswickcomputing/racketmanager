@@ -63,10 +63,6 @@ class Admin_Display {
     protected ?string $invalid_security_token = 'invalid';
     protected ?string $no_permission;
     protected ?string $team_ranking_saved = 'Team ranking saved';
-    public Admin_Club $admin_club;
-    public Admin_Tournament $admin_tournament;
-    public Admin_Event $admin_event;
-    public Admin_Competition $admin_competition;
     public Admin_League $admin_league;
     public Admin_Season $admin_seasons;
     public Admin_Result $admin_results;
@@ -144,12 +140,12 @@ class Admin_Display {
                 $this->admin_cup->handle_display( $view );
                 break;
             case 'racketmanager-tournaments':
-                $this->admin_tournament = new Admin_Tournament(
+                $admin_tournament = new Admin_Tournament(
                     $this->racketmanager,
                     $this->racketmanager->container->get( 'view_renderer' ),
                     $this->racketmanager->container->get( 'admin_message_service' )
                 );
-                $this->admin_tournament->handle_display( $view );
+                $admin_tournament->handle_display( $view );
                 break;
             case 'racketmanager-clubs':
                 $this->admin_club = new Admin_Club( $this->racketmanager );

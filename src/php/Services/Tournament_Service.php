@@ -47,6 +47,7 @@ use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
+use function Racketmanager\debug_to_console;
 use function Racketmanager\get_league;
 
 /**
@@ -1004,6 +1005,7 @@ class Tournament_Service {
     }
 
     public function calculate_player_team_rating_for_tournament( ?int $tournament_id ): bool {
+        debug_to_console( 'in calculate_player_team_rating_for_tournament');
         try {
             $events = $this->get_events_for_tournament( $tournament_id );
         } catch ( Tournament_Not_Found_Exception $e ) {
@@ -1022,6 +1024,7 @@ class Tournament_Service {
                 }
                 $league_team->set_rating( $team_rating );
                 $count = $this->league_team_repository->save( $league_team );
+                debug_to_console( $count);
                 if ( $count ) {
                     $updates = true;
                 }

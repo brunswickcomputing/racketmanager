@@ -46,13 +46,16 @@ use Racketmanager\Services\View\View_Renderer_Interface;
  * @package RacketManager
  * @subpackage RacketManagerAdmin
  */
-final class Admin_Tournament extends Admin_Championship {
+final class Admin_Tournament {
+    private Admin_Competition $admin_competition;
+    private Admin_Event $admin_event;
+    private Admin_Club $admin_club;
+
     public function __construct(
-        RacketManager $racketmanager,
+        private readonly RacketManager $racketmanager,
         private readonly View_Renderer_Interface $renderer,
         private readonly Admin_Message_Service $message_service
     ) {
-        parent::__construct( $racketmanager );
     }
 
     private function msg_controller_not_available(): string {
@@ -194,9 +197,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_teams_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Teams_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->teams_page( $_GET, $_POST );
 
@@ -206,7 +206,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Teams_List_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Teams_List_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/includes/teams-list', $vm );
     }
@@ -228,9 +230,6 @@ final class Admin_Tournament extends Admin_Championship {
      */
     public function display_tournaments_page(): void {
         $controller = $this->racketmanager->container->get( 'tournament_tournaments_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Tournaments_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->tournaments_page( $_GET, $_POST );
 
@@ -238,7 +237,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Tournaments_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Tournaments_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/show-tournaments', $vm );
     }
@@ -250,9 +251,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_overview_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Overview_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->overview_page( $_GET, $_POST );
 
@@ -260,7 +258,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Overview_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Overview_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament/show-tournament', $vm );
     }
@@ -272,9 +272,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_draw_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Draw_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->draw_page( $_GET, $_POST );
 
@@ -282,10 +279,13 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_with_flash_if_needed( $result );
         }
 
+        $this->apply_result_message( $result );
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Draw_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Draw_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament/draw', $vm );
     }
@@ -297,9 +297,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_setup_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Setup_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->setup_page( $_GET, $_POST );
 
@@ -307,10 +304,13 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_with_flash_if_needed( $result );
         }
 
+        $this->apply_result_message( $result );
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Setup_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament/setup', $vm );
     }
@@ -322,9 +322,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_setup_event_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Setup_Event_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->setup_event_page( $_GET, $_POST );
 
@@ -332,10 +329,13 @@ final class Admin_Tournament extends Admin_Championship {
             $this->redirect_with_flash_if_needed( $result );
         }
 
+        $this->apply_result_message( $result );
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Setup_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament/setup-event', $vm );
     }
@@ -347,9 +347,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->modify_page( $_GET, $_POST );
 
@@ -359,7 +356,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Modify_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Modify_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament-edit', $vm );
     }
@@ -371,9 +370,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_plan_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Plan_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->plan_page( $_GET, $_POST );
 
@@ -383,7 +379,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Plan_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Plan_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament/plan', $vm );
     }
@@ -395,9 +393,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_matches_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Matches_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->matches_page( $_GET, $_POST );
 
@@ -407,7 +402,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Matches_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Matches_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/includes/match', $vm );
     }
@@ -419,9 +416,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_contact_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Contact_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->contact_page( $_GET, $_POST );
 
@@ -431,7 +425,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Contact_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Contact_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/includes/contact', $vm );
     }
@@ -443,9 +439,6 @@ final class Admin_Tournament extends Admin_Championship {
         $this->apply_flash_message();
 
         $controller = $this->racketmanager->container->get( 'tournament_information_admin_controller' );
-        if ( ! ( $controller instanceof Tournament_Information_Admin_Controller ) ) {
-            throw new Invalid_Status_Exception( $this->msg_controller_not_available() );
-        }
 
         $result = $controller->information_page( $_GET, $_POST );
 
@@ -455,7 +448,9 @@ final class Admin_Tournament extends Admin_Championship {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        $this->assert_view_model_instance( $vm, Tournament_Information_Page_View_Model::class );
+        if ( ! ( $vm instanceof Tournament_Information_Page_View_Model ) ) {
+            throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
+        }
 
         $this->renderer->render( 'admin/tournament/information', $vm );
     }

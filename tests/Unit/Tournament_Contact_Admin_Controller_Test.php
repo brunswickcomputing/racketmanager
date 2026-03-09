@@ -224,16 +224,6 @@ final class Tournament_Contact_Admin_Controller_Test extends TestCase {
 
         $this->set_property( $tournament, 'id', $id );
         $this->set_property( $tournament, 'name', $name );
-        $this->set_property(
-            $tournament,
-            'competition',
-            (object) array(
-                'type' => 'tournament',
-                'settings' => array(
-                    'entry_type' => 'players',
-                ),
-            )
-        );
         $this->set_season_property_if_present( $tournament, $season );
 
         return $tournament;

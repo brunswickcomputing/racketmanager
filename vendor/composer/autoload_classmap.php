@@ -1468,6 +1468,7 @@ return array(
     'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Action_Dispatcher' => $baseDir . '/src/php/Services/Admin/Tournament/Tournament_Action_Dispatcher.php',
     'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Contact_Action_Dispatcher' => $baseDir . '/src/php/Services/Admin/Tournament/Tournament_Contact_Action_Dispatcher.php',
     'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Information_Action_Dispatcher' => $baseDir . '/src/php/Services/Admin/Tournament/Tournament_Information_Action_Dispatcher.php',
+    'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Matches_Admin_Service' => $baseDir . '/src/php/Services/Admin/Tournament/Tournament_Matches_Admin_Service.php',
     'Racketmanager\\Services\\Championship' => $baseDir . '/src/php/Services/Championship.php',
     'Racketmanager\\Services\\Club_Service' => $baseDir . '/src/php/Services/Club_Service.php',
     'Racketmanager\\Services\\Competition_Entry_Service' => $baseDir . '/src/php/Services/Competition_Entry_Service.php',

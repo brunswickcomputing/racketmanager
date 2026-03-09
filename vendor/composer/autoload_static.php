@@ -1517,6 +1517,7 @@ class ComposerStaticInitad31f6215e50efeea301f674ab3183ec
         'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Action_Dispatcher' => __DIR__ . '/../..' . '/src/php/Services/Admin/Tournament/Tournament_Action_Dispatcher.php',
         'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Contact_Action_Dispatcher' => __DIR__ . '/../..' . '/src/php/Services/Admin/Tournament/Tournament_Contact_Action_Dispatcher.php',
         'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Information_Action_Dispatcher' => __DIR__ . '/../..' . '/src/php/Services/Admin/Tournament/Tournament_Information_Action_Dispatcher.php',
+        'Racketmanager\\Services\\Admin\\Tournament\\Tournament_Matches_Admin_Service' => __DIR__ . '/../..' . '/src/php/Services/Admin/Tournament/Tournament_Matches_Admin_Service.php',
         'Racketmanager\\Services\\Championship' => __DIR__ . '/../..' . '/src/php/Services/Championship.php',
         'Racketmanager\\Services\\Club_Service' => __DIR__ . '/../..' . '/src/php/Services/Club_Service.php',
         'Racketmanager\\Services\\Competition_Entry_Service' => __DIR__ . '/../..' . '/src/php/Services/Competition_Entry_Service.php',

@@ -11,6 +11,7 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\Admin\Tournament\Tournament_Matches_Admin_Service;
 use Racketmanager\Services\Tournament_Service;
 use ReflectionClass;
 use ReflectionException;
@@ -53,11 +54,6 @@ final class Tournament_Matches_Admin_Controller_Test extends TestCase {
         );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $tournament_service
-            ->expects( self::once() )
-            ->method( 'get_tournament' )
-            ->with( 1 )
-            ->willReturn( $tournament );
 
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard
@@ -67,6 +63,30 @@ final class Tournament_Matches_Admin_Controller_Test extends TestCase {
 
         $dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
 
+        $matches_admin_service = $this->createMock( Tournament_Matches_Admin_Service::class );
+        $matches_admin_service->method( 'prepare_matches_view_model' )->willReturn(
+            new Tournament_Matches_Page_View_Model(
+                league: $league,
+                tournament: $tournament,
+                competition: $league->event->competition,
+                season: '2026',
+                form_title: 'Matches',
+                submit_title: 'Matches',
+                matches: array(),
+                edit: true,
+                bulk: false,
+                is_finals: false,
+                mode: 'edit',
+                teams: array(),
+                single_cup_game: false,
+                max_matches: 0,
+                final_key: '',
+                home_title: '',
+                away_title: '',
+                match_day: null
+            )
+        );
+
         // Mock global functions
         if ( ! function_exists( 'Racketmanager\get_league' ) ) {
             eval( 'namespace Racketmanager; function get_league($id) { return $GLOBALS["test_league"] ?? null; }' );
@@ -74,7 +94,7 @@ final class Tournament_Matches_Admin_Controller_Test extends TestCase {
         $GLOBALS['test_league'] = $league;
 
         $controller = new Tournament_Matches_Admin_Controller(
-            $tournament_service,
+            $matches_admin_service,
             $dispatcher,
             $guard
         );
@@ -133,16 +153,35 @@ final class Tournament_Matches_Admin_Controller_Test extends TestCase {
         );
 
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $tournament_service
-            ->expects( self::once() )
-            ->method( 'get_tournament' )
-            ->with( 1 )
-            ->willReturn( $tournament );
 
         $guard = $this->createMock( Action_Guard_Interface::class );
         $guard->method( 'assert_capability' )->with( 'edit_matches' );
 
         $dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
+
+        $matches_admin_service = $this->createMock( Tournament_Matches_Admin_Service::class );
+        $matches_admin_service->method( 'prepare_matches_view_model' )->willReturn(
+            new Tournament_Matches_Page_View_Model(
+                league: $league,
+                tournament: $tournament,
+                competition: $league->event->competition,
+                season: '2026',
+                form_title: 'Edit Match',
+                submit_title: 'Edit Match',
+                matches: array($match),
+                edit: true,
+                bulk: false,
+                is_finals: false,
+                mode: 'edit',
+                teams: array(),
+                single_cup_game: true,
+                max_matches: 1,
+                final_key: '',
+                home_title: 'Team A',
+                away_title: 'Team B',
+                match_day: 1
+            )
+        );
 
         // Mock global functions
         if ( ! function_exists( 'Racketmanager\get_match' ) ) {
@@ -156,7 +195,7 @@ final class Tournament_Matches_Admin_Controller_Test extends TestCase {
         $GLOBALS['test_team'] = (object) ['title' => 'Test Team'];
 
         $controller = new Tournament_Matches_Admin_Controller(
-            $tournament_service,
+            $matches_admin_service,
             $dispatcher,
             $guard
         );
@@ -200,8 +239,10 @@ final class Tournament_Matches_Admin_Controller_Test extends TestCase {
             ->method( 'handle' )
             ->willReturn( new Draw_Action_Response_DTO( message: 'Matches updated', message_type: Admin_Message_Type::SUCCESS ) );
 
+        $matches_admin_service = $this->createMock( Tournament_Matches_Admin_Service::class );
+
         $controller = new Tournament_Matches_Admin_Controller(
-            $tournament_service,
+            $matches_admin_service,
             $dispatcher,
             $guard
         );

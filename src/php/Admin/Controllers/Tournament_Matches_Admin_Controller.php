@@ -11,21 +11,15 @@ namespace Racketmanager\Admin\Controllers;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
-use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
-use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Services\Admin\Tournament\Tournament_Matches_Admin_Service;
 
-use Racketmanager\Util\Util;
-use function Racketmanager\get_league;
-use function Racketmanager\get_match;
-use function Racketmanager\get_team;
-
-class Tournament_Matches_Admin_Controller {
+readonly class Tournament_Matches_Admin_Controller {
 
     public function __construct(
-        private Tournament_Service $tournament_service,
+        private Tournament_Matches_Admin_Service $matches_admin_service,
         private Draw_Action_Dispatcher $draw_action_dispatcher,
         private Action_Guard_Interface $action_guard,
     ) {
@@ -38,7 +32,6 @@ class Tournament_Matches_Admin_Controller {
      * @param array $post  Typically $_POST
      * @return array{view_model?:Tournament_Matches_Page_View_Model, redirect?:string, message?:string, message_type?:bool|string}
      *
-     * @throws Invalid_Status_Exception
      * @throws Tournament_Not_Found_Exception
      */
     public function matches_page( array $query, array $post ): array {
@@ -47,11 +40,11 @@ class Tournament_Matches_Admin_Controller {
         $is_post = ( 'POST' === strtoupper( strval( $_SERVER['REQUEST_METHOD'] ?? '' ) ) );
 
         //phpcs:disable WordPress.Security.NonceVerification.Recommended
-        $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
-        $league_id     = isset( $query['league_id'] ) ? intval( $query['league_id'] ) : ( isset( $query['league'] ) ? intval( $query['league'] ) : ( isset( $post['league_id'] ) ? intval( $post['league_id'] ) : null ) );
-        $final_key     = isset( $query['final'] ) ? sanitize_text_field( wp_unslash( $query['final'] ) ) : ( isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null );
-        $match_id      = isset( $query['edit'] ) ? intval( $query['edit'] ) : ( isset( $post['match'][0] ) ? intval( $post['match'][0] ) : null );
-        $view          = isset( $query['view'] ) ? sanitize_text_field( wp_unslash( $query['view'] ) ) : 'matches';
+        $tournament_id = $this->extract_tournament_id( $query );
+        $league_id     = $this->extract_league_id( $query, $post );
+        $final_key     = $this->extract_final_key( $query, $post );
+        $match_id      = $this->extract_match_id( $query, $post );
+        $view          = $this->extract_view( $query );
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         // POST: manage matches (updateLeague=match) -> PRG redirect back to GET.
@@ -87,107 +80,56 @@ class Tournament_Matches_Admin_Controller {
         }
 
         // GET: render page
-        $tournament = $this->tournament_service->get_tournament( $tournament_id );
-        $season     = $tournament->get_season();
-
-        $league = get_league( $league_id );
-        if ( ! $league ) {
-            throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
-        }
-
-        $competition = $league->event->competition;
-
-        $mode            = 'edit';
-        $is_finals       = ! empty( $final_key );
-
-        $matches      = array();
-        $teams        = array();
-        $max_matches  = 0;
-        $form_title   = __( 'Matches', 'racketmanager' );
-        $submit_title = $form_title;
-        $home_title   = '';
-        $away_title   = '';
-        $match_day    = null;
-
-        if ( 'match' === $view ) {
-            if ( ! $match_id ) {
-                throw new Invalid_Status_Exception( __( 'Match not found', 'racketmanager' ) );
-            }
-
-            $match = get_match( $match_id );
-            if ( ! $match ) {
-                throw new Invalid_Status_Exception( __( 'Match not found', 'racketmanager' ) );
-            }
-
-            $form_title   = __( 'Edit Match', 'racketmanager' );
-            $submit_title = $form_title;
-            $matches      = array( $match );
-            $match_day    = $match->match_day;
-            $max_matches  = 1;
-
-            $final       = $league->championship->get_finals( $final_key );
-            $final_teams = $league->championship->get_final_teams( $final['key'] );
-
-            if ( is_numeric( $match->home_team ) ) {
-                $home_team  = get_team( intval( $match->home_team ) );
-                $home_title = strval( $home_team?->title ?? '' );
-            } else {
-                $home_team  = $final_teams[ $match->home_team ] ?? null;
-                $home_title = strval( $home_team ? $home_team->title : '' );
-            }
-
-            if ( is_numeric( $match->away_team ) ) {
-                $away_team  = get_team( intval( $match->away_team ) );
-                $away_title = strval( $away_team?->title ?? '' );
-            } else {
-                $away_team  = $final_teams[ $match->away_team ] ?? null;
-                $away_title = strval( $away_team ? $away_team->title : '' );
-            }
-
-            $teams = $final_teams;
-        } elseif ( $is_finals ) {
-            $final = $league->championship->get_finals( $final_key );
-            $max_matches = intval( $final['num_matches'] ?? 0 );
-
-            /* translators: %s: round name */
-            $form_title = sprintf( __( 'Edit Matches - %s', 'racketmanager' ), Util::get_final_name( $final_key ) );
-            $submit_title = $form_title;
-
-            $match_args = array(
-                'final'   => $final_key,
-                'orderby' => array( 'id' => 'ASC' ),
-            );
-            if ( 'final' !== $final_key && ! empty( $league->current_season['home_away'] ) && 'true' === $league->current_season['home_away'] ) {
-                $match_args['leg'] = 1;
-            }
-
-            $matches = $league->get_matches( $match_args );
-            $teams   = $league->championship->get_final_teams( $final_key );
-        }
-
-        $vm = new Tournament_Matches_Page_View_Model(
-            league: $league,
-            tournament: $tournament,
-            competition: $competition,
-            season: strval( $season ),
-            form_title: $form_title,
-            submit_title: $submit_title,
-            matches: $matches,
-            edit: true,
-            bulk: false,
-            is_finals: $is_finals,
-            mode: $mode,
-            teams: $teams,
-            single_cup_game: ( 'match' === $view ),
-            max_matches: $max_matches,
-            final_key: strval( $final_key ?? '' ),
-            home_title: $home_title,
-            away_title: $away_title,
-            match_day: $match_day,
-        );
+        $vm = $this->matches_admin_service->prepare_matches_view_model( $tournament_id, $league_id, $final_key, $match_id, $view );
 
         return array(
             'view_model' => $vm,
         );
+    }
+
+    private function extract_tournament_id( array $query ): ?int {
+        return isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
+    }
+
+    private function extract_league_id( array $query, array $post ): ?int {
+        $league_id = null;
+
+        if ( isset( $query['league_id'] ) ) {
+            $league_id = intval( $query['league_id'] );
+        } elseif ( isset( $query['league'] ) ) {
+            $league_id = intval( $query['league'] );
+        } elseif ( isset( $post['league_id'] ) ) {
+            $league_id = intval( $post['league_id'] );
+        }
+
+        return $league_id;
+    }
+
+    private function extract_final_key( array $query, array $post ): ?string {
+        if ( isset( $query['final'] ) ) {
+            return sanitize_text_field( wp_unslash( $query['final'] ) );
+        }
+
+        if ( isset( $post['final'] ) ) {
+            return sanitize_text_field( wp_unslash( strval( $post['final'] ) ) );
+        }
+
+        return null;
+    }
+
+    private function extract_match_id( array $query, array $post ): ?int {
+        if ( isset( $query['edit'] ) ) {
+            return intval( $query['edit'] );
+        }
+
+        if ( isset( $post['match'][0] ) ) {
+            return intval( $post['match'][0] );
+        }
+
+        return null;
+    }
+
+    private function extract_view( array $query ): string {
+        return isset( $query['view'] ) ? sanitize_text_field( wp_unslash( $query['view'] ) ) : 'matches';
     }
 }

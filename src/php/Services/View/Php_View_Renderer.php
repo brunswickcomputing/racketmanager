@@ -8,7 +8,7 @@
 
 namespace Racketmanager\Services\View;
 
-use RuntimeException;
+use Racketmanager\Exceptions\Template_Not_Found_Exception;
 
 /**
  * Class Php_View_Renderer
@@ -40,7 +40,7 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
         $full_path = $this->base_path . ltrim( $template_path, '/' ) . '.php';
 
         if ( ! file_exists( $full_path ) ) {
-            throw new RuntimeException( sprintf( 'Template not found at: %s', $full_path ) );
+            throw new Template_Not_Found_Exception( sprintf( __( 'Template not found at: %s', 'racketmanager' ), $full_path ) );
         }
 
         require $full_path;

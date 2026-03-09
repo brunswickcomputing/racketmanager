@@ -34,6 +34,8 @@ use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Tournaments_Page_View_Model;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\RacketManager;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 /**
  * RacketManager administration functions
@@ -44,6 +46,13 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
  * @subpackage RacketManagerAdmin
  */
 final class Admin_Tournament extends Admin_Championship {
+    public function __construct(
+        RacketManager $racketmanager,
+        private readonly View_Renderer_Interface $renderer
+    ) {
+        parent::__construct( $racketmanager );
+    }
+
     private function msg_controller_not_available(): string {
         return __( 'Controller not available', 'racketmanager' );
     }
@@ -197,7 +206,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Teams_List_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/includes/teams-list.php';
+        $this->renderer->render( 'admin/includes/teams-list', $vm );
     }
 
     private function get_admin_competition(): Admin_Competition {
@@ -229,7 +238,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Tournaments_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/show-tournaments.php';
+        $this->renderer->render( 'admin/show-tournaments', $vm );
     }
 
     /**
@@ -251,7 +260,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Overview_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/show-tournament.php';
+        $this->renderer->render( 'admin/tournament/show-tournament', $vm );
     }
 
     /**
@@ -276,7 +285,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Draw_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/draw.php';
+        $this->renderer->render( 'admin/tournament/draw', $vm );
     }
 
     /**
@@ -301,7 +310,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
+        $this->renderer->render( 'admin/tournament/setup', $vm );
     }
 
     /**
@@ -326,7 +335,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Setup_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/setup.php';
+        $this->renderer->render( 'admin/tournament/setup-event', $vm );
     }
 
     /**
@@ -350,7 +359,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Modify_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/tournament-edit.php';
+        $this->renderer->render( 'admin/tournament-edit', $vm );
     }
 
     /**
@@ -374,7 +383,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Plan_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/plan.php';
+        $this->renderer->render( 'admin/tournament/plan', $vm );
     }
 
     /**
@@ -398,7 +407,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Matches_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/includes/match.php';
+        $this->renderer->render( 'admin/includes/match', $vm );
     }
 
     /**
@@ -422,7 +431,7 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Contact_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/includes/contact.php';
+        $this->renderer->render( 'admin/includes/contact', $vm );
     }
 
     /**
@@ -446,6 +455,6 @@ final class Admin_Tournament extends Admin_Championship {
         $vm = $result['view_model'] ?? null;
         $this->assert_view_model_instance( $vm, Tournament_Information_Page_View_Model::class );
 
-        require_once RACKETMANAGER_PATH . 'templates/admin/tournament/information.php';
+        $this->renderer->render( 'admin/tournament/information', $vm );
     }
 }

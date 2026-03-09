@@ -19,6 +19,7 @@ if ( $vm ) {
     $pending_entries   = $vm->pending_entries;
     $confirmed_entries = $vm->confirmed_entries;
 }
+$player_list_base = 'admin/tournament/player-list';
 
 /** @var array $withdrawn_entries */
 /** @var array $unpaid_entries */
@@ -37,11 +38,7 @@ if ( $vm ) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    $player_list = $withdrawn_entries;
-                    $entered     = true;
-                    require 'player-list.php';
-                    ?>
+                    <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $withdrawn_entries, 'entered' => true ] ); ?>
                 </tbody>
             </table>
             <?php
@@ -55,11 +52,7 @@ if ( $vm ) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    $player_list = $unpaid_entries;
-                    $entered     = true;
-                    require 'player-list.php';
-                    ?>
+                    <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $unpaid_entries, 'entered' => true ] ); ?>
                 </tbody>
             </table>
             <?php
@@ -72,11 +65,7 @@ if ( $vm ) {
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $player_list = $pending_entries;
-                $entered     = false;
-                require 'player-list.php';
-                ?>
+                <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $pending_entries, 'entered' => false ] ); ?>
             </tbody>
         </table>
     </div>
@@ -88,11 +77,7 @@ if ( $vm ) {
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $player_list = $confirmed_entries;
-                $entered     = true;
-                require 'player-list.php';
-                ?>
+                <?php $renderer->render( $player_list_base, $vm, [ 'player_list' => $confirmed_entries, 'entered' => true ] ); ?>
             </tbody>
         </table>
     </div>

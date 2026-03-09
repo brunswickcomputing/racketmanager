@@ -144,7 +144,10 @@ class Admin_Display {
                 $this->admin_cup->handle_display( $view );
                 break;
             case 'racketmanager-tournaments':
-                $this->admin_tournament = new Admin_Tournament( $this->racketmanager );
+                $this->admin_tournament = new Admin_Tournament(
+                    $this->racketmanager,
+                    $this->racketmanager->container->get( 'view_renderer' )
+                );
                 $this->admin_tournament->handle_display( $view );
                 break;
             case 'racketmanager-clubs':

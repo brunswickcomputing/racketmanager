@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 // Preferred input.
 $vm = isset( $vm ) && ( $vm instanceof Tournament_Overview_Page_View_Model ) ? $vm : null;
@@ -26,6 +27,7 @@ if ( $vm ) {
 
 /** @var string $tab */
 /** @var object $tournament */
+/** @var View_Renderer_Interface $renderer */
 ?>
 <script type='text/javascript'>
 jQuery(document).ready(function(){
@@ -71,7 +73,7 @@ jQuery(document).ready(function(){
                         <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=config&competition_id=<?php echo esc_attr( $tournament->competition_id ); ?>&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Config', 'racketmanager' ); ?></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="contact-tab" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=contact&tournament_id=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></a>
+                        <a class="nav-link" id="contact-tab" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=contact&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Contact', 'racketmanager' ); ?></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="information-tab" href="/wp-admin/admin.php?page=racketmanager-tournaments&view=information&tournament=<?php echo esc_attr( $tournament->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Information', 'racketmanager' ); ?></a>
@@ -83,14 +85,14 @@ jQuery(document).ready(function(){
     <div class="tab-content">
         <div class="tab-pane" id="overview" role="tabpanel" aria-labelledby="overview-tab">
             <h2><?php esc_html_e( 'Overview', 'racketmanager' ); ?></h2>
-            <?php require_once 'tournament/overview.php'; ?>
+            $renderer->render( 'admin/tournament/overview', $vm ); ?>
         </div>
         <div class="tab-pane" id="events" role="tabpanel" aria-labelledby="events-tab">
             <h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
-            <?php require_once 'tournament/events.php'; ?>
+            <?php $renderer->render( 'admin/tournament/events', $vm ); ?>
         </div>
         <div class="tab-pane" id="entries" role="tabpanel" aria-labelledby="entries-tab">
             <h2><?php esc_html_e( 'Entries', 'racketmanager' ); ?></h2>
-            <?php require_once 'tournament/entries.php'; ?>
+            <?php $renderer->render( 'admin/tournament/entries', $vm ); ?>
         </div>
     </div>

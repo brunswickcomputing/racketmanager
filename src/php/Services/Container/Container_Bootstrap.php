@@ -52,6 +52,7 @@ use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
+use Racketmanager\Services\View\Php_View_Renderer;
 use RuntimeException;
 
 /**
@@ -138,6 +139,10 @@ final class Container_Bootstrap {
 
         $c->set( 'season_service', function ( Simple_Container $c ) use ( $app ) {
             return new Season_Service( $app, $c->get( 'season_repository' ), );
+        } );
+
+        $c->set( 'view_renderer', function () {
+            return new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         } );
 
         $c->set( 'notify_service', fn() => new Notify_Service( $app ) );

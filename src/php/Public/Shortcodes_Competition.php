@@ -78,7 +78,7 @@ class Shortcodes_Competition extends Shortcodes {
         }
         $user_competitions = array();
         if ( 'tournament' === $type ) {
-            $query_args['orderby'] = array( 'date' => 'DESC' );
+            $query_args['orderby'] = array( 'date_end' => 'DESC' );
             $tournaments           = $this->tournament_service->get_tournaments( $query_args );
             $competitions          = array();
             foreach ( $tournaments as $tournament ) {

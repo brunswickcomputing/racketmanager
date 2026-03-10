@@ -208,10 +208,10 @@ class Tournament_Repository {
             $search_terms[] = '`date_closing` >= CURDATE()';
         }
         if ( $open ) {
-            $search_terms[] = "(`date` >= CURDATE() OR `date` = '0000-00-00')";
+            $search_terms[] = "(`date_end` >= CURDATE() OR `date_end` = '0000-00-00')";
         }
         if ( $active ) {
-            $search_terms[] = '`date` >= CURDATE() AND `date_start` <= CURDATE()';
+            $search_terms[] = '`date_end` >= CURDATE() AND `date_start` <= CURDATE()';
         }
         if ( $age_group ) {
             $search_terms[] = $this->wpdb->prepare( " `competition_id` in (select `id` from `$this->competition_table` WHERE `age_group` = %s)", $age_group );
@@ -681,7 +681,7 @@ class Tournament_Repository {
             FROM `$this->table_name` t
                 JOIN `$tournament_entries_table` te ON t.id = te.tournament_id
             WHERE te.player_id = %d
-            ORDER BY t.date DESC
+            ORDER BY t.date_end DESC
             ",
             $player_id
         );

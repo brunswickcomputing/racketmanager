@@ -62,7 +62,7 @@ $racketmanager_prev_league = 0;
             }
         } else {
             ?>
-            <tr><td colspan="3"><?php esc_html_e( 'No matches found for criteria', 'racketmanager' ); ?></td></tr>
+            <tr><td colspan="3"><?php esc_html_e( 'No results found for criteria', 'racketmanager' ); ?></td></tr>
             <?php
         }
         ?>

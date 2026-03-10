@@ -955,7 +955,7 @@ class RacketManager {
         );
 
         // Now register and enqueue your module AFTER the config
-        wp_register_script_module( $module_handle, $module_src, ['jquery-ui-autocomplete'], RACKETMANAGER_VERSION );
+        wp_register_script_module( $module_handle, $module_src, array(), RACKETMANAGER_VERSION );
         wp_enqueue_script_module( $module_handle );
 
         // Add locale config

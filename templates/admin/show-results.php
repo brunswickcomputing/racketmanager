@@ -74,11 +74,11 @@ jQuery(document).ready(function(){
                 <?php require_once 'results/results.php'; ?>
             </div>
             <div class="tab-pane fade" id="postponed" role="tabpanel" aria-labelledby="postponed-tab">
-                <h2 class="header"><?php esc_html_e( 'Postponed matches', 'racketmanager' ); ?></h2>
+                <h2 class="header"><?php esc_html_e( 'Postponed fixtures', 'racketmanager' ); ?></h2>
                 <?php require_once 'results/postponed.php'; ?>
             </div>
             <div class="tab-pane fade" id="tournament" role="tabpanel" aria-labelledby="tournament-tab">
-                <h2 class="header"><?php esc_html_e( 'Tournament matches not yet in', 'racketmanager' ); ?></h2>
+                <h2 class="header"><?php esc_html_e( 'Tournament results not yet in', 'racketmanager' ); ?></h2>
                 <?php require_once 'results/tournament.php'; ?>
             </div>
         </div>

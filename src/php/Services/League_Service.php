@@ -71,7 +71,7 @@ class League_Service {
         return $league_team;
     }
 
-    public function get_league( ?int $league_id ): ?League {
+    public function get_league( ?int $league_id ): ?object {
         return $this->league_repository->find_by_id( $league_id );
     }
 

@@ -63,6 +63,9 @@ class Upgrade {
         $this->v10_0_11();
         $this->v10_0_12();
         $this->v10_0_13();
+        $this->v10_0_14();
+        $this->v10_0_15();
+        $this->v10_0_16();
         /*
         * Update version and dbversion
         */
@@ -142,7 +145,7 @@ class Upgrade {
                 $parent_page_id = $parent_page->ID;
             }
 
-            // Define and create child page if parent page exists
+            // Define and create a child page if the parent page exists
             if ( $parent_page_id )  {
                 $child_page_slug = 'roles';
 
@@ -363,7 +366,7 @@ class Upgrade {
                             $decoded = (array) $decoded;
                         }
                         $json = wp_json_encode( $decoded );
-                        // Only update if normalized differs
+                        // Only update if normalised differs
                         $needs_update = ( $json !== $raw );
                     } else {
                         // Try unserialize; if array, encode to JSON
@@ -424,7 +427,7 @@ class Upgrade {
                     $json = wp_json_encode( $settings );
                     $needs_update = true;
                 } else {
-                    // Empty or unknown; normalize to an empty object
+                    // Empty or unknown; normalise to an empty object
                     $json = '{}';
                     $needs_update = true;
                 }
@@ -501,7 +504,7 @@ class Upgrade {
 
     /**
      * Upgrade to 10.0.13
-     * Change date column to date_end
+     * Change the date column to date_end
      *
      * @return void
      */
@@ -510,6 +513,48 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_tournaments CHANGE `date` `date_end` DATE NULL DEFAULT NULL;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.14
+     * Change match_day column to allow null
+     *
+     * @return void
+     */
+    private function v10_0_14 ():void {
+        $version = '10.0.14';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_matches CHANGE `match_day` `match_day` TINYINT NULL DEFAULT NULL;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.15
+     * Change winner_id and loser_id column to allow null
+     *
+     * @return void
+     */
+    private function v10_0_15 ():void {
+        $version = '10.0.15';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_matches CHANGE `winner_id` `winner_id` INT NULL DEFAULT NULL, CHANGE `loser_id` `loser_id` INT NULL DEFAULT NULL;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.16
+     * Change post_id column to allow null
+     *
+     * @return void
+     */
+    private function v10_0_16 ():void {
+        $version = '10.0.16';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_matches CHANGE `post_id` `post_id` INT NULL DEFAULT NULL;" );
         }
     }
 

@@ -141,7 +141,7 @@ readonly final class Tournament_Setup_Admin_Controller {
     }
 
     /**
-     * POST: set round dates / add/replace matches.
+     * POST: set round dates / add/replace fixtures.
      *
      * @param array<string, mixed> $query
      * @param array<string, mixed> $post
@@ -154,7 +154,7 @@ readonly final class Tournament_Setup_Admin_Controller {
      * @throws Tournament_Not_Found_Exception
      */
     private function handle_round_dates_post( array $query, array $post, Validator_Tournament $validator, ?int $tournament_id ): array {
-        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
 
         $request = new Championship_Rounds_Request_DTO( $post );
 

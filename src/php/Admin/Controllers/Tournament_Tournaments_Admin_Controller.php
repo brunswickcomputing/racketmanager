@@ -48,8 +48,8 @@ readonly final class Tournament_Tournaments_Admin_Controller {
                     'competition_id' => $filters['competition_select'],
                     'age_group'      => $filters['age_group_select'],
                     'orderby'        => array(
-                        'date' => 'desc',
-                        'name' => 'asc',
+                        'date_end' => 'desc',
+                        'name'     => 'asc',
                     ),
                 )
             ),

@@ -47,7 +47,7 @@ if ( ! is_array( $tournament->get_order_of_play() ) || count( $tournament->get_o
     for ( $i = 0; $i < $tournament->get_num_courts(); $i++ ) {
         $order_of_play[ $i ]['court']      = 'Court ' . ( $i + 1 );
         $order_of_play[ $i ]['start_time'] = $tournament->get_start_time();
-        $order_of_play[ $i ]['matches']    = array();
+        $order_of_play[ $i ]['fixtures']    = array();
     }
 } else {
     $order_of_play = $tournament->get_order_of_play();
@@ -78,7 +78,7 @@ jQuery(document).ready(function(){
                         <td class="col-auto"><?php echo esc_html( $tournament->get_end_date() ); ?></td>
                     </tr>
                     <tr>
-                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></th>
+                        <th scope="col" class="col-6 col-md-3"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></th>
                         <td class="col-auto"><?php echo esc_html( count( $final_matches ) ); ?></td>
                     </tr>
                 </tbody>
@@ -87,7 +87,7 @@ jQuery(document).ready(function(){
     </div>
     <ul class="nav nav-pills">
         <li class="nav-item">
-            <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="true"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
+            <button class="nav-link" id="finals-tab" data-bs-toggle="tab" data-bs-target="#finals" type="button" role="tab" aria-controls="finals" aria-selected="true"><?php esc_html_e( 'Finals', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item">
             <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="config" aria-selected="true"><?php esc_html_e( 'Config', 'racketmanager' ); ?></button>
@@ -161,8 +161,8 @@ jQuery(document).ready(function(){
                 </div>
             </form>
         </div>
-        <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
-            <h2><?php esc_html_e( 'Final matches', 'racketmanager' ); ?></h2>
+        <div class="tab-pane fade" id="finals" role="tabpanel" aria-labelledby="finals-tab">
+            <h2><?php esc_html_e( 'Final fixtures', 'racketmanager' ); ?></h2>
             <div class="col-2 col-sm-1"></div>
             <div class="col-10 col-sm-11">
                 <div class="row text-center">
@@ -270,9 +270,9 @@ jQuery(document).ready(function(){
                                     <div class="row">
                                         <?php
                                         for ( $c = 0; $c < $tournament->get_num_courts(); $c++ ) {
-                                            if ( isset( $order_of_play[ $c ]['matches'][ $i ] ) ) {
+                                            if ( isset( $order_of_play[ $c ]['fixtures'][ $i ] ) ) {
                                                 $fixtures_players = array();
-                                                $fixture_id      = intval( $order_of_play[ $c ]['matches'][ $i ] );
+                                                $fixture_id      = intval( $order_of_play[ $c ]['fixtures'][ $i ] );
                                                 $fixture         = get_match( $fixture_id );
                                                 if ( $fixture ) {
                                                     $fixtures_players = match_add_players( $fixtures_players, $fixture );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Tournament matches page view model
+ * Tournament fixtures page view model
  *
  * @package RacketManager
  * @subpackage Admin/View_Models
@@ -8,10 +8,10 @@
 
 namespace Racketmanager\Admin\View_Models;
 
-final readonly class Tournament_Matches_Page_View_Model {
+final readonly class Tournament_Fixtures_Page_View_Model {
 
     /**
-     * @param array<int,object> $matches
+     * @param array<int,object> $fixtures
      * @param array<int,object> $teams
      */
     public function __construct(
@@ -21,14 +21,14 @@ final readonly class Tournament_Matches_Page_View_Model {
         public string $season,
         public string $form_title,
         public string $submit_title,
-        public array $matches,
+        public array $fixtures,
         public bool $edit,
         public bool $bulk,
         public bool $is_finals,
         public string $mode,
         public array $teams,
         public bool $single_cup_game,
-        public int $max_matches,
+        public int $max_fixtures,
         public string $final_key,
         public string $home_title = '',
         public string $away_title = '',
@@ -47,14 +47,14 @@ final readonly class Tournament_Matches_Page_View_Model {
             'season'          => $this->season,
             'form_title'      => $this->form_title,
             'submit_title'    => $this->submit_title,
-            'matches'         => $this->matches,
+            'fixtures'        => $this->fixtures,
             'edit'            => $this->edit,
             'bulk'            => $this->bulk,
             'is_finals'       => $this->is_finals,
             'mode'            => $this->mode,
             'teams'           => $this->teams,
             'single_cup_game' => $this->single_cup_game,
-            'max_matches'     => $this->max_matches,
+            'max_fixtures'    => $this->max_fixtures,
             'final_key'       => $this->final_key,
             'home_title'      => $this->home_title,
             'away_title'      => $this->away_title,

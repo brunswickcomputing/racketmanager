@@ -11,7 +11,7 @@ namespace Racketmanager;
 /** @var int    $f */
 /** @var string $player_class */
 
-foreach ( $final->matches as $fixture_details ) {
+foreach ( $final->fixtures as $fixture_details ) {
     $fixture = $fixture_details->fixture;
     $league  = $fixture_details->league;
     $event   = $fixture_details->event;

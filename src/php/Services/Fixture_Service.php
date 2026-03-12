@@ -206,6 +206,10 @@ class Fixture_Service {
         return $this->fixture_repository->find_finals_fixtures_for_tournament( $tournament_id );
     }
 
+    public function delete_fixtures_for_season( int $league_id, string $season ): void {
+        $this->fixture_repository->delete_by_league_and_season( $league_id, $season );
+    }
+
     /**
      * @param int|null $player_id
      * @param int|null $tournament_id
@@ -230,13 +234,21 @@ class Fixture_Service {
             $competition = $this->competition_service->get_by_id( $event->competition->id );
 
             $home_team = null;
-            if ( ! empty( $fixture->get_home_team() ) && is_numeric( $fixture->get_home_team() ) ) {
-                $home_team = $this->team_service->get_team_details( (int) $fixture->get_home_team() );
+            if ( ! empty( $fixture->get_home_team() ) ) {
+                if ( is_numeric( $fixture->get_home_team() ) ) {
+                    $home_team = $this->team_service->get_team_details( (int) $fixture->get_home_team() );
+                } else {
+                    $home_team = $this->team_service->derive_team_details( $fixture->get_home_team() );
+                }
             }
 
             $away_team = null;
-            if ( ! empty( $fixture->get_away_team() ) && is_numeric( $fixture->get_away_team() ) ) {
-                $away_team = $this->team_service->get_team_details( (int) $fixture->get_away_team() );
+            if ( ! empty( $fixture->get_away_team() ) ) {
+                if ( is_numeric( $fixture->get_away_team() ) ) {
+                    $away_team = $this->team_service->get_team_details( (int) $fixture->get_away_team() );
+                } else {
+                    $away_team = $this->team_service->derive_team_details( $fixture->get_away_team() );
+                }
             }
 
             $prev_home_match_title = null;
@@ -259,7 +271,7 @@ class Fixture_Service {
     }
 
     /**
-     * Resolve placeholder title for matches
+     * Resolve placeholder title for fixtures
      *
      * @param string $team_ref
      * @param string $season
@@ -303,7 +315,7 @@ class Fixture_Service {
 
         $prev_matches = $league->get_matches( $args );
         if ( ! $prev_matches ) {
-            // If we can't find previous matches, we fall back to a descriptive name
+            // If we can't find previous fixtures, we fall back to a descriptive name
             /* translators: %1$s: type (Winner/Loser), %2$s: round name, %3$s: match number */
             return sprintf( __( '%1$s %2$s %3$s', 'racketmanager' ), $type, $round_name, $match_num );
         }

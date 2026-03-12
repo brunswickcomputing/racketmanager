@@ -11,6 +11,10 @@ namespace Racketmanager\Admin\Controllers;
 use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
+use Racketmanager\Domain\League;
+use Racketmanager\Domain\Event;
+use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
+use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
@@ -51,8 +55,8 @@ readonly final class Tournament_Draw_Admin_Controller {
     public function draw_page( array $query, array $post ): array {
         $this->action_guard->assert_capability( 'edit_matches' );
 
-        $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
-        $league_id     = isset( $query['league'] ) ? intval( $query['league'] ) : null;
+        $tournament_id = isset( $query['tournament'] ) ? (int) $query['tournament'] : null;
+        $league_id     = isset( $query['league'] ) ? (int) $query['league'] : null;
 
         $tournament = $this->tournament_service->get_tournament( $tournament_id );
 
@@ -90,7 +94,7 @@ readonly final class Tournament_Draw_Admin_Controller {
         return $result;
     }
 
-    private function dispatch_action( ?int $tournament_id, ?int $league_id, array $post ): object {
+    private function dispatch_action( ?int $tournament_id, ?int $league_id, array $post ): Draw_Action_Response_DTO {
         $dto = new Draw_Action_Request_DTO(
             tournament_id: $tournament_id,
             league_id: $league_id,
@@ -101,12 +105,43 @@ readonly final class Tournament_Draw_Admin_Controller {
         return $this->draw_action_dispatcher->handle( $dto );
     }
 
-    private function build_view_model( object $tournament, object $league, array $query, array $post, ?string $tab_override ): Tournament_Draw_Page_View_Model {
+    private function build_view_model( Tournament $tournament, object $league, array $query, array $post, ?string $tab_override ): Tournament_Draw_Page_View_Model {
+        $tab     = $this->extract_tab( $query, $tab_override );
+        $season  = $this->extract_season( $query, $post, $tournament->get_season() );
+
+        $event_id = isset( $league->event->id ) ? (int) $league->event->id : null;
+        $event    = $this->tournament_service->get_draw_details_for_tournament( $tournament, $event_id );
+
+        $target_league = null;
+        if ( $event instanceof Event ) {
+            foreach ( $event->leagues as $l ) {
+                $l_id      = isset( $l->id ) ? (int) $l->id : null;
+                $league_id = method_exists( $league, 'get_id' ) ? (int) $league->get_id() : ( isset( $league->id ) ? (int) $league->id : null );
+                if ( $l_id === $league_id ) {
+                    $target_league = $l;
+                    break;
+                }
+            }
+        }
+
+        $finals  = ( $target_league && isset( $target_league->finals ) ) ? (array) $target_league->finals : array();
+        $matches = array();
+        foreach ( $finals as $final_obj ) {
+            if ( isset( $final_obj->key, $final_obj->fixtures ) ) {
+                $matches[ $final_obj->key ] = $final_obj->fixtures;
+            }
+        }
+
+        $teams = $league->get_league_teams( array() );
+
         return new Tournament_Draw_Page_View_Model(
             tournament: $tournament,
             league: $league,
-            tab: $this->extract_tab( $query, $tab_override ),
-            season: $this->extract_season( $query, $post, $tournament->get_season() ),
+            tab: $tab,
+            season: $season,
+            matches: $matches,
+            teams: $teams,
+            finals: $finals,
         );
     }
 

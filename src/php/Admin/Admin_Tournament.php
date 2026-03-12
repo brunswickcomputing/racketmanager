@@ -14,7 +14,7 @@ use Racketmanager\Admin\View_Models\Tournament_Contact_Page_View_Model;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Information_Page_View_Model;
-use Racketmanager\Admin\View_Models\Tournament_Matches_Page_View_Model;
+use Racketmanager\Admin\View_Models\Tournament_Fixtures_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Modify_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
@@ -143,8 +143,8 @@ final class Admin_Tournament {
             'draw'         => [ $this, 'display_draw_page' ],
             'setup'        => [ $this, 'display_setup_page' ],
             'setup-event'  => [ $this, 'display_setup_event_page' ],
-            'matches'      => [ $this, 'display_matches_page' ],
-            'match'        => [ $this, 'display_matches_page' ],
+            'fixtures'     => [ $this, 'display_fixtures_page' ],
+            'fixture'      => [ $this, 'display_fixtures_page' ],
             'teams'        => [ $this, 'display_teams_list' ],
             'contact'      => [ $this, 'display_contact_page' ],
             'information'  => [ $this, 'display_information_page' ],
@@ -411,14 +411,14 @@ final class Admin_Tournament {
     }
 
     /**
-     * Display tournament matches or single match page
+     * Display tournament fixtures or single fixture page
      */
-    public function display_matches_page(): void {
+    public function display_fixtures_page(): void {
         $this->apply_flash_message();
 
-        $controller = $this->racketmanager->container->get( 'tournament_matches_admin_controller' );
+        $controller = $this->racketmanager->container->get( 'tournament_fixtures_admin_controller' );
 
-        $result = $controller->matches_page( $_GET, $_POST );
+        $result = $controller->fixtures_page( $_GET, $_POST );
 
         $this->redirect_with_flash_if_needed( $result );
 
@@ -426,7 +426,7 @@ final class Admin_Tournament {
         $this->message_service->show_message();
 
         $vm = $result['view_model'] ?? null;
-        if ( ! ( $vm instanceof Tournament_Matches_Page_View_Model ) ) {
+        if ( ! ( $vm instanceof Tournament_Fixtures_Page_View_Model ) ) {
             throw new Invalid_Status_Exception( $this->msg_invalid_view_model() );
         }
 

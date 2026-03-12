@@ -66,7 +66,7 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
      */
     private function handle_post_request( ?int $tournament_id, ?int $league_id, array $query, array $post ): array {
         // Security: setup template posts with this nonce.
-        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-matches', 'edit_matches' );
+        $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add_championship-fixtures', 'edit_matches' );
 
         $dto = new Draw_Action_Request_DTO(
             tournament_id: $tournament_id ?? 0,

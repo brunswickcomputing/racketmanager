@@ -25,7 +25,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
 
             public function handle_league_teams_action( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
             public function add_teams_to_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
-            public function manage_matches_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
+            public function manage_fixtures_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
 
             public function rank_teams( Draw_Action_Request_DTO $dto, string $mode ): Action_Result_DTO {
                 $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array( 'mode' => $mode ) );
@@ -34,7 +34,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
 
             public function start_finals( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
             public function update_final_results( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
-            public function set_championship_matches( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
+            public function set_championship_fixtures( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
         };
 
         $guard = new class implements Action_Guard_Interface {
@@ -80,11 +80,11 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
 
             public function handle_league_teams_action( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
             public function add_teams_to_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
-            public function manage_matches_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
+            public function manage_fixtures_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
             public function rank_teams( Draw_Action_Request_DTO $dto, string $mode ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array( 'mode' => $mode ) ); return new Action_Result_DTO(); }
             public function start_finals( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
             public function update_final_results( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
-            public function set_championship_matches( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
+            public function set_championship_fixtures( Draw_Action_Request_DTO $dto ): Action_Result_DTO { $this->calls[] = array( 'method' => __FUNCTION__, 'args' => array() ); return new Action_Result_DTO(); }
         };
 
         $guard = new class( $guard_calls ) implements Action_Guard_Interface {
@@ -100,7 +100,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
 
         $dispatcher = new Draw_Action_Dispatcher( $handler, $guard );
 
-        // Make has_any_action() true, but ensure no policy matches.
+        // Make has_any_action() true, but ensure no policy fixtures.
         $dto = new Draw_Action_Request_DTO(
             tournament_id: 1,
             league_id: 2,

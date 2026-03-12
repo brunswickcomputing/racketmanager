@@ -42,7 +42,7 @@ readonly final class Tournament_Plan_Admin_Controller {
 
         $validator     = new Validator_Tournament();
         $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
-        $tab           = ( isset( $query['tab'] ) ) ? sanitize_text_field( wp_unslash( $query['tab'] ) ) : 'matches';
+        $tab           = ( isset( $query['tab'] ) ) ? sanitize_text_field( wp_unslash( $query['tab'] ) ) : 'finals';
 
         if ( isset( $post['saveTournamentPlan'] ) ) {
             $result = $this->handle_save_tournament_plan( $query, $post, $validator, $tournament_id );
@@ -122,7 +122,7 @@ readonly final class Tournament_Plan_Admin_Controller {
 
                 return $this->render(
                     tournament_id: $tournament_id_posted,
-                    tab: 'matches',
+                    tab: 'finals',
                     validator: $validator,
                     message: __( 'Error updating tournament finals', 'racketmanager' ),
                     message_type: true
@@ -135,7 +135,7 @@ readonly final class Tournament_Plan_Admin_Controller {
                 $tournament_id_posted,
                 array(
                     'plan_saved' => 1,
-                    'tab'        => 'matches',
+                    'tab'        => 'finals',
                 )
             );
 
@@ -170,7 +170,7 @@ readonly final class Tournament_Plan_Admin_Controller {
                 $tournament_id_posted,
                 array(
                     'plan_reset' => $response ? 1 : 0,
-                    'tab'        => 'matches',
+                    'tab'        => 'finals',
                 )
             );
 

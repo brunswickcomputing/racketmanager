@@ -844,33 +844,6 @@ class League {
         );
     }
     /**
-     * Delete matches from League for a season
-     *
-     * @param string $season season.
-     */
-    public function delete_season_matches( string $season ): void {
-        $matches = $this->get_matches(
-            array(
-                'season' => $season,
-                'final'  => 'all',
-            )
-        );
-        if ( $matches ) {
-            $this->delete_matches( $matches );
-        }
-    }
-    /**
-     * Delete matches from League
-     *
-     * @param array $matches array of matches.
-     */
-    public function delete_matches( array $matches ): void {
-        foreach ( $matches as $match ) {
-            $match = get_match( $match->id );
-            $match->delete();
-        }
-    }
-    /**
      * Delete team from League
      *
      * @param integer $team team id.
@@ -882,10 +855,16 @@ class League {
             array(
                 'team_id' => $team,
                 'season'  => $season,
+                'final'   => 'all',
             )
         );
         if ( $matches ) {
-            $this->delete_matches( $matches );
+            foreach ( $matches as $match ) {
+                $match = get_match( $match->id );
+                if ( $match ) {
+                    $match->delete();
+                }
+            }
         }
         // remove tables.
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -3486,6 +3465,8 @@ class League {
             $match->update_legs( $match->leg, $new_match->id );
         }
     }
+
+
     /**
      * Update match within league function
      *

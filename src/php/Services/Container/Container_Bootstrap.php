@@ -8,7 +8,8 @@ use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
-use Racketmanager\Admin\Controllers\Tournament_Matches_Admin_Controller;
+use Racketmanager\Services\Admin\Tournament\Tournament_Fixtures_Admin_Service;
+use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Event_Config_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
@@ -244,6 +245,7 @@ final class Container_Bootstrap {
         $c->set( 'championship_admin_service', function ( Simple_Container $c ) {
             return new Championship_Admin_Service(
                 $c->get( 'league_service' ),
+                $c->get( 'fixture_service' ),
             );
         } );
 
@@ -306,9 +308,18 @@ final class Container_Bootstrap {
             );
         } );
 
-        $c->set( 'tournament_matches_admin_controller', function ( Simple_Container $c ) {
-            return new Tournament_Matches_Admin_Controller(
+        $c->set( 'tournament_matches_admin_service', function ( Simple_Container $c ) {
+            return new Tournament_Fixtures_Admin_Service(
                 $c->get( 'tournament_service' ),
+                $c->get( 'fixture_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'team_service' ),
+            );
+        } );
+
+        $c->set( 'tournament_fixtures_admin_controller', function ( Simple_Container $c ) {
+            return new Tournament_Fixtures_Admin_Controller(
+                $c->get( 'tournament_matches_admin_service' ),
                 $c->get( 'draw_action_dispatcher' ),
                 $c->get( 'action_guard' ),
             );

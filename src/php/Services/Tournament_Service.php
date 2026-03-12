@@ -45,7 +45,6 @@ use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
 use WP_Error;
-use function Racketmanager\debug_to_console;
 use function Racketmanager\get_league;
 
 /**
@@ -571,7 +570,7 @@ class Tournament_Service {
         $fixture_length        = strtotime( $tournament->get_time_increment() );
         foreach ( $tournament->get_order_of_play() as $final_courts ) {
             $start_time = $tournament_start_time;
-            foreach ( $final_courts['matches'] as $fixture_id ) {
+            foreach ( $final_courts['fixtures'] as $fixture_id ) {
                 $fixture_time = gmdate( 'H:i', $start_time );
                 if ( ! empty( $fixture_id ) && ! in_array( $fixture_time, $times, true ) ) {
                     $times[] = $fixture_time;
@@ -649,7 +648,7 @@ class Tournament_Service {
             throw new Event_Not_Found_Exception( Util_Messages::event_not_found( $event_id ) );
         }
 
-        // 1. Fetch all leagues and all matches for the event at once to avoid N+1 issues
+        // 1. Fetch all leagues and all fixtures for the event at once to avoid N+1 issues
         $leagues        = $this->competition_service->get_leagues_for_event( $event->get_id() );
         $event_fixtures = $this->tournament_repository->find_matches_by_event_for_tournament(
             $tournament->get_id(),
@@ -663,13 +662,13 @@ class Tournament_Service {
             $active_finals       = [];
 
             foreach ( $championship_finals as $final ) {
-                // 2. Filter matches from the pre-fetched list instead of querying inside the loop
+                // 2. Filter fixtures from the pre-fetched list instead of querying inside the loop
                 $fixtures = array_filter( $event_fixtures,
                     fn( $fixture ) => $fixture->league_id === $league->id && $fixture->final === $final['key']
                 );
 
                 if ( ! empty( $fixtures ) ) {
-                    $final['matches'] = array_map(
+                    $final['fixtures'] = array_map(
                         fn( $fixture ) => $this->fixture_service->get_tournament_fixture_with_details( $fixture ),
                         $fixtures
                     );
@@ -978,7 +977,6 @@ class Tournament_Service {
     }
 
     public function calculate_player_team_rating_for_tournament( ?int $tournament_id ): bool {
-        debug_to_console( 'in calculate_player_team_rating_for_tournament');
         try {
             $events = $this->get_events_for_tournament( $tournament_id );
         } catch ( Tournament_Not_Found_Exception $e ) {
@@ -997,7 +995,6 @@ class Tournament_Service {
                 }
                 $league_team->set_rating( $team_rating );
                 $count = $this->league_team_repository->save( $league_team );
-                debug_to_console( $count);
                 if ( $count ) {
                     $updates = true;
                 }
@@ -1105,7 +1102,7 @@ class Tournament_Service {
             $order_of_play[ $idx ]['court']      = $court_name;
             $order_of_play[ $idx ]['start_time'] = $start_time;
             foreach ( $court_schedule->slots as $slot_num => $slot ) {
-                $order_of_play[ $idx ]['matches'][ $slot_num ] = $slot->fixture_id;
+                $order_of_play[ $idx ]['fixtures'][ $slot_num ] = $slot->fixture_id;
                 $time                                          = strtotime( $start_time ) + $slot->start_time;
                 $new_date                                      = gmdate( 'Y-m-d H:i:s', $time );
                 $fixture_update                                = $this->fixture_service->update_fixture_finals_data( $slot->fixture_id, $new_date, $court_name );

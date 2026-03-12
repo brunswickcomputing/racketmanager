@@ -30,7 +30,7 @@ if ( $vm ) {
             <button class="nav-link" id="finalResults-tab" data-bs-toggle="pill" data-bs-target="#finalResults" type="button" role="tab" aria-controls="finalResults" aria-selected="true"><?php esc_html_e( 'Draw', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="matches-tab" data-bs-toggle="pill" data-bs-target="#matches" type="button" role="tab" aria-controls="matches" aria-selected="false"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></button>
+            <button class="nav-link" id="fixtures-tab" data-bs-toggle="pill" data-bs-target="#fixtures" type="button" role="tab" aria-controls="fixtures" aria-selected="false"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="preliminary-tab" data-bs-toggle="pill" data-bs-target="#preliminary" type="button" role="tab" aria-controls="preliminary" aria-selected="false"><?php esc_html_e( 'Teams', 'racketmanager' ); ?></button>
@@ -57,7 +57,7 @@ if ( $vm ) {
             <h2><?php esc_html_e( 'Final Results', 'racketmanager' ); ?></h2>
             <?php require_once RACKETMANAGER_PATH . 'templates/admin/championship/final-results.php'; ?>
         </div>
-        <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
+        <div class="tab-pane fade" id="fixtures" role="tabpanel" aria-labelledby="fixtures-tab">
             <h2><?php echo esc_html( Util::get_final_name() ); ?></h2>
             <?php require_once RACKETMANAGER_PATH . 'templates/admin/championship/finals.php'; ?>
         </div>

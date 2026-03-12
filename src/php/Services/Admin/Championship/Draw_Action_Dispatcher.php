@@ -57,6 +57,15 @@ class Draw_Action_Dispatcher {
         return new Draw_Action_Response_DTO();
     }
 
+    private function has_any_action( array $post ): bool {
+        return isset( $post['action'] )
+               || isset( $post['updateLeague'] )
+               || isset( $post['saveRanking'] )
+               || isset( $post['randomRanking'] )
+               || isset( $post['ratingPointsRanking']
+               );
+    }
+
     private function policies(): array {
         return array(
             array(
@@ -82,12 +91,12 @@ class Draw_Action_Dispatcher {
             array(
                 'key'          => 'manage_matches',
                 'detect'       => Draw_Action_Resolver::DETECT_POST_FIELD_EQUALS,
-                'detect_args'  => array( 'updateLeague', 'match' ),
+                'detect_args'  => array( 'updateLeague', 'fixture' ),
                 'nonce_field'  => 'racketmanager_nonce',
-                'nonce_action' => 'racketmanager_manage-matches',
+                'nonce_action' => 'racketmanager_manage-fixtures',
                 'capability'   => 'edit_matches',
-                'handler'      => array( 'method' => 'manage_matches_in_league' ),
-                'tab_override' => 'matches',
+                'handler'      => array( 'method' => 'manage_fixtures_in_league' ),
+                'tab_override' => 'fixtures',
             ),
             array(
                 'key'          => 'rankings',
@@ -119,32 +128,32 @@ class Draw_Action_Dispatcher {
                 'tab_override' => null,
             ),
             array(
-                'key'          => 'set_championship_matches',
-                'detect'       => Draw_Action_Resolver::DETECT_POST_ACTION_IN,
-                'detect_args'  => array( 'add', 'replace' ),
+                'key'             => 'set_championship_fixtures',
+                'detect'          => Draw_Action_Resolver::DETECT_POST_ACTION_IN,
+                'detect_args'     => array( 'add', 'replace' ),
                 'detect_requires' => array( 'rounds' ),
-                'nonce_field'  => 'racketmanager_nonce',
-                'nonce_action' => 'racketmanager_add_championship-matches',
-                'capability'   => 'edit_matches',
-                'handler'      => array( 'method' => 'set_championship_matches' ),
-                'tab_override' => 'matches',
+                'nonce_field'     => 'racketmanager_nonce',
+                'nonce_action'    => 'racketmanager_add_championship-fixtures',
+                'capability'      => 'edit_matches',
+                'handler'         => array( 'method' => 'set_championship_fixtures' ),
+                'tab_override'    => 'fixtures',
             ),
         );
     }
 
     private function invoke_handler( array $handler, Draw_Action_Request_DTO $dto, array $context ): Action_Result_DTO {
-            $method = strval( $handler['method'] ?? '' );
-            $args   = $handler['args'] ?? array();
-    
-            if ( '' === $method || ! method_exists( $this->championship_admin_service, $method ) ) {
-                    return new Action_Result_DTO();
+        $method = strval( $handler['method'] ?? '' );
+        $args   = $handler['args'] ?? array();
+
+        if ( '' === $method || ! method_exists( $this->championship_admin_service, $method ) ) {
+            return new Action_Result_DTO();
         }
 
         $call_args = array( $dto );
         foreach ( (array) $args as $arg_spec ) {
-                    if ( 'mode_from_context' === strval( $arg_spec ) ) {
-                            $call_args[] = isset( $context['mode'] ) ? strval( $context['mode'] ) : 'manual';
-                        }
+            if ( 'mode_from_context' === strval( $arg_spec ) ) {
+                $call_args[] = isset( $context['mode'] ) ? strval( $context['mode'] ) : 'manual';
+            }
         }
 
         /** @var Action_Result_DTO $result */
@@ -162,15 +171,5 @@ class Draw_Action_Dispatcher {
         }
 
         return $resolved;
-    }
-
-
-    private function has_any_action( array $post ): bool {
-        return isset( $post['action'] )
-           || isset( $post['updateLeague'] )
-           || isset( $post['saveRanking'] )
-           || isset( $post['randomRanking'] )
-           || isset( $post['ratingPointsRanking']
-           );
     }
 }

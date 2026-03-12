@@ -43,7 +43,7 @@ final class Tournament {
      */
     public ?string $season;
     /**
-     * Number of courts available for matches
+     * Number of courts available for fixtures
      *
      * @var int|null
      */
@@ -139,7 +139,7 @@ final class Tournament {
      */
     public string|array|null $order_of_play = null;
     /**
-     * Time increment for finals day matches
+     * Time increment for finals day fixtures
      *
      * @var string|null
      */

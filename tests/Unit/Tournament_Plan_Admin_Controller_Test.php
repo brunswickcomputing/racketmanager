@@ -47,11 +47,11 @@ final class Tournament_Plan_Admin_Controller_Test extends TestCase {
 
         $controller = new Tournament_Plan_Admin_Controller( $tournament_service, $guard );
 
-        $result = $controller->plan_page( [ 'tournament' => (string) $tournament_id, 'tab' => 'matches' ], [] );
+        $result = $controller->plan_page( [ 'tournament' => (string) $tournament_id, 'tab' => 'fixtures' ], [] );
 
         self::assertArrayHasKey( 'view_model', $result );
         self::assertInstanceOf( Tournament_Plan_Page_View_Model::class, $result['view_model'] );
-        self::assertSame( 'matches', $result['view_model']->tab );
+        self::assertSame( 'fixtures', $result['view_model']->tab );
     }
 
     public function test_plan_page_save_plan_redirects_on_success(): void {

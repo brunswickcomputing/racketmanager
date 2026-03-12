@@ -236,4 +236,15 @@ class Fixture_Repository {
 
         return $results;
     }
+
+    public function delete_by_league_and_season( int $league_id, string $season ): void {
+        $this->wpdb->delete(
+            $this->table_name,
+            array(
+                'league_id' => $league_id,
+                'season'    => $season,
+            ),
+            array( '%d', '%s' )
+        );
+    }
 }

@@ -55,10 +55,10 @@ if ( empty( $league ) ) {
     $button_text  = __( 'Set round dates', 'racketmanager' );
     $match_action = null;
 } elseif ( $match_count ) {
-    $button_text  = __( 'Replace matches', 'racketmanager' );
+    $button_text  = __( 'Replace fixtures', 'racketmanager' );
     $match_action = 'replace';
 } else {
-    $button_text  = __( 'Add matches', 'racketmanager' );
+    $button_text  = __( 'Add fixtures', 'racketmanager' );
     $match_action = 'add';
 }
 ?>
@@ -95,7 +95,7 @@ if ( empty( $league ) ) {
     }
     ?>
     <form method="post" class="form-control mb-3">
-        <?php wp_nonce_field( 'racketmanager_add_championship-matches', 'racketmanager_nonce' ); ?>
+        <?php wp_nonce_field( 'racketmanager_add_championship-fixtures', 'racketmanager_nonce' ); ?>
         <?php
         if ( empty( $league ) ) {
             ?>
@@ -156,7 +156,7 @@ if ( empty( $league ) ) {
             <div class="alert_rm alert--info">
                 <div class="alert__body">
                     <div class="alert__body-inner">
-                        <span><?php esc_html_e( 'Existing matches will be replaced', 'racketmanager' ); ?></span>
+                        <span><?php esc_html_e( 'Existing fixtures will be replaced', 'racketmanager' ); ?></span>
                     </div>
                 </div>
             </div>

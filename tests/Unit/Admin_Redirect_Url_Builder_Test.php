@@ -18,18 +18,18 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
             'draw',
             10,
             20,
-            'matches'
+            'fixtures'
         );
 
         self::assertStringContainsString( 'admin.php?', $url );
         self::assertStringContainsString( 'view=draw', $url );
         self::assertStringContainsString( 'tournament=10', $url );
         self::assertStringContainsString( 'league=20', $url );
-        self::assertStringContainsString( 'league-tab=matches', $url );
+        self::assertStringContainsString( 'league-tab=fixtures', $url );
     }
 
     public function test_preserves_optional_context_params_from_query_or_post(): void {
-        $url = Admin_Redirect_Url_Builder::tournament_match(
+        $url = Admin_Redirect_Url_Builder::tournament_fixture(
             array(
                 'page' => 'racketmanager-tournaments',
                 'leg'  => '2',
@@ -50,7 +50,7 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
     }
 
     public function test_matches_redirect_includes_final_when_present(): void {
-        $url = Admin_Redirect_Url_Builder::tournament_matches(
+        $url = Admin_Redirect_Url_Builder::tournament_fixtures(
             array( 'page' => 'racketmanager-tournaments' ),
             array(),
             7,
@@ -58,7 +58,7 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
             'final'
         );
 
-        self::assertStringContainsString( 'view=matches', $url );
+        self::assertStringContainsString( 'view=fixtures', $url );
         self::assertStringContainsString( 'tournament=7', $url );
         self::assertStringContainsString( 'league_id=8', $url );
         self::assertStringContainsString( 'final=final', $url );

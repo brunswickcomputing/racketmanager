@@ -28,7 +28,8 @@ if ( $vm ) {
         <div class="row">
             <?php
             $class = null;
-            foreach ( $league->championship->get_finals() as $final ) {
+            foreach ( $vm->finals as $final ) {
+                $final = (array) $final;
                 $class = ( 'alternate' === $class ) ? '' : 'alternate';
                 ?>
                 <div class="final-round <?php echo esc_html( $class ); ?>">
@@ -48,13 +49,14 @@ if ( $vm ) {
                         ?>
                         <div class="row row-cols-1 row-cols-sm-<?php echo esc_html( $sm_size ); ?> row-cols-lg-<?php echo esc_html( $lg_size ); ?> final-matches justify-content-center">
                             <?php
-                            $matches = $league->get_matches(
-                                array(
-                                    'final'   => $final['key'],
-                                    'orderby' => array( 'id' => 'ASC' ),
-                                )
-                            );
-                            foreach ( $matches as $match ) {
+                            $matches = $vm->matches[ $final['key'] ] ?? array();
+                            foreach ( $final['fixtures'] as $fixture_details ) {
+                                $match = $fixture_details->fixture;
+                                $league  = $fixture_details->league;
+                                $event   = $fixture_details->event;
+                                $competition = $fixture_details->competition;
+                                $home_team_dtls = $fixture_details->home_team->team ?? null;
+                                $away_team_dtls = $fixture_details->away_team->team ?? null;
                                 ?>
                                 <div class="final-match">
                                     <div class="row">
@@ -64,10 +66,10 @@ if ( $vm ) {
                                             $away_class = '';
                                             $home_tip   = '';
                                             $away_tip   = '';
-                                            if ( $match->winner_id === $match->teams['home']->id ) {
+                                            if ( $match->winner_id === intval( $match->home_team ) ) {
                                                 $home_class = 'winner';
                                                 $home_tip   = 'Match winner';
-                                            } elseif ( $match->winner_id === $match->teams['away']->id ) {
+                                            } elseif ( $match->winner_id === intval( $match->away_team ) ) {
                                                 $away_class = 'winner';
                                                 $away_tip   = 'Match winner';
                                             } elseif ( isset( $match->host ) ) {
@@ -79,8 +81,8 @@ if ( $vm ) {
                                                     $away_tip   = 'Home team';
                                                 }
                                             }
-                                            $home_team = $match->teams['home']->title;
-                                            $away_team = $match->teams['away']->title;
+                                            $home_team = $home_team_dtls->title ?? null;
+                                            $away_team = $away_team_dtls->title ?? null;
                                             ?>
                                             <div title="<?php echo esc_html( $home_tip ); ?>" class="col-5 col-sm-5 team team-left <?php echo esc_html( $home_class ); ?>">
                                                 <?php echo esc_html( $home_team ); ?>

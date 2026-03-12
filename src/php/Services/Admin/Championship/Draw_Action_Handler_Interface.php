@@ -16,9 +16,9 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 interface Draw_Action_Handler_Interface {
     public function handle_league_teams_action( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
     public function add_teams_to_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
-    public function manage_matches_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
+    public function manage_fixtures_in_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
     public function rank_teams( Draw_Action_Request_DTO $dto, string $mode ): Action_Result_DTO;
     public function start_finals( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
     public function update_final_results( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
-    public function set_championship_matches( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
+    public function set_championship_fixtures( Draw_Action_Request_DTO $dto ): Action_Result_DTO;
 }

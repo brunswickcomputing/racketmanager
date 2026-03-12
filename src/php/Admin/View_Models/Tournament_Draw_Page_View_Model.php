@@ -15,6 +15,9 @@ readonly final class Tournament_Draw_Page_View_Model {
         public object $league,
         public string $tab,
         public string $season,
+        public array $matches = array(),
+        public array $teams = array(),
+        public array $finals = array(),
     ) {
     }
 
@@ -29,6 +32,9 @@ readonly final class Tournament_Draw_Page_View_Model {
             'league'     => $this->league,
             'tab'        => $this->tab,
             'season'     => $this->season,
+            'matches'    => $this->matches,
+            'teams'      => $this->teams,
+            'finals'     => $this->finals,
         );
     }
 }

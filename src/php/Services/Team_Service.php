@@ -19,6 +19,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use WP_Error;
@@ -213,5 +214,36 @@ class Team_Service {
         return $teams;
     }
 
+    public function derive_team_details( string $team_ref ): null|Team_Details_DTO {
+        $team  = explode( '_', $team_ref );
+        if ( empty( $team ) ) {
+            return null;
+        }
+        if ( count( $team ) === 2 ) {
+            $team_name = sprintf( __( 'Team rank %s', 'racketmanager' ), $team[0] );
+        } else {
+            $final = $team[1] ?? null;
+            if ( empty( $final ) ) {
+                // Handle case like 1_semi-final_1 where 1 means Winner, 2 means Loser
+                // Or cases where it's not a round key but just something else
+                return null;
+            }
+
+            $type = match ( $team[0] ) {
+                '1' => __( 'Winner', 'racketmanager' ),
+                '2' => __( 'Loser', 'racketmanager' ),
+                default => null
+            };
+            $round_name = Util::get_final_name( $final );
+            $match_num  = $team[2] ?? '';
+
+            /* translators: %1$s: type (Winner/Loser), %2$s: round name, %3$s: match number */
+            $team_name = sprintf( __( '%1$s %2$s %3$s', 'racketmanager' ), $type, $round_name, $match_num );
+        }
+        $new_team = new Team();
+        $new_team->set_name( $team_name );
+        return new Team_Details_DTO( $new_team, null, null );
+
+    }
 
 }

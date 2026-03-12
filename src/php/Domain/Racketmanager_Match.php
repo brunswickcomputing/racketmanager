@@ -116,21 +116,21 @@ final class Racketmanager_Match {
     /**
      * Winning team id
      *
-     * @var string
+     * @var int|null
      */
-    public string $winner_id;
+    public ?int $winner_id = null;
     /**
      * Losing team id
      *
-     * @var string
+     * @var int|null
      */
-    public string $loser_id;
+    public ?int $loser_id = null;
     /**
      * Post id for match report
      *
-     * @var int
+     * @var int|null
      */
-    public int $post_id;
+    public ?int $post_id;
     /**
      * Round for a championship
      *

@@ -2,7 +2,7 @@
 /**
  * Draw action resolver (pure)
  *
- * Pure logic for resolving whether a policy matches a POST payload and (if so)
+ * Pure logic for resolving whether a policy fixtures a POST payload and (if so)
  * returning the handler context.
  *
  * @package RacketManager
@@ -23,7 +23,7 @@ final class Draw_Action_Resolver {
     /**
      * @param array $post Typically sanitised/unslashed POST payload (controller-owned)
      * @param array $policy A single policy descriptor
-     * @return array|null Context array if policy matches, otherwise null
+     * @return array|null Context array if policy fixtures, otherwise null
      */
     public static function resolve( array $post, array $policy ): ?array {
         $requires = $policy['detect_requires'] ?? array();
@@ -79,15 +79,11 @@ final class Draw_Action_Resolver {
     }
 
     private static function ranking_mode_from_post( array $post ): ?string {
-        if ( isset( $post['saveRanking'] ) ) {
-            return 'manual';
-        }
-        if ( isset( $post['randomRanking'] ) ) {
-            return 'random';
-        }
-        if ( isset( $post['ratingPointsRanking'] ) ) {
-            return 'ratings';
-        }
-        return null;
+        return match ( true ) {
+            isset( $post['saveRanking'] ) => 'manual',
+            isset( $post['randomRanking'] ) => 'random',
+            isset( $post['ratingPointsRanking'] ) => 'ratings',
+            default => null,
+        };
     }
 }

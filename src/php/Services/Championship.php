@@ -403,7 +403,7 @@ final class Championship {
     /**
      * Update final rounds results
      *
-     * @param array $matches array of matches.
+     * @param array $matches array of fixtures.
      * @param array $home_points home points.
      * @param array $away_points away points.
      * @param array $custom custom.
@@ -420,8 +420,8 @@ final class Championship {
         if ( $round < $this->num_rounds ) {
             $this->proceed( $round );
         }
-        /* translators: %d: number of matches */
-        $racketmanager->set_message( sprintf( __( 'Updated Results of %d matches', 'racketmanager' ), $num_matches ) );
+        /* translators: %d: number of fixtures */
+        $racketmanager->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_matches ) );
     }
 
     /**
@@ -507,7 +507,7 @@ final class Championship {
                 } else {
                     $away['no'] = 0;
                 }
-                // get matches of current round.
+                // get fixtures of current round.
                 $match_args = array(
                     'final'   => $current,
                     'limit'   => false,

@@ -107,7 +107,7 @@ final class Admin_Redirect_Url_Builder {
      *
      * @return string
      */
-    public static function tournament_match( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $match_id ): string {
+    public static function tournament_fixture( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key, ?int $match_id ): string {
         $args = array(
             'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
             'view'       => 'match',
@@ -123,7 +123,7 @@ final class Admin_Redirect_Url_Builder {
     }
 
     /**
-     * Build redirect URL for a tournament matches list view.
+     * Build redirect URL for a tournament fixtures list view.
      *
      * @param array<string, mixed> $query
      * @param array<string, mixed> $post
@@ -133,10 +133,10 @@ final class Admin_Redirect_Url_Builder {
      *
      * @return string
      */
-    public static function tournament_matches( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key ): string {
+    public static function tournament_fixtures( array $query, array $post, ?int $tournament_id, ?int $league_id, ?string $final_key ): string {
         $args = array(
             'page'       => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-tournaments',
-            'view'       => 'matches',
+            'view'       => 'fixtures',
             'tournament' => $tournament_id,
             'league_id'  => $league_id,
             'final'      => $final_key,

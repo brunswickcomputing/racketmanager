@@ -71,6 +71,27 @@ class League_Service {
         return $league_team;
     }
 
+    /**
+     * Bulk add teams to a league.
+     *
+     * @param array<int> $team_ids
+     * @param int        $league_id
+     * @param int        $season
+     *
+     * @return int Number of teams added.
+     *
+     * @throws Team_Not_Found_Exception
+     * @throws League_Not_Found_Exception
+     */
+    public function add_teams_to_league( array $team_ids, int $league_id, int $season ): int {
+        $added = 0;
+        foreach ( $team_ids as $team_id ) {
+            $this->add_team_to_league( $team_id, $league_id, $season );
+            $added++;
+        }
+        return $added;
+    }
+
     public function get_league( ?int $league_id ): ?object {
         return $this->league_repository->find_by_id( $league_id );
     }

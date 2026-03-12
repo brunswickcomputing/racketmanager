@@ -12,20 +12,24 @@ use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
-use function Racketmanager\get_league;
-use function Racketmanager\get_team;
 
 final class Tournament_Team_Admin_Controller {
 
     /**
      * @param Tournament_Service $tournament_service
+     * @param League_Service $league_service
+     * @param Team_Service $team_service
      * @param Club_Service $club_service
      * @param Action_Guard_Interface $action_guard
      */
     public function __construct(
         private readonly Tournament_Service $tournament_service,
+        private readonly League_Service $league_service,
+        private readonly Team_Service $team_service,
         private readonly Club_Service $club_service,
         private readonly Action_Guard_Interface $action_guard,
     ) {
@@ -34,9 +38,11 @@ final class Tournament_Team_Admin_Controller {
     /**
      * Handle the display of the tournament team page.
      *
+     * @param array $query
+     *
      * @return array{view_model?:Tournament_Team_Page_View_Model, message?:string, message_type?:bool|string}
      */
-    public function handle(): array {
+    public function handle( array $query ): array {
         try {
             $this->action_guard->assert_capability( 'edit_teams' );
         } catch ( \Exception $e ) {
@@ -46,7 +52,7 @@ final class Tournament_Team_Admin_Controller {
             );
         }
 
-        $team_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
+        $team_id = isset( $query['edit'] ) ? intval( $query['edit'] ) : null;
         if ( ! $team_id ) {
             return array(
                 'message'      => __( 'Team not specified', 'racketmanager' ),
@@ -59,17 +65,17 @@ final class Tournament_Team_Admin_Controller {
         $season = '';
         $match_days = array();
 
-        if ( isset( $_GET['league_id'] ) ) {
-            $league_id  = intval( $_GET['league_id'] );
-            $league     = get_league( $league_id );
-            $season     = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
+        if ( isset( $query['league_id'] ) ) {
+            $league_id  = intval( $query['league_id'] );
+            $league     = $this->league_service->get_league( $league_id );
+            $season     = isset( $query['season'] ) ? sanitize_text_field( wp_unslash( $query['season'] ) ) : '';
             $match_days = Util_Lookup::get_match_days();
-            if ( $league->event->competition->is_player_entry ) {
+            if ( $league && $league->event->competition->is_player_entry ) {
                 $file = 'player-team.php';
             }
         }
 
-        $tournament_id = isset( $_GET['tournament'] ) ? intval( $_GET['tournament'] ) : null;
+        $tournament_id = isset( $query['tournament'] ) ? intval( $query['tournament'] ) : null;
         $tournament    = null;
         if ( $tournament_id ) {
             try {
@@ -85,7 +91,7 @@ final class Tournament_Team_Admin_Controller {
         if ( $league ) {
             $team = $league->get_team_dtls( $team_id );
         } else {
-            $team = get_team( $team_id );
+            $team = $this->team_service->get_team_by_id( $team_id );
         }
 
         if ( ! $team ) {

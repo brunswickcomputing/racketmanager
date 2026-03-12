@@ -13,13 +13,17 @@ namespace Racketmanager\Services\Admin;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
+use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
+use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
+use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Handler_Interface;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Tournament_Service;
 use stdClass;
 
 use function Racketmanager\get_event;
@@ -28,12 +32,40 @@ use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 
-readonly final class Championship_Admin_Service implements Draw_Action_Handler_Interface {
+readonly final class Championship_Admin_Service implements Draw_Action_Handler_Interface, Tournament_Overview_Action_Handler_Interface {
 
     public function __construct(
         private League_Service $league_service,
         private Fixture_Service $fixture_service,
+        private Tournament_Service $tournament_service,
     ) {
+    }
+
+    public function contact_teams( Tournament_Overview_Action_Request_DTO $dto ): Action_Result_DTO {
+        $post          = $dto->post;
+        $tournament_id = $dto->tournament_id;
+        $message       = isset( $post['emailMessage'] ) ? htmlspecialchars_decode( strval( $post['emailMessage'] ) ) : null;
+        $active        = isset( $post['contactTeamActive'] );
+
+        try {
+            $sent = $this->tournament_service->contact_teams( $tournament_id, $message, $active );
+            if ( $sent ) {
+                return new Action_Result_DTO(
+                    message: __( 'Email sent to players', 'racketmanager' ),
+                    message_type: Admin_Message_Type::SUCCESS
+                );
+            }
+
+            return new Action_Result_DTO(
+                message: __( 'Unable to send email', 'racketmanager' ),
+                message_type: Admin_Message_Type::ERROR
+            );
+        } catch ( Tournament_Not_Found_Exception $e ) {
+            return new Action_Result_DTO(
+                message: $e->getMessage(),
+                message_type: Admin_Message_Type::ERROR
+            );
+        }
     }
 
     public function handle_league_teams_action( Draw_Action_Request_DTO $dto ): Action_Result_DTO {

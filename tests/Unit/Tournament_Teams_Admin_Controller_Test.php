@@ -87,15 +87,10 @@ final class Tournament_Teams_Admin_Controller_Test extends TestCase {
         // Simulate POST request
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        // We use a real League_Team instance if possible, or we need to find a way to mock the service method without returning a mock of a final class.
-        // Actually, we can return a real League_Team instance by passing a stdClass to its constructor.
-        $lt_data = new \stdClass();
-        $lt_data->id = 999;
-        $league_team = new League_Team($lt_data);
-
-        $league_service->expects( self::exactly( 2 ) )
-            ->method( 'add_team_to_league' )
-            ->willReturn($league_team);
+        $league_service->expects( self::once() )
+            ->method( 'add_teams_to_league' )
+            ->with( [ 10, 11 ], $league_id, 2024 )
+            ->willReturn( 2 );
 
         $result = $controller->teams_page( $query, $post );
 

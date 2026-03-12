@@ -198,7 +198,15 @@ final class Container_Bootstrap {
         $c->set( 'tournament_overview_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Overview_Admin_Controller(
                 $c->get( 'tournament_service' ),
+                $c->get( 'tournament_overview_action_dispatcher' ),
                 $c->get( 'action_guard' ),
+            );
+        } );
+
+        $c->set( 'tournament_overview_action_dispatcher', function ( Simple_Container $c ) {
+            return new \Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher(
+                $c->get( 'championship_admin_service' ),
+                $c->get( 'action_guard' )
             );
         } );
 
@@ -229,6 +237,8 @@ final class Container_Bootstrap {
         $c->set( 'tournament_team_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Team_Admin_Controller(
                 $c->get( 'tournament_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'team_service' ),
                 $c->get( 'club_service' ),
                 $c->get( 'action_guard' ),
             );
@@ -246,6 +256,7 @@ final class Container_Bootstrap {
             return new Championship_Admin_Service(
                 $c->get( 'league_service' ),
                 $c->get( 'fixture_service' ),
+                $c->get( 'tournament_service' ),
             );
         } );
 

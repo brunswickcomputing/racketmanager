@@ -67,7 +67,7 @@ readonly final class Tournament_Draw_Admin_Controller {
 
         $response = $this->dispatch_action( $tournament_id, $league_id, $post );
 
-        $vm = $this->build_view_model( $tournament, $league, $query, $post, $response->tab_override );
+        $vm = $this->tournament_service->get_draw_view_model( $tournament, $league, $query, $post, $response->tab_override );
 
         $result = array(
             'view_model'   => $vm,
@@ -103,70 +103,5 @@ readonly final class Tournament_Draw_Admin_Controller {
         );
 
         return $this->draw_action_dispatcher->handle( $dto );
-    }
-
-    private function build_view_model( Tournament $tournament, object $league, array $query, array $post, ?string $tab_override ): Tournament_Draw_Page_View_Model {
-        $tab     = $this->extract_tab( $query, $tab_override );
-        $season  = $this->extract_season( $query, $post, $tournament->get_season() );
-
-        $event_id = isset( $league->event->id ) ? (int) $league->event->id : null;
-        $event    = $this->tournament_service->get_draw_details_for_tournament( $tournament, $event_id );
-
-        $target_league = null;
-        if ( $event instanceof Event ) {
-            foreach ( $event->leagues as $l ) {
-                $l_id      = isset( $l->id ) ? (int) $l->id : null;
-                $league_id = method_exists( $league, 'get_id' ) ? (int) $league->get_id() : ( isset( $league->id ) ? (int) $league->id : null );
-                if ( $l_id === $league_id ) {
-                    $target_league = $l;
-                    break;
-                }
-            }
-        }
-
-        $finals  = ( $target_league && isset( $target_league->finals ) ) ? (array) $target_league->finals : array();
-        $matches = array();
-        foreach ( $finals as $final_obj ) {
-            if ( isset( $final_obj->key, $final_obj->fixtures ) ) {
-                $matches[ $final_obj->key ] = $final_obj->fixtures;
-            }
-        }
-
-        $teams = $league->get_league_teams( array() );
-
-        return new Tournament_Draw_Page_View_Model(
-            tournament: $tournament,
-            league: $league,
-            tab: $tab,
-            season: $season,
-            matches: $matches,
-            teams: $teams,
-            finals: $finals,
-        );
-    }
-
-    /**
-     * @param array $query Typically $_GET
-     * @param string|null $override Optional tab override.
-     */
-    private function extract_tab( array $query, ?string $override ): string {
-        if ( ! empty( $override ) ) {
-            return $override;
-        }
-
-        return isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( $query['league-tab'] ) ) : 'finalResults';
-    }
-
-    /**
-     * @param array $query  Typically $_GET
-     * @param array $post   Typically $_POST
-     * @param string|null $fallback Fallback season value.
-     */
-    private function extract_season( array $query, array $post, ?string $fallback ): string {
-        if ( isset( $post['season'] ) ) {
-            return sanitize_text_field( wp_unslash( strval( $post['season'] ) ) );
-        }
-
-        return strval( $query['season'] ?? $fallback );
     }
 }

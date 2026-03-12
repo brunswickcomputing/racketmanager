@@ -14,7 +14,10 @@ namespace Racketmanager\Tests\Unit {
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
+use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
+use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use stdClass;
@@ -51,6 +54,7 @@ final class Tournament_Overview_Admin_Controller_Test extends TestCase {
         ];
 
         $tournament_service = $this->createMock( Tournament_Service::class );
+        $dispatcher = $this->createMock( Tournament_Overview_Action_Dispatcher::class );
         $action_guard = $this->createMock( Action_Guard_Interface::class );
 
         $tournament_service->expects( self::once() )
@@ -73,8 +77,11 @@ final class Tournament_Overview_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id )
             ->willReturn( $categorized_entries );
 
+        $dispatcher->method( 'handle' )->willReturn( new Action_Result_DTO() );
+
         $controller = new Tournament_Overview_Admin_Controller(
             $tournament_service,
+            $dispatcher,
             $action_guard
         );
 
@@ -84,6 +91,36 @@ final class Tournament_Overview_Admin_Controller_Test extends TestCase {
         self::assertInstanceOf( Tournament_Overview_Page_View_Model::class, $result['view_model'] );
         self::assertSame( $tournament, $result['view_model']->tournament );
         self::assertSame( $overview, $result['view_model']->overview );
+    }
+
+    public function test_overview_page_handles_post_via_dispatcher(): void {
+        $tournament_id = 123;
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $dispatcher = $this->createMock( Tournament_Overview_Action_Dispatcher::class );
+        $action_guard = $this->createMock( Action_Guard_Interface::class );
+
+        $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament' ) ) );
+        $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
+        $tournament_service->method( 'get_tournament_overview' )->willReturn( new stdClass() );
+        $tournament_service->method( 'get_leagues_by_event_for_tournament' )->willReturn( [] );
+        $tournament_service->method( 'get_categorized_players_for_tournament' )->willReturn( [
+            'confirmed' => [], 'unpaid' => [], 'pending' => [], 'withdrawn' => []
+        ] );
+
+        $dispatcher->expects( self::once() )
+            ->method( 'handle' )
+            ->willReturn( new Action_Result_DTO( 'Email sent', Admin_Message_Type::SUCCESS ) );
+
+        $controller = new Tournament_Overview_Admin_Controller(
+            $tournament_service,
+            $dispatcher,
+            $action_guard
+        );
+
+        $result = $controller->overview_page( [ 'tournament' => '123' ], [ 'contactTeam' => '1' ] );
+
+        self::assertEquals( 'Email sent', $result['message'] );
+        self::assertFalse( $result['message_type'] ); // Success maps to false in legacy
     }
 }
 }

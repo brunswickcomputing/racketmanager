@@ -19,14 +19,14 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
+use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
-
-use function Racketmanager\get_league;
 
 readonly final class Tournament_Setup_Event_Admin_Controller {
 
     public function __construct(
         private Tournament_Service $tournament_service,
+        private League_Service $league_service,
         private Draw_Action_Dispatcher $draw_action_dispatcher,
         private Action_Guard_Interface $action_guard,
     ) {
@@ -112,7 +112,7 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
         $tournament = $this->tournament_service->get_tournament( $tournament_id );
         $season     = isset( $query['season'] ) ? sanitize_text_field( wp_unslash( strval( $query['season'] ) ) ) : $tournament->get_season();
 
-        $league = get_league( $league_id );
+        $league = $this->league_service->get_league( $league_id );
         if ( ! $league ) {
             throw new Invalid_Status_Exception( __( 'League not found', 'racketmanager' ) );
         }

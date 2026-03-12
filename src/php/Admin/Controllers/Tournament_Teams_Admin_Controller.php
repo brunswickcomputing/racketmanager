@@ -65,14 +65,8 @@ readonly final class Tournament_Teams_Admin_Controller {
         if ( $is_post ) {
             $this->action_guard->assert_allowed( 'racketmanager_nonce', 'racketmanager_add-teams-bulk', 'edit_teams' );
 
-            $added = 0;
-
             $team_ids = array_map( 'intval', (array) ( $post['team'] ?? array() ) );
-
-            foreach ( $team_ids as $team_id ) {
-                $this->league_service->add_team_to_league( $team_id, $league_id, (int) $season );
-                ++$added;
-            }
+            $added    = $this->league_service->add_teams_to_league( $team_ids, $league_id, (int) $season );
 
             $redirect = Admin_Redirect_Url_Builder::tournament_draw_view(
                 $query,

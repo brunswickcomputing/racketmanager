@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Charge;
 use Racketmanager\Domain\Competition;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
@@ -1144,5 +1145,45 @@ class Tournament_Service {
     public function calculate_default_match_dates( Tournament $tournament, Competition $competition ): array {
         $round_length = $competition->settings['round_length'] ?? 7;
         return $tournament->calculate_default_match_dates( $round_length );
+    }
+
+    /**
+     * @param object $tournament
+     * @param object $league
+     * @param array $query
+     * @param array $post
+     * @param string|null $tab_override
+     *
+     * @return Tournament_Draw_Page_View_Model
+     */
+    public function get_draw_view_model( object $tournament, object $league, array $query, array $post, ?string $tab_override = null ): Tournament_Draw_Page_View_Model {
+        $tab     = $tab_override ?? ( $query['tab'] ?? 'draw' );
+        $season  = (string) ( $post['season'] ?? ( $query['season'] ?? ( $league->season ?? '' ) ) );
+        $matches = array();
+        $teams   = $league->get_teams( $season );
+        $finals  = array();
+
+        foreach ( $league->event->leagues as $event_league ) {
+            if ( $event_league->id === $league->id ) {
+                $target_league = $event_league;
+                foreach ( $target_league->get_finals( $season ) as $final ) {
+                    $finals[] = $final;
+                    foreach ( $final->get_matches() as $match ) {
+                        $matches[] = $match;
+                    }
+                }
+                break;
+            }
+        }
+
+        return new Tournament_Draw_Page_View_Model(
+            tournament: $tournament,
+            league: $league,
+            tab: $tab,
+            season: $season,
+            matches: $matches,
+            teams: $teams,
+            finals: $finals,
+        );
     }
 }

@@ -22,7 +22,7 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use stdClass;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Tournament_Overview_Admin_Controller_Test extends TestCase {
 

@@ -17,7 +17,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
 use stdClass;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../wp-stubs.php';
 
 final class Tournament_Test extends TestCase {
 

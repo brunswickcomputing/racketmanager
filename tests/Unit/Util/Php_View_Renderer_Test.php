@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Util;
+
+require_once __DIR__ . '/../../wp-stubs.php';
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\View\Php_View_Renderer;
@@ -13,7 +15,7 @@ final class Php_View_Renderer_Test extends TestCase {
     private string $template_base;
 
     protected function setUp(): void {
-        $this->template_base = __DIR__ . '/../templates/';
+        $this->template_base = __DIR__ . '/../../templates/';
     }
 
     public function test_render_outputs_correct_template(): void {

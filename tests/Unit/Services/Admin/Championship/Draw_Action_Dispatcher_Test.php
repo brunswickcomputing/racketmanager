@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 // ... existing code ...
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Services\Admin\Championship;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;

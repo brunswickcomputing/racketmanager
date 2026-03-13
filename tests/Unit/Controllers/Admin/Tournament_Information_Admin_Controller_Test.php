@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
@@ -16,7 +16,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Tournament_Information_Admin_Controller_Test extends TestCase {
 

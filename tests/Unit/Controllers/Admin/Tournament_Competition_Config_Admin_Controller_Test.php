@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
@@ -14,7 +14,7 @@ use Racketmanager\Domain\Competition;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use stdClass;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
 

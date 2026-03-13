@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +21,7 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Messages;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../wp-stubs.php';
 
 final class Tournament_Service_Test extends TestCase {
 

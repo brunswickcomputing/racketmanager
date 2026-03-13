@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Services\Admin\Championship;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Resolver;

@@ -19,7 +19,7 @@ use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Admin_Tournament_Test extends TestCase {
 

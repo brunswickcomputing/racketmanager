@@ -125,9 +125,10 @@ final class League_Service_Test extends TestCase {
         // Championship_Admin_Service uses `use function Racketmanager\get_league;`
         
         if (!function_exists('Racketmanager\get_league')) {
-            eval('namespace Racketmanager; function get_league($id) { return $GLOBALS["league_mock_for_test"]; }');
+            eval('namespace Racketmanager; function get_league($id) { return $GLOBALS["league_mock_for_test"] ?? $GLOBALS["test_league"] ?? null; }');
         }
         $GLOBALS['league_mock_for_test'] = $league;
+        $GLOBALS['test_league'] = $league; // Just in case another test already defined it using this key
 
         $league_service     = $this->createMock( League_Service::class );
         $fixture_service    = $this->createMock( Fixture_Service::class );

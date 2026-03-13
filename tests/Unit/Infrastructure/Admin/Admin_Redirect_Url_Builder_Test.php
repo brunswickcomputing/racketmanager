@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Infrastructure\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;

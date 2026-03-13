@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
@@ -13,7 +13,7 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 
-require_once __DIR__ . '/../wp-stubs.php';
+require_once __DIR__ . '/../../../wp-stubs.php';
 
 
 use Racketmanager\Domain\Event;

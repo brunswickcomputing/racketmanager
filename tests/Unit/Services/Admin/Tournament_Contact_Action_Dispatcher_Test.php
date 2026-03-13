@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Tests\Unit;
+namespace Racketmanager\Tests\Unit\Services\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;

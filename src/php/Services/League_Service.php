@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\League;
 use Racketmanager\Domain\League_Team;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
@@ -62,11 +63,17 @@ class League_Service {
         if ( ! $league ) {
             throw new League_Not_Found_Exception( __( 'League not found', 'racketmanager' ) );
         }
-        $lt            = new stdClass();
-        $lt->league_id = $league_id;
-        $lt->team_id   = $team_id;
-        $lt->season    = $season;
-        $league_team   = new League_Team( $lt );
+
+        $existing_league_team = $this->league_team_repository->find_by_team_league_and_season( $team_id, $league_id, $season );
+        if ( $existing_league_team ) {
+            return $existing_league_team;
+        }
+
+        $league_team = new League_Team();
+        $league_team->set_league_id( $league_id );
+        $league_team->set_team_id( $team_id );
+        $league_team->set_season( $season );
+        $league_team->set_entered_state( Team_Profile::ACTIVE );
         $this->league_team_repository->save( $league_team );
         return $league_team;
     }

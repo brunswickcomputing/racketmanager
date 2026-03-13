@@ -37,7 +37,7 @@ readonly class League_Standings_DTO {
         public float $rating,
         public Team_Profile $profile,
         public string $status,
-        public array $additional_info
+        public array|null $additional_info
     ) {}
 
 }

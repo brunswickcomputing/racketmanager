@@ -437,4 +437,18 @@ class League_Team_Repository {
         return $rows;
     }
 
+    public function find_by_team_league_and_season( int $team_id, int $league_id, int $season ): ?League_Team {
+        $query = $this->wpdb->prepare(
+            "SELECT * FROM `$this->table_name` WHERE team_id = %d AND league_id = %d AND season = %d",
+            $team_id,
+            $league_id,
+            $season
+        );
+        $row = $this->wpdb->get_row( $query );
+        if ( ! $row ) {
+            return null;
+        }
+        return new League_Team( $row );
+    }
+
 }

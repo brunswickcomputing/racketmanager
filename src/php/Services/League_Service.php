@@ -101,7 +101,7 @@ class League_Service {
     }
 
     /**
-     * Remove team from league.
+     * Remove a team from a league.
      *
      * @param int $team_id
      * @param int $league_id
@@ -137,6 +137,38 @@ class League_Service {
         $this->league_team_repository->delete( $league_team->get_id() );
     }
 
+    /**
+     * Remove multiple teams from a league (using league_team table IDs).
+     *
+     * @param array<int> $league_team_ids IDs from the league_teams table.
+     * @param int        $league_id
+     * @param int        $season
+     *
+     * @return array List containing [messages => array, any_error => bool]
+     */
+    public function remove_teams_from_league( array $league_team_ids, int $league_id, int $season ): array {
+        $messages  = array();
+        $any_error = false;
+        foreach ( $league_team_ids as $id ) {
+            try {
+                $league_team = $this->league_team_repository->find_by_id( $id );
+                if ( ! $league_team ) {
+                    continue;
+                }
+                $team_id = $league_team->get_team_id();
+                $this->remove_team_from_league( $team_id, $league_id, $season );
+                $messages[] = $team_id . ' ' . __( 'deleted', 'racketmanager' );
+            } catch ( Team_Has_Matches_Exception $e ) {
+                $messages[] = $id . ': ' . $e->getMessage();
+                $any_error  = true;
+            }
+        }
+        return array(
+            'messages'  => $messages,
+            'any_error' => $any_error,
+        );
+    }
+
     public function get_league( ?int $league_id ): ?object {
         return $this->league_repository->find_by_id( $league_id );
     }
@@ -145,6 +177,8 @@ class League_Service {
      * Get an eligible consolation teams list.
      *
      * @param League $league
+     * @param int $season
+     *
      * @return array<int,object>
      */
     public function get_consolation_teams( League $league, int $season ): array {
@@ -267,5 +301,189 @@ class League_Service {
             throw new League_Not_Found_Exception( $league_id );
         }
         return $this->league_team_repository->find_league_standings( $league->get_id(), $season );
+    }
+
+    public function rank_teams_by_points( array $teams ): array {
+        $status        = array();
+        $points        = array();
+        $sets_diff     = array();
+        $sets_won      = array();
+        $sets_allowed  = array();
+        $games_diff    = array();
+        $games_won     = array();
+        $games_allowed = array();
+        $title         = array();
+
+        foreach ( $teams as $key => $team ) {
+            $team_sets_won     = $team->sets_won ?? 0;
+            $team_sets_allowed = $team->sets_allowed ?? 0;
+            if ( ! is_numeric( $team_sets_won ) ) {
+                $team_sets_won = 0;
+            }
+            if ( ! is_numeric( $team_sets_allowed ) ) {
+                $team_sets_allowed = 0;
+            }
+            $team_games_won     = $team->games_won ?? 0;
+            $team_games_allowed = $team->games_allowed ?? 0;
+            if ( ! is_numeric( $team_games_won ) ) {
+                $team_games_won = 0;
+            }
+            if ( ! is_numeric( $team_games_allowed ) ) {
+                $team_games_allowed = 0;
+            }
+            $points[ $key ]        = $team->points['plus'] ?? 0;
+            $sets_diff[ $key ]     = $team_sets_won - $team_sets_allowed;
+            $sets_won[ $key ]      = $team_sets_won;
+            $sets_allowed[ $key ]  = $team_sets_allowed;
+            $games_diff[ $key ]    = $team_games_won - $team_games_allowed;
+            $games_won[ $key ]     = $team_games_won;
+            $games_allowed[ $key ] = $team_games_allowed;
+            if ( isset( $team->status ) && 'W' === $team->status ) {
+                $status[ $key ] = $team->status;
+            } else {
+                $status[ $key ] = null;
+            }
+            $title[ $key ] = $team->title ?? '';
+        }
+        array_multisort( $status, SORT_ASC, $points, SORT_DESC, $sets_diff, SORT_DESC, $games_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $title, SORT_ASC, $teams );
+
+        return $teams;
+    }
+
+    /**
+     * Rank teams in a league
+     *
+     * @param object $league League object.
+     * @param string $mode Ranking mode (random, ratings, manual).
+     * @param array $post Post data containing ranking info.
+     * @param array $team_ids IDs of teams to rank.
+     *
+     * @return bool True if a ranking was performed, false otherwise.
+     */
+    public function rank_teams( object $league, string $mode, array $post, array $team_ids ): bool {
+        $sorted_team_ids = match ( $mode ) {
+            'random' => $this->sort_team_ids_random( $team_ids ),
+            'ratings' => $this->sort_team_ids_by_ratings( $league, $post, $team_ids ),
+            'manual' => $this->sort_team_ids_manual( $post, $team_ids ),
+            default => null,
+        };
+
+        if ( null === $sorted_team_ids ) {
+            return false;
+        }
+
+        $team_ranks = array();
+        foreach ( $sorted_team_ids as $key => $team_id ) {
+            $team = $this->league_team_repository->find_by_id( $team_id );
+            if ( $team ) {
+                $team_ranks[ $key ] = $team;
+            }
+        }
+
+        $team_ranks = $this->get_ranking( $league, $team_ranks );
+        $this->update_ranking( $team_ranks );
+
+        return true;
+    }
+
+    public function get_ranking( object $league, array $teams ): array {
+        $rank      = 1;
+        $incr      = 1;
+        $new_teams = array();
+        foreach ( $teams as $key => $team ) {
+            $team->old_rank = $team->get_rank();
+
+            if ( $key > 0 ) {
+                if ( ! $league->is_championship && ( isset( $team->points ) && $league->is_tie( $team, $teams[ $key - 1 ] ) ) ) {
+                    ++$incr;
+                } else {
+                    $rank += $incr;
+                    $incr  = 1;
+                }
+            }
+
+            $team->set_rank( $rank );
+            if ( 'W' !== $team->get_status() ) {
+                $team->set_status( $this->get_team_status( $team, $rank ) );
+            }
+
+            $new_teams[ $key ] = $team;
+        }
+
+        // re-order teams by rank.
+        $ranks = array_map( function ( $row ) {
+            return $row->get_rank();
+        }, $new_teams );
+        array_multisort( $ranks, SORT_ASC, $new_teams );
+
+        return $new_teams;
+    }
+
+    /**
+     * Get team status depending on previous rank
+     *
+     * @param object $team team.
+     * @param int $rank rank.
+     *
+     * @return string
+     */
+    private function get_team_status( object $team, int $rank ): string {
+        if ( 0 !== $team->old_rank && $team->get_done_matches() > 1 ) {
+            if ( intval( $team->old_rank ) === $rank ) {
+                $status = '=';
+            } elseif ( $rank < $team->old_rank ) {
+                $status = '+';
+            } else {
+                $status = '-';
+            }
+        } else {
+            $status = '';
+        }
+        return $status;
+    }
+
+    /**
+     * Update Team Rank and status
+     *
+     * @param array $teams teams to be ranked.
+     */
+    public function update_ranking( array $teams ): void {
+        foreach ( $teams as $team ) {
+            $this->league_team_repository->save( $team );
+            wp_cache_delete( $team->get_league_id(), 'leaguetable' );
+        }
+    }
+
+    public function sort_team_ids_random( array $team_ids ): array {
+        shuffle( $team_ids );
+
+        return $team_ids;
+    }
+
+    public function sort_team_ids_by_ratings( object $league, array $post, array $team_ids ): array {
+        if ( isset( $post['rating_points'] ) ) {
+            $rating_points = array_values( (array) $post['rating_points'] );
+            array_multisort( $rating_points, SORT_ASC, $team_ids, SORT_ASC );
+        }
+        if ( $league->is_championship && $league->championship->num_seeds ) {
+            $teams_seeded   = array_slice( $team_ids, 0, $league->championship->num_seeds );
+            $teams_unseeded = array_slice( $team_ids, $league->championship->num_seeds );
+            shuffle( $teams_unseeded );
+
+            return array_merge( $teams_seeded, $teams_unseeded );
+        }
+
+        return $team_ids;
+    }
+
+    public function sort_team_ids_manual( array $post, array $team_ids ): array {
+        if ( ! isset( $post['js-active'] ) || '1' !== strval( $post['js-active'] ) ) {
+            $ranks = isset( $post['rank'] ) ? array_values( (array) $post['rank'] ) : array();
+            if ( $ranks ) {
+                array_multisort( $ranks, SORT_ASC, $team_ids, SORT_ASC );
+            }
+        }
+
+        return $team_ids;
     }
 }

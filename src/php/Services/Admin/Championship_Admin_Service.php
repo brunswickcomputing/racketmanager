@@ -21,14 +21,15 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Handler_Interface;
+use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use stdClass;
 
+use function Racketmanager\debug_to_console;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 
@@ -38,6 +39,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         private League_Service $league_service,
         private Fixture_Service $fixture_service,
         private Tournament_Service $tournament_service,
+        private League_Team_Repository $league_team_repository,
     ) {
     }
 
@@ -103,21 +105,12 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     private function delete_teams_from_league( object $league, array $post ): Action_Result_DTO {
-        $season    = isset( $post['season'] ) ? intval( sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) ) : 0;
-        $messages  = array();
-        $any_error = false;
+        $season   = isset( $post['season'] ) ? intval( sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) ) : 0;
+        $team_ids = isset( $post['team'] ) && is_array( $post['team'] ) ? $post['team'] : array();
 
-        if ( isset( $post['team'] ) && is_array( $post['team'] ) ) {
-            foreach ( $post['team'] as $team_id ) {
-                try {
-                    $this->league_service->remove_team_from_league( intval( $team_id ), $league->get_id(), $season );
-                    $messages[] = intval( $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
-                } catch ( Team_Has_Matches_Exception $e ) {
-                    $messages[] = intval( $team_id ) . ': ' . $e->getMessage();
-                    $any_error  = true;
-                }
-            }
-        }
+        $result    = $this->league_service->remove_teams_from_league( $team_ids, $league->get_id(), $season );
+        $messages  = $result['messages'];
+        $any_error = $result['any_error'];
 
         $message_type = Admin_Message_Type::WARNING;
         if ( $any_error ) {
@@ -141,9 +134,14 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $messages = array();
 
         if ( isset( $post['team'] ) && is_array( $post['team'] ) ) {
-            foreach ( $post['team'] as $team_id ) {
-                $team = get_team( $team_id );
-                $league->withdraw_team( intval( $team_id ), $season );
+            foreach ( $post['team'] as $id ) {
+                $league_team = $this->league_team_repository->find_by_id( intval( $id ) );
+                if ( ! $league_team ) {
+                    continue;
+                }
+                $team_id = $league_team->get_team_id();
+                $team    = get_team( $team_id );
+                $league->withdraw_team( $team_id, $season );
                 $title      = $team ? $team->title : strval( $team_id );
                 $messages[] = $title . ' ' . __( 'withdrawn', 'racketmanager' );
             }
@@ -203,14 +201,10 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             if ( empty( $team_ids ) ) {
                 $result = $this->result_no_updates();
             } else {
-                $sorted_team_ids = $this->sort_team_ids_for_ranking_mode( $league, $mode, $post, $team_ids );
-                if ( null === $sorted_team_ids ) {
+                $ranking_performed = $this->league_service->rank_teams( $league, $mode, $post, $team_ids );
+                if ( ! $ranking_performed ) {
                     $result = new Action_Result_DTO( __( 'Invalid ranking mode', 'racketmanager' ), Admin_Message_Type::ERROR );
                 } else {
-                    $team_ranks = $this->build_league_team_rank_list( $sorted_team_ids );
-                    $team_ranks = $league->get_ranking( $team_ranks );
-                    $league->update_ranking( $team_ranks );
-
                     $result = new Action_Result_DTO( $this->msg_team_ranking_saved(), Admin_Message_Type::SUCCESS );
                 }
             }
@@ -221,63 +215,6 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
 
     private function result_no_updates(): Action_Result_DTO {
         return new Action_Result_DTO( $this->msg_no_updates(), Admin_Message_Type::WARNING );
-    }
-
-    private function sort_team_ids_for_ranking_mode( object $league, string $mode, array $post, array $team_ids ): ?array {
-        return match ( $mode ) {
-            'random' => $this->sort_team_ids_random( $team_ids ),
-            'ratings' => $this->sort_team_ids_by_ratings( $league, $post, $team_ids ),
-            'manual' => $this->sort_team_ids_manual( $post, $team_ids ),
-            default => null,
-        };
-    }
-
-    private function sort_team_ids_random( array $team_ids ): array {
-        shuffle( $team_ids );
-
-        return $team_ids;
-    }
-
-    private function sort_team_ids_by_ratings( object $league, array $post, array $team_ids ): array {
-        if ( isset( $post['rating_points'] ) ) {
-            $rating_points = array_values( (array) $post['rating_points'] );
-            array_multisort( $rating_points, SORT_ASC, $team_ids, SORT_ASC );
-        }
-        if ( $league->is_championship && $league->championship->num_seeds ) {
-            $teams_seeded   = array_slice( $team_ids, 0, $league->championship->num_seeds );
-            $teams_unseeded = array_slice( $team_ids, $league->championship->num_seeds );
-            shuffle( $teams_unseeded );
-
-            return array_merge( $teams_seeded, $teams_unseeded );
-        }
-
-        return $team_ids;
-    }
-
-    private function sort_team_ids_manual( array $post, array $team_ids ): array {
-        if ( ! isset( $post['js-active'] ) || '1' !== strval( $post['js-active'] ) ) {
-            $ranks = isset( $post['rank'] ) ? array_values( (array) $post['rank'] ) : array();
-            if ( $ranks ) {
-                array_multisort( $ranks, SORT_ASC, $team_ids, SORT_ASC );
-            }
-        }
-
-        return $team_ids;
-    }
-
-    /**
-     * @return array<int,object>
-     */
-    private function build_league_team_rank_list( array $team_ids ): array {
-        $team_ranks = array();
-        foreach ( $team_ids as $key => $team_id ) {
-            $team = get_league_team( $team_id );
-            if ( $team ) {
-                $team_ranks[ $key ] = $team;
-            }
-        }
-
-        return $team_ranks;
     }
 
     private function msg_team_ranking_saved(): string {

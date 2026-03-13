@@ -99,6 +99,12 @@ if ( ! function_exists( 'is_serialized' ) ) {
     }
 }
 
+if ( ! function_exists( 'wp_cache_delete' ) ) {
+    function wp_cache_delete( $id, $group = '' ) {
+        return true;
+    }
+}
+
 if ( ! function_exists( 'esc_url_raw' ) ) {
     function esc_url_raw( $url ) {
         return $url;

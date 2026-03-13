@@ -2090,8 +2090,9 @@ class League {
         /*
         * rank teams.
         */
-        $teams = $this->rank_teams( $teams );
-        return $this->get_ranking( $teams );
+        $league_service = \Racketmanager\RacketManager::get_instance()->get_container()->get( 'league_service' );
+        $teams          = $league_service->rank_teams_by_points( $teams );
+        return $league_service->get_ranking( $this, $teams );
     }
     /**
      * Set finals flag for championship mode
@@ -2337,52 +2338,6 @@ class League {
         return $score;
     }
     /**
-     * Default ranking function. Re-defined in sports-specific class
-     * 1) Primary points DESC
-     * 2) Games Allowed ASC
-     * 3) Done Matches ASC
-     *
-     * @param array $teams team.
-     *
-     * @return array
-     */
-    protected function rank_teams( array $teams ): array {
-        foreach ( $teams as $key => $team ) {
-            $team_sets_won     = $team->sets_won ?? 0;
-            $team_sets_allowed = $team->sets_allowed ?? 0;
-            if ( ! is_numeric( $team_sets_won ) ) {
-                $team_sets_won = 0;
-            }
-            if ( ! is_numeric( $team_sets_allowed ) ) {
-                $team_sets_allowed = 0;
-            }
-            $team_games_won     = $team->games_won ?? 0;
-            $team_games_allowed = $team->games_allowed ?? 0;
-            if ( ! is_numeric( $team_games_won ) ) {
-                $team_games_won = 0;
-            }
-            if ( ! is_numeric( $team_games_allowed ) ) {
-                $team_games_allowed = 0;
-            }
-            $points[ $key ]        = $team->points['plus'];
-            $sets_diff[ $key ]     = $team_sets_won - $team_sets_allowed;
-            $sets_won[ $key ]      = $team_sets_won;
-            $sets_allowed[ $key ]  = $team_sets_allowed;
-            $games_diff[ $key ]    = $team_games_won - $team_games_allowed;
-            $games_won[ $key ]     = $team_games_won;
-            $games_allowed[ $key ] = $team_games_allowed;
-            if ( 'W' === $team->status ) {
-                $status[ $key ] = $team->status;
-            } else {
-                $status[ $key ] = null;
-            }
-            $title[ $key ] = $team->title;
-        }
-        array_multisort( $status, SORT_ASC, $points, SORT_DESC, $sets_diff, SORT_DESC, $games_diff, SORT_DESC, $sets_won, SORT_DESC, $sets_allowed, SORT_ASC, $games_won, SORT_DESC, $games_allowed, SORT_ASC, $title, SORT_ASC, $teams );
-
-        return $teams;
-    }
-    /**
      * Set tab in league/archive shortcodes
      *
      * @param boolean $is_archive is this an archive.
@@ -2473,9 +2428,10 @@ class League {
             $teams = $this->get_league_teams( $team_args );
 
             if ( ! empty( $teams ) && 'auto' === $this->event->competition->settings['team_ranking'] ) {
-                $teams = $this->rank_teams( $teams );
-                $teams = $this->get_ranking( $teams );
-                $this->update_ranking( $teams );
+                $league_service = \Racketmanager\RacketManager::get_instance()->get_container()->get( 'league_service' );
+                $teams          = $league_service->rank_teams_by_points( $teams );
+                $teams          = $league_service->get_ranking( $this, $teams );
+                $league_service->update_ranking( $teams );
             }
         }
     }
@@ -2539,83 +2495,6 @@ class League {
             return $team_status->status;
         } else {
             return null;
-        }
-    }
-    /**
-     * Gets ranking of teams
-     *
-     * @param array $teams teams.
-     *
-     * @return array of parameters
-     */
-    public function get_ranking( array $teams ): array {
-        $rank      = 1;
-        $incr      = 1;
-        $new_teams = array();
-        foreach ( $teams as $key => $team ) {
-            $team->old_rank = $team->rank;
-
-            if ( $key > 0 ) {
-                if ( ! $this->is_championship && ( isset( $team->points ) && $this->is_tie( $team, $teams[ $key - 1 ] ) ) ) {
-                    ++$incr;
-                } else {
-                    $rank += $incr;
-                    $incr  = 1;
-                }
-            }
-
-            $team->rank = $rank;
-            if ( 'W' !== $team->status ) {
-                $team->status = $this->get_team_status( $team, $rank );
-            }
-
-            $new_teams[ $key ] = $team;
-        }
-
-        return $this->tiebreak( $new_teams );
-    }
-
-    /**
-     * Get team status depending on previous rank
-     *
-     * @param object $team team.
-     * @param int $rank rank.
-     *
-     * @return string
-     */
-    private function get_team_status( object $team, int $rank ): string {
-        if ( 0 !== $team->old_rank && $team->done_matches > 1 ) {
-            if ( intval( $team->old_rank ) === $rank ) {
-                $status = '=';
-            } elseif ( $rank < $team->old_rank ) {
-                $status = '+';
-            } else {
-                $status = '-';
-            }
-        } else {
-            $status = '';
-        }
-        return $status;
-    }
-
-    /**
-     * Update Team Rank and status
-     *
-     * @param array $teams teams to be ranked.
-     */
-    public function update_ranking( array $teams ): void {
-        global $wpdb;
-        foreach ( $teams as $team ) {
-            $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_league_teams SET `rank` = %d, `status` = %s WHERE `id` = %d",
-                    $team->rank,
-                    $team->status,
-                    $team->table_id
-                )
-            ); // db call ok.
-            wp_cache_delete( $team->table_id, 'league-teams' );
-            wp_cache_delete( $team->league_id, 'leaguetable' );
         }
     }
     /**
@@ -2874,7 +2753,7 @@ class League {
      *
      * @return boolean
      */
-    protected function is_tie( object $team1, object $team2 ): bool {
+    public function is_tie( object $team1, object $team2 ): bool {
         // initialize results array.
 
         $res = array(

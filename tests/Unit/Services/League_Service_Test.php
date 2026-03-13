@@ -118,32 +118,39 @@ final class League_Service_Test extends TestCase {
         $league = $this->create_real_instance_without_constructor( League::class );
         $league->id = $league_id;
 
-        // In the test context, we need to mock the global Racketmanager\get_league function
-        // but since we can't redefine it if it already exists, we rely on our wp-stubs.php 
-        // to have a way to inject it, or we just hope it hasn't been defined yet.
-        // Actually, the wp-stubs.php I saw earlier DOES NOT define get_league.
-        // Championship_Admin_Service uses `use function Racketmanager\get_league;`
-        
         if (!function_exists('Racketmanager\get_league')) {
             eval('namespace Racketmanager; function get_league($id) { return $GLOBALS["league_mock_for_test"] ?? $GLOBALS["test_league"] ?? null; }');
         }
         $GLOBALS['league_mock_for_test'] = $league;
-        $GLOBALS['test_league'] = $league; // Just in case another test already defined it using this key
+        $GLOBALS['test_league'] = $league;
 
-        $league_service     = $this->createMock( League_Service::class );
-        $fixture_service    = $this->createMock( Fixture_Service::class );
-        $tournament_service = $this->createMock( Tournament_Service::class );
+        $league_team_id = 789;
+        $league_team = $this->createMock( League_Team::class );
+        $league_team->method( 'get_team_id' )->willReturn( $team_id );
+
+        $league_service         = $this->createMock( League_Service::class );
+        $fixture_service        = $this->createMock( Fixture_Service::class );
+        $tournament_service     = $this->createMock( Tournament_Service::class );
+        $league_team_repository = $this->createMock( League_Team_Repository::class );
+
+        $league_team_repository->method( 'find_by_id' )
+                               ->with( $league_team_id )
+                               ->willReturn( $league_team );
 
         $admin_service = new Championship_Admin_Service(
             $league_service,
             $fixture_service,
-            $tournament_service
+            $tournament_service,
+            $league_team_repository
         );
 
         $league_service->expects( self::once() )
-                       ->method( 'remove_team_from_league' )
-                       ->with( $team_id, $league_id, $season )
-                       ->willThrowException( new Team_Has_Matches_Exception( 'Matches exist' ) );
+                       ->method( 'remove_teams_from_league' )
+                       ->with( [$league_team_id], $league_id, $season )
+                       ->willReturn( [
+                           'messages'  => [$league_team_id . ': Matches exist'],
+                           'any_error' => true,
+                       ] );
 
         $dto = new Draw_Action_Request_DTO(
             tournament_id: 1,
@@ -151,7 +158,7 @@ final class League_Service_Test extends TestCase {
             season: (string)$season,
             post: [
                 'action' => 'delete',
-                'team'   => [$team_id],
+                'team'   => [$league_team_id],
                 'season' => $season
             ]
         );
@@ -160,5 +167,141 @@ final class League_Service_Test extends TestCase {
 
         self::assertEquals( Admin_Message_Type::ERROR, $result->message_type );
         self::assertStringContainsString( 'Matches exist', $result->message );
+    }
+
+    public function test_league_team_constructor_handles_string_profile(): void {
+        $data = new stdClass();
+        $data->profile = '1'; // ACTIVE
+        $data->id = 123;
+        $data->team_id = 456;
+        $data->league_id = 1;
+        $data->season = '2024';
+        $data->add_points = 0;
+        $data->points_plus = 0;
+        $data->points_minus = 0;
+        $data->points_2_plus = 0;
+        $data->points_2_minus = 0;
+        $data->diff = 0;
+        $data->done_matches = 0;
+        $data->won_matches = 0;
+        $data->lost_matches = 0;
+        $data->draw_matches = 0;
+
+        $league_team = new League_Team( $data );
+
+        self::assertInstanceOf( Team_Profile::class, $league_team->get_profile_enum() );
+        self::assertEquals( Team_Profile::ACTIVE, $league_team->get_profile_enum() );
+        self::assertEquals( 1, $league_team->get_profile() );
+    }
+
+    public function test_remove_teams_from_league_collects_messages_and_errors(): void {
+        $league_id = 1;
+        $season = 2024;
+        $ids = [101, 102];
+
+        $league_team1 = $this->createMock( League_Team::class );
+        $league_team1->method('get_team_id')->willReturn(456);
+        $league_team1->method('get_id')->willReturn(101);
+
+        $league_team2 = $this->createMock( League_Team::class );
+        $league_team2->method('get_team_id')->willReturn(789);
+        $league_team2->method('get_id')->willReturn(102);
+
+        $this->league_team_repository->method('find_by_id')
+            ->willReturnMap([
+                [101, $league_team1],
+                [102, $league_team2]
+            ]);
+
+        $this->league_team_repository->method('find_by_team_league_and_season')
+            ->willReturnMap([
+                [456, $league_id, $season, $league_team1],
+                [789, $league_id, $season, $league_team2]
+            ]);
+
+        $league = $this->createMock( League::class );
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        // First team has matches
+        $league->method('get_matches')
+            ->willReturnCallback(function($args) use ($season) {
+                if ($args['team_id'] == 456 && $args['season'] == $season) {
+                    return [(object)['id' => 1]];
+                }
+                return [];
+            });
+
+        $result = $this->service->remove_teams_from_league($ids, $league_id, $season);
+
+        self::assertTrue($result['any_error']);
+        self::assertCount(2, $result['messages']);
+        self::assertStringContainsString('cannot be deleted', $result['messages'][0]);
+        self::assertStringContainsString('deleted', $result['messages'][1]);
+    }
+
+    public function test_rank_teams_by_points(): void {
+        $team1 = new stdClass();
+        $team1->points = ['plus' => 10];
+        $team1->sets_won = 5;
+        $team1->sets_allowed = 2;
+        $team1->games_won = 30;
+        $team1->games_allowed = 20;
+        $team1->title = 'Team B';
+
+        $team2 = new stdClass();
+        $team2->points = ['plus' => 10];
+        $team2->sets_won = 6;
+        $team2->sets_allowed = 2;
+        $team2->games_won = 35;
+        $team2->games_allowed = 20;
+        $team2->title = 'Team A';
+
+        $teams = [$team1, $team2];
+        $ranked = $this->service->rank_teams_by_points($teams);
+
+        self::assertSame($team2, $ranked[0]); // More sets won
+        self::assertSame($team1, $ranked[1]);
+    }
+
+    public function test_rank_teams_manual(): void {
+        $league = $this->createMock(League::class);
+        $team1_id = 101;
+        $team2_id = 102;
+
+        $team1_data = new stdClass();
+        $team1_data->id = $team1_id;
+        $team1_data->team_id = 456;
+        $team1_data->league_id = 1;
+        $team1_data->season = '2024';
+        $team1_data->profile = '1';
+        $team1 = new League_Team($team1_data);
+
+        $team2_data = new stdClass();
+        $team2_data->id = $team2_id;
+        $team2_data->team_id = 789;
+        $team2_data->league_id = 1;
+        $team2_data->season = '2024';
+        $team2_data->profile = '1';
+        $team2 = new League_Team($team2_data);
+
+        $this->league_team_repository->method('find_by_id')
+            ->willReturnMap([
+                [$team1_id, $team1],
+                [$team2_id, $team2]
+            ]);
+
+        $post = [
+            'rank' => [2, 1],
+            'table_id' => [$team1_id, $team2_id]
+        ];
+
+        $this->league_team_repository->expects(self::exactly(2))
+            ->method('save');
+
+        $result = $this->service->rank_teams($league, 'manual', $post, [$team1_id, $team2_id]);
+
+        self::assertTrue($result);
+        self::assertEquals(2, $team1->get_rank());
+        self::assertEquals(1, $team2->get_rank());
     }
 }

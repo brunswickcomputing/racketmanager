@@ -473,8 +473,12 @@ class League_Team {
                 $league_team         = (object) array_merge( (array) $league_team, (array) $league_team->custom );
             }
             foreach ( get_object_vars( $league_team ) as $key => $value ) {
-                $key        = trim( $key );
-                $this->$key = $value;
+                $key = trim( $key );
+                if ( 'profile' === $key ) {
+                    $this->profile = Team_Profile::from_value( (int) $value );
+                } else {
+                    $this->$key = $value;
+                }
             }
 
             $this->points_plus += $this->add_points; // add or subtract extra points.
@@ -698,12 +702,21 @@ class League_Team {
     }
 
     /**
+     * Get profile enum
+     *
+     * @return Team_Profile|null
+     */
+    public function get_profile_enum(): ?Team_Profile {
+        return $this->profile ?? null;
+    }
+
+    /**
      * Get profile id
      *
      * @return int|null Profile identifier
      */
     public function get_profile(): ?int {
-        return $this->profile->value;
+        return isset( $this->profile ) ? $this->profile->value : null;
     }
 
     /**
@@ -1087,6 +1100,10 @@ class League_Team {
 
     public function set_entered_state( Team_Profile $entered_state ): void {
         $this->profile = $entered_state;
+    }
+
+    public function set_rank( ?int $rank ): void {
+        $this->rank = $rank;
     }
 
 }

@@ -329,6 +329,7 @@ final class Container_Bootstrap {
                 $c->get( 'league_service' ),
                 $c->get( 'fixture_service' ),
                 $c->get( 'tournament_service' ),
+                $c->get( 'league_team_repository' ),
             );
         } );
 

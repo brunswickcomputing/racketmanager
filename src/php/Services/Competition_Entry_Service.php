@@ -16,6 +16,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
+use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\League_Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
@@ -508,7 +509,7 @@ class Competition_Entry_Service {
                         $league_team->set_captain( $team_entry->captain_id );
                         $league_team->set_match_day( $match_day );
                         $league_team->set_match_time( $team_entry->match_time );
-                        $league_team->set_entered_state( 1 );
+                        $league_team->set_entered_state( Team_Profile::ACTIVE );
                         $league_team->set_status();
                         $this->league_team_repository->save( $league_team );
                     }
@@ -586,7 +587,7 @@ class Competition_Entry_Service {
     public function withdraw_teams( int $club_id, string $season, int $event_id, array $teams = array() ): int {
         $teams_to_withdraw = $this->league_team_repository->find_teams_to_withdraw_from_league( $club_id, $season, $event_id, $teams );
         foreach ( $teams_to_withdraw as $league_team_entry ) {
-            $league_team_entry->set_entered_state( 3 );
+            $league_team_entry->set_entered_state( Team_Profile::WITHDRAWN );
             $league_team_entry->set_status( 'W' );
             $this->league_team_repository->save( $league_team_entry );
         }
@@ -989,7 +990,7 @@ class Competition_Entry_Service {
         if ( ! empty( $tournament_entry->missed_events ) ) {
             $entries_to_withdraw = $this->league_team_repository->find_player_teams_by_player_for_events( $player_id, $tournament_entry->missed_events, $tournament->season );
             foreach ( $entries_to_withdraw as $entry_to_withdraw ) {
-                $entry_to_withdraw->profile = 3;
+                $entry_to_withdraw->set_entered_state( Team_Profile::WITHDRAWN );
                 $this->league_team_repository->save( $entry_to_withdraw );
                 $updates = true;
             }
@@ -1040,7 +1041,7 @@ class Competition_Entry_Service {
                 $league_team->set_league_id( $entry->league_id );
                 $league_team->set_season( $tournament->season );
                 $league_team->set_captain( $player_id );
-                $league_team->set_profile( 1 );
+                $league_team->set_entered_state( Team_Profile::ACTIVE );
                 $this->league_team_repository->save( $league_team );
                 $updates = true;
             }
@@ -1248,7 +1249,7 @@ class Competition_Entry_Service {
         foreach ( $events as $event ) {
             $entries_to_withdraw = $this->get_player_teams_for_event( $event->get_id(), $player->get_id(), $tournament->get_season() );
             foreach ( $entries_to_withdraw as $entry_to_withdraw ) {
-                $entry_to_withdraw->profile = 3;
+                $entry_to_withdraw->set_entered_state( Team_Profile::WITHDRAWN );
                 $this->league_team_repository->save( $entry_to_withdraw );
                 $updates = true;
             }

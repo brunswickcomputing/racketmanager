@@ -27,7 +27,7 @@ if ( $vm ) {
 <!-- Nav tabs -->
     <ul class="nav nav-pills" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="finalResults-tab" data-bs-toggle="pill" data-bs-target="#finalResults" type="button" role="tab" aria-controls="finalResults" aria-selected="true"><?php esc_html_e( 'Draw', 'racketmanager' ); ?></button>
+            <button class="nav-link" id="draw-tab" data-bs-toggle="pill" data-bs-target="#draw" type="button" role="tab" aria-controls="draw" aria-selected="true"><?php esc_html_e( 'Draw', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="fixtures-tab" data-bs-toggle="pill" data-bs-target="#fixtures" type="button" role="tab" aria-controls="fixtures" aria-selected="false"><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></button>
@@ -53,7 +53,7 @@ if ( $vm ) {
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
-        <div class="tab-pane fade" id="finalResults" role="tabpanel" aria-labelledby="finalResults-tab">
+        <div class="tab-pane fade" id="draw" role="tabpanel" aria-labelledby="draw-tab">
             <h2><?php esc_html_e( 'Final Results', 'racketmanager' ); ?></h2>
             <?php require_once RACKETMANAGER_PATH . 'templates/admin/championship/final-results.php'; ?>
         </div>

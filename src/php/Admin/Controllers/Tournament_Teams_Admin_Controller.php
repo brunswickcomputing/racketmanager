@@ -99,7 +99,7 @@ readonly final class Tournament_Teams_Admin_Controller {
                 $teams = $this->team_service->get_club_teams( $league_type );
             }
         } else {
-            $teams = $this->league_service->get_consolation_teams( $league );
+            $teams = $this->league_service->get_consolation_teams( $league, $season );
         }
 
         $vm = new Tournament_Teams_List_Page_View_Model(

@@ -148,7 +148,7 @@ final class Admin_Cup extends Admin_Championship {
         $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $league_id      = isset( $_GET['league'] ) ? intval( $_GET['league'] ) : null;
-        $tab            = isset( $_GET['league-tab'] ) ? sanitize_text_field( wp_unslash( $_GET['league-tab'] ) ) : null;
+        $tab            = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : null;
         //phpcs:enable WordPress.Security.NonceVerification.Recommended
         try {
             $competition = $this->competition_service->get_by_id( $competition_id );

@@ -83,8 +83,8 @@ readonly final class Tournament_Setup_Event_Admin_Controller {
             'setup-event',
             $tournament_id,
             $league_id,
-            // setup-event uses the same league-tab pattern as draw for context; default is fine.
-            isset( $query['league-tab'] ) ? sanitize_text_field( wp_unslash( strval( $query['league-tab'] ) ) ) : 'finalResults'
+            // setup-event uses the same tab pattern as draw for context; default is fine.
+            isset( $query['tab'] ) ? sanitize_text_field( wp_unslash( strval( $query['tab'] ) ) ) : 'finalResults'
         );
 
         $result = array(

@@ -64,7 +64,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                     }
                     ?>
                 </select>
-                <input type="hidden" name="league-tab" value="fixtures" />
+                <input type="hidden" name="tab" value="fixtures" />
                 <input type="submit" class="btn btn-secondary" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" />
             </form>
         </div>
@@ -105,7 +105,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                     }
                     ?>
                 </select>
-                <input type="hidden" name="league-tab" value="fixtures" />
+                <input type="hidden" name="tab" value="fixtures" />
                 <input type="submit" class="btn btn-secondary" value="<?php esc_html_e( 'Go', 'racketmanager' ); ?>" />
             </form>
         </div>
@@ -121,7 +121,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
     }
     ?>
     <?php
-    $fixtures = $vm->matches[ $current_final_key ];
+    $fixtures = $final['fixtures'];
     ?>
 
     <form method="post" action="">
@@ -129,7 +129,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
         <input type="hidden" name="league_id" value="<?php echo esc_html( $league->id ); ?>" />
         <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />
         <input type="hidden" name="round" value="<?php echo empty( $final['round'] ) ? null : esc_html( $final['round'] ); ?>" />
-        <input type="hidden" name="league-tab" value="fixtures" />
+        <input type="hidden" name="tab" value="fixtures" />
         <input type="hidden" name="action" value="updateFinalResults" />
 
         <?php

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit;
 
@@ -25,7 +25,7 @@ final class Admin_Redirect_Url_Builder_Test extends TestCase {
         self::assertStringContainsString( 'view=draw', $url );
         self::assertStringContainsString( 'tournament=10', $url );
         self::assertStringContainsString( 'league=20', $url );
-        self::assertStringContainsString( 'league-tab=fixtures', $url );
+        self::assertStringContainsString( 'tab=fixtures', $url );
     }
 
     public function test_preserves_optional_context_params_from_query_or_post(): void {

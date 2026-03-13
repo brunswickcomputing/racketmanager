@@ -102,21 +102,18 @@ class League_Service {
      * @param League $league
      * @return array<int,object>
      */
-    public function get_consolation_teams( League $league ): array {
+    public function get_consolation_teams( League $league, int $season ): array {
         $primary_league_id = $league->event->primary_league ?? null;
         if ( ! $primary_league_id ) {
             return array();
         }
 
-        $primary_league = $this->get_league( (int) $primary_league_id );
+        $primary_league = $this->get_league( $primary_league_id );
         if ( ! $primary_league ) {
             return array();
         }
 
-        $teams = $primary_league->get_league_teams();
-        if ( ! is_array( $teams ) ) {
-            $teams = array();
-        }
+        $teams = $this->league_team_repository->get_teams_by_league_and_season( $primary_league_id, $season );
 
         foreach ( $teams as $key => $team ) {
             $match_array                     = array();
@@ -155,7 +152,7 @@ class League_Service {
             } elseif ( 1 === $matches_count ) {
                 $match_array['count'] = false;
                 $matches              = $primary_league->get_matches( $match_array );
-                if ( is_array( $matches ) && count( $matches ) >= 1 ) {
+                if ( is_array( $matches ) && ! empty( $matches ) ) {
                     $last_match = $matches[0];
                 }
             }
@@ -219,4 +216,11 @@ class League_Service {
         return $team;
     }
 
+    public function get_league_standings( ?int $league_id, ?int $season ): array {
+        $league = $this->get_league( $league_id );
+        if ( ! $league ) {
+            throw new League_Not_Found_Exception( $league_id );
+        }
+        return $this->league_team_repository->find_league_standings( $league->get_id(), $season );
+    }
 }

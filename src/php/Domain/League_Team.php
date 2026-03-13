@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use function Racketmanager\get_club;
@@ -99,9 +100,9 @@ final class League_Team {
     /**
      * Profile variable
      *
-     * @var string
+     * @var Team_Profile
      */
-    public string $profile = '1';
+    private Team_Profile $profile; // Type-hinted to the Enum
     /**
      * Status variable
      *
@@ -333,15 +334,15 @@ final class League_Team {
     /**
      * Group variable
      *
-     * @var string
+     * @var string|null
      */
     public ?string $group = null;
     /**
      * Rank variable
      *
-     * @var string
+     * @var int|null
      */
-    public ?string $rank = null;
+    public ?int $rank = null;
     /**
      * Rating variable
      *
@@ -460,6 +461,10 @@ final class League_Team {
      * @param object|null $league_team League_Team object.
      */
     public function __construct( ?object $league_team = null ) {
+        if ( is_null( $league_team ) ) {
+            return;
+        }
+
         if ( ! is_null( $league_team ) ) {
             if ( empty( $league_team->custom ) ) {
                 $league_team->custom = array();
@@ -698,7 +703,7 @@ final class League_Team {
      * @return int|null Profile identifier
      */
     public function get_profile(): ?int {
-        return $this->profile;
+        return $this->profile->value;
     }
 
     /**
@@ -746,9 +751,6 @@ final class League_Team {
     }
     public function set_match_time( string $match_time ): void {
         $this->match_time = $match_time;
-    }
-    public function set_entered_state( string $entered_state ): void {
-        $this->profile = $entered_state;
     }
     public function set_status( ?string $status = null ): void {
         $this->status = $status;
@@ -1083,7 +1085,8 @@ final class League_Team {
         $this->league_id = $league_id;
     }
 
-    public function set_profile( int $profile ): void {
-        $this->profile = $profile;
+    public function set_entered_state( Team_Profile $entered_state ): void {
+        $this->profile = $entered_state;
     }
+
 }

@@ -89,7 +89,7 @@ $form_action = '/wp-admin/admin.php?page=racketmanager-' . $vm->league->event->c
             $form_action .= '&amp;match_day=' . $vm->match_day;
         }
         if ( isset( $vm->final_key ) && $vm->final_key > '' ) {
-            $form_action .= '&amp;final=' . $vm->final_key . '&amp;league-tab=fixtures';
+            $form_action .= '&amp;final=' . $vm->final_key . '&amp;tab=fixtures';
         }
         ?>
         <form action="<?php echo esc_html( $form_action ); ?>" method='post'>

@@ -26,7 +26,7 @@ if ( $vm ) {
 ?>
 <form id="teams-filter" action="" method="post" name="standings">
     <input type="hidden" name="js-active" value="0" class="js-active" />
-    <input type="hidden" name="league-tab" value="preliminary" />
+    <input type="hidden" name="tab" value="preliminary" />
     <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
     <?php wp_nonce_field( 'racketmanager_teams-bulk', 'racketmanager_nonce' ); ?>
     <div class="row gx-3 mb-3 align-items-center">
@@ -138,7 +138,7 @@ if ( $vm ) {
                         <?php
                         if ( 'manual' === $league->event->competition->settings['team_ranking'] ) {
                             ?>
-                            <label for="rank_<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></label><input type="text" name="rank[<?php echo esc_html( $team->id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->table_id ); ?>]" value="<?php echo esc_html( $team->table_id ); ?>" />
+                            <label for="rank_<?php echo esc_html( $team->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Rank', 'racketmanager' ); ?></label><input type="text" name="rank[<?php echo esc_html( $team->team_id ); ?>]" size="2" id="rank_<?php echo esc_html( $team->team_id ); ?>" class="rank-input" value="<?php echo esc_html( $team->rank ); ?>" /><input type="hidden" name="table_id[<?php echo esc_html( $team->id ); ?>]" value="<?php echo esc_html( $team->id ); ?>" />
                             <?php
                         } else {
                             echo esc_html( $i + 1 );// team rank.
@@ -157,20 +157,16 @@ if ( $vm ) {
                     <td>
                         <a href="<?php echo esc_url( $team_link ); ?>">
                             <?php
-                            if ( $team->is_withdrawn ) {
+                            if ( $team->profile->is_withdrawn() ) {
                                 $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
                                 ?>
                                 <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
                                 <?php
                             }
-                            if ( 1 === $team->home ) {
-                                echo '<strong>' . esc_html( $team->title ) . '</strong>';
-                            } else {
-                                echo esc_html( $team->title );
-                            }
+                            echo esc_html( $team->team_name);
                             ?>
                             <?php
-                            if ( $team->is_withdrawn ) {
+                            if ( $team->profile->is_withdrawn() ) {
                                 ?>
                                 </s>
                                 <?php

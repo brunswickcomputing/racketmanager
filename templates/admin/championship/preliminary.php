@@ -26,7 +26,7 @@ if ( $vm ) {
 <div class="championship-block">
     <form action="" method="post" class="form-control mb-3">
         <?php wp_nonce_field( 'racketmanager_championship_proceed', 'racketmanager_proceed_nonce' ); ?>
-        <input type="hidden" name="league-tab" value="preliminary" />
+        <input type="hidden" name="tab" value="preliminary" />
         <input type="hidden" name="action" value="startFinals" />
         <p><?php esc_html_e( 'After adding the teams and arranging the rankings then ', 'racketmanager' ); ?></p>
         <div class="mb-3">

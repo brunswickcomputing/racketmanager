@@ -63,12 +63,13 @@ class Tournament_Service {
     private Player_Service $player_service;
     private Club_Service $club_service;
     private Finance_Service $finance_service;
+    private League_Service $league_service;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Tournament_Repository $tournament_repository, Charge_Repository $charge_repository, Event_Repository $event_repository, Fixture_Service $fixture_service, League_Team_Repository $league_team_repository, Tournament_Entry_Repository $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service, Finance_Service $finance_service ) {
+    public function __construct( RacketManager $plugin_instance, Tournament_Repository $tournament_repository, Charge_Repository $charge_repository, Event_Repository $event_repository, Fixture_Service $fixture_service, League_Team_Repository $league_team_repository, Tournament_Entry_Repository $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service, Finance_Service $finance_service, League_Service $league_service ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
         $this->charge_repository           = $charge_repository;
@@ -80,6 +81,7 @@ class Tournament_Service {
         $this->player_service              = $player_service;
         $this->club_service                = $club_service;
         $this->finance_service             = $finance_service;
+        $this->league_service              = $league_service;
     }
 
     public function get_tournaments( array $criteria = array() ): array {
@@ -277,7 +279,7 @@ class Tournament_Service {
         $validator = $validator->date( $tournament->date_closing, 'closing', $tournament->date_open, 'open' );
         $validator = $validator->date( $tournament->date_withdrawal, 'withdrawal', $tournament->date_closing, 'closing' );
         $validator = $validator->date( $tournament->date_start, 'start', $tournament->date_withdrawal, 'withdrawal' );
-        $validator = $validator->date( $tournament->date, 'end', $tournament->date_start, 'start' );
+        $validator = $validator->date( $tournament->date_end, 'end', $tournament->date_start, 'start' );
         if ( $validator->error ) {
             return $validator->err;
         }
@@ -357,7 +359,7 @@ class Tournament_Service {
         $season->date_closing     = $tournament_request->date_closing;
         $season->date_withdrawal  = $tournament_request->date_withdrawal;
         $season->date_start       = $tournament_request->date_start;
-        $season->date_end         = $tournament_request->date;
+        $season->date_end         = $tournament_request->date_end;
         $season->competition_code = $tournament_request->competition_code;
         $season->grade            = $tournament_request->grade;
         $season->venue            = $tournament_request->venue;
@@ -1156,23 +1158,20 @@ class Tournament_Service {
      *
      * @return Tournament_Draw_Page_View_Model
      */
-    public function get_draw_view_model( object $tournament, object $league, array $query, array $post, ?string $tab_override = null ): Tournament_Draw_Page_View_Model {
+    public function get_draw_view_model( Tournament $tournament, object $league, array $query, array $post, ?string $tab_override = null ): Tournament_Draw_Page_View_Model {
         $tab     = $tab_override ?? ( $query['tab'] ?? 'draw' );
         $season  = (string) ( $post['season'] ?? ( $query['season'] ?? ( $league->season ?? '' ) ) );
+        $event   = $this->get_draw_details_for_tournament( $tournament, $league->get_event_id() );
         $matches = array();
-        $teams   = $league->get_teams( $season );
+        $teams   = $this->league_service->get_league_standings( $league->get_id(), $season );
         $finals  = array();
 
-        foreach ( $league->event->leagues as $event_league ) {
-            if ( $event_league->id === $league->id ) {
-                $target_league = $event_league;
-                foreach ( $target_league->get_finals( $season ) as $final ) {
-                    $finals[] = $final;
-                    foreach ( $final->get_matches() as $match ) {
-                        $matches[] = $match;
-                    }
+        if ( $event ) {
+            foreach ( $event->leagues as $event_league ) {
+                if ( $league->id === $event_league->get_id() ) {
+                    $finals = $event_league->finals;
+                    break;
                 }
-                break;
             }
         }
 

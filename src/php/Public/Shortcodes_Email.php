@@ -197,7 +197,7 @@ class Shortcodes_Email extends Shortcodes {
             $action_url .= '&match_day=' . $match_day;
         }
         if ( $round ) {
-            $action_url .= '&final=' . $round . '&league-tab=matches';
+            $action_url .= '&final=' . $round . '&tab=matches';
         }
 
         $filename = ( ! empty( $template ) ) ? 'result-notification-' . $template : 'result-notification';

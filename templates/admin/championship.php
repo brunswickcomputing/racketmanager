@@ -43,7 +43,7 @@ jQuery(document).ready(function(){
                         ?>
                     </select>
                 </label>
-                <input type="hidden" name="league-tab" value="<?php echo esc_html( $tab ); ?>" />
+                <input type="hidden" name="tab" value="<?php echo esc_html( $tab ); ?>" />
                 <input type="submit" class="button-secondary" value="<?php esc_html_e( 'Show', 'racketmanager' ); ?>" />
             </form>
         </div>

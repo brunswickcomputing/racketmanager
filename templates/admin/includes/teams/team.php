@@ -159,7 +159,7 @@ use Racketmanager\Util\Util_Lookup;
         <input type="hidden" name="team_id" id="team_id" value="<?php echo esc_html( $team->id ); ?>" />
         <input type="hidden" name="league_id" value="<?php echo esc_html( $league_id ); ?>" />
         <input type="hidden" name="updateLeague" value="team" />
-        <input type="hidden" name="league-tab" value="preliminary" />
+        <input type="hidden" name="tab" value="preliminary" />
         <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
         <?php
         if ( isset( $club_id ) ) {

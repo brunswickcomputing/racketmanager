@@ -62,7 +62,7 @@ final class Admin_Redirect_Url_Builder {
             'view'       => $view,
             'tournament' => $tournament_id,
             'league'     => $league_id,
-            'league-tab' => $tab,
+            'tab' => $tab,
         );
 
         $args = array_merge( $args, self::preserve_optional_context_params( $query, $post ) );

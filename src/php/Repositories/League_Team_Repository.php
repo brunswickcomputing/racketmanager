@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Repositories;
 
+use Racketmanager\Domain\DTO\League\League_Standings_DTO;
+use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\League_Team;
 use stdClass;
 use wpdb;
@@ -355,4 +357,84 @@ class League_Team_Repository {
         return $results;
 
     }
+
+    public function find_league_standings( int $league_id, int $season ): array {
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+        $query       = $this->wpdb->prepare(
+            "SELECT lt.id,
+                lt.league_id,
+                lt.season,
+                lt.profile,
+                lt.points_plus,
+                lt.add_points,
+                lt.done_matches,
+                lt.won_matches,
+                lt.lost_matches,
+                lt.draw_matches,
+                lt.diff,
+                lt.rank,
+                lt.rating,
+                lt.custom,
+                lt.status,
+                t.id as team_id,
+                t.title as team_name
+            FROM `$this->table_name` lt
+            JOIN `$teams_table` t ON lt.team_id = t.id
+            WHERE lt.league_id = %d
+            AND lt.season = %d
+            ORDER BY lt.rank",
+            $league_id,
+            $season
+        );
+        $cache_key   = md5( $league_id . '_' . $season );
+        $rows        = wp_cache_get( $cache_key, 'league_standings' );
+        if ( false === $rows ) {
+            $rows = $this->wpdb->get_results( $query );
+            wp_cache_set( $cache_key, $rows, 'league_standings' );
+        }
+
+        return array_map( function ( $row ) {
+            return new League_Standings_DTO(
+                id: (int) $row->id,
+                league_id: (int) $row->league_id,
+                team_id: (int) $row->team_id,
+                team_name: $row->team_name,
+                season: (int) $row->season,
+                points: (float) $row->points_plus + (float) $row->add_points,
+                done_matches: (int) $row->done_matches,
+                won_matches: (int) $row->won_matches,
+                lost_matches: (int) $row->lost_matches,
+                drawn_matches: (int) $row->draw_matches,
+                rank: (int) $row->rank,
+                rating: (float) $row->rating,
+                // Convert raw int to Enum safely
+                profile: Team_Profile::tryFrom( (int) $row->profile ) ?? Team_Profile::ACTIVE,
+                status: (string) $row->status,
+                additional_info: maybe_unserialize( $row->custom )
+            );
+        }, $rows );
+    }
+
+    public function get_teams_by_league_and_season( int $league_id, int $season ): array {
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+        $query = $this->wpdb->prepare(
+            "SELECT t.id,
+            t.title,
+            '' as stadium
+            FROM `$this->table_name` lt
+            JOIN `$teams_table` t ON lt.team_id = t.id
+            WHERE lt.league_id = %d
+            AND lt.season = %d",
+            $league_id,
+            $season
+        );
+        $cache_key   = md5( $league_id . '_' . $season );
+        $rows        = wp_cache_get( $cache_key, 'league_teams' );
+        if ( false === $rows ) {
+            $rows = $this->wpdb->get_results( $query );
+            wp_cache_set( $cache_key, $rows, 'league_teams' );
+        }
+        return $rows;
+    }
+
 }

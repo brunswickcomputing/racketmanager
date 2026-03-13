@@ -8,6 +8,7 @@ use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Information_Admin_Controller;
+use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher;
 use Racketmanager\Services\Admin\Tournament\Tournament_Fixtures_Admin_Service;
 use Racketmanager\Admin\Controllers\Tournament_Fixtures_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
@@ -72,6 +73,8 @@ final class Container_Bootstrap {
         self::register_external_clients( $c );
         self::register_services( $c, $app );
         self::register_admin_controllers( $c );
+        self::register_admin_draw_controllers( $c );
+        self::register_admin_tournament_controllers( $c );
 
         return $c;
     }
@@ -140,7 +143,7 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'tournament_service', function ( Simple_Container $c ) use ( $app ) {
-            return new Tournament_Service( $app, $c->get( 'tournament_repository' ), $c->get( 'charge_repository' ), $c->get( 'event_repository' ), $c->get( 'fixture_service' ), $c->get( 'league_team_repository' ), $c->get( 'tournament_entry_repository' ), $c->get( 'competition_service' ), $c->get( 'player_service' ), $c->get( 'club_service' ), $c->get( 'finance_service' ), );
+            return new Tournament_Service( $app, $c->get( 'tournament_repository' ), $c->get( 'charge_repository' ), $c->get( 'event_repository' ), $c->get( 'fixture_service' ), $c->get( 'league_team_repository' ), $c->get( 'tournament_entry_repository' ), $c->get( 'competition_service' ), $c->get( 'player_service' ), $c->get( 'club_service' ), $c->get( 'finance_service' ), $c->get( 'league_service' ) );
         } );
 
         $c->set( 'season_service', function ( Simple_Container $c ) use ( $app ) {
@@ -160,7 +163,7 @@ final class Container_Bootstrap {
         $c->set( 'notify_service', fn() => new Notify_Service( $app ) );
     }
 
-    private static function register_admin_controllers( Simple_Container $c ): void {
+    private static function register_admin_tournament_controllers( Simple_Container $c ): void {
         $c->set( 'tournament_action_dispatcher', function ( Simple_Container $c ) {
             return new Tournament_Action_Dispatcher(
                 $c->get( 'tournament_service' ),
@@ -204,7 +207,7 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'tournament_overview_action_dispatcher', function ( Simple_Container $c ) {
-            return new \Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher(
+            return new Tournament_Overview_Action_Dispatcher(
                 $c->get( 'championship_admin_service' ),
                 $c->get( 'action_guard' )
             );
@@ -247,44 +250,8 @@ final class Container_Bootstrap {
         $c->set( 'tournament_setup_event_admin_controller', function ( Simple_Container $c ) {
             return new Tournament_Setup_Event_Admin_Controller(
                 $c->get( 'tournament_service' ),
-                $c->get( 'draw_action_dispatcher' ),
-                $c->get( 'action_guard' ),
-            );
-        } );
-
-        $c->set( 'championship_admin_service', function ( Simple_Container $c ) {
-            return new Championship_Admin_Service(
                 $c->get( 'league_service' ),
-                $c->get( 'fixture_service' ),
-                $c->get( 'tournament_service' ),
-            );
-        } );
-
-        // Register draw action handler under an interface-ish name for consumers.
-        $c->set( 'draw_action_handler', function ( Simple_Container $c ) {
-            $handler = $c->get( 'championship_admin_service' );
-            if ( ! ( $handler instanceof Draw_Action_Handler_Interface ) ) {
-                throw new Interface_Exception( __( 'Draw action handler must implement Draw_Action_Handler_Interface', 'racketmanager' ) );
-            }
-            return $handler;
-        } );
-
-        // Register the concrete implementation (optional alias).
-        $c->set( 'wp_action_guard', fn () => new Wp_Action_Guard() );
-
-        // Register under an interface-ish name for consumers.
-        // (Simple_Container is string-keyed, so we keep it as a convention.)
-        $c->set( 'action_guard', function ( Simple_Container $c ) {
-            $guard = $c->get( 'wp_action_guard' );
-            if ( ! ( $guard instanceof Action_Guard_Interface ) ) {
-                throw new Interface_Exception( __( 'Action guard must implement Action_Guard_Interface', 'racketmanager' ) );
-            }
-            return $guard;
-        } );
-
-        $c->set( 'draw_action_dispatcher', function ( Simple_Container $c ) {
-            return new Draw_Action_Dispatcher(
-                $c->get( 'draw_action_handler' ),
+                $c->get( 'draw_action_dispatcher' ),
                 $c->get( 'action_guard' ),
             );
         } );
@@ -350,6 +317,51 @@ final class Container_Bootstrap {
                 $c->get( 'tournament_service' ),
                 $c->get( 'league_service' ),
                 $c->get( 'team_service' ),
+                $c->get( 'action_guard' ),
+            );
+        } );
+
+    }
+
+    private static function register_admin_controllers( Simple_Container $c ): void {
+        $c->set( 'championship_admin_service', function ( Simple_Container $c ) {
+            return new Championship_Admin_Service(
+                $c->get( 'league_service' ),
+                $c->get( 'fixture_service' ),
+                $c->get( 'tournament_service' ),
+            );
+        } );
+
+        // Register the concrete implementation (optional alias).
+        $c->set( 'wp_action_guard', fn() => new Wp_Action_Guard() );
+
+        // Register under an interface-ish name for consumers.
+        // (Simple_Container is string-keyed, so we keep it as a convention.)
+        $c->set( 'action_guard', function ( Simple_Container $c ) {
+            $guard = $c->get( 'wp_action_guard' );
+            if ( ! ( $guard instanceof Action_Guard_Interface ) ) {
+                throw new Interface_Exception( __( 'Action guard must implement Action_Guard_Interface', 'racketmanager' ) );
+            }
+
+            return $guard;
+        } );
+
+    }
+
+    private static function register_admin_draw_controllers( Simple_Container $c ): void {
+        // Register draw action handler under an interface-ish name for consumers.
+        $c->set( 'draw_action_handler', function ( Simple_Container $c ) {
+            $handler = $c->get( 'championship_admin_service' );
+            if ( ! ( $handler instanceof Draw_Action_Handler_Interface ) ) {
+                throw new Interface_Exception( __( 'Draw action handler must implement Draw_Action_Handler_Interface', 'racketmanager' ) );
+            }
+
+            return $handler;
+        } );
+
+        $c->set( 'draw_action_dispatcher', function ( Simple_Container $c ) {
+            return new Draw_Action_Dispatcher(
+                $c->get( 'draw_action_handler' ),
                 $c->get( 'action_guard' ),
             );
         } );

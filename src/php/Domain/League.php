@@ -1485,7 +1485,7 @@ class League {
                             $team_rating += $rating;
                         }
                     }
-                    $team->profile = $team_rating;
+                    $team->rating = $team_rating;
                 }
                 if ( $get_details ) {
                     $team_dtls           = $this->get_team_dtls( $team->id );

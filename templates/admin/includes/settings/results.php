@@ -17,7 +17,7 @@ namespace Racketmanager;
                 esc_html_e( 'Cups', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="competitions-league-tab" data-bs-toggle="tab" data-bs-target="#competitions-league" type="button" role="tab" aria-controls="competitions-league" aria-selected="false"><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></button>
+            <button class="nav-link" id="competitions-tab" data-bs-toggle="tab" data-bs-target="#competitions-league" type="button" role="tab" aria-controls="competitions-league" aria-selected="false"><?php esc_html_e( 'Leagues', 'racketmanager' ); ?></button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="competitions-tournament-tab" data-bs-toggle="tab" data-bs-target="#competitions-tournament" type="button" role="tab" aria-controls="competitions-tournament" aria-selected="false"><?php esc_html_e( 'Tournaments', 'racketmanager' ); ?></button>

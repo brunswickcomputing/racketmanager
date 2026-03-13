@@ -49,7 +49,6 @@ if ( $vm ) {
                         ?>
                         <div class="row row-cols-1 row-cols-sm-<?php echo esc_html( $sm_size ); ?> row-cols-lg-<?php echo esc_html( $lg_size ); ?> final-matches justify-content-center">
                             <?php
-                            $matches = $vm->matches[ $final['key'] ] ?? array();
                             foreach ( $final['fixtures'] as $fixture_details ) {
                                 $match = $fixture_details->fixture;
                                 $league  = $fixture_details->league;
@@ -90,9 +89,8 @@ if ( $vm ) {
                                             <div class="col-2 col-sm-2 score">
                                                 <?php
                                                 if ( null !== $match->home_points && null !== $match->away_points ) {
-                                                    $match->score = sprintf( '%d-%d', $match->home_points, $match->away_points );
                                                     ?>
-                                                    <strong><?php echo esc_html( $match->score ); ?></strong>
+                                                    <strong><?php echo esc_html( sprintf( '%d-%d', $match->home_points, $match->away_points ) ); ?></strong>
                                                     <?php
                                                 } else {
                                                     ?>

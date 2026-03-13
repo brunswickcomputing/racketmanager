@@ -100,7 +100,7 @@ global $racketmanager;
                         </label>
                     </div>
                     <div class="col-auto">
-                        <input type="hidden" name="league-tab" value="matches" />
+                        <input type="hidden" name="tab" value="matches" />
                         <button type="submit" class="btn btn-secondary action"><?php esc_html_e( 'Edit Matches', 'racketmanager' ); ?></button>
                     </div>
                 </div>
@@ -114,7 +114,7 @@ global $racketmanager;
 <form id="matches-action" action="" method="post">
     <?php wp_nonce_field( 'racketmanager_matches-bulk', 'racketmanager_nonce' ); ?>
     <input type="hidden" name="current_match_day" value="<?php echo esc_html( $match_day ); ?>" />
-    <input type="hidden" name="league-tab" value="matches" />
+    <input type="hidden" name="tab" value="matches" />
     <input type="hidden" name="group" value="<?php echo esc_html( $group ); ?>" />
     <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
     <div class="row gx-3 mb-3 align-items-center">

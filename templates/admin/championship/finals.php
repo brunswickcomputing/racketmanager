@@ -121,7 +121,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
     }
     ?>
     <?php
-    $fixtures = $final['fixtures'];
+    $fixtures = $final['fixtures'] ?? array();
     ?>
 
     <form method="post" action="">

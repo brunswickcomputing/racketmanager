@@ -19,7 +19,7 @@ use function Racketmanager\get_team;
 /**
  * Class to implement the League_Team object
  */
-final class League_Team {
+class League_Team {
     /**
      * Number of done matches
      *

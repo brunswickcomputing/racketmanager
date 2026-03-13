@@ -19,7 +19,7 @@ use function Racketmanager\seo_url;
 /**
  * Class to implement the Player object
  */
-final class Player {
+class Player {
     /**
      * Id.
      *

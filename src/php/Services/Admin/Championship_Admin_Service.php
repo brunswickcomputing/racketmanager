@@ -15,8 +15,8 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
 use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Exceptions\Team_Has_Matches_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
@@ -103,19 +103,32 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     private function delete_teams_from_league( object $league, array $post ): Action_Result_DTO {
-        $season   = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null;
-        $messages = array();
+        $season    = isset( $post['season'] ) ? intval( sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) ) : 0;
+        $messages  = array();
+        $any_error = false;
 
         if ( isset( $post['team'] ) && is_array( $post['team'] ) ) {
             foreach ( $post['team'] as $team_id ) {
-                $league->delete_team( intval( $team_id ), $season );
-                $messages[] = intval( $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
+                try {
+                    $this->league_service->remove_team_from_league( intval( $team_id ), $league->get_id(), $season );
+                    $messages[] = intval( $team_id ) . ' ' . __( 'deleted', 'racketmanager' );
+                } catch ( Team_Has_Matches_Exception $e ) {
+                    $messages[] = intval( $team_id ) . ': ' . $e->getMessage();
+                    $any_error  = true;
+                }
             }
+        }
+
+        $message_type = Admin_Message_Type::WARNING;
+        if ( $any_error ) {
+            $message_type = Admin_Message_Type::ERROR;
+        } elseif ( $messages ) {
+            $message_type = Admin_Message_Type::SUCCESS;
         }
 
         return new Action_Result_DTO(
             $messages ? implode( '<br>', $messages ) : $this->msg_no_updates(),
-            $messages ? Admin_Message_Type::SUCCESS : Admin_Message_Type::WARNING
+            $message_type
         );
     }
 

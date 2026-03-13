@@ -16,7 +16,7 @@ use function Racketmanager\seo_url;
 /**
  * Class to implement the Tournament object
  */
-final class Tournament {
+class Tournament {
 
     /**
      * Id

@@ -10,7 +10,7 @@ namespace Racketmanager\Domain\View_Models;
 
 use Racketmanager\Domain\Tournament;
 
-final readonly class Tournament_Email_View_Model {
+readonly class Tournament_Email_View_Model {
 
 	public string $date_display;
 	public string $date_closing_display;

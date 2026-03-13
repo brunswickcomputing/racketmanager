@@ -14,7 +14,7 @@ use function Racketmanager\seo_url;
 /**
  * Class to implement the Club object
  */
-final class Club {
+class Club {
     /**
      * Id
      *

@@ -12,7 +12,7 @@ namespace Racketmanager\Domain;
 /**
  * Class to implement the Player Error object
  */
-final class Player_Error {
+class Player_Error {
     /**
      * Id
      *

@@ -5,7 +5,7 @@ namespace Racketmanager\Domain;
 /**
  * Class to implement the charges object
  */
-final class Charge {
+class Charge {
     /**
      * Id
      *

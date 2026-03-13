@@ -10,7 +10,7 @@
 
 namespace Racketmanager\Domain\DTO\Admin\Championship;
 
-final readonly class Draw_Action_Request_DTO {
+readonly class Draw_Action_Request_DTO {
     /**
      * @param int $tournament_id
      * @param int $league_id

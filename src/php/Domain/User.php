@@ -21,7 +21,7 @@ use function Racketmanager\get_team;
 /**
  * Class to implement the User object
  */
-final class User {
+class User {
     /**
      * Id.
      *

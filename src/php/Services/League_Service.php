@@ -7,6 +7,7 @@ use Racketmanager\Domain\League;
 use Racketmanager\Domain\League_Team;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Exceptions\Team_Has_Matches_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Event_Repository;
@@ -97,6 +98,43 @@ class League_Service {
             $added++;
         }
         return $added;
+    }
+
+    /**
+     * Remove team from league.
+     *
+     * @param int $team_id
+     * @param int $league_id
+     * @param int $season
+     *
+     * @return void
+     *
+     * @throws Team_Has_Matches_Exception
+     */
+    public function remove_team_from_league( int $team_id, int $league_id, int $season ): void {
+        $league_team = $this->league_team_repository->find_by_team_league_and_season( $team_id, $league_id, $season );
+        if ( ! $league_team ) {
+            return;
+        }
+
+        $league = $this->league_repository->find_by_id( $league_id );
+        if ( ! $league ) {
+            return;
+        }
+
+        $matches = $league->get_matches(
+            array(
+                'team_id' => $team_id,
+                'season'  => $season,
+                'final'   => 'all',
+            )
+        );
+
+        if ( $matches ) {
+            throw new Team_Has_Matches_Exception( __( 'Team has matches and cannot be deleted', 'racketmanager' ) );
+        }
+
+        $this->league_team_repository->delete( $league_team->get_id() );
     }
 
     public function get_league( ?int $league_id ): ?object {

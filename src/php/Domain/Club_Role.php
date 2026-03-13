@@ -15,7 +15,7 @@ use function Racketmanager\get_user;
 /**
  * Class to implement the Club_Role object
  */
-final class Club_Role {
+class Club_Role {
     /**
      * Id
      *

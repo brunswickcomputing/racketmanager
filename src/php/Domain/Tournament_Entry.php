@@ -5,7 +5,7 @@ namespace Racketmanager\Domain;
 /**
  * Class to implement the Tournament Entry object (moved to PSR-4)
  */
-final class Tournament_Entry {
+class Tournament_Entry {
     /**
      * Id
      *

@@ -8,7 +8,7 @@
 
 namespace Racketmanager\Domain\DTO\Admin;
 
-final readonly class Action_Result_DTO {
+readonly class Action_Result_DTO {
     public function __construct(
         public ?string $message = null,
         public ?Admin_Message_Type $message_type = null,

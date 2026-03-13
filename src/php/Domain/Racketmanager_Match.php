@@ -33,7 +33,7 @@ use function Racketmanager\seo_url;
 /**
  * Class to implement the Racketmanager_Match object
  */
-final class Racketmanager_Match {
+class Racketmanager_Match {
 
     /**
      * Final round indicator

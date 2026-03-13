@@ -14,7 +14,7 @@ namespace Racketmanager\Domain;
  *
  * @Entity
  */
-final class Invoice {
+class Invoice {
     /**
      * Id
      *

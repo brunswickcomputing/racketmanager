@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the Tournament Entry Request Data Transfer Object
  */
-final class Tournament_Entry_Request_DTO {
+class Tournament_Entry_Request_DTO {
     public int $tournament_id;
     public int $player_id;
     public int $club_id;

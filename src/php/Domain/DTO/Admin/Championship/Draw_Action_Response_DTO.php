@@ -10,7 +10,7 @@ namespace Racketmanager\Domain\DTO\Admin\Championship;
 
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 
-final readonly class Draw_Action_Response_DTO {
+readonly class Draw_Action_Response_DTO {
     public function __construct(
         public ?string $message = null,
         public ?Admin_Message_Type $message_type = null,

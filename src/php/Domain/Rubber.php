@@ -23,7 +23,7 @@ use function Racketmanager\get_team;
 /**
  * Class to implement the Rubber object
  */
-final class Rubber {
+class Rubber {
     /**
      * Rubber id variable
      *

@@ -12,7 +12,7 @@ namespace Racketmanager\Domain;
 /**
  * Class to implement the results report object
  */
-final class Results_Report {
+class Results_Report {
     /**
      * Id
      *

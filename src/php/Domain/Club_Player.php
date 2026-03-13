@@ -14,7 +14,7 @@ use Racketmanager\Exceptions\Invalid_Status_Exception;
 /**
  * Class to implement the Club_Player object
  */
-final class Club_Player {
+class Club_Player {
     /**
      * Id
      *

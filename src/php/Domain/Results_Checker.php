@@ -17,7 +17,7 @@ use function Racketmanager\get_rubber;
 /**
  * Class to implement the results checker object
  */
-final class Results_Checker {
+class Results_Checker {
     /**
      * Id
      *

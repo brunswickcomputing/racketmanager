@@ -14,7 +14,7 @@ use mysqli_result;
 /**
  * Class to implement the message object
  */
-final class Message {
+class Message {
     /**
      * Id
      *

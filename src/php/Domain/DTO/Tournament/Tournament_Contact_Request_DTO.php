@@ -8,7 +8,7 @@
 
 namespace Racketmanager\Domain\DTO\Tournament;
 
-final readonly class Tournament_Contact_Request_DTO {
+readonly class Tournament_Contact_Request_DTO {
 
     public ?string $season;
     public string $email_title;

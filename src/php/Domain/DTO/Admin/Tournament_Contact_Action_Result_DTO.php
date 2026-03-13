@@ -8,7 +8,7 @@
 
 namespace Racketmanager\Domain\DTO\Admin;
 
-final readonly class Tournament_Contact_Action_Result_DTO {
+readonly class Tournament_Contact_Action_Result_DTO {
     public const INTENT_NONE = 'none';
     public const INTENT_PREVIEW = 'preview';
     public const INTENT_SEND = 'send';

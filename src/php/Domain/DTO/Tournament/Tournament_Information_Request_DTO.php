@@ -14,7 +14,7 @@ use stdClass;
 /**
  * Class to implement the Tournament Information Request Data Transfer Object
  */
-final class Tournament_Information_Request_DTO {
+class Tournament_Information_Request_DTO {
     public string $parking;
     public string $catering;
     public string $photography;

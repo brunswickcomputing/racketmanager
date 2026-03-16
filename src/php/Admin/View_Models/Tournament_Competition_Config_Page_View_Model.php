@@ -8,22 +8,27 @@
 
 namespace Racketmanager\Admin\View_Models;
 
+use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Tournament;
 
 readonly final class Tournament_Competition_Config_Page_View_Model {
 
     /**
      * @param Competition $competition
-     * @param object|null $tournament
+     * @param Tournament|null $tournament
      * @param array $rules_options
-     * @param array $clubs
+     * @param Club[] $clubs
+     * @param Event[] $events
      * @param string $tab
      */
     public function __construct(
         public Competition $competition,
-        public ?object $tournament,
+        public ?Tournament $tournament,
         public array $rules_options,
         public array $clubs,
+        public array $events,
         public string $tab = 'general',
     ) {
     }
@@ -39,6 +44,7 @@ readonly final class Tournament_Competition_Config_Page_View_Model {
             'tournament'    => $this->tournament,
             'rules_options' => $this->rules_options,
             'clubs'         => $this->clubs,
+            'events'        => $this->events,
             'tab'           => $this->tab,
             // Legacy variables that were previously set in display_config_page
             'forwin'           => 0,

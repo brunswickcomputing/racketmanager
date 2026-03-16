@@ -295,7 +295,7 @@ class Tournament {
         $this->season           = $tournament->season ?? null;
         $this->competition_code = $tournament->competition_code ?? null;
         $this->grade            = $tournament->grade ?? null;
-        $this->date_end         = $tournament->date ?? '';
+        $this->date_end         = $tournament->date_end ?? '';
         $this->date_closing     = $tournament->date_closing ?? null;
         $this->date_start       = $tournament->date_start ?? null;
         $this->date_open        = $tournament->date_open ?? null;

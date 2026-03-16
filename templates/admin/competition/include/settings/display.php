@@ -1,14 +1,16 @@
 <?php
 /**
- * Competition Settings display administration panel
+ * Competition Settings display the administration panel
  *
  * @package Racketmanager/Admin/Templates
  */
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
+/** @var Tournament_Competition_Config_Page_View_Model $vm */
 /** @var boolean $is_invalid */
 /** @var string $msg */
 $tab_name = 'display';
@@ -31,7 +33,7 @@ $tab_name = 'display';
                                 $msg_id     = array_search( 'point_format', $validator->err_flds, true );
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
-                            $current_value = $_POST['point_format'] ?? $competition->config->point_format ?? null;
+                            $current_value = $_POST['point_format'] ?? $vm->competition->config->point_format ?? null;
                             ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_format" id="point_format" >
                                 <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select point format', 'racketmanager' ); ?></option>
@@ -49,8 +51,6 @@ $tab_name = 'display';
                                 ?>
                                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                                 <?php
-                                $is_invalid = false;
-                                $msg        = null;
                             }
                             ?>
                         </div>
@@ -64,7 +64,7 @@ $tab_name = 'display';
                                 $msg_id     = array_search( 'point_2_format', $validator->err_flds, true );
                                 $msg        = $validator->err_msgs[$msg_id] ?? null;
                             }
-                            $current_value = $_POST['point_2_format'] ?? $competition->config->point_2_format ?? null;
+                            $current_value = $_POST['point_2_format'] ?? $vm->competition->config->point_2_format ?? null;
                             ?>
                             <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="point_2_format" id="point_2_format" >
                                 <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select point 2 format', 'racketmanager' ); ?></option>
@@ -98,7 +98,7 @@ $tab_name = 'display';
                     $msg_id     = array_search( 'num_matches_per_page', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['num_matches_per_page'] ?? $competition->config->num_matches_per_page ?? null;
+                $current_value = $_POST['num_matches_per_page'] ?? $vm->competition->config->num_matches_per_page ?? null;
                 ?>
                 <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_matches_per_page" id="num_matches_per_page" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                 <label for="num_matches_per_page"><?php esc_html_e( 'Matches per page', 'racketmanager' ); ?></label>
@@ -127,7 +127,7 @@ $tab_name = 'display';
             <div>
                 <?php
                 foreach ( $standings_options as $standings_option => $type_desc ) {
-                    $current_value = $_POST['standings'][ $standings_option ] ?? $competition->config->standings[ $standings_option ] ?? null;
+                    $current_value = $_POST['standings'][ $standings_option ] ?? $vm->competition->config->standings[ $standings_option ] ?? null;
                     ?>
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" name="standings[<?php echo esc_html( $standings_option ); ?>]" id="standings-<?php echo esc_html( $standings_option ); ?>" value="1" <?php checked( 1, $current_value ); ?> />
@@ -142,8 +142,6 @@ $tab_name = 'display';
                 ?>
                 <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
                 <?php
-                $is_invalid = false;
-                $msg        = null;
             }
             ?>
         </div>

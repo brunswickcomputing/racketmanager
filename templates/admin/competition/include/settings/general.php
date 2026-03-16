@@ -7,9 +7,11 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 
+/** @var Tournament_Competition_Config_Page_View_Model $vm */
 /** @var object $competition */
 /** @var bool   $is_invalid */
 /** @var string $msg */
@@ -27,7 +29,7 @@ $tab_name = 'general';
                 $msg_id     = array_search( 'name', $validator->err_flds, true );
                 $msg        = $validator->err_msgs[$msg_id] ?? null;
             }
-            $current_value = $_POST['competition_title'] ?? $competition->name ?? null;
+            $current_value = $_POST['competition_title'] ?? $vm->competition->name ?? null;
             ?>
             <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_title" id="competition_title" value="<?php echo esc_html( $current_value ); ?>" placeholder="<?php esc_html_e( 'Competition name', 'racketmanager' ); ?>" />
             <label for="competition_title"><?php esc_html_e( 'Competition name', 'racketmanager' ); ?></label>
@@ -53,7 +55,7 @@ $tab_name = 'general';
                     $msg_id     = array_search( 'sport', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['sport'] ?? $competition->config->sport ?? null;
+                $current_value = $_POST['sport'] ?? $vm->competition->config->sport ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="sport" id="sport" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select sport', 'racketmanager' ); ?></option>
@@ -87,7 +89,7 @@ $tab_name = 'general';
                     $msg_id     = array_search( 'type', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['type'] ?? $competition->config->type ?? null;
+                $current_value = $_POST['type'] ?? $vm->competition->config->type ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
@@ -121,7 +123,7 @@ $tab_name = 'general';
                     $msg_id     = array_search( 'entry_type', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['entry_type'] ?? $competition->config->entry_type ?? null;
+                $current_value = $_POST['entry_type'] ?? $vm->competition->config->entry_type ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="entry_type" id="entry_type" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
@@ -157,7 +159,7 @@ $tab_name = 'general';
                     $msg_id     = array_search( 'age_group', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['age_group'] ?? $competition->config->age_group ?? null;
+                $current_value = $_POST['age_group'] ?? $vm->competition->config->age_group ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_group" id="age_group" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select age group', 'racketmanager' ); ?></option>
@@ -190,7 +192,7 @@ $tab_name = 'general';
                     $msg_id     = array_search( 'competition_code', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['competition_code'] ?? $competition->config->competition_code ?? null;
+                $current_value = $_POST['competition_code'] ?? $vm->competition->config->competition_code ?? null;
                 ?>
                 <input type="text" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="competition_code" id="competition_code" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
                 <label for="competition_code"><?php esc_html_e( 'Competition code', 'racketmanager' ); ?></label>
@@ -215,7 +217,7 @@ $tab_name = 'general';
                     $msg_id     = array_search( 'grade', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['grade'] ?? $competition->config->grade ?? null;
+                $current_value = $_POST['grade'] ?? $vm->competition->config->grade ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="grade" id="grade" >
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select grade', 'racketmanager' ); ?></option>

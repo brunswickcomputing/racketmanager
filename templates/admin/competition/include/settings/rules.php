@@ -7,7 +7,10 @@
 
 namespace Racketmanager;
 
-/** @var array $rules_options */
+use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
+
+/** @var Tournament_Competition_Config_Page_View_Model $vm */
+$rules_options = $vm->rules_options;
 ksort( $rules_options );
 ?>
 <div class="form-control">

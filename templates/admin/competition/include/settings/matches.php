@@ -7,9 +7,10 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $competition */
+/** @var Tournament_Competition_Config_Page_View_Model $vm */
 $tab_name   = 'matches';
 $is_invalid = false;
 $msg        = null;
@@ -26,7 +27,7 @@ $msg        = null;
                     $msg_id     = array_search( 'scoring', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['scoring'] ?? $competition->config->scoring ?? null;
+                $current_value = $_POST['scoring'] ?? $vm->competition->config->scoring ?? null;
                 ?>
                 <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name='scoring' id='scoring'>
                     <option disabled <?php selected( null, empty( $current_value ) ? null : $current_value ); ?>><?php esc_html_e( 'Select scoring type', 'racketmanager' ); ?></option>
@@ -61,7 +62,7 @@ $msg        = null;
                     $msg_id     = array_search( 'num_sets', $validator->err_flds, true );
                     $msg        = $validator->err_msgs[$msg_id] ?? null;
                 }
-                $current_value = $_POST['num_sets'] ?? $competition->config->num_sets ?? null;
+                $current_value = $_POST['num_sets'] ?? $vm->competition->config->num_sets ?? null;
                 ?>
                 <input type="number" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="num_sets" id="num_sets" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" placeholder="<?php esc_html_e( 'Number of sets', 'racketmanager' ); ?>" />
                 <label for="num_sets"><?php esc_html_e( 'Number of sets', 'racketmanager' ); ?></label>
@@ -75,8 +76,8 @@ $msg        = null;
             </div>
         </div>
         <?php
-        $current_value = $_POST['num_rubbers'] ?? $competition->config->num_rubbers ?? null;
-        if ( $competition->is_player_entry ) {
+        $current_value = $_POST['num_rubbers'] ?? $vm->competition->config->num_rubbers ?? null;
+        if ( $vm->competition->is_player_entry ) {
             ?>
             <input type="hidden" name="num_rubbers" id="num_rubbers" value="<?php echo isset( $current_value ) ? esc_html( $current_value ) : null; ?>" />
             <?php
@@ -116,7 +117,7 @@ $msg        = null;
                         $msg_id     = array_search( 'reverse_rubbers', $validator->err_flds, true );
                         $msg        = $validator->err_msgs[$msg_id] ?? null;
                     }
-                    $current_value = ( isset( $_POST['reverse_rubbers'] ) ? 1 : empty( $competition->config->reverse_rubbers ) ) ? null : 1;
+                    $current_value = ( isset( $_POST['reverse_rubbers'] ) ? 1 : empty( $vm->competition->config->reverse_rubbers ) ) ? null : 1;
                     ?>
                     <input type="checkbox" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="reverse_rubbers" id="reverse_rubbers" <?php checked( 1, empty( $current_value ) ? null : 1 ); ?>value="true" />
                     <label for="reverse_rubbers"><?php esc_html_e( 'Reverse rubbers', 'racketmanager' ); ?></label>

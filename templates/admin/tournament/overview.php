@@ -96,8 +96,11 @@ if ( $vm ) {
         </div>
     </div>
 <script type="text/javascript">
-    document.getElementById('notifyOpen').addEventListener('click', function (e) {
-        let tournamentId = this.dataset.tournamentId;
-        Racketmanager.notifyTournamentEntryOpen(e, tournamentId);
-    });
+    const notifyOpen = document.getElementById('notifyOpen');
+    if ( notifyOpen ) {
+        notifyOpen.addEventListener('click', function (e) {
+            let tournamentId = this.dataset.tournamentId;
+            Racketmanager.notifyTournamentEntryOpen(e, tournamentId);
+        });
+    }
 </script>

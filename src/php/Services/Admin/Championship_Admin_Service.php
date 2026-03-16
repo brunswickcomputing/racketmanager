@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
 use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Has_Matches_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
@@ -23,12 +24,12 @@ use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Handler_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
 use stdClass;
 
-use function Racketmanager\debug_to_console;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
@@ -158,11 +159,6 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     // -------- internal ports (no validation, minimal sanitization) --------
 
     public function add_teams_to_league( Draw_Action_Request_DTO $dto ): Action_Result_DTO {
-        $league = get_league( $dto->league_id );
-        if ( ! $league ) {
-            return $this->result_league_not_found();
-        }
-
         $post   = $dto->post;
         $season = isset( $post['season'] ) ? intval( $post['season'] ) : null;
 
@@ -174,12 +170,22 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $any_error = false;
 
         foreach ( $post['team'] as $team_id ) {
-            $team_id = sanitize_text_field( wp_unslash( $team_id ) );
-            if ( ! is_numeric( $team_id ) ) {
-                //TODO: handle team in format 2_round_match number
-            }
             try {
-                $this->league_service->add_team_to_league( $team_id, $league->get_id(), $season );
+                $team_id = sanitize_text_field( wp_unslash( $team_id ) );
+                if ( is_numeric( $team_id ) ) {
+                    $this->league_service->add_team_to_league( $team_id, $dto->league_id, $season );
+                } else {
+                    $team = $this->team_repository->find_by_id( $team_id );
+                    if ( ! $team ) {
+                        $team = new Team();
+                        $team->set_name( $team_id );
+                        $team->set_type( 'S' );
+                        $team_id = $this->team_repository->save( $team );
+                    } else {
+                        $team_id = $team->get_id();
+                    }
+                    $this->league_service->add_team_to_league( $team_id, $dto->league_id, $season );
+                }
                 $messages[] = __( 'Team added', 'racketmanager' );
             } catch ( Team_Not_Found_Exception|League_Not_Found_Exception $e ) {
                 $messages[] = $e->getMessage();
@@ -398,6 +404,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
     }
 
     private function start_final_rounds( object $league ): bool {
+        $championship_manager = new Championship_Manager();
         $updates       = false;
         $multiple_legs = false;
         $round_name    = $league->championship->get_final_keys( 1 );
@@ -423,14 +430,14 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
             $home_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->home_team, 'home' );
             $away_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->away_team, 'away' );
             if ( null !== $home_team && null !== $away_team ) {
-                $league->championship->set_teams( $fixture, $home_team, $away_team );
+                $championship_manager->set_teams( $fixture, $home_team, $away_team );
                 $updates = true;
             }
         }
 
         $fixtures_list = $this->maybe_expand_fixtures_list_with_linked_fixtures( $fixtures_list, $multiple_legs );
         if ( $fixtures_list ) {
-            $league->championship->update_final_results( $fixtures_list, array(), array(), array(), 1, $league->event->current_season['name'] );
+            $championship_manager->update_final_results( $league->championship, $fixtures_list, array(), array(), array(), 1, $league->event->current_season['name'] );
         }
 
         return $updates;
@@ -504,7 +511,8 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $round       = isset( $post['round'] ) ? intval( $post['round'] ) : null;
         $season      = isset( $post['season'] ) ? sanitize_text_field( wp_unslash( strval( $post['season'] ) ) ) : null;
 
-        $league->championship->update_final_results( $fixtures, $home_points, $away_points, $custom, $round, $season );
+        $championship_manager = new Championship_Manager();
+        $championship_manager->update_final_results( $league->championship, $fixtures, $home_points, $away_points, $custom, $round, $season );
 
         return new Action_Result_DTO( __( 'Final results updated', 'racketmanager' ), Admin_Message_Type::SUCCESS );
     }

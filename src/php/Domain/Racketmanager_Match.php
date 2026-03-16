@@ -10,7 +10,8 @@
 namespace Racketmanager\Domain;
 
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Services\Championship;
+use Racketmanager\Domain\Championship;
+use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Match;
@@ -2504,7 +2505,8 @@ class Racketmanager_Match {
             if ( ! empty( $this->final_round ) ) {
                 $round_data = $league->championship->get_finals( $this->final_round );
                 $round      = $round_data['round'];
-                $league->championship->proceed( $round );
+                $championship_manager = new Championship_Manager();
+                $championship_manager->proceed( $league->championship, $round );
                 $return->msg     = __( 'Match saved and draw updated', 'racketmanager' );
                 $return->updated = true;
             } else {

@@ -6,12 +6,13 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Draw_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
+use Racketmanager\Domain\Championship_Settings;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
+use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Event;
 use Racketmanager\Domain\League;
 use Racketmanager\Domain\Tournament;
-use Racketmanager\Services\Championship;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
@@ -231,11 +232,22 @@ final class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $league->method( 'get_league_teams' )->willReturn( array() );
 
         // Mock championship
-        $reflection                  = new ReflectionClass( Championship::class );
-        $championship                = $reflection->newInstanceWithoutConstructor();
-        $championship->finals        = array( array( 'key' => 'final1', 'name' => 'Final Round' ) );
-        $championship->current_final = 'final1';
-        $league->championship        = $championship;
+        $settings     = new Championship_Settings();
+        $championship = new Championship(
+            league_id: 10,
+            is_consolation: false,
+            settings: $settings,
+            num_advance: 2,
+            num_rounds: 1,
+            num_teams: 2,
+            num_teams_first_round: 2,
+            num_seeds: 0,
+            keys_by_round: array( 1 => 'final1' ),
+            finals_by_key: array( 'final1' => array( 'key' => 'final1', 'name' => 'Final Round' ) ),
+            final_teams_by_round: array(),
+            current_final: 'final1'
+        );
+        $league->championship = $championship;
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );

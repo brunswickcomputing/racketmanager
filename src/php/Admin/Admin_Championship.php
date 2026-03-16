@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_event;
@@ -61,7 +62,9 @@ class Admin_Championship extends Admin_Display {
                     $away_points = $_POST['away_points'] ?? array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     $round       = isset( $_POST['round'] ) ? intval( $_POST['round'] ) : null;
                     $season      = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-                    $league->championship->update_final_results( $matches, $home_points, $away_points, $custom, $round, $season );
+
+                    $championship_manager = new Championship_Manager();
+                    $championship_manager->update_final_results( $league->championship, $matches, $home_points, $away_points, $custom, $round, $season );
                 }
                 if ( ! empty( $validator->error ) ) {
                     if ( empty( $validator->msg ) ) {

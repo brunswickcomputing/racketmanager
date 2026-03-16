@@ -9,7 +9,9 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Services\Championship;
+use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Championship_Settings;
+use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Services\Schedule_Round_Robin;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -718,7 +720,9 @@ class League {
         // Championship.
         if ( 'championship' === $this->mode ) {
             $this->is_championship = true;
-            $this->championship    = new Championship( $this, $this->settings );
+            $settings              = Championship_Settings::from_array( $this->settings );
+            $factory               = new Championship_Factory();
+            $this->championship    = $factory->create( $this, $settings );
         }
 
         // add actions & filter.
@@ -1118,29 +1122,6 @@ class League {
      * @param boolean $force_overwrite force overwrite.
      */
     public function set_group( string $group = '', bool $force_overwrite = false ): void {
-        if ( '' === $group || true !== $force_overwrite ) {
-            if ( isset( $_GET['group'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-                $group = wp_strip_all_tags( wp_unslash( $_GET['group'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            } elseif ( is_admin() && isset( $_POST['group'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-                $group = wp_strip_all_tags( wp_unslash( $_POST['group'] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            } else {
-                // set to first group in league by default.
-                $groups = $this->get_groups();
-                if ( isset( $groups[0] ) ) {
-                    $group = $groups[0];
-                }
-            }
-        }
-
-        if ( is_array( $group ) ) {
-            $group = $group[0];
-        }
-        $group = htmlspecialchars( wp_strip_all_tags( $group ) );
-        if ( $this->group_exists( $group ) ) {
-            $this->set_team_query_arg( 'group', $group );
-            $this->set_match_query_arg( 'group', $group );
-            $this->current_group = $group;
-        }
     }
 
     /**

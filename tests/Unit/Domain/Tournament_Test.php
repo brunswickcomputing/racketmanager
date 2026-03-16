@@ -16,8 +16,9 @@ use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
 use stdClass;
+    use function Racketmanager\debug_to_console;
 
-require_once __DIR__ . '/../../wp-stubs.php';
+    require_once __DIR__ . '/../../wp-stubs.php';
 
 final class Tournament_Test extends TestCase {
 
@@ -30,7 +31,7 @@ final class Tournament_Test extends TestCase {
         $data = new stdClass();
         $data->id = 1;
         $data->name = 'Test Tournament';
-        $data->date = '2026-12-31';
+        $data->date_end = '2026-12-31';
         $data->date_start = '2026-12-01';
         $data->date_open = '2026-11-01';
         $data->date_closing = '2026-11-30';
@@ -96,7 +97,7 @@ final class Tournament_Test extends TestCase {
         $data = new stdClass();
         $data->id = 1;
         $data->name = 'Test';
-        $data->date = '2026-12-31';
+        $data->date_end = '2026-12-31';
         $tournament = new Tournament($data);
 
         // finals[R1] = round 6

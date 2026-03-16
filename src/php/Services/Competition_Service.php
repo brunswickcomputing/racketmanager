@@ -455,8 +455,8 @@ class Competition_Service {
         $validator = $validator->match_date_option( $config->fixed_match_dates);
         $validator = $validator->fixture_type( $config->home_away );
         $validator = $validator->round_length( $config->round_length );
-        $validator = $validator->default_match_start_time( $config->default_match_start_time );
         if ( 'tournament' !== $config->type ) {
+            $validator = $validator->default_match_start_time( $config->default_match_start_time );
             $validator = $validator->match_day_restriction( $config->match_day_restriction, $config->match_days_allowed, $config->start_time );
         }
         $validator = $validator->point_format( $config->point_format );

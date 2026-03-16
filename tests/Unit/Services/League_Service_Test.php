@@ -141,7 +141,8 @@ final class League_Service_Test extends TestCase {
             $league_service,
             $fixture_service,
             $tournament_service,
-            $league_team_repository
+            $league_team_repository,
+            $this->team_repository
         );
 
         $league_service->expects( self::once() )
@@ -167,6 +168,120 @@ final class League_Service_Test extends TestCase {
 
         self::assertEquals( Admin_Message_Type::ERROR, $result->message_type );
         self::assertStringContainsString( 'Matches exist', $result->message );
+    }
+
+    public function test_add_teams_to_league_creates_team_if_not_exists_by_name(): void {
+        global $racketmanager;
+        $racketmanager = new stdClass();
+        $container = $this->createMock( \Racketmanager\Services\Container\Simple_Container::class );
+        $racketmanager->container = $container;
+
+        $player_service = $this->createMock( \Racketmanager\Services\Player_Service::class );
+        $container->method( 'get' )->with( 'player_service' )->willReturn( $player_service );
+
+        $league_id = 123;
+        $season = 2024;
+        $team_name = '2_round_match_456';
+
+        $league_service = $this->createMock( League_Service::class );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $league_team_repository = $this->createMock( League_Team_Repository::class );
+
+        // Mock Team_Repository::find_by_id to return null (team doesn't exist by name)
+        $this->team_repository->expects( self::once() )
+            ->method( 'find_by_id' )
+            ->with( $team_name )
+            ->willReturn( null );
+
+        // Mock Team_Repository::save to return a new team ID
+        $new_team_id = 999;
+        $this->team_repository->expects( self::once() )
+            ->method( 'save' )
+            ->with( self::callback( function ( $team ) use ( $team_name ) {
+                return $team instanceof Team && $team->get_name() === $team_name && $team->get_type() === 'S';
+            } ) )
+            ->willReturn( $new_team_id );
+
+        // Mock League_Service::add_team_to_league to be called with the new team ID
+        $league_service->expects( self::once() )
+            ->method( 'add_team_to_league' )
+            ->with( $new_team_id, $league_id, $season );
+
+        $admin_service = new Championship_Admin_Service(
+            $league_service,
+            $fixture_service,
+            $tournament_service,
+            $league_team_repository,
+            $this->team_repository
+        );
+
+        $dto = new Draw_Action_Request_DTO(
+            tournament_id: 1,
+            league_id: $league_id,
+            season: (string)$season,
+            post: [
+                'team' => [$team_name],
+                'season' => $season
+            ]
+        );
+
+        $result = $admin_service->add_teams_to_league( $dto );
+
+        self::assertEquals( Admin_Message_Type::SUCCESS, $result->message_type );
+        self::assertStringContainsString( 'Team added', $result->message );
+    }
+
+    public function test_add_teams_to_league_uses_existing_team_if_exists_by_name(): void {
+        $league_id = 123;
+        $season = 2024;
+        $team_name = '2_round_match_456';
+        $existing_team_id = 777;
+
+        $league_service = $this->createMock( League_Service::class );
+        $fixture_service = $this->createMock( Fixture_Service::class );
+        $tournament_service = $this->createMock( Tournament_Service::class );
+        $league_team_repository = $this->createMock( League_Team_Repository::class );
+
+        $existing_team = $this->createMock( Team::class );
+        $existing_team->method( 'get_id' )->willReturn( $existing_team_id );
+
+        // Mock Team_Repository::find_by_id to return the existing team
+        $this->team_repository->expects( self::once() )
+            ->method( 'find_by_id' )
+            ->with( $team_name )
+            ->willReturn( $existing_team );
+
+        // Team_Repository::save should NOT be called
+        $this->team_repository->expects( self::never() )
+            ->method( 'save' );
+
+        // Mock League_Service::add_team_to_league to be called with the existing team ID
+        $league_service->expects( self::once() )
+            ->method( 'add_team_to_league' )
+            ->with( $existing_team_id, $league_id, $season );
+
+        $admin_service = new Championship_Admin_Service(
+            $league_service,
+            $fixture_service,
+            $tournament_service,
+            $league_team_repository,
+            $this->team_repository
+        );
+
+        $dto = new Draw_Action_Request_DTO(
+            tournament_id: 1,
+            league_id: $league_id,
+            season: (string)$season,
+            post: [
+                'team' => [$team_name],
+                'season' => $season
+            ]
+        );
+
+        $result = $admin_service->add_teams_to_league( $dto );
+
+        self::assertEquals( Admin_Message_Type::SUCCESS, $result->message_type );
     }
 
     public function test_league_team_constructor_handles_string_profile(): void {

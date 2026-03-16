@@ -587,7 +587,7 @@ class Tournament_Repository {
                 WHERE f.season = t.season
                   AND t.id = %d
                   AND e.id = %d
-                ORDER BY f.`date`
+                ORDER BY f.`id`
             ", $tournament_id, $event_id );
         $results           = $this->wpdb->get_results( $query );
 

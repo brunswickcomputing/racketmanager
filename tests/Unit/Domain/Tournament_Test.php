@@ -12,6 +12,8 @@ use stdClass;
 
     require_once __DIR__ . '/../../wp-stubs.php';
 
+    use function Racketmanager\seo_url;
+
 final class Tournament_Test extends TestCase {
 
     public function test_set_tournament_info_sets_correct_data(): void {

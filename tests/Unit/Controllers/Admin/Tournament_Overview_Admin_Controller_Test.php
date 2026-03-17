@@ -13,6 +13,7 @@ use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Tournament_Service;
 use stdClass;
+use function Racketmanager\seo_url;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 

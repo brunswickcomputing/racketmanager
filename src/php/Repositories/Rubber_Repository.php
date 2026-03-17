@@ -99,4 +99,26 @@ class Rubber_Repository {
         return $rubber;
     }
 
+    /**
+     * Find all rubbers for a given fixture ID.
+     *
+     * @param int $fixture_id
+     *
+     * @return Rubber[]
+     */
+    public function find_by_fixture_id( int $fixture_id ): array {
+        $results = $this->wpdb->get_results(
+            $this->wpdb->prepare(
+                "SELECT * FROM $this->table_name WHERE `match_id` = %d ORDER BY `rubber_number`",
+                $fixture_id
+            )
+        );
+
+        $rubbers = [];
+        foreach ( $results as $row ) {
+            $rubbers[] = new Rubber( $row );
+        }
+
+        return $rubbers;
+    }
 }

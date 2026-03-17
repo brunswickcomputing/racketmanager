@@ -10,7 +10,7 @@
   <p>A league competition has a mode of default (entry type is not required but equates to Team).</p>
   <h4 id="Tournaments"><?php _e( 'Tournaments', 'racketmanager' ) ?></h4>
   <p>A tournament competition has a mode of Championship and an entry team of Player.</p>
-  <h3 id="Leagues"><?php _e( 'Leagues', 'racketmanager' ) ?></h3>
+  <h3><?php _e( 'Leagues', 'racketmanager' ) ?></h3>
   <p>The leagues page of Racketmanager show an overview of the leagues for a competition together with a few statistics on the number of teams and matches for the latest season.</p>
   <p>Player statistics are also available to view which show which players have played in the league on each match day.</p>
   <p>Clicking the league title takes the user to the individual league page. Here there are three tabs and options to add multiple teams, a single team  and matches. The "Add Teams" button should be used to add existing teams to the league. The "Add Team" button should only be used to add a new team to "Tournaments".</p>

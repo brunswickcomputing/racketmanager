@@ -1,15 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager {
-    if ( ! function_exists( 'Racketmanager\show_alert' ) ) {
-        function show_alert( string $message, string $type, ?string $template = null ): string {
-            return "<div class='alert alert-{$type}'>{$message}</div>";
-        }
-    }
-}
-
-namespace Racketmanager\Tests\Unit {
+namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_Tournament;
@@ -126,5 +118,4 @@ final class Admin_Tournament_Test extends TestCase {
 
         $this->admin_tournament->display_team_page();
     }
-}
 }

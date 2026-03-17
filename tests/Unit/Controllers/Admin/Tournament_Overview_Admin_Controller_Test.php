@@ -1,15 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager {
-    if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
-        function seo_url( string $string_field ): string {
-            return strtolower( str_replace( ' ', '-', $string_field ) );
-        }
-    }
-}
-
-namespace Racketmanager\Tests\Unit {
+namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
@@ -122,5 +114,4 @@ final class Tournament_Overview_Admin_Controller_Test extends TestCase {
         self::assertEquals( 'Email sent', $result['message'] );
         self::assertFalse( $result['message_type'] ); // Success maps to false in legacy
     }
-}
 }

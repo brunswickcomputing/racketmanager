@@ -1,15 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager {
-    if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
-        function seo_url( string $name ): string {
-            return strtolower( str_replace( ' ', '-', $name ) );
-        }
-    }
-}
-
-namespace Racketmanager\Tests\Unit {
+namespace Racketmanager\Tests\Unit\Domain;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Tournament;
@@ -117,5 +109,4 @@ final class Tournament_Test extends TestCase {
         // Quarter-final (round 3 - 1 = 2) should be previous - 7 days
         $this->assertEquals('2026-12-17', $match_dates[2]);
     }
-}
 }

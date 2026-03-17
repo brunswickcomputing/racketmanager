@@ -2869,27 +2869,35 @@ class Racketmanager_Match {
                 break;
         }
         $custom['sets'] = $sets;
-        $match_updated  = $this->update_result( $home_points, $away_points, $custom, $match_confirmed, $status );
-        if ( $match_updated ) {
-            $match_message       = __( 'Result saved', 'racketmanager' );
-            $msg                 = $match_message;
-            $rm_options          = $racketmanager->get_options();
-            $result_confirmation = $rm_options[ $this->league->event->competition->type ]['resultConfirmation'];
-            if ( 'auto' === $result_confirmation || ( current_user_can( 'manage_racketmanager' ) ) ) {
-                $this->confirmed = 'Y';
-                $this->set_confirmed();
-                $update = $this->update_league_with_result();
-                $msg    = $update->msg;
-                if ( ! current_user_can( 'manage_racketmanager' ) ) {
-                    $match_confirmed = 'Y';
-                    $this->result_notification( $match_confirmed, $match_message );
-                }
-            } else {
-                $this->result_notification( $match_confirmed, $match_message );
-            }
+
+        $fixture_repository = new Fixture_Repository();
+        $fixture            = $fixture_repository->find_by_id( $this->id );
+        if ( $fixture ) {
+            $result_data = [
+                'home_points' => $home_points,
+                'away_points' => $away_points,
+                'status'      => $status,
+                'custom'      => $custom,
+                'sets'        => $sets,
+            ];
+            $result = Result_Factory::from_array( $result_data, $this->home_team, $this->away_team );
+            $result_service = new Result_Service( $fixture_repository );
+            $result_service->apply_to_fixture( $fixture, $result, $match_confirmed );
+
+            // Sync current object for legacy return values
+            $this->home_points = (float) $fixture->get_home_points();
+            $this->away_points = (float) $fixture->get_away_points();
+            $this->winner_id   = $fixture->get_winner_id();
+            $this->loser_id    = $fixture->get_loser_id();
+            $this->status      = $fixture->get_status();
+            $this->confirmed   = $fixture->get_confirmed();
+            $this->custom      = $fixture->get_custom();
+
+            $msg = __( 'Result saved', 'racketmanager' );
         } else {
-            $msg = __( 'No result to save', 'racketmanager' );
+            $msg = __( 'Unable to update match result', 'racketmanager' );
         }
+        
         $data = new stdClass();
         $data->msg = $msg;
         return $data;

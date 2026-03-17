@@ -18,7 +18,10 @@ final class Tournament_Test extends TestCase {
 
     public function test_set_tournament_info_sets_correct_data(): void {
         global $racketmanager;
-        $racketmanager = new stdClass();
+        // Do not overwrite global $racketmanager if it is already set by stubs with necessary methods
+        if ( ! isset( $racketmanager ) || ! method_exists( $racketmanager, 'get_options' ) ) {
+            $racketmanager = new stdClass();
+        }
         $racketmanager->site_url = 'http://example.com';
         $racketmanager->date_format = 'Y-m-d';
 

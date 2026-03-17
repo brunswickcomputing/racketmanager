@@ -190,4 +190,83 @@ class Result_Calculator {
             'away_points' => (float) $away_points,
         ];
     }
+
+    /**
+     * Determine winner and loser IDs from points and status.
+     *
+     * @param float $home_points
+     * @param float $away_points
+     * @param int|string $home_team_id
+     * @param int|string $away_team_id
+     * @param int|null $status
+     * @param array $custom
+     * @return array{winner_id: int|string, loser_id: int|string}
+     */
+    public static function determine_winner_and_loser(
+        float $home_points,
+        float $away_points,
+        int|string $home_team_id,
+        int|string $away_team_id,
+        ?int $status = null,
+        array $custom = []
+    ): array {
+        $winner_id = 0;
+        $loser_id  = 0;
+
+        if ( 7 === $status || ( ! empty( $custom['withdrawn'] ) ) ) {
+            $winner_id = -1;
+            $loser_id  = -1;
+        } elseif ( 1 === $status || ( ! empty( $custom['walkover'] ) ) ) {
+            if ( ( $custom['walkover'] ?? '' ) === 'home' ) {
+                $winner_id = $home_team_id;
+                $loser_id  = $away_team_id;
+            } elseif ( ( $custom['walkover'] ?? '' ) === 'away' ) {
+                $winner_id = $away_team_id;
+                $loser_id  = $home_team_id;
+            } else {
+                // Fallback to points if walkover direction is not specified in custom
+                if ( $home_points > $away_points ) {
+                    $winner_id = $home_team_id;
+                    $loser_id  = $away_team_id;
+                } elseif ( $home_points < $away_points ) {
+                    $winner_id = $away_team_id;
+                    $loser_id  = $home_team_id;
+                } else {
+                    $winner_id = -1;
+                    $loser_id  = -1;
+                }
+            }
+        } elseif ( 2 === $status || ( ! empty( $custom['retired'] ) ) ) {
+            if ( ( $custom['retired'] ?? '' ) === 'away' ) {
+                $winner_id = $home_team_id;
+                $loser_id  = $away_team_id;
+            } elseif ( ( $custom['retired'] ?? '' ) === 'home' ) {
+                $winner_id = $away_team_id;
+                $loser_id  = $home_team_id;
+            }
+        } elseif ( 3 === $status || ( ! empty( $custom['share'] ) ) ) {
+            $winner_id = -1;
+            $loser_id  = -1;
+        } elseif ( '-1' === (string) $home_team_id ) {
+            $winner_id = $away_team_id;
+            $loser_id  = 0;
+        } elseif ( '-1' === (string) $away_team_id ) {
+            $winner_id = $home_team_id;
+            $loser_id  = 0;
+        } elseif ( $home_points > $away_points ) {
+            $winner_id = $home_team_id;
+            $loser_id  = $away_team_id;
+        } elseif ( $home_points < $away_points ) {
+            $winner_id = $away_team_id;
+            $loser_id  = $home_team_id;
+        } else {
+            $winner_id = -1;
+            $loser_id  = -1;
+        }
+
+        return [
+            'winner_id' => $winner_id,
+            'loser_id'  => $loser_id,
+        ];
+    }
 }

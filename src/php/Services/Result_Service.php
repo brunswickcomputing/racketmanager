@@ -6,6 +6,7 @@ use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Result;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
 
 class Result_Service {
@@ -23,17 +24,40 @@ class Result_Service {
      *
      * @param Fixture $fixture The fixture to update.
      * @param Result $result The result to apply.
+     * @param string|null $confirmed Confirmation status ('Y', 'N', 'P').
      */
-    public function apply_to_fixture( Fixture $fixture, Result $result ): void {
+    public function apply_to_fixture( Fixture $fixture, Result $result, ?string $confirmed = null ): void {
+        global $racketmanager;
+        
+        $league = get_league( $fixture->get_league_id() );
+        $competition_type = $league?->event?->competition?->type ?? 'league';
+        $rm_options = $racketmanager->get_options();
+        $result_confirmation = $rm_options[ $competition_type ]['resultConfirmation'] ?? 'manual';
+
+        // Handle auto-confirmation and admin override
+        if ( null === $confirmed ) {
+            $confirmed = $fixture->get_confirmed() ?: 'P';
+        }
+
+        if ( 'auto' === $result_confirmation || current_user_can( 'manage_racketmanager' ) ) {
+            $confirmed = 'Y';
+        }
+
         // 1. Update the fixture object with the result details
         $fixture->set_result( $result );
+        $fixture->set_confirmed( $confirmed );
 
         // 2. Persist to database (via Repository)
         $this->fixture_repository->save( $fixture );
 
-        // 3. For tournaments, trigger championship progression
+        // 3. Notify favourites if it's not a bye
+        if ( '-1' !== (string) $fixture->get_home_team() && '-1' !== (string) $fixture->get_away_team() ) {
+            $this->notify_favourites( $fixture );
+        }
+
+        // 4. For tournaments, trigger championship progression
         if ( ! empty( $fixture->get_final() ) ) {
-            $championship_manager = new Championship_Manager();
+            $championship_manager = new Championship_Manager( $this );
             $championship         = $this->get_championship_for_fixture( $fixture );
             if ( $championship ) {
                 $round = $this->get_round_for_fixture( $fixture, $championship );
@@ -41,6 +65,73 @@ class Result_Service {
                     $championship_manager->proceed( $championship, $round );
                 }
             }
+        }
+    }
+
+    /**
+     * Notify users who have favourited the teams, league or competition.
+     *
+     * @param Fixture $fixture
+     */
+    public function notify_favourites( Fixture $fixture ): void {
+        global $racketmanager;
+
+        $league = get_league( $fixture->get_league_id() );
+        if ( ! $league ) {
+            return;
+        }
+
+        $favourited_users = array();
+        $users            = Util::get_users_for_favourite( 'league', $league->id );
+        foreach ( $users as $user ) {
+            $favourited_users[] = $user;
+        }
+
+        $users = Util::get_users_for_favourite( 'competition', $league->event->id );
+        foreach ( $users as $user ) {
+            $favourited_users[] = $user;
+        }
+
+        // Note: Real implementation would need to get club/team IDs from the fixture
+        // For now, mirroring Racketmanager_Match logic as much as possible with available data.
+        
+        $favourited_users = array_unique( $favourited_users, SORT_REGULAR );
+        if ( empty( $favourited_users ) ) {
+            return;
+        }
+
+        $headers           = array();
+        $competition_type  = $league->event->competition->type;
+        $from_email        = $racketmanager->get_confirmation_email( $competition_type );
+        $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition_type ) . ' Secretary <' . $from_email . '>';
+        $organisation_name = $racketmanager->site_name;
+        $email_subject     = $racketmanager->site_name . ' - ' . $league->title . ' Result Notification';
+        $favourite_url     = $racketmanager->site_url . '/member-account/favourites';
+        
+        // We need a link to the fixture, which might not be fully implemented in the new Fixture class yet
+        $match_url = $racketmanager->site_url . '/fixture/' . $fixture->get_id(); 
+
+        foreach ( $favourited_users as $user ) {
+            $user_details  = get_userdata( $user );
+            if ( ! $user_details ) {
+                continue;
+            }
+            $email_to      = $user_details->display_name . ' <' . $user_details->user_email . '>';
+            $email_message = $racketmanager->shortcodes->load_template(
+                'favourite-notification',
+                array(
+                    'email_subject' => $email_subject,
+                    'from_email'    => $from_email,
+                    'match_url'     => $match_url,
+                    'favourite_url' => $favourite_url,
+                    'organisation'  => $organisation_name,
+                    'user'          => $user_details,
+                    'fixture'       => $fixture,
+                    'league'        => $league,
+                ),
+                'email'
+            );
+            wp_mail( $email_to, $email_subject, $email_message, $headers );
         }
     }
 

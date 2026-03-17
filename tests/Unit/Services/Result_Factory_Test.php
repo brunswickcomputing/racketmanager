@@ -72,4 +72,25 @@ final class Result_Factory_Test extends TestCase {
         $this->assertEquals( 5.0, $result->get_home_points() );
         $this->assertEquals( 0.0, $result->get_away_points() );
     }
+
+    public function test_from_array_determines_winner(): void {
+        $data = [
+            'home_points' => 3.0,
+            'away_points' => 1.0,
+        ];
+        $result = Result_Factory::from_array( $data, 10, 20 );
+
+        $this->assertEquals( 10, $result->get_winner_id() );
+        $this->assertEquals( 20, $result->get_loser_id() );
+    }
+
+    public function test_from_array_handles_bye(): void {
+        $data = [
+            'winning_points' => 3.0,
+        ];
+        $result = Result_Factory::from_array( $data, '-1', 20 );
+
+        $this->assertEquals( 3.0, $result->get_home_points() );
+        $this->assertEquals( 20, $result->get_winner_id() );
+    }
 }

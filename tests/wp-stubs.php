@@ -232,7 +232,15 @@ namespace {
             public $container;
             public string $date_format = 'Y-m-d';
             public string $site_url = 'https://example.test';
+            public string $site_name = 'RacketManager';
+            public $shortcodes;
+
             public function __construct() {
+                $this->shortcodes = new class {
+                    public function load_template( string $slug, array $args = [], string $sub_directory = '' ): string {
+                        return 'Template: ' . $slug;
+                    }
+                };
                 $this->container = new class {
                     public function get( string $id ): object {
                         $reflection = null;
@@ -263,7 +271,51 @@ namespace {
                     }
                 };
             }
+
+            public function get_options(): array {
+                return [
+                    'league' => [
+                        'resultConfirmation' => 'manual',
+                    ],
+                    'tournament' => [
+                        'resultConfirmation' => 'manual',
+                    ],
+                ];
+            }
+
+            public function get_confirmation_email( string $type ): string {
+                return 'admin@example.test';
+            }
         };
+    }
+
+    if ( ! function_exists( 'get_userdata' ) ) {
+        function get_userdata( $user_id ) {
+            return (object) [
+                'display_name' => 'User ' . $user_id,
+                'user_email'   => 'user' . $user_id . '@example.test',
+            ];
+        }
+    }
+
+    if ( ! function_exists( 'wp_mail' ) ) {
+        function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
+            return true;
+        }
+    }
+
+    if ( ! defined( 'RACKETMANAGER_FROM_EMAIL' ) ) {
+        define( 'RACKETMANAGER_FROM_EMAIL', 'From: ' );
+    }
+
+    if ( ! defined( 'RACKETMANAGER_CC_EMAIL' ) ) {
+        define( 'RACKETMANAGER_CC_EMAIL', 'Cc: ' );
+    }
+
+    if ( ! function_exists( 'current_user_can' ) ) {
+        function current_user_can( $capability ) {
+            return false;
+        }
     }
 
     if ( ! class_exists( 'WP_Error' ) ) {

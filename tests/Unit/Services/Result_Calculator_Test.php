@@ -170,4 +170,36 @@ final class Result_Calculator_Test extends TestCase {
         // 1 win * 2 points = 2
         $this->assertEquals( 2.0, $points['away_points'] );
     }
+
+    public function test_determine_winner_and_loser_standard(): void {
+        $result = Result_Calculator::determine_winner_and_loser( 3.0, 1.0, 10, 20 );
+        $this->assertEquals( 10, $result['winner_id'] );
+        $this->assertEquals( 20, $result['loser_id'] );
+
+        $result = Result_Calculator::determine_winner_and_loser( 1.0, 3.0, 10, 20 );
+        $this->assertEquals( 20, $result['winner_id'] );
+        $this->assertEquals( 10, $result['loser_id'] );
+    }
+
+    public function test_determine_winner_and_loser_walkover(): void {
+        $result = Result_Calculator::determine_winner_and_loser( 2.0, 0.0, 10, 20, 1, ['walkover' => 'home'] );
+        $this->assertEquals( 10, $result['winner_id'] );
+        $this->assertEquals( 20, $result['loser_id'] );
+
+        $result = Result_Calculator::determine_winner_and_loser( 0.0, 2.0, 10, 20, 1, ['walkover' => 'away'] );
+        $this->assertEquals( 20, $result['winner_id'] );
+        $this->assertEquals( 10, $result['loser_id'] );
+    }
+
+    public function test_determine_winner_and_loser_draw(): void {
+        $result = Result_Calculator::determine_winner_and_loser( 2.0, 2.0, 10, 20 );
+        $this->assertEquals( -1, $result['winner_id'] );
+        $this->assertEquals( -1, $result['loser_id'] );
+    }
+
+    public function test_determine_winner_and_loser_bye(): void {
+        $result = Result_Calculator::determine_winner_and_loser( 2.0, 0.0, '-1', 20 );
+        $this->assertEquals( 20, $result['winner_id'] );
+        $this->assertEquals( 0, $result['loser_id'] );
+    }
 }

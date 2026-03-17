@@ -168,7 +168,10 @@ final class League_Service_Test extends TestCase {
 
     public function test_add_teams_to_league_creates_team_if_not_exists_by_name(): void {
         global $racketmanager;
-        $racketmanager = new stdClass();
+        // Do not overwrite global $racketmanager if it is already set by stubs with necessary methods
+        if ( ! isset( $racketmanager ) || ! method_exists( $racketmanager, 'get_options' ) ) {
+            $racketmanager = new stdClass();
+        }
         $container = $this->createMock( \Racketmanager\Services\Container\Simple_Container::class );
         $racketmanager->container = $container;
 

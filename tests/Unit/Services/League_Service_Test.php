@@ -118,11 +118,7 @@ final class League_Service_Test extends TestCase {
         $league = $this->create_real_instance_without_constructor( League::class );
         $league->id = $league_id;
 
-        if (!function_exists('Racketmanager\get_league')) {
-            eval('namespace Racketmanager; function get_league($id) { return $GLOBALS["league_mock_for_test"] ?? $GLOBALS["test_league"] ?? null; }');
-        }
-        $GLOBALS['league_mock_for_test'] = $league;
-        $GLOBALS['test_league'] = $league;
+        $GLOBALS['wp_stubs_leagues'][$league_id] = $league;
 
         $league_team_id = 789;
         $league_team = $this->createMock( League_Team::class );

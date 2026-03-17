@@ -910,4 +910,31 @@ class Fixture {
 
         $this->set_status_flags();
     }
+
+    /**
+     * Reset the fixture result and status.
+     *
+     * @return void
+     */
+    public function reset_result(): void {
+        $this->home_points  = null;
+        $this->away_points  = null;
+        $this->winner_id    = 0;
+        $this->loser_id     = 0;
+        $this->status       = null;
+        $this->custom       = array();
+        $this->confirmed    = null;
+        $this->home_captain = null;
+        $this->away_captain = null;
+
+        if ( ! empty( $this->leg ) && 2 === $this->leg ) {
+            $this->home_points_tie = null;
+            $this->away_points_tie = null;
+            $this->winner_id_tie   = null;
+            $this->loser_id_tie    = null;
+        }
+
+        $this->is_pending = true;
+        $this->set_status_flags();
+    }
 }

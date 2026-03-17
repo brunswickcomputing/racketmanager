@@ -44,4 +44,130 @@ final class Result_Calculator_Test extends TestCase {
         $this->assertEquals( 0.0, $result['home_points'] );
         $this->assertEquals( 0.0, $result['away_points'] );
     }
+
+    public function test_calculate_stats_from_rubbers(): void {
+        $rubber1 = (object) [
+            'status'      => 0,
+            'winner_id'   => '10',
+            'home_points' => 2,
+            'away_points' => 0,
+            'custom'      => [
+                'stats' => [
+                    'sets'  => [ 'home' => 2, 'away' => 0 ],
+                    'games' => [ 'home' => 12, 'away' => 4 ],
+                ]
+            ]
+        ];
+        $rubber2 = (object) [
+            'status'      => 0,
+            'winner_id'   => '20',
+            'home_points' => 0,
+            'away_points' => 2,
+            'custom'      => [
+                'stats' => [
+                    'sets'  => [ 'home' => 0, 'away' => 2 ],
+                    'games' => [ 'home' => 5, 'away' => 12 ],
+                ]
+            ]
+        ];
+        $rubber3 = (object) [
+            'status'      => 3, // Shared
+            'winner_id'   => '-1',
+            'home_points' => 1,
+            'away_points' => 1,
+            'custom'      => [
+                'stats' => [
+                    'sets'  => [ 'home' => 1, 'away' => 1 ],
+                    'games' => [ 'home' => 10, 'away' => 10 ],
+                ]
+            ]
+        ];
+
+        $rubbers = [ $rubber1, $rubber2, $rubber3 ];
+        $home_id = '10';
+        $away_id = '20';
+
+        $result = Result_Calculator::calculate_stats_from_rubbers( $rubbers, $home_id, $away_id );
+
+        $this->assertEquals( 1.5, $result['stats']['rubbers']['home'] );
+        $this->assertEquals( 1.5, $result['stats']['rubbers']['away'] );
+        $this->assertEquals( 3, $result['stats']['sets']['home'] );
+        $this->assertEquals( 3, $result['stats']['sets']['away'] );
+        $this->assertEquals( 27, $result['stats']['games']['home'] );
+        $this->assertEquals( 26, $result['stats']['games']['away'] );
+        $this->assertEquals( 1, $result['home_win'] );
+        $this->assertEquals( 1, $result['away_win'] );
+        $this->assertEquals( 1, $result['draw'] );
+        $this->assertEquals( 1, $result['shared'] );
+        $this->assertEquals( 3.0, $result['home_points'] );
+        $this->assertEquals( 3.0, $result['away_points'] );
+    }
+
+    public function test_calculate_stats_with_walkovers(): void {
+        $rubber1 = (object) [
+            'status'      => 1, // Walkover
+            'winner_id'   => '10',
+            'home_points' => 2,
+            'away_points' => 0,
+        ];
+
+        $rubbers = [ $rubber1 ];
+        $home_id = '10';
+        $away_id = '20';
+
+        $result = Result_Calculator::calculate_stats_from_rubbers( $rubbers, $home_id, $away_id );
+
+        $this->assertEquals( 1, $result['away_walkover'] );
+        $this->assertEquals( 0, $result['home_walkover'] );
+        $this->assertEquals( 1, $result['home_win'] );
+        $this->assertEquals( 2.0, $result['home_points'] );
+    }
+
+    public function test_calculate_points_from_stats_match_win_points(): void {
+        $stats_result = [
+            'home_win'      => 2,
+            'away_win'      => 1,
+            'draw'          => 0,
+            'home_walkover' => 0,
+            'away_walkover' => 0,
+            'home_points'   => 4.0, // Rubbers points
+            'away_points'   => 2.0,
+        ];
+        $point_rule = [
+            'matches_win' => 3,
+        ];
+        $status = 0;
+        $num_rubbers = 3;
+
+        $points = Result_Calculator::calculate_points_from_stats( $stats_result, $point_rule, $status, $num_rubbers );
+
+        // 4 + 3 = 7
+        $this->assertEquals( 7.0, $points['home_points'] );
+        $this->assertEquals( 2.0, $points['away_points'] );
+    }
+
+    public function test_calculate_points_from_stats_rubber_count_mode(): void {
+        $stats_result = [
+            'home_win'      => 2,
+            'away_win'      => 1,
+            'draw'          => 0,
+            'home_walkover' => 0,
+            'away_walkover' => 0,
+            'home_points'   => 0.0,
+            'away_points'   => 0.0,
+        ];
+        $point_rule = [
+            'match_result' => 'rubber_count',
+            'rubber_win'   => 2,
+        ];
+        $status = 0;
+        $num_rubbers = 3;
+
+        $points = Result_Calculator::calculate_points_from_stats( $stats_result, $point_rule, $status, $num_rubbers );
+
+        // 2 wins * 2 points = 4
+        $this->assertEquals( 4.0, $points['home_points'] );
+        // 1 win * 2 points = 2
+        $this->assertEquals( 2.0, $points['away_points'] );
+    }
 }

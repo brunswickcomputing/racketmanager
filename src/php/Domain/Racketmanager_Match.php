@@ -1242,46 +1242,17 @@ class Racketmanager_Match {
             $stats['games']['home']   = 0;
             $stats['games']['away']   = 0;
             $rubbers                  = $this->get_rubbers();
-            foreach ( $rubbers as $rubber ) {
-                switch ( $rubber->status ) {
-                    case 1:
-                        if ( $this->home_team === $rubber->winner_id ) {
-                            ++$away_walkover;
-                        } elseif ( $this->away_team === $rubber->winner_id ) {
-                            ++$home_walkover;
-                        }
-                        break;
-                    case 3:
-                        ++$shared;
-                        break;
-                    default:
-                        break;
-                }
-                if ( $this->home_team === $rubber->winner_id ) {
-                    ++$home_win;
-                    ++$stats['rubbers']['home'];
-                }
-                if ( $this->away_team === $rubber->winner_id ) {
-                    ++$away_win;
-                    ++$stats['rubbers']['away'];
-                }
-                if ( '-1' === $rubber->winner_id ) {
-                    ++$draw;
-                    $stats['rubbers']['home'] += 0.5;
-                    $stats['rubbers']['away'] += 0.5;
-                }
-                if ( is_numeric( $rubber->home_points ) ) {
-                    $home_points += floatval( $rubber->home_points );
-                }
-                if ( is_numeric( $rubber->away_points ) ) {
-                    $away_points += floatval( $rubber->away_points );
-                }
-                $stats['sets']['home']  += empty( $rubber->custom['stats']['sets']['home'] ) ? 0 : $rubber->custom['stats']['sets']['home'];
-                $stats['sets']['away']  += empty( $rubber->custom['stats']['sets']['away'] ) ? 0 : $rubber->custom['stats']['sets']['away'];
-                $stats['games']['home'] += empty( $rubber->custom['stats']['games']['home'] ) ? 0 : $rubber->custom['stats']['games']['home'];
-                $stats['games']['away'] += empty( $rubber->custom['stats']['games']['away'] ) ? 0 : $rubber->custom['stats']['games']['away'];
-            }
-            $custom['stats'] = $stats;
+            $calculated               = Result_Calculator::calculate_stats_from_rubbers( $rubbers, $this->home_team, $this->away_team );
+            $stats                    = $calculated['stats'];
+            $home_win                 = $calculated['home_win'];
+            $away_win                 = $calculated['away_win'];
+            $draw                     = $calculated['draw'];
+            $shared                   = $calculated['shared'];
+            $home_walkover            = $calculated['home_walkover'];
+            $away_walkover            = $calculated['away_walkover'];
+            $home_points              = $calculated['home_points'];
+            $away_points              = $calculated['away_points'];
+            $custom['stats']          = $stats;
             if ( is_array( $this->custom ) ) {
                 unset( $this->custom['walkover'] );
                 unset( $this->custom['share'] );
@@ -1319,39 +1290,10 @@ class Racketmanager_Match {
                         $this->status        = 6;
                         $this->is_abandoned  = true;
                     }
-                    $point_rule          = $this->league->get_point_rule();
-                    $rubber_win          = ! empty( $point_rule['rubber_win'] ) ? $point_rule['rubber_win'] : 0;
-                    $rubber_draw         = ! empty( $point_rule['rubber_draw'] ) ? $point_rule['rubber_draw'] : 0;
-                    $matches_win         = ! empty( $point_rule['matches_win'] ) ? $point_rule['matches_win'] : 0;
-                    $matches_draw        = ! empty( $point_rule['matches_draw'] ) ? $point_rule['matches_draw'] : 0;
-                    $shared_match        = ! empty( $point_rule['shared_match'] ) ? $point_rule['shared_match'] : 0;
-                    $forwalkover_rubber  = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
-                    $walkover_penalty    = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
-                    if ( ! empty( $point_rule['match_result'] ) && 'rubber_count' === $point_rule['match_result'] ) {
-                        if ( 1 === $this->status ) {
-                            $home_points = $home_win * $rubber_win - $forwalkover_rubber * $home_walkover - $walkover_penalty * $home_walkover;
-                            $away_points = $away_win * $rubber_win - $forwalkover_rubber * $away_walkover - $walkover_penalty * $away_walkover;
-                        } elseif ( 3 === $this->status ) {
-                            $home_points = $shared_match * $this->num_rubbers;
-                            $away_points = $shared_match * $this->num_rubbers;
-                        } else {
-                            $home_points = $home_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $home_walkover;
-                            $away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
-                        }
-                    } else {
-                        if ( $home_win > $away_win ) {
-                            $home_points += $matches_win;
-                        } elseif ( $home_win < $away_win ) {
-                            $away_points += $matches_win;
-                        } else {
-                            $home_points += $matches_draw;
-                            $away_points += $matches_draw;
-                        }
-                        if ( 1 === $this->status ) {
-                            $home_points -= $walkover_penalty * $home_walkover;
-                            $away_points -= $walkover_penalty * $away_walkover;
-                        }
-                    }
+                    $point_rule  = $this->league->get_point_rule();
+                    $calculated_points = Result_Calculator::calculate_points_from_stats( $calculated, $point_rule, $this->status, (int) $this->num_rubbers );
+                    $home_points = $calculated_points['home_points'];
+                    $away_points = $calculated_points['away_points'];
                 }
             } else {
                 $this->status = intval( $match_status );

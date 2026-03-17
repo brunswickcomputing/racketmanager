@@ -88,13 +88,13 @@ Competition
     -> Fixture
       -> Result
 ```
-## Participation model text
+## Participation model
 ```
 Entrant
   -> TeamEntrant
   -> PlayerEntrant
 ```
-## On-court model text
+## On-court model
 ```
 PlayableUnit
   -> Fixture
@@ -485,7 +485,7 @@ In legacy WP plugins, trying to fix schema and domain at the same time is how we
 If enums are awkward with existing WP serialization/storage, constants are acceptable.
  
 # My recommended core abstraction model
-If I had to give you one clean setup, it would be this: text
+If I had to give you one clean setup, it would be this:
 ```
 Competition
   -> Event

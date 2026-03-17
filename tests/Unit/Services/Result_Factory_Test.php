@@ -43,4 +43,33 @@ final class Result_Factory_Test extends TestCase {
         $this->assertSame([], $result->get_sets());
         $this->assertSame([], $result->get_custom());
     }
+
+    public function test_from_array_calculates_points_from_sets_if_zero(): void {
+        $data = [
+            'sets' => [
+                [ 'player1' => 6, 'player2' => 4 ],
+                [ 'player1' => 6, 'player2' => 2 ],
+            ],
+        ];
+
+        $result = Result_Factory::from_array( $data );
+
+        $this->assertEquals( 2.0, $result->get_home_points() );
+        $this->assertEquals( 0.0, $result->get_away_points() );
+    }
+
+    public function test_from_array_prefers_explicit_points_over_sets(): void {
+        $data = [
+            'home_points' => 5.0,
+            'away_points' => 0.0,
+            'sets' => [
+                [ 'player1' => 0, 'player2' => 6 ],
+            ],
+        ];
+
+        $result = Result_Factory::from_array( $data );
+
+        $this->assertEquals( 5.0, $result->get_home_points() );
+        $this->assertEquals( 0.0, $result->get_away_points() );
+    }
 }

@@ -11,7 +11,9 @@ namespace Racketmanager\Domain;
 
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Domain\Championship;
-use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Result_Calculator;
+use Racketmanager\Services\Result_Factory;
+use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Match;
@@ -1222,16 +1224,10 @@ class Racketmanager_Match {
             $this->status = intval( $match_status );
             if ( empty( $home_points_input ) && empty( $away_points_input ) ) {
                 if ( isset( $custom['sets'] ) ) {
-                    $this->sets = $custom['sets'];
-                    foreach ( $this->sets as $set ) {
-                        if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
-                            if ( $set['player1'] > $set['player2'] ) {
-                                ++ $home_points;
-                            } elseif ( $set['player1'] < $set['player2'] ) {
-                                ++ $away_points;
-                            }
-                        }
-                    }
+                    $calculated  = Result_Calculator::calculate_points_from_sets( $custom['sets'] );
+                    $home_points = $calculated['home_points'];
+                    $away_points = $calculated['away_points'];
+                    $this->sets  = $custom['sets'];
                 }
             } else {
                 $home_points = $home_points_input;

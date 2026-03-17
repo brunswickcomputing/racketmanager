@@ -51,14 +51,17 @@ class Fixture_Repository {
             'post_id'             => $fixture->get_post_id(),
             'final'               => $fixture->get_final(),
             'custom'              => maybe_serialize( $fixture->get_custom() ),
-            'updated_user'        => $fixture->get_updated_user(),
-            'updated'             => $fixture->get_updated(),
-            'date_result_entered' => $fixture->get_date_result_entered(),
             'confirmed'           => $fixture->get_confirmed(),
             'home_captain'        => $fixture->get_home_captain(),
             'away_captain'        => $fixture->get_away_captain(),
             'comments'            => $fixture->get_comments(),
+            'updated'             => current_time( 'mysql' ),
+            'updated_user'        => get_current_user_id(),
         );
+
+        if ( ! empty( $fixture->get_home_points() ) || ! empty( $fixture->get_away_points() ) ) {
+            $data['date_result_entered'] = current_time( 'mysql' );
+        }
 
         $format = array(
             '%s', // group
@@ -85,14 +88,17 @@ class Fixture_Repository {
             '%d', // post_id
             '%s', // final
             '%s', // custom
-            '%d', // updated_user
-            '%s', // updated
-            '%s', // date_result_entered
             '%s', // confirmed
             '%d', // home_captain
             '%d', // away_captain
             '%s', // comments
+            '%s', // updated
+            '%d', // updated_user
         );
+
+        if ( isset( $data['date_result_entered'] ) ) {
+            $format[] = '%s';
+        }
 
         if ( empty( $fixture->get_id() ) ) {
             $inserted = $this->wpdb->insert(
@@ -198,36 +204,6 @@ class Fixture_Repository {
                       ",
             $tournament_id,
             $player_id,
-        );
-        $results = $this->wpdb->get_results( $query );
-        foreach ( $results as &$row ) {
-            $row = new Fixture( $row );
-        }
-
-        return $results;
-    }
-
-    public function find_fixtures_by_round_by_league_by_tournament( int $tournament_id, int $league_id, string $round ): array {
-        $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
-        $events_table      = $this->wpdb->prefix . 'racketmanager_events';
-        $leagues_table     = $this->wpdb->prefix . 'racketmanager_leagues';
-
-        $query   = $this->wpdb->prepare(
-            "
-                SELECT DISTINCT f.*
-                FROM `$this->table_name` f
-                    JOIN $leagues_table l on f.league_id = l.id
-                    JOIN $events_table e on l.event_id = e.id
-                    JOIN $tournaments_table t on t.competition_id = e.competition_id
-                WHERE f.season = t.season
-                  AND t.id = %d
-                  AND f.league_id = %d
-                  AND f.final = %s
-                ORDER BY f.id
-                      ",
-            $tournament_id,
-            $league_id,
-            $round
         );
         $results = $this->wpdb->get_results( $query );
         foreach ( $results as &$row ) {

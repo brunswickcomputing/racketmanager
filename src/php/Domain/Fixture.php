@@ -242,7 +242,7 @@ class Fixture {
     public ?string $comments = null;
 
     /**
-     * Is walkover
+     * Is walkover?
      *
      * @var bool
      */
@@ -896,4 +896,18 @@ class Fixture {
         return $update;
     }
 
+    public function set_result( Result $result ): void {
+        $this->home_points = (string) $result->get_home_points();
+        $this->away_points = (string) $result->get_away_points();
+        $this->winner_id   = $result->get_winner_id();
+        $this->loser_id    = $result->get_loser_id();
+        $this->status      = $result->get_status();
+        $this->custom      = $result->get_custom();
+
+        if ( ! empty( $result->get_sets() ) ) {
+            $this->custom['sets'] = $result->get_sets();
+        }
+
+        $this->set_status_flags();
+    }
 }

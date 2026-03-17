@@ -18,7 +18,7 @@ class Championship {
     private int $league_id;
 
     /**
-     * Is consolation draw.
+     * Is consolation draw?
      *
      * @var bool
      */
@@ -53,7 +53,7 @@ class Championship {
     private int $num_teams;
 
     /**
-     * Number of teams in first round.
+     * Number of teams in the first round.
      *
      * @var int
      */
@@ -81,7 +81,7 @@ class Championship {
     private array $finals_by_key;
 
     /**
-     * Placeholder teams indexed by final key.
+     * Placeholder teams indexed by a final key.
      *
      * @var array
      */
@@ -203,7 +203,7 @@ class Championship {
     }
 
     /**
-     * Check if consolation championship.
+     * Check if it is a consolation championship.
      *
      * @return bool
      */
@@ -239,7 +239,7 @@ class Championship {
     }
 
     /**
-     * Get number of rounds.
+     * Get the number of rounds.
      *
      * @return int
      */
@@ -248,7 +248,7 @@ class Championship {
     }
 
     /**
-     * Get number of teams.
+     * Get the number of teams.
      *
      * @return int
      */
@@ -257,7 +257,7 @@ class Championship {
     }
 
     /**
-     * Get teams in first round.
+     * Get teams in the first round.
      *
      * @return int
      */
@@ -266,7 +266,7 @@ class Championship {
     }
 
     /**
-     * Get number of seeds.
+     * Get the number of seeds.
      *
      * @return int
      */
@@ -304,7 +304,7 @@ class Championship {
     }
 
     /**
-     * Get final key for round.
+     * Get the final key for the round.
      *
      * @param int $round round number.
      *
@@ -315,7 +315,7 @@ class Championship {
     }
 
     /**
-     * Get default/current final key.
+     * Get the default / current final key.
      *
      * @return string|false
      */
@@ -328,7 +328,7 @@ class Championship {
     }
 
     /**
-     * Get final teams for round.
+     * Get final teams for the round.
      *
      * @param string $final_round final round key.
      *
@@ -339,7 +339,7 @@ class Championship {
     }
 
     /**
-     * Get current final key.
+     * Get the current final key.
      *
      * @return string
      */
@@ -376,9 +376,9 @@ class Championship {
      *
      * @param false|int|string $key final key.
      *
-     * @return mixed
+     * @return array|null
      */
-    public function get_finals( false|int|string $key = false ): mixed {
+    public function get_finals( false|int|string $key = false ): ?array {
         if ( false === $key ) {
             return $this->finals();
         }
@@ -391,7 +391,7 @@ class Championship {
     }
 
     /**
-     * Backwards-compatible getter for current final key.
+     * Backwards-compatible getter for the current final key.
      *
      * @return string
      */
@@ -410,8 +410,12 @@ class Championship {
         return $this->final_teams( $final_round );
     }
 
+    public function get_finals_by_key(): array {
+        return $this->finals_by_key;
+    }
+
     /**
-     * Resolve final key from team count.
+     * Resolve the final key from team count.
      *
      * @param int $num_teams teams in round.
      *

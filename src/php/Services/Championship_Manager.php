@@ -10,11 +10,21 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Championship;
+use Racketmanager\Repositories\Fixture_Repository;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 
 final class Championship_Manager {
+    /**
+     * @var Result_Service
+     */
+    private Result_Service $result_service;
+
+    public function __construct( ?Result_Service $result_service = null ) {
+        $this->result_service = $result_service ?? new Result_Service( new Fixture_Repository() );
+    }
+
     /**
      * Update final round results and progress competition if needed.
      *
@@ -24,7 +34,6 @@ final class Championship_Manager {
      * @param array $away_points away points.
      * @param array $custom custom values.
      * @param int $round round.
-     * @param string $season season.
      *
      * @return void
      */
@@ -34,21 +43,37 @@ final class Championship_Manager {
         array $home_points,
         array $away_points,
         array $custom,
-        int $round,
-        string $season
+        int $round
     ): void {
         global $racketmanager;
 
-        $league = get_league( $championship->league_id() );
-        $league->set_finals();
-        $num_matches = $league->update_match_results( $matches, $home_points, $away_points, $custom, $season, $round );
+        $fixture_repository = new Fixture_Repository();
+        $num_updated = 0;
+
+        foreach ( $matches as $match_id ) {
+            $fixture = $fixture_repository->find_by_id( (int) $match_id );
+            if ( ! $fixture ) {
+                continue;
+            }
+
+            $result_data = [
+                'home_points' => $home_points[ $match_id ] ?? 0,
+                'away_points' => $away_points[ $match_id ] ?? 0,
+                'custom'      => $custom[ $match_id ] ?? [],
+                'status'      => 0, // Assuming 0 for completed if points are provided
+            ];
+
+            $result = Result_Factory::from_array( $result_data );
+            $this->result_service->apply_to_fixture( $fixture, $result );
+            $num_updated++;
+        }
 
         if ( $round < $championship->num_rounds() ) {
             $this->proceed( $championship, $round );
         }
 
         /* translators: %d: number of fixtures */
-        $racketmanager->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_matches ) );
+        $racketmanager->set_message( sprintf( __( 'Updated Results of %d fixtures', 'racketmanager' ), $num_updated ) );
     }
 
     /**

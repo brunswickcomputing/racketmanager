@@ -9,68 +9,66 @@ declare(strict_types=1);
  */
 
 namespace Racketmanager {
-    if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
-        class RacketManager {
-            public $container;
-            public string $date_format = 'Y-m-d';
-            public string $site_url    = 'https://example.test';
-            public string $site_name   = 'RacketManager';
-            public $shortcodes;
+    class RacketManager {
+        public $container;
+        public string $date_format = 'Y-m-d';
+        public string $site_url = 'https://example.test';
+        public string $site_name = 'RacketManager';
+        public $shortcodes;
 
-            public function __construct() {
-                $this->shortcodes = new class {
-                    public function load_template( string $slug, array $args = [], string $sub_directory = '' ): string {
-                        return 'Template: ' . $slug;
-                    }
-                };
-                $this->container  = new class {
-                    public function get( string $id ): object {
-                        $reflection = null;
-                        try {
-                            switch ( $id ) {
-                                case 'competition_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Competition_Service' );
-                                    break;
-                                case 'club_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Club_Service' );
-                                    break;
-                                case 'player_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Player_Service' );
-                                    break;
-                                case 'registration_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Registration_Service' );
-                                    break;
-                            }
-                        } catch ( \ReflectionException ) {
-                            return new \stdClass();
+        public function __construct() {
+            $this->shortcodes = new class {
+                public function load_template( string $slug, array $args = [], string $sub_directory = '' ): string {
+                    return 'Template: ' . $slug;
+                }
+            };
+            $this->container = new class {
+                public function get( string $id ): object {
+                    $reflection = null;
+                    try {
+                        switch ( $id ) {
+                            case 'competition_service':
+                                $reflection = new \ReflectionClass( 'Racketmanager\Services\Competition_Service' );
+                                break;
+                            case 'club_service':
+                                $reflection = new \ReflectionClass( 'Racketmanager\Services\Club_Service' );
+                                break;
+                            case 'player_service':
+                                $reflection = new \ReflectionClass( 'Racketmanager\Services\Player_Service' );
+                                break;
+                            case 'registration_service':
+                                $reflection = new \ReflectionClass( 'Racketmanager\Services\Registration_Service' );
+                                break;
                         }
-
-                        if ( $reflection ) {
-                            return $reflection->newInstanceWithoutConstructor();
-                        }
-
+                    } catch ( \ReflectionException ) {
                         return new \stdClass();
                     }
-                };
-            }
 
-            public function get_options(): array {
-                return [
-                    'league'     => [
-                        'resultConfirmation' => 'manual',
-                    ],
-                    'tournament' => [
-                        'resultConfirmation' => 'manual',
-                    ],
-                ];
-            }
+                    if ( $reflection ) {
+                        return $reflection->newInstanceWithoutConstructor();
+                    }
 
-            public function get_confirmation_email( string $type ): string {
-                return 'admin@example.test';
-            }
-
-            public function set_message( string $message ): void {}
+                    return new \stdClass();
+                }
+            };
         }
+
+        public function get_options(): array {
+            return [
+                'league' => [
+                    'resultConfirmation' => 'manual',
+                ],
+                'tournament' => [
+                    'resultConfirmation' => 'manual',
+                ],
+            ];
+        }
+
+        public function get_confirmation_email( string $type ): string {
+            return 'admin@example.test';
+        }
+
+        public function set_message( string $message ): void {}
     }
 }
 
@@ -294,65 +292,13 @@ namespace {
     }
 
     if ( ! isset( $GLOBALS['racketmanager'] ) ) {
-        $GLOBALS['racketmanager'] = new class {
-            public $container;
-            public string $date_format = 'Y-m-d';
-            public string $site_url = 'https://example.test';
-            public string $site_name = 'RacketManager';
-            public $shortcodes;
+        $GLOBALS['racketmanager'] = new Racketmanager\RacketManager();
+    }
 
-            public function __construct() {
-                $this->shortcodes = new class {
-                    public function load_template( string $slug, array $args = [], string $sub_directory = '' ): string {
-                        return 'Template: ' . $slug;
-                    }
-                };
-                $this->container = new class {
-                    public function get( string $id ): object {
-                        $reflection = null;
-                        try {
-                            switch ( $id ) {
-                                case 'competition_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Competition_Service' );
-                                    break;
-                                case 'club_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Club_Service' );
-                                    break;
-                                case 'player_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Player_Service' );
-                                    break;
-                                case 'registration_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Registration_Service' );
-                                    break;
-                            }
-                        } catch ( \ReflectionException ) {
-                            return new \stdClass();
-                        }
-
-                        if ( $reflection ) {
-                            return $reflection->newInstanceWithoutConstructor();
-                        }
-
-                        return new \stdClass();
-                    }
-                };
-            }
-
-            public function get_options(): array {
-                return [
-                    'league' => [
-                        'resultConfirmation' => 'manual',
-                    ],
-                    'tournament' => [
-                        'resultConfirmation' => 'manual',
-                    ],
-                ];
-            }
-
-            public function get_confirmation_email( string $type ): string {
-                return 'admin@example.test';
-            }
-        };
+    if ( ! function_exists( 'current_user_can' ) ) {
+        function current_user_can( $capability ) {
+            return true;
+        }
     }
 
     if ( ! function_exists( 'get_userdata' ) ) {
@@ -378,51 +324,14 @@ namespace {
         define( 'RACKETMANAGER_CC_EMAIL', 'Cc: ' );
     }
 
-    if ( ! function_exists( 'current_user_can' ) ) {
-        function current_user_can( $capability ) {
-            return false;
-        }
-    }
-
     if ( ! class_exists( 'WP_Error' ) ) {
         class WP_Error {
             public array $errors = array();
-
             public function __construct( $code = '', $message = '', $data = '' ) {
-                if ( ! empty( $code ) ) {
-                    $this->add( $code, $message, $data );
+                if ( $code ) {
+                    $this->errors[ $code ][] = $message;
                 }
             }
-
-            public function add( $code, $message, $data = '' ): void {
-                $this->errors[ $code ][] = $message;
-            }
-
-            public function get_error_messages( $code = '' ) {
-                if ( empty( $code ) ) {
-                    $all = array();
-                    foreach ( $this->errors as $messages ) {
-                        $all = array_merge( $all, $messages );
-                    }
-                    return $all;
-                }
-                return $this->errors[ $code ] ?? array();
-            }
-
-            public function get_error_codes(): array {
-                return array_keys( $this->errors );
-            }
-
-            public function get_error_message( $code = '' ): mixed {
-                $messages = $this->get_error_messages( $code );
-                return $messages[0] ?? '';
-            }
-        }
-    }
-
-    if ( ! function_exists( 'is_wp_error' ) ) {
-        function is_wp_error( $thing ): bool {
-            return $thing instanceof WP_Error;
         }
     }
 }
@@ -430,20 +339,13 @@ namespace {
 namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
         function seo_url( string $string_field ): string {
-            $string_field = strtolower( $string_field );
-            $string_field = preg_replace( '/[^a-z0-9_\s-]/', '', $string_field );
-            $string_field = preg_replace( '/\s+/', ' ', $string_field );
-            $string_field = str_replace( '-', '_', $string_field );
-            return preg_replace( '/\s/', '-', $string_field );
+            return strtolower( str_replace( ' ', '-', $string_field ) );
         }
     }
 
     if ( ! function_exists( 'Racketmanager\get_league' ) ) {
         function get_league( $id ) {
-            if ( isset( $GLOBALS['wp_stubs_leagues'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_leagues'][ $id ];
-            }
-            return null;
+            return $GLOBALS['wp_stubs_leagues'][$id] ?? null;
         }
     }
 }

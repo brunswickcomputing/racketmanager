@@ -674,11 +674,15 @@ class Rubber {
      *
      * @param array $players array of players.
      */
-    public function set_players(array $players ): void {
+    public function set_players( array $players ): void {
         global $wpdb;
+        $this->players = array();
         foreach ( $players as $player_team => $player_ref ) {
             foreach ( $player_ref as $player_num => $player ) {
-                $club_player = $this->registration_service->get_registration( $player );
+                if ( empty( $player ) ) {
+                    continue;
+                }
+                $club_player = $this->registration_service->get_registration( (int) $player );
                 if ( $club_player ) {
                     $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                         $wpdb->prepare(
@@ -690,9 +694,7 @@ class Rubber {
                             $club_player->registration_id,
                         )
                     );
-                    if ( $player ) {
-                        $this->players[ $player_team ][ $player_num ] = $club_player;
-                    }
+                    $this->players[ $player_team ][ $player_num ] = $club_player;
                 }
             }
         }

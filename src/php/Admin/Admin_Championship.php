@@ -39,7 +39,9 @@ class Admin_Championship extends Admin_Display {
                     $validator = $validator->capability( 'update_results');
                 }
                 if ( empty( $validator->error ) ) {
-                    $updates = $this->start_final_rounds( $league );
+                    //TODO: start final rounds now moved to championship admin service
+                    //$updates = $this->start_final_rounds( $league );
+                    $updates = false;
                     if ( $updates ) {
                         $this->set_message( __( 'First round started', 'racketmanager' ) );
                     } else {

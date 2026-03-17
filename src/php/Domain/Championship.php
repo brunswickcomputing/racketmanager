@@ -422,18 +422,11 @@ class Championship {
      * @return string
      */
     public static function resolve_final_key( int $num_teams ): string {
-        if ( 2 === $num_teams ) {
-            return 'final';
-        }
-
-        if ( 4 === $num_teams ) {
-            return 'semi';
-        }
-
-        if ( 8 === $num_teams ) {
-            return 'quarter';
-        }
-
-        return 'last-' . $num_teams;
+        return match ( $num_teams ) {
+            2 => 'final',
+            4 => 'semi',
+            8 => 'quarter',
+            default => 'last-' . $num_teams,
+        };
     }
 }

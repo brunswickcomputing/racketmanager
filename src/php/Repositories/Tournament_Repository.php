@@ -166,7 +166,7 @@ class Tournament_Repository {
         }
 
         $tournament = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-            "SELECT * FROM `$this->table_name` WHERE `date` >= CURDATE() AND `date_start` <= CURDATE() $search LIMIT 1" );
+            "SELECT * FROM `$this->table_name` WHERE `date_end` >= CURDATE() AND `date_start` <= CURDATE() $search LIMIT 1" );
         if ( ! $tournament ) {
             return null;
         }

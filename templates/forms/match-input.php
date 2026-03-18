@@ -60,20 +60,24 @@ $tab_base        = 0;
                     <div class="row text-center mb-1">
                         <?php
                         for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
-                            if ( ! isset( $match->sets[ $i ] ) ) {
-                                $match->sets[ $i ] = array(
-                                    'player1' => '',
-                                    'player2' => '',
-                                );
+                            $set = $match->sets[ $i ] ?? array();
+                            $p1 = '';
+                            $p2 = '';
+                            if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                $p1 = $set->get_home_games();
+                                $p2 = $set->get_away_games();
+                            } elseif ( is_array( $set ) ) {
+                                $p1 = $set['player1'] ?? '';
+                                $p2 = $set['player2'] ?? '';
                             }
                             $colspan  = 12 / $match->league->num_sets;
                             $tabindex = $tab_base + 10 + $i;
                             ?>
                             <div class="col-<?php echo esc_html( $colspan ); ?> col-sm-12 col-lg-<?php echo esc_html( $colspan ); ?>">
-                                <label for="set_<?php echo esc_html( $i ); ?>_player1"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $match->sets[ $i ]['player1'] ); ?>" />
+                                <label for="set_<?php echo esc_html( $i ); ?>_player1"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $p1 ); ?>" />
                                 -
                                 <?php $tabindex = $tab_base + 11 + $i; ?>
-                                <label for="set_<?php echo esc_html( $i ); ?>_player2"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $match->sets[ $i ]['player2'] ); ?>" />
+                                <label for="set_<?php echo esc_html( $i ); ?>_player2"></label><input tabindex="<?php echo esc_html( $tabindex ); ?>" class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $p2 ); ?>" />
                             </div>
                             <?php
                         }

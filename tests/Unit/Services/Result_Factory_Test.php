@@ -15,7 +15,7 @@ final class Result_Factory_Test extends TestCase {
             'loser_id'    => 456,
             'status'      => 4,
             'is_walkover' => true,
-            'sets'        => [['p1' => 6, 'p2' => 0]],
+            'sets'        => [['player1' => 6, 'player2' => 0]],
             'custom'      => ['note' => 'test']
         ];
 
@@ -27,7 +27,13 @@ final class Result_Factory_Test extends TestCase {
         $this->assertSame(456, $result->get_loser_id());
         $this->assertSame(4, $result->get_status());
         $this->assertTrue($result->is_walkover());
-        $this->assertSame([['p1' => 6, 'p2' => 0]], $result->get_sets());
+        
+        $sets = $result->get_sets();
+        $this->assertCount(1, $sets);
+        $this->assertInstanceOf(\Racketmanager\Domain\Scoring\Set_Score::class, $sets[1]);
+        $this->assertSame(6, $sets[1]->get_home_games());
+        $this->assertSame(0, $sets[1]->get_away_games());
+        
         $this->assertSame(['note' => 'test'], $result->get_custom());
     }
 

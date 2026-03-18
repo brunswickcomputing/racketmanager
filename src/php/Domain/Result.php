@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Scoring\Set_Score;
+
 class Result {
     /**
      * @param float $home_points
@@ -10,7 +12,7 @@ class Result {
      * @param int|null $loser_id
      * @param int|null $status
      * @param bool $is_walkover
-     * @param array $sets
+     * @param Set_Score[] $sets
      * @param array $custom
      */
     public function __construct(

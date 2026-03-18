@@ -9,8 +9,10 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Domain\Championship;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
@@ -791,7 +793,11 @@ class Racketmanager_Match {
                 $this->sets = ! empty( $this->custom['sets'] ) ? $this->custom['sets'] : array();
                 $s          = 1;
                 foreach ( $this->sets as $set ) {
-                    if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
+                    if ( $set instanceof Set_Score ) {
+                        $p1 = $set->get_home_games();
+                        $p2 = $set->get_away_games();
+                        $set_score .= $p1 . '-' . $p2 . ' ';
+                    } elseif ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
                         $set_score .= $set['player1'] . '-' . $set['player2'] . ' ';
                         if ( $set['player1'] > $set['player2'] ) {
                             $set['winner'] = 'player1';
@@ -2138,13 +2144,33 @@ class Racketmanager_Match {
             $team1set = 'set' . $s . 'team1';
             $team2set = 'set' . $s . 'team2';
             $tiebreak = 'tiebreak' . $s;
-            if ( ! empty( ( $sets[ $s ][ $winning_player ] ) ) || ! empty( $sets[ $s ][ $losing_player ] ) ) {
-                $set = $sets[ $s ];
+
+            $set = $sets[ $s ] ?? null;
+            if ( $set instanceof Set_Score ) {
+                $p1 = 'player1' === $winning_player ? $set->get_home_games() : $set->get_away_games();
+                $p2 = 'player1' === $losing_player ? $set->get_home_games() : $set->get_away_games();
+                $tb = 'player1' === $winning_player ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
+
+                if ( $s > 1 ) {
+                    $result_match->score .= ' ';
+                }
+
+                $result_match->score .= $p1 . '-' . $p2;
+                if ( ! empty( $tb ) ) {
+                    $result_match->score    .= '(' . $tb . ')';
+                    $result_match->$tiebreak = $tb;
+                } else {
+                    $result_match->$tiebreak = '';
+                }
+
+                $result_match->$team1set = $p1;
+                $result_match->$team2set = $p2;
+            } elseif ( is_array( $set ) && ( ! empty( $set[ $winning_player ] ) || ! empty( $set[ $losing_player ] ) ) ) {
                 if ( $s > 1 ) {
                     $result_match->score .= ' ';
                 }
                 $match_tiebreak = false;
-                if ( ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) || ( 3 === $s && '1' === $set[ $winning_player ] && '0' === $set[ $losing_player ] ) ) {
+                if ( ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) || ( 3 === $s && '1' === (string) $set[ $winning_player ] && '0' === (string) $set[ $losing_player ] ) ) {
                     $result_match->score .= '[';
                     $match_tiebreak       = true;
                 }
@@ -2152,7 +2178,7 @@ class Racketmanager_Match {
                     $set[ $winning_player ] = 10;
                     $set[ $losing_player ]  = 8;
                 }
-                if ( '7' === $set[ $winning_player ] && '6' === $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
+                if ( '7' === (string) $set[ $winning_player ] && '6' === (string) $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
                     $set['tiebreak'] = 5;
                 }
                 $result_match->score .= $set[ $winning_player ] . '-' . $set[ $losing_player ];
@@ -2834,7 +2860,7 @@ class Racketmanager_Match {
         $home_points = $validator->home_points;
         $away_points = $validator->away_points;
         $sets        = $validator->sets;
-        $this->update_sets( $sets );
+
         switch ( $match_status ) {
             case 'walkover_player1':
                 $custom['walkover'] = 'home';

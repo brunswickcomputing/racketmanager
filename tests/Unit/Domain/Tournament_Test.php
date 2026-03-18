@@ -8,7 +8,6 @@ use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
 use stdClass;
-    use function Racketmanager\debug_to_console;
 
     require_once __DIR__ . '/../../wp-stubs.php';
 

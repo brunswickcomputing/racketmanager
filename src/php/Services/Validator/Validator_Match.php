@@ -12,7 +12,6 @@ namespace Racketmanager\Services\Validator;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_match;
-use function Racketmanager\get_player;
 use function Racketmanager\get_rubber;
 
 /**
@@ -244,7 +243,7 @@ final class Validator_Match extends Validator {
             $set_retired = null;
             if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status ) {
                 for ( $s1 = $num_sets; $s1 >= 1; $s1-- ) {
-                    if ( '' !== $sets[ $s1 ]['player1'] || '' !== $sets[ $s1 ]['player2'] ) {
+                    if ( ( isset($sets[ $s1 ]['player1']) && '' !== $sets[ $s1 ]['player1'] ) || ( isset($sets[ $s1 ]['player2']) && '' !== $sets[ $s1 ]['player2'] ) ) {
                         $set_retired = $s1;
                         break;
                     }

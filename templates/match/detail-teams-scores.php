@@ -351,10 +351,23 @@ if ( ! empty( $match->winner_id ) ) {
                             $sets = $rubber->sets ?? array();
                             for ( $i = 1; $i <= $match->league->num_sets; $i ++ ) {
                                 $set = $sets[ $i ] ?? array();
-                                if ( ! empty( $set['player1'] ) || ! empty( $set['player2'] ) ) {
-                                    if ( $set['player1'] > $set['player2'] ) {
+                                $p1 = '';
+                                $p2 = '';
+                                $tb = '';
+                                if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                    $p1 = $set->get_home_games();
+                                    $p2 = $set->get_away_games();
+                                    $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                                } elseif ( is_array( $set ) ) {
+                                    $p1 = $set['player1'] ?? '';
+                                    $p2 = $set['player2'] ?? '';
+                                    $tb = $set['tiebreak'] ?? '';
+                                }
+
+                                if ( ! empty( $p1 ) || ! empty( $p2 ) ) {
+                                    if ( $p1 > $p2 ) {
                                         $winner_set = 'player1';
-                                    } elseif ( $set['player1'] < $set['player2'] ) {
+                                    } elseif ( $p1 < $p2 ) {
                                         $winner_set = 'player2';
                                     } else {
                                         $winner_set = null;
@@ -368,13 +381,14 @@ if ( ! empty( $match->winner_id ) ) {
                                             } else {
                                                 $winner_class = '';
                                             }
+                                            $val = 'player1' === $opponent ? $p1 : $p2;
                                             ?>
                                             <li class="match-points__cell <?php echo esc_html( $winner_class ); ?>">
-                                                <?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>
+                                                <?php echo esc_html( $val ); ?>
                                                 <?php
-                                                if ( isset( $set['tiebreak'] ) && ! empty( $winner_class ) ) {
+                                                if ( ! empty( $tb ) && ! empty( $winner_class ) ) {
                                                     ?>
-                                                    <span class="player-row__tie-break"><?php echo esc_html( $set['tiebreak'] ); ?></span>
+                                                    <span class="player-row__tie-break"><?php echo esc_html( $tb ); ?></span>
                                                     <?php
                                                 }
                                                 ?>

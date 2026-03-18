@@ -233,24 +233,41 @@ if ( ! empty( $fixture->winner_id ) ) {
             <?php
             $sets = ! empty( $fixture->custom['sets'] ) ? $fixture->custom['sets'] : array();
             foreach ( $sets as $set ) {
-                if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
+                $p1 = '';
+                $p2 = '';
+                $tb = '';
+                $winner = null;
+                if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                    $p1 = $set->get_home_games();
+                    $p2 = $set->get_away_games();
+                    $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                    $winner = $set->winner() === 'home' ? 'player1' : ($set->winner() === 'away' ? 'player2' : null);
+                } elseif ( is_array( $set ) ) {
+                    $p1 = $set['player1'] ?? '';
+                    $p2 = $set['player2'] ?? '';
+                    $tb = $set['tiebreak'] ?? '';
+                    $winner = $set['winner'] ?? null;
+                }
+
+                if ( '' !== $p1 && '' !== $p2 ) {
                     ?>
                     <ul class="match-points">
                         <?php
                         $opponents = array( 'player1', 'player2' );
                         foreach ( $opponents as $opponent_ref ) {
-                            if ( isset( $set['winner'] ) && $set['winner'] === $opponent_ref ) {
+                            if ( $winner === $opponent_ref ) {
                                 $winner_class = ' winner';
                             } else {
                                 $winner_class = '';
                             }
+                            $val = 'player1' === $opponent_ref ? $p1 : $p2;
                             ?>
                             <li class="match-points__cell <?php echo esc_html( $winner_class ); ?>">
                                 <?php
-                                echo esc_html( $set[ $opponent_ref ] );
-                                if ( isset( $set['tiebreak'] ) && ! empty( $winner_class ) ) {
+                                echo esc_html( $val );
+                                if ( ! empty( $tb ) && ! empty( $winner_class ) ) {
                                     ?>
-                                    <span class="player-row__tie-break"><?php echo esc_html( $set['tiebreak'] ); ?></span>
+                                    <span class="player-row__tie-break"><?php echo esc_html( $tb ); ?></span>
                                     <?php
                                 }
                                 ?>

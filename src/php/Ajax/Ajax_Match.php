@@ -396,10 +396,8 @@ class Ajax_Match extends Ajax {
                 }
             }
         }
-        $msg = __( 'Unable to update match result', 'racketmanager' );
-        $return = array();
-        array_push( $return, $msg, $validator->err_msgs, $validator->err_flds );
-        wp_send_json_error( $return, $validator->status );
+        $validator->msg = __( 'Unable to update match result', 'racketmanager' );
+        wp_send_json_error( $validator, $validator->status );
     }
     /**
      * Update match details for team matches only

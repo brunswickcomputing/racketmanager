@@ -5,14 +5,15 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\Result_Calculator;
+use Racketmanager\Domain\Scoring\Set_Score;
 
 final class Result_Calculator_Test extends TestCase {
 
     public function test_calculate_points_from_sets(): void {
         $sets = [
-            [ 'player1' => 6, 'player2' => 4 ],
-            [ 'player1' => 3, 'player2' => 6 ],
-            [ 'player1' => 7, 'player2' => 5 ],
+            new Set_Score( 6, 4 ),
+            new Set_Score( 3, 6 ),
+            new Set_Score( 7, 5 ),
         ];
 
         $result = Result_Calculator::calculate_points_from_sets( $sets );
@@ -21,28 +22,81 @@ final class Result_Calculator_Test extends TestCase {
         $this->assertEquals( 1.0, $result['away_points'] );
     }
 
-    public function test_calculate_points_from_sets_with_missing_scores(): void {
-        $sets = [
-            [ 'player1' => 6, 'player2' => 4 ],
-            [ 'player1' => 3 ], // missing player2
-            [ 'player2' => 5 ], // missing player1
-        ];
-
-        $result = Result_Calculator::calculate_points_from_sets( $sets );
-
-        $this->assertEquals( 1.0, $result['home_points'] );
-        $this->assertEquals( 0.0, $result['away_points'] );
-    }
-
     public function test_calculate_points_from_sets_with_draw(): void {
         $sets = [
-            [ 'player1' => 6, 'player2' => 6 ],
+            new Set_Score( 6, 6 ),
         ];
 
         $result = Result_Calculator::calculate_points_from_sets( $sets );
 
         $this->assertEquals( 0.0, $result['home_points'] );
         $this->assertEquals( 0.0, $result['away_points'] );
+    }
+
+    public function test_calculate_points_from_sets_with_tiebreak(): void {
+        $sets = [
+            new Set_Score( 6, 7, 5, 7 ),
+        ];
+
+        $result = Result_Calculator::calculate_points_from_sets( $sets );
+
+        $this->assertEquals( 0.0, $result['home_points'] );
+        $this->assertEquals( 1.0, $result['away_points'] );
+    }
+
+    public function test_result_factory_handles_player_and_tiebreak_keys(): void {
+        $data = [
+            'home_points' => 0,
+            'away_points' => 0,
+            'sets' => [
+                1 => ['player1' => 6, 'player2' => 2],
+                2 => ['player1' => 6, 'player2' => 7, 'tiebreak' => 5],
+                3 => ['player1' => 1, 'player2' => 0, 'settype' => 'MTB']
+            ]
+        ];
+
+        $result = \Racketmanager\Services\Result_Factory::from_array($data, 10, 20);
+        $sets = $result->get_sets();
+
+        $this->assertCount(3, $sets);
+        $this->assertEquals(6, $sets[1]->get_home_games());
+        $this->assertEquals(2, $sets[1]->get_away_games());
+        $this->assertNull($sets[1]->get_home_tiebreak());
+
+        $this->assertEquals(6, $sets[2]->get_home_games());
+        $this->assertEquals(7, $sets[2]->get_away_games());
+        $this->assertNull($sets[2]->get_home_tiebreak());
+        $this->assertEquals(5, $sets[2]->get_away_tiebreak());
+
+        $this->assertEquals(1, $sets[3]->get_home_games());
+        $this->assertEquals(0, $sets[3]->get_away_games());
+        $this->assertEquals(2.0, $result->get_home_points());
+        $this->assertEquals(1.0, $result->get_away_points());
+    }
+
+    public function test_result_factory_handles_empty_sets_and_tiebreaks(): void {
+        $data = [
+            'home_points' => 0,
+            'away_points' => 0,
+            'sets' => [
+                1 => ['player1' => 6, 'player2' => 2],
+                2 => ['player1' => 6, 'player2' => 0],
+                3 => ['player1' => '', 'player2' => '', 'tiebreak' => '']
+            ]
+        ];
+
+        $result = \Racketmanager\Services\Result_Factory::from_array($data, 10, 20);
+        $sets = $result->get_sets();
+
+        $this->assertCount(3, $sets);
+        
+        // Set 3 should be empty/null if it's 6-2 6-0
+        // Currently Result_Factory::from_array converts '' to 0 via (int)
+        // We want them to be null or some indicator that they are not set
+        $this->assertNull($sets[3]->get_home_games());
+        $this->assertNull($sets[3]->get_away_games());
+        $this->assertNull($sets[3]->get_home_tiebreak());
+        $this->assertNull($sets[3]->get_away_tiebreak());
     }
 
     public function test_calculate_stats_from_rubbers(): void {

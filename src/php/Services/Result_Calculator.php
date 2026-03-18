@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Domain\Scoring\Set_Score;
+
 /**
  * Result Calculator: Handles logic for calculating scores and stats from raw match data.
  */
@@ -9,7 +11,7 @@ class Result_Calculator {
     /**
      * Calculate home and away points from a list of set scores.
      *
-     * @param array $sets Array of sets, each containing 'player1' and 'player2' scores.
+     * @param Set_Score[] $sets Array of Set_Score objects.
      * @return array{home_points: float, away_points: float}
      */
     public static function calculate_points_from_sets( array $sets ): array {
@@ -17,16 +19,10 @@ class Result_Calculator {
         $away_points = 0.0;
 
         foreach ( $sets as $set ) {
-            $p1 = $set['player1'] ?? null;
-            $p2 = $set['player2'] ?? null;
-
-            if ( $p1 === null || $p2 === null ) {
-                continue;
-            }
-
-            if ( $p1 > $p2 ) {
+            $winner = $set->winner();
+            if ( 'home' === $winner ) {
                 $home_points += 1.0;
-            } elseif ( $p1 < $p2 ) {
+            } elseif ( 'away' === $winner ) {
                 $away_points += 1.0;
             }
         }

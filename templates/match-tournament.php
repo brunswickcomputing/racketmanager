@@ -12,6 +12,7 @@
 namespace Racketmanager;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Util\Util;
 
 /** @var object $is_update_allowed */
@@ -495,7 +496,17 @@ if ( $match ) {
                             $sets = $fixture->custom['sets'] ?? null;
                             for ( $i = 1; $i <= $league->num_sets; $i++ ) {
                                 $set = ! empty( $sets[ $i ] ) ? $sets[ $i ] : array();
-                                if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
+                                if ( $set instanceof Set_Score ) {
+                                    $player1_games = $set->get_home_games();
+                                    $player2_games = $set->get_away_games();
+                                    if ( $player1_games > $player2_games ) {
+                                        $winner_set = 'player1';
+                                    } elseif ( $player1_games < $player2_games ) {
+                                        $winner_set = 'player2';
+                                    } else {
+                                        $winner_set = null;
+                                    }
+                                } elseif ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
                                     if ( $set['player1'] > $set['player2'] ) {
                                         $winner_set = 'player1';
                                     } elseif ( $set['player1'] < $set['player2'] ) {
@@ -508,7 +519,7 @@ if ( $match ) {
                                 }
                                 ?>
                                 <?php
-                                if ( $match_editable || ( ! empty( $set['player1'] ) || ! empty( $set['player2'] ) ) ) {
+                                if ( $match_editable || ( ! empty( $set ) ) ) {
                                     $set_type = Util::get_set_type( $league->scoring, $fixture->final, $league->num_sets, $i, false, $league->num_rubbers, $match->leg );
                                     $set_info = Util::get_set_info( $set_type );
                                     ?>
@@ -527,17 +538,29 @@ if ( $match ) {
                                                 ?>
                                                 <li class="match-points__cell <?php echo esc_html( $winner_class ); ?>">
                                                     <?php
+                                                    $val = '';
+                                                    if ( $set instanceof Set_Score ) {
+                                                        $val = 'player1' === $opponent ? $set->get_home_games() : $set->get_away_games();
+                                                    } elseif ( isset( $set[ $opponent ] ) ) {
+                                                        $val = $set[ $opponent ];
+                                                    }
                                                     if ( $match_editable ) {
                                                         ?>
-                                                        <label for="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>"></label><input type="text" class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>" id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]" value="<?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>" onblur="SetCalculator(this)" />
+                                                        <label for="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>"></label><input type="text" class="points match-points__cell-input <?php echo esc_html( $winner_point_class ); ?>" id="set_<?php echo esc_html( $i ); ?>_<?php echo esc_html( $opponent ); ?>" name="sets[<?php echo esc_html( $i ); ?>][<?php echo esc_html( $opponent ); ?>]" value="<?php echo esc_html( $val ); ?>" onblur="SetCalculator(this)" />
                                                         <?php
                                                     } else {
+                                                        echo esc_html( $val );
                                                         ?>
-                                                        <?php echo isset( $set[ $opponent ] ) ? esc_html( $set[ $opponent ] ) : ''; ?>
                                                         <?php
-                                                        if ( isset( $set['tiebreak'] ) && ! empty( $winner_class ) ) {
+                                                        $tb = null;
+                                                        if ( $set instanceof Set_Score ) {
+                                                            $tb = 'player1' === $opponent ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
+                                                        } elseif ( isset( $set['tiebreak'] ) ) {
+                                                            $tb = $set['tiebreak'];
+                                                        }
+                                                        if ( ! empty( $tb ) && ! empty( $winner_class ) ) {
                                                             ?>
-                                                            <span class="player-row__tie-break"><?php echo esc_html( $set['tiebreak'] ); ?></span>
+                                                            <span class="player-row__tie-break"><?php echo esc_html( $tb ); ?></span>
                                                             <?php
                                                         }
                                                         ?>
@@ -551,16 +574,30 @@ if ( $match ) {
                                         </ul>
                                         <?php
                                         if ( $match_editable ) {
+                                            $tb = '';
+                                            if ( $set instanceof Set_Score ) {
+                                                $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                                            } elseif ( isset( $set['tiebreak'] ) ) {
+                                                $tb = $set['tiebreak'];
+                                            }
                                             ?>
                                             <ul class="match-points tie-break" id="set_<?php echo esc_html( $i ); ?>_tiebreak_wrapper"
                                             <?php
-                                            if ( ! isset( $set['tiebreak'] ) || '' === $set['tiebreak'] ) {
+                                            if ( empty( $tb ) ) {
                                                 echo 'style="display:none;"';
                                             }
                                             ?>
                                             >
                                                 <li class="match-points__cell">
-                                                    <label for="set_<?php echo esc_html( $i ); ?>_tiebreak" class="visually-hidden"><?php esc_html_e( 'Tie break', 'racketmanager' ); ?></label><input type="text" class="points match-points__cell-input" id="set_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo isset( $set['tiebreak'] ) ? esc_html( $set['tiebreak'] ) : ''; ?>" onblur="SetCalculatorTieBreak(this)" />
+                                                    <?php
+                                                    $tb = '';
+                                                    if ( $set instanceof Set_Score ) {
+                                                        $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                                                    } elseif ( is_array( $set ) && isset( $set['tiebreak'] ) ) {
+                                                        $tb = $set['tiebreak'];
+                                                    }
+                                                    ?>
+                                                    <label for="set_<?php echo esc_html( $i ); ?>_tiebreak" class="visually-hidden"><?php esc_html_e( 'Tie break', 'racketmanager' ); ?></label><input type="text" class="points match-points__cell-input" id="set_<?php echo esc_html( $i ); ?>_tiebreak" name="sets[<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $tb ); ?>" onblur="SetCalculatorTieBreak(this)" />
                                                 </li>
                                             </ul>
                                             <?php

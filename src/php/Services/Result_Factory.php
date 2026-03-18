@@ -9,6 +9,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Result;
+use Racketmanager\Domain\Scoring\Set_Score;
 
 class Result_Factory {
     /**
@@ -23,9 +24,26 @@ class Result_Factory {
     public static function from_array( array $data, int|string|null $home_team_id = null, int|string|null $away_team_id = null ): Result {
         $home_points = (float) ( $data['home_points'] ?? 0 );
         $away_points = (float) ( $data['away_points'] ?? 0 );
-        $sets        = $data['sets'] ?? [];
+        $raw_sets    = $data['sets'] ?? [];
         $status      = isset( $data['status'] ) ? (int) $data['status'] : null;
         $custom      = $data['custom'] ?? [];
+
+        $sets = [];
+        $i    = 1;
+        foreach ( $raw_sets as $set_data ) {
+            $home_games    = isset( $set_data['home'] ) ? (int) $set_data['home'] : ( isset( $set_data['player1'] ) && '' !== $set_data['player1'] ? (int) $set_data['player1'] : null );
+            $away_games    = isset( $set_data['away'] ) ? (int) $set_data['away'] : ( isset( $set_data['player2'] ) && '' !== $set_data['player2'] ? (int) $set_data['player2'] : null );
+            $home_tiebreak = isset( $set_data['home_tb'] ) ? (int) $set_data['home_tb'] : ( isset( $set_data['tiebreak'] ) && '' !== $set_data['tiebreak'] && $home_games > $away_games ? (int) $set_data['tiebreak'] : null );
+            $away_tiebreak = isset( $set_data['away_tb'] ) ? (int) $set_data['away_tb'] : ( isset( $set_data['tiebreak'] ) && '' !== $set_data['tiebreak'] && $away_games > $home_games ? (int) $set_data['tiebreak'] : null );
+
+            $sets[ $i ] = new Set_Score(
+                home_games: $home_games,
+                away_games: $away_games,
+                home_tiebreak: $home_tiebreak,
+                away_tiebreak: $away_tiebreak
+            );
+            $i++;
+        }
 
         // Handle byes
         if ( empty( $home_points ) && '-1' === (string) $home_team_id ) {

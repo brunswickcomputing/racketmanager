@@ -222,23 +222,26 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                             } else {
                                 $sets = empty( $match->custom[ 'sets' ] ) ? array() : $match->custom[ 'sets' ];
                                 for ( $i = 1; $i <= $league->num_sets; $i++ ) {
-                                    if ( ! isset( $sets[ $i ] ) ) {
-                                        $sets[ $i ] = array(
-                                            'player1'  => '',
-                                            'player2'  => '',
-                                            'tiebreak' => '',
-                                        );
-                                    }
-                                    if ( ! isset( $sets[ $i ]['tiebreak'] ) ) {
-                                        $sets[ $i ]['tiebreak'] = '';
+                                    $set = $sets[ $i ] ?? array();
+                                    $p1 = '';
+                                    $p2 = '';
+                                    $tb = '';
+                                    if ( $set instanceof \Racketmanager\Domain\Scoring\Set_Score ) {
+                                        $p1 = $set->get_home_games();
+                                        $p2 = $set->get_away_games();
+                                        $tb = $set->get_home_tiebreak() ?? $set->get_away_tiebreak() ?? '';
+                                    } elseif ( is_array( $set ) ) {
+                                        $p1 = $set['player1'] ?? '';
+                                        $p2 = $set['player2'] ?? '';
+                                        $tb = $set['tiebreak'] ?? '';
                                     }
                                     ?>
                                     <td>
-                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Player 1 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $sets[ $i ]['player1'] ); ?>" />
+                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Player 1 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player1" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player1]" value="<?php echo esc_html( $p1 ); ?>" />
                                         <span>:</span>
-                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" class="visually-hidden"><?php esc_html_e( 'Player 2 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $sets[ $i ]['player2'] ); ?>" />
+                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" class="visually-hidden"><?php esc_html_e( 'Player 2 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_player2" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][player2]" value="<?php echo esc_html( $p2 ); ?>" />
                                         <br>
-                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" class="visually-hidden"><?php esc_html_e( 'Tiebreak', 'racketmanager' ); ?></label><input class="points tie-break" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $sets[ $i ]['tiebreak'] ); ?>" />
+                                        <label for="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" class="visually-hidden"><?php esc_html_e( 'Tiebreak', 'racketmanager' ); ?></label><input class="points tie-break" type="text" size="2" id="set_<?php echo esc_html( $match->id ); ?>_<?php echo esc_html( $i ); ?>_tiebreak" name="custom[<?php echo esc_html( $match->id ); ?>][sets][<?php echo esc_html( $i ); ?>][tiebreak]" value="<?php echo esc_html( $tb ); ?>" />
                                     </td>
                                     <?php
                                 }

@@ -6,66 +6,122 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\Result;
-use Racketmanager\Domain\Championship;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Result_Service;
-use Racketmanager\Services\Championship_Manager;
-use ReflectionClass;
+use stdClass;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
-final class Result_Service_Test extends TestCase {
+class Result_Service_Test extends TestCase {
     private $fixture_repository;
-    private $result_service;
+    private $service;
 
     protected function setUp(): void {
+        parent::setUp();
         $this->fixture_repository = $this->createMock(Fixture_Repository::class);
-        $this->result_service = new Result_Service($this->fixture_repository);
+        $this->service = new Result_Service($this->fixture_repository);
+
+        global $racketmanager;
+        $racketmanager = $this->getMockBuilder(stdClass::class)
+            ->addMethods(['get_options', 'get_confirmation_email'])
+            ->getMock();
+        $racketmanager->method('get_options')->willReturn([
+            'league' => ['resultConfirmation' => 'manual'],
+            'championship' => ['resultConfirmation' => 'manual']
+        ]);
+        $racketmanager->method('get_confirmation_email')->willReturn('test@example.com');
+        $racketmanager->site_name = 'Test Site';
+        $racketmanager->site_url = 'http://example.com';
+        $racketmanager->shortcodes = new stdClass();
     }
 
     public function test_apply_to_fixture_saves_fixture(): void {
         $fixture = $this->createMock(Fixture::class);
         $result  = $this->createMock(Result::class);
-
+        
         $fixture->expects($this->once())
                 ->method('set_result')
                 ->with($result);
-
+        
         $this->fixture_repository->expects($this->once())
                                  ->method('save')
                                  ->with($fixture);
-
-        $this->result_service->apply_to_fixture($fixture, $result);
+                                 
+        $this->service->apply_to_fixture($fixture, $result);
     }
 
-    public function test_get_round_for_fixture_returns_correct_round(): void {
-        $fixture = $this->createMock(Fixture::class);
-        $fixture->method('get_final')->willReturn('final2');
+    public function test_apply_to_fixture_sets_confirmed_to_null_on_reset(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->confirmed = 'Y';
+        $fixture = new Fixture($fixture_data);
 
-        $championship = $this->createMock(Championship::class);
-        $championship->method('get_finals_by_key')->willReturn([
-            'final2' => ['round' => 2]
+        $result = new Result(0, 0, null, null, null, false, [], []);
+        $this->assertTrue($result->is_reset());
+
+        $this->service->apply_to_fixture($fixture, $result, null);
+
+        $this->assertNull($fixture->get_confirmed());
+    }
+
+    public function test_apply_to_fixture_does_not_auto_confirm_on_reset(): void {
+        global $racketmanager;
+        $racketmanager->method('get_options')->willReturn([
+            'league' => ['resultConfirmation' => 'auto']
         ]);
 
-        $reflection = new ReflectionClass(Result_Service::class);
-        $method = $reflection->getMethod('get_round_for_fixture');
-        $method->setAccessible(true);
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture = new Fixture($fixture_data);
 
-        $result = $method->invoke($this->result_service, $fixture, $championship);
-        $this->assertSame(2, $result);
+        $result = new Result(0, 0, null, null, null, false, [], []);
+        
+        $this->service->apply_to_fixture($fixture, $result, null);
+
+        $this->assertNull($fixture->get_confirmed());
     }
 
-    public function test_get_round_for_fixture_returns_null_for_no_final(): void {
-        $fixture = $this->createMock(Fixture::class);
-        $fixture->method('get_final')->willReturn(null);
+    public function test_apply_to_fixture_triggers_notifications_for_non_reset(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '1';
+        $fixture_data->away_team = '2';
+        $fixture = new Fixture($fixture_data);
 
-        $championship = $this->createMock(Championship::class);
+        $result = new Result(3, 1, 1, 2, 0, false, [], []);
+        $this->assertFalse($result->is_reset());
 
-        $reflection = new ReflectionClass(Result_Service::class);
-        $method = $reflection->getMethod('get_round_for_fixture');
-        $method->setAccessible(true);
+        $service = $this->getMockBuilder(Result_Service::class)
+            ->setConstructorArgs([$this->fixture_repository])
+            ->onlyMethods(['notify_favourites'])
+            ->getMock();
 
-        $result = $method->invoke($this->result_service, $fixture, $championship);
-        $this->assertNull($result);
+        $service->expects($this->once())
+            ->method('notify_favourites')
+            ->with($fixture);
+
+        $service->apply_to_fixture($fixture, $result, null);
+    }
+
+    public function test_apply_to_fixture_suppresses_notifications_on_reset(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture = new Fixture($fixture_data);
+
+        $result = new Result(0, 0, null, null, null, false, [], []);
+        
+        $service = $this->getMockBuilder(Result_Service::class)
+            ->setConstructorArgs([$this->fixture_repository])
+            ->onlyMethods(['notify_favourites'])
+            ->getMock();
+
+        $service->expects($this->never())
+            ->method('notify_favourites');
+
+        $service->apply_to_fixture($fixture, $result, null);
     }
 }

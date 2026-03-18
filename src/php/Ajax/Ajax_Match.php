@@ -9,6 +9,10 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Services\Competition\Knockout_Progression_Service;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Validator\Validator_Match;
 use stdClass;
 use function Racketmanager\get_match;
@@ -276,8 +280,20 @@ class Ajax_Match extends Ajax {
         if ( empty( $validator->error ) ) {
             $match = get_match( $match_id );
             if ( $match ) {
-                $match->reset_result();
-                $msg = __( 'Match result reset', 'racketmanager' );
+                if ( $match->league->is_championship ) {
+                    $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+                    $fixture            = $fixture_repository->find_by_id( $match_id );
+                    if ( $fixture ) {
+                        $result_service      = new \Racketmanager\Services\Result_Service( $fixture_repository );
+                        $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
+                        $result_manager      = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
+                        $result_manager->reset_result( $fixture, $match->league );
+                        $msg = __( 'Match result and progression reset', 'racketmanager' );
+                    }
+                } else {
+                    $match->reset_result();
+                    $msg = __( 'Match result reset', 'racketmanager' );
+                }
             } else {
                 $validator->error  = true;
                 $validator->msg    = $this->match_not_found;
@@ -285,10 +301,11 @@ class Ajax_Match extends Ajax {
             }
         }
         if ( empty( $validator->error ) ) {
-            $validator->msg      = $msg;
-            $validator->modal    = $modal;
-            $validator->match_id = $match_id;
-            wp_send_json_success( $validator );
+            $return = $validator->get_details();
+            $return->msg      = $msg;
+            $return->modal    = $modal;
+            $return->match_id = $match_id;
+            wp_send_json_success( $return );
         } else {
             wp_send_json_error( $validator, $validator->status );
         }
@@ -386,12 +403,12 @@ class Ajax_Match extends Ajax {
             $sets         = $_POST['sets'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             $validator    = $validator->match( $match_id );
             if ( empty( $validator->error ) ) {
-                $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+                $fixture_repository = new Fixture_Repository();
                 $fixture            = $fixture_repository->find_by_id( $match_id );
                 if ( $fixture ) {
-                    $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
-                    $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
-                    $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
+                    $result_service = new Result_Service( $fixture_repository );
+                    $progression_service = new Knockout_Progression_Service();
+                    $result_manager = new Fixture_Result_Manager( $result_service, $progression_service );
 
                     $validator = new stdClass();
                     $validator->error = false;

@@ -43,10 +43,14 @@ The goal is to move complex logic out of `Racketmanager_Match` into specialized 
 3.  **Align `Knockout_Progression_Service`**: [IN PROGRESS]
    - Location: `src/php/Services/Competition/Knockout_Progression_Service.php`
    - Actions: Ensure `Championship_Manager` or a new progression service uses the `Stage` and `Fixture` domain models for advancing winners.
-   - Status: `progress_winner()` implemented by delegating to `Championship_Manager::proceed()`. Integrated into `Fixture_Result_Manager::update_result()`. Refined to use `Stage` and `Championship` domain models instead of legacy `get_league()`.
+   - Status: `progress_winner()` and `reset_progression()` implemented. Integrated into `Fixture_Result_Manager`. Refactored `Result_Service` to remove duplicated progression logic, centralizing it in the progression service.
 4.  **Refine `Set_Score` Value Object**: [DONE]
    - Status: Implemented `ArrayAccess` to maintain compatibility with legacy templates (`round-draw.php`, etc.) while migrating to object-oriented domain models.
    - Verification: Added `Set_Score_Test` to verify `ArrayAccess` aliases, winning logic, and immutability. Verified `Result_Factory_Test` correctly handles the new model.
+5.  **Refine Fixture Result Reset Logic**: [DONE]
+   - Status: Updated `Fixture::reset_result()` to ensure the `confirmed` flag is set to `null`. Refined `Fixture_Result_Manager` and `Result_Service` to ensure consistent state transitions and persistence during result resets.
+   - Verification: Updated `Fixture_Result_Manager_Test` and `Result_Service_Test` to verify `confirmed` flag is cleared, persistence is triggered, and notifications are suppressed on reset.
+   - Key Fix: Fixed `Result_Service::apply_to_fixture` which was incorrectly auto-confirming and notifying on resets.
 
 ##### Phase 3: Repository & Persistence Cleanup
 Decouple domain objects from the database.

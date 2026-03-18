@@ -4,6 +4,7 @@ namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\League;
 use Racketmanager\Domain\Result;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Result_Factory;
@@ -14,7 +15,7 @@ use function Racketmanager\get_league;
  * Service for managing fixture results and state transitions.
  * Orchestrates logic formerly in Racketmanager_Match.
  */
-final class Fixture_Result_Manager
+class Fixture_Result_Manager
 {
     /**
      * @var Result_Service
@@ -89,7 +90,7 @@ final class Fixture_Result_Manager
 
         $result = Result_Factory::from_array($result_data, $fixture->get_home_team(), $fixture->get_away_team());
         
-        $this->result_service->apply_to_fixture($fixture, $result, $confirmed);
+        $this->update_result($fixture, $result, $confirmed);
     }
 
     /**
@@ -102,15 +103,7 @@ final class Fixture_Result_Manager
      */
     public function update_result(Fixture $fixture, Result $result, ?string $confirmed = null): void
     {
-        $fixture->set_result($result);
-        
-        if ($confirmed !== null) {
-            $fixture->set_confirmed($confirmed);
-        }
-
-        if ($result->get_status() !== null) {
-            $fixture->set_status($result->get_status());
-        }
+        $this->result_service->apply_to_fixture($fixture, $result, $confirmed);
 
         $league = get_league($fixture->get_league_id());
         if (!$league) {
@@ -122,6 +115,43 @@ final class Fixture_Result_Manager
         if ($league->is_championship) {
             $this->progression_service->progress_winner($stage, $fixture, $league);
         } else {
+            $league->update_standings($fixture->get_season());
+        }
+    }
+
+    /**
+     * Reset the result of a fixture.
+     * 
+     * @param Fixture $fixture
+     * @param League|null $league Optional league object to avoid legacy get_league call.
+     * @return void
+     */
+    public function reset_result(Fixture $fixture, ?League $league = null): void
+    {
+        $fixture->reset_result();
+        
+        // Persist the reset state.
+        // We pass null as the result to Result_Service::apply_to_fixture, but we've already
+        // called reset_result on the fixture which cleared its properties.
+        // Result_Service::apply_to_fixture expects a Result object.
+        // Let's create an empty/null Result to use for resetting via the service.
+        $empty_result = new Result(
+            home_points: 0,
+            away_points: 0,
+            status: null,
+            sets: [],
+            custom: []
+        );
+        $this->result_service->apply_to_fixture($fixture, $empty_result, null);
+
+        if (!$league) {
+            $league = get_league($fixture->get_league_id());
+        }
+
+        if ($league && $league->is_championship) {
+            $stage = Stage::from_league($league);
+            $this->progression_service->reset_progression($stage, $fixture, $league);
+        } elseif ($league) {
             $league->update_standings($fixture->get_season());
         }
     }

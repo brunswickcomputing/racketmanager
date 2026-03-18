@@ -934,7 +934,6 @@ class Fixture {
             $this->loser_id_tie    = null;
         }
 
-        $this->is_pending = true;
         $this->set_status_flags();
     }
 }

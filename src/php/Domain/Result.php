@@ -58,4 +58,8 @@ class Result {
     public function get_custom(): array {
         return $this->custom;
     }
+
+    public function is_reset(): bool {
+        return null === $this->status && empty( $this->sets ) && empty( $this->custom );
+    }
 }

@@ -282,7 +282,36 @@ foreach ( $final->fixtures as $fixture_details ) {
                                             }
                                             $sets = $rubber->custom['sets'] ?? array();
                                             foreach ( $sets as $set ) {
-                                                if ( isset( $set[ $set_ref ] ) && '' !== $set[ $set_ref ] ) {
+                                                if ( $set instanceof Set_Score ) {
+                                                    $player1_games = $set->get_home_games();
+                                                    $player2_games = $set->get_away_games();
+                                                    
+                                                    if ( 'home' === $team_ref ) {
+                                                        $val      = $player1_games;
+                                                        $val_alt  = $player2_games;
+                                                        $tb       = $set->get_home_tiebreak();
+                                                    } else {
+                                                        $val      = $player2_games;
+                                                        $val_alt  = $player1_games;
+                                                        $tb       = $set->get_away_tiebreak();
+                                                    }
+
+                                                    if ( null !== $val && '' !== $val ) {
+                                                        $winner_class_set = ( $val > $val_alt ) ? 'winner' : null;
+                                                        ?>
+                                                        <div class="player-row__score-game  <?php echo esc_html( $winner_class_set ); ?>">
+                                                            <?php echo esc_html( $val ); ?>
+                                                            <?php
+                                                            if ( ! empty( $tb ) ) {
+                                                                ?>
+                                                                <span class="player-row__tie-break"></span>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                        <?php
+                                                    }
+                                                } elseif ( isset( $set[ $set_ref ] ) && '' !== $set[ $set_ref ] ) {
                                                     if ( $set[ $set_ref ] > $set [ $set_ref_alt ] ) {
                                                         $winner_class_set = 'winner';
                                                     } else {
@@ -313,7 +342,39 @@ foreach ( $final->fixtures as $fixture_details ) {
                                         }
                                         $sets = $fixture->custom['sets'];
                                         foreach ( $sets as $set ) {
-                                            if ( isset( $set[ $set_ref ] ) && '' !== $set[ $set_ref ] ) {
+                                            if ( $set instanceof Set_Score ) {
+                                                $player1_games = $set->get_home_games();
+                                                $player2_games = $set->get_away_games();
+                                                $player1_tb    = $set->get_home_tiebreak();
+                                                $player2_tb    = $set->get_away_tiebreak();
+                                                $tiebreak      = $player1_tb ?: $player2_tb;
+                                                
+                                                if ( 'home' === $team_ref ) {
+                                                    $val      = $player1_games;
+                                                    $val_alt  = $player2_games;
+                                                    $tb_val   = $player1_tb;
+                                                } else {
+                                                    $val      = $player2_games;
+                                                    $val_alt  = $player1_games;
+                                                    $tb_val   = $player2_tb;
+                                                }
+
+                                                if ( null !== $val && '' !== $val ) {
+                                                    $winner_class_set = ( $val > $val_alt ) ? 'winner' : null;
+                                                    ?>
+                                                    <div class="player-row__score-game  <?php echo esc_html( $winner_class_set ); ?>">
+                                                        <?php echo esc_html( $val ); ?>
+                                                        <?php
+                                                        if ( ! empty( $tiebreak ) && ! empty( $winner_class_set ) ) {
+                                                            ?>
+                                                            <span class="player-row__tie-break"><?php echo esc_html( $tiebreak ); ?></span>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </div>
+                                                    <?php
+                                                }
+                                            } elseif ( isset( $set[ $set_ref ] ) && '' !== $set[ $set_ref ] ) {
                                                 if ( $set[ $set_ref ] > $set [ $set_ref_alt ] ) {
                                                     $winner_class_set = 'winner';
                                                 } else {

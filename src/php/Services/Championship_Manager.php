@@ -10,6 +10,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\League;
 use Racketmanager\Repositories\Fixture_Repository;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
@@ -81,10 +82,11 @@ final class Championship_Manager {
      *
      * @param Championship $championship championship domain object.
      * @param int $round round number.
+     * @param League|null $league Optional league object to avoid legacy get_league call.
      *
      * @return void
      */
-    public function proceed( Championship $championship, int $round ): void {
+    public function proceed( Championship $championship, int $round, ?League $league = null ): void {
         if ( $round >= $championship->num_rounds() ) {
             return;
         }
@@ -94,7 +96,9 @@ final class Championship_Manager {
         $legs       = false;
         $prev_home  = null;
         $prev_away  = null;
-        $league     = get_league( $championship->league_id() );
+        if ( ! $league ) {
+            $league = get_league( $championship->league_id() );
+        }
         $match_args = array(
             'final' => $next,
             'limit' => false,

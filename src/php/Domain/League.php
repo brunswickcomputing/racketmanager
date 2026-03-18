@@ -911,7 +911,15 @@ class League {
                         if ( empty( $match->leg ) || 2 === $match->leg ) {
                             $match->notify_team_withdrawal( $team_id );
                         }
-                        $match->handle_result_update( array(), $match_status );
+
+                        $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+                        $fixture = $fixture_repository->find_by_id( $match->id );
+                        if ( $fixture ) {
+                            $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
+                            $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
+                            $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
+                            $result_manager->handle_single_result_update( $fixture, array(), $match_status, $match->confirmed );
+                        }
                     } else {
                         $match_confirmed = 'Y';
                         $home_team_score = 0;
@@ -2550,8 +2558,23 @@ class League {
                 $c             = $custom[$match_id] ?? array();
                 $points_home   = isset( $home_points[$match_id] ) ? floatval( $home_points[$match_id] ) : null;
                 $points_away   = isset( $away_points[$match_id] ) ? floatval( $away_points[$match_id] ) : null;
-                $match_updated = $match->update_result( $points_home, $points_away, $c, $confirmed, $match->status );
-                if ( $match_updated ) {
+
+                $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+                $fixture = $fixture_repository->find_by_id( $match_id );
+                if ( $fixture ) {
+                    $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
+                    $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
+                    $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
+
+                    $result_data = [
+                        'home_points' => $points_home,
+                        'away_points' => $points_away,
+                        'status' => $match->status,
+                        'custom' => $c,
+                        'sets'   => $c['sets'] ?? $match->sets
+                    ];
+                    $result = \Racketmanager\Services\Result_Factory::from_array($result_data, $match->home_team, $match->away_team);
+                    $result_manager->update_result($fixture, $result, $confirmed);
                     ++$num_matches;
                 }
             }

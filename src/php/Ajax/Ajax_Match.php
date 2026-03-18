@@ -386,13 +386,34 @@ class Ajax_Match extends Ajax {
             $sets         = $_POST['sets'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             $validator    = $validator->match( $match_id );
             if ( empty( $validator->error ) ) {
-                $match     = get_match( $match_id );
-                $validator = $match->handle_result_update( $sets, $match_status );
-                if ( empty( $validator->error ) ) {
+                $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+                $fixture            = $fixture_repository->find_by_id( $match_id );
+                if ( $fixture ) {
+                    $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
+                    $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
+                    $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
+
+                    $validator = new stdClass();
+                    $validator->error = false;
                     $match = get_match( $match_id );
-                    $return = array();
-                    array_push( $return, $validator->msg, $match->home_points, $match->away_points, $match->winner_id, $match->sets );
-                    wp_send_json_success( $return );
+                    $match_confirmed = $match->confirmed;
+
+                    try {
+                        $result_manager->handle_single_result_update( $fixture, $sets, $match_status, $match_confirmed );
+                        $msg = __( 'Result saved', 'racketmanager' );
+                        
+                        // Sync match object for legacy return values if needed, 
+                        // though we are re-getting it below.
+                        $match = get_match( $match_id );
+
+                        $return = array();
+                        array_push( $return, $msg, $match->home_points, $match->away_points, $match->winner_id, $match->sets );
+                        wp_send_json_success( $return );
+                    } catch ( \Exception $e ) {
+                        $validator->error = true;
+                        $validator->msg = $e->getMessage();
+                        $validator->status = 400;
+                    }
                 }
             }
         }

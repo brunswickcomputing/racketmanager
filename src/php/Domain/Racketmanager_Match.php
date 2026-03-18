@@ -13,6 +13,7 @@ use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Championship_Manager;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
@@ -2835,98 +2836,6 @@ class Racketmanager_Match {
             )
         );
         wp_cache_set( $this->id, $this, 'matches' );
-    }
-    /**
-     * Function to handle match result update
-     *
-     * @param array|null  $sets
-     * @param string|null $match_status
-     *
-     * @return stdClass
-     */
-    public function handle_result_update( ?array $sets, ?string $match_status ): stdClass {
-        global $racketmanager;
-        $validator = new Validator_Match();
-        $validator = $validator->match_status( $match_status );
-        if ( ! empty( $validator->error ) ) {
-            return $validator->get_details();
-        }
-        $match_confirmed = $this->confirmed;
-        $set_prefix      = 'set_';
-        $validator       = $validator->match_score( $this, $sets, $match_status, $set_prefix );
-        if ( ! empty( $validator->error ) ) {
-            return $validator->get_details();
-        }
-        $home_points = $validator->home_points;
-        $away_points = $validator->away_points;
-        $sets        = $validator->sets;
-
-        switch ( $match_status ) {
-            case 'walkover_player1':
-                $custom['walkover'] = 'home';
-                $status             = 1;
-                break;
-            case 'walkover_player2':
-                $custom['walkover'] = 'away';
-                $status             = 1;
-                break;
-            case 'retired_player1':
-                $custom['retired'] = 'home';
-                $status            = 2;
-                break;
-            case 'retired_player2':
-                $custom['retired'] = 'away';
-                $status            = 2;
-                break;
-            case 'share':
-                $custom['share'] = 'true';
-                $status          = 3;
-                break;
-            case 'abandoned':
-                $custom['abandoned'] = 'true';
-                $status              = 6;
-                break;
-            case 'cancelled':
-                $custom['cancelled'] = 'true';
-                $status              = 8;
-                break;
-            default:
-                $status = 0;
-                break;
-        }
-        $custom['sets'] = $sets;
-
-        $fixture_repository = new Fixture_Repository();
-        $fixture            = $fixture_repository->find_by_id( $this->id );
-        if ( $fixture ) {
-            $result_data = [
-                'home_points' => $home_points,
-                'away_points' => $away_points,
-                'status'      => $status,
-                'custom'      => $custom,
-                'sets'        => $sets,
-            ];
-            $result = Result_Factory::from_array( $result_data, $this->home_team, $this->away_team );
-            $result_service = new Result_Service( $fixture_repository );
-            $result_service->apply_to_fixture( $fixture, $result, $match_confirmed );
-
-            // Sync current object for legacy return values
-            $this->home_points = (float) $fixture->get_home_points();
-            $this->away_points = (float) $fixture->get_away_points();
-            $this->winner_id   = $fixture->get_winner_id();
-            $this->loser_id    = $fixture->get_loser_id();
-            $this->status      = $fixture->get_status();
-            $this->confirmed   = $fixture->get_confirmed();
-            $this->custom      = $fixture->get_custom();
-
-            $msg = __( 'Result saved', 'racketmanager' );
-        } else {
-            $msg = __( 'Unable to update match result', 'racketmanager' );
-        }
-        
-        $data = new stdClass();
-        $data->msg = $msg;
-        return $data;
     }
 
     /**

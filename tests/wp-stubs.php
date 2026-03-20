@@ -105,7 +105,7 @@ namespace {
 
     if ( ! function_exists( 'sanitize_text_field' ) ) {
         function sanitize_text_field( $value ) {
-            return is_string( $value ) ? trim( $value ) : $value;
+            return is_string( $value ) ? trim( strip_tags( $value ) ) : $value;
         }
     }
 

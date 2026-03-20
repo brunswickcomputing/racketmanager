@@ -34,6 +34,22 @@ final class Validator_Match extends Validator {
     private array $players_involved = array();
 
     /**
+     * Validate fixture
+     *
+     * @param ?int $fixture_id fixture id.
+     * @param string $error_field error field.
+     * @return object $validation updated validation object.
+     */
+    public function fixture( ?int $fixture_id, string $error_field = 'match' ): object {
+        if ( empty( $fixture_id ) ) {
+            $this->error      = true;
+            $this->err_flds[] = $error_field;
+            $this->err_msgs[] = __( 'Match id not supplied', 'racketmanager' );
+        }
+        return $this;
+    }
+
+    /**
      * Validate match
      *
      * @param ?int $match_id match id.

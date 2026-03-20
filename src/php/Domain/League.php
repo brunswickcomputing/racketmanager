@@ -718,7 +718,7 @@ class League {
         }
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
         // Championship.
-        if ( 'championship' === $this->mode ) {
+        if ( 'championship' === ($this->mode ?? '') ) {
             $this->is_championship = true;
             $settings              = Championship_Settings::from_array( $this->settings );
             $factory               = new Championship_Factory();
@@ -1096,20 +1096,43 @@ class League {
             $data = $by_name[ $season ] ?? null;
         } else {
             $tmp  = $seasons_list;
-            $data = ! empty( $tmp ) ? end( $tmp ) : null;
+            if ( is_array( $tmp ) ) {
+                ksort( $tmp ); // Sort by year key (e.g. "2024", "2025", "2026")
+                $data = end( $tmp );
+            } else {
+                $data = null;
+            }
         }
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
         if ( empty( $data ) ) {
             $tmp  = $seasons_list;
-            $data = ! empty( $tmp ) ? end( $tmp ) : null;
+            if ( is_array( $tmp ) ) {
+                ksort( $tmp );
+                $data = end( $tmp );
+            } else {
+                $data = null;
+            }
         }
+
+        // Fix for inconsistent season data where 'season' is used instead of 'name'
+        if ( $data && ! isset( $data['name'] ) && isset( $data['season'] ) ) {
+            $data['name'] = (string) $data['season'];
+        }
+
         if ( ! $data ) {
             $data                   = array();
-            $data['name']           = '';
+            $data['name']           = 'default';
             $data['num_match_days'] = 0;
         }
+
         $this->current_season = $data;
-        $this->num_match_days = $data['num_match_days'];
+        $this->num_match_days = $data['num_match_days'] ?? 0;
+
+        if ( 'championship' === ($this->mode ?? '') ) {
+            $settings              = Championship_Settings::from_array( $this->settings );
+            $factory               = new Championship_Factory();
+            $this->championship    = $factory->create( $this, $settings );
+        }
 
         $this->set_team_query_arg( 'season', $this->current_season['name'] );
         $this->set_match_query_arg( 'season', $this->current_season['name'] );

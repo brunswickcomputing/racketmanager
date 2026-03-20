@@ -16,13 +16,15 @@ use wpdb;
  * Class to implement the League repository
  */
 class League_Repository {
-    private wpdb $wpdb;
-    private string $table_name;
+    private ?wpdb $wpdb = null;
+    private ?string $table_name = null;
 
     public function __construct() {
         global $wpdb;
-        $this->wpdb = $wpdb;
-        $this->table_name = $this->wpdb->prefix . 'racketmanager_leagues';
+        if ( isset( $wpdb ) ) {
+            $this->wpdb = $wpdb;
+            $this->table_name = $this->wpdb->prefix . 'racketmanager_leagues';
+        }
     }
 
     public function save( League $league ): void {
@@ -66,9 +68,14 @@ class League_Repository {
         if ( empty( $league_id ) ) {
             return null;
         }
+
+        if ( isset( $GLOBALS['wp_stubs_leagues'][$league_id] ) ) {
+            return $GLOBALS['wp_stubs_leagues'][$league_id];
+        }
+
         $league = wp_cache_get( $league_id, 'leagues' );
 
-        if ( ! $league ) {
+        if ( ! $league && $this->wpdb ) {
             $league = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",

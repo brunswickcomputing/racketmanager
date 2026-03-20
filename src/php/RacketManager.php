@@ -74,7 +74,7 @@ class RacketManager {
      *
      * @var array $options
      */
-    public array $options;
+    public array $options = [];
     /**
      * Date format.
      *

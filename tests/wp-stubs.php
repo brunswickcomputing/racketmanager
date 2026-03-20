@@ -1,13 +1,6 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Minimal WordPress function stubs for unit tests.
- *
- * These allow running PHPUnit without bootstrapping WordPress.
- * Keep intentionally tiny: only add functions as tests require them.
- */
-
 namespace Racketmanager {
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
         class RacketManager {
@@ -16,6 +9,7 @@ namespace Racketmanager {
             public string $site_url    = 'https://example.test';
             public string $site_name   = 'RacketManager';
             public $shortcodes;
+            public array $options = [];
 
             public function __construct() {
                 $this->shortcodes = new class {
@@ -25,30 +19,27 @@ namespace Racketmanager {
                 };
                 $this->container  = new class {
                     public function get( string $id ): object {
-                        $reflection = null;
                         try {
                             switch ( $id ) {
                                 case 'competition_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Competition_Service' );
-                                    break;
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Competition_Service' ))->newInstanceWithoutConstructor();
                                 case 'club_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Club_Service' );
-                                    break;
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Club_Service' ))->newInstanceWithoutConstructor();
                                 case 'player_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Player_Service' );
-                                    break;
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Player_Service' ))->newInstanceWithoutConstructor();
                                 case 'registration_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Registration_Service' );
-                                    break;
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Registration_Service' ))->newInstanceWithoutConstructor();
+                                case 'event_service':
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Event_Service' ))->newInstanceWithoutConstructor();
+                                case 'league_service':
+                                    return (new \ReflectionClass( 'Racketmanager\Services\League_Service' ))->newInstanceWithoutConstructor();
+                                case 'fixture_service':
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Fixture_Service' ))->newInstanceWithoutConstructor();
+                                case 'team_service':
+                                    return (new \ReflectionClass( 'Racketmanager\Services\Team_Service' ))->newInstanceWithoutConstructor();
                             }
-                        } catch ( \ReflectionException ) {
-                            return new \stdClass();
+                        } catch ( \ReflectionException $e ) {
                         }
-
-                        if ( $reflection ) {
-                            return $reflection->newInstanceWithoutConstructor();
-                        }
-
                         return new \stdClass();
                     }
                 };
@@ -70,17 +61,101 @@ namespace Racketmanager {
             }
 
             public function set_message( string $message ): void {}
+            public function load_options(): void {
+                $this->options = [];
+                $this->date_format = 'Y-m-d';
+            }
         }
     }
 }
 
 namespace {
+    if ( ! function_exists( 'get_option' ) ) {
+        function get_option( $option, $default = false ) {
+            if ($option === 'racketmanager_options') {
+                return is_array($default) ? $default : array();
+            }
+            if ($option === 'racketmanager_settings') {
+                return [
+                    'date_format' => 'Y-m-d',
+                    'league' => [
+                        'resultConfirmation' => 'manual',
+                    ],
+                    'tournament' => [
+                        'resultConfirmation' => 'manual',
+                    ],
+                ];
+            }
+            return $default;
+        }
+    }
+
+    if ( ! class_exists( 'wpdb' ) ) {
+        class wpdb {
+            public $prefix = 'wp_';
+            public $get_results_callback;
+            public $get_row_callback;
+            public $update_callback;
+
+            public function prepare( $query, ...$args ) {
+                if ( empty($args) ) return $query;
+                if ( is_array($args[0]) && count($args) === 1 ) $args = $args[0];
+                
+                $prepared_args = [];
+                foreach ($args as $arg) {
+                    if (is_string($arg)) {
+                        $prepared_args[] = "'" . addslashes($arg) . "'";
+                    } else {
+                        $prepared_args[] = $arg;
+                    }
+                }
+
+                $query = str_replace( "'%s'", '%s', $query );
+                $query = str_replace( '%d', '%s', $query );
+                $query = str_replace( '%f', '%s', $query );
+                
+                try {
+                    return vsprintf( $query, $prepared_args );
+                } catch (\Throwable $e) {
+                    return $query;
+                }
+            }
+            public function get_row( $query, $output = 'OBJECT' ) { 
+                if ( $this->get_row_callback ) return ($this->get_row_callback)($query);
+                return null; 
+            }
+            public function get_results( $query, $output = 'OBJECT' ) { 
+                if ( $this->get_results_callback ) return ($this->get_results_callback)($query);
+                return array(); 
+            }
+            public function get_var( $query, $x = 0, $y = 0 ) { return null; }
+            public function insert( $table, $data, $format = null ) { return true; }
+            public function update( $table, $data, $where, $format = null, $where_format = null ) { 
+                if ( $this->update_callback ) return ($this->update_callback)($table, $data, $where);
+                return true; 
+            }
+            public function delete( $table, $where, $where_format = null ) { return true; }
+            public function show_errors() {}
+            public function hide_errors() {}
+        }
+    }
+
+    if ( ! isset( $GLOBALS['wpdb'] ) ) {
+        $GLOBALS['wpdb'] = new wpdb();
+    }
+
     if ( ! defined( 'ABSPATH' ) ) {
         define( 'ABSPATH', __DIR__ . '/' );
     }
 
     if ( ! function_exists( 'add_action' ) ) {
         function add_action( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'add_filter' ) ) {
+        function add_filter( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
             return true;
         }
     }
@@ -122,19 +197,6 @@ namespace {
     }
 
     if ( ! function_exists( 'add_query_arg' ) ) {
-        /**
-         * Very small subset of WP's add_query_arg behaviour.
-         *
-         * Supports the common WP signatures:
-         * - add_query_arg( array $args, string $url = '')
-         * - add_query_arg( string $key, string $value, string $url = '')
-         *
-         * @param array<string,mixed>|string $arg1
-         * @param mixed $arg2
-         * @param string $arg3
-         *
-         * @return string
-         */
         function add_query_arg( array|string $arg1, mixed $arg2 = '', string $arg3 = '' ): string {
             if ( is_array( $arg1 ) ) {
                 $args = $arg1;

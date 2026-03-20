@@ -686,6 +686,10 @@ class Validator {
         return $return;
     }
 
+    public function get_status(): int {
+        return $this->status;
+    }
+
     public function set_errors( string $error_field, string $error_message, int $status = 400 ): void {
         $this->error      = true;
         $this->err_flds[] = $error_field;

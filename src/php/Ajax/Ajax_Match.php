@@ -9,6 +9,9 @@
 namespace Racketmanager\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
+use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
@@ -258,58 +261,56 @@ class Ajax_Match extends Ajax {
      * @return void
      */
     public function reset_match_result(): void {
-        $msg       = null;
-        $match_id  = null;
-        $modal     = null;
+        // 1. Initialize the Validator (fluent interface)
         $validator = new Validator_Match();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'match-option');
-        if ( empty( $validator->error ) ) {
-            $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-            if ( ! $modal ) {
-                $validator->error  = true;
-                $validator->msg    = $this->no_modal;
-                $validator->status = 404;
-            }
-            if ( ! $match_id ) {
-                $validator->error  = true;
-                $validator->msg    = $this->no_match_id;
-                $validator->status = 404;
-            }
+
+        // 2. Map global POST data to a Domain DTO
+        // The DTO factory handles basic extraction and sanitization.
+        $request = Fixture_Reset_Request::from_post( $_POST );
+
+        // 3. Execute Security & Existence Validation
+        // We chain checks to ensure we have a valid nonce, a valid modal identifier,
+        // and that the fixture actually exists in the database.
+        $validator->check_security_token( 'racketmanager_nonce', 'match-option' )
+                  ->modal( $request->modal )
+                  ->fixture( $request->fixture_id );
+
+        // 4. Handle Validation Failures
+        if ( ! empty( $validator->error ) ) {
+            // Automatically returns standardized error object and HTTP status (e.g., 404 or 403)
+            wp_send_json_error( $validator->get_details(), $validator->get_status() );
         }
-        if ( empty( $validator->error ) ) {
-            $match = get_match( $match_id );
-            if ( $match ) {
-                if ( $match->league->is_championship ) {
-                    $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
-                    $fixture            = $fixture_repository->find_by_id( $match_id );
-                    if ( $fixture ) {
-                        $result_service      = new \Racketmanager\Services\Result_Service( $fixture_repository );
-                        $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
-                        $result_manager      = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
-                        $result_manager->reset_result( $fixture, $match->league );
-                        $msg = __( 'Match result and progression reset', 'racketmanager' );
-                    }
-                } else {
-                    $match->reset_result();
-                    $msg = __( 'Match result reset', 'racketmanager' );
-                }
-            } else {
-                $validator->error  = true;
-                $validator->msg    = $this->match_not_found;
-                $validator->status = 404;
-            }
-        }
-        if ( empty( $validator->error ) ) {
-            $return = $validator->get_details();
-            $return->msg      = $msg;
-            $return->modal    = $modal;
-            $return->match_id = $match_id;
-            wp_send_json_success( $return );
-        } else {
-            wp_send_json_error( $validator, $validator->status );
+
+        try {
+            // 5. Load the Rich Domain Entity
+            // We use the repository to get a fully hydrated Fixture object.
+            $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+            $fixture = $fixture_repository->find_by_id( $request->fixture_id );
+
+            // 6. Delegate Business Logic to the Domain Service
+            // The manager handles: resetting scores, updating standings (Leagues),
+            // and reverting progression (Championships/Knockouts).
+            $result_service      = new Result_Service( $fixture_repository );
+            $progression_service = new Knockout_Progression_Service();
+            $fixture_result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service );
+            $response = $fixture_result_manager->reset_result( $fixture );
+
+            // 7. Determine the Success Message (Domain-aware)
+            $presenter = new Fixture_Presenter();
+            $message   = $presenter->get_reset_message( $response->status );
+
+            // 8. Send Success Response
+            wp_send_json_success([
+                'msg'      => $message,
+                'modal'    => $request->modal,
+                'match_id' => $response->fixture_id,
+            ]);
+        } catch ( League_Not_Found_Exception $e ) {
+            // 9. Centralized Exception Handling
+            wp_send_json_error( [ 'msg' => $e->getMessage() ], 500 );
         }
     }
+
     /**
      * Show rubber status options
      */
@@ -408,7 +409,7 @@ class Ajax_Match extends Ajax {
                 if ( $fixture ) {
                     $result_service = new Result_Service( $fixture_repository );
                     $progression_service = new Knockout_Progression_Service();
-                    $result_manager = new Fixture_Result_Manager( $result_service, $progression_service );
+                    $result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service );
 
                     $validator = new stdClass();
                     $validator->error = false;

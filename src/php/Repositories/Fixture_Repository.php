@@ -223,4 +223,33 @@ class Fixture_Repository {
             array( '%d', '%s' )
         );
     }
+
+    /**
+     * Find fixtures by league, season and final key.
+     *
+     * @param int $league_id
+     * @param string $season
+     * @param string $final_key
+     * @param int|null $leg
+     * @return Fixture[]
+     */
+    public function find_by_league_and_final( int $league_id, string $season, string $final_key, ?int $leg = null ): array {
+        $query = "SELECT * FROM $this->table_name WHERE `league_id` = %d AND `season` = %s AND `final` = %s";
+        $args  = [ $league_id, $season, $final_key ];
+
+        if ( null !== $leg ) {
+            $query .= " AND `leg` = %d";
+            $args[] = $leg;
+        }
+
+        $query .= " ORDER BY `id` ASC";
+
+        $sql = $this->wpdb->prepare( $query, ...$args );
+        $results = $this->wpdb->get_results( $sql );
+
+        return array_map(
+            fn( $row ) => new Fixture( $row ),
+            $results
+        );
+    }
 }

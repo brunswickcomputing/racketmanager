@@ -213,7 +213,8 @@ final class Championship_Factory {
      * @return array
      */
     private function build_standard_progression( object $league, int $num_teams ): array {
-        $num_advance = (int) pow( 2, $league->current_season['num_match_days'] );
+        $num_match_days = $league->current_season['num_match_days'] ?? 0;
+        $num_advance = (int) pow( 2, (int) $num_match_days );
 
         if ( $league->event->competition->is_active || $league->event->competition->is_complete ) {
             $use_teams = true;

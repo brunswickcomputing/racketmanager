@@ -3,13 +3,18 @@
 namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\Competition\Stage;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
+use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\League;
 use Racketmanager\Domain\Result;
+use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
+use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
-use function Racketmanager\get_league;
+
+use Racketmanager\Repositories\League_Repository;
 
 /**
  * Service for managing fixture results and state transitions.
@@ -27,17 +32,24 @@ class Fixture_Result_Manager
      */
     private Knockout_Progression_Service $progression_service;
 
+    /**
+     * @var League_Service
+     */
+    private League_Service $league_service;
+
     public function __construct(
         Result_Service $result_service,
-        Knockout_Progression_Service $progression_service
+        Knockout_Progression_Service $progression_service,
+        League_Service $league_service
     ) {
-        $this->result_service = $result_service;
+        $this->result_service      = $result_service;
         $this->progression_service = $progression_service;
+        $this->league_service      = $league_service;
     }
 
     /**
      * Handle result update for a single fixture (player/tournament match).
-     * 
+     *
      * @param Fixture $fixture
      * @param array|null $sets
      * @param string|null $match_status
@@ -78,6 +90,8 @@ class Fixture_Result_Manager
                 $custom['cancelled'] = 'true';
                 $status = 8;
                 break;
+            default:
+                break;
         }
 
         $custom['sets'] = $sets;
@@ -95,7 +109,7 @@ class Fixture_Result_Manager
 
     /**
      * Update a fixture with a new result.
-     * 
+     *
      * @param Fixture $fixture The fixture to update.
      * @param Result $result The new result.
      * @param string|null $confirmed Confirmation status ('Y', 'N', or null).
@@ -105,7 +119,8 @@ class Fixture_Result_Manager
     {
         $this->result_service->apply_to_fixture($fixture, $result, $confirmed);
 
-        $league = get_league($fixture->get_league_id());
+        $league_repository = new League_Repository();
+        $league = $league_repository->find_by_id($fixture->get_league_id());
         if (!$league) {
             return;
         }
@@ -114,6 +129,7 @@ class Fixture_Result_Manager
 
         if ($league->is_championship) {
             $this->progression_service->progress_winner($stage, $fixture, $league);
+            $this->progression_service->handle_consolation($stage, $fixture, $league);
         } else {
             $league->update_standings($fixture->get_season());
         }
@@ -121,20 +137,16 @@ class Fixture_Result_Manager
 
     /**
      * Reset the result of a fixture.
-     * 
+     *
      * @param Fixture $fixture
-     * @param League|null $league Optional league object to avoid legacy get_league call.
-     * @return void
+     *
+     * @return Fixture_Reset_Response
      */
-    public function reset_result(Fixture $fixture, ?League $league = null): void
+    public function reset_result( Fixture $fixture ): Fixture_Reset_Response
     {
         $fixture->reset_result();
         
         // Persist the reset state.
-        // We pass null as the result to Result_Service::apply_to_fixture, but we've already
-        // called reset_result on the fixture which cleared its properties.
-        // Result_Service::apply_to_fixture expects a Result object.
-        // Let's create an empty/null Result to use for resetting via the service.
         $empty_result = new Result(
             home_points: 0,
             away_points: 0,
@@ -144,8 +156,10 @@ class Fixture_Result_Manager
         );
         $this->result_service->apply_to_fixture($fixture, $empty_result, null);
 
-        if (!$league) {
-            $league = get_league($fixture->get_league_id());
+        try {
+            $league = $this->league_service->get_league( $fixture->get_league_id() );
+        } catch ( League_Not_Found_Exception ) {
+            $league = null;
         }
 
         if ($league && $league->is_championship) {
@@ -154,11 +168,18 @@ class Fixture_Result_Manager
         } elseif ($league) {
             $league->update_standings($fixture->get_season());
         }
+
+        $status = ( $league && $league->is_championship )
+            ? Fixture_Reset_Status::SUCCESS_KNOCKOUT_RESET
+            : Fixture_Reset_Status::SUCCESS_DIVISION_RESET;
+
+        return new Fixture_Reset_Response( $fixture->get_id(), $status );
+
     }
 
     /**
      * Confirm a fixture result.
-     * 
+     *
      * @param Fixture $fixture
      * @param string $actioned_by
      * @param string|null $comments

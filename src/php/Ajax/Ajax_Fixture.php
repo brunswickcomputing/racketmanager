@@ -429,7 +429,7 @@ class Ajax_Fixture extends Ajax {
                     wp_send_json_success( $return );
                 } catch ( Fixture_Validation_Exception $e ) {
                     $validator->error    = true;
-                    $validator->msg      = $e->getMessage();
+                    $validator->msg      = __( 'Unable to update result', 'racketmanager' );
                     $validator->err_msgs = $e->get_error_msgs();
                     $validator->err_flds = $e->get_error_flds();
                     $validator->status   = 400;
@@ -440,7 +440,6 @@ class Ajax_Fixture extends Ajax {
                 }
             }
         }
-        $validator->msg = $validator->msg ?? __( 'Unable to update match result', 'racketmanager' );
         wp_send_json_error( $validator, $validator->status ?? 400 );
     }
     /**

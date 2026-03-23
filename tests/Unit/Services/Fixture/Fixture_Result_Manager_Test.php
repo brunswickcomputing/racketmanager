@@ -6,10 +6,13 @@ namespace Racketmanager\Tests\Unit\Services\Fixture;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\League;
+use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Services\Validator\Fixture_Score_Validator;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Repositories\League_Repository;
 use stdClass;
@@ -18,6 +21,7 @@ class Fixture_Result_Manager_Test extends TestCase {
     private $result_service;
     private $progression_service;
     private $league_service;
+    private $score_validator;
     private $manager;
 
     protected function setUp(): void {
@@ -25,7 +29,13 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->result_service = $this->createMock(Result_Service::class);
         $this->progression_service = $this->createMock(Knockout_Progression_Service::class);
         $this->league_service = $this->createMock(League_Service::class);
-        $this->manager = new Fixture_Result_Manager($this->result_service, $this->progression_service, $this->league_service);
+        $this->score_validator = $this->createMock(Fixture_Score_Validator::class);
+        $this->manager = new Fixture_Result_Manager(
+            $this->result_service,
+            $this->progression_service,
+            $this->league_service,
+            $this->score_validator
+        );
     }
 
     public function test_reset_result_for_non_championship_league(): void {
@@ -120,6 +130,9 @@ class Fixture_Result_Manager_Test extends TestCase {
         $league->method('get_event_id')->willReturn(10);
         
         $GLOBALS['wp_stubs_leagues'][789] = $league;
+        
+        $match = $this->createMock(Racketmanager_Match::class);
+        $GLOBALS['wp_stubs_matches'][123] = $match;
 
         $this->result_service->expects($this->once())
                              ->method('apply_to_fixture');
@@ -128,6 +141,7 @@ class Fixture_Result_Manager_Test extends TestCase {
                                   ->method('progress_winner')
                                   ->with($this->isInstanceOf(Stage::class), $fixture, $league);
 
-        $this->manager->handle_single_result_update($fixture, [], 'share');
+        $request = new Fixture_Result_Update_Request(123, [], 'share', 'Y');
+        $this->manager->handle_fixture_result_update($fixture, $request);
     }
 }

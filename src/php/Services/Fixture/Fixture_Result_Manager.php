@@ -4,15 +4,17 @@ namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
 use Racketmanager\Domain\Result;
+use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Services\Validator\Fixture_Score_Validator;
 
 use Racketmanager\Repositories\League_Repository;
 
@@ -37,31 +39,49 @@ class Fixture_Result_Manager
      */
     private League_Service $league_service;
 
+    /**
+     * @var Fixture_Score_Validator
+     */
+    private Fixture_Score_Validator $score_validator;
+
     public function __construct(
         Result_Service $result_service,
         Knockout_Progression_Service $progression_service,
-        League_Service $league_service
+        League_Service $league_service,
+        Fixture_Score_Validator $score_validator
     ) {
         $this->result_service      = $result_service;
         $this->progression_service = $progression_service;
         $this->league_service      = $league_service;
+        $this->score_validator     = $score_validator;
     }
 
     /**
      * Handle result update for a single fixture (player/tournament match).
      *
      * @param Fixture $fixture
-     * @param array|null $sets
-     * @param string|null $match_status
-     * @param string|null $confirmed
+     * @param Fixture_Result_Update_Request $request
+     *
      * @return void
+     * @throws Fixture_Validation_Exception If validation fails.
      */
-    public function handle_single_result_update(Fixture $fixture, ?array $sets, ?string $match_status, ?string $confirmed = null): void
+    public function handle_fixture_result_update(Fixture $fixture, Fixture_Result_Update_Request $request): void
     {
+        // 1. Validate the match score using extracted logic
+        $legacy_match = \Racketmanager\get_match($fixture->get_id());
+        $this->score_validator->validate($legacy_match, $request->sets, $request->match_status, 'set_');
+
+        if ($this->score_validator->get_error()) {
+            throw new Fixture_Validation_Exception(
+                $this->score_validator->get_err_msgs(),
+                $this->score_validator->get_err_flds()
+            );
+        }
+
         $status = 0;
         $custom = $fixture->get_custom() ?: [];
 
-        switch ($match_status) {
+        switch ($request->match_status) {
             case 'walkover_player1':
                 $custom['walkover'] = 'home';
                 $status = 1;
@@ -94,17 +114,17 @@ class Fixture_Result_Manager
                 break;
         }
 
-        $custom['sets'] = $sets;
+        $custom['sets'] = $request->sets;
 
         $result_data = [
             'status' => $status,
             'custom' => $custom,
-            'sets'   => $sets,
+            'sets'   => $request->sets,
         ];
 
         $result = Result_Factory::from_array($result_data, $fixture->get_home_team(), $fixture->get_away_team());
         
-        $this->update_result($fixture, $result, $confirmed);
+        $this->update_result($fixture, $result, $request->confirmed);
     }
 
     /**

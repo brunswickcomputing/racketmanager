@@ -19,7 +19,7 @@ use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Tournament_Service;
-use Racketmanager\Services\Validator\Validator_Match;
+use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -2852,7 +2852,7 @@ class Racketmanager_Match {
      * @return object
      */
     public function handle_team_result_update( ?string $match_status, array $rubber_statuses, ?array $match_comments, array $rubber_ids, array $rubber_types, array $match_players, array $match_sets ): object {
-        $validator         = new Validator_Match();
+        $validator         = new Validator_Fixture();
         $validator         = $validator->match_status( $match_status );
         $is_update_allowed = $this->is_update_allowed();
         $validator         = $validator->can_player_enter_result( $is_update_allowed, $match_players );
@@ -3348,7 +3348,7 @@ class Racketmanager_Match {
         global $racketmanager;
         $match_msg     = null;
         $update_league = false;
-        $validator     = new Validator_Match();
+        $validator     = new Validator_Fixture();
         $validator     = $validator->result_confirm( $result_confirm, $confirm_comments );
         if ( ! empty( $validator->error ) ) {
             return $validator;

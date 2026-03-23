@@ -17,7 +17,7 @@ use function Racketmanager\get_rubber;
 /**
  * Class to implement the Match Validator object
  */
-final class Validator_Match extends Validator {
+final class Validator_Fixture extends Validator {
     public bool $completed_set;
     /**
      * @var float|int|mixed|string
@@ -232,193 +232,21 @@ final class Validator_Match extends Validator {
      * @return object $validation updated validation object.
      */
     public function match_score( object $match, ?array $sets, ?string $match_status, string $set_prefix_start, ?int $rubber_number = null ): object {
-        $num_sets_to_win  = intval( $match->league->num_sets_to_win );
-        $num_games_to_win = 1;
-        $point_rule       = $match->league->get_point_rule();
-        $points_format    = null;
-        if ( 1 === $num_sets_to_win && ! empty( $point_rule['match_result'] ) && 'games' === $point_rule['match_result'] ) {
-            $points_format = 'games';
-        }
-        $home_score             = 0;
-        $away_score             = 0;
-        $scoring                = $match->league->scoring ?? 'TB';
-        $sets_updated           = array();
-        $s                      = 1;
-        $stats                  = array();
-        $stats['sets']['home']  = 0;
-        $stats['sets']['away']  = 0;
-        $stats['games']['home'] = 0;
-        $stats['games']['away'] = 0;
+        $score_validator = new Fixture_Score_Validator();
+        $score_validator->validate( $match, $sets, $match_status, $set_prefix_start, $rubber_number );
 
-        $points['home']['sets']   = 0;
-        $points['away']['sets']   = 0;
-        $points['shared']['sets'] = 0;
-        $points['split']['sets']  = 0;
-        if ( ! empty( $sets ) ) {
-            $num_sets    = count( $sets );
-            $set_retired = null;
-            if ( 'retired_player1' === $match_status || 'retired_player2' === $match_status || 'abandoned' === $match_status ) {
-                for ( $s1 = $num_sets; $s1 >= 1; $s1-- ) {
-                    if ( ( isset($sets[ $s1 ]['player1']) && '' !== $sets[ $s1 ]['player1'] ) || ( isset($sets[ $s1 ]['player2']) && '' !== $sets[ $s1 ]['player2'] ) ) {
-                        $set_retired = $s1;
-                        break;
-                    }
-                }
-            }
-            foreach ( $sets as $set ) {
-                $set_prefix = $set_prefix_start . $s . '_';
-                $set_type   = Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
-                $set_info   = Util::get_set_info( $set_type );
-                if ( 1 === $s ) {
-                    $num_games_to_win = $set_info->min_win;
-                }
-                if ( ( $s > $num_sets_to_win ) && ( $home_score === $num_sets_to_win || $away_score === $num_sets_to_win ) ) {
-                    $set_info->set_type = 'null';
-                }
-                $set_status = null;
-                switch ( $match_status ) {
-                    case 'retired_player1':
-                    case 'retired_player2':
-                    case 'abandoned':
-                        if ( $set_retired === $s ) {
-                            $set_status = $match_status;
-                        } elseif ( $s > $set_retired ) {
-                            $set_info->set_type = 'null';
-                        }
-                        break;
-                    case 'cancelled':
-                    default:
-                        $set_status = $match_status;
-                        break;
-                }
-                $set           = $this->validate_set( $set, $set_prefix, $set_info, $set_status );
-                $set_player_1  = is_null( $set['player1'] ) ? null : strtoupper( $set['player1'] );
-                $set_player_2  = is_null( $set['player2'] ) ? null : strtoupper( $set['player2'] );
-                $set_completed = $set['completed'];
-                if ( null !== $set_player_1 && null !== $set_player_2 ) {
-                    if ( ( $set_player_1 > $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player2' ) === $set_status || ( 'invalid_player2' ) === $set_status || ( 'invalid_players' ) === $set_status ) {
-                        if ( empty( $points_format ) ) {
-                            ++$points['home']['sets'];
-                            ++$stats['sets']['home'];
-                            ++$home_score;
-                            if ( 'MTB' === $set['settype'] ) {
-                                ++$stats['games']['home'];
-                            }
-                        } else {
-                            $home_score = $set_player_1;
-                            $away_score = $set_player_2;
-                        }
-                    } elseif ( ( $set_player_1 < $set_player_2 && ( empty( $set_status ) || ( 'abandoned' === $set_status && $set_completed ) ) ) || ( 'retired_player1' ) === $set_status || ( 'invalid_player1' ) === $set_status ) {
-                        if ( empty( $points_format ) ) {
-                            ++$points['away']['sets'];
-                            ++$stats['sets']['away'];
-                            ++$away_score;
-                            if ( 'MTB' === $set['settype'] ) {
-                                ++$stats['games']['away'];
-                            }
-                        } else {
-                            $home_score = $set_player_1;
-                            $away_score = $set_player_2;
-                        }
-                    } elseif ( 'S' === $set_player_1 ) {
-                        ++$points['shared']['sets'];
-                        $stats['sets']['home'] += 0.5;
-                        $stats['sets']['away'] += 0.5;
-                        $home_score             += 0.5;
-                        $away_score             += 0.5;
-                    }
-                }
-                if ( is_numeric( $set_player_1 ) && 'MTB' !== $set['settype'] ) {
-                    $stats['games']['home'] += $set_player_1;
-                }
-                if ( is_numeric( $set_player_2 ) && 'MTB' !== $set['settype'] ) {
-                    $stats['games']['away'] += $set_player_2;
-                }
-                $sets_updated[ $s ] = $set;
-                ++$s;
-            }
-            if ( ! empty( $home_score ) && ! empty( $away_score ) ) {
-                ++$points['split']['sets'];
-            }
+        if ( $score_validator->get_error() ) {
+            $this->error    = true;
+            $this->err_flds = array_merge( $this->err_flds, $score_validator->get_err_flds() );
+            $this->err_msgs = array_merge( $this->err_msgs, $score_validator->get_err_msgs() );
         }
-        if ( 'league' === $match->league->event->competition->type ) {
-            $point_rule              = $match->league->get_point_rule();
-            $walkover_rubber_penalty = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
-        } else {
-            $walkover_rubber_penalty = 0;
-        }
-        if ( 'walkover_player1' === $match_status ) {
-            $stats['sets']['home']     += $num_sets_to_win;
-            $points['home']['sets']    += $num_sets_to_win;
-            $points['away']['walkover'] = true;
-            $home_score                += $num_sets_to_win;
-            $away_score                -= $walkover_rubber_penalty;
-            $stats['games']['home']    += $num_games_to_win * $num_sets_to_win;
-        } elseif ( 'walkover_player2' === $match_status ) {
-            $stats['sets']['away']     += $num_sets_to_win;
-            $points['away']['sets']    += $num_sets_to_win;
-            $points['home']['walkover'] = true;
-            $away_score                += $num_sets_to_win;
-            $home_score                -= $walkover_rubber_penalty;
-            $stats['games']['away']    += $num_games_to_win * $num_sets_to_win;
-        } elseif ( 'retired_player1' === $match_status ) {
-            $points['home']['retired'] = true;
-            $points['away']['sets']    = $num_sets_to_win;
-            $stats['sets']['away']     = $num_sets_to_win;
-            $away_score                = $num_sets_to_win;
-        } elseif ( 'retired_player2' === $match_status ) {
-            $points['away']['retired'] = true;
-            $points['home']['sets']    = $num_sets_to_win;
-            $stats['sets']['home']     = $num_sets_to_win;
-            $home_score                = $num_sets_to_win;
-        } elseif ( 'invalid_player2' === $match_status ) {
-            $stats['sets']['home']     = $num_sets_to_win;
-            $points['home']['sets']    = $num_sets_to_win;
-            $points['away']['invalid'] = true;
-            $home_score                 = $num_sets_to_win;
-            $away_score                -= $walkover_rubber_penalty;
-            $stats['games']['home']    = $num_games_to_win * $num_sets_to_win;
-            $stats['games']['away']    = 0;
-        } elseif ( 'invalid_player1' === $match_status ) {
-            $stats['sets']['away']     = $num_sets_to_win;
-            $points['away']['sets']    = $num_sets_to_win;
-            $points['home']['invalid'] = true;
-            $away_score                = $num_sets_to_win;
-            $home_score               -= $walkover_rubber_penalty;
-            $stats['games']['away']    = $num_games_to_win * $num_sets_to_win;
-            $stats['games']['home']    = 0;
-        } elseif ( 'invalid_players' === $match_status ) {
-            $stats['sets']['home']     = 0;
-            $points['home']['sets']    = 0;
-            $stats['sets']['away']     = 0;
-            $points['away']['sets']    = 0;
-            $points['both']['invalid'] = true;
-            $away_score                = $walkover_rubber_penalty;
-            $home_score                = $walkover_rubber_penalty;
-            $stats['games']['away']    = 0;
-            $stats['games']['home']    = 0;
-        } elseif ( 'share' === $match_status ) {
-            $shared_sets              = $match->league->num_sets / 2;
-            $points['shared']['sets'] = $match->league->num_sets;
-            $home_score              += $shared_sets;
-            $away_score              += $shared_sets;
-        } elseif ( 'withdrawn' === $match_status ) {
-            $points['withdrawn'] = 1;
-        } elseif ( 'cancelled' === $match_status ) {
-            $points['cancelled'] = 1;
-        } elseif ( 'abandoned' === $match_status ) {
-            if ( $home_score !== $num_sets_to_win && $away_score !== $num_sets_to_win ) {
-                $shared_sets              = $match->league->num_sets - $home_score - $away_score;
-                $points['shared']['sets'] = $shared_sets;
-                $home_score              += $shared_sets;
-                $away_score              += $shared_sets;
-            }
-        }
-        $this->home_points = $home_score;
-        $this->away_points = $away_score;
-        $this->sets        = $sets_updated;
-        $this->stats       = $stats;
-        $this->points      = $points;
+
+        $this->home_points = $score_validator->get_home_points();
+        $this->away_points = $score_validator->get_away_points();
+        $this->sets        = $score_validator->get_sets();
+        $this->stats       = $score_validator->get_stats();
+        $this->points      = $score_validator->get_points();
+
         return $this;
     }
     /**

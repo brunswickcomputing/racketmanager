@@ -917,8 +917,10 @@ class League {
                         if ( $fixture ) {
                             $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
                             $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
-                            $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
-                            $result_manager->handle_single_result_update( $fixture, array(), $match_status, $match->confirmed );
+                            $score_validator = new \Racketmanager\Services\Validator\Fixture_Score_Validator();
+                            $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+                            $request = new \Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $match->confirmed );
+                            $result_manager->handle_fixture_result_update( $fixture, $request );
                         }
                     } else {
                         $match_confirmed = 'Y';
@@ -2587,7 +2589,8 @@ class League {
                 if ( $fixture ) {
                     $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
                     $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
-                    $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service );
+                    $score_validator = new \Racketmanager\Services\Validator\Fixture_Score_Validator();
+                    $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
 
                     $result_data = [
                         'home_points' => $points_home,

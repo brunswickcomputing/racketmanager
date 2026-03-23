@@ -13,7 +13,7 @@ use Racketmanager\Ajax\Ajax_Account;
 use Racketmanager\Ajax\Ajax_Club;
 use Racketmanager\Ajax\Ajax_Finance;
 use Racketmanager\Ajax\Ajax_Frontend;
-use Racketmanager\Ajax\Ajax_Match;
+use Racketmanager\Ajax\Ajax_Fixture;
 use Racketmanager\Ajax\Ajax_Tournament;
 use Racketmanager\Domain\Message;
 use Racketmanager\Rest\Rest_Routes;
@@ -122,7 +122,7 @@ class RacketManager {
     public object $ajax_club;
     public object $ajax_finance;
     public object $ajax_frontend;
-    public object $ajax_match;
+    public object $ajax_fixture;
     public object $ajax_tournament ;
     public object $login;
     public object $shortcodes;
@@ -701,7 +701,7 @@ class RacketManager {
         $this->ajax_club                = new Ajax_Club( $this );
         $this->ajax_finance             = new Ajax_Finance( $this );
         $this->ajax_frontend            = new Ajax_Frontend( $this );
-        $this->ajax_match               = new Ajax_Match( $this );
+        $this->ajax_fixture               = new Ajax_Fixture( $this );
         $this->ajax_tournament          = new Ajax_Tournament( $this );
         $this->shortcodes               = new Shortcodes( $this );
         $this->shortcodes_club          = new Shortcodes_Club( $this );

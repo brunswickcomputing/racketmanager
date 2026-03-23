@@ -190,6 +190,7 @@ class Util {
      */
     public static function get_set_info( string $set_type ): object {
         $tiebreak_allowed  = false;
+        $tiebreak_required = false;
         $tiebreak_set      = 6;
         if ( 'TB' === $set_type ) {
             $max_win          = 7;
@@ -202,6 +203,8 @@ class Util {
             $min_win  = 10;
             $max_loss = $max_win - 2;
             $min_loss = $min_win - 2;
+            $tiebreak_allowed = true;
+            $tiebreak_required = true;
         } elseif ( 'fast4' === $set_type ) {
             $max_win          = 4;
             $min_win          = 4;
@@ -220,6 +223,7 @@ class Util {
             $max_loss     = $max_win - 2;
             $min_loss     = $min_win - 2;
             $tiebreak_set = 7;
+            $tiebreak_allowed = true;
         } else {
             $max_win  = 0;
             $min_win  = 0;
@@ -234,7 +238,7 @@ class Util {
         $set_info->min_loss          = $min_loss;
         $set_info->tiebreak_set      = $tiebreak_set;
         $set_info->tiebreak_allowed  = $tiebreak_allowed;
-        $set_info->tiebreak_required = false;
+        $set_info->tiebreak_required = $tiebreak_required;
         return $set_info;
     }
     /**

@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit\Services\Fixture;
+namespace Racketmanager\Tests\Integration\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture;
@@ -18,7 +18,7 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use stdClass;
 
-class Fixture_Result_Manager_Test extends TestCase {
+class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $result_service;
     private $progression_service;
     private $league_service;

@@ -161,6 +161,10 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $post   = $dto->post;
         $season = isset( $post['season'] ) ? intval( $post['season'] ) : null;
 
+        if ( $season === null && $dto->season !== null ) {
+            $season = intval( $dto->season );
+        }
+
         if ( empty( $post['team'] ) || ! is_array( $post['team'] ) ) {
             return new Action_Result_DTO( __( 'No teams selected', 'racketmanager' ), Admin_Message_Type::WARNING );
         }

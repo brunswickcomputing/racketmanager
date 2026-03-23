@@ -8,6 +8,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\Result;
+use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
@@ -65,11 +66,25 @@ class Fixture_Result_Manager
      * @return void
      * @throws Fixture_Validation_Exception If validation fails.
      */
-    public function handle_fixture_result_update(Fixture $fixture, Fixture_Result_Update_Request $request): void
-    {
+    public function handle_fixture_result_update( Fixture $fixture, Fixture_Result_Update_Request $request ): void {
+        $league = $this->league_service->get_league( $fixture->get_league_id() );
+        if ( ! $league ) {
+            throw new League_Not_Found_Exception( 'League not found for fixture: ' . $fixture->get_id() );
+        }
+
+        $scoring_context = new Scoring_Context(
+            num_sets_to_win: (int) $league->num_sets_to_win,
+            scoring_type: $league->scoring ?? 'TB',
+            point_rule: $league->get_point_rule(),
+            is_championship: (bool) $league->is_championship,
+            final_round: $fixture->get_final(),
+            num_rubbers: (int) $league->num_rubbers,
+            leg: $fixture->get_leg(),
+            num_sets: (int) $league->num_sets
+        );
+
         // 1. Validate the match score using extracted logic
-        $legacy_match = \Racketmanager\get_match($fixture->get_id());
-        $this->score_validator->validate($legacy_match, $request->sets, $request->match_status, 'set_');
+        $this->score_validator->validate( $scoring_context, $request->sets, $request->match_status, 'set_' );
 
         if ($this->score_validator->get_error()) {
             throw new Fixture_Validation_Exception(

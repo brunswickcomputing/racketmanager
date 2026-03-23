@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Domain\Scoring\Scoring_Context;
 use stdClass;
 
 class Fixture_Result_Manager_Test extends TestCase {
@@ -128,14 +129,19 @@ class Fixture_Result_Manager_Test extends TestCase {
         $league->method('get_id')->willReturn(789);
         $league->method('get_name')->willReturn('Tournament');
         $league->method('get_event_id')->willReturn(10);
+        $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
+        $league->num_sets_to_win = 2;
+        $league->num_sets = 3;
         
+        $this->league_service->method('get_league')->with(789)->willReturn($league);
         $GLOBALS['wp_stubs_leagues'][789] = $league;
         
-        $match = $this->createMock(Racketmanager_Match::class);
-        $GLOBALS['wp_stubs_matches'][123] = $match;
-
         $this->result_service->expects($this->once())
                              ->method('apply_to_fixture');
+
+        $this->score_validator->expects($this->once())
+                             ->method('validate')
+                             ->with($this->isInstanceOf(Scoring_Context::class), [], 'share', 'set_');
 
         $this->progression_service->expects($this->once())
                                   ->method('progress_winner')

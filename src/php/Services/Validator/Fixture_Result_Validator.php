@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Domain\Scoring\Scoring_Context;
+
 /**
  * Handles match-level score awards and statistics updates.
  */
@@ -9,8 +11,8 @@ class Fixture_Result_Validator {
     /**
      * Handle match status awards (walkovers, retirements, etc.)
      */
-    public function handle_match_status_awards( object $match, ?string $match_status, object $match_info, array &$stats, array &$points, &$home_score, &$away_score ): void {
-        $walkover_rubber_penalty = $this->calculate_walkover_penalty( $match );
+    public function handle_match_status_awards( Scoring_Context $context, ?string $match_status, object $match_info, array &$stats, array &$points, &$home_score, &$away_score ): void {
+        $walkover_rubber_penalty = $this->calculate_walkover_penalty( $context );
 
         switch ( $match_status ) {
             case 'walkover_player1':
@@ -30,18 +32,16 @@ class Fixture_Result_Validator {
             case 'withdrawn':
             case 'cancelled':
             case 'abandoned':
-                $this->handle_miscellaneous_status_awards( $match, $match_status, $match_info->num_sets_to_win, $points, $home_score, $away_score );
+                $this->handle_miscellaneous_status_awards( $context, $match_status, $match_info->num_sets_to_win, $points, $home_score, $away_score );
                 break;
             default:
                 break;
         }
     }
 
-    private function calculate_walkover_penalty( object $match ): int {
-        if ( 'league' === $match->league->event->competition->type ) {
-            $point_rule = $match->league->get_point_rule();
-
-            return empty( $point_rule['forwalkover_rubber'] ) ? 0 : (int) $point_rule['forwalkover_rubber'];
+    private function calculate_walkover_penalty( Scoring_Context $context ): int {
+        if ( ! empty( $context->point_rule['forwalkover_rubber'] ) ) {
+            return (int) $context->point_rule['forwalkover_rubber'];
         }
 
         return 0;
@@ -115,10 +115,10 @@ class Fixture_Result_Validator {
         }
     }
 
-    private function handle_miscellaneous_status_awards( object $match, string $match_status, int $num_sets_to_win, array &$points, &$home_score, &$away_score ): void {
+    private function handle_miscellaneous_status_awards( Scoring_Context $context, string $match_status, int $num_sets_to_win, array &$points, &$home_score, &$away_score ): void {
         if ( 'share' === $match_status ) {
-            $shared_sets              = $match->league->num_sets / 2;
-            $points['shared']['sets'] = $match->league->num_sets;
+            $shared_sets              = $context->num_sets / 2;
+            $points['shared']['sets'] = $context->num_sets;
             $home_score               += $shared_sets;
             $away_score               += $shared_sets;
         } elseif ( 'withdrawn' === $match_status ) {
@@ -127,7 +127,7 @@ class Fixture_Result_Validator {
             $points['cancelled'] = 1;
         } elseif ( 'abandoned' === $match_status ) {
             if ( $home_score !== (float) $num_sets_to_win && $away_score !== (float) $num_sets_to_win ) {
-                $shared_sets              = $match->league->num_sets - $home_score - $away_score;
+                $shared_sets              = $context->num_sets - $home_score - $away_score;
                 $points['shared']['sets'] = $shared_sets;
                 $home_score               += $shared_sets;
                 $away_score               += $shared_sets;

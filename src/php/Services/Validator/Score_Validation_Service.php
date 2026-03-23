@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Util\Util;
 
 /**
@@ -28,7 +29,7 @@ class Score_Validation_Service {
     /**
      * Validate match score
      *
-     * @param object $match match object (needs league property).
+     * @param Scoring_Context $context Scoring context DTO.
      * @param array|null $sets sets.
      * @param string|null $match_status match status.
      * @param string $set_prefix_start
@@ -36,17 +37,17 @@ class Score_Validation_Service {
      *
      * @return self
      */
-    public function validate( object $match, ?array $sets, ?string $match_status, string $set_prefix_start, ?int $rubber_number = null ): self {
+    public function validate( Scoring_Context $context, ?array $sets, ?string $match_status, string $set_prefix_start, ?int $rubber_number = null ): self {
         $this->reset_validation_state();
 
-        $num_sets_to_win  = intval( $match->league->num_sets_to_win );
+        $num_sets_to_win  = $context->num_sets_to_win;
         $num_games_to_win = 1;
-        $point_rule       = $match->league->get_point_rule();
+        $point_rule       = $context->point_rule;
         $points_format    = ( 1 === $num_sets_to_win && ! empty( $point_rule['match_result'] ) && 'games' === $point_rule['match_result'] ) ? 'games' : null;
 
         $home_score   = 0;
         $away_score   = 0;
-        $scoring      = $match->league->scoring ?? 'TB';
+        $scoring      = $context->scoring_type;
         $sets_updated = array();
         $s            = 1;
         $stats        = $this->initialize_stats_array();
@@ -57,7 +58,7 @@ class Score_Validation_Service {
 
             foreach ( $sets as $set ) {
                 $set_prefix = $set_prefix_start . $s . '_';
-                $set_type   = Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
+                $set_type   = Util::get_set_type( $scoring, $context->final_round, $context->num_sets, $s, $rubber_number, $context->num_rubbers, $context->leg );
                 $set_info   = Util::get_set_info( $set_type );
                 if ( 1 === $s ) {
                     $num_games_to_win = $set_info->min_win;
@@ -86,7 +87,7 @@ class Score_Validation_Service {
                 'num_sets_to_win'  => $num_sets_to_win,
                 'num_games_to_win' => $num_games_to_win,
             ];
-            $this->match_validator->handle_match_status_awards( $match, $match_status, $match_info, $stats, $points, $home_score, $away_score );
+            $this->match_validator->handle_match_status_awards( $context, $match_status, $match_info, $stats, $points, $home_score, $away_score );
         }
 
         $this->finalize_validation_results( $home_score, $away_score, $sets_updated, $stats, $points );

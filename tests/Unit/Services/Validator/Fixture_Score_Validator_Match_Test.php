@@ -13,6 +13,7 @@ namespace {
 namespace Racketmanager\Tests\Unit\Services\Validator {
 
     use PHPUnit\Framework\TestCase;
+    use Racketmanager\Domain\Scoring\Scoring_Context;
     use Racketmanager\Services\Validator\Score_Validation_Service;
     use stdClass;
 
@@ -26,68 +27,45 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             $this->validator = new Score_Validation_Service();
         }
 
-        private function create_mock_match($overrides = []): stdClass
+        private function create_scoring_context($overrides = []): Scoring_Context
         {
-            $match = new stdClass();
-            $match->final_round = null;
-            $match->num_rubbers = null;
-            $match->leg = null;
-            
-            $league = new stdClass();
-            $league->num_sets_to_win = 2;
-            $league->num_sets = 3;
-            $league->scoring = 'TB';
-            $league->get_point_rule = function() {
-                return ['match_result' => 'sets'];
-            };
-            
-            $match->league = $league;
+            $data = [
+                'num_sets_to_win' => 2,
+                'scoring_type'    => 'TB',
+                'point_rule'      => ['match_result' => 'sets'],
+                'is_championship' => false,
+                'final_round'     => null,
+                'num_rubbers'     => null,
+                'leg'             => null,
+                'num_sets'        => 3,
+            ];
 
             foreach ($overrides as $key => $value) {
-                if ($key === 'league_overrides') {
-                    foreach ($value as $lkey => $lvalue) {
-                        $match->league->$lkey = $lvalue;
-                    }
-                } else {
-                    $match->$key = $value;
-                }
+                $data[$key] = $value;
             }
 
-            // In PHP, we can't easily mock methods on stdClass without some tricks or just using a real mock object.
-            // But the code calls $match->league->get_point_rule(), so we need that to work.
-            // Let's use an anonymous class or a simple mock.
-            
-            $match->league = new class($match->league) {
-                public $num_sets_to_win;
-                public $num_sets;
-                public $scoring;
-                public array $point_rule;
-                
-                public function __construct($league) {
-                    $this->num_sets_to_win = $league->num_sets_to_win;
-                    $this->num_sets = $league->num_sets;
-                    $this->scoring = $league->scoring;
-                    $this->point_rule = isset($league->point_rule) ? $league->point_rule : ['match_result' => 'sets'];
-                }
-                
-                public function get_point_rule(): array {
-                    return $this->point_rule;
-                }
-            };
-
-            return $match;
+            return new Scoring_Context(
+                num_sets_to_win: $data['num_sets_to_win'],
+                scoring_type:    $data['scoring_type'],
+                point_rule:      $data['point_rule'],
+                is_championship: $data['is_championship'],
+                final_round:     $data['final_round'],
+                num_rubbers:     $data['num_rubbers'],
+                leg:             $data['leg'],
+                num_sets:        $data['num_sets']
+            );
         }
 
         public function test_validate_complete_match_2_0(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             $sets = [
                 1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
                 2 => ['player1' => '6', 'player2' => '2', 'tiebreak' => ''],
                 3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
             ];
 
-            $this->validator->validate($match, $sets, null, 'set_');
+            $this->validator->validate($context, $sets, null, 'set_');
 
             $this->assertFalse($this->validator->get_error());
             $this->assertEquals(2, $this->validator->get_home_points());
@@ -108,14 +86,14 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
 
         public function test_validate_complete_match_2_1(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             $sets = [
                 1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
                 2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
                 3 => ['player1' => '6', 'player2' => '0', 'tiebreak' => ''],
             ];
 
-            $this->validator->validate($match, $sets, null, 'set_');
+            $this->validator->validate($context, $sets, null, 'set_');
 
             $this->assertFalse($this->validator->get_error());
             $this->assertEquals(2, $this->validator->get_home_points());
@@ -124,7 +102,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
 
         public function test_validate_retired_match(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             // Player 1 retires in the second set
             $sets = [
                 1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
@@ -132,7 +110,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
                 3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
             ];
 
-            $this->validator->validate($match, $sets, 'retired_player1', 'set_');
+            $this->validator->validate($context, $sets, 'retired_player1', 'set_');
 
             $this->assertFalse($this->validator->get_error());
             // Away player should get the remaining sets to win the match
@@ -145,14 +123,14 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
 
         public function test_validate_abandoned_match(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             $sets = [
                 1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
                 2 => ['player1' => '2', 'player2' => '2', 'tiebreak' => ''],
                 3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
             ];
 
-            $this->validator->validate($match, $sets, 'abandoned', 'set_');
+            $this->validator->validate($context, $sets, 'abandoned', 'set_');
 
             $this->assertFalse($this->validator->get_error());
             // Abandoned logic typically shares remaining sets
@@ -168,14 +146,14 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
 
         public function test_validate_walkover(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             $sets = [
                 1 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
                 2 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
                 3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
             ];
 
-            $this->validator->validate($match, $sets, 'walkover_player1', 'set_');
+            $this->validator->validate($context, $sets, 'walkover_player1', 'set_');
 
             $this->assertFalse($this->validator->get_error());
             // Walkover home: home gets max points
@@ -185,14 +163,14 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
 
         public function test_validate_invalid_score_in_match(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             $sets = [
                 1 => ['player1' => '6', 'player2' => '6', 'tiebreak' => ''], // Invalid tied score
                 2 => ['player1' => '6', 'player2' => '2', 'tiebreak' => ''],
                 3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
             ];
 
-            $this->validator->validate($match, $sets, null, 'set_');
+            $this->validator->validate($context, $sets, null, 'set_');
 
             $this->assertTrue($this->validator->get_error());
             $this->assertContains('set_1_player1', $this->validator->get_err_flds());
@@ -200,14 +178,14 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
 
         public function test_validate_too_many_sets_entered(): void
         {
-            $match = $this->create_mock_match();
+            $context = $this->create_scoring_context();
             $sets = [
                 1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
                 2 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
                 3 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''], // Should be empty
             ];
 
-            $this->validator->validate($match, $sets, null, 'set_');
+            $this->validator->validate($context, $sets, null, 'set_');
 
             $this->assertTrue($this->validator->get_error());
             $this->assertContains('set_3_player1', $this->validator->get_err_flds());

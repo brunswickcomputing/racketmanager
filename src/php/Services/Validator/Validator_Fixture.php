@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Services\Validator;
 
+use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use function Racketmanager\get_match;
 use function Racketmanager\get_rubber;
@@ -231,7 +232,8 @@ final class Validator_Fixture extends Validator {
      */
     public function match_score( object $match, ?array $sets, ?string $match_status, string $set_prefix_start, ?int $rubber_number = null ): object {
         $score_validator = new Score_Validation_Service();
-        $score_validator->validate( $match, $sets, $match_status, $set_prefix_start, $rubber_number );
+        $context         = Scoring_Context::from_legacy_match( $match );
+        $score_validator->validate( $context, $sets, $match_status, $set_prefix_start, $rubber_number );
 
         if ( $score_validator->get_error() ) {
             $this->error    = true;

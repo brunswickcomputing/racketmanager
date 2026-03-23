@@ -13,7 +13,7 @@ namespace {
 namespace Racketmanager\Tests\Unit\Services\Validator {
 
     use PHPUnit\Framework\TestCase;
-    use Racketmanager\Services\Validator\Fixture_Score_Validator;
+    use Racketmanager\Services\Validator\Score_Validation_Service;
     use stdClass;
 
     class Fixture_Score_Validator_Match_Test extends TestCase
@@ -23,7 +23,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
         protected function setUp(): void
         {
             parent::setUp();
-            $this->validator = new Fixture_Score_Validator();
+            $this->validator = new Score_Validation_Service();
         }
 
         private function create_mock_match($overrides = []): stdClass

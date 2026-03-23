@@ -10,7 +10,6 @@
 namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Util\Util;
 use function Racketmanager\get_match;
 use function Racketmanager\get_rubber;
 
@@ -18,7 +17,6 @@ use function Racketmanager\get_rubber;
  * Class to implement the Match Validator object
  */
 final class Validator_Fixture extends Validator {
-    public bool $completed_set;
     /**
      * @var float|int|mixed|string
      */
@@ -232,7 +230,7 @@ final class Validator_Fixture extends Validator {
      * @return object $validation updated validation object.
      */
     public function match_score( object $match, ?array $sets, ?string $match_status, string $set_prefix_start, ?int $rubber_number = null ): object {
-        $score_validator = new Fixture_Score_Validator();
+        $score_validator = new Score_Validation_Service();
         $score_validator->validate( $match, $sets, $match_status, $set_prefix_start, $rubber_number );
 
         if ( $score_validator->get_error() ) {
@@ -248,201 +246,6 @@ final class Validator_Fixture extends Validator {
         $this->points      = $score_validator->get_points();
 
         return $this;
-    }
-    /**
-     * Validate set
-     *
-     * @param array $set set information.
-     * @param string $set_prefix set prefix.
-     * @param object $set_info type of set.
-     * @param string|null $match_status match_status setting.
-     */
-    public function validate_set( array $set, string $set_prefix, object $set_info, ?string $match_status ): array {
-        $completed_set  = false;
-        $set_type       = $set_info->set_type;
-        $retired        = ! empty( $match_status ) && str_starts_with( $match_status, 'retired' );
-        $walkover       = ! empty( $match_status ) && str_starts_with( $match_status, 'walkover' );
-        $cancelled      = ! empty( $match_status ) && str_starts_with( $match_status, 'cancelled' );
-        $abandoned      = ! empty( $match_status ) && str_starts_with( $match_status, 'abandoned' );
-        if ( $walkover ) {
-            if ( 'null' === $set_type ) {
-                $set['player1'] = '';
-                $set['player2'] = '';
-            } else {
-                $set['player1'] = null;
-                $set['player2'] = null;
-            }
-            $set['tiebreak'] = '';
-        } elseif ( $retired || $abandoned ) {
-            if ( 'null' === $set_type ) {
-                $set['player1']  = '';
-                $set['player2']  = '';
-                $set['tiebreak'] = '';
-            }
-        } elseif ( $cancelled ) {
-            $set['player1'] = null;
-            $set['player2'] = null;
-        }
-        if ( ! is_null( $set['player1'] ) || ! is_null( $set['player2'] ) ) {
-            if ( 'null' === $set_type ) {
-                if ( '' !== $set['player1'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'player1';
-                    $this->err_msgs[] = __( 'Set score should be empty', 'racketmanager' );
-                }
-                if ( '' !== $set['player2'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'player2';
-                    $this->err_msgs[] = __( 'Set score should be empty', 'racketmanager' );
-                }
-                if ( '' !== $set['tiebreak'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'tiebreak';
-                    $this->err_msgs[] = __( 'Tie break should be empty', 'racketmanager' );
-                }
-            } elseif ( 'share' === $match_status || 'withdrawn' === $match_status ) {
-                $set['player1']  = '';
-                $set['player2']  = '';
-                $set['tiebreak'] = '';
-            } elseif ( 'S' === $set['player1'] || 'S' === $set['player2'] ) {
-                if ( 'S' !== $set['player1'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'player1';
-                    $this->err_msgs[] = __( 'Both scores must be shared', 'racketmanager' );
-                }
-                if ( 'S' !== $set['player2'] ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'player2';
-                    $this->err_msgs[] = __( 'Both scores must be shared', 'racketmanager' );
-                }
-            } elseif ( empty( $set['player1'] ) && empty( $set['player2'] ) ) {
-                if ( ! $retired && ! $walkover && 'abandoned' !== $match_status ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'player1';
-                    $this->err_flds[] = $set_prefix . 'player2';
-                    $this->err_msgs[] = __( 'Set scores must be entered', 'racketmanager' );
-                }
-            } elseif ( $set['player1'] === $set['player2'] ) {
-                if ( ! $retired && ! $walkover && ! $abandoned ) {
-                    $this->error      = true;
-                    $this->err_flds[] = $set_prefix . 'player1';
-                    $this->err_flds[] = $set_prefix . 'player2';
-                    $this->err_msgs[] = __( 'Set scores must be different', 'racketmanager' );
-                }
-            } elseif ( $set['player1'] > $set['player2'] ) {
-                $this->validate_set_score( $set, $set_prefix, 'player1', 'player2', $set_info, $match_status );
-                $completed_set   = $this->completed_set;
-            } elseif ( $set['player1'] < $set['player2'] ) {
-                $this->validate_set_score( $set, $set_prefix, 'player2', 'player1', $set_info, $match_status );
-                $completed_set   = $this->completed_set;
-            } elseif ( '' === $set['player1'] || '' === $set['player2'] ) {
-                if ( ! $retired && ! $walkover ) {
-                    $this->error = true;
-                    if ( '' === $set['player1'] ) {
-                        $this->err_flds[] = $set_prefix . 'player1';
-                    }
-                    if ( '' === $set['player2'] ) {
-                        $this->err_flds[] = $set_prefix . 'player2';
-                    }
-                    $this->err_msgs[] = __( 'Set score not entered', 'racketmanager' );
-                }
-            }
-        }
-        $set['completed'] = $completed_set;
-        $set['settype']   = $set_type;
-        return $set;
-    }
-
-    /**
-     * Validate set score function
-     *
-     * @param array $set set details.
-     * @param string $set_prefix ste prefix.
-     * @param string $team_1 team 1.
-     * @param string $team_2 team 2.
-     * @param object $set_info set info.
-     * @param string|null $match_status match status.
-     *
-     * @return void
-     */
-    private function validate_set_score( array $set, string $set_prefix, string $team_1, string $team_2, object $set_info, ?string $match_status = null ): void {
-        $game_difference_incorrect = __( 'Games difference incorrect', 'racketmanager' );
-        $tie_break_score_required  = __( 'Tie break score required', 'racketmanager' );
-        $tiebreak_allowed  = $set_info->tiebreak_allowed;
-        $tiebreak_required = $set_info->tiebreak_required;
-        $max_win           = $set_info->max_win;
-        $min_win           = $set_info->min_win;
-        $max_loss          = $set_info->max_loss;
-        $min_loss          = $set_info->min_loss;
-        $retired           = ! empty( $match_status ) && substr( $match_status, 0, 8 ) === 'retired';
-        $completed_set     = true;
-        if ( $set[ $team_1 ] < $min_win && $retired ) {
-            if ( 'abandoned' === $match_status ) {
-                $completed_set = false;
-            } else {
-                $this->error      = true;
-                $this->err_msgs[] = __( 'Winning set score too low', 'racketmanager' );
-                $this->err_flds[] = $set_prefix . $team_1;
-            }
-        } elseif ( $set[ $team_1 ] > $max_win ) {
-            $this->error      = true;
-            $this->err_msgs[] = __( 'Winning set score too high', 'racketmanager' );
-            $this->err_flds[] = $set_prefix . $team_1;
-        } elseif ( intval( $set[ $team_1 ] ) === intval( $min_win ) && $max_win !== $min_win && $set[ $team_2 ] > $min_loss && $retired ) {
-            $this->error      = true;
-            $this->err_msgs[] = __( 'Games difference must be at least 2', 'racketmanager' );
-            $this->err_flds[] = $set_prefix . $team_1;
-            $this->err_flds[] = $set_prefix . $team_2;
-        } elseif ( intval( $set[ $team_1 ] ) === $max_win ) {
-            if ( $set[ $team_2 ] < $max_loss && $max_win !== $min_win ) {
-                $this->error      = true;
-                $this->err_msgs[] = $game_difference_incorrect;
-                $this->err_flds[] = $set_prefix . $team_1;
-                $this->err_flds[] = $set_prefix . $team_2;
-            } elseif ( $tiebreak_allowed && $set[ $team_2 ] > $max_loss ) {
-                if ( ! strlen( $set['tiebreak'] ) > 0 ) {
-                    $this->error      = true;
-                    $this->err_msgs[] = $tie_break_score_required;
-                    $this->err_flds[] = $set_prefix . 'tiebreak';
-                } elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
-                    $this->error      = true;
-                    $this->err_msgs[] = __( 'Tie break score must be whole number', 'racketmanager' );
-                    $this->err_flds[] = $set_prefix . 'tiebreak';
-                }
-            } elseif ( $tiebreak_required && '' === $set['tiebreak'] ) {
-                $this->error      = true;
-                $this->err_msgs[] = $tie_break_score_required;
-                $this->err_flds[] = $set_prefix . 'tiebreak';
-            }
-        } elseif ( $set[ $team_1 ] > $min_win && $set[ $team_2 ] < $min_loss ) {
-            $this->error      = true;
-            $this->err_msgs[] = $game_difference_incorrect;
-            $this->err_flds[] = $set_prefix . $team_1;
-            $this->err_flds[] = $set_prefix . $team_2;
-        } elseif ( $set[ $team_1 ] > $min_win && $set[ $team_2 ] > $min_loss && ( $set[ $team_1 ] - 2 ) !== intval( $set[ $team_2 ] ) ) {
-            if ( ! str_starts_with( $match_status, 'retired_player' ) ) {
-                $this->error      = true;
-                $this->err_msgs[] = $game_difference_incorrect;
-                $this->err_flds[] = $set_prefix . $team_2;
-            }
-        } elseif ( $set['tiebreak'] > '' ) {
-            if ( ! $tiebreak_required ) {
-                $this->error      = true;
-                $this->err_msgs[] = __( 'Tie break score should be empty', 'racketmanager' );
-                $this->err_flds[] = $set_prefix . 'tiebreak';
-            }
-        } elseif ( $tiebreak_required ) {
-            if ( '' === $set['tiebreak'] ) {
-                $this->error      = true;
-                $this->err_msgs[] = $tie_break_score_required;
-                $this->err_flds[] = $set_prefix . 'tiebreak';
-            } elseif ( ! is_numeric( $set['tiebreak'] ) || strval( round( $set['tiebreak'] ) ) !== $set['tiebreak'] ) {
-                $this->error      = true;
-                $this->err_msgs[] = __( 'Tie break score must be whole number', 'racketmanager' );
-                $this->err_flds[] = $set_prefix . 'tiebreak';
-            }
-        }
-        $this->completed_set = $completed_set;
     }
 
     /**
@@ -466,7 +269,7 @@ final class Validator_Fixture extends Validator {
     }
 
     /**
-     * Function to validate result confirmation action.
+     * Function to validate a result confirmation action.
      *
      * @param string|null $result_confirm
      * @param string|null $comments
@@ -498,7 +301,7 @@ final class Validator_Fixture extends Validator {
     }
 
     /**
-     * Function to check if user is in team
+     * Function to check if a user is in a team
      *
      * @param object $is_update_allowed
      * @param array $match_players
@@ -506,44 +309,56 @@ final class Validator_Fixture extends Validator {
      * @return object
      */
     public function can_player_enter_result( object $is_update_allowed, array $match_players ): object {
-        $update_allowed = $is_update_allowed->user_can_update;
-        $user_type      = $is_update_allowed->user_type;
-        if ( $update_allowed ) {
-            if ( 'player' === $user_type ) {
-                $player_found = false;
-                try {
-                    $registrations = $this->registration_service->get_clubs_for_player( get_current_user_id() );
-                    foreach ( $registrations as $registration ) {
-                        $registration_id = $registration->registration_id;
-                        foreach ( $match_players as $teams ) {
-                            foreach ( $teams as $players ) {
-                                foreach ( $players as $player ) {
-                                    if ( intval( $player ) === $registration_id ) {
-                                        $player_found = true;
-                                        break 4;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if ( ! $player_found ) {
-                        $this->error = true;
-                        $this->msg   = __( 'Player cannot submit results', 'racketmanager' );
-                    }
-                } catch ( Player_Not_Found_Exception ) {
-                    $this->error = true;
-                    $this->msg   = __( 'Player not found', 'racketmanager' );
-                }
-            }
-        } else {
+        if ( ! $is_update_allowed->user_can_update ) {
             $this->error = true;
             $this->msg   = __( 'Result entry not permitted', 'racketmanager' );
+            return $this;
         }
+
+        if ( 'player' !== $is_update_allowed->user_type ) {
+            return $this;
+        }
+
+        try {
+            $registrations = $this->registration_service->get_clubs_for_player( get_current_user_id() );
+            if ( ! $this->is_player_in_match( $registrations, $match_players ) ) {
+                $this->error = true;
+                $this->msg   = __( 'Player cannot submit results', 'racketmanager' );
+            }
+        } catch ( Player_Not_Found_Exception ) {
+            $this->error = true;
+            $this->msg   = __( 'Player not found', 'racketmanager' );
+        }
+
         return $this;
     }
 
     /**
-     * Function to check players involved in match
+     * Check if any of the player's registrations match a player in the match.
+     *
+     * @param array $registrations
+     * @param array $match_players
+     *
+     * @return bool
+     */
+    private function is_player_in_match( array $registrations, array $match_players ): bool {
+        foreach ( $registrations as $registration ) {
+            $registration_id = $registration->registration_id;
+            foreach ( $match_players as $teams ) {
+                foreach ( $teams as $players ) {
+                    foreach ( $players as $player ) {
+                        if ( intval( $player ) === $registration_id ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Function to check players involved in a match
      *
      * @param array $players
      * @param array $player_numbers
@@ -554,40 +369,90 @@ final class Validator_Fixture extends Validator {
      * @return object
      */
     public function players_involved( array $players, array $player_numbers, int $rubber, bool $playoff, bool $reverse_rubber ): object {
-        $opponents        = array( 'home', 'away' );
+        $opponents = array( 'home', 'away' );
         foreach ( $opponents as $opponent ) {
             $team_players = $players[ $opponent ] ?? array();
-            foreach ( $player_numbers as $player_number ) {
-                if ( empty( $team_players[ $player_number ] ) ) {
-                    $this->error      = true;
-                    $this->err_flds[] = 'players_' . $rubber . '_' . $opponent . '_' . $player_number;
-                    $this->err_msgs[] = __( 'Player not selected', 'racketmanager' );
-                } else {
-                    $player_ref  = $team_players[ $player_number ];
-                    $club_player = $this->registration_service->get_registration( $player_ref );
-                    if ( ! $club_player->system_record ) {
-                        $player_found = in_array( $player_ref, $this->players_involved, true );
-                        if ( ! $player_found ) {
-                            if ( $playoff ) {
-                                $this->error      = true;
-                                $this->err_flds[] = 'players_' . $rubber . '_' . $opponent . '_' . $player_number;
-                                $this->err_msgs[] = __( 'Player for playoff must have played', 'racketmanager' );
-                            } elseif ( $reverse_rubber ) {
-                                $this->error      = true;
-                                $this->err_flds[] = 'players_' . $rubber . '_' . $opponent . '_' . $player_number;
-                                $this->err_msgs[] = __( 'Player for reverse rubber must have played', 'racketmanager' );
-                            } else {
-                                $this->players_involved[] = $player_ref;
-                            }
-                        } elseif ( ! $playoff && ! $reverse_rubber ) {
-                            $this->error      = true;
-                            $this->err_flds[] = 'players_' . $rubber . '_' . $opponent . '_' . $player_number;
-                            $this->err_msgs[] = __( 'Player already selected', 'racketmanager' );
-                        }
-                    }
-                }
-            }
+            $this->validate_team_players( $team_players, $player_numbers, $rubber, $opponent, $playoff, $reverse_rubber );
         }
         return $this;
+    }
+
+    /**
+     * Validate players for a specific team (home or away).
+     *
+     * @param array  $team_players
+     * @param array  $player_numbers
+     * @param int    $rubber
+     * @param string $opponent
+     * @param bool   $playoff
+     * @param bool   $reverse_rubber
+     */
+    private function validate_team_players( array $team_players, array $player_numbers, int $rubber, string $opponent, bool $playoff, bool $reverse_rubber ): void {
+        foreach ( $player_numbers as $player_number ) {
+            if ( empty( $team_players[ $player_number ] ) ) {
+                $this->add_player_error( 'Player not selected', $rubber, $opponent, $player_number );
+                continue;
+            }
+
+            $player_ref  = $team_players[ $player_number ];
+            $club_player = $this->registration_service->get_registration( $player_ref );
+            if ( ! $club_player->system_record ) {
+                $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber );
+            }
+        }
+    }
+
+    /**
+     * Validate player eligibility based on match context.
+     *
+     * @param int|string $player_ref
+     * @param int        $rubber
+     * @param string     $opponent
+     * @param int        $player_number
+     * @param bool       $playoff
+     * @param bool       $reverse_rubber
+     */
+    private function validate_player_eligibility( int|string $player_ref, int $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber ): void {
+        $player_found = in_array( $player_ref, $this->players_involved, true );
+
+        if ( ! $player_found ) {
+            $this->handle_new_player( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber );
+        } elseif ( ! $playoff && ! $reverse_rubber ) {
+            $this->add_player_error( 'Player already selected', $rubber, $opponent, $player_number );
+        }
+    }
+
+    /**
+     * Handle a player who hasn't been tracked yet in the current match.
+     *
+     * @param int|string $player_ref
+     * @param int        $rubber
+     * @param string     $opponent
+     * @param int        $player_number
+     * @param bool       $playoff
+     * @param bool       $reverse_rubber
+     */
+    private function handle_new_player( int|string $player_ref, int $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber ): void {
+        if ( $playoff ) {
+            $this->add_player_error( 'Player for playoff must have played', $rubber, $opponent, $player_number );
+        } elseif ( $reverse_rubber ) {
+            $this->add_player_error( 'Player for reverse rubber must have played', $rubber, $opponent, $player_number );
+        } else {
+            $this->players_involved[] = $player_ref;
+        }
+    }
+
+    /**
+     * Helper to add a player-related validation error.
+     *
+     * @param string $message
+     * @param int    $rubber
+     * @param string $opponent
+     * @param int    $player_number
+     */
+    private function add_player_error( string $message, int $rubber, string $opponent, int $player_number ): void {
+        $this->error      = true;
+        $this->err_flds[] = 'players_' . $rubber . '_' . $opponent . '_' . $player_number;
+        $this->err_msgs[] = __( $message, 'racketmanager' );
     }
 }

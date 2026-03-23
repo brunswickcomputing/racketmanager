@@ -14,7 +14,7 @@ use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
-use Racketmanager\Services\Validator\Fixture_Score_Validator;
+use Racketmanager\Services\Validator\Score_Validation_Service;
 
 use Racketmanager\Repositories\League_Repository;
 
@@ -40,15 +40,15 @@ class Fixture_Result_Manager
     private League_Service $league_service;
 
     /**
-     * @var Fixture_Score_Validator
+     * @var Score_Validation_Service
      */
-    private Fixture_Score_Validator $score_validator;
+    private Score_Validation_Service $score_validator;
 
     public function __construct(
         Result_Service $result_service,
         Knockout_Progression_Service $progression_service,
         League_Service $league_service,
-        Fixture_Score_Validator $score_validator
+        Score_Validation_Service $score_validator
     ) {
         $this->result_service      = $result_service;
         $this->progression_service = $progression_service;

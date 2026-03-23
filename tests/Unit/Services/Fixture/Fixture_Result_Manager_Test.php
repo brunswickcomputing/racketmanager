@@ -12,7 +12,7 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Services\Validator\Fixture_Score_Validator;
+use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Repositories\League_Repository;
 use stdClass;
@@ -29,7 +29,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->result_service = $this->createMock(Result_Service::class);
         $this->progression_service = $this->createMock(Knockout_Progression_Service::class);
         $this->league_service = $this->createMock(League_Service::class);
-        $this->score_validator = $this->createMock(Fixture_Score_Validator::class);
+        $this->score_validator = $this->createMock(Score_Validation_Service::class);
         $this->manager = new Fixture_Result_Manager(
             $this->result_service,
             $this->progression_service,

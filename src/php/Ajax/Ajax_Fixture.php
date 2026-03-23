@@ -18,7 +18,7 @@ use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Result_Service;
-use Racketmanager\Services\Validator\Fixture_Score_Validator;
+use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use stdClass;
 use function Racketmanager\get_match;
@@ -295,7 +295,7 @@ class Ajax_Fixture extends Ajax {
             // and reverting progression (Championships/Knockouts).
             $result_service         = new Result_Service( $fixture_repository );
             $progression_service    = new Knockout_Progression_Service();
-            $score_validator        = new Fixture_Score_Validator();
+            $score_validator        = new Score_Validation_Service();
             $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
             $response               = $fixture_result_manager->reset_result( $fixture );
 
@@ -411,7 +411,7 @@ class Ajax_Fixture extends Ajax {
             if ( $fixture ) {
                 $result_service      = new Result_Service( $fixture_repository );
                 $progression_service = new Knockout_Progression_Service();
-                $score_validator     = new Fixture_Score_Validator();
+                $score_validator     = new Score_Validation_Service();
                 $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
 
                 $validator        = new stdClass();

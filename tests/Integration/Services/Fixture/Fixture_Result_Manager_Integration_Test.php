@@ -48,10 +48,17 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $container->set('competition_service', $comp_service);
         $container->set('club_service', $club_service);
         $container->set('player_service', $player_service);
-        $racketmanager_instance = (object)[
-            'container' => $container,
-            'get_confirmation_email' => function() { return 'admin@example.com'; }
-        ];
+        $racketmanager_instance = new class($container) {
+            public $container;
+            public function __construct($container) { $this->container = $container; }
+            public function get_confirmation_email() { return 'admin@example.com'; }
+            public function get_options() {
+                return [
+                    'league' => ['resultConfirmation' => 'manual'],
+                    'tournament' => ['resultConfirmation' => 'manual'],
+                ];
+            }
+        };
         $GLOBALS['racketmanager'] = $racketmanager_instance;
 
         $this->manager = new Fixture_Result_Manager(
@@ -224,13 +231,25 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->createMock(League::class);
+        $league = $this->getMockBuilder(League::class)
+                       ->disableOriginalConstructor()
+                       ->onlyMethods(['get_id', 'get_name', 'get_event_id', 'get_point_rule'])
+                       ->addMethods(['get_competition_type'])
+                       ->getMock();
         $league->method('get_id')->willReturn(456);
         $league->method('get_name')->willReturn('Test League');
         $league->method('get_event_id')->willReturn(10);
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
+        $league->method('get_competition_type')->willReturn('league');
         $league->num_sets_to_win = 2;
         $league->num_sets = 3;
+        $league->num_rubbers = 1;
+
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)
+                      ->disableOriginalConstructor()
+                      ->getMock();
+        $league->event = $event;
+
         $this->league_service->method('get_league')->willReturn($league);
 
         $fixture_repo = $this->createMock(\Racketmanager\Repositories\League_Repository::class);
@@ -275,5 +294,52 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         unset($GLOBALS['wp_stubs_teams'][100]);
         unset($GLOBALS['wp_stubs_teams'][200]);
+    }
+
+    public function test_handle_team_result_confirmation_updates_fixture(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->confirmed = null;
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)
+                       ->disableOriginalConstructor()
+                       ->onlyMethods(['get_id'])
+                       ->addMethods(['get_competition_type'])
+                       ->getMock();
+        $league->method('get_id')->willReturn(456);
+        $league->method('get_competition_type')->willReturn('league');
+        $this->league_service->method('get_league')->willReturn($league);
+
+        // Mock result_notification if we don't want to rely on get_match
+        // But for now, we'll let it call get_match and we'll stub it
+        $legacy_match = $this->getMockBuilder(Racketmanager_Match::class)
+                             ->disableOriginalConstructor()
+                             ->getMock();
+        $GLOBALS['wp_stubs_matches'][123] = $legacy_match;
+
+        $request = new Team_Result_Confirmation_Request(
+            match_id: 123,
+            result_confirm: 'A',
+            confirm_comments: 'Looks good',
+            result_home: true,
+            result_away: false
+        );
+
+        $this->result_service->expects($this->once())
+                             ->method('apply_to_fixture');
+
+        $result = $this->manager->handle_team_result_confirmation($fixture, $request);
+
+        $this->assertEquals('success', $result->status);
+        $this->assertEquals('A', $fixture->get_confirmed());
+        $comments = maybe_unserialize($fixture->get_comments());
+        $this->assertArrayHasKey('home_confirm', $comments);
+        $this->assertEquals('Looks good', $comments['home_confirm']);
+
+        unset($GLOBALS['wp_stubs_matches'][123]);
     }
 }

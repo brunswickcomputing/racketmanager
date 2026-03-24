@@ -22,6 +22,7 @@ use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
+use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 
 use Racketmanager\Repositories\League_Repository;
@@ -204,6 +205,8 @@ class Fixture_Result_Manager
 
         $validator = new \Racketmanager\Services\Validator\Validator_Fixture();
 
+        $processed_rubbers = [];
+
         foreach ( $request->rubber_ids as $ix => $rubber_id ) {
             $rubber_id     = (int) $rubber_id;
             $rubber_status = $request->rubber_statuses[ $ix ] ?? null;
@@ -225,9 +228,6 @@ class Fixture_Result_Manager
             try {
                 $rubber_result = $this->rubber_manager->handle_rubber_update( $fixture, $rubber_request, $dummy_players );
 
-                $home_points += $rubber_result->home_points;
-                $away_points += $rubber_result->away_points;
-
                 $updated_rubbers[ $rubber_id ] = [
                     'players'     => $rubber_result->players,
                     'homepoints'  => $rubber_result->home_points,
@@ -236,20 +236,13 @@ class Fixture_Result_Manager
                     'winner'      => $rubber_result->winner_id,
                 ];
 
-                // Aggregate stats
-                $match_stats['sets']['home']  += $rubber_result->stats['sets']['home'];
-                $match_stats['sets']['away']  += $rubber_result->stats['sets']['away'];
-                $match_stats['games']['home'] += $rubber_result->stats['games']['home'];
-                $match_stats['games']['away'] += $rubber_result->stats['games']['away'];
-
-                if ( (int) $rubber_result->winner_id === (int) $fixture->get_home_team() ) {
-                    $match_stats['rubbers']['home']++;
-                } elseif ( (int) $rubber_result->winner_id === (int) $fixture->get_away_team() ) {
-                    $match_stats['rubbers']['away']++;
-                } else {
-                    $match_stats['rubbers']['home'] += 0.5;
-                    $match_stats['rubbers']['away'] += 0.5;
-                }
+                $processed_rubbers[] = (object)[
+                    'status'    => $rubber_result->status,
+                    'winner_id' => $rubber_result->winner_id,
+                    'home_points' => $rubber_result->home_points,
+                    'away_points' => $rubber_result->away_points,
+                    'custom'    => $rubber_result->custom,
+                ];
 
             } catch ( Fixture_Validation_Exception $e ) {
                 $validator->error    = true;
@@ -264,18 +257,29 @@ class Fixture_Result_Manager
             return $data;
         }
 
-        // Finalize fixture update
-        $status = \Racketmanager\Util\Util_Lookup::get_match_status_code( $request->match_status );
+        // Finalize fixture update using Result_Calculator
+        $stats_result = Result_Calculator::calculate_stats_from_rubbers(
+            $processed_rubbers,
+            (string) $fixture->get_home_team(),
+            (string) $fixture->get_away_team()
+        );
+
+        $match_points = Result_Calculator::calculate_points_from_stats(
+            $stats_result,
+            $league->get_point_rule(),
+            \Racketmanager\Util\Util_Lookup::get_match_status_code( $request->match_status ),
+            (int) $league->num_rubbers
+        );
         
         $custom = $fixture->get_custom() ?: [];
-        $custom['stats'] = $match_stats;
+        $custom['stats'] = $stats_result['stats'];
 
         $result = new Result(
-            home_points: $home_points,
-            away_points: $away_points,
+            home_points: $match_points['home_points'],
+            away_points: $match_points['away_points'],
             winner_id: null, // update_result will determine
             loser_id: null,
-            status: $status,
+            status: \Racketmanager\Util\Util_Lookup::get_match_status_code( $request->match_status ),
             sets: [], // Team fixture sets are in rubbers
             custom: $custom
         );
@@ -301,17 +305,95 @@ class Fixture_Result_Manager
      *
      * @param Fixture $fixture
      * @param Team_Result_Confirmation_Request $request
+     * @param League_Repository|null $league_repository Optional league repository for testing.
      *
      * @return object Validator details for now to maintain compatibility with legacy AJAX.
      */
-    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request ): object {
-        $match = \Racketmanager\get_match( $fixture->get_id() );
-        return $match->handle_team_result_confirmation(
-            $request->result_confirm,
-            $request->confirm_comments,
-            $request->result_home,
-            $request->result_away
+    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository $league_repository = null ): object {
+        $validator = new \Racketmanager\Services\Validator\Validator_Fixture();
+        $validator = $validator->result_confirm( $request->result_confirm, $request->confirm_comments );
+        if ( ! empty( $validator->error ) ) {
+            return $validator;
+        }
+
+        $actioned_by = '';
+        if ( $request->result_home ) {
+            $actioned_by = 'home';
+        } elseif ( $request->result_away ) {
+            $actioned_by = 'away';
+        }
+
+        $league = $this->league_service->get_league( $fixture->get_league_id() );
+        if ( ! $league ) {
+             throw new League_Not_Found_Exception( 'League not found for fixture: ' . $fixture->get_id() );
+        }
+
+        global $racketmanager;
+        $rm_options          = $racketmanager->get_options();
+        $competition_type    = $league->get_competition_type() ?: 'league';
+        $result_confirmation = $rm_options[ $competition_type ]['resultConfirmation'] ?? 'manual';
+
+        $match_msg = null;
+        $final_confirmed_status = $request->result_confirm;
+        $update_standings = false;
+
+        if ( 'A' === $request->result_confirm ) {
+            $match_msg = __( 'Result Approved', 'racketmanager' );
+            if ( 'auto' === $result_confirmation ) {
+                $update_standings = true;
+                $final_confirmed_status = 'Y';
+            }
+        } elseif ( 'C' === $request->result_confirm ) {
+            $match_msg = __( 'Result Challenged', 'racketmanager' );
+        }
+
+        // 1. Update confirmation status and comments in domain object
+        $fixture->set_confirmed( $final_confirmed_status );
+        
+        $comments = $fixture->get_comments() ? maybe_unserialize( $fixture->get_comments() ) : [];
+        if ( ! is_array( $comments ) ) {
+            $comments = [];
+        }
+
+        if ( $actioned_by ) {
+             $comments[ $actioned_by . '_confirm' ] = $request->confirm_comments;
+        } else {
+             $comments['confirm'] = $request->confirm_comments;
+        }
+        $fixture->set_comments( maybe_serialize( $comments ) );
+
+        // 2. Persist changes using result service
+        $result = new Result(
+            home_points: (float) $fixture->get_home_points(),
+            away_points: (float) $fixture->get_away_points(),
+            status: $fixture->get_status(),
+            custom: $fixture->get_custom() ?: [],
+            sets: [] // sets for team match are in rubbers
         );
+        $this->result_service->apply_to_fixture( $fixture, $result, $final_confirmed_status );
+
+        // 3. Handle league updates if approved
+        if ( $update_standings ) {
+            $this->update_result( $fixture, $result, $final_confirmed_status, $league_repository );
+        }
+
+        // 4. Handle notifications (legacy function call for now)
+        if ( method_exists( \Racketmanager\Domain\Racketmanager_Match::class, 'result_notification' ) ) {
+             // We still need a Racketmanager_Match instance for the legacy notification method
+             // This is the last bit of coupling to be removed in the next step.
+             $match = \Racketmanager\get_match( $fixture->get_id() );
+             if ( $match ) {
+                 $match->result_notification( $final_confirmed_status, $match_msg, $actioned_by );
+             }
+        }
+
+        $data           = new \stdClass();
+        $data->msg      = $match_msg;
+        $data->rubbers  = array();
+        $data->status   = 'success';
+        $data->warnings = []; // TODO: handle player warnings migration
+
+        return $data;
     }
 
     /**

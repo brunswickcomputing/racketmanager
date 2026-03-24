@@ -10,6 +10,7 @@ use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Repositories\Rubber_Repository;
 use function Racketmanager\get_rubber;
 
 /**
@@ -18,13 +19,16 @@ use function Racketmanager\get_rubber;
 class Rubber_Result_Manager {
     private Score_Validation_Service $score_validator;
     private League_Service $league_service;
+    private Rubber_Repository $rubber_repository;
 
     public function __construct(
         Score_Validation_Service $score_validator,
-        League_Service $league_service
+        League_Service $league_service,
+        ?Rubber_Repository $rubber_repository = null
     ) {
-        $this->score_validator = $score_validator;
-        $this->league_service  = $league_service;
+        $this->score_validator   = $score_validator;
+        $this->league_service    = $league_service;
+        $this->rubber_repository = $rubber_repository ?? new Rubber_Repository();
     }
 
     /**
@@ -135,15 +139,14 @@ class Rubber_Result_Manager {
         $points['away']['team'] = $fixture->get_away_team();
         $calc_result            = $rubber->calculate_result( $points );
 
-        // 6. Update Rubber Entity (Legacy approach for now)
-        $rubber->home_points = $calc_result->home;
-        $rubber->away_points = $calc_result->away;
-        $rubber->winner_id   = (string) $calc_result->winner;
-        $rubber->loser_id    = (string) $calc_result->loser;
-        $rubber->custom      = $custom;
-        $rubber->status      = $status;
-        
-        $rubber->update_result();
+        $rubber->set_home_points( (float) $calc_result->home );
+        $rubber->set_away_points( (float) $calc_result->away );
+        $rubber->set_winner_id( (string) $calc_result->winner );
+        $rubber->set_loser_id( (string) $calc_result->loser );
+        $rubber->set_custom( $custom );
+        $rubber->set_status( $status );
+
+        $this->rubber_repository->save( $rubber );
         $rubber->set_players( $players );
 
         return new Rubber_Update_Result(

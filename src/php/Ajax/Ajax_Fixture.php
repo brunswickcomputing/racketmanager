@@ -18,6 +18,7 @@ use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
@@ -300,7 +301,8 @@ class Ajax_Fixture extends Ajax {
             $result_service         = new Result_Service( $fixture_repository );
             $progression_service    = new Knockout_Progression_Service();
             $score_validator        = new Score_Validation_Service();
-            $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service );
+            $rubber_repository      = new Rubber_Repository();
+            $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository );
             $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager );
             $response               = $fixture_result_manager->reset_result( $fixture );
 
@@ -474,7 +476,8 @@ class Ajax_Fixture extends Ajax {
                     $result_service      = new Result_Service( $fixture_repository );
                     $progression_service = new Knockout_Progression_Service();
                     $score_validator     = new Score_Validation_Service();
-                    $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service );
+                    $rubber_repository   = new Rubber_Repository();
+                    $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository );
                     $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager );
 
                     switch ( $action ) {

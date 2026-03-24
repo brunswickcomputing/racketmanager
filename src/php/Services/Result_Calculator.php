@@ -132,11 +132,11 @@ class Result_Calculator {
      *
      * @param array $stats_result Result from calculate_stats_from_rubbers.
      * @param array $point_rule   Scoring rules from the league.
-     * @param int   $status       Match status.
+     * @param int|null $status    Match status.
      * @param int   $num_rubbers  Total number of rubbers in the match.
      * @return array{home_points: float, away_points: float}
      */
-    public static function calculate_points_from_stats( array $stats_result, array $point_rule, int $status, int $num_rubbers ): array {
+    public static function calculate_points_from_stats( array $stats_result, array $point_rule, ?int $status, int $num_rubbers ): array {
         $home_points = $stats_result['home_points'];
         $away_points = $stats_result['away_points'];
 
@@ -164,6 +164,13 @@ class Result_Calculator {
             } else {
                 $home_points = $home_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $home_walkover;
                 $away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
+            }
+        } elseif ( ! empty( $point_rule['match_result'] ) && 'games' === $point_rule['match_result'] ) {
+            $home_points = $stats_result['stats']['games']['home'];
+            $away_points = $stats_result['stats']['games']['away'];
+            if ( 1 === $status ) { // Walkover
+                $home_points -= $walkover_penalty * $home_walkover;
+                $away_points -= $walkover_penalty * $away_walkover;
             }
         } else {
             if ( $home_win > $away_win ) {

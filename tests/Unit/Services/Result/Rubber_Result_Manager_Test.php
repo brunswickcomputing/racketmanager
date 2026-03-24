@@ -29,9 +29,11 @@ class Rubber_Result_Manager_Test extends TestCase {
         parent::setUp();
         $this->score_validator = $this->createMock(Score_Validation_Service::class);
         $this->league_service  = $this->createMock(League_Service::class);
+        $this->rubber_repository = $this->createMock(\Racketmanager\Repositories\Rubber_Repository::class);
         $this->manager = new Rubber_Result_Manager(
             $this->score_validator,
-            $this->league_service
+            $this->league_service,
+            $this->rubber_repository
         );
     }
 
@@ -51,6 +53,7 @@ class Rubber_Result_Manager_Test extends TestCase {
         $this->league_service->method('get_league')->with(456)->willReturn($league);
 
         $rubber_mock = $this->createMock(Rubber::class);
+        $rubber_mock->method('get_id')->willReturn(10);
         $rubber_mock->method('calculate_result')->willReturn((object)[
             'home' => 2.0,
             'away' => 0.0,
@@ -74,7 +77,7 @@ class Rubber_Result_Manager_Test extends TestCase {
 
         $GLOBALS['wp_stubs_rubbers'][10] = $rubber_mock;
 
-        $rubber_mock->expects($this->once())->method('update_result');
+        $this->rubber_repository->expects($this->once())->method('save')->with($rubber_mock);
         $rubber_mock->expects($this->once())->method('set_players');
 
         $result = $this->manager->handle_rubber_update($fixture, $request);

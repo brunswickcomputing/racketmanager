@@ -20,6 +20,7 @@ use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Result\Rubber_Result_Manager;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Validator_Fixture;
@@ -299,7 +300,8 @@ class Ajax_Fixture extends Ajax {
             $result_service         = new Result_Service( $fixture_repository );
             $progression_service    = new Knockout_Progression_Service();
             $score_validator        = new Score_Validation_Service();
-            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+            $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service );
+            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager );
             $response               = $fixture_result_manager->reset_result( $fixture );
 
             // 7. Determine the Success Message (Domain-aware)
@@ -472,7 +474,8 @@ class Ajax_Fixture extends Ajax {
                     $result_service      = new Result_Service( $fixture_repository );
                     $progression_service = new Knockout_Progression_Service();
                     $score_validator     = new Score_Validation_Service();
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+                    $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service );
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager );
 
                     switch ( $action ) {
                         case 'results':

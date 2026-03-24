@@ -313,6 +313,7 @@ function get_league( object|int|string|null $league = null ): ?League {
     return $_league;
 }
 
+
 /**
  * Get Racketmanager_Match object
  *

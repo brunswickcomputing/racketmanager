@@ -4,10 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager {
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
         class RacketManager {
-            public $container;
-            public string $date_format = 'Y-m-d';
-            public string $site_url    = 'https://example.test';
-            public string $site_name   = 'RacketManager';
+            public static $container;
             public $shortcodes;
             public array $options = [];
 
@@ -17,7 +14,7 @@ namespace Racketmanager {
                         return 'Template: ' . $slug;
                     }
                 };
-                $this->container  = new class {
+                self::$container  = new class {
                     public function get( string $id ): object {
                         try {
                             switch ( $id ) {
@@ -223,7 +220,8 @@ namespace {
 
     if ( ! function_exists( 'mysql2date' ) ) {
         function mysql2date( string $format, string $date_string, bool $translate = true ): string|int|false {
-            return date( $format, strtotime( $date_string ) );
+            $timestamp = strtotime( $date_string );
+            return $timestamp ? date( $format, $timestamp ) : false;
         }
     }
 
@@ -300,7 +298,20 @@ namespace {
             return $data;
         }
     }
+}
 
+namespace Racketmanager\Domain {
+    if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
+        function maybe_unserialize( $data ) {
+            if ( is_string( $data ) && preg_match( '/^([adObis]):/', $data ) ) {
+                return unserialize( $data );
+            }
+            return $data;
+        }
+    }
+}
+
+namespace {
     if ( ! function_exists( 'is_serialized' ) ) {
         function is_serialized( $data ): bool {
             return is_string( $data ) && preg_match( '/^([adObis]):/', $data );
@@ -513,6 +524,25 @@ namespace Racketmanager {
         function get_match( $id ) {
             if ( isset( $GLOBALS['wp_stubs_matches'][ $id ] ) ) {
                 return $GLOBALS['wp_stubs_matches'][ $id ];
+            }
+            return null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_rubber' ) ) {
+        function get_rubber( $id ) {
+            if ( isset( $GLOBALS['wp_stubs_rubbers'][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_rubbers'][ $id ];
+            }
+            return null;
+        }
+    }
+
+
+    if ( ! function_exists( 'Racketmanager\get_team' ) ) {
+        function get_team( $id ) {
+            if ( isset( $GLOBALS['wp_stubs_teams'][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_teams'][ $id ];
             }
             return null;
         }

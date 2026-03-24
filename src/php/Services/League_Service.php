@@ -15,6 +15,7 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use stdClass;
+use function Racketmanager\debug_to_console;
 
 class League_Service {
 
@@ -449,6 +450,10 @@ class League_Service {
      */
     public function update_ranking( array $teams ): void {
         foreach ( $teams as $team ) {
+            if ( ! empty( $team->table_id ) ) {
+                $team->set_team_id( $team->id );
+                $team->set_id( $team->table_id );
+            }
             $this->league_team_repository->save( $team );
             wp_cache_delete( $team->get_league_id(), 'leaguetable' );
         }

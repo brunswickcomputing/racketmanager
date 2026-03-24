@@ -2023,6 +2023,7 @@ class League {
      * @return array the ranked teams
      */
     public function get_standings( array $teams, int $match_day, string $mode = 'all' ): array {
+        global $racketmanager;
         // hide status as it's meaningless.
         $this->standings['status'] = 0;
 
@@ -2104,7 +2105,7 @@ class League {
         /*
         * rank teams.
         */
-        $league_service = \Racketmanager\RacketManager::get_instance()->get_container()->get( 'league_service' );
+        $league_service = $racketmanager->container->get( 'league_service' );
         $teams          = $league_service->rank_teams_by_points( $teams );
         return $league_service->get_ranking( $this, $teams );
     }
@@ -2427,6 +2428,7 @@ class League {
      * @param false|string $season season.
      */
     public function set_teams_rank( false|string $season = false ): void {
+        global $racketmanager;
         if ( ! isset( $season ) ) {
             $season = $this->current_season;
         }
@@ -2442,7 +2444,7 @@ class League {
             $teams = $this->get_league_teams( $team_args );
 
             if ( ! empty( $teams ) && 'auto' === $this->event->competition->settings['team_ranking'] ) {
-                $league_service = \Racketmanager\RacketManager::get_instance()->get_container()->get( 'league_service' );
+                $league_service = $racketmanager->container->get( 'league_service' );
                 $teams          = $league_service->rank_teams_by_points( $teams );
                 $teams          = $league_service->get_ranking( $this, $teams );
                 $league_service->update_ranking( $teams );

@@ -10,6 +10,7 @@ if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
     eval( 'namespace Racketmanager\Domain { function maybe_unserialize($data) { return $data; } }' );
 }
 
+use Racketmanager\Services\Validator\Player_Validation_Service;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\League;
@@ -23,6 +24,7 @@ use stdClass;
 class Rubber_Result_Manager_Test extends TestCase {
     private $score_validator;
     private $league_service;
+    private $player_validator;
     private $manager;
 
     protected function setUp(): void {
@@ -30,10 +32,12 @@ class Rubber_Result_Manager_Test extends TestCase {
         $this->score_validator = $this->createMock(Score_Validation_Service::class);
         $this->league_service  = $this->createMock(League_Service::class);
         $this->rubber_repository = $this->createMock(\Racketmanager\Repositories\Rubber_Repository::class);
+        $this->player_validator = $this->createMock(Player_Validation_Service::class);
         $this->manager = new Rubber_Result_Manager(
             $this->score_validator,
             $this->league_service,
-            $this->rubber_repository
+            $this->rubber_repository,
+            $this->player_validator
         );
     }
 
@@ -74,6 +78,8 @@ class Rubber_Result_Manager_Test extends TestCase {
         $this->score_validator->method('get_sets')->willReturn([]);
         $this->score_validator->method('get_stats')->willReturn([]);
         $this->score_validator->method('get_points')->willReturn([]);
+
+        $this->player_validator->method('apply_dummy_players')->willReturn($request->players);
 
         $GLOBALS['wp_stubs_rubbers'][10] = $rubber_mock;
 

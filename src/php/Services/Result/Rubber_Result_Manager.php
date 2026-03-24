@@ -11,6 +11,7 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Services\Validator\Player_Validation_Service;
 use function Racketmanager\get_rubber;
 
 /**
@@ -20,15 +21,18 @@ class Rubber_Result_Manager {
     private Score_Validation_Service $score_validator;
     private League_Service $league_service;
     private Rubber_Repository $rubber_repository;
+    private Player_Validation_Service $player_validator;
 
     public function __construct(
         Score_Validation_Service $score_validator,
         League_Service $league_service,
-        ?Rubber_Repository $rubber_repository = null
+        ?Rubber_Repository $rubber_repository = null,
+        ?Player_Validation_Service $player_validator = null
     ) {
         $this->score_validator   = $score_validator;
         $this->league_service    = $league_service;
         $this->rubber_repository = $rubber_repository ?? new Rubber_Repository();
+        $this->player_validator  = $player_validator ?? new Player_Validation_Service( new Registration_Service() );
     }
 
     /**
@@ -48,8 +52,8 @@ class Rubber_Result_Manager {
 
         $league = $this->league_service->get_league( $fixture->get_league_id() );
         
-        // 1. Handle Dummy Players (This logic might move to a Player_Service later)
-        $players = $this->apply_dummy_players( $league->type ?? '', $request->rubber_status, $request->players, $dummy_players );
+        // 1. Handle Dummy Players
+        $players = $this->player_validator->apply_dummy_players( $league->type ?? '', $request->rubber_status ?? 'none', $request->players, $dummy_players );
 
         $player_numbers = [ 1 ];
         if ( $request->rubber_type && str_contains( $request->rubber_type, 'D' ) ) {
@@ -160,36 +164,5 @@ class Rubber_Result_Manager {
             custom: $custom,
             stats: $stats
         );
-    }
-
-    /**
-     * Map dummy players based on status.
-     */
-    private function apply_dummy_players( string $match_type, ?string $status, array $players, array $dummy_players ): array {
-        if ( empty( $dummy_players ) ) {
-            return $players;
-        }
-
-        $opponents = [ 'home', 'away' ];
-        foreach ( $opponents as $opponent ) {
-            if ( ! isset( $players[ $opponent ] ) ) {
-                $players[ $opponent ] = [];
-            }
-            for ( $i = 1; $i <= 2; $i++ ) {
-                if ( ! isset( $players[ $opponent ][ $i ] ) ) {
-                    $players[ $opponent ][ $i ] = 0;
-                }
-                
-                // If walkover/retired/invalid, ensure dummy players are used if necessary
-                // This logic is a simplified version of Racketmanager_Match::set_dummy_players
-                if ( $status && $status !== 'none' && (int)$players[ $opponent ][ $i ] === 0 ) {
-                    if ( isset( $dummy_players[ $opponent ] ) && ! empty( $dummy_players[ $opponent ] ) ) {
-                        // Just pick the first dummy player for now, similar to legacy
-                        $players[ $opponent ][ $i ] = $dummy_players[ $opponent ][0]->id ?? 0;
-                    }
-                }
-            }
-        }
-        return $players;
     }
 }

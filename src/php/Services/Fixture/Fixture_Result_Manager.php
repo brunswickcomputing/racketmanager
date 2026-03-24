@@ -11,6 +11,8 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
+use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture;
@@ -26,6 +28,11 @@ use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 
 use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Services\Validator\Validator_Fixture;
+use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
+use stdClass;
+use function Racketmanager\get_team;
 
 /**
  * Service for managing fixture results and state transitions.
@@ -63,13 +70,25 @@ class Fixture_Result_Manager
      */
     private Registration_Service|null $registration_service;
 
+    /**
+     * @var Player_Validation_Service|null
+     */
+    private Player_Validation_Service|null $player_validator;
+
+    /**
+     * @var Notification_Service|null
+     */
+    private Notification_Service|null $notification_service;
+
     public function __construct(
         Result_Service $result_service,
         Knockout_Progression_Service $progression_service,
         League_Service $league_service,
         Score_Validation_Service $score_validator,
         ?Rubber_Result_Manager $rubber_manager = null,
-        ?Registration_Service $registration_service = null
+        ?Registration_Service $registration_service = null,
+        ?Player_Validation_Service $player_validator = null,
+        ?Notification_Service $notification_service = null
     ) {
         $this->result_service       = $result_service;
         $this->progression_service  = $progression_service;
@@ -77,6 +96,8 @@ class Fixture_Result_Manager
         $this->score_validator      = $score_validator;
         $this->rubber_manager       = $rubber_manager;
         $this->registration_service = $registration_service;
+        $this->player_validator     = $player_validator ?? new Player_Validation_Service( $registration_service ?? new Registration_Service() );
+        $this->notification_service = $notification_service ?? new Notification_Service();
     }
 
     /**
@@ -177,7 +198,7 @@ class Fixture_Result_Manager
     public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request, ?League_Repository $league_repository = null ): object {
         $league = $this->league_service->get_league( $fixture->get_league_id() );
         if ( ! $league ) {
-            throw new \Racketmanager\Exceptions\League_Not_Found_Exception( 'League not found for fixture: ' . $fixture->get_id() );
+            throw new League_Not_Found_Exception( 'League not found for fixture: ' . $fixture->get_id() );
         }
 
         $dummy_players = [];
@@ -185,7 +206,7 @@ class Fixture_Result_Manager
 
         foreach ( $opponents as $opponent ) {
             $team_id = $opponent === 'home' ? $fixture->get_home_team() : $fixture->get_away_team();
-            $team    = \Racketmanager\get_team( $team_id );
+            $team    = get_team( $team_id );
             if ( $team && $team->club_id && $this->registration_service ) {
                 $dummy_players[ $opponent ] = $this->registration_service->get_dummy_players( (int) $team->club_id );
             }
@@ -194,16 +215,16 @@ class Fixture_Result_Manager
         $home_points     = 0.0;
         $away_points     = 0.0;
         $updated_rubbers = [];
-        $match_stats     = \Racketmanager\Util\Util::initialise_match_stats();
+        $match_stats     = Util::initialise_match_stats();
 
         $is_withdrawn = false;
-        if ( \Racketmanager\get_team( $fixture->get_home_team() )->is_withdrawn || \Racketmanager\get_team( $fixture->get_away_team() )->is_withdrawn ) {
+        if ( get_team( $fixture->get_home_team() )->is_withdrawn || get_team( $fixture->get_away_team() )->is_withdrawn ) {
             $is_withdrawn = true;
         }
 
         $is_cancelled = 'cancelled' === $request->match_status;
 
-        $validator = new \Racketmanager\Services\Validator\Validator_Fixture();
+        $validator = new Validator_Fixture();
 
         $processed_rubbers = [];
 
@@ -267,19 +288,28 @@ class Fixture_Result_Manager
         $match_points = Result_Calculator::calculate_points_from_stats(
             $stats_result,
             $league->get_point_rule(),
-            \Racketmanager\Util\Util_Lookup::get_match_status_code( $request->match_status ),
+            Util_Lookup::get_match_status_code( $request->match_status ),
             (int) $league->num_rubbers
         );
         
         $custom = $fixture->get_custom() ?: [];
         $custom['stats'] = $stats_result['stats'];
 
+        $determined = Result_Calculator::determine_winner_and_loser(
+            $match_points['home_points'],
+            $match_points['away_points'],
+            (int) $fixture->get_home_team(),
+            (int) $fixture->get_away_team(),
+            Util_Lookup::get_match_status_code( $request->match_status ),
+            $custom
+        );
+
         $result = new Result(
             home_points: $match_points['home_points'],
             away_points: $match_points['away_points'],
-            winner_id: null, // update_result will determine
-            loser_id: null,
-            status: \Racketmanager\Util\Util_Lookup::get_match_status_code( $request->match_status ),
+            winner_id: $determined['winner_id'] ? (int) $determined['winner_id'] : null,
+            loser_id: $determined['loser_id'] ? (int) $determined['loser_id'] : null,
+            status: Util_Lookup::get_match_status_code( $request->match_status ),
             sets: [], // Team fixture sets are in rubbers
             custom: $custom
         );
@@ -291,10 +321,20 @@ class Fixture_Result_Manager
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );
 
-        $data          = new \stdClass();
+        // Handle notifications (legacy notification via service)
+        if ( $this->notification_service ) {
+            $msg = __( 'Result saved', 'racketmanager' );
+            $this->notification_service->send_result_notification( $fixture, $confirmed ?: 'P', $msg, false );
+        }
+
+        $fixture_id = $fixture->get_id();
+
+        $data          = new stdClass();
         $data->msg     = __( 'Result saved', 'racketmanager' );
         $data->rubbers = $updated_rubbers;
         $data->status  = 'success';
+        $data->winner_id = $fixture->get_winner_id();
+        $data->loser_id  = $fixture->get_loser_id();
         $data->warnings = []; // TODO: handle warnings
         
         return $data;
@@ -310,7 +350,7 @@ class Fixture_Result_Manager
      * @return object Validator details for now to maintain compatibility with legacy AJAX.
      */
     public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository $league_repository = null ): object {
-        $validator = new \Racketmanager\Services\Validator\Validator_Fixture();
+        $validator = new Validator_Fixture();
         $validator = $validator->result_confirm( $request->result_confirm, $request->confirm_comments );
         if ( ! empty( $validator->error ) ) {
             return $validator;
@@ -377,17 +417,12 @@ class Fixture_Result_Manager
             $this->update_result( $fixture, $result, $final_confirmed_status, $league_repository );
         }
 
-        // 4. Handle notifications (legacy function call for now)
-        if ( method_exists( \Racketmanager\Domain\Racketmanager_Match::class, 'result_notification' ) ) {
-             // We still need a Racketmanager_Match instance for the legacy notification method
-             // This is the last bit of coupling to be removed in the next step.
-             $match = \Racketmanager\get_match( $fixture->get_id() );
-             if ( $match ) {
-                 $match->result_notification( $final_confirmed_status, $match_msg, $actioned_by );
-             }
+        // 4. Handle notifications (via notification service)
+        if ( $this->notification_service ) {
+            $this->notification_service->send_result_notification( $fixture, $final_confirmed_status, $match_msg ?: '', $actioned_by ?: false );
         }
 
-        $data           = new \stdClass();
+        $data           = new stdClass();
         $data->msg      = $match_msg;
         $data->rubbers  = array();
         $data->status   = 'success';

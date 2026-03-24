@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Services\Validator\Player_Validation_Service;
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
@@ -302,8 +303,9 @@ class Ajax_Fixture extends Ajax {
             $progression_service    = new Knockout_Progression_Service();
             $score_validator        = new Score_Validation_Service();
             $rubber_repository      = new Rubber_Repository();
-            $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository );
-            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager );
+            $player_validator       = new Player_Validation_Service( $this->registration_service ?? new \Racketmanager\Services\Registration_Service() );
+            $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
+            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service, $player_validator );
             $response               = $fixture_result_manager->reset_result( $fixture );
 
             // 7. Determine the Success Message (Domain-aware)
@@ -425,7 +427,8 @@ class Ajax_Fixture extends Ajax {
                     $result_service      = new Result_Service( $fixture_repository );
                     $progression_service = new Knockout_Progression_Service();
                     $score_validator     = new Score_Validation_Service();
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+                    $player_validator    = new Player_Validation_Service( $this->registration_service ?? new \Racketmanager\Services\Registration_Service() );
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, null, $this->registration_service, $player_validator );
 
                     $response = $result_manager->handle_fixture_result_update( $fixture, $request );
 
@@ -477,8 +480,9 @@ class Ajax_Fixture extends Ajax {
                     $progression_service = new Knockout_Progression_Service();
                     $score_validator     = new Score_Validation_Service();
                     $rubber_repository   = new Rubber_Repository();
-                    $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository );
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager );
+                    $player_validator    = new Player_Validation_Service( $this->registration_service ?? new \Racketmanager\Services\Registration_Service() );
+                    $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service, $player_validator );
 
                     switch ( $action ) {
                         case 'results':

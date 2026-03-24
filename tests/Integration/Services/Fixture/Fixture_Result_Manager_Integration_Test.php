@@ -16,6 +16,8 @@ use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
+use Racketmanager\Services\Validator\Player_Validation_Service;
+use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Competition\Stage;
@@ -29,6 +31,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $league_service;
     private $score_validator;
     private $rubber_manager;
+    private $player_validator;
+    private $notification_service;
     private $manager;
 
     protected function setUp(): void {
@@ -38,6 +42,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->league_service = $this->createMock(League_Service::class);
         $this->score_validator = $this->createMock(Score_Validation_Service::class);
         $this->rubber_manager = $this->createMock(Rubber_Result_Manager::class);
+        $this->player_validator = $this->createMock(Player_Validation_Service::class);
+        $this->notification_service = $this->createMock(Notification_Service::class);
         $reg_service = $this->createMock(\Racketmanager\Services\Registration_Service::class);
         $reg_service->method('get_dummy_players')->willReturn([]);
         $comp_service = $this->createMock(\Racketmanager\Services\Competition_Service::class);
@@ -67,7 +73,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             $this->league_service,
             $this->score_validator,
             $this->rubber_manager,
-            $reg_service
+            $reg_service,
+            $this->player_validator,
+            $this->notification_service
         );
     }
 
@@ -276,6 +284,13 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
              ->method('handle_rubber_update')
              ->willReturn($rubber_result);
 
+        $this->result_service->expects($this->once())
+             ->method('apply_to_fixture')
+             ->willReturnCallback(function($f, $r, $c) {
+                 $f->set_result($r);
+                 $f->set_confirmed($c);
+             });
+
         $request = new Team_Result_Update_Request(
             match_id: 123,
             match_status: 'completed',
@@ -291,6 +306,10 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->assertEquals('success', $result->status);
         $this->assertArrayHasKey(10, $result->rubbers);
+
+        // Verify winner_id and loser_id on the fixture (since update_result should have been called)
+        $this->assertEquals(100, $fixture->get_winner_id(), 'Winner ID should be 100');
+        $this->assertEquals(200, $fixture->get_loser_id(), 'Loser ID should be 200');
 
         unset($GLOBALS['wp_stubs_teams'][100]);
         unset($GLOBALS['wp_stubs_teams'][200]);

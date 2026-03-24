@@ -12,6 +12,8 @@ use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Presenters\Fixture_Presenter;
@@ -453,49 +455,57 @@ class Ajax_Fixture extends Ajax {
      */
     public function update_team_match(): void {
         $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match' );
-        if ( empty( $validator->error ) ) {
-            $match_id  = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
-            $validator = $validator->match( $match_id );
+        $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match' );
+
+        try {
+            $fixture_id = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
+            $validator->fixture( $fixture_id );
+
             $action    = isset( $_POST['updateRubber'] ) ? sanitize_text_field( wp_unslash( $_POST['updateRubber'] ) ) : null;
-            $validator = $validator->result_action( $action );
+            $validator->result_action( $action );
+
             if ( empty( $validator->error ) ) {
-                $match = get_match( $match_id );
-                switch ( $action ) {
-                    case 'results':
-                        $match_status    = isset( $_POST['new_match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['new_match_status'] ) ) : null;
-                        $match_comments  = isset( $_POST['matchComments'] ) ? wp_unslash( $_POST['matchComments'] ) : '';
-                        $rubber_ids      = $_POST['id'] ?? null;
-                        $rubber_types    = $_POST['type'] ?? null;
-                        $players         = $_POST['players'] ?? array();
-                        $sets            = $_POST['sets'] ?? array();
-                        $rubber_statuses = $_POST['match_status'] ?? null;
-                        $validator       = $match->handle_team_result_update( $match_status, $rubber_statuses, $match_comments, $rubber_ids, $rubber_types, $players, $sets );
-                        break;
-                    case 'confirm':
-                        $result_home      = isset( $_POST['result_home'] ) ? true : null;
-                        $result_away      = isset( $_POST['result_away'] ) ? true : null;
-                        $result_confirm   = isset( $_POST['resultConfirm'] ) ? sanitize_text_field( wp_unslash( $_POST['resultConfirm'] ) ) : null;
-                        $confirm_comments = isset( $_POST['resultConfirmComments'] ) ? sanitize_text_field( wp_unslash( $_POST['resultConfirmComments'] ) ) : '';
-                        $validator        = $match->handle_team_result_confirmation( $result_confirm, $confirm_comments, $result_home, $result_away );
-                        break;
-                    default:
-                        break;
+                $fixture_repository = new Fixture_Repository();
+                $fixture            = $fixture_repository->find_by_id( $fixture_id );
+
+                if ( $fixture ) {
+                    $result_service      = new Result_Service( $fixture_repository );
+                    $progression_service = new Knockout_Progression_Service();
+                    $score_validator     = new Score_Validation_Service();
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+
+                    switch ( $action ) {
+                        case 'results':
+                            $request   = Team_Result_Update_Request::from_post( $_POST );
+                            $validator = $result_manager->handle_team_result_update( $fixture, $request );
+                            break;
+                        case 'confirm':
+                            $request   = Team_Result_Confirmation_Request::from_post( $_POST );
+                            $validator = $result_manager->handle_team_result_confirmation( $fixture, $request );
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
+        } catch ( Exception $e ) {
+            $validator->error = true;
+            $validator->msg   = $e->getMessage();
         }
+
         if ( ! empty( $validator->error ) ) {
             $return = $validator;
             if ( empty( $return->msg ) ) {
                 $return->msg = __( 'Unable to save result', 'racketmanager' );
             }
             $return->rubbers = $validator->rubbers ?? array();
-            wp_send_json_error( $return, $return->status );
+            wp_send_json_error( $return, $return->status ?? 400 );
         }
+
         $return           = $validator;
-        $return->rubbers  = $validator->rubbers;
-        $return->status   = $validator->status;
-        $return->warnings = $validator->warnings;
+        $return->rubbers  = $validator->rubbers ?? array();
+        $return->status   = $validator->status ?? 200;
+        $return->warnings = $validator->warnings ?? array();
         wp_send_json_success( $return );
     }
     /**

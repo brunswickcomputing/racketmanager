@@ -12,7 +12,8 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Competition\Stage;
@@ -152,7 +153,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $request = new Fixture_Result_Update_Request(123, [], 'share', 'Y');
         $response = $this->manager->handle_fixture_result_update($fixture, $request);
 
-        $this->assertInstanceOf(Fixture_Update_Response::class, $response);
+        $this->assertInstanceOf(\Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response::class, $response);
         $this->assertTrue($response->has_outcome(Fixture_Update_Status::SAVED));
         $this->assertTrue($response->has_outcome(Fixture_Update_Status::PROGRESSED));
     }
@@ -186,8 +187,65 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $request = new Fixture_Result_Update_Request(123, [], 'share', 'Y');
         $response = $this->manager->handle_fixture_result_update($fixture, $request);
 
-        $this->assertInstanceOf(Fixture_Update_Response::class, $response);
+        $this->assertInstanceOf(\Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response::class, $response);
         $this->assertTrue($response->has_outcome(Fixture_Update_Status::SAVED));
         $this->assertTrue($response->has_outcome(Fixture_Update_Status::TABLE_UPDATED));
+    }
+
+    public function test_handle_team_result_update_calls_legacy_match(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture = new Fixture($fixture_data);
+
+        $match_mock = $this->createMock(Racketmanager_Match::class);
+        $match_mock->expects($this->once())
+                   ->method('handle_team_result_update')
+                   ->with('completed', ['1' => 'share'], ['comments'], [1 => 10], [1 => 'S'], [1 => []], [1 => []])
+                   ->willReturn((object)['error' => false]);
+
+        $GLOBALS['wp_stubs_matches'][123] = $match_mock;
+
+        $request = new Team_Result_Update_Request(
+            match_id: 123,
+            match_status: 'completed',
+            rubber_statuses: ['1' => 'share'],
+            match_comments: ['comments'],
+            rubber_ids: [1 => 10],
+            rubber_types: [1 => 'S'],
+            players: [1 => []],
+            sets: [1 => []]
+        );
+
+        $result = $this->manager->handle_team_result_update($fixture, $request);
+
+        $this->assertFalse($result->error);
+        unset($GLOBALS['wp_stubs_matches'][123]);
+    }
+
+    public function test_handle_team_result_confirmation_calls_legacy_match(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture = new Fixture($fixture_data);
+
+        $match_mock = $this->createMock(Racketmanager_Match::class);
+        $match_mock->expects($this->once())
+                   ->method('handle_team_result_confirmation')
+                   ->with('Y', 'confirm comments', true, false)
+                   ->willReturn((object)['error' => false]);
+
+        $GLOBALS['wp_stubs_matches'][123] = $match_mock;
+
+        $request = new Team_Result_Confirmation_Request(
+            match_id: 123,
+            result_confirm: 'Y',
+            confirm_comments: 'confirm comments',
+            result_home: true,
+            result_away: false
+        );
+
+        $result = $this->manager->handle_team_result_confirmation($fixture, $request);
+
+        $this->assertFalse($result->error);
+        unset($GLOBALS['wp_stubs_matches'][123]);
     }
 }

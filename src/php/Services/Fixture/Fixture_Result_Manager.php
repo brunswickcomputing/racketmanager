@@ -5,6 +5,8 @@ namespace Racketmanager\Services\Fixture;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
@@ -142,6 +144,46 @@ class Fixture_Result_Manager
         $result = Result_Factory::from_array($result_data, $fixture->get_home_team(), $fixture->get_away_team());
         
         return $this->update_result($fixture, $result, $request->confirmed);
+    }
+
+    /**
+     * Handle result update for a team fixture.
+     *
+     * @param Fixture $fixture
+     * @param Team_Result_Update_Request $request
+     *
+     * @return object Validator details for now to maintain compatibility with legacy AJAX.
+     * @throws Fixture_Validation_Exception
+     */
+    public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request ): object {
+        $match = \Racketmanager\get_match( $fixture->get_id() );
+        return $match->handle_team_result_update(
+            $request->match_status,
+            $request->rubber_statuses,
+            $request->match_comments,
+            $request->rubber_ids,
+            $request->rubber_types,
+            $request->players,
+            $request->sets
+        );
+    }
+
+    /**
+     * Handle result confirmation for a team fixture.
+     *
+     * @param Fixture $fixture
+     * @param Team_Result_Confirmation_Request $request
+     *
+     * @return object Validator details for now to maintain compatibility with legacy AJAX.
+     */
+    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request ): object {
+        $match = \Racketmanager\get_match( $fixture->get_id() );
+        return $match->handle_team_result_confirmation(
+            $request->result_confirm,
+            $request->confirm_comments,
+            $request->result_home,
+            $request->result_away
+        );
     }
 
     /**

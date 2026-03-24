@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Ajax;
 
+use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
@@ -66,7 +67,7 @@ class Ajax_Fixture extends Ajax {
         add_action( 'wp_ajax_racketmanager_reset_match_result', array( &$this, 'reset_match_result' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_reset_match_result', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_update_match_header', array( &$this, 'update_match_header' ) );
-        add_action( 'wp_ajax_racketmanager_update_match', array( &$this, 'update_match' ) );
+        add_action( 'wp_ajax_racketmanager_update_match', array( &$this, 'update_fixture_result' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_update_match', array( &$this, 'logged_out' ) );
         add_action( 'wp_ajax_racketmanager_update_rubbers', array( &$this, 'update_team_match' ) );
         add_action( 'wp_ajax_nopriv_racketmanager_update_rubbers', array( &$this, 'logged_out' ) );
@@ -280,7 +281,7 @@ class Ajax_Fixture extends Ajax {
 
         // 4. Handle Validation Failures
         if ( ! empty( $validator->error ) ) {
-            // Automatically returns standardized error object and HTTP status (e.g., 404 or 403)
+            // Automatically returns standardized error object and HTTP status (e.g. 404 or 403)
             wp_send_json_error( $validator->get_details(), $validator->get_status() );
         }
 
@@ -399,49 +400,54 @@ class Ajax_Fixture extends Ajax {
     /**
      * Update match details
      */
-    public function update_match(): void {
-        $fixture_id = isset( $_POST['current_match_id'] ) ? (int) $_POST['current_match_id'] : 0;
-        $validator  = new Validator_Fixture();
-        $validator->check_security_token( 'racketmanager_nonce', 'scores-match' )
-                  ->fixture( $fixture_id );
+    public function update_fixture_result(): void {
+        $validator = new Validator_Fixture();
+        $validator->check_security_token( 'racketmanager_nonce', 'scores-match' );
 
-        if ( empty( $validator->error ) ) {
-            $fixture_repository = new Fixture_Repository();
-            $fixture            = $fixture_repository->find_by_id( $fixture_id );
-            if ( $fixture ) {
-                $result_service      = new Result_Service( $fixture_repository );
-                $progression_service = new Knockout_Progression_Service();
-                $score_validator     = new Score_Validation_Service();
-                $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+        $validator->error  = false;
+        $validator->status = 400;
 
-                $validator        = new stdClass();
-                $validator->error = false;
+        try {
+            $request    = Fixture_Result_Update_Request::from_post( $_POST );
+            $fixture_id = $request->fixture_id;
+            $validator->fixture( $fixture_id );
 
-                try {
-                    $request = Fixture_Result_Update_Request::from_post( $_POST );
-                    $result_manager->handle_fixture_result_update( $fixture, $request );
-                    $msg = __( 'Result saved', 'racketmanager' );
+            if ( empty( $validator->error ) ) {
+                $fixture_repository = new Fixture_Repository();
+                $fixture            = $fixture_repository->find_by_id( $fixture_id );
+                if ( $fixture ) {
+                    $result_service      = new Result_Service( $fixture_repository );
+                    $progression_service = new Knockout_Progression_Service();
+                    $score_validator     = new Score_Validation_Service();
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
 
-                    $match = get_match( $fixture_id );
+                    $response = $result_manager->handle_fixture_result_update( $fixture, $request );
 
-                    $return = array();
-                    array_push( $return, $msg, $match->home_points, $match->away_points, $match->winner_id, $match->sets );
+                    $presenter = new Fixture_Presenter();
+                    $msg       = $presenter->get_update_message( $response );
+
+                    $return = array(
+                        'msg'         => $msg,
+                        'home_points' => $fixture->get_home_points(),
+                        'away_points' => $fixture->get_away_points(),
+                        'winner_id'   => $fixture->get_winner_id(),
+                        'sets'        => $request->sets,
+                    );
                     wp_send_json_success( $return );
-                } catch ( Fixture_Validation_Exception $e ) {
-                    $validator->error    = true;
-                    $validator->msg      = __( 'Unable to update result', 'racketmanager' );
-                    $validator->err_msgs = $e->get_error_msgs();
-                    $validator->err_flds = $e->get_error_flds();
-                    $validator->status   = 400;
-                } catch ( \Exception $e ) {
-                    $validator->error  = true;
-                    $validator->msg    = $e->getMessage();
-                    $validator->status = 400;
                 }
             }
+        } catch ( Fixture_Validation_Exception $e ) {
+            $validator->error    = true;
+            $validator->msg      = __( 'Unable to update result', 'racketmanager' );
+            $validator->err_msgs = $e->get_error_msgs();
+            $validator->err_flds = $e->get_error_flds();
+        } catch ( Exception $e ) {
+            $validator->error = true;
+            $validator->msg   = $e->getMessage();
         }
         wp_send_json_error( $validator, $validator->status ?? 400 );
     }
+
     /**
      * Update match details for team matches only
      */

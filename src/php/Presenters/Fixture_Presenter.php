@@ -3,6 +3,8 @@
 namespace Racketmanager\Presenters;
 
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
+use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 
 class Fixture_Presenter {
 
@@ -13,6 +15,18 @@ class Fixture_Presenter {
             Fixture_Reset_Status::ERROR_NOT_FOUND        => __( 'Fixture not found', 'racketmanager' ),
             default => __( 'Fixture reset', 'racketmanager' ),
         };
+    }
+
+    public function get_update_message( Fixture_Update_Response $response ): string {
+        if ( $response->has_outcome( Fixture_Update_Status::PROGRESSED ) ) {
+            return __( 'Result saved and draw updated', 'racketmanager' );
+        }
+
+        if ( $response->has_outcome( Fixture_Update_Status::TABLE_UPDATED ) ) {
+            return __( 'Result saved and league table updated', 'racketmanager' );
+        }
+
+        return __( 'Result saved', 'racketmanager' );
     }
 
 }

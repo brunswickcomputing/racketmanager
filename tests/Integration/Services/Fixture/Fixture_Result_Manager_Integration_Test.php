@@ -12,6 +12,8 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
+use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Repositories\League_Repository;
@@ -148,6 +150,44 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                                   ->with($this->isInstanceOf(Stage::class), $fixture, $league);
 
         $request = new Fixture_Result_Update_Request(123, [], 'share', 'Y');
-        $this->manager->handle_fixture_result_update($fixture, $request);
+        $response = $this->manager->handle_fixture_result_update($fixture, $request);
+
+        $this->assertInstanceOf(Fixture_Update_Response::class, $response);
+        $this->assertTrue($response->has_outcome(Fixture_Update_Status::SAVED));
+        $this->assertTrue($response->has_outcome(Fixture_Update_Status::PROGRESSED));
+    }
+
+    public function test_handle_single_result_update_triggers_standings_for_division(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->createMock(League::class);
+        $league->id = 456;
+        $league->is_championship = false;
+        $league->method('get_id')->willReturn(456);
+        $league->method('get_event_id')->willReturn(10);
+        $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
+        $league->num_sets_to_win = 2;
+        $league->num_sets = 3;
+
+        $this->league_service->method('get_league')->with(456)->willReturn($league);
+        $GLOBALS['wp_stubs_leagues'][456] = $league;
+
+        $this->result_service->expects($this->once())
+                             ->method('apply_to_fixture');
+
+        $league->expects($this->once())
+               ->method('update_standings')
+               ->with('2026');
+
+        $request = new Fixture_Result_Update_Request(123, [], 'share', 'Y');
+        $response = $this->manager->handle_fixture_result_update($fixture, $request);
+
+        $this->assertInstanceOf(Fixture_Update_Response::class, $response);
+        $this->assertTrue($response->has_outcome(Fixture_Update_Status::SAVED));
+        $this->assertTrue($response->has_outcome(Fixture_Update_Status::TABLE_UPDATED));
     }
 }

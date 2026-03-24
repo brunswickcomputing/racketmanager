@@ -5,6 +5,8 @@ namespace Racketmanager\Services\Fixture;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
+use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Domain\Result;
@@ -63,10 +65,10 @@ class Fixture_Result_Manager
      * @param Fixture $fixture
      * @param Fixture_Result_Update_Request $request
      *
-     * @return void
+     * @return Fixture_Update_Response
      * @throws Fixture_Validation_Exception If validation fails.
      */
-    public function handle_fixture_result_update( Fixture $fixture, Fixture_Result_Update_Request $request ): void {
+    public function handle_fixture_result_update( Fixture $fixture, Fixture_Result_Update_Request $request ): Fixture_Update_Response {
         $league = $this->league_service->get_league( $fixture->get_league_id() );
         if ( ! $league ) {
             throw new League_Not_Found_Exception( 'League not found for fixture: ' . $fixture->get_id() );
@@ -139,7 +141,7 @@ class Fixture_Result_Manager
 
         $result = Result_Factory::from_array($result_data, $fixture->get_home_team(), $fixture->get_away_team());
         
-        $this->update_result($fixture, $result, $request->confirmed);
+        return $this->update_result($fixture, $result, $request->confirmed);
     }
 
     /**
@@ -148,16 +150,18 @@ class Fixture_Result_Manager
      * @param Fixture $fixture The fixture to update.
      * @param Result $result The new result.
      * @param string|null $confirmed Confirmation status ('Y', 'N', or null).
-     * @return void
+     * @return Fixture_Update_Response
      */
-    public function update_result(Fixture $fixture, Result $result, ?string $confirmed = null): void
+    public function update_result(Fixture $fixture, Result $result, ?string $confirmed = null): Fixture_Update_Response
     {
         $this->result_service->apply_to_fixture($fixture, $result, $confirmed);
+
+        $outcomes = [Fixture_Update_Status::SAVED];
 
         $league_repository = new League_Repository();
         $league = $league_repository->find_by_id($fixture->get_league_id());
         if (!$league) {
-            return;
+            return new Fixture_Update_Response($outcomes);
         }
 
         $stage = Stage::from_league($league);
@@ -165,9 +169,13 @@ class Fixture_Result_Manager
         if ($league->is_championship) {
             $this->progression_service->progress_winner($stage, $fixture, $league);
             $this->progression_service->handle_consolation($stage, $fixture, $league);
+            $outcomes[] = Fixture_Update_Status::PROGRESSED;
         } else {
             $league->update_standings($fixture->get_season());
+            $outcomes[] = Fixture_Update_Status::TABLE_UPDATED;
         }
+
+        return new Fixture_Update_Response($outcomes);
     }
 
     /**

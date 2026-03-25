@@ -34,6 +34,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $player_validator;
     private $notification_service;
     private $manager;
+    private $league_team_repository;
 
     protected function setUp(): void {
         parent::setUp();
@@ -44,6 +45,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->rubber_manager = $this->createMock(Rubber_Result_Manager::class);
         $this->player_validator = $this->createMock(Player_Validation_Service::class);
         $this->notification_service = $this->createMock(Notification_Service::class);
+        $this->league_team_repository = $this->createMock(\Racketmanager\Repositories\League_Team_Repository::class);
         $reg_service = $this->createMock(\Racketmanager\Services\Registration_Service::class);
         $reg_service->method('get_dummy_players')->willReturn([]);
         $comp_service = $this->createMock(\Racketmanager\Services\Competition_Service::class);
@@ -74,9 +76,91 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             $this->score_validator,
             $this->rubber_manager,
             $reg_service,
-            $this->player_validator,
-            $this->notification_service
+            $this->notification_service,
+            null,
+            $this->league_team_repository
         );
+    }
+
+    public function test_is_any_team_withdrawn_returns_true_if_home_team_is_withdrawn(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $home_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $home_league_team->is_withdrawn = true;
+        $away_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $away_league_team->is_withdrawn = false;
+
+        $this->league_team_repository->method('find_by_team_league_and_season')
+            ->willReturnMap([
+                [100, 456, 2026, $home_league_team],
+                [200, 456, 2026, $away_league_team],
+            ]);
+
+        $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
+        $method = $reflection->getMethod('is_any_team_withdrawn');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($this->manager, $fixture));
+    }
+
+    public function test_is_any_team_withdrawn_returns_true_if_away_team_is_withdrawn(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $home_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $home_league_team->is_withdrawn = false;
+        $away_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $away_league_team->is_withdrawn = true;
+
+        $this->league_team_repository->method('find_by_team_league_and_season')
+            ->willReturnMap([
+                [100, 456, 2026, $home_league_team],
+                [200, 456, 2026, $away_league_team],
+            ]);
+
+        $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
+        $method = $reflection->getMethod('is_any_team_withdrawn');
+        $method->setAccessible(true);
+
+        $this->assertTrue($method->invoke($this->manager, $fixture));
+    }
+
+    public function test_is_any_team_withdrawn_returns_false_if_no_team_is_withdrawn(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $home_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $home_league_team->is_withdrawn = false;
+        $away_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $away_league_team->is_withdrawn = false;
+
+        $this->league_team_repository->method('find_by_team_league_and_season')
+            ->willReturnMap([
+                [100, 456, 2026, $home_league_team],
+                [200, 456, 2026, $away_league_team],
+            ]);
+
+        $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
+        $method = $reflection->getMethod('is_any_team_withdrawn');
+        $method->setAccessible(true);
+
+        $this->assertFalse($method->invoke($this->manager, $fixture));
     }
 
     public function test_reset_result_for_non_championship_league(): void {

@@ -12,6 +12,8 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\League;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Result_Service;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
@@ -23,7 +25,7 @@ final class Championship_Manager {
     private Result_Service $result_service;
 
     public function __construct( ?Result_Service $result_service = null ) {
-        $this->result_service = $result_service ?? new Result_Service( new Fixture_Repository() );
+        $this->result_service = $result_service ?? new Result_Service( new Fixture_Repository(), new Team_Repository() );
     }
 
     /**

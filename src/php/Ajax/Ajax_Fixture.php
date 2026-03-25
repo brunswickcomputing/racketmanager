@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
@@ -299,13 +300,14 @@ class Ajax_Fixture extends Ajax {
             // 6. Delegate Business Logic to the Domain Service
             // The manager handles: resetting scores, updating standings (Leagues),
             // and reverting progression (Championships/Knockouts).
-            $result_service         = new Result_Service( $fixture_repository );
+            $team_repository        = new Team_Repository();
+            $result_service         = new Result_Service( $fixture_repository, $team_repository );
             $progression_service    = new Knockout_Progression_Service();
             $score_validator        = new Score_Validation_Service();
             $rubber_repository      = new Rubber_Repository();
-            $player_validator       = new Player_Validation_Service( $this->registration_service ?? new \Racketmanager\Services\Registration_Service() );
+            $player_validator       = new Player_Validation_Service( $this->registration_service );
             $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
-            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service, $player_validator );
+            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service );
             $response               = $fixture_result_manager->reset_result( $fixture );
 
             // 7. Determine the Success Message (Domain-aware)
@@ -424,11 +426,12 @@ class Ajax_Fixture extends Ajax {
                 $fixture_repository = new Fixture_Repository();
                 $fixture            = $fixture_repository->find_by_id( $fixture_id );
                 if ( $fixture ) {
-                    $result_service      = new Result_Service( $fixture_repository );
+                    $fixture_repository = new Fixture_Repository();
+                    $team_repository    = new Team_Repository();
+                    $result_service     = new Result_Service( $fixture_repository, $team_repository );
                     $progression_service = new Knockout_Progression_Service();
                     $score_validator     = new Score_Validation_Service();
-                    $player_validator    = new Player_Validation_Service( $this->registration_service ?? new \Racketmanager\Services\Registration_Service() );
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, null, $this->registration_service, $player_validator );
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, null, $this->registration_service );
 
                     $response = $result_manager->handle_fixture_result_update( $fixture, $request );
 
@@ -473,16 +476,17 @@ class Ajax_Fixture extends Ajax {
 
             if ( empty( $validator->error ) ) {
                 $fixture_repository = new Fixture_Repository();
+                $team_repository    = new Team_Repository();
                 $fixture            = $fixture_repository->find_by_id( $fixture_id );
 
                 if ( $fixture ) {
-                    $result_service      = new Result_Service( $fixture_repository );
+                    $result_service      = new Result_Service( $fixture_repository, $team_repository );
                     $progression_service = new Knockout_Progression_Service();
                     $score_validator     = new Score_Validation_Service();
                     $rubber_repository   = new Rubber_Repository();
-                    $player_validator    = new Player_Validation_Service( $this->registration_service ?? new \Racketmanager\Services\Registration_Service() );
+                    $player_validator    = new Player_Validation_Service( $this->registration_service );
                     $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service, $player_validator );
+                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service );
 
                     switch ( $action ) {
                         case 'results':

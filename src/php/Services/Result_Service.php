@@ -5,6 +5,7 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\Result;
 use Racketmanager\Domain\Fixture;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
 
@@ -14,8 +15,14 @@ class Result_Service {
      */
     private Fixture_Repository $fixture_repository;
 
-    public function __construct( Fixture_Repository $fixture_repository ) {
+    /**
+     * @var Team_Repository
+     */
+    private Team_Repository $team_repository;
+
+    public function __construct( Fixture_Repository $fixture_repository, Team_Repository $team_repository ) {
         $this->fixture_repository = $fixture_repository;
+        $this->team_repository    = $team_repository;
     }
 
     /**
@@ -60,7 +67,7 @@ class Result_Service {
     }
 
     /**
-     * Notify users who have favourited the teams, league or competition.
+     * Notify users who have favourited the teams, league, or competition.
      *
      * @param Fixture $fixture
      */
@@ -83,9 +90,35 @@ class Result_Service {
             $favourited_users[] = $user;
         }
 
-        // Note: Real implementation would need to get club/team IDs from the fixture
-        // For now, mirroring Racketmanager_Match logic as much as possible with available data.
-        
+        $home_team = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
+        $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
+
+        if ( $home_team ) {
+            $users = Util::get_users_for_favourite( 'team', $home_team->get_id() );
+            foreach ( $users as $user ) {
+                $favourited_users[] = $user;
+            }
+            if ( $home_team->get_club_id() ) {
+                $users = Util::get_users_for_favourite( 'club', $home_team->get_club_id() );
+                foreach ( $users as $user ) {
+                    $favourited_users[] = $user;
+                }
+            }
+        }
+
+        if ( $away_team ) {
+            $users = Util::get_users_for_favourite( 'team', $away_team->get_id() );
+            foreach ( $users as $user ) {
+                $favourited_users[] = $user;
+            }
+            if ( $away_team->get_club_id() ) {
+                $users = Util::get_users_for_favourite( 'club', $away_team->get_club_id() );
+                foreach ( $users as $user ) {
+                    $favourited_users[] = $user;
+                }
+            }
+        }
+
         $favourited_users = array_unique( $favourited_users, SORT_REGULAR );
         if ( empty( $favourited_users ) ) {
             return;
@@ -100,7 +133,7 @@ class Result_Service {
         $favourite_url     = $racketmanager->site_url . '/member-account/favourites';
         
         // We need a link to the fixture, which might not be fully implemented in the new Fixture class yet
-        $match_url = $racketmanager->site_url . '/fixture/' . $fixture->get_id(); 
+        $match_url = $racketmanager->site_url . '/fixture/' . $fixture->get_id();
 
         foreach ( $favourited_users as $user ) {
             $user_details  = get_userdata( $user );
@@ -119,6 +152,8 @@ class Result_Service {
                     'user'          => $user_details,
                     'fixture'       => $fixture,
                     'league'        => $league,
+                    'home_team'     => $home_team,
+                    'away_team'     => $away_team,
                 ),
                 'email'
             );

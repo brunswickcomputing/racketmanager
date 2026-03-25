@@ -23,7 +23,6 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_league;
 
 /**
  * Class to implement the Fixture Management Service
@@ -222,14 +221,14 @@ class Fixture_Service {
         return array_map( fn( $fixture ) => $this->get_tournament_fixture_with_details( $fixture ), $fixtures );
     }
 
-    public function get_tournament_fixture_with_details( int|Fixture|null $fixture_id ): ?Fixture_Details_DTO {
+    public function get_fixture_with_details( int|Fixture|null $fixture_id, bool $is_tournament = false ): ?Fixture_Details_DTO {
         try {
             if ( $fixture_id instanceof Fixture ) {
                 $fixture = $fixture_id;
             } else {
                 $fixture = $this->get_fixture( $fixture_id );
             }
-            $league      = get_league( $fixture->get_league_id() );
+            $league      = $this->league_repository->find_by_id( $fixture->get_league_id() );
             $event       = $this->competition_service->get_event_by_id( $league->event->id );
             $competition = $this->competition_service->get_by_id( $event->competition->id );
 
@@ -252,15 +251,16 @@ class Fixture_Service {
             }
 
             $prev_home_match_title = null;
-            if ( ! is_numeric( $fixture->get_home_team() ) ) {
-                $prev_home_match_title = $this->resolve_placeholder_title( $fixture->get_home_team(), $fixture->get_season(), $league, $fixture->get_final() );
-            }
-
             $prev_away_match_title = null;
-            if ( ! is_numeric( $fixture->get_away_team() ) ) {
-                $prev_away_match_title = $this->resolve_placeholder_title( $fixture->get_away_team(), $fixture->get_season(), $league, $fixture->get_final() );
-            }
+            if ( $is_tournament ) {
+                if ( ! is_numeric( $fixture->get_home_team() ) ) {
+                    $prev_home_match_title = $this->resolve_placeholder_title( $fixture->get_home_team(), $fixture->get_season(), $league, $fixture->get_final() );
+                }
 
+                if ( ! is_numeric( $fixture->get_away_team() ) ) {
+                    $prev_away_match_title = $this->resolve_placeholder_title( $fixture->get_away_team(), $fixture->get_season(), $league, $fixture->get_final() );
+                }
+            }
             $is_update_allowed = $this->is_update_allowed( $fixture );
 
         } catch ( Fixture_Not_Found_Exception|League_Not_Found_Exception|Event_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
@@ -268,6 +268,11 @@ class Fixture_Service {
         }
 
         return new Fixture_Details_DTO( $fixture, $league, $event, $competition, $home_team, $away_team, $prev_home_match_title, $prev_away_match_title, $is_update_allowed );
+
+    }
+
+    public function get_tournament_fixture_with_details( int|Fixture|null $fixture_id ): ?Fixture_Details_DTO {
+        return $this->get_fixture_with_details( $fixture_id, true );
     }
 
     /**

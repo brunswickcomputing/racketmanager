@@ -242,4 +242,8 @@ class Util_Messages {
         return sprintf( __( 'Fixture %s not found', 'racketmanager' ), $fixture_id );
     }
 
+    public static function league_not_found_for_fixture( ?int $fixture_id ): string {
+        return sprintf( __( 'League not found for fixture: %d', 'racketmanager' ), $fixture_id );
+    }
+
 }

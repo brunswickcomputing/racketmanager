@@ -9,7 +9,9 @@ namespace Racketmanager;
 
 /** @var object $user */
 /** @var string $match_url */
-/** @var object $match */
+/** @var \Racketmanager\Domain\Fixture $fixture */
+/** @var \Racketmanager\Domain\Team $home_team */
+/** @var \Racketmanager\Domain\Team $away_team */
 /** @var string $salutation */
 /** @var string $contact */
 /** @var string $closing */
@@ -44,9 +46,9 @@ require 'email-header.php';
                                                                     <div style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
                                                                         <table class="body-action" aria-describedby="<?php esc_html_e( 'outside url wrapping action', 'racketmanager' ); ?>">
                                                                             <tr>
-                                                                                <td class="align-right team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->teams['home']->title ); ?></a></td>
-                                                                                <td class="align-center"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->score ); ?></a></td>
-                                                                                <td class="align-left team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $match->teams['away']->title ); ?></a></td>
+                                                                                <td class="align-right team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $home_team?->get_name() ?? '' ); ?></a></td>
+                                                                                <td class="align-center"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( ( $fixture->get_home_points() ?? '0' ) . '-' . ( $fixture->get_away_points() ?? '0' ) ); ?></a></td>
+                                                                                <td class="align-left team"><a style="text-decoration: none; color: #006800;" href="<?php echo esc_html( $match_url ); ?>"><?php echo esc_html( $away_team?->get_name() ?? '' ); ?></a></td>
                                                                             </tr>
                                                                         </table>
                                                                     </div>

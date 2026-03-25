@@ -33,7 +33,7 @@ if ( ! empty( $override ) ) {
 } elseif ( ! empty( $outstanding ) ) {
     $message_detail = __('The approval of this result is outstanding', 'racketmanager' );
     if ( $time_period ) {
-        $message_detail .= sprinft( __(' more than %s hours after the result was entered', 'racketmanager' ), $time_period );
+        $message_detail .= sprintf( __(' more than %s hours after the result was entered', 'racketmanager' ), $time_period );
     }
     $message_detail .= '.';
     $paragraph_text  = $message_detail;
@@ -59,7 +59,7 @@ if ( ! empty( $override ) ) {
     $paragraph_text = __( 'The result of this match has been challenged.', 'racketmanager' );
 } else {
     $message_detail = __( 'The result of this match has been entered', 'racketmanager' );
-    if ( $confirmation_required ) {
+    if ( ! empty( $confirmation_required ) ) {
         $message_detail .= __( ' and requires action', 'racketmanager' );
     }
     if ( ! empty( $confirmation_timeout ) ) {
@@ -68,7 +68,9 @@ if ( ! empty( $override ) ) {
     $message_detail .= '.';
     $paragraph_text  = $message_detail;
     require $paragraph;
-    if ( ! empty( $confirmation_timeout ) ) {
+    if ( empty( $confirmation_timeout ) ) {
+        $paragraph_text = null;
+    } else {
         $paragraph_text = __( 'If you wish to confirm or challenge the result, please do so as soon as possible.', 'racketmanager' );
     }
 }

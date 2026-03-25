@@ -90,6 +90,10 @@ namespace {
     if ( ! class_exists( 'wpdb' ) ) {
         class wpdb {
             public $prefix = 'wp_';
+            public $racketmanager_teams = 'wp_racketmanager_teams';
+            public $racketmanager_league_teams = 'wp_racketmanager_league_teams';
+            public $racketmanager_results_checker = 'wp_racketmanager_results_checker';
+            public $racketmanager_matches = 'wp_racketmanager_matches';
             public $get_results_callback;
             public $get_row_callback;
             public $update_callback;
@@ -323,6 +327,14 @@ namespace Racketmanager\Domain {
     }
 }
 
+namespace Racketmanager\Util {
+    if ( ! function_exists( 'Racketmanager\Util\get_users' ) ) {
+        function get_users( $args = [] ) {
+            return [];
+        }
+    }
+}
+
 namespace {
     if ( ! function_exists( 'is_serialized' ) ) {
         function is_serialized( $data ): bool {
@@ -451,6 +463,13 @@ namespace {
 
     if ( ! function_exists( 'wp_mail' ) ) {
         function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
+            $GLOBALS['wp_mail_calls'][] = array(
+                'to'          => $to,
+                'subject'     => $subject,
+                'message'     => $message,
+                'headers'     => $headers,
+                'attachments' => $attachments,
+            );
             return true;
         }
     }
@@ -557,6 +576,24 @@ namespace Racketmanager {
                 return $GLOBALS['wp_stubs_teams'][ $id ];
             }
             return null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\result_notification' ) ) {
+        function result_notification( $match_id, $args = array() ) {
+            return 'Result notification for match ' . $match_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\captain_result_notification' ) ) {
+        function captain_result_notification( $match_id, $args = array() ) {
+            return 'Captain result notification for match ' . $match_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\match_team_withdrawn_notification' ) ) {
+        function match_team_withdrawn_notification( $match_id, $args = array() ) {
+            return 'Team withdrawn notification for match ' . $match_id;
         }
     }
 }

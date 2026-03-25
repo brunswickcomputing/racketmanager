@@ -51,10 +51,12 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
@@ -150,6 +152,10 @@ final class Container_Bootstrap {
             return new Season_Service( $app, $c->get( 'season_repository' ), );
         } );
 
+        $c->set( 'result_service', function ( Simple_Container $c ) {
+            return new Result_Service( $c->get( 'fixture_repository' ), $c->get( 'team_repository' ) );
+        } );
+
         $c->set( 'view_renderer', function () {
             return new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
         } );
@@ -161,6 +167,15 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'notify_service', fn() => new Notify_Service( $app ) );
+        $c->set( 'notification_service', function ( Simple_Container $c ) {
+            return new Notification_Service(
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'club_repository' )
+            );
+        } );
     }
 
     private static function register_admin_tournament_controllers( Simple_Container $c ): void {

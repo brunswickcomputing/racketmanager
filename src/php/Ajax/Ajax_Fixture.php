@@ -8,6 +8,7 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Exception;
@@ -300,14 +301,7 @@ class Ajax_Fixture extends Ajax {
             // 6. Delegate Business Logic to the Domain Service
             // The manager handles: resetting scores, updating standings (Leagues),
             // and reverting progression (Championships/Knockouts).
-            $team_repository        = new Team_Repository();
-            $result_service         = new Result_Service( $fixture_repository, $team_repository );
-            $progression_service    = new Knockout_Progression_Service();
-            $score_validator        = new Score_Validation_Service();
-            $rubber_repository      = new Rubber_Repository();
-            $player_validator       = new Player_Validation_Service( $this->registration_service );
-            $rubber_manager         = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
-            $fixture_result_manager = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service );
+            $fixture_result_manager = $this->get_fixture_result_manager();
             $response               = $fixture_result_manager->reset_result( $fixture );
 
             // 7. Determine the Success Message (Domain-aware)
@@ -426,12 +420,7 @@ class Ajax_Fixture extends Ajax {
                 $fixture_repository = new Fixture_Repository();
                 $fixture            = $fixture_repository->find_by_id( $fixture_id );
                 if ( $fixture ) {
-                    $fixture_repository = new Fixture_Repository();
-                    $team_repository    = new Team_Repository();
-                    $result_service     = new Result_Service( $fixture_repository, $team_repository );
-                    $progression_service = new Knockout_Progression_Service();
-                    $score_validator     = new Score_Validation_Service();
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, null, $this->registration_service );
+                    $result_manager      = $this->get_fixture_result_manager();
 
                     $response = $result_manager->handle_fixture_result_update( $fixture, $request );
 
@@ -476,17 +465,10 @@ class Ajax_Fixture extends Ajax {
 
             if ( empty( $validator->error ) ) {
                 $fixture_repository = new Fixture_Repository();
-                $team_repository    = new Team_Repository();
                 $fixture            = $fixture_repository->find_by_id( $fixture_id );
 
                 if ( $fixture ) {
-                    $result_service      = new Result_Service( $fixture_repository, $team_repository );
-                    $progression_service = new Knockout_Progression_Service();
-                    $score_validator     = new Score_Validation_Service();
-                    $rubber_repository   = new Rubber_Repository();
-                    $player_validator    = new Player_Validation_Service( $this->registration_service );
-                    $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
-                    $result_manager      = new Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator, $rubber_manager, $this->registration_service );
+                    $result_manager      = $this->get_fixture_result_manager();
 
                     switch ( $action ) {
                         case 'results':
@@ -522,6 +504,41 @@ class Ajax_Fixture extends Ajax {
         $return->warnings = $validator->warnings ?? array();
         wp_send_json_success( $return );
     }
+    /**
+     * Get the Fixture Result Manager with its dependencies.
+     *
+     * @return Fixture_Result_Manager
+     */
+    private function get_fixture_result_manager(): Fixture_Result_Manager {
+        $fixture_repository = new Fixture_Repository();
+        $team_repository    = new Team_Repository();
+        $result_service      = new Result_Service( $fixture_repository, $team_repository );
+        $progression_service = new Knockout_Progression_Service();
+        $score_validator     = new Score_Validation_Service();
+        $rubber_repository   = new Rubber_Repository();
+        $results_checker_repository = new Results_Checker_Repository();
+        $player_validator    = new Player_Validation_Service( $this->registration_service, $results_checker_repository, $fixture_repository );
+        $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
+
+        return new Fixture_Result_Manager(
+            $result_service,
+            $progression_service,
+            $this->league_service,
+            $score_validator,
+            $player_validator,
+            $rubber_manager,
+            $this->registration_service,
+            null,
+            null,
+            null,
+            $team_repository,
+            null,
+            $rubber_repository,
+            $results_checker_repository,
+            $fixture_repository
+        );
+    }
+
     /**
      * Function to set match or rubber status details
      *

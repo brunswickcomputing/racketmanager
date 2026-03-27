@@ -23,79 +23,79 @@ class Results_Checker {
      *
      * @var int
      */
-    public int $id;
+    public int $id = 0;
     /**
      * Match id
      *
      * @var int
      */
-    public int $match_id;
+    public int $match_id = 0;
     /**
      * Team id
      *
      * @var int
      */
-    public int $team_id;
+    public int $team_id = 0;
     /**
      * Player id
      *
      * @var int|null
      */
-    public ?int $player_id;
+    public ?int $player_id = null;
     /**
      * League Id
      *
      * @var int
      */
-    public int $league_id;
+    public int $league_id = 0;
     /**
      * Rubber Id
      *
      * @var int|null
      */
-    public ?int $rubber_id;
+    public ?int $rubber_id = null;
     /**
      * Status
      *
      * @var int|null
      */
-    public ?int $status;
+    public ?int $status = null;
     /**
      * Status description
      *
      * @var string
      */
-    public string $status_desc;
+    public string $status_desc = '';
     /**
      * Description
      *
      * @var string
      */
-    public string $description;
+    public string $description = '';
     /**
      * Updated date
      *
      * @var string|null
      */
-    public ?string $updated_date;
+    public ?string $updated_date = null;
     /**
      * Updated user id
      *
      * @var int|null
      */
-    public ?int $updated_user;
+    public ?int $updated_user = null;
     /**
      * Updated username
      *
      * @var string|int|null
      */
-    public string|int|null $updated_user_name;
+    public string|int|null $updated_user_name = null;
     /**
      * Match
      *
      * @var Racketmanager_Match|null
      */
-    public null|Racketmanager_Match $match;
+    public null|Racketmanager_Match $match = null;
     /**
      * Player
      *
@@ -193,7 +193,7 @@ class Results_Checker {
     /**
      * Add new results checker entry
      */
-    private function add(): void {
+    public function add(): void {
         global $wpdb;
         if ( empty( $this->player_id ) ) {
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

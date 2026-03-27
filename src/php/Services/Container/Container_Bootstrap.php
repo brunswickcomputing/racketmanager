@@ -38,6 +38,7 @@ use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -62,7 +63,11 @@ use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
-use Racketmanager\Services\View\Php_View_Renderer;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Validator\Player_Validation_Service;
+use Racketmanager\Services\Validator\Score_Validation_Service;
+use Racketmanager\Services\Standings\Standings_Service;
+use Racketmanager\Services\Competition\Knockout_Progression_Service;
 
 /**
  * Registers core services in the Simple_Container.
@@ -99,6 +104,7 @@ final class Container_Bootstrap {
         $c->set( 'tournament_entry_repository', fn() => new Tournament_Entry_Repository() );
         $c->set( 'season_repository', fn() => new Season_Repository() );
         $c->set( 'rubber_repository', fn() => new Rubber_Repository() );
+        $c->set( 'results_checker_repository', fn() => new Results_Checker_Repository() );
     }
 
     private static function register_external_clients( Simple_Container $c ): void {
@@ -174,6 +180,50 @@ final class Container_Bootstrap {
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),
                 $c->get( 'club_repository' )
+            );
+        } );
+
+        $c->set( 'score_validation_service', fn() => new Score_Validation_Service() );
+        
+        $c->set( 'player_validation_service', function ( Simple_Container $c ) {
+            return new Player_Validation_Service(
+                $c->get( 'registration_service' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'fixture_repository' )
+            );
+        } );
+
+        $c->set( 'knockout_progression_service', function ( Simple_Container $c ) {
+            return new Knockout_Progression_Service(
+                $c->get( 'fixture_repository' ),
+                $c->get( 'result_service' )
+            );
+        } );
+
+        $c->set( 'standings_service', function ( Simple_Container $c ) {
+            return new Standings_Service(
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'fixture_repository' )
+            );
+        } );
+
+        $c->set( 'fixture_result_manager', function ( Simple_Container $c ) {
+            return new Fixture_Result_Manager(
+                $c->get( 'result_service' ),
+                $c->get( 'knockout_progression_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'score_validation_service' ),
+                $c->get( 'player_validation_service' ),
+                $c->get( 'rubber_repository' ),
+                $c->get( 'registration_service' ),
+                $c->get( 'notification_service' ),
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'results_checker_repository' )
             );
         } );
     }

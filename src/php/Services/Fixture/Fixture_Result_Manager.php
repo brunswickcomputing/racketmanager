@@ -26,17 +26,19 @@ use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Validator\Score_Validation_Service;
+use Racketmanager\Services\Validator\Player_Validation_Service;
 
+use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Results_Checker_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
-
-use function Racketmanager\get_rubber;
 
 /**
  * Service for managing fixture results and state transitions.
@@ -63,6 +65,11 @@ class Fixture_Result_Manager
      * @var Score_Validation_Service
      */
     private Score_Validation_Service $score_validator;
+
+    /**
+     * @var Player_Validation_Service
+     */
+    private Player_Validation_Service $player_validator;
 
     /**
      * @var Rubber_Result_Manager|null
@@ -95,12 +102,23 @@ class Fixture_Result_Manager
     private League_Team_Repository|null $league_team_repository;
 
     /**
+     * @var Rubber_Repository|null
+     */
+    private Rubber_Repository|null $rubber_repository;
+
+    /**
+     * @var Results_Checker_Repository|null
+     */
+    private Results_Checker_Repository|null $results_checker_repository;
+
+    /**
      * Constructor.
      *
      * @param Result_Service               $result_service
      * @param Knockout_Progression_Service $progression_service
      * @param League_Service               $league_service
      * @param Score_Validation_Service     $score_validator
+     * @param Player_Validation_Service    $player_validator
      * @param Rubber_Result_Manager|null   $rubber_manager
      * @param Registration_Service|null    $registration_service
      * @param Notification_Service|null    $notification_service
@@ -108,29 +126,38 @@ class Fixture_Result_Manager
      * @param League_Team_Repository|null  $league_team_repository
      * @param Team_Repository|null         $team_repository
      * @param Player_Repository|null       $player_repository
+     * @param Rubber_Repository|null       $rubber_repository
+     * @param Results_Checker_Repository|null $results_checker_repository
      */
     public function __construct(
         Result_Service $result_service,
         Knockout_Progression_Service $progression_service,
         League_Service $league_service,
         Score_Validation_Service $score_validator,
+        Player_Validation_Service $player_validator = null,
         ?Rubber_Result_Manager $rubber_manager = null,
         ?Registration_Service $registration_service = null,
         ?Notification_Service $notification_service = null,
         ?League_Repository $league_repository = null,
         ?League_Team_Repository $league_team_repository = null,
         ?Team_Repository $team_repository = null,
-        ?Player_Repository $player_repository = null
+        ?Player_Repository $player_repository = null,
+        ?Rubber_Repository $rubber_repository = null,
+        ?Results_Checker_Repository $results_checker_repository = null,
+        ?Fixture_Repository $fixture_repository = null
     ) {
         $this->result_service         = $result_service;
         $this->progression_service    = $progression_service;
         $this->league_service         = $league_service;
         $this->score_validator        = $score_validator;
+        $this->player_validator       = $player_validator ?? new Player_Validation_Service( $registration_service ?? new Registration_Service( $GLOBALS['racketmanager'] ), $results_checker_repository ?? new Results_Checker_Repository(), $fixture_repository ?? new Fixture_Repository() );
         $this->rubber_manager         = $rubber_manager;
         $this->registration_service   = $registration_service;
         $this->team_repository        = $team_repository ?? new Team_Repository();
         $this->player_repository      = $player_repository ?? new Player_Repository();
         $this->league_team_repository = $league_team_repository ?? new League_Team_Repository();
+        $this->rubber_repository      = $rubber_repository ?? new Rubber_Repository();
+        $this->results_checker_repository = $results_checker_repository ?? new Results_Checker_Repository();
 
         if ( ! $notification_service ) {
             $league_repo          = $league_repository ?? new League_Repository();
@@ -333,6 +360,12 @@ class Fixture_Result_Manager
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );
 
+        global $racketmanager;
+        $options = $racketmanager->get_options();
+        
+        // Run player and result checks
+        $this->player_validator->run_fixture_checks( $fixture, $league, $updated_rubbers, $options );
+
         // Handle notifications (legacy notification via service)
         if ( $this->notification_service ) {
             $msg = __( 'Result saved', 'racketmanager' );
@@ -503,7 +536,14 @@ class Fixture_Result_Manager
             $this->update_result( $fixture, $result, $final_confirmed_status, $league_repository );
         }
 
-        // 4. Handle notifications (via notification service)
+        // 4. Run player and result checks if approved
+        if ( 'A' === $request->result_confirm ) {
+            global $racketmanager;
+            $options = $racketmanager->get_options();
+            $this->player_validator->run_fixture_checks( $fixture, $league, $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id() ), $options );
+        }
+
+        // 5. Handle notifications (via notification service)
         $this->notification_service?->send_result_notification( $fixture, $final_confirmed_status, $match_msg ? : '', $actioned_by ? : false );
 
         $data           = new stdClass();
@@ -528,29 +568,27 @@ class Fixture_Result_Manager
      * @return object
      */
     private function handle_player_warnings( Fixture $fixture ): object {
-        global $racketmanager, $wpdb;
-        $msg             = null;
-        $player_warnings = null;
+        $msg             = '';
+        $player_warnings = [];
         $result_status   = null;
 
-        $has_result_check = (bool) $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT count(*) FROM $wpdb->racketmanager_results_checker WHERE `match_id` = %d",
-                $fixture->get_id()
-            )
-        );
+        $has_result_check = $this->results_checker_repository->has_results_check( (int) $fixture->get_id() );
 
         if ( $has_result_check ) {
             $warning_player  = false;
             $warning_match   = array();
             $result_status   = 'warning';
-            $result_warnings = $racketmanager->get_result_warnings( array( 'match' => $fixture->get_id() ) );
+            $result_warnings = $this->results_checker_repository->find_by_fixture_id( (int) $fixture->get_id() );
+            if ( empty( $result_warnings ) ) {
+                global $racketmanager;
+                $result_warnings = $racketmanager->get_result_warnings( [ 'match_id' => $fixture->get_id() ] );
+            }
             foreach ( $result_warnings as $player_warning ) {
                 if ( $player_warning->rubber_id ) {
                     $warning_player = true;
-                    $rubber = get_rubber( $player_warning->rubber_id );
+                    $rubber = $this->rubber_repository->find_by_id( $player_warning->rubber_id );
                     if ( $rubber ) {
-                        $team = ( (int) $player_warning->team_id === (int) $fixture->get_home_team() ) ? 'home' : 'away';
+                        $team = ( $player_warning->team_id === (int) $fixture->get_home_team() ) ? 'home' : 'away';
                         
                         $player_number = ( (int) $player_warning->player_id === (int) $rubber->players[ $team ]['1']->id ) ? 1 : 2;
                         

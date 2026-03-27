@@ -252,4 +252,38 @@ class Fixture_Repository {
             $results
         );
     }
+    /**
+     * Count how many other matches a player has played on the same match day.
+     *
+     * @param string $season
+     * @param int $match_day
+     * @param int $league_id
+     * @param int $club_player_id
+     * @return int
+     */
+    public function count_player_matches_on_same_day( string $season, int $match_day, int $league_id, int $club_player_id ): int {
+        $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
+
+        return (int) $this->wpdb->get_var( $this->wpdb->prepare(
+            "SELECT count(*) 
+             FROM $this->table_name m
+             JOIN $rubbers_table r ON m.`id` = r.`match_id`
+             JOIN $rubber_players_table rp ON r.`id` = rp.`rubber_id`
+             WHERE m.`season` = %s 
+               AND m.`match_day` = %d 
+               AND m.`league_id` != %d 
+               AND m.`league_id` IN (
+                   SELECT l.`id` 
+                   FROM {$this->wpdb->prefix}racketmanager l 
+                   WHERE l.`event_id` = (SELECT `event_id` FROM {$this->wpdb->prefix}racketmanager WHERE `id` = %d)
+               ) 
+               AND rp.`club_player_id` = %d",
+            $season,
+            $match_day,
+            $league_id,
+            $league_id,
+            $club_player_id
+        ) );
+    }
 }

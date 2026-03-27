@@ -8,6 +8,8 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Response;
+use Racketmanager\Domain\DTO\Player\Player_Warnings_Response;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Services\Registration_Service;
@@ -265,11 +267,11 @@ class Fixture_Result_Manager
      * @param Team_Result_Update_Request $request
      * @param League_Repository|null $league_repository Optional league repository for testing.
      *
-     * @return object Validator details for now to maintain compatibility with legacy AJAX.
+     * @return Team_Result_Response
      * @throws Fixture_Validation_Exception
      * @throws League_Not_Found_Exception
      */
-    public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request, ?League_Repository $league_repository = null ): object {
+    public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request, ?League_Repository $league_repository = null ): Team_Result_Response {
         $league = $this->league_service->get_league( $fixture->get_league_id() );
         if ( ! $league ) {
             throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_fixture( $fixture->get_id() ) );
@@ -312,9 +314,9 @@ class Fixture_Result_Manager
         }
 
         if ( ! empty( $validator->error ) ) {
-            $data          = $validator->get_details();
-            $data->rubbers = $updated_rubbers;
-            return $data;
+            $details = (array) $validator->get_details();
+            $details['rubbers'] = $updated_rubbers;
+            return new Team_Result_Response( $details );
         }
 
         // Finalize fixture update using Result_Calculator
@@ -372,21 +374,22 @@ class Fixture_Result_Manager
             $this->notification_service->send_result_notification( $fixture, $confirmed ?: 'P', $msg );
         }
 
-        $data          = new stdClass();
-        $data->msg     = __( 'Result saved', 'racketmanager' );
-        $data->rubbers = $updated_rubbers;
-        $data->status  = 'success';
-        $data->winner_id = $fixture->get_winner_id();
-        $data->loser_id  = $fixture->get_loser_id();
+        $response = new Team_Result_Response( [
+            'msg'       => __( 'Result saved', 'racketmanager' ),
+            'rubbers'   => $updated_rubbers,
+            'status'    => 'success',
+            'winner_id' => $fixture->get_winner_id(),
+            'loser_id'  => $fixture->get_loser_id(),
+        ] );
 
         $warnings = $this->handle_player_warnings( $fixture );
         if ( ! empty( $warnings->msg ) ) {
-            $data->msg    .= $warnings->msg;
-            $data->status  = $warnings->status;
+            $response->msg    .= $warnings->msg;
+            $response->status  = $warnings->status;
         }
-        $data->warnings = $warnings->warnings;
+        $response->warnings = $warnings->warnings;
         
-        return $data;
+        return $response;
     }
 
     /**
@@ -465,14 +468,14 @@ class Fixture_Result_Manager
      * @param Team_Result_Confirmation_Request $request
      * @param League_Repository|null $league_repository Optional league repository for testing.
      *
-     * @return object Validator details for now to maintain compatibility with legacy AJAX.
+     * @return Team_Result_Response
      * @throws League_Not_Found_Exception
      */
-    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository $league_repository = null ): object {
+    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository $league_repository = null ): Team_Result_Response {
         $validator = new Validator_Fixture();
         $validator = $validator->result_confirm( $request->result_confirm, $request->confirm_comments );
         if ( ! empty( $validator->error ) ) {
-            return $validator;
+            return new Team_Result_Response( (array) $validator->get_details() );
         }
 
         $actioned_by = '';
@@ -546,28 +549,29 @@ class Fixture_Result_Manager
         // 5. Handle notifications (via notification service)
         $this->notification_service?->send_result_notification( $fixture, $final_confirmed_status, $match_msg ? : '', $actioned_by ? : false );
 
-        $data           = new stdClass();
-        $data->msg      = $match_msg;
-        $data->rubbers  = array();
-        $data->status   = 'success';
+        $response = new Team_Result_Response( [
+            'msg'     => $match_msg,
+            'rubbers' => [],
+            'status'  => 'success',
+        ] );
 
         $warnings = $this->handle_player_warnings( $fixture );
         if ( ! empty( $warnings->msg ) ) {
-            $data->msg    .= $warnings->msg;
-            $data->status  = $warnings->status;
+            $response->msg    .= $warnings->msg;
+            $response->status  = $warnings->status;
         }
-        $data->warnings = $warnings->warnings;
+        $response->warnings = $warnings->warnings;
 
-        return $data;
+        return $response;
     }
 
     /**
      * Function to check and return any player warnings for a match
      *
      * @param Fixture $fixture
-     * @return object
+     * @return Player_Warnings_Response
      */
-    private function handle_player_warnings( Fixture $fixture ): object {
+    private function handle_player_warnings( Fixture $fixture ): Player_Warnings_Response {
         $msg             = '';
         $player_warnings = [];
         $result_status   = null;
@@ -606,11 +610,8 @@ class Fixture_Result_Manager
                 $msg .= '<br>' . $warning;
             }
         }
-        $return           = new stdClass();
-        $return->msg      = $msg;
-        $return->status   = $result_status;
-        $return->warnings = $player_warnings;
-        return $return;
+        
+        return new Player_Warnings_Response( $msg, $result_status, $player_warnings );
     }
 
     /**

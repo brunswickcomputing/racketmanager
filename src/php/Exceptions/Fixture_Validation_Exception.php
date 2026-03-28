@@ -3,10 +3,10 @@
 namespace Racketmanager\Exceptions;
 
 class Fixture_Validation_Exception extends Plugin_Exception {
-    private array $error_flds = [];
-    private array $error_msgs = [];
+    private array $error_flds;
+    private array $error_msgs;
 
-    public function __construct(array $error_msgs, array $error_flds, int $code = 400) {
+    public function __construct(array $error_msgs, array $error_flds = array(), int $code = 400) {
         $this->error_msgs = $error_msgs;
         $this->error_flds = $error_flds;
         parent::__construct(reset($error_msgs), $code);

@@ -31,6 +31,8 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
 
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
@@ -120,67 +122,39 @@ class Fixture_Result_Manager
     private Results_Checker_Repository|null $results_checker_repository;
 
     /**
-     * Constructor.
-     *
-     * @param Result_Service               $result_service
-     * @param Knockout_Progression_Service $progression_service
-     * @param League_Service               $league_service
-     * @param Score_Validation_Service     $score_validator
-     * @param Settings_Service             $settings_service
-     * @param Player_Validation_Service    $player_validator
-     * @param Rubber_Result_Manager|null   $rubber_manager
-     * @param Registration_Service|null    $registration_service
-     * @param Notification_Service|null    $notification_service
-     * @param League_Repository|null       $league_repository
-     * @param League_Team_Repository|null  $league_team_repository
-     * @param Team_Repository|null         $team_repository
-     * @param Player_Repository|null       $player_repository
-     * @param Rubber_Repository|null       $rubber_repository
-     * @param Results_Checker_Repository|null $results_checker_repository
+     * @param Service_Provider $service_provider
+     * @param Repository_Provider $repository_provider
      */
     public function __construct(
-        Result_Service $result_service,
-        Knockout_Progression_Service $progression_service,
-        League_Service $league_service,
-        Score_Validation_Service $score_validator,
-        ?Settings_Service $settings_service = null,
-        Player_Validation_Service $player_validator = null,
-        ?Rubber_Result_Manager $rubber_manager = null,
-        ?Registration_Service $registration_service = null,
-        ?Notification_Service $notification_service = null,
-        ?League_Repository $league_repository = null,
-        ?League_Team_Repository $league_team_repository = null,
-        ?Team_Repository $team_repository = null,
-        ?Player_Repository $player_repository = null,
-        ?Rubber_Repository $rubber_repository = null,
-        ?Results_Checker_Repository $results_checker_repository = null,
-        ?Fixture_Repository $fixture_repository = null
+        Service_Provider $service_provider,
+        Repository_Provider $repository_provider
     ) {
-        $this->result_service         = $result_service;
-        $this->progression_service    = $progression_service;
-        $this->league_service         = $league_service;
-        $this->score_validator        = $score_validator;
-        $this->settings_service       = $settings_service ?? new Settings_Service();
-        $this->player_validator       = $player_validator ?? new Player_Validation_Service( $registration_service ?? new Registration_Service( $GLOBALS['racketmanager'] ), $results_checker_repository ?? new Results_Checker_Repository(), $fixture_repository ?? new Fixture_Repository() );
-        $this->rubber_manager         = $rubber_manager;
-        $this->registration_service   = $registration_service;
-        $this->team_repository        = $team_repository ?? new Team_Repository();
-        $this->player_repository      = $player_repository ?? new Player_Repository();
-        $this->league_team_repository = $league_team_repository ?? new League_Team_Repository();
-        $this->rubber_repository      = $rubber_repository ?? new Rubber_Repository();
-        $this->results_checker_repository = $results_checker_repository ?? new Results_Checker_Repository();
+        $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
+        $this->progression_service = $service_provider->get_progression_service() ?? new Knockout_Progression_Service( $repository_provider->get_fixture_repository() );
+        $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new \Racketmanager\Repositories\Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );
+        $this->score_validator     = $service_provider->get_score_validator() ?? new Score_Validation_Service();
+        $this->settings_service    = $service_provider->get_settings_service() ?? new Settings_Service();
 
-        if ( ! $notification_service ) {
-            $league_repo          = $league_repository ?? new League_Repository();
-            $notification_service = new Notification_Service(
-                $league_repo,
+        $this->registration_service = $service_provider->get_registration_service() ?? new Registration_Service( $GLOBALS['racketmanager'] );
+        $this->player_validator     = $service_provider->get_player_validator() ?? new Player_Validation_Service( $this->registration_service, $repository_provider->get_results_checker_repository(), $repository_provider->get_fixture_repository() );
+        $this->rubber_manager       = $service_provider->get_rubber_manager() ?? new Rubber_Result_Manager( $this->score_validator, $this->league_service, $repository_provider->get_rubber_repository(), $this->player_validator );
+
+        $this->team_repository            = $repository_provider->get_team_repository();
+        $this->player_repository          = $repository_provider->get_player_repository();
+        $this->league_team_repository     = $repository_provider->get_league_team_repository();
+        $this->rubber_repository          = $repository_provider->get_rubber_repository();
+        $this->results_checker_repository = $repository_provider->get_results_checker_repository();
+
+        $this->notification_service = $service_provider->get_notification_service();
+        if ( ! $this->notification_service ) {
+            $this->notification_service = new Notification_Service(
+                $repository_provider->get_league_repository(),
                 $this->league_team_repository,
                 $this->team_repository,
                 $this->player_repository,
-                new Club_Repository()
+                $repository_provider->get_club_repository()
             );
         }
-        $this->notification_service = $notification_service;
     }
 
     /**

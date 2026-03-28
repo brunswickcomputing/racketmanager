@@ -11,8 +11,6 @@ use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Services\League_Service;
-use Racketmanager\Repositories\Results_Checker_Repository;
-use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use function Racketmanager\get_rubber;
 
@@ -63,16 +61,16 @@ class Rubber_Result_Manager {
         }
 
         // 2. Validate Players Involved
-        // For now, we rely on the legacy validator being passed or available. 
+        // For now, we rely on the legacy validator being passed or available.
         // But since we want to move away from it, we might need a new way.
-        // For this step, we assume the players are already partially validated by the caller or we add minimal checks.
+        // For this step, we assume the players are already partially validated by the caller, or we add minimal checks.
 
         // 3. Validate Score
         $scoring_context = new Scoring_Context(
             num_sets_to_win: (int) $league->num_sets_to_win,
             scoring_type: $league->scoring ?? 'TB',
             point_rule: $league->get_point_rule(),
-            is_championship: (bool) $league->is_championship,
+            is_championship: $league->is_championship,
             final_round: $fixture->get_final(),
             num_rubbers: (int) $league->num_rubbers,
             leg: $fixture->get_leg(),
@@ -138,6 +136,8 @@ class Rubber_Result_Manager {
                 $status            = 9;
                 $custom['invalid'] = 'both';
                 break;
+            default:
+                break;
         }
 
         // 5. Calculate Result
@@ -156,7 +156,7 @@ class Rubber_Result_Manager {
         $rubber->set_players( $players );
 
         return new Rubber_Update_Result(
-            rubber_id: (int) $request->rubber_id,
+            rubber_id: $request->rubber_id,
             home_points: (float) $calc_result->home,
             away_points: (float) $calc_result->away,
             winner_id: $calc_result->winner ? (int) $calc_result->winner : null,

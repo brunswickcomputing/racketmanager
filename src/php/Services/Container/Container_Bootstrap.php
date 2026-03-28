@@ -64,11 +64,14 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
+use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
+use Racketmanager\Services\View\Php_View_Renderer;
 
 /**
  * Registers core services in the Simple_Container.
@@ -195,38 +198,37 @@ final class Container_Bootstrap {
             );
         } );
 
-        $c->set( 'knockout_progression_service', function ( Simple_Container $c ) {
-            return new Knockout_Progression_Service(
-                $c->get( 'fixture_repository' ),
-                $c->get( 'result_service' )
-            );
-        } );
+        $c->set( 'knockout_progression_service', fn() => new Knockout_Progression_Service() );
 
-        $c->set( 'standings_service', function ( Simple_Container $c ) {
-            return new Standings_Service(
-                $c->get( 'league_repository' ),
-                $c->get( 'league_team_repository' ),
-                $c->get( 'team_repository' ),
-                $c->get( 'fixture_repository' )
-            );
-        } );
+        $c->set( 'standings_service', fn() => new Standings_Service() );
 
         $c->set( 'fixture_result_manager', function ( Simple_Container $c ) {
-            return new Fixture_Result_Manager(
+            $service_provider = new Fixture_Service_Provider(
                 $c->get( 'result_service' ),
                 $c->get( 'knockout_progression_service' ),
                 $c->get( 'league_service' ),
                 $c->get( 'score_validation_service' ),
-                $c->get( 'settings_service' ),
                 $c->get( 'player_validation_service' ),
-                $c->get( 'rubber_repository' ),
-                $c->get( 'registration_service' ),
+                null, // rubber_manager will be created by Fixture_Result_Manager if null
                 $c->get( 'notification_service' ),
+                $c->get( 'registration_service' ),
+                $c->get( 'settings_service' )
+            );
+
+            $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),
-                $c->get( 'results_checker_repository' )
+                $c->get( 'rubber_repository' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'club_repository' )
+            );
+
+            return new Fixture_Result_Manager(
+                $service_provider,
+                $repository_provider
             );
         } );
     }

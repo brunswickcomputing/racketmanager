@@ -8,9 +8,10 @@
 
 namespace Racketmanager\Ajax;
 
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Services\Validator\Player_Validation_Service;
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
@@ -22,10 +23,7 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
-use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Result\Rubber_Result_Manager;
-use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use stdClass;
@@ -510,33 +508,23 @@ class Ajax_Fixture extends Ajax {
      * @return Fixture_Result_Manager
      */
     private function get_fixture_result_manager(): Fixture_Result_Manager {
-        $fixture_repository = new Fixture_Repository();
-        $team_repository    = new Team_Repository();
-        $result_service      = new Result_Service( $fixture_repository, $team_repository );
-        $progression_service = new Knockout_Progression_Service();
-        $score_validator     = new Score_Validation_Service();
-        $rubber_repository   = new Rubber_Repository();
-        $results_checker_repository = new Results_Checker_Repository();
-        $player_validator    = new Player_Validation_Service( $this->registration_service, $results_checker_repository, $fixture_repository );
-        $rubber_manager      = new Rubber_Result_Manager( $score_validator, $this->league_service, $rubber_repository, $player_validator );
+        $repository_provider = new Repository_Provider(
+            team_repository: new Team_Repository(),
+            rubber_repository: new Rubber_Repository(),
+            results_checker_repository: new Results_Checker_Repository(),
+            fixture_repository: new Fixture_Repository()
+        );
+
+        $service_provider = new Fixture_Service_Provider(
+            league_service: $this->league_service,
+            score_validator: new Score_Validation_Service(),
+            registration_service: $this->registration_service,
+            settings_service: $this->settings_service
+        );
 
         return new Fixture_Result_Manager(
-            $result_service,
-            $progression_service,
-            $this->league_service,
-            $score_validator,
-            $this->settings_service,
-            $player_validator,
-            $rubber_manager,
-            $this->registration_service,
-            null,
-            null,
-            null,
-            $team_repository,
-            null,
-            $rubber_repository,
-            $results_checker_repository,
-            $fixture_repository
+            $service_provider,
+            $repository_provider
         );
     }
 

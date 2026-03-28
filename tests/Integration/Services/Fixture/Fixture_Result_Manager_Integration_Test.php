@@ -11,6 +11,8 @@ use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
@@ -77,23 +79,26 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         };
         $GLOBALS['racketmanager'] = $racketmanager_instance;
 
+        $repository_provider = new Repository_Provider(
+            league_team_repository: $this->league_team_repository,
+            rubber_repository: $this->rubber_repository,
+            results_checker_repository: $this->results_checker_repository,
+            fixture_repository: $fixture_repository
+        );
+
+        $service_provider = new Fixture_Service_Provider(
+            result_service: $this->result_service,
+            progression_service: $this->progression_service,
+            league_service: $this->league_service,
+            score_validator: $this->score_validator,
+            rubber_manager: $this->rubber_manager,
+            notification_service: $this->notification_service,
+            registration_service: $reg_service
+        );
+
         $this->manager = new Fixture_Result_Manager(
-            $this->result_service,
-            $this->progression_service,
-            $this->league_service,
-            $this->score_validator,
-            null, // settings_service
-            null, // player_validator (auto-created in constructor)
-            $this->rubber_manager,
-            $reg_service,
-            $this->notification_service,
-            null,
-            $this->league_team_repository,
-            null,
-            null,
-            $this->rubber_repository,
-            $this->results_checker_repository,
-            $fixture_repository
+            $service_provider,
+            $repository_provider
         );
     }
 

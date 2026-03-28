@@ -82,6 +82,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             $this->progression_service,
             $this->league_service,
             $this->score_validator,
+            null, // settings_service
             null, // player_validator (auto-created in constructor)
             $this->rubber_manager,
             $reg_service,
@@ -478,7 +479,10 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $player_warning->player_id = 5;
         $player_warning->description = 'Warning description';
 
-        $GLOBALS['racketmanager']->result_warnings = [$player_warning];
+        $this->results_checker_repository->expects($this->once())
+            ->method('find_by_fixture_id')
+            ->with(123)
+            ->willReturn([$player_warning]);
 
         $rubber = $this->createMock(\Racketmanager\Domain\Rubber::class);
         $rubber->rubber_number = 1;

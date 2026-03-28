@@ -525,6 +525,7 @@ class Ajax_Fixture extends Ajax {
             $progression_service,
             $this->league_service,
             $score_validator,
+            $this->settings_service,
             $player_validator,
             $rubber_manager,
             $this->registration_service,

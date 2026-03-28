@@ -29,6 +29,7 @@ use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
+use Racketmanager\Services\Settings_Service;
 
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
@@ -67,6 +68,11 @@ class Fixture_Result_Manager
      * @var Score_Validation_Service
      */
     private Score_Validation_Service $score_validator;
+
+    /**
+     * @var Settings_Service
+     */
+    private Settings_Service $settings_service;
 
     /**
      * @var Player_Validation_Service
@@ -120,6 +126,7 @@ class Fixture_Result_Manager
      * @param Knockout_Progression_Service $progression_service
      * @param League_Service               $league_service
      * @param Score_Validation_Service     $score_validator
+     * @param Settings_Service             $settings_service
      * @param Player_Validation_Service    $player_validator
      * @param Rubber_Result_Manager|null   $rubber_manager
      * @param Registration_Service|null    $registration_service
@@ -136,6 +143,7 @@ class Fixture_Result_Manager
         Knockout_Progression_Service $progression_service,
         League_Service $league_service,
         Score_Validation_Service $score_validator,
+        ?Settings_Service $settings_service = null,
         Player_Validation_Service $player_validator = null,
         ?Rubber_Result_Manager $rubber_manager = null,
         ?Registration_Service $registration_service = null,
@@ -152,6 +160,7 @@ class Fixture_Result_Manager
         $this->progression_service    = $progression_service;
         $this->league_service         = $league_service;
         $this->score_validator        = $score_validator;
+        $this->settings_service       = $settings_service ?? new Settings_Service();
         $this->player_validator       = $player_validator ?? new Player_Validation_Service( $registration_service ?? new Registration_Service( $GLOBALS['racketmanager'] ), $results_checker_repository ?? new Results_Checker_Repository(), $fixture_repository ?? new Fixture_Repository() );
         $this->rubber_manager         = $rubber_manager;
         $this->registration_service   = $registration_service;
@@ -362,8 +371,7 @@ class Fixture_Result_Manager
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );
 
-        global $racketmanager;
-        $options = $racketmanager->get_options();
+        $options = $this->settings_service->get_all_options();
         
         // Run player and result checks
         $this->player_validator->run_fixture_checks( $fixture, $league, $updated_rubbers, $options );
@@ -490,10 +498,8 @@ class Fixture_Result_Manager
             throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_fixture( $fixture->get_id() ) );
         }
 
-        global $racketmanager;
-        $rm_options          = $racketmanager->get_options();
         $competition_type    = $league->get_competition_type() ?: 'league';
-        $result_confirmation = $rm_options[ $competition_type ]['resultConfirmation'] ?? 'manual';
+        $result_confirmation = $this->settings_service->get_option( $competition_type, 'resultConfirmation', 'manual' );
 
         $match_msg = null;
         $final_confirmed_status = $request->result_confirm;
@@ -541,8 +547,7 @@ class Fixture_Result_Manager
 
         // 4. Run player and result checks if approved
         if ( 'A' === $request->result_confirm ) {
-            global $racketmanager;
-            $options = $racketmanager->get_options();
+            $options = $this->settings_service->get_all_options();
             $this->player_validator->run_fixture_checks( $fixture, $league, $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id() ), $options );
         }
 
@@ -583,10 +588,7 @@ class Fixture_Result_Manager
             $warning_match   = array();
             $result_status   = 'warning';
             $result_warnings = $this->results_checker_repository->find_by_fixture_id( (int) $fixture->get_id() );
-            if ( empty( $result_warnings ) ) {
-                global $racketmanager;
-                $result_warnings = $racketmanager->get_result_warnings( [ 'match_id' => $fixture->get_id() ] );
-            }
+
             foreach ( $result_warnings as $player_warning ) {
                 if ( $player_warning->rubber_id ) {
                     $warning_player = true;

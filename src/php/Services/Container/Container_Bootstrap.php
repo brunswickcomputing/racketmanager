@@ -66,6 +66,7 @@ use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 
@@ -113,6 +114,7 @@ final class Container_Bootstrap {
 
     private static function register_services( Simple_Container $c, RacketManager $app ): void {
         $c->set( 'racketmanager_app', fn() => $app );
+        $c->set( 'settings_service', fn() => new Settings_Service( $app->get_options() ) );
 
         $c->set( 'player_service', function ( Simple_Container $c ) use ( $app ) {
             return new Player_Service( $app, $c->get( 'player_repository' ), $c->get( 'player_error_repository' ), $c->get( 'club_role_repository' ), $c->get( 'wtn_api_client' ), $c->get( 'league_team_repository' ), $c->get( 'club_repository' ), $c->get( 'registration_repository' ), );
@@ -215,6 +217,7 @@ final class Container_Bootstrap {
                 $c->get( 'knockout_progression_service' ),
                 $c->get( 'league_service' ),
                 $c->get( 'score_validation_service' ),
+                $c->get( 'settings_service' ),
                 $c->get( 'player_validation_service' ),
                 $c->get( 'rubber_repository' ),
                 $c->get( 'registration_service' ),

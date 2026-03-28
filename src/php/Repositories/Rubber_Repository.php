@@ -18,11 +18,13 @@ use wpdb;
 class Rubber_Repository {
     private wpdb $wpdb;
     private string $table_name;
+    private string $players_table_name;
 
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $this->players_table_name = $this->wpdb->prefix . 'racketmanager_rubber_players';
     }
 
     public function save( Rubber $rubber ): void {
@@ -103,16 +105,22 @@ class Rubber_Repository {
      * Find all rubbers for a given fixture ID.
      *
      * @param int $fixture_id
+     * @param int|null $player_id Optional player ID to filter by.
      *
      * @return Rubber[]
      */
-    public function find_by_fixture_id( int $fixture_id ): array {
-        $results = $this->wpdb->get_results(
-            $this->wpdb->prepare(
-                "SELECT * FROM $this->table_name WHERE `match_id` = %d ORDER BY `rubber_number`",
-                $fixture_id
-            )
-        );
+    public function find_by_fixture_id( int $fixture_id, ?int $player_id = null ): array {
+        $sql_select = "SELECT r.* FROM $this->table_name r";
+        $sql_where  = $this->wpdb->prepare( " WHERE r.`match_id` = %d", $fixture_id );
+
+        if ( $player_id ) {
+            $sql_select .= ", $this->players_table_name rp";
+            $sql_where  .= $this->wpdb->prepare( " AND r.`id` = rp.`rubber_id` AND rp.`player_id` = %d", $player_id );
+        }
+
+        $sql = $sql_select . $sql_where . " ORDER BY r.`date` ASC, r.`id` ASC";
+
+        $results = $this->wpdb->get_results( $sql );
 
         $rubbers = [];
         foreach ( $results as $row ) {
@@ -120,5 +128,32 @@ class Rubber_Repository {
         }
 
         return $rubbers;
+    }
+
+    /**
+     * Count rubbers for a given fixture ID.
+     *
+     * @param int $fixture_id
+     * @param int|null $player_id Optional player ID to filter by.
+     *
+     * @return int
+     */
+    public function count_by_fixture_id( int $fixture_id, ?int $player_id = null ): int {
+        if ( ! $player_id ) {
+            return (int) $this->wpdb->get_var(
+                $this->wpdb->prepare(
+                    "SELECT count(*) FROM $this->table_name WHERE `match_id` = %d",
+                    $fixture_id
+                )
+            );
+        }
+
+        $sql = $this->wpdb->prepare(
+            "SELECT count(*) FROM $this->table_name r, $this->players_table_name rp WHERE r.`id` = rp.`rubber_id` AND r.`match_id` = %d AND rp.`player_id` = %d",
+            $fixture_id,
+            $player_id
+        );
+
+        return (int) $this->wpdb->get_var( $sql );
     }
 }

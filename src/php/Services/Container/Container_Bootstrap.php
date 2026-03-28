@@ -39,6 +39,7 @@ use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
+use Racketmanager\Repositories\Results_Report_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Season_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -109,6 +110,7 @@ final class Container_Bootstrap {
         $c->set( 'season_repository', fn() => new Season_Repository() );
         $c->set( 'rubber_repository', fn() => new Rubber_Repository() );
         $c->set( 'results_checker_repository', fn() => new Results_Checker_Repository() );
+        $c->set( 'results_report_repository', fn() => new Results_Report_Repository() );
     }
 
     private static function register_external_clients( Simple_Container $c ): void {
@@ -222,6 +224,7 @@ final class Container_Bootstrap {
                 $c->get( 'player_repository' ),
                 $c->get( 'rubber_repository' ),
                 $c->get( 'results_checker_repository' ),
+                $c->get( 'results_report_repository' ),
                 $c->get( 'fixture_repository' ),
                 $c->get( 'club_repository' )
             );

@@ -13,6 +13,7 @@ class Repository_Provider {
     private ?Player_Repository $player_repository = null;
     private ?Rubber_Repository $rubber_repository = null;
     private ?Results_Checker_Repository $results_checker_repository = null;
+    private ?Results_Report_Repository $results_report_repository = null;
     private ?Fixture_Repository $fixture_repository = null;
     private ?Club_Repository $club_repository = null;
 
@@ -23,6 +24,7 @@ class Repository_Provider {
         ?Player_Repository $player_repository = null,
         ?Rubber_Repository $rubber_repository = null,
         ?Results_Checker_Repository $results_checker_repository = null,
+        ?Results_Report_Repository $results_report_repository = null,
         ?Fixture_Repository $fixture_repository = null,
         ?Club_Repository $club_repository = null
     ) {
@@ -32,6 +34,7 @@ class Repository_Provider {
         $this->player_repository = $player_repository;
         $this->rubber_repository = $rubber_repository;
         $this->results_checker_repository = $results_checker_repository;
+        $this->results_report_repository = $results_report_repository;
         $this->fixture_repository = $fixture_repository;
         $this->club_repository = $club_repository;
     }
@@ -58,6 +61,10 @@ class Repository_Provider {
 
     public function get_results_checker_repository(): Results_Checker_Repository {
         return $this->results_checker_repository ??= new Results_Checker_Repository();
+    }
+
+    public function get_results_report_repository(): Results_Report_Repository {
+        return $this->results_report_repository ??= new Results_Report_Repository();
     }
 
     public function get_fixture_repository(): Fixture_Repository {

@@ -126,29 +126,88 @@ class Fixture_Repository {
         }
     }
 
+    /**
+     * Delete a fixture by ID.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function delete( int $id ): bool {
+        $deleted = $this->wpdb->delete(
+            $this->table_name,
+            array( 'id' => $id ),
+            array( '%d' )
+        );
+
+        if ( $deleted ) {
+            wp_cache_delete( $id, 'fixtures' );
+            wp_cache_delete( $id . '_legacy', 'fixtures' );
+        }
+
+        return $deleted !== false;
+    }
+
+    /**
+     * Insert a new fixture.
+     *
+     * @param array $data
+     * @param array|null $format
+     * @return int|bool The insert ID or false on failure.
+     */
+    public function insert( array $data, ?array $format = null ) {
+        $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
+
+        if ( $inserted ) {
+            return $this->wpdb->insert_id;
+        }
+
+        return false;
+    }
+
     public function find_by_id( $fixture_id ): ?Fixture {
+        $row = $this->find_raw_by_id( $fixture_id );
+
+        if ( ! $row ) {
+            return null;
+        }
+
+        return new Fixture( $row );
+    }
+
+    /**
+     * Find raw fixture row by ID.
+     *
+     * @param int $fixture_id
+     * @param bool $legacy Whether to include legacy date formatting fields.
+     * @return object|null
+     */
+    public function find_raw_by_id( int $fixture_id, bool $legacy = false ): ?object {
         if ( empty( $fixture_id ) ) {
             return null;
         }
-        $fixture = wp_cache_get( $fixture_id, 'fixtures' );
+
+        $cache_key = $legacy ? $fixture_id . '_legacy' : $fixture_id;
+        $fixture = wp_cache_get( $cache_key, 'fixtures' );
 
         if ( ! $fixture ) {
+            $select = "*";
+            if ( $legacy ) {
+                $select = "`final` AS final_round, `group`, `home_team`, `away_team`, DATE_FORMAT(`date`, '%Y-%m-%d %H:%i') AS date, DATE_FORMAT(`date_original`, '%Y-%m-%d %H:%i') AS date_original, DATE_FORMAT(`date`, '%e') AS day, DATE_FORMAT(`date`, '%c') AS month, DATE_FORMAT(`date`, '%Y') AS year, DATE_FORMAT(`date`, '%H') AS `hour`, DATE_FORMAT(`date`, '%i') AS `minutes`, `match_day`, `location`, `league_id`, `home_points`, `away_points`, `winner_id`, `loser_id`, `post_id`, `season`, `id`, `custom`, `updated`, `updated_user`, `confirmed`, `home_captain`, `away_captain`, `comments`, `status`, `host`, `linked_match`, `leg`, `winner_id_tie`, `loser_id_tie`, `home_points_tie`, `away_points_tie`, `updated`, `date_result_entered`";
+            }
+
             $fixture = $this->wpdb->get_row(
                 $this->wpdb->prepare(
-                    "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
+                    "SELECT $select FROM $this->table_name WHERE `id` = %d LIMIT 1",
                     $fixture_id
                 )
             );
 
-            if ( ! $fixture ) {
-                return null;
+            if ( $fixture ) {
+                wp_cache_set( $cache_key, $fixture, 'fixtures' );
             }
-            $fixture = new Fixture( $fixture );
-
-            wp_cache_set( $fixture->id, $fixture, 'fixtures' );
         }
 
-        return $fixture;
+        return $fixture ? (object) $fixture : null;
     }
 
     /**

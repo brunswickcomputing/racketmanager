@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Notification;
 
-use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;

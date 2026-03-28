@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;

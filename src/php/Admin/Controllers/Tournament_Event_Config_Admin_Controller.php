@@ -9,7 +9,7 @@
 namespace Racketmanager\Admin\Controllers;
 
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;

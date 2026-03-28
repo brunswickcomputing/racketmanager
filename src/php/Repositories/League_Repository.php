@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Competition\League;
 use wpdb;
 
 /**

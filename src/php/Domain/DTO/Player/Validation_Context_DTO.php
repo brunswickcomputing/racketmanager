@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\DTO\Player;
 
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
 
 /**
  * Context for player validation checks.

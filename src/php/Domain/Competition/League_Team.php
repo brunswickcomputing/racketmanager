@@ -7,8 +7,9 @@
  * @subpackage League_Team
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\Competition;
 
+use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;

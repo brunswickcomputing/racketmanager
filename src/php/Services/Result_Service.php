@@ -2,8 +2,8 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Result;
-use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\Result\Result;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Util\Util;

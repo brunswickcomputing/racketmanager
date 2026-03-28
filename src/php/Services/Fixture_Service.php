@@ -10,8 +10,8 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\Rubber;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;

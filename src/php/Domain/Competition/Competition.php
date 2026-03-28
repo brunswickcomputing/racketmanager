@@ -7,7 +7,7 @@
  * @subpackage Competition
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Util\Util;
 use stdClass;

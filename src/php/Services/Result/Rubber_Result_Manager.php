@@ -5,7 +5,7 @@ namespace Racketmanager\Services\Result;
 
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
-use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Validator\Score_Validation_Service;

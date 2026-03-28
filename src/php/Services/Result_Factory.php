@@ -8,7 +8,7 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Result;
+use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Scoring\Set_Score;
 
 class Result_Factory {

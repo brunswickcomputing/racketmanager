@@ -17,7 +17,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Entry_Response_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Invoice_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Partner_Request_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
-use Racketmanager\Domain\League_Team;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;

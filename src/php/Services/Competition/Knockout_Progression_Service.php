@@ -3,8 +3,8 @@
 namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Stage;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;

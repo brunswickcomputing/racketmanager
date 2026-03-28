@@ -10,7 +10,7 @@
 namespace Racketmanager\Domain\DTO\Tournament;
 
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Tournament;
 
 /**

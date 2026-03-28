@@ -7,7 +7,7 @@
  * @subpackage League
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Championship_Settings;

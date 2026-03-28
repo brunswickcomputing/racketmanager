@@ -10,7 +10,7 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Championship;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Result_Service;

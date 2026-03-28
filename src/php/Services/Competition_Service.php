@@ -9,10 +9,10 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
 use Racketmanager\Exceptions\Database_Operation_Exception;

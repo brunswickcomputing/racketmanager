@@ -1,6 +1,6 @@
 <?php
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\Result;
 
 use Racketmanager\Domain\Scoring\Set_Score;
 

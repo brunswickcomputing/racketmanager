@@ -11,7 +11,7 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Charge;
-use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Championship_Rounds_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Details_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
@@ -21,7 +21,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Finals_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Information_Request_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Player_DTO;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;

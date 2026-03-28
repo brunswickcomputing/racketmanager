@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Controllers\Admin;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Teams_List_Page_View_Model;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\League_Service;
@@ -16,7 +16,7 @@ use Racketmanager\Services\Tournament_Service;
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Event;
 
 final class Tournament_Teams_Admin_Controller_Test extends TestCase {
 

@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\League_Service;
@@ -106,9 +106,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture = new Fixture($fixture_data);
 
-        $home_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $home_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $home_league_team->is_withdrawn = true;
-        $away_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $away_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $away_league_team->is_withdrawn = false;
 
         $this->league_team_repository->method('find_by_team_league_and_season')
@@ -133,9 +133,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture = new Fixture($fixture_data);
 
-        $home_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $home_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $home_league_team->is_withdrawn = false;
-        $away_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $away_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $away_league_team->is_withdrawn = true;
 
         $this->league_team_repository->method('find_by_team_league_and_season')
@@ -160,9 +160,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture = new Fixture($fixture_data);
 
-        $home_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $home_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $home_league_team->is_withdrawn = false;
-        $away_league_team = $this->createMock(\Racketmanager\Domain\League_Team::class);
+        $away_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $away_league_team->is_withdrawn = false;
 
         $this->league_team_repository->method('find_by_team_league_and_season')
@@ -207,7 +207,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         // Result_Service::apply_to_fixture is expected to be called during reset to save the fixture.
         $this->result_service->expects($this->once())
                              ->method('apply_to_fixture')
-                             ->with($fixture, $this->isInstanceOf(\Racketmanager\Domain\Result::class), null);
+                             ->with($fixture, $this->isInstanceOf(\Racketmanager\Domain\Result\Result::class), null);
 
         $this->manager->reset_result($fixture);
 
@@ -246,7 +246,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         // Result_Service::apply_to_fixture is expected to be called during reset to save the fixture.
         $this->result_service->expects($this->once())
                              ->method('apply_to_fixture')
-                             ->with($fixture, $this->isInstanceOf(\Racketmanager\Domain\Result::class), null);
+                             ->with($fixture, $this->isInstanceOf(\Racketmanager\Domain\Result\Result::class), null);
 
         $this->manager->reset_result($fixture);
 
@@ -352,7 +352,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league->num_sets = 3;
         $league->num_rubbers = 1;
 
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
                       ->disableOriginalConstructor()
                       ->getMock();
         $league->event = $event;
@@ -484,7 +484,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             ->with(123)
             ->willReturn([$player_warning]);
 
-        $rubber = $this->createMock(\Racketmanager\Domain\Rubber::class);
+        $rubber = $this->createMock(\Racketmanager\Domain\Fixture\Rubber::class);
         $rubber->rubber_number = 1;
         $rubber->players = [
             'home' => [
@@ -519,10 +519,10 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
                       ->disableOriginalConstructor()
                       ->getMock();
-        $competition = $this->getMockBuilder(\Racketmanager\Domain\Competition::class)
+        $competition = $this->getMockBuilder(\Racketmanager\Domain\Competition\Competition::class)
                             ->disableOriginalConstructor()
                             ->getMock();
         $event->competition = $competition;

@@ -302,6 +302,18 @@ namespace {
             return $data;
         }
     }
+
+    if ( ! function_exists( 'is_admin' ) ) {
+        function is_admin() {
+            return false;
+        }
+    }
+
+    if ( ! function_exists( 'paginate_links' ) ) {
+        function paginate_links( $args = '' ) {
+            return '';
+        }
+    }
 }
 
 namespace Racketmanager\Domain {
@@ -311,18 +323,6 @@ namespace Racketmanager\Domain {
                 return unserialize( $data );
             }
             return $data;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\Domain\is_admin' ) ) {
-        function is_admin() {
-            return false;
-        }
-    }
-
-    if ( ! function_exists( 'Racketmanager\Domain\paginate_links' ) ) {
-        function paginate_links( $args = '' ) {
-            return '';
         }
     }
 }

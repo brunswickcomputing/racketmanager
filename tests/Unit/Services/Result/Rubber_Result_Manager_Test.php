@@ -12,9 +12,9 @@ if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
 
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
-use Racketmanager\Domain\Rubber;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
 use Racketmanager\Services\Validator\Score_Validation_Service;

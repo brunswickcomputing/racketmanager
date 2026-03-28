@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Validator;
 
 use Exception;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
 use Racketmanager\Repositories\Fixture_Repository;

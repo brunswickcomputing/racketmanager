@@ -9,11 +9,11 @@
 
 namespace Racketmanager\Domain\DTO\Fixture;
 
-use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
-use Racketmanager\Domain\Event;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
 
 /**
  * Class to implement the Fixture Details Data Transfer Object

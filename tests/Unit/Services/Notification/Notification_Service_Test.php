@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Services\Notification;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
-use Racketmanager\Domain\League_Team;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Club_Repository;
@@ -71,7 +71,7 @@ class Notification_Service_Test extends TestCase {
         $league->id = 456;
         $league->title = 'Championship League';
         $league->is_championship = true;
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
             ->disableOriginalConstructor()
             ->getMock();
         $event->competition = (object)['type' => 'tournament'];
@@ -127,7 +127,7 @@ class Notification_Service_Test extends TestCase {
         $league->id = 456;
         $league->title = 'Division 1';
         $league->is_championship = false;
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
             ->disableOriginalConstructor()
             ->getMock();
         $event->competition = (object)['type' => 'league'];
@@ -197,7 +197,7 @@ class Notification_Service_Test extends TestCase {
             ->getMock();
         $league->id = 456;
         $league->title = 'Division 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
             ->disableOriginalConstructor()
             ->getMock();
         $event->competition = (object)['type' => 'league'];
@@ -251,7 +251,7 @@ class Notification_Service_Test extends TestCase {
         $fixture = $this->createMock(Fixture::class);
         $fixture->method('get_league_id')->willReturn(1);
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -275,7 +275,7 @@ class Notification_Service_Test extends TestCase {
         $league->id = 456;
         $league->title = 'League 1';
         $league->is_championship = false;
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -302,7 +302,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -329,7 +329,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -367,7 +367,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -396,7 +396,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -441,7 +441,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -487,7 +487,7 @@ class Notification_Service_Test extends TestCase {
 
         // Case 2: Admin email empty
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);

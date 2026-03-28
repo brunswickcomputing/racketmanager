@@ -7,7 +7,7 @@
  * @subpackage Event
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;

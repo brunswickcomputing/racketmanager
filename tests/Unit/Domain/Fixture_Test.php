@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\Result;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Result\Result;
 
 final class Fixture_Test extends TestCase {
     public function test_set_result_updates_fixture_properties(): void {

@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Rubber;
+use Racketmanager\Domain\Fixture\Rubber;
 use wpdb;
 
 /**

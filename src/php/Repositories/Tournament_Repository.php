@@ -10,8 +10,8 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
-use Racketmanager\Domain\Event;
-use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Util\Util;
 use stdClass;

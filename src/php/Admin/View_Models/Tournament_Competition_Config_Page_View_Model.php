@@ -9,8 +9,8 @@
 namespace Racketmanager\Admin\View_Models;
 
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Competition;
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Tournament;
 
 readonly final class Tournament_Competition_Config_Page_View_Model {

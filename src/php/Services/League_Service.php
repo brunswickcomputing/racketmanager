@@ -3,8 +3,8 @@
 namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Enums\Team_Profile;
-use Racketmanager\Domain\League;
-use Racketmanager\Domain\League_Team;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Has_Matches_Exception;

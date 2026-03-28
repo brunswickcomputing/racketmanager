@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Repositories;
 
-use Racketmanager\Domain\Fixture;
+use Racketmanager\Domain\Fixture\Fixture;
 use wpdb;
 
 /**
@@ -262,22 +262,23 @@ class Fixture_Repository {
      * @return int
      */
     public function count_player_matches_on_same_day( string $season, int $match_day, int $league_id, int $club_player_id ): int {
+        $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
         $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
         $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
 
         return (int) $this->wpdb->get_var( $this->wpdb->prepare(
-            "SELECT count(*) 
+            "SELECT count(*)
              FROM $this->table_name m
              JOIN $rubbers_table r ON m.`id` = r.`match_id`
              JOIN $rubber_players_table rp ON r.`id` = rp.`rubber_id`
-             WHERE m.`season` = %s 
-               AND m.`match_day` = %d 
-               AND m.`league_id` != %d 
+             WHERE m.`season` = %s
+               AND m.`match_day` = %d
+               AND m.`league_id` != %d
                AND m.`league_id` IN (
-                   SELECT l.`id` 
-                   FROM {$this->wpdb->prefix}racketmanager l 
-                   WHERE l.`event_id` = (SELECT `event_id` FROM {$this->wpdb->prefix}racketmanager WHERE `id` = %d)
-               ) 
+                   SELECT l.`id`
+                   FROM $leagues_table l
+                   WHERE l.`event_id` =  %d
+               )
                AND rp.`club_player_id` = %d",
             $season,
             $match_day,

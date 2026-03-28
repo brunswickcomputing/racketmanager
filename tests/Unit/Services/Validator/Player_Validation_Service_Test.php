@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Validator;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\League;
-use Racketmanager\Domain\Event;
-use Racketmanager\Domain\Competition;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Services\Registration_Service;

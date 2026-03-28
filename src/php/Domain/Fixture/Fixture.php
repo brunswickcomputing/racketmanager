@@ -7,7 +7,9 @@
  * @subpackage Domain
  */
 
-namespace Racketmanager\Domain;
+namespace Racketmanager\Domain\Fixture;
+
+use Racketmanager\Domain\Result\Result;
 
 /**
  * Class Fixture

@@ -8,8 +8,8 @@
 
 namespace Racketmanager\Admin\View_Models;
 
-use Racketmanager\Domain\Competition;
-use Racketmanager\Domain\Event;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 
 readonly final class Tournament_Event_Config_Page_View_Model {
 

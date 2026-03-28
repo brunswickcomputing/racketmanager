@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Fixture;
-use Racketmanager\Domain\Result;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -140,10 +140,10 @@ class Result_Service_Test extends TestCase {
         $fixture_data->away_team = '200';
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->createMock(\Racketmanager\Domain\League::class);
+        $league = $this->createMock(\Racketmanager\Domain\Competition\League::class);
         $league->id = 456;
         $league->title = 'Test League';
-        $event = $this->createMock(\Racketmanager\Domain\Event::class);
+        $event = $this->createMock(\Racketmanager\Domain\Competition\Event::class);
         $event->id = 10;
         $competition = (object)['type' => 'league'];
         $event->competition = $competition;

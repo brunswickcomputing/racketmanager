@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Result;
+use Racketmanager\Domain\Result\Result;
 
 final class Result_Test extends TestCase {
     public function test_result_constructor_and_getters(): void {

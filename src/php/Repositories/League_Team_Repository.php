@@ -11,7 +11,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\League\League_Standings_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
-use Racketmanager\Domain\League_Team;
+use Racketmanager\Domain\Competition\League_Team;
 use stdClass;
 use wpdb;
 

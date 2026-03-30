@@ -508,19 +508,31 @@ class Ajax_Fixture extends Ajax {
      * @return Fixture_Result_Manager
      */
     private function get_fixture_result_manager(): Fixture_Result_Manager {
+        $c = $this->racketmanager->container;
+
         $repository_provider = new Repository_Provider(
-            team_repository: new Team_Repository(),
-            rubber_repository: new Rubber_Repository(),
-            results_checker_repository: new Results_Checker_Repository(),
-            fixture_repository: new Fixture_Repository()
+            $c->get( 'league_repository' ),
+            $c->get( 'league_team_repository' ),
+            $c->get( 'team_repository' ),
+            $c->get( 'player_repository' ),
+            $c->get( 'rubber_repository' ),
+            $c->get( 'results_checker_repository' ),
+            $c->get( 'results_report_repository' ),
+            $c->get( 'fixture_repository' ),
+            $c->get( 'club_repository' )
         );
 
         $service_provider = new Fixture_Service_Provider(
-            league_service: $this->league_service,
-            score_validator: new Score_Validation_Service(),
-            registration_service: $this->registration_service
+            $c->get( 'result_service' ),
+            $c->get( 'knockout_progression_service' ),
+            $c->get( 'league_service' ),
+            $c->get( 'score_validation_service' ),
+            $c->get( 'player_validation_service' ),
+            $c->get( 'notification_service' ),
+            $c->get( 'registration_service' )
         );
-        $service_provider->set_settings_service( $this->settings_service );
+        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+        $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
 
         return new Fixture_Result_Manager(
             $service_provider,

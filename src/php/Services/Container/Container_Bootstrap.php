@@ -66,6 +66,8 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
+use Racketmanager\Services\Fixture\Fixture_Permission_Service;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Validator\Player_Validation_Service;
@@ -150,7 +152,63 @@ final class Container_Bootstrap {
             return new League_Service( $app, $c->get( 'league_repository' ), $c->get( 'event_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), );
         } );
 
-        $c->set( 'fixture_service', function ( Simple_Container $c ) use ( $app ) {
+        $c->set( 'fixture_permission_service', function ( Simple_Container $c ) {
+            $repository_provider = new Repository_Provider(
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'rubber_repository' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'results_report_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'club_repository' )
+            );
+
+            $service_provider = new Fixture_Service_Provider(
+                $c->get( 'result_service' ),
+                $c->get( 'knockout_progression_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'score_validation_service' ),
+                $c->get( 'player_validation_service' ),
+                $c->get( 'notification_service' ),
+                $c->get( 'registration_service' )
+            );
+            $service_provider->set_team_service( $c->get( 'team_service' ) );
+            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+            return new Fixture_Permission_Service( $repository_provider, $service_provider );
+        } );
+
+        $c->set( 'fixture_detail_service', function ( Simple_Container $c ) {
+            $repository_provider = new Repository_Provider(
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'rubber_repository' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'results_report_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'club_repository' )
+            );
+
+            $service_provider = new Fixture_Service_Provider(
+                $c->get( 'result_service' ),
+                $c->get( 'knockout_progression_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'score_validation_service' ),
+                $c->get( 'player_validation_service' ),
+                $c->get( 'notification_service' ),
+                $c->get( 'registration_service' )
+            );
+            $service_provider->set_team_service( $c->get( 'team_service' ) );
+            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+            return new Fixture_Detail_Service( $repository_provider, $service_provider );
+        } );
+
+        $c->set( 'fixture_service', function ( Simple_Container $c ) {
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
                 $c->get( 'league_team_repository' ),
@@ -244,6 +302,7 @@ final class Container_Bootstrap {
                 $c->get( 'registration_service' )
             );
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+            $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
 
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),

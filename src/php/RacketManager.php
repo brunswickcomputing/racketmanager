@@ -27,6 +27,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\Public\Shortcodes_Club;
 use Racketmanager\Public\Shortcodes_Competition;

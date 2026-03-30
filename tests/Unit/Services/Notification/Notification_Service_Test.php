@@ -1,7 +1,73 @@
 <?php
 declare(strict_types=1);
 
-namespace Racketmanager\Tests\Unit\Services\Notification;
+namespace Racketmanager\Domain\Fixture {
+    if ( ! function_exists( 'Racketmanager\Domain\Fixture\maybe_unserialize' ) ) {
+        function maybe_unserialize( $data ) {
+            return $data;
+        }
+    }
+}
+
+namespace Racketmanager\Domain\Competition {
+    if ( ! function_exists( 'Racketmanager\Domain\Competition\maybe_unserialize' ) ) {
+        function maybe_unserialize( $data ) {
+            return $data;
+        }
+    }
+}
+
+namespace Racketmanager\Services\Notification {
+    if ( ! function_exists( 'Racketmanager\Services\Notification\__' ) ) {
+        function __( $text, $domain ) {
+            return $text;
+        }
+    }
+    if ( ! defined( 'RACKETMANAGER_CC_EMAIL' ) ) {
+        define( 'RACKETMANAGER_CC_EMAIL', 'cc@example.com' );
+    }
+    if ( ! function_exists( 'Racketmanager\Services\Notification\wp_mail' ) ) {
+        function wp_mail( $to, $subject, $message, $headers ) {
+            $GLOBALS['wp_mail_calls'][] = [
+                'to'      => $to,
+                'subject' => $subject,
+                'message' => $message,
+                'headers' => $headers,
+            ];
+            return true;
+        }
+    }
+}
+
+namespace Racketmanager {
+    if ( ! function_exists( 'Racketmanager\result_notification' ) ) {
+        function result_notification( $match_id, $args ) {
+            return 'Result Notification';
+        }
+    }
+    if ( ! function_exists( 'Racketmanager\captain_result_notification' ) ) {
+        function captain_result_notification( $match_id, $args ) {
+            return 'Captain Result Notification';
+        }
+    }
+    if ( ! function_exists( 'Racketmanager\match_notification' ) ) {
+        function match_notification( $match_id, $args ) {
+            return 'Match Notification';
+        }
+    }
+    if ( ! function_exists( 'Racketmanager\match_date_change_notification' ) ) {
+        function match_date_change_notification( $match_id, $args ) {
+            return 'Date Change Notification';
+        }
+    }
+    if ( ! function_exists( 'Racketmanager\match_team_withdrawn_notification' ) ) {
+        function match_team_withdrawn_notification( $match_id, $args ) {
+            return 'Withdrawn Notification';
+        }
+    }
+}
+
+namespace Racketmanager\Tests\Unit\Services\Notification {
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -508,4 +574,177 @@ class Notification_Service_Test extends TestCase {
         $this->service->notify_team_withdrawal($fixture, 100);
         $this->assertEmpty($GLOBALS['wp_mail_calls']);
     }
+    public function test_send_next_match_notification_success(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->leg = 1;
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Division 1';
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'cup', 'name' => 'Cup Name'];
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $home_captain = $this->createMock(Player::class);
+        $home_captain->method('get_email')->willReturn('home@example.com');
+        $away_captain = $this->createMock(Player::class);
+        $away_captain->method('get_email')->willReturn('away@example.com');
+
+        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home->method('get_captain')->willReturn(1);
+        $league_team_away = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_away->method('get_captain')->willReturn(2);
+
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturnMap([
+            [100, 456, 2026, $league_team_home],
+            [200, 456, 2026, $league_team_away]
+        ]);
+
+        $this->player_repository->method('find')->willReturnMap([
+            [1, 'id', $home_captain],
+            [2, 'id', $away_captain]
+        ]);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_next_match_notification($fixture);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertContains('home@example.com', $mail['to']);
+        $this->assertContains('away@example.com', $mail['to']);
+        $this->assertStringContainsString('Match Details', $mail['subject']);
+        $this->assertStringContainsString('Leg 1', $mail['subject']);
+    }
+
+    public function test_send_date_change_notification_success(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->date = '2026-05-01';
+        $fixture_data->date_original = '2026-04-01';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Division 1';
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'league', 'name' => 'League Name', 'is_tournament' => false];
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $home_captain = $this->createMock(Player::class);
+        $home_captain->method('get_email')->willReturn('home@example.com');
+        $this->player_repository->method('find')->willReturn($home_captain);
+        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home->method('get_captain')->willReturn(1);
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_date_change_notification($fixture);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertStringContainsString('Match Date Change', $mail['subject']);
+    }
+
+    public function test_send_date_change_notification_tournament_delay(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->date = '2026-05-01';
+        $fixture_data->date_original = '2026-04-01';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Division 1';
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name', 'is_tournament' => true];
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $home_captain = $this->createMock(Player::class);
+        $home_captain->method('get_email')->willReturn('home@example.com');
+        $this->player_repository->method('find')->willReturn($home_captain);
+        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home->method('get_captain')->willReturn(1);
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_date_change_notification($fixture);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertStringContainsString('DELAY', $mail['subject']);
+    }
+
+    public function test_notify_team_withdrawal_enhanced(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Division 1';
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'league'];
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $home_team = $this->createMock(Team::class);
+        $home_team->method('get_id')->willReturn(100);
+        $home_team->method('get_name')->willReturn('Home Team');
+        $away_team = $this->createMock(Team::class);
+        $away_team->method('get_id')->willReturn(200);
+        $away_team->method('get_name')->willReturn('Away Team');
+
+        $this->team_repository->method('find_by_id')->willReturnMap([
+            [100, $home_team],
+            [200, $away_team]
+        ]);
+
+        $away_captain = $this->createMock(Player::class);
+        $away_captain->method('get_email')->willReturn('away-captain@example.com');
+        $this->player_repository->method('find')->willReturn($away_captain);
+        $league_team_away = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_away->method('get_captain')->willReturn(2);
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_away);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->notify_team_withdrawal($fixture, 100);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertEquals('away-captain@example.com', $mail['to']);
+    }
+}
 }

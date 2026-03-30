@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Notification;
 
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Player;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
@@ -12,6 +13,8 @@ use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\RacketManager;
 use function Racketmanager\captain_result_notification;
+use function Racketmanager\match_date_change_notification;
+use function Racketmanager\match_notification;
 use function Racketmanager\match_team_withdrawn_notification;
 use function Racketmanager\result_notification;
 use function Racketmanager\result_outstanding_notification;
@@ -343,6 +346,156 @@ class Notification_Service {
         }
 
         return null;
+    }
+
+    /**
+     * Get the email addresses for a team or both teams in a fixture.
+     *
+     * @param Fixture $fixture
+     * @param string $target 'home', 'away', or 'both'
+     * @return array
+     */
+    public function get_fixture_emails( Fixture $fixture, string $target = 'both' ): array {
+        $emails = array();
+
+        if ( 'home' === $target || 'both' === $target ) {
+            $email = $this->get_team_captain_email( (int) $fixture->get_home_team(), (int) $fixture->get_league_id(), (int) $fixture->get_season() );
+            if ( $email ) {
+                $emails[] = $email;
+            }
+        }
+
+        if ( 'away' === $target || 'both' === $target ) {
+            $email = $this->get_team_captain_email( (int) $fixture->get_away_team(), (int) $fixture->get_league_id(), (int) $fixture->get_season() );
+            if ( $email ) {
+                $emails[] = $email;
+            }
+        }
+
+        return array_unique( $emails );
+    }
+
+    /**
+     * Notify teams when their next match is confirmed (e.g. in knockout draws).
+     *
+     * @param Fixture $fixture
+     * @return void
+     */
+    public function send_next_match_notification( Fixture $fixture ): void {
+        $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
+        if ( ! $league ) {
+            return;
+        }
+
+        // Skip if either team is not set, or if it's a 'S' team type (legacy condition)
+        if ( -1 === (int) $fixture->get_home_team() || -1 === (int) $fixture->get_away_team() ) {
+            return;
+        }
+
+        $email_to = $this->get_fixture_emails( $fixture );
+        if ( empty( $email_to ) ) {
+            return;
+        }
+
+        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
+        $headers     = array();
+        $headers[]   = $this->app->get_from_user_email();
+        $headers[]   = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+
+        $message_args = array(
+            'competition_type' => $league->event->competition->type,
+            'emailfrom'        => $admin_email,
+        );
+
+        if ( 'tournament' === $league->event->competition->type ) {
+            $message_args['tournament'] = $league->event->competition_id;
+        } elseif ( 'cup' === $league->event->competition->type ) {
+            $message_args['competition'] = $league->event->competition->name;
+        }
+
+        $round_name = '';
+        if ( $league->is_championship && $league->championship ) {
+            $round_name           = $league->championship->finals[ $fixture->get_final() ]['name'] ?? '';
+            $message_args['round'] = $round_name;
+        }
+
+        $email_message = match_notification( $fixture->get_id(), $message_args );
+        $subject       = __( 'Match Details', 'racketmanager' ) . ( $round_name ? ' - ' . $round_name : '' );
+
+        if ( $fixture->get_leg() ) {
+            $subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $fixture->get_leg();
+        }
+        $subject .= ' - ' . $league->title;
+
+        wp_mail( $email_to, $subject, $email_message, $headers );
+    }
+
+    /**
+     * Notify teams when a fixture date or time has changed.
+     *
+     * @param Fixture $fixture
+     * @return void
+     */
+    public function send_date_change_notification( Fixture $fixture ): void {
+        $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
+        if ( ! $league ) {
+            return;
+        }
+
+        if ( -1 === (int) $fixture->get_home_team() || -1 === (int) $fixture->get_away_team() ) {
+            return;
+        }
+
+        $email_to = $this->get_fixture_emails( $fixture );
+        if ( empty( $email_to ) ) {
+            return;
+        }
+
+        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
+        $headers     = array();
+        $headers[]   = $this->app->get_from_user_email();
+        $headers[]   = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+
+        $round_name = '';
+        if ( $league->is_championship && $league->championship ) {
+            $round_name = $league->championship->finals[ $fixture->get_final() ]['name'] ?? '';
+        }
+
+        $message_args = array(
+            'match'            => $fixture->get_id(),
+            'round'            => $round_name,
+            'new_date'         => $fixture->get_date(),
+            'original_date'    => $fixture->get_date_original(),
+            'competition_type' => $league->event->competition->type,
+            'emailfrom'        => $admin_email,
+        );
+
+        if ( 'tournament' === $league->event->competition->type || 'cup' === $league->event->competition->type || 'league' === $league->event->competition->type ) {
+            $message_args['competition'] = $league->event->competition->name;
+        }
+
+        $delay = false;
+        if ( $league->event->competition->is_tournament && $fixture->get_date() > $fixture->get_date_original() ) {
+            $message_args['delay'] = true;
+            $delay                  = true;
+        }
+
+        $subject = __( 'Match Date Change', 'racketmanager' );
+        if ( $delay ) {
+            $subject .= ' ' . __( 'DELAY', 'racketmanager' );
+        }
+        if ( $round_name ) {
+            $subject .= ' - ' . $round_name;
+        }
+        if ( $fixture->get_leg() ) {
+            $subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $fixture->get_leg();
+        }
+        $subject .= ' - ' . $league->title;
+
+        $message_args['email_subject'] = $subject;
+        $email_message                 = match_date_change_notification( $fixture->get_id(), $message_args );
+
+        wp_mail( $email_to, $subject, $email_message, $headers );
     }
 
     /**

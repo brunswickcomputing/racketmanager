@@ -12,6 +12,9 @@ use Racketmanager\Services\Result\Rubber_Result_Manager;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Settings_Service;
+use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Player_Service;
 
 /**
  * Provides access to various services in the system.
@@ -26,6 +29,9 @@ class Service_Provider {
     private ?Notification_Service $notification_service = null;
     private ?Registration_Service $registration_service = null;
     private ?Settings_Service $settings_service = null;
+    private ?Fixture_Service $fixture_service = null;
+    private ?Team_Service $team_service = null;
+    private ?Player_Service $player_service = null;
 
     public function __construct(
         ?Result_Service $result_service = null,
@@ -36,7 +42,10 @@ class Service_Provider {
         ?Rubber_Result_Manager $rubber_manager = null,
         ?Notification_Service $notification_service = null,
         ?Registration_Service $registration_service = null,
-        ?Settings_Service $settings_service = null
+        ?Settings_Service $settings_service = null,
+        ?Fixture_Service $fixture_service = null,
+        ?Team_Service $team_service = null,
+        ?Player_Service $player_service = null
     ) {
         $this->result_service = $result_service;
         $this->progression_service = $progression_service;
@@ -47,6 +56,9 @@ class Service_Provider {
         $this->notification_service = $notification_service;
         $this->registration_service = $registration_service;
         $this->settings_service = $settings_service;
+        $this->fixture_service = $fixture_service;
+        $this->team_service = $team_service;
+        $this->player_service = $player_service;
     }
 
     public function get_result_service(): ?Result_Service {
@@ -83,5 +95,17 @@ class Service_Provider {
 
     public function get_settings_service(): ?Settings_Service {
         return $this->settings_service;
+    }
+
+    public function get_fixture_service(): ?Fixture_Service {
+        return $this->fixture_service;
+    }
+
+    public function get_team_service(): ?Team_Service {
+        return $this->team_service;
+    }
+
+    public function get_player_service(): ?Player_Service {
+        return $this->player_service;
     }
 }

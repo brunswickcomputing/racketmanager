@@ -25,6 +25,7 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Domain\Scoring\Scoring_Context;
+use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
 use stdClass;
 
 class Fixture_Result_Manager_Integration_Test extends TestCase {
@@ -44,6 +45,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $rubber_repository;
     private $results_checker_repository;
     private $fixture_repository;
+
+    private $fixture_service_mock;
 
     protected function setUp(): void {
         parent::setUp();
@@ -99,6 +102,22 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             fixture_repository: $this->fixture_repository
         );
 
+        $this->fixture_service_mock = $this->createMock(\Racketmanager\Services\Fixture_Service::class);
+        $this->fixture_service_mock->method('is_update_allowed')->will($this->returnCallback(function($fixture) {
+            if ($fixture->get_id() === 999) {
+                return (object)[
+                    'user_can_update' => false,
+                    'user_type' => 'none',
+                    'user_team' => 'none'
+                ];
+            }
+            return (object)[
+                'user_can_update' => true,
+                'user_type' => 'admin',
+                'user_team' => 'home'
+            ];
+        }));
+
         $service_provider = new Fixture_Service_Provider(
             result_service: $this->result_service,
             progression_service: $this->progression_service,
@@ -107,7 +126,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             rubber_manager: $this->rubber_manager,
             notification_service: $this->notification_service,
             registration_service: $reg_service,
-            settings_service: $this->settings_service
+            settings_service: $this->settings_service,
+            fixture_service: $this->fixture_service_mock
         );
 
         $this->manager = new Fixture_Result_Manager(
@@ -511,7 +531,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
     public function test_handle_team_result_update_blocks_unauthorized_user(): void {
         $fixture_data = new stdClass();
-        $fixture_data->id = 123;
+        $fixture_data->id = 999;
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
@@ -539,17 +559,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                           ->getMock();
         $away_team->method('get_club_id')->willReturn(20);
 
-        $this->team_repository->method('find_by_id')->willReturnMap([
-            [100, $home_team],
-            [200, $away_team],
-        ]);
-
-        // Simulate a logged-in user who is NOT an admin and NOT a captain
-        // We need to stub global functions for this to work in integration tests if they are called.
-        // Our wp-stubs.php has basic versions of these.
-        
         $request = new Team_Result_Update_Request(
-            match_id: 123,
+            match_id: 999,
             match_status: 'completed',
             rubber_statuses: ['1' => 'completed'],
             match_comments: [],
@@ -558,6 +569,18 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             players: [1 => []],
             sets: [1 => []]
         );
+
+        $this->rubber_manager->method('handle_rubber_update')->willReturn(new Rubber_Update_Result(
+            rubber_id: 10,
+            home_points: 2.0,
+            away_points: 0.0,
+            winner_id: 5,
+            players: [],
+            sets: [],
+            status: 1,
+            custom: [],
+            stats: []
+        ));
 
         $result = $this->manager->handle_team_result_update($fixture, $request);
 

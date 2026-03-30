@@ -67,6 +67,13 @@ namespace Racketmanager {
 }
 
 namespace {
+    function maybe_unserialize( $data ) {
+        if ( is_string( $data ) && preg_match( '/^([adObis]):/', $data ) ) {
+            return unserialize( $data );
+        }
+        return $data;
+    }
+
     if ( ! function_exists( 'get_option' ) ) {
         function get_option( $option, $default = false ) {
             if ($option === 'racketmanager_options') {
@@ -235,9 +242,15 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'is_user_logged_in' ) ) {
+        function is_user_logged_in(): bool {
+            return ( $GLOBALS['wp_stubs_get_current_user_id'] ?? 1 ) > 0;
+        }
+    }
+
     if ( ! function_exists( 'get_current_user_id' ) ) {
         function get_current_user_id(): int {
-            return 1;
+            return $GLOBALS['wp_stubs_get_current_user_id'] ?? 1;
         }
     }
 
@@ -294,15 +307,6 @@ namespace {
         }
     }
 
-    if ( ! function_exists( 'maybe_unserialize' ) ) {
-        function maybe_unserialize( $data ) {
-            if ( is_serialized( $data ) ) {
-                return unserialize( $data );
-            }
-            return $data;
-        }
-    }
-
     if ( ! function_exists( 'is_admin' ) ) {
         function is_admin() {
             return false;
@@ -312,17 +316,6 @@ namespace {
     if ( ! function_exists( 'paginate_links' ) ) {
         function paginate_links( $args = '' ) {
             return '';
-        }
-    }
-}
-
-namespace Racketmanager\Domain {
-    if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
-        function maybe_unserialize( $data ) {
-            if ( is_string( $data ) && preg_match( '/^([adObis]):/', $data ) ) {
-                return unserialize( $data );
-            }
-            return $data;
         }
     }
 }
@@ -484,7 +477,7 @@ namespace {
 
     if ( ! function_exists( 'current_user_can' ) ) {
         function current_user_can( $capability ) {
-            return false;
+            return $GLOBALS['wp_stubs_current_user_can'] ?? false;
         }
     }
 
@@ -594,6 +587,43 @@ namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\match_team_withdrawn_notification' ) ) {
         function match_team_withdrawn_notification( $match_id, $args = array() ) {
             return 'Team withdrawn notification for match ' . $match_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_event' ) ) {
+        function get_event( $event_id ) {
+            return new class((object)['id'=>$event_id]) extends \Racketmanager\Domain\Competition\Event {
+                public function __construct($obj) {
+                    $this->id = $obj->id;
+                    $comp = new \stdClass();
+                    $comp->settings = ['point_rule' => 'three', 'mode' => 'league'];
+                    $comp->type = 'league';
+                    $comp->is_player_entry = false;
+                    $comp->standings = [];
+                    $comp->current_season = ['name' => '2024-25'];
+                    $this->competition = $comp;
+                    $this->seasons = json_encode([['name' => '2024-25']]);
+                    $this->name = 'Test Event';
+                }
+                public function get_num_sets(): int { return 3; }
+                public function get_num_rubbers(): ?int { return 6; }
+                public function get_season_event($season = false, bool $index = false): array|false|string { return '2024-25'; }
+                public function get_seasons(): array { return [['name' => '2024-25']]; }
+                public function set_num_leagues(bool $total = false): void {}
+                public function set_season(?string $season = null, bool $force = false): void {}
+            };
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_league' ) ) {
+        function get_league( $league_id ) {
+            try {
+                $league = (new \ReflectionClass( 'Racketmanager\Domain\Competition\League' ))->newInstanceWithoutConstructor();
+                $league->id = $league_id;
+                return $league;
+            } catch ( \ReflectionException $e ) {
+                return (object) [ 'id' => $league_id ];
+            }
         }
     }
 }

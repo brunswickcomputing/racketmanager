@@ -10,4 +10,7 @@ enum Fixture_Update_Status: string {
     case SAVED = 'saved';
     case PROGRESSED = 'progressed';
     case TABLE_UPDATED = 'table_updated';
+    case PENALTY_APPLIED = 'penalty_applied';
+    case TIE_UPDATED = 'tie_updated';
+    case LEGS_UPDATED = 'legs_updated';
 }

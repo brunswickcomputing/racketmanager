@@ -272,4 +272,50 @@ class Result_Calculator {
             'loser_id'  => $loser_id,
         ];
     }
+
+    /**
+     * Calculate aggregate result for multi-leg matches.
+     *
+     * @param float      $current_home_points Points from current leg home team.
+     * @param float      $current_away_points Points from current leg away team.
+     * @param float      $linked_home_points Points from linked leg home team.
+     * @param float      $linked_away_points Points from linked leg away team.
+     * @param int|string $home_team_id        ID of home team in CURRENT leg.
+     * @param int|string $away_team_id        ID of away team in CURRENT leg.
+     *
+     * @return array{
+     *     home_points_tie: float,
+     *     away_points_tie: float,
+     *     winner_id_tie: int|string,
+     *     loser_id_tie: int|string
+     * }
+     */
+    public static function calculate_aggregate_result(
+        float $current_home_points,
+        float $current_away_points,
+        float $linked_home_points,
+        float $linked_away_points,
+        int|string $home_team_id,
+        int|string $away_team_id
+    ): array {
+        // Leg 1 Home is Leg 2 Away, and vice versa.
+        // So Home Team's aggregate = Leg 2 Home + Leg 1 Away
+        // And Away Team's aggregate = Leg 2 Away + Leg 1 Home
+        $home_points_tie = $current_home_points + $linked_away_points;
+        $away_points_tie = $current_away_points + $linked_home_points;
+
+        $tie_result = self::determine_winner_and_loser(
+            $home_points_tie,
+            $away_points_tie,
+            $home_team_id,
+            $away_team_id
+        );
+
+        return [
+            'home_points_tie' => $home_points_tie,
+            'away_points_tie' => $away_points_tie,
+            'winner_id_tie'   => $tie_result['winner_id'],
+            'loser_id_tie'    => $tie_result['loser_id'],
+        ];
+    }
 }

@@ -43,6 +43,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $league_repository_repo;
     private $rubber_repository;
     private $results_checker_repository;
+    private $fixture_repository;
 
     protected function setUp(): void {
         parent::setUp();
@@ -61,7 +62,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->league_repository_repo = $this->createMock(\Racketmanager\Repositories\League_Repository::class);
         $this->rubber_repository = $this->createMock(\Racketmanager\Repositories\Rubber_Repository::class);
         $this->results_checker_repository = $this->createMock(\Racketmanager\Repositories\Results_Checker_Repository::class);
-        $fixture_repository = $this->createMock(\Racketmanager\Repositories\Fixture_Repository::class);
+        $this->fixture_repository = $this->createMock(\Racketmanager\Repositories\Fixture_Repository::class);
 
         $reg_service = $this->createMock(\Racketmanager\Services\Registration_Service::class);
         $reg_service->method('get_dummy_players')->willReturn([]);
@@ -95,7 +96,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             player_repository: $this->player_repository,
             rubber_repository: $this->rubber_repository,
             results_checker_repository: $this->results_checker_repository,
-            fixture_repository: $fixture_repository
+            fixture_repository: $this->fixture_repository
         );
 
         $service_provider = new Fixture_Service_Provider(
@@ -734,5 +735,87 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $player_validator->run_fixture_checks($fixture, $league, $rubbers, []);
         
         // If it didn't throw and reg_service was called, it means it tried to load them.
+    }
+
+    public function test_update_legs(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture = new Fixture( $fixture_data );
+
+        $this->fixture_repository->expects( $this->once() )
+                                 ->method( 'save' )
+                                 ->with( $fixture );
+
+        $response = $this->manager->update_legs( $fixture, 1, 456 );
+
+        $this->assertEquals( 1, $fixture->get_leg() );
+        $this->assertEquals( 456, $fixture->get_linked_match() );
+        $this->assertTrue( $response->has_outcome( Fixture_Update_Status::LEGS_UPDATED ) );
+    }
+
+    public function test_apply_penalty_leg_1(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id          = 123;
+        $fixture_data->home_team   = 10;
+        $fixture_data->away_team   = 20;
+        $fixture_data->home_points = '8.0';
+        $fixture_data->away_points = '2.0';
+        $fixture_data->leg         = 1;
+        $fixture = new Fixture( $fixture_data );
+
+        $this->fixture_repository->expects( $this->once() )
+                                 ->method( 'save' )
+                                 ->with( $fixture );
+
+        $response = $this->manager->apply_penalty( $fixture, 'home', 2 );
+
+        $this->assertEquals( 6.0, (float) $fixture->get_home_points() );
+        $this->assertEquals( 2.0, (float) $fixture->get_away_points() );
+        $this->assertEquals( 10, $fixture->get_winner_id() );
+        $this->assertTrue( $response->has_outcome( Fixture_Update_Status::PENALTY_APPLIED ) );
+        $this->assertFalse( $response->has_outcome( Fixture_Update_Status::TIE_UPDATED ) );
+    }
+
+    public function test_apply_penalty_leg_2_triggers_tie_update(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id          = 123;
+        $fixture_data->home_team   = 10;
+        $fixture_data->away_team   = 20;
+        $fixture_data->home_points = '4.0';
+        $fixture_data->away_points = '2.0';
+        $fixture_data->leg         = 2;
+        $fixture_data->linked_match = 456;
+        $fixture = new Fixture( $fixture_data );
+
+        $linked_data = new stdClass();
+        $linked_data->id          = 456;
+        $linked_data->home_team   = 20;
+        $linked_data->away_team   = 10;
+        $linked_data->home_points = '5.0';
+        $linked_data->away_points = '1.0';
+        $linked_data->winner_id   = 20;
+        $linked_fixture = new Fixture( $linked_data );
+
+        $this->fixture_repository->expects( $this->exactly( 1 ) )
+                                 ->method( 'find_by_id' )
+                                 ->with( 456 )
+                                 ->willReturn( $linked_fixture );
+
+        $this->fixture_repository->expects( $this->exactly( 2 ) )
+                                 ->method( 'save' );
+
+        $response = $this->manager->apply_penalty( $fixture, 'away', 1 );
+
+        // Leg 2 Home: 4.0, Away: 2.0 - 1.0 = 1.0
+        // Leg 1 (Linked) Home (Team 20): 5.0, Away (Team 10): 1.0
+        // Aggregate Team 10: 4.0 (leg 2 home) + 1.0 (leg 1 away) = 5.0
+        // Aggregate Team 20: 1.0 (leg 2 away) + 5.0 (leg 1 home) = 6.0
+
+        $this->assertEquals( 1.0, (float) $fixture->get_away_points() );
+        $this->assertEquals( 5.0, (float) $fixture->get_home_points_tie() );
+        $this->assertEquals( 6.0, (float) $fixture->get_away_points_tie() );
+        $this->assertEquals( 20, $fixture->get_winner_id_tie() );
+        $this->assertTrue( $response->has_outcome( Fixture_Update_Status::PENALTY_APPLIED ) );
+        $this->assertTrue( $response->has_outcome( Fixture_Update_Status::TIE_UPDATED ) );
     }
 }

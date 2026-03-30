@@ -38,6 +38,7 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
+use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Validator_Fixture;
@@ -130,6 +131,11 @@ class Fixture_Result_Manager {
     private Results_Checker_Repository|null $results_checker_repository;
 
     /**
+     * @var Fixture_Repository|null
+     */
+    private Fixture_Repository|null $fixture_repository;
+
+    /**
      * @param Service_Provider $service_provider
      * @param Repository_Provider $repository_provider
      */
@@ -154,6 +160,7 @@ class Fixture_Result_Manager {
         $this->rubber_repository          = $repository_provider->get_rubber_repository();
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
         $this->club_repository            = $repository_provider->get_club_repository();
+        $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
         $this->notification_service = $service_provider->get_notification_service();
         if ( ! $this->notification_service ) {
@@ -978,5 +985,112 @@ class Fixture_Result_Manager {
         }
 
         return [ 'type' => 'none', 'team' => 'none' ];
+    }
+
+    /**
+     * Update leg and linked match for a fixture.
+     *
+     * @param Fixture $fixture
+     * @param int $leg
+     * @param int $linked_match_id
+     * @return Fixture_Update_Response
+     */
+    public function update_legs( Fixture $fixture, int $leg, int $linked_match_id ): Fixture_Update_Response {
+        $fixture->set_leg( $leg );
+        $fixture->set_linked_match( $linked_match_id );
+        $this->fixture_repository->save( $fixture );
+
+        return new Fixture_Update_Response( [ Fixture_Update_Status::LEGS_UPDATED ] );
+    }
+
+    /**
+     * Apply penalty points to a team's result in a fixture.
+     *
+     * @param Fixture $fixture
+     * @param string $team_ref 'home' or 'away'
+     * @param int $penalty
+     * @return Fixture_Update_Response
+     */
+    public function apply_penalty( Fixture $fixture, string $team_ref, int $penalty ): Fixture_Update_Response {
+        $home_points = (float) $fixture->get_home_points();
+        $away_points = (float) $fixture->get_away_points();
+
+        if ( 'home' === $team_ref ) {
+            $home_points -= $penalty;
+        } elseif ( 'away' === $team_ref ) {
+            $away_points -= $penalty;
+        }
+
+        $fixture->set_home_points( (string) $home_points );
+        $fixture->set_away_points( (string) $away_points );
+
+        $winner_loser = Result_Calculator::determine_winner_and_loser(
+            $home_points,
+            $away_points,
+            (int) $fixture->get_home_team(),
+            (int) $fixture->get_away_team(),
+            $fixture->get_status(),
+            $fixture->get_custom() ?? []
+        );
+
+        $fixture->set_winner_id( (int) $winner_loser['winner_id'] );
+        $fixture->set_loser_id( (int) $winner_loser['loser_id'] );
+
+        $this->fixture_repository->save( $fixture );
+
+        $outcomes = [ Fixture_Update_Status::PENALTY_APPLIED ];
+
+        if ( 2 === $fixture->get_leg() ) {
+            $tie_response = $this->update_result_tie( $fixture );
+            $outcomes     = array_merge( $outcomes, $tie_response->outcomes );
+        }
+
+        // Notify if needed - although Notification_Service might handle this later.
+        // For now, mirroring legacy notification trigger if teams are present.
+        if ( '-1' !== $fixture->get_home_team() && '-1' !== $fixture->get_away_team() ) {
+            // $this->notification_service->notify_result_update( $fixture );
+        }
+
+        return new Fixture_Update_Response( $outcomes );
+    }
+
+    /**
+     * Update aggregate result for a multi-leg tie.
+     *
+     * @param Fixture $fixture
+     * @return Fixture_Update_Response
+     */
+    public function update_result_tie( Fixture $fixture ): Fixture_Update_Response {
+        if ( 2 !== $fixture->get_leg() ) {
+            return new Fixture_Update_Response( [] );
+        }
+
+        $linked_match_id = $fixture->get_linked_match();
+        if ( ! $linked_match_id ) {
+            return new Fixture_Update_Response( [] );
+        }
+
+        $linked_fixture = $this->fixture_repository->find_by_id( $linked_match_id );
+        if ( ! $linked_fixture || ! $linked_fixture->get_winner_id() ) {
+            return new Fixture_Update_Response( [] );
+        }
+
+        $aggregate = Result_Calculator::calculate_aggregate_result(
+            (float) $fixture->get_home_points(),
+            (float) $fixture->get_away_points(),
+            (float) $linked_fixture->get_home_points(),
+            (float) $linked_fixture->get_away_points(),
+            (int) $fixture->get_home_team(),
+            (int) $fixture->get_away_team()
+        );
+
+        $fixture->set_home_points_tie( $aggregate['home_points_tie'] );
+        $fixture->set_away_points_tie( $aggregate['away_points_tie'] );
+        $fixture->set_winner_id_tie( (int) $aggregate['winner_id_tie'] );
+        $fixture->set_loser_id_tie( (int) $aggregate['loser_id_tie'] );
+
+        $this->fixture_repository->save( $fixture );
+
+        return new Fixture_Update_Response( [ Fixture_Update_Status::TIE_UPDATED ] );
     }
 }

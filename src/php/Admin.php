@@ -69,7 +69,7 @@ class Admin extends RacketManager {
         add_action( 'personal_options_update', array( &$this, 'update_extra_profile_fields' ) );
         add_action( 'edit_user_profile_update', array( &$this, 'update_extra_profile_fields' ) );
 
-        // Add meta box to post screen.
+        // Add a meta-box to the post-screen.
         add_action( 'publish_post', array( &$this, 'edit_match_report' ) );
         add_action( 'edit_post', array( &$this, 'edit_match_report' ) );
         add_action( 'add_meta_boxes', array( &$this, 'metaboxes' ) );
@@ -331,7 +331,7 @@ class Admin extends RacketManager {
      */
     public function update_extra_profile_fields( int $user_id ): void {
         // phpcs:disable WordPress.Security.NonceVerification.Missing
-        if ( current_user_can( 'edit_user', $user_id ) ) {
+        if ( current_user_can( 'edit_user' ) ) {
             if ( isset( $_POST['gender'] ) ) {
                 update_user_meta( $user_id, 'gender', sanitize_text_field( wp_unslash( $_POST['gender'] ) ) );
             }
@@ -360,7 +360,7 @@ class Admin extends RacketManager {
 
 
     /**
-     * Display link to settings page in plugin table
+     * Display a link to the settings page in the plugin table
      *
      * @param array $links array of action links.
      *
@@ -588,7 +588,7 @@ class Admin extends RacketManager {
     }
 
     /**
-     * Update post id for a match report
+     * Update post-id for a match report
      */
     public function edit_match_report(): void {
         global $wpdb;

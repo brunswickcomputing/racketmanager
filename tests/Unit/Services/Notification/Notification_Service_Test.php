@@ -15,6 +15,8 @@ use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Settings_Service;
+use Racketmanager\RacketManager;
 use stdClass;
 
 class Notification_Service_Test extends TestCase {
@@ -23,6 +25,8 @@ class Notification_Service_Test extends TestCase {
     private $team_repository;
     private $player_repository;
     private $club_repository;
+    private $settings_service;
+    private $app;
     private $service;
 
     protected function setUp(): void {
@@ -32,18 +36,23 @@ class Notification_Service_Test extends TestCase {
         $this->team_repository = $this->createMock(Team_Repository::class);
         $this->player_repository = $this->createMock(Player_Repository::class);
         $this->club_repository = $this->createMock(Club_Repository::class);
+        $this->settings_service = $this->createMock(Settings_Service::class);
+        $this->app = $this->createMock(RacketManager::class);
+
         $this->service = new Notification_Service(
             $this->league_repository,
             $this->league_team_repository,
             $this->team_repository,
             $this->player_repository,
-            $this->club_repository
+            $this->club_repository,
+            $this->settings_service,
+            $this->app
         );
 
-        $GLOBALS['racketmanager'] = $this->getMockBuilder(\stdClass::class)
-            ->addMethods(['get_confirmation_email', 'get_options', 'get_from_user_email'])
-            ->getMock();
-        $GLOBALS['racketmanager']->site_name = 'Test Site';
+        $this->app->site_name = 'Test Site';
+
+        // Keep global mock for any remaining legacy calls or functions that use it
+        $GLOBALS['racketmanager'] = $this->app;
     }
 
     public function test_send_result_notification_league_not_found(): void {
@@ -79,15 +88,13 @@ class Notification_Service_Test extends TestCase {
 
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn([
-            'tournament' => [
-                'resultNotification' => 'admin',
-                'confirmationRequired' => false,
-                'confirmationTimeout' => 0
-            ]
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn([
+            'resultNotification' => 'admin',
+            'confirmationRequired' => false,
+            'confirmationTimeout' => 0
         ]);
-        $GLOBALS['racketmanager']->method('get_from_user_email')->willReturn('From: User <user@example.com>');
+        $this->app->method('get_from_user_email')->willReturn('From: User <user@example.com>');
 
         $home_team = $this->createMock(Team::class);
         $home_team->method('get_name')->willReturn('Home Team');
@@ -135,15 +142,13 @@ class Notification_Service_Test extends TestCase {
 
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn([
-            'league' => [
-                'resultNotification' => 'captain',
-                'confirmationRequired' => true,
-                'confirmationTimeout' => 48
-            ]
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn([
+            'resultNotification' => 'captain',
+            'confirmationRequired' => true,
+            'confirmationTimeout' => 48
         ]);
-        $GLOBALS['racketmanager']->method('get_from_user_email')->willReturn('From: User <user@example.com>');
+        $this->app->method('get_from_user_email')->willReturn('From: User <user@example.com>');
 
         $home_team = $this->createMock(Team::class);
         $home_team->method('get_name')->willReturn('Home Team');
@@ -233,8 +238,8 @@ class Notification_Service_Test extends TestCase {
             ->with(6, 'id')
             ->willReturn($away_captain);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
 
         $GLOBALS['wp_mail_calls'] = [];
 
@@ -255,7 +260,7 @@ class Notification_Service_Test extends TestCase {
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('');
+        $this->app->method('get_confirmation_email')->willReturn('');
 
         $GLOBALS['wp_mail_calls'] = [];
         $this->service->send_result_notification($fixture, 'Y', 'Test');
@@ -280,9 +285,9 @@ class Notification_Service_Test extends TestCase {
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn(['league' => ['resultNotification' => 'admin', 'confirmationRequired' => false, 'confirmationTimeout' => 0]]);
-        $GLOBALS['racketmanager']->method('get_from_user_email')->willReturn('from@example.com');
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn(['resultNotification' => 'admin', 'confirmationRequired' => false, 'confirmationTimeout' => 0]);
+        $this->app->method('get_from_user_email')->willReturn('from@example.com');
 
         $this->team_repository->method('find_by_id')->willReturn($this->createMock(Team::class));
 
@@ -307,9 +312,9 @@ class Notification_Service_Test extends TestCase {
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn(['league' => ['resultNotification' => 'admin', 'confirmationRequired' => false, 'confirmationTimeout' => 0]]);
-        $GLOBALS['racketmanager']->method('get_from_user_email')->willReturn('from@example.com');
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn(['resultNotification' => 'admin', 'confirmationRequired' => false, 'confirmationTimeout' => 0]);
+        $this->app->method('get_from_user_email')->willReturn('from@example.com');
 
         $this->team_repository->method('find_by_id')->willReturn($this->createMock(Team::class));
 
@@ -334,8 +339,8 @@ class Notification_Service_Test extends TestCase {
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn(['league' => ['resultNotification' => 'secretary', 'confirmationRequired' => false, 'confirmationTimeout' => 0]]);
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn(['resultNotification' => 'secretary', 'confirmationRequired' => false, 'confirmationTimeout' => 0]);
 
         $this->team_repository->method('find_by_id')->willReturn($this->createMock(Team::class));
 
@@ -372,8 +377,8 @@ class Notification_Service_Test extends TestCase {
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn(['league' => ['resultNotification' => 'captain', 'confirmationRequired' => false, 'confirmationTimeout' => 0]]);
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn(['resultNotification' => 'captain', 'confirmationRequired' => false, 'confirmationTimeout' => 0]);
 
         $this->team_repository->method('find_by_id')->willReturn($this->createMock(Team::class));
 
@@ -401,8 +406,8 @@ class Notification_Service_Test extends TestCase {
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
-        $GLOBALS['racketmanager']->method('get_options')->willReturn(['league' => ['resultNotification' => 'captain', 'confirmationRequired' => false, 'confirmationTimeout' => 0]]);
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->settings_service->method('get_category')->willReturn(['resultNotification' => 'captain', 'confirmationRequired' => false, 'confirmationTimeout' => 0]);
 
         $this->team_repository->method('find_by_id')->willReturn($this->createMock(Team::class));
 

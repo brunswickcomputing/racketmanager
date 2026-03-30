@@ -17,9 +17,13 @@ final class Tournament_Test extends TestCase {
 
     public function test_set_tournament_info_sets_correct_data(): void {
         global $racketmanager;
-        // Do not overwrite global $racketmanager if it is already set by stubs with necessary methods
-        if ( ! isset( $racketmanager ) || ! method_exists( $racketmanager, 'get_options' ) ) {
-            $racketmanager = new stdClass();
+        // Ensure $racketmanager has the expected properties to avoid dynamic property warnings in PHP 8.2+
+        if ( ! isset( $racketmanager ) || ! property_exists( $racketmanager, 'site_url' ) ) {
+            $racketmanager = new class() {
+                public $site_url;
+                public $date_format;
+                public function get_options() { return []; }
+            };
         }
         $racketmanager->site_url = 'http://example.com';
         $racketmanager->date_format = 'Y-m-d';

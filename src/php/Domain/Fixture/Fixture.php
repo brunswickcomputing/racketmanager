@@ -244,6 +244,13 @@ class Fixture {
     public ?string $comments = null;
 
     /**
+     * Updated by
+     *
+     * @var string|null
+     */
+    public ?string $updated_by = null;
+
+    /**
      * Is walkover?
      *
      * @var bool
@@ -326,7 +333,7 @@ class Fixture {
         $this->home_captain        = $fixture->home_captain ?? null;
         $this->away_captain        = $fixture->away_captain ?? null;
         $this->comments            = $fixture->comments ?? null;
-
+        $this->updated_by          = $fixture->updated_by ?? null;
         $this->set_status_flags();
     }
 
@@ -777,6 +784,20 @@ class Fixture {
      */
     public function set_comments( ?string $comments ): void {
         $this->comments = $comments;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function get_updated_by(): ?string {
+        return $this->updated_by;
+    }
+
+    /**
+     * @param string|null $updated_by
+     */
+    public function set_updated_by( ?string $updated_by ): void {
+        $this->updated_by = $updated_by;
     }
 
     /**

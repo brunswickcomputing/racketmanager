@@ -25,6 +25,7 @@ class Rubber_Result_Manager_Test extends TestCase {
     private $score_validator;
     private $league_service;
     private $player_validator;
+    private $rubber_repository;
     private $manager;
 
     protected function setUp(): void {

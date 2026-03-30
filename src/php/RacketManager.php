@@ -145,6 +145,7 @@ class RacketManager {
     private Finance_Service $finance_service;
     private Player_Service $player_service;
     private Tournament_Service $tournament_service;
+    private Fixture_Maintenance_Service $fixture_maintenance_service;
 
     /**
      * Constructor
@@ -166,6 +167,7 @@ class RacketManager {
             $this->finance_service           = $this->container->get( 'finance_service' );
             $this->player_service            = $this->container->get( 'player_service' );
             $this->tournament_service        = $this->container->get( 'tournament_service' );
+            $this->fixture_maintenance_service = $this->container->get( 'fixture_maintenance_service' );
 
             add_action( 'widgets_init', array( &$this, 'register_widget' ) );
             add_action( 'init', array( &$this, 'racketmanager_locale' ) );
@@ -434,7 +436,10 @@ class RacketManager {
         $match_args['timeOffset']       = $result_pending;
         $matches                        = $this->get_matches( $match_args );
         foreach ( $matches as $match ) {
-            $match->chase_match_result( $result_pending, $result_timeout, $result_penalty );
+            $fixture = $this->container->get( 'fixture_repository' )->find_by_id( $match->id );
+            if ( $fixture ) {
+                $this->fixture_maintenance_service->chase_match_result( $fixture, $result_pending, $result_timeout, $result_penalty );
+            }
         }
     }
 
@@ -458,7 +463,10 @@ class RacketManager {
         $match_args['timeOffset']       = $confirmation_timeout;
         $matches                        = $this->get_matches( $match_args );
         foreach ( $matches as $match ) {
-            $match->complete_result( $confirmation_timeout );
+            $fixture = $this->container->get( 'fixture_repository' )->find_by_id( $match->id );
+            if ( $fixture ) {
+                $this->fixture_maintenance_service->complete_result( $fixture, (int) $confirmation_timeout );
+            }
         }
         $confirmation_required  = $this->get_options( $competition )['confirmationRequired'];
         if ( $confirmation_required ) {
@@ -475,7 +483,10 @@ class RacketManager {
             $match_args['timeOffset']       = $confirmation_pending;
             $matches                        = $this->get_matches( $match_args );
             foreach ( $matches as $match ) {
-                $match->chase_match_approval( $confirmation_pending, false, $confirmation_timeout, $confirmation_penalty );
+                $fixture = $this->container->get( 'fixture_repository' )->find_by_id( $match->id );
+                if ( $fixture ) {
+                    $this->fixture_maintenance_service->chase_match_approval( $fixture, $confirmation_pending, false, $confirmation_timeout, $confirmation_penalty );
+                }
             }
         }
     }
@@ -486,7 +497,7 @@ class RacketManager {
      *
      * @return void
      */
-    public function calculate_player_ratings( int $club_id = null ): void {
+    public function calculate_player_ratings( ?int $club_id = null ): void {
         // Delegate to the Player__Service implementation.
         $this->player_service->calculate_player_ratings( $club_id );
     }

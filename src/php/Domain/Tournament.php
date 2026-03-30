@@ -325,11 +325,12 @@ class Tournament {
 
     private function set_tournament_display_dates(): void {
         global $racketmanager;
-        $this->date_display            = empty( $this->date_end ) ? 'TBC' : mysql2date( $racketmanager->date_format, $this->date_end );
-        $this->date_closing_display    = empty( $this->date_closing ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_closing );
-        $this->date_withdrawal_display = empty( $this->date_withdrawal ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_withdrawal );
-        $this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_open );
-        $this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $racketmanager->date_format, $this->date_start );
+        $date_format                   = $racketmanager->date_format ?? get_option( 'date_format' );
+        $this->date_display            = empty( $this->date_end ) ? 'TBC' : mysql2date( $date_format, $this->date_end );
+        $this->date_closing_display    = empty( $this->date_closing ) ? 'N/A' : mysql2date( $date_format, $this->date_closing );
+        $this->date_withdrawal_display = empty( $this->date_withdrawal ) ? 'N/A' : mysql2date( $date_format, $this->date_withdrawal );
+        $this->date_open_display       = empty( $this->date_open ) ? 'N/A' : mysql2date( $date_format, $this->date_open );
+        $this->date_start_display      = empty( $this->date_start ) ? 'N/A' : mysql2date( $date_format, $this->date_start );
     }
 
     private function set_tournament_phase(): void {

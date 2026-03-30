@@ -20,6 +20,14 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 final class Tournament_Overview_Admin_Controller_Test extends TestCase {
 
     public function test_overview_page_returns_view_model(): void {
+        global $racketmanager;
+        if ( ! isset( $racketmanager ) || ! property_exists( $racketmanager, 'site_url' ) ) {
+            $racketmanager = new class() {
+                public $site_url = 'http://example.com';
+                public $date_format = 'Y-m-d';
+                public function get_options() { return []; }
+            };
+        }
         $tournament_id = 123;
         $tournament_obj = new stdClass();
         $tournament_obj->id = $tournament_id;

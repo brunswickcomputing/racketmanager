@@ -55,6 +55,7 @@ class Fixture_Repository {
             'home_captain'        => $fixture->get_home_captain(),
             'away_captain'        => $fixture->get_away_captain(),
             'comments'            => $fixture->get_comments(),
+            'updated_by'          => $fixture->get_updated_by(),
             'updated'             => current_time( 'mysql' ),
             'updated_user'        => get_current_user_id(),
         );
@@ -92,6 +93,7 @@ class Fixture_Repository {
             '%d', // home_captain
             '%d', // away_captain
             '%s', // comments
+            '%s', // updated_by
             '%s', // updated
             '%d', // updated_user
         );

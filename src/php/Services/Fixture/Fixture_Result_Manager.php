@@ -3,6 +3,7 @@
 namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\Competition\Stage;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Confirmation_Context;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Response;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
@@ -33,7 +34,6 @@ use Racketmanager\Services\Settings_Service;
 
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
@@ -43,16 +43,12 @@ use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
-use function maybe_serialize;
-use function maybe_unserialize;
-use function Racketmanager\debug_to_console;
 
 /**
  * Service for managing fixture results and state transitions.
  * Orchestrates logic formerly in Racketmanager_Match.
  */
-class Fixture_Result_Manager
-{
+class Fixture_Result_Manager {
     /**
      * @var Result_Service
      */
@@ -124,11 +120,6 @@ class Fixture_Result_Manager
     private League_Repository|null $league_repository;
 
     /**
-     * @var Fixture_Repository|null
-     */
-    private Fixture_Repository|null $fixture_repository;
-
-    /**
      * @var Club_Repository|null
      */
     private Club_Repository|null $club_repository;
@@ -162,7 +153,6 @@ class Fixture_Result_Manager
         $this->league_repository          = $repository_provider->get_league_repository();
         $this->rubber_repository          = $repository_provider->get_rubber_repository();
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
-        $this->fixture_repository         = $repository_provider->get_fixture_repository();
         $this->club_repository            = $repository_provider->get_club_repository();
 
         $this->notification_service = $service_provider->get_notification_service();
@@ -172,7 +162,9 @@ class Fixture_Result_Manager
                 $this->league_team_repository,
                 $this->team_repository,
                 $this->player_repository,
-                $repository_provider->get_club_repository()
+                $repository_provider->get_club_repository(),
+                $this->settings_service,
+                $GLOBALS['racketmanager']
             );
         }
     }
@@ -188,7 +180,8 @@ class Fixture_Result_Manager
      * @throws League_Not_Found_Exception
      */
     public function handle_fixture_result_update( Fixture $fixture, Fixture_Result_Update_Request $request ): Fixture_Update_Response {
-        $league = $this->league_service->get_league( $fixture->get_league_id() );
+        $league_id = $fixture->get_league_id();
+        $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
         if ( ! $league ) {
             throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_fixture( $fixture->get_id() ) );
         }
@@ -289,7 +282,8 @@ class Fixture_Result_Manager
      * @throws League_Not_Found_Exception
      */
     public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request, ?League_Repository $league_repository = null ): Team_Result_Response {
-        $league = $this->league_service->get_league( $fixture->get_league_id() );
+        $league_id = $fixture->get_league_id();
+        $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
         if ( ! $league ) {
             throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_fixture( $fixture->get_id() ) );
         }
@@ -381,6 +375,7 @@ class Fixture_Result_Manager
         $confirmed = null;
         if ( empty( $fixture->get_confirmed() ) ) {
             $confirmed = 'P'; // Pending
+            $fixture->set_updated_by( $is_update_allowed->user_team );
         }
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );
@@ -500,60 +495,108 @@ class Fixture_Result_Manager
             return new Team_Result_Response( (array) $validator->get_details() );
         }
 
-        $actioned_by = '';
-        if ( $request->result_home ) {
-            $actioned_by = 'home';
-        } elseif ( $request->result_away ) {
-            $actioned_by = 'away';
-        }
-
-        $league = $this->league_service->get_league( $fixture->get_league_id() );
-        if ( ! $league ) {
-            throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_fixture( $fixture->get_id() ) );
-        }
-
-        $competition_type    = $league->get_competition_type() ?: 'league';
-        $result_confirmation = $this->settings_service->get_option( $competition_type, 'resultConfirmation', 'manual' );
-
-        $match_msg = null;
+        $league = $this->get_league_for_fixture( $fixture );
+        $actioned_by = $this->determine_actioned_by( $request );
+        
         $final_confirmed_status = $request->result_confirm;
         $update_standings       = false;
 
         if ( 'A' === $request->result_confirm ) {
-            $match_msg = __( 'Result Approved', 'racketmanager' );
+            $result_confirmation = $this->settings_service->get_option( $league->get_competition_type() ?: 'league', 'resultConfirmation', 'manual' );
             if ( 'auto' === $result_confirmation ) {
                 $update_standings       = true;
                 $final_confirmed_status = 'Y';
             }
-        } elseif ( 'C' === $request->result_confirm ) {
-            $match_msg = __( 'Result Challenged', 'racketmanager' );
         }
 
-        $result = new Result(
-            home_points: (float) $fixture->get_home_points(),
-            away_points: (float) $fixture->get_away_points(),
-            status: $fixture->get_status(),
-            sets: [],
-            custom: $fixture->get_custom() ?: [] // sets for team match are in rubbers
-        );
+        $result = $this->create_result_from_fixture( $fixture );
 
         if ( 'Y' === $final_confirmed_status ) {
             $this->confirm_result( $fixture, $actioned_by, $request->confirm_comments, $result, $league_repository );
         } else {
             $this->apply_confirmation_to_fixture(
-                fixture: $fixture,
-                status: $final_confirmed_status,
-                actioned_by: $actioned_by,
-                confirm_comments: $request->confirm_comments,
-                result: $result,
-                update_standings: $update_standings,
-                run_checks: 'A' === $request->result_confirm,
-                league_repository: $league_repository
+                $fixture,
+                new Fixture_Confirmation_Context(
+                    status: $final_confirmed_status,
+                    actioned_by: $actioned_by,
+                    confirm_comments: $request->confirm_comments,
+                    result: $result,
+                    update_standings: $update_standings,
+                    run_checks: 'A' === $request->result_confirm,
+                    league_repository: $league_repository
+                )
             );
         }
 
-        // 5. Handle notifications (via notification service)
-        $this->notification_service?->send_result_notification( $fixture, $final_confirmed_status, $match_msg ? : '', $actioned_by ? : false );
+        return $this->prepare_confirmation_response( $fixture, $request->result_confirm, $final_confirmed_status, $actioned_by );
+    }
+
+    /**
+     * Get the league associated with a fixture.
+     *
+     * @param Fixture $fixture
+     * @return object
+     * @throws League_Not_Found_Exception
+     */
+    private function get_league_for_fixture( Fixture $fixture ): object {
+        $league_id = $fixture->get_league_id();
+        $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
+        if ( ! $league ) {
+            throw new League_Not_Found_Exception( Util_Messages::league_not_found_for_fixture( $fixture->get_id() ) );
+        }
+        return $league;
+    }
+
+    /**
+     * Determine which team actioned the confirmation.
+     *
+     * @param Team_Result_Confirmation_Request $request
+     * @return string
+     */
+    private function determine_actioned_by( Team_Result_Confirmation_Request $request ): string {
+        if ( $request->result_home ) {
+            return 'home';
+        } elseif ( $request->result_away ) {
+            return 'away';
+        }
+        return '';
+    }
+
+    /**
+     * Create a Result object based on the current fixture data.
+     *
+     * @param Fixture $fixture
+     * @return Result
+     */
+    private function create_result_from_fixture( Fixture $fixture ): Result {
+        return new Result(
+            home_points: (float) ( $fixture->get_home_points() ?? 0 ),
+            away_points: (float) ( $fixture->get_away_points() ?? 0 ),
+            status: $fixture->get_status(),
+            sets: [],
+            custom: $fixture->get_custom() ?: []
+        );
+    }
+
+    /**
+     * Prepare the response after handling result confirmation.
+     *
+     * @param Fixture $fixture
+     * @param string $requested_status
+     * @param string $final_status
+     * @param string $actioned_by
+     * @return Team_Result_Response
+     */
+    private function prepare_confirmation_response( Fixture $fixture, string $requested_status, string $final_status, string $actioned_by ): Team_Result_Response {
+        $match_msg = null;
+        if ( 'A' === $requested_status ) {
+            $match_msg = __( 'Result Approved', 'racketmanager' );
+        } elseif ( 'C' === $requested_status ) {
+            $match_msg = __( 'Result Challenged', 'racketmanager' );
+        }
+
+        // Handle notifications (via notification service)
+        $this->notification_service?->send_result_notification( $fixture, $final_status, $match_msg ?: '', $actioned_by ?: false );
 
         $response = new Team_Result_Response( [
             'msg'     => $match_msg,
@@ -578,43 +621,69 @@ class Fixture_Result_Manager
      * @return Player_Warnings_Response
      */
     private function handle_player_warnings( Fixture $fixture ): Player_Warnings_Response {
-        $msg             = '';
+        $fixture_id = $fixture->get_id();
+        if ( ! $fixture_id || ! $this->results_checker_repository->has_results_check( $fixture_id ) ) {
+            return new Player_Warnings_Response( '', null, [] );
+        }
+
         $player_warnings = [];
-        $result_status   = null;
+        $warning_match   = [];
+        $warning_player  = false;
 
-        $has_result_check = $this->results_checker_repository->has_results_check( (int) $fixture->get_id() );
-debug_to_console( $has_result_check);
-        if ( $has_result_check ) {
-            $warning_player  = false;
-            $warning_match   = array();
-            $result_status   = 'warning';
-            $result_warnings = $this->results_checker_repository->find_by_fixture_id( (int) $fixture->get_id() );
+        $result_warnings = $this->results_checker_repository->find_by_fixture_id( $fixture_id );
 
-            foreach ( $result_warnings as $player_warning ) {
-                if ( $player_warning->rubber_id ) {
-                    $warning_player = true;
-                    $rubber = $this->rubber_repository->find_by_id( $player_warning->rubber_id );
-                    if ( $rubber ) {
-                        $team = ( $player_warning->team_id === (int) $fixture->get_home_team() ) ? 'home' : 'away';
-                        
-                        $player_number = ( (int) $player_warning->player_id === (int) $rubber->players[ $team ]['1']->id ) ? 1 : 2;
-                        
-                        $player_ref                     = 'players_' . $rubber->rubber_number . '_' . $team . '_' . $player_number;
-                        $player_warnings[ $player_ref ] = $player_warning->description;
-                    }
-                } else {
-                    $warning_match[] = $player_warning->description;
+        foreach ( $result_warnings as $warning ) {
+            if ( $warning->rubber_id ) {
+                $ref = $this->get_player_warning_reference( $fixture, $warning );
+                if ( $ref ) {
+                    $player_warnings[ $ref ] = $warning->description;
+                    $warning_player          = true;
                 }
-            }
-            if ( $warning_player ) {
-                $msg .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
-            }
-            foreach ( $warning_match as $warning ) {
-                $msg .= '<br>' . $warning;
+            } else {
+                $warning_match[] = $warning->description;
             }
         }
-        
-        return new Player_Warnings_Response( $msg, $result_status, $player_warnings );
+
+        $msg = $this->build_player_warnings_message( $warning_player, $warning_match );
+
+        return new Player_Warnings_Response( $msg, 'warning', $player_warnings );
+    }
+
+    /**
+     * Build the warning message for player warnings.
+     *
+     * @param bool $has_player_warnings
+     * @param array $match_warnings
+     * @return string
+     */
+    private function build_player_warnings_message( bool $has_player_warnings, array $match_warnings ): string {
+        $msg = '';
+        if ( $has_player_warnings ) {
+            $msg .= '<br>' . __( 'Match has player warnings', 'racketmanager' );
+        }
+        foreach ( $match_warnings as $warning ) {
+            $msg .= '<br>' . $warning;
+        }
+        return $msg;
+    }
+
+    /**
+     * Get the player warning reference for a specific warning.
+     *
+     * @param Fixture $fixture
+     * @param object $warning
+     * @return string|null
+     */
+    private function get_player_warning_reference( Fixture $fixture, object $warning ): ?string {
+        $rubber = $this->rubber_repository->find_by_id( (int) $warning->rubber_id );
+        if ( ! $rubber ) {
+            return null;
+        }
+
+        $team          = ( (int) $warning->team_id === (int) $fixture->get_home_team() ) ? 'home' : 'away';
+        $player_number = ( (int) $warning->player_id === (int) $rubber->players[ $team ]['1']->id ) ? 1 : 2;
+
+        return 'players_' . $rubber->rubber_number . '_' . $team . '_' . $player_number;
     }
 
     /**
@@ -626,30 +695,34 @@ debug_to_console( $has_result_check);
      * @param League_Repository|null $league_repository Optional league repository for testing.
      * @return Fixture_Update_Response
      */
-    public function update_result( Fixture $fixture, Result $result, ?string $confirmed = null, ?League_Repository $league_repository = null ): Fixture_Update_Response
-    {
-        $this->result_service->apply_to_fixture($fixture, $result, $confirmed);
+    public function update_result( Fixture $fixture, Result $result, ?string $confirmed = null, ?League_Repository $league_repository = null ): Fixture_Update_Response {
+        $this->result_service->apply_to_fixture( $fixture, $result, $confirmed );
 
-        $outcomes = [Fixture_Update_Status::SAVED];
+        $outcomes = [ Fixture_Update_Status::SAVED ];
 
-        $league_repository = $league_repository ?? $this->league_repository;
-        $league = $league_repository->find_by_id($fixture->get_league_id());
-        if (!$league) {
-            return new Fixture_Update_Response($outcomes);
+        $league_id = $fixture->get_league_id();
+        if ( ! $league_id ) {
+            return new Fixture_Update_Response( $outcomes );
         }
 
-        $stage = Stage::from_league($league);
+        $league_repository = $league_repository ?? $this->league_repository;
+        $league            = $league_repository->find_by_id( $league_id );
+        if ( ! $league ) {
+            return new Fixture_Update_Response( $outcomes );
+        }
 
-        if ($league->is_championship) {
-            $this->progression_service->progress_winner($stage, $fixture, $league);
-            $this->progression_service->handle_consolation($stage, $fixture, $league);
+        $stage = Stage::from_league( $league );
+
+        if ( $league->is_championship ) {
+            $this->progression_service->progress_winner( $stage, $fixture, $league );
+            $this->progression_service->handle_consolation( $stage, $fixture, $league );
             $outcomes[] = Fixture_Update_Status::PROGRESSED;
         } else {
-            $league->update_standings($fixture->get_season());
+            $league->update_standings( (string) $fixture->get_season() );
             $outcomes[] = Fixture_Update_Status::TABLE_UPDATED;
         }
 
-        return new Fixture_Update_Response($outcomes);
+        return new Fixture_Update_Response( $outcomes );
     }
 
     /**
@@ -660,38 +733,38 @@ debug_to_console( $has_result_check);
      * @return Fixture_Reset_Response
      * @throws League_Not_Found_Exception
      */
-    public function reset_result( Fixture $fixture ): Fixture_Reset_Response
-    {
+    public function reset_result( Fixture $fixture ): Fixture_Reset_Response {
         $fixture->reset_result();
-        
+
         // Persist the reset state.
         $empty_result = new Result(
-            home_points: 0,
-            away_points: 0,
+            home_points: 0.0,
+            away_points: 0.0,
             status: null,
             sets: [],
             custom: []
         );
-        $this->result_service->apply_to_fixture($fixture, $empty_result );
+        $this->result_service->apply_to_fixture( $fixture, $empty_result );
 
+        $league_id = $fixture->get_league_id();
         try {
-            $league = $this->league_service->get_league( $fixture->get_league_id() );
+            $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
         } catch ( League_Not_Found_Exception ) {
             $league = null;
         }
 
-        if ($league && $league->is_championship) {
-            $stage = Stage::from_league($league);
-            $this->progression_service->reset_progression($stage, $fixture, $league);
-        } elseif ($league) {
-            $league->update_standings($fixture->get_season());
+        if ( $league && $league->is_championship ) {
+            $stage = Stage::from_league( $league );
+            $this->progression_service->reset_progression( $stage, $fixture, $league );
+        } elseif ( $league ) {
+            $league->update_standings( (string) $fixture->get_season() );
         }
 
         $status = ( $league && $league->is_championship )
             ? Fixture_Reset_Status::SUCCESS_KNOCKOUT_RESET
             : Fixture_Reset_Status::SUCCESS_DIVISION_RESET;
 
-        return new Fixture_Reset_Response( $fixture->get_id(), $status );
+        return new Fixture_Reset_Response( (int) $fixture->get_id(), $status );
 
     }
 
@@ -699,40 +772,35 @@ debug_to_console( $has_result_check);
      * Apply confirmation status and comments to a fixture.
      *
      * @param Fixture $fixture
-     * @param string $status
-     * @param string $actioned_by
-     * @param string|null $confirm_comments
-     * @param Result $result
-     * @param bool $update_standings
-     * @param bool $run_checks
-     * @param League_Repository|null $league_repository
+     * @param Fixture_Confirmation_Context $context
      * @return Fixture_Update_Response
      * @throws League_Not_Found_Exception
      */
-    private function apply_confirmation_to_fixture( Fixture $fixture, string $status, string $actioned_by, ?string $confirm_comments, Result $result, bool $update_standings, bool $run_checks, ?League_Repository $league_repository = null ): Fixture_Update_Response {
-        $fixture->set_confirmed( $status );
+    private function apply_confirmation_to_fixture( Fixture $fixture, Fixture_Confirmation_Context $context ): Fixture_Update_Response {
+        $fixture->set_confirmed( $context->status );
 
         $comments = $fixture->get_comments() ? maybe_unserialize( $fixture->get_comments() ) : [];
         if ( ! is_array( $comments ) ) {
             $comments = [];
         }
 
-        if ( $actioned_by ) {
-            $comments[ $actioned_by . '_confirm' ] = $confirm_comments;
+        if ( $context->actioned_by ) {
+            $comments[ $context->actioned_by . '_confirm' ] = $context->confirm_comments;
         } else {
-            $comments['confirm'] = $confirm_comments;
+            $comments['confirm'] = $context->confirm_comments;
         }
         $fixture->set_comments( maybe_serialize( $comments ) );
 
-        if ( $update_standings ) {
-            $response = $this->update_result( $fixture, $result, $status, $league_repository );
+        if ( $context->update_standings ) {
+            $response = $this->update_result( $fixture, $context->result, $context->status, $context->league_repository );
         } else {
-            $this->result_service->apply_to_fixture( $fixture, $result, $status );
+            $this->result_service->apply_to_fixture( $fixture, $context->result, $context->status );
             $response = new Fixture_Update_Response( [ Fixture_Update_Status::SAVED ] );
         }
 
-        if ( $run_checks ) {
-            $league = $this->league_service->get_league( $fixture->get_league_id() );
+        if ( $context->run_checks ) {
+            $league_id = $fixture->get_league_id();
+            $league = $league_id ? $this->league_service->get_league( $league_id ) : null;
             if ( $league ) {
                 $options = $this->settings_service->get_all_options();
                 $this->player_validator->run_fixture_checks( $fixture, $league, $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id() ), $options );
@@ -756,8 +824,8 @@ debug_to_console( $has_result_check);
     public function confirm_result( Fixture $fixture, string $actioned_by = '', ?string $confirm_comments = null, ?Result $result = null, ?League_Repository $league_repository = null ): Fixture_Update_Response {
         if ( ! $result ) {
             $result = new Result(
-                home_points: (float) $fixture->get_home_points(),
-                away_points: (float) $fixture->get_away_points(),
+                home_points: (float) ( $fixture->get_home_points() ?? 0 ),
+                away_points: (float) ( $fixture->get_away_points() ?? 0 ),
                 status: $fixture->get_status(),
                 sets: [],
                 custom: $fixture->get_custom() ?: []
@@ -765,14 +833,16 @@ debug_to_console( $has_result_check);
         }
 
         return $this->apply_confirmation_to_fixture(
-            fixture: $fixture,
-            status: 'Y',
-            actioned_by: $actioned_by,
-            confirm_comments: $confirm_comments,
-            result: $result,
-            update_standings: true,
-            run_checks: true,
-            league_repository: $league_repository
+            $fixture,
+            new Fixture_Confirmation_Context(
+                status: 'Y',
+                actioned_by: $actioned_by,
+                confirm_comments: $confirm_comments,
+                result: $result,
+                update_standings: true,
+                run_checks: true,
+                league_repository: $league_repository
+            )
         );
     }
 
@@ -783,74 +853,130 @@ debug_to_console( $has_result_check);
      * @return object
      */
     public function is_update_allowed( Fixture $fixture ): object {
-        $user_can_update = false;
-        $user_type       = 'none';
-        $user_team       = 'none';
+        $user_id    = is_user_logged_in() ? get_current_user_id() : 0;
+        $user_type  = 'none';
+        $user_team  = 'none';
+        $can_update = false;
 
-        if ( is_user_logged_in() ) {
-            $userid = get_current_user_id();
+        if ( $user_id > 0 ) {
+            $league_id = $fixture->get_league_id();
+            $league    = $league_id ? $this->league_repository->find_by_id( $league_id ) : null;
 
             if ( current_user_can( 'manage_racketmanager' ) ) {
-                $user_type       = 'admin';
-                $user_can_update = true;
-            } else {
-                $league = $this->league_repository->find_by_id( (int) $fixture->get_league_id() );
-                if ( $league ) {
-                    $competition_type = $league->event->competition->type;
-                    $rm_options       = $this->settings_service->get_all_options();
-                    $match_capability = $rm_options[ $competition_type ]['matchCapability'] ?? 'captains';
-                    $result_entry     = $rm_options[ $competition_type ]['resultEntry'] ?? 'either';
+                $user_type  = 'admin';
+                $can_update = true;
+            } elseif ( $league ) {
+                $user_data = $this->identify_user_data( $fixture, $user_id, $league );
+                $user_type = $user_data['type'];
+                $user_team = $user_data['team'];
 
-                    $home_team = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
-                    $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
-
-                    if ( $home_team ) {
-                        $home_club = $this->club_repository->find( (int) $home_team->get_club_id() );
-                        if ( $home_club ) {
-                            if ( isset( $home_club->match_secretary->id ) && intval( $home_club->match_secretary->id ) === $userid ) {
-                                $user_type = 'matchsecretary';
-                                $user_team = 'home';
-                            } elseif ( $fixture->get_home_captain() && intval( $fixture->get_home_captain() ) === $userid ) {
-                                $user_type = 'captain';
-                                $user_team = 'home';
-                            }
-                        }
-                    }
-
-                    if ( $away_team && 'none' === $user_type ) {
-                        $away_club = $this->club_repository->find( (int) $away_team->get_club_id() );
-                        if ( $away_club ) {
-                            if ( isset( $away_club->match_secretary->id ) && intval( $away_club->match_secretary->id ) === $userid ) {
-                                $user_type = 'matchsecretary';
-                                $user_team = 'away';
-                            } elseif ( $fixture->get_away_captain() && intval( $fixture->get_away_captain() ) === $userid ) {
-                                $user_type = 'captain';
-                                $user_team = 'away';
-                            }
-                        }
-                    }
-
-                    if ( 'none' === $user_type && 'players' === $match_capability ) {
-                        if ( $this->registration_service->is_player_active_in_club( $userid, (int) $home_team->get_club_id() ) ) {
-                            $user_type = 'player';
-                            $user_team = 'home';
-                        } elseif ( $this->registration_service->is_player_active_in_club( $userid, (int) $away_team->get_club_id() ) ) {
-                            $user_type = 'player';
-                            $user_team = 'away';
-                        }
-                    }
-
-                    if ( 'none' !== $user_type && ( 'either' === $result_entry || $user_team === $result_entry ) ) {
-                        $user_can_update = true;
-                    }
+                if ( 'none' !== $user_type ) {
+                    $can_update = $this->check_update_permission( $league, $user_team );
                 }
             }
         }
 
         return (object) [
-            'user_can_update' => $user_can_update,
+            'user_can_update' => $can_update,
             'user_type'       => $user_type,
             'user_team'       => $user_team,
         ];
+    }
+
+    /**
+     * Identify user data (type and team) for a fixture.
+     *
+     * @param Fixture $fixture
+     * @param int $user_id
+     * @param object $league
+     * @return array
+     */
+    private function identify_user_data( Fixture $fixture, int $user_id, object $league ): array {
+        $user_data = $this->identify_user_team_role( $fixture, $user_id );
+
+        if ( 'none' === $user_data['type'] ) {
+            $competition_type = $league->event->competition->type;
+            $match_capability = $this->settings_service->get_option( $competition_type, 'matchCapability', 'captains' );
+
+            if ( 'players' === $match_capability ) {
+                $user_data = $this->identify_player_team( $fixture, $user_id );
+            }
+        }
+
+        return $user_data;
+    }
+
+    /**
+     * Check if the user has permission to update based on competition settings.
+     *
+     * @param object $league
+     * @param string $user_team
+     * @return bool
+     */
+    private function check_update_permission( object $league, string $user_team ): bool {
+        $competition_type = $league->event->competition->type;
+        $result_entry     = $this->settings_service->get_option( $competition_type, 'resultEntry', 'either' );
+
+        return 'either' === $result_entry || $user_team === $result_entry;
+    }
+
+    /**
+     * Identify the user's role and team (captain/match secretary) for a fixture.
+     *
+     * @param Fixture $fixture
+     * @param int $userid
+     * @return array
+     */
+    private function identify_user_team_role( Fixture $fixture, int $userid ): array {
+        $teams = [
+            'home' => $this->team_repository->find_by_id( (int) $fixture->get_home_team() ),
+            'away' => $this->team_repository->find_by_id( (int) $fixture->get_away_team() ),
+        ];
+
+        foreach ( $teams as $team_key => $team ) {
+            if ( ! $team ) {
+                continue;
+            }
+
+            $club = $this->club_repository->find( (int) $team->get_club_id() );
+            if ( ! $club ) {
+                continue;
+            }
+
+            if ( isset( $club->match_secretary->id ) && intval( $club->match_secretary->id ) === $userid ) {
+                return [ 'type' => 'matchsecretary', 'team' => $team_key ];
+            }
+
+            $captain_id = ( 'home' === $team_key ) ? $fixture->get_home_captain() : $fixture->get_away_captain();
+            if ( $captain_id && $captain_id === $userid ) {
+                return [ 'type' => 'captain', 'team' => $team_key ];
+            }
+        }
+
+        return [ 'type' => 'none', 'team' => 'none' ];
+    }
+
+    /**
+     * Identify which team a player belongs to in a fixture.
+     *
+     * @param Fixture $fixture
+     * @param int $userid
+     * @return array
+     */
+    private function identify_player_team( Fixture $fixture, int $userid ): array {
+        $home_team_id = (int) $fixture->get_home_team();
+        $away_team_id = (int) $fixture->get_away_team();
+
+        $home_team = $this->team_repository->find_by_id( $home_team_id );
+        if ( $home_team && $this->registration_service->is_player_active_in_club( $userid, (int) $home_team->get_club_id() ) ) {
+            return [ 'type' => 'player', 'team' => 'home' ];
+        }
+
+        $away_team = $this->team_repository->find_by_id( $away_team_id );
+        if ( $away_team && $this->registration_service->is_player_active_in_club( $userid, (int) $away_team->get_club_id() ) ) {
+            return [ 'type' => 'player', 'team' => 'away' ];
+        }
+
+        return [ 'type' => 'none', 'team' => 'none' ];
     }
 }

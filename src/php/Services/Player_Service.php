@@ -435,7 +435,7 @@ class Player_Service {
      *
      * @return void
      */
-    public function calculate_player_ratings( int $club_id = null ): void {
+    public function calculate_player_ratings( ?int $club_id = null ): void {
         $wtn_list = array();
         if ( $club_id ) {
             // Active players only; restrict to club if provided.
@@ -472,7 +472,7 @@ class Player_Service {
      *
      * @return void
      */
-    private function get_wtn_for_players( $players, $club_id = null ): void {
+    private function get_wtn_for_players( $players, ?int $club_id = null ): void {
         $error_count = 0;
         $btm_missing = 0;
         foreach ( $players as $player ) {

@@ -180,7 +180,7 @@ class Registration_Service {
      *
      * @return Club_Player_DTO[]
      */
-    public function get_registered_players_list( string $active = null, string $status = null, int $club_id = null, string $gender = null, bool $system = false, ?int $max_age = null, ?int $min_age = null ): array {
+    public function get_registered_players_list( ?string $active = null, ?string $status = null, ?int $club_id = null, ?string $gender = null, bool $system = false, ?int $max_age = null, ?int $min_age = null ): array {
         $players = $this->player_repository->find_club_players_with_details( $club_id, $status, $gender, $active, $system, $max_age, $min_age );
 
         return array_map( function ( $registration_id ) {

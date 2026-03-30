@@ -673,15 +673,18 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
         $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
+                      ->addMethods(['competition_obj'])
+                      ->onlyMethods(['get_season_by_name'])
                       ->disableOriginalConstructor()
                       ->getMock();
         $competition = $this->getMockBuilder(\Racketmanager\Domain\Competition\Competition::class)
+                            ->onlyMethods(['get_season_by_name'])
                             ->disableOriginalConstructor()
                             ->getMock();
         $competition->type = 'league';
         $competition->is_player_entry = false;
         $event->competition = $competition;
-        $event->competition_obj = $competition; // For any other logic
+        $event->method('competition_obj')->willReturn($competition);
         $league->event = $event;
         $this->league_repository_repo->method('find_by_id')->willReturn($league);
 

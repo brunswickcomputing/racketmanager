@@ -9,9 +9,12 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Settings_Service;
+use Racketmanager\RacketManager;
 use function Racketmanager\captain_result_notification;
 use function Racketmanager\match_team_withdrawn_notification;
 use function Racketmanager\result_notification;
+use function Racketmanager\result_outstanding_notification;
 
 /**
  * Service for handling fixture-related notifications.
@@ -53,6 +56,20 @@ class Notification_Service {
     private Club_Repository $club_repository;
 
     /**
+     * Settings Service.
+     *
+     * @var Settings_Service
+     */
+    private Settings_Service $settings_service;
+
+    /**
+     * RacketManager App.
+     *
+     * @var RacketManager
+     */
+    private RacketManager $app;
+
+    /**
      * Constructor.
      *
      * @param League_Repository      $league_repository
@@ -60,19 +77,25 @@ class Notification_Service {
      * @param Team_Repository        $team_repository
      * @param Player_Repository      $player_repository
      * @param Club_Repository        $club_repository
+     * @param Settings_Service       $settings_service
+     * @param RacketManager          $app
      */
     public function __construct(
         League_Repository $league_repository,
         League_Team_Repository $league_team_repository,
         Team_Repository $team_repository,
         Player_Repository $player_repository,
-        Club_Repository $club_repository
+        Club_Repository $club_repository,
+        Settings_Service $settings_service,
+        RacketManager $app
     ) {
         $this->league_repository      = $league_repository;
         $this->league_team_repository = $league_team_repository;
         $this->team_repository        = $team_repository;
         $this->player_repository      = $player_repository;
         $this->club_repository        = $club_repository;
+        $this->settings_service       = $settings_service;
+        $this->app                    = $app;
     }
 
     /**
@@ -84,22 +107,20 @@ class Notification_Service {
      * @param string|false $match_updated_by
      */
     public function send_result_notification( Fixture $fixture, string $match_status, string $match_message, string|false $match_updated_by = false ): void {
-        global $racketmanager;
-
         $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
         if ( ! $league ) {
             return;
         }
 
-        $admin_email = $racketmanager->get_confirmation_email( $league->event->competition->type );
+        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
         if ( empty( $admin_email ) ) {
             return;
         }
 
-        $rm_options            = $racketmanager->get_options();
-        $result_notification   = $rm_options[ $league->event->competition->type ]['resultNotification'];
-        $confirmation_required = $rm_options[ $league->event->competition->type ]['confirmationRequired'];
-        $confirmation_timeout  = $rm_options[ $league->event->competition->type ]['confirmationTimeout'];
+        $options               = $this->settings_service->get_category( $league->event->competition->type );
+        $result_notification   = $options['resultNotification'] ?? 'none';
+        $confirmation_required = $options['confirmationRequired'] ?? false;
+        $confirmation_timeout  = $options['confirmationTimeout'] ?? 0;
 
         $message_args               = array();
         $message_args['email_from'] = $admin_email;
@@ -115,15 +136,15 @@ class Notification_Service {
         // Match title construction
         $home_team = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
         $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
-        $match_title = ( $home_team && $away_team ) ? $home_team->get_name() . ' v ' . $away_team->get_name() : '';
+        $match_title = $this->get_match_title( $home_team, $away_team );
 
-        $subject = $racketmanager->site_name . ' - ' . $league->title . ' - ' . $match_title . ' - ' . $match_message;
+        $subject = $this->app->site_name . ' - ' . $league->title . ' - ' . $match_title . ' - ' . $match_message;
 
         $confirmation_email = $this->get_confirmation_email( $fixture, $match_status, (string) $match_updated_by, $result_notification );
 
         if ( $confirmation_email ) {
             $email_to  = $confirmation_email;
-            $headers[] = $racketmanager->get_from_user_email();
+            $headers[] = $this->app->get_from_user_email();
             $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
 
             if ( $confirmation_required ) {
@@ -135,7 +156,7 @@ class Notification_Service {
             $message                               = captain_result_notification( $fixture->get_id(), $message_args );
         } else {
             $email_to  = $admin_email;
-            $headers[] = $racketmanager->get_from_user_email();
+            $headers[] = $this->app->get_from_user_email();
 
             if ( 'Y' === $match_status ) {
                 // To replace has_result_check(), we'd need to migrate that logic too.
@@ -150,6 +171,121 @@ class Notification_Service {
         }
 
         wp_mail( $email_to, $subject, $message, $headers );
+    }
+
+    /**
+     * Get match title.
+     *
+     * @param object|null $home_team
+     * @param object|null $away_team
+     * @return string
+     */
+    private function get_match_title( ?object $home_team, ?object $away_team ): string {
+        return ( $home_team && $away_team ) ? $home_team->get_name() . ' v ' . $away_team->get_name() : '';
+    }
+
+    /**
+     * Send chase result notification for a fixture.
+     *
+     * @param Fixture $fixture
+     * @param array $args
+     */
+    public function send_chase_result_notification( Fixture $fixture, array $args ): void {
+        $data = $this->prepare_chase_notification( $fixture, $args );
+        if ( ! $data ) {
+            return;
+        }
+
+        $email_to = array();
+        if ( $data['home_team'] ) {
+            $captain_email = $this->get_team_captain_email( (int) $data['home_team']->get_id(), (int) $data['league']->id, (int) $fixture->get_season() );
+            if ( $captain_email ) {
+                $email_to[] = $captain_email;
+            }
+
+            $club = $this->club_repository->find( (int) $data['home_team']->get_club_id() );
+            if ( $club && isset( $club->match_secretary->email ) ) {
+                $data['headers'][] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
+            }
+        }
+
+        if ( ! empty( $email_to ) ) {
+            $email_subject = __( 'Match result pending', 'racketmanager' ) . ' - ' . $data['match_title'] . ' - ' . $data['league']->title;
+            $email_message = result_outstanding_notification( $fixture->get_id(), $args );
+            wp_mail( $email_to, $email_subject, $email_message, $data['headers'] );
+        }
+    }
+
+    /**
+     * Send chase approval notification for a fixture.
+     *
+     * @param Fixture $fixture
+     * @param array $args
+     */
+    public function send_chase_approval_notification( Fixture $fixture, array $args ): void {
+        $data = $this->prepare_chase_notification( $fixture, $args );
+        if ( ! $data ) {
+            return;
+        }
+
+        $email_to         = array();
+        $match_updated_by = $fixture->get_updated_by();
+        $opponent_team_id = 'home' === $match_updated_by ? (int) $fixture->get_away_team() : (int) $fixture->get_home_team();
+        $opponent_team    = $this->team_repository->find_by_id( $opponent_team_id );
+
+        if ( $opponent_team ) {
+            $captain_email = $this->get_team_captain_email( (int) $opponent_team->get_id(), (int) $data['league']->id, (int) $fixture->get_season() );
+            if ( $captain_email ) {
+                $email_to[] = $captain_email;
+            }
+
+            $club = $this->club_repository->find( (int) $opponent_team->get_club_id() );
+            if ( $club && isset( $club->match_secretary->email ) ) {
+                $data['headers'][] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
+            }
+        }
+
+        if ( ! empty( $email_to ) ) {
+            $email_subject = __( 'Match result approval', 'racketmanager' ) . ' - ' . $data['match_title'] . ' - ' . $data['league']->title;
+            $email_message = captain_result_notification( $fixture->get_id(), $args );
+            wp_mail( $email_to, $email_subject, $email_message, $data['headers'] );
+        }
+    }
+
+    /**
+     * Prepare common data for chase notifications.
+     *
+     * @param Fixture $fixture
+     * @param array $args
+     * @return array|null
+     */
+    private function prepare_chase_notification( Fixture $fixture, array $args ): ?array {
+        $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
+        if ( ! $league ) {
+            return null;
+        }
+
+        $admin_email = $args['from_email'] ?? $this->app->get_confirmation_email( $league->event->competition->type );
+        if ( empty( $admin_email ) ) {
+            return null;
+        }
+
+        $headers   = array();
+        $headers[] = $this->app->get_from_user_email();
+        $headers[] = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+
+        $home_team = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
+        $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
+        $match_title = $this->get_match_title( $home_team, $away_team );
+
+        return array(
+            'league'      => $league,
+            'admin_email' => $admin_email,
+            'headers'     => $headers,
+            'home_team'   => $home_team,
+            'away_team'   => $away_team,
+            'match_title' => $match_title,
+        );
     }
 
     /**

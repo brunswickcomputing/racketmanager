@@ -123,12 +123,13 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             progression_service: $this->progression_service,
             league_service: $this->league_service,
             score_validator: $this->score_validator,
-            rubber_manager: $this->rubber_manager,
             notification_service: $this->notification_service,
-            registration_service: $reg_service,
-            settings_service: $this->settings_service,
-            fixture_service: $this->fixture_service_mock
+            registration_service: $reg_service
         );
+        $service_provider->set_player_validator( $this->player_validator );
+        $service_provider->set_rubber_manager( $this->rubber_manager );
+        $service_provider->set_settings_service( $this->settings_service );
+        $service_provider->set_fixture_service( $this->fixture_service_mock );
 
         $this->manager = new Fixture_Result_Manager(
             $service_provider,

@@ -41,11 +41,10 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
             league_service: $this->createMock(\Racketmanager\Services\League_Service::class),
             score_validator: $this->createMock(\Racketmanager\Services\Validator\Score_Validation_Service::class),
             player_validator: $this->createMock(\Racketmanager\Services\Validator\Player_Validation_Service::class),
-            rubber_manager: null,
             notification_service: $this->notification_service,
-            registration_service: $this->createMock(\Racketmanager\Services\Registration_Service::class),
-            settings_service: $this->settings_service
+            registration_service: $this->createMock(\Racketmanager\Services\Registration_Service::class)
         );
+        $service_provider->set_settings_service( $this->settings_service );
 
         $repository_provider = new Repository_Provider(
             league_repository: $this->league_repository,

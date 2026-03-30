@@ -151,7 +151,33 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'fixture_service', function ( Simple_Container $c ) use ( $app ) {
-            return new Fixture_Service( $app, $c->get( 'fixture_repository' ), $c->get( 'registration_service' ), $c->get( 'league_repository' ), $c->get( 'team_repository' ), $c->get( 'club_repository' ), $c->get( 'competition_service' ), $c->get( 'team_service' ), );
+            $repository_provider = new Repository_Provider(
+                $c->get( 'league_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'rubber_repository' ),
+                $c->get( 'results_checker_repository' ),
+                $c->get( 'results_report_repository' ),
+                $c->get( 'fixture_repository' ),
+                $c->get( 'club_repository' )
+            );
+
+            $service_provider = new Fixture_Service_Provider(
+                $c->get( 'result_service' ),
+                $c->get( 'knockout_progression_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'score_validation_service' ),
+                $c->get( 'player_validation_service' ),
+                $c->get( 'notification_service' ),
+                $c->get( 'registration_service' )
+            );
+            $service_provider->set_team_service( $c->get( 'team_service' ) );
+            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+
+            return new Fixture_Service( $repository_provider, $service_provider );
         } );
 
         $c->set( 'finance_service', function ( Simple_Container $c ) use ( $app ) {
@@ -214,11 +240,10 @@ final class Container_Bootstrap {
                 $c->get( 'league_service' ),
                 $c->get( 'score_validation_service' ),
                 $c->get( 'player_validation_service' ),
-                null, // rubber_manager will be created by Fixture_Result_Manager if null
                 $c->get( 'notification_service' ),
-                $c->get( 'registration_service' ),
-                $c->get( 'settings_service' )
+                $c->get( 'registration_service' )
             );
+            $service_provider->set_settings_service( $c->get( 'settings_service' ) );
 
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
@@ -245,11 +270,10 @@ final class Container_Bootstrap {
                 $c->get( 'league_service' ),
                 $c->get( 'score_validation_service' ),
                 $c->get( 'player_validation_service' ),
-                null,
                 $c->get( 'notification_service' ),
-                $c->get( 'registration_service' ),
-                $c->get( 'settings_service' )
+                $c->get( 'registration_service' )
             );
+            $service_provider->set_settings_service( $c->get( 'settings_service' ) );
 
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),

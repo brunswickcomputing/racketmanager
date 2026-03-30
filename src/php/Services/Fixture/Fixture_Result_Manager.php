@@ -32,8 +32,6 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\Player_Service;
 
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Club_Repository;
@@ -170,30 +168,7 @@ class Fixture_Result_Manager {
         $this->club_repository            = $repository_provider->get_club_repository();
         $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
-        $this->fixture_service = $service_provider->get_fixture_service() ?? new Fixture_Service(
-            $GLOBALS['racketmanager'] instanceof \Racketmanager\RacketManager ? $GLOBALS['racketmanager'] : new \Racketmanager\RacketManager(),
-            $this->fixture_repository,
-            $this->registration_service,
-            $this->league_repository,
-            $this->team_repository,
-            $this->club_repository,
-            $service_provider->get_progression_service() ?? new Knockout_Progression_Service(),
-            $service_provider->get_team_service() ?? new Team_Service(
-                $this->team_repository,
-                $this->club_repository,
-                new Event_Repository(),
-                $service_provider->get_player_service() ?? new Player_Service(
-                    $GLOBALS['racketmanager'] instanceof \Racketmanager\RacketManager ? $GLOBALS['racketmanager'] : new \Racketmanager\RacketManager(),
-                    $this->player_repository,
-                    new \Racketmanager\Repositories\Player_Error_Repository(),
-                    new \Racketmanager\Repositories\Club_Role_Repository(),
-                    new \Racketmanager\Services\External\Wtn_Api_Client(),
-                    $this->league_team_repository,
-                    $this->club_repository,
-                    new \Racketmanager\Repositories\Registration_Repository()
-                )
-            )
-        );
+        $this->fixture_service = $service_provider->get_fixture_service();
 
         $this->notification_service = $service_provider->get_notification_service();
         if ( ! $this->notification_service ) {
@@ -202,7 +177,7 @@ class Fixture_Result_Manager {
                 $this->league_team_repository,
                 $this->team_repository,
                 $this->player_repository,
-                $repository_provider->get_club_repository(),
+                $this->club_repository,
                 $this->settings_service,
                 $GLOBALS['racketmanager']
             );
@@ -903,17 +878,8 @@ class Fixture_Result_Manager {
      * @return Fixture_Update_Response
      */
     public function update_result_tie( Fixture $fixture ): Fixture_Update_Response {
-        if ( 2 !== $fixture->get_leg() ) {
-            return new Fixture_Update_Response( [] );
-        }
-
-        $linked_match_id = $fixture->get_linked_match();
-        if ( ! $linked_match_id ) {
-            return new Fixture_Update_Response( [] );
-        }
-
-        $linked_fixture = $this->fixture_repository->find_by_id( $linked_match_id );
-        if ( ! $linked_fixture || ! $linked_fixture->get_winner_id() ) {
+        $linked_fixture = $this->validate_tie_update( $fixture );
+        if ( ! $linked_fixture ) {
             return new Fixture_Update_Response( [] );
         }
 
@@ -934,6 +900,25 @@ class Fixture_Result_Manager {
         $this->fixture_repository->save( $fixture );
 
         return new Fixture_Update_Response( [ Fixture_Update_Status::TIE_UPDATED ] );
+    }
+
+    /**
+     * Validate if a tie update is possible.
+     *
+     * @param Fixture $fixture
+     * @return Fixture|null
+     */
+    private function validate_tie_update( Fixture $fixture ): ?Fixture {
+        if ( 2 !== $fixture->get_leg() || ! $fixture->get_linked_match() ) {
+            return null;
+        }
+
+        $linked_fixture = $this->fixture_repository->find_by_id( $fixture->get_linked_match() );
+        if ( ! $linked_fixture || ! $linked_fixture->get_winner_id() ) {
+            return null;
+        }
+
+        return $linked_fixture;
     }
 
     /**

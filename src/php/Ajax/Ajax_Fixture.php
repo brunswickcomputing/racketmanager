@@ -518,9 +518,9 @@ class Ajax_Fixture extends Ajax {
         $service_provider = new Fixture_Service_Provider(
             league_service: $this->league_service,
             score_validator: new Score_Validation_Service(),
-            registration_service: $this->registration_service,
-            settings_service: $this->settings_service
+            registration_service: $this->registration_service
         );
+        $service_provider->set_settings_service( $this->settings_service );
 
         return new Fixture_Result_Manager(
             $service_provider,

@@ -21,6 +21,7 @@ use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Handler_Interface;
+use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Championship_Manager;
@@ -255,11 +256,11 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         $final  = isset( $post['final'] ) ? sanitize_text_field( wp_unslash( strval( $post['final'] ) ) ) : null;
 
         if ( $final ) {
-            $final_exists = $league->get_matches(
-                array(
-                    'final'  => $final,
-                    'season' => $season,
-                )
+            $fixture_repository = new Fixture_Repository();
+            $final_exists = $fixture_repository->find_by_league_and_final(
+                $league->get_id(),
+                $season,
+                $final
             );
             if ( $final_exists ) {
                 return new Action_Result_DTO( sprintf( __( 'Fixtures already exist for %s', 'racketmanager' ), $final ), Admin_Message_Type::ERROR );
@@ -423,13 +424,19 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         }
 
         $fixtures_list = array();
-        $fixtures      = $league->get_matches( $fixture_args );
+        $fixture_repository = new Fixture_Repository();
+        $fixtures = $fixture_repository->find_by_league_and_final(
+            $league->get_id(),
+            $league->get_season(),
+            $round_name,
+            $multiple_legs ? 1 : null
+        );
 
         foreach ( $fixtures as $fixture ) {
-            $fixtures_list[] = $fixture->id;
+            $fixtures_list[] = $fixture->get_id();
 
-            $home_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->home_team, 'home' );
-            $away_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->away_team, 'away' );
+            $home_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->get_home_team(), 'home' );
+            $away_team = $this->resolve_final_team_slot( $league, $fixture, (string) $fixture->get_away_team(), 'away' );
             if ( null !== $home_team && null !== $away_team ) {
                 $championship_manager->set_teams( $fixture, $home_team, $away_team );
                 $updates = true;

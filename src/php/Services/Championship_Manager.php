@@ -101,19 +101,14 @@ final class Championship_Manager {
         if ( ! $league ) {
             $league = get_league( $championship->league_id() );
         }
-        $match_args = array(
-            'final' => $next,
-            'limit' => false,
+
+        $fixture_repository = new Fixture_Repository();
+        $matches = $fixture_repository->find_by_league_and_final(
+            $league->get_id(),
+            $league->get_season(),
+            $next,
+            ! empty( $league->current_season['home_away'] ) && 'final' !== $next ? 1 : null
         );
-
-        if ( ! empty( $league->current_season['home_away'] ) ) {
-            $legs = true;
-            if ( 'final' !== $next ) {
-                $match_args['leg'] = 1;
-            }
-        }
-
-        $matches = $league->get_matches( $match_args );
 
         foreach ( $matches as $match ) {
             $update = true;
@@ -163,7 +158,12 @@ final class Championship_Manager {
                     $prev_match_args['leg'] = 2;
                 }
 
-                $prev      = $league->get_matches( $prev_match_args );
+                $prev = $fixture_repository->find_by_league_and_final(
+                    $league->get_id(),
+                    $league->get_season(),
+                    $current,
+                    ! empty( $league->current_season['home_away'] ) ? 2 : null
+                );
                 $home_team = 0;
                 $away_team = 0;
 
@@ -194,19 +194,15 @@ final class Championship_Manager {
                     }
 
                     if ( 'third' === $next ) {
-                        $final_matches = $league->get_matches(
-                            array(
-                                'final'   => 'final',
-                                'limit'   => false,
-                                'orderby' => array(
-                                    'id' => 'ASC',
-                                ),
-                            )
+                        $final_matches = $fixture_repository->find_by_league_and_final(
+                            $league->get_id(),
+                            $league->get_season(),
+                            'final'
                         );
 
                         if ( ! empty( $final_matches[0] ) && ! empty( $prev_home ) && ! empty( $prev_away ) ) {
                             $final_match = $final_matches[0];
-                            $final_match->set_teams( $prev_home->loser_id, $prev_away->loser_id );
+                            $this->set_teams( $final_match, (string) $prev_home->loser_id, (string) $prev_away->loser_id );
                         }
                     }
                 }
@@ -258,21 +254,22 @@ final class Championship_Manager {
         if ( $match->is_walkover ) {
             $team_switch = '-1';
         } else {
-            $team_switch                     = $match->loser_id;
-            $match_array                     = array();
-            $match_array['team_id']          = $match->loser_id;
-            $match_array['final']            = 'all';
-            $match_array['reset_query_args'] = true;
-            $matches                         = $league->get_matches( $match_array );
+            $team_switch = $match->loser_id;
+            $fixture_repository = new Fixture_Repository();
+            $matches = $fixture_repository->find_by_league_and_team(
+                $league->get_id(),
+                $league->get_season(),
+                (string)$match->loser_id
+            );
 
             if ( 2 === count( $matches ) ) {
-                if ( $matches[0]->id === $match->id ) {
+                if ( $matches[0]->get_id() === $match->id ) {
                     $first_match = $matches[1];
                 } else {
                     $first_match = $matches[0];
                 }
 
-                if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) {
+                if ( '-1' !== $first_match->get_home_team() && '-1' !== $first_match->get_away_team() ) {
                     $team_switch = '-1';
                 }
             }
@@ -310,19 +307,18 @@ final class Championship_Manager {
 
                     if ( $consolation_teams ) {
                         $consolation_team    = $consolation_teams[0];
-                        $consolation_matches = $consolation_league->get_matches(
-                            array(
-                                'team_id' => $consolation_team->id,
-                                'final'   => 'all',
-                            )
+                        $consolation_matches = $fixture_repository->find_by_league_and_team(
+                            $consolation_league->get_id(),
+                            $league->get_season(),
+                            (string)$consolation_team->id
                         );
 
                         if ( $consolation_matches ) {
                             foreach ( $consolation_matches as $consolation_match ) {
-                                if ( $consolation_match->home_team === $consolation_team->id ) {
-                                    $this->set_teams( $consolation_match, $team_switch, null );
-                                } elseif ( $consolation_match->away_team === $consolation_team->id ) {
-                                    $this->set_teams( $consolation_match, null, $team_switch );
+                                if ( $consolation_match->get_home_team() === (string)$consolation_team->id ) {
+                                    $this->set_teams( $consolation_match, (string)$team_switch, null );
+                                } elseif ( $consolation_match->get_away_team() === (string)$consolation_team->id ) {
+                                    $this->set_teams( $consolation_match, null, (string)$team_switch );
                                 }
                             }
                         }

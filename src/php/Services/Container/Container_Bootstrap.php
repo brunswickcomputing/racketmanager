@@ -287,7 +287,12 @@ final class Container_Bootstrap {
             );
         } );
 
-        $c->set( 'knockout_progression_service', fn() => new Knockout_Progression_Service() );
+        $c->set( 'knockout_progression_service', function ( Simple_Container $c ) {
+            $service = new Knockout_Progression_Service( $c->get( 'fixture_repository' ) );
+            $service->set_notification_service( $c->get( 'notification_service' ) );
+
+            return $service;
+        } );
 
         $c->set( 'standings_service', fn() => new Standings_Service() );
 

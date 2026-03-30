@@ -941,7 +941,7 @@ class Event {
         $search_terms   = array();
         $search_terms[] = $wpdb->prepare( '`event_id` = %d', $this->id );
         if ( $consolation ) {
-            $search_terms[] = "'consolation' = 'consolation'";
+            $search_terms[] = "`settings` LIKE '%\"is_consolation\";b:1;%'";
         }
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( "`id` IN (SELECT DISTINCT `league_id` FROM $wpdb->racketmanager_league_teams t, $wpdb->racketmanager l WHERE t.`league_id` = l.`id` AND `season` = %d AND `event_id` = %d)", intval( $season ), $this->id);

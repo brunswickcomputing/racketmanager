@@ -5,17 +5,37 @@ namespace Racketmanager\Services\Competition;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Services\Notification\Notification_Service;
 
 /**
  * Service for managing knockout progression and bracket logic.
- * Extraction from Championship_Manager.
  */
 class Knockout_Progression_Service
 {
+    private Fixture_Repository $fixture_repository;
+    private ?Notification_Service $notification_service = null;
+
+    public function __construct(
+        ?Fixture_Repository $fixture_repository = null,
+        ?Notification_Service $notification_service = null
+    ) {
+        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
+        $this->notification_service = $notification_service;
+    }
+
+    /**
+     * Set the notification service.
+     *
+     * @param Notification_Service $notification_service
+     */
+    public function set_notification_service(Notification_Service $notification_service): void
+    {
+        $this->notification_service = $notification_service;
+    }
+
     /**
      * Advance winning entrants to the next round.
      *
@@ -26,6 +46,7 @@ class Knockout_Progression_Service
      */
     public function progress_winner(Stage $stage, Fixture $fixture, ?League $league = null): void
     {
+
         $championship = $stage->get_championship();
         if (!$championship) {
             return;
@@ -36,14 +57,126 @@ class Knockout_Progression_Service
             return;
         }
 
+        if (!$league) {
+            $league = (new League_Repository())->find_by_id($championship->league_id());
+        }
+
+        if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
+            $league->set_season($fixture->get_season(), true);
+            // Re-fetch championship since season change affects round counts
+            $championship = $league->championship;
+        }
+
+        if (!$championship) {
+            return;
+        }
+
         $round_data = $championship->get_finals($final_round);
         if (!$round_data) {
             return;
         }
-        $round = $round_data['round'];
+        $current_round_num = $round_data['round'];
 
-        $championship_manager = new Championship_Manager();
-        $championship_manager->proceed($championship, $round, $league);
+        if ($current_round_num >= $championship->num_rounds()) {
+            return;
+        }
+
+        $next_round_key = $championship->final_key_for_round($current_round_num + 1);
+        if (!$next_round_key) {
+            return;
+        }
+
+        $found_index = $this->find_fixture_index($this->fixture_repository, $league, $fixture, $final_round);
+        if ($found_index === -1) {
+            return;
+        }
+
+        $legs = !empty($league->current_season['home_away']);
+        $winner_col = $legs ? 'winner_id_tie' : 'winner_id';
+        $winner_id = $fixture->{"get_$winner_col"}();
+
+
+        if (empty($winner_id)) {
+            return;
+        }
+
+        $next_round_match_index = (int) floor($found_index / 2);
+        $is_home = ($found_index % 2 === 0);
+
+
+        $next_round_fixtures = $this->fixture_repository->find_by_league_and_final(
+            $league->get_id(),
+            $fixture->get_season(),
+            $next_round_key,
+            $legs && 'final' !== $next_round_key ? 1 : null
+        );
+
+        if (!isset($next_round_fixtures[$next_round_match_index])) {
+            return;
+        }
+
+        $next_fixture = $next_round_fixtures[$next_round_match_index];
+        $this->update_fixture_team($next_fixture, $is_home, (string)$winner_id);
+        $this->fixture_repository->save($next_fixture);
+
+        if ($next_fixture->get_linked_match()) {
+            $linked_fixture = $this->fixture_repository->find_by_id($next_fixture->get_linked_match());
+            if ($linked_fixture) {
+                $this->update_fixture_team($linked_fixture, $is_home, (string)$winner_id);
+                $this->fixture_repository->save($linked_fixture);
+            }
+        }
+
+        // Notify teams if both teams are now set
+        if ($this->notification_service && is_numeric($next_fixture->get_home_team()) && is_numeric($next_fixture->get_away_team())) {
+            $this->notification_service->send_next_match_notification($next_fixture);
+        }
+
+        // Special case for third place playoff
+        if ('semi' === $final_round && $championship->settings()->match_place3) {
+            $this->handle_third_place_playoff($championship, $fixture, $league);
+        }
+    }
+
+    /**
+     * Handle third place playoff progression.
+     *
+     * @param Championship $championship
+     * @param Fixture $fixture
+     * @param League $league
+     * @return void
+     */
+    private function handle_third_place_playoff(Championship $championship, Fixture $fixture, League $league): void
+    {
+        $legs = !empty($league->current_season['home_away']);
+        $loser_col = $legs ? 'loser_id_tie' : 'loser_id';
+        $loser_id = $fixture->{"get_$loser_col"}();
+
+        if (empty($loser_id)) {
+            return;
+        }
+
+        $found_index = $this->find_fixture_index($this->fixture_repository, $league, $fixture, $fixture->get_final());
+        $is_home = ($found_index === 0); 
+
+
+        $third_place_fixtures = $this->fixture_repository->find_by_league_and_final(
+            $league->get_id(),
+            $fixture->get_season(),
+            'third'
+        );
+
+        if (empty($third_place_fixtures)) {
+            return;
+        }
+
+        $third_fixture = $third_place_fixtures[0];
+        $this->update_fixture_team($third_fixture, $is_home, (string)$loser_id);
+        $this->fixture_repository->save($third_fixture);
+
+        if ($this->notification_service && is_numeric($third_fixture->get_home_team()) && is_numeric($third_fixture->get_away_team())) {
+            $this->notification_service->send_next_match_notification($third_fixture);
+        }
     }
 
     /**
@@ -73,10 +206,6 @@ class Knockout_Progression_Service
             $championship = $league->championship;
         }
 
-        if (!$championship) {
-            return;
-        }
-
         $round_data = $championship->get_finals($final_round);
         if (!$round_data) {
             return;
@@ -85,12 +214,100 @@ class Knockout_Progression_Service
         $current_round_num = $round_data['round'];
         $next_round_key = $championship->final_key_for_round($current_round_num + 1);
         
-        $fixture_repository = new Fixture_Repository();
-        
         if ($league && $next_round_key) {
-            $found_index = $this->find_fixture_index($fixture_repository, $league, $fixture, $final_round);
+            $found_index = $this->find_fixture_index($this->fixture_repository, $league, $fixture, $final_round);
             if ($found_index !== -1) {
-                $this->update_next_round_fixtures($fixture_repository, $league, $fixture, $next_round_key, $final_round, $found_index);
+                $this->update_next_round_fixtures($this->fixture_repository, $league, $fixture, $next_round_key, $final_round, $found_index);
+            }
+        }
+    }
+
+    /**
+     * Move losing entrants to a consolation draw if applicable.
+     *
+     * @param Stage $stage
+     * @param Fixture $fixture
+     * @param League|null $league
+     * @return void
+     */
+    public function handle_consolation(Stage $stage, Fixture $fixture, ?League $league = null): void
+    {
+        $championship = $stage->get_championship();
+
+        if (!$league) {
+            $league_repository = new League_Repository();
+            $league = $league_repository->find_by_id($fixture->get_league_id());
+        }
+
+        if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
+            $league->set_season($fixture->get_season(), true);
+            // Re-fetch championship since season change affects round counts
+            $championship = $league->championship;
+        }
+
+        if (!$championship || $championship->is_consolation()) {
+            return;
+        }
+
+        // Only handle consolation for the first few rounds as per legacy logic (round < 3)
+        $final_round = $fixture->get_final();
+        $round_data = $championship->get_finals($final_round);
+        if (!$round_data || $round_data['round'] >= 3) {
+            return;
+        }
+
+        if (!$league || !$championship) {
+            return;
+        }
+
+        $event_repository = new Event_Repository();
+        $event = $event_repository->find_by_id($league->get_event_id());
+        if (!$event) {
+            return;
+        }
+
+        // Identify consolation leagues in this event
+        $consolation_league_ids = $event->get_leagues(['consolation' => true]);
+        if (empty($consolation_league_ids)) {
+            return;
+        }
+
+        $legs = !empty($league->current_season['home_away']);
+        $loser_col = $legs ? 'loser_id_tie' : 'loser_id';
+        $loser_id = $fixture->{"get_$loser_col"}();
+
+        if (empty($loser_id)) {
+            return;
+        }
+
+        $team_ref = '2_' . $final_round . '_' . $fixture->get_id();
+
+        foreach ($consolation_league_ids as $c_league_id) {
+            $c_league = (new League_Repository())->find_by_id($c_league_id);
+            if (!$c_league) {
+                continue;
+            }
+
+            // Find fixtures in consolation where this placeholder is assigned
+            // We'll search by team_id which can be a placeholder string
+            $c_fixtures = $this->fixture_repository->find_by_league_and_team(
+                $c_league->get_id(),
+                $fixture->get_season(),
+                $team_ref
+            );
+
+
+            foreach ($c_fixtures as $c_fixture) {
+                if ($c_fixture->get_home_team() === $team_ref) {
+                    $c_fixture->set_home_team((string)$loser_id);
+                } elseif ($c_fixture->get_away_team() === $team_ref) {
+                    $c_fixture->set_away_team((string)$loser_id);
+                }
+                $this->fixture_repository->save($c_fixture);
+
+                if ($this->notification_service && is_numeric($c_fixture->get_home_team()) && is_numeric($c_fixture->get_away_team())) {
+                    $this->notification_service->send_next_match_notification($c_fixture);
+                }
             }
         }
     }
@@ -112,6 +329,10 @@ class Knockout_Progression_Service
             $final_round,
             $fixture->get_leg() ?: null
         );
+
+        // Sorting by ID ensures consistency, but for tournaments, 
+        // we assume creation order matches logical bracket order.
+        usort($current_round_fixtures, fn($a, $b) => $a->get_id() <=> $b->get_id());
 
         foreach ($current_round_fixtures as $i => $m) {
             if ($fixture->get_id() === $m->get_id()) {
@@ -166,6 +387,62 @@ class Knockout_Progression_Service
                 $repository->save($linked_fixture);
             }
         }
+
+        // Also reset consolation if applicable
+        $this->reset_consolation($fixture, $league, $final_round);
+    }
+
+    /**
+     * Reset consolation placeholders.
+     *
+     * @param Fixture $fixture
+     * @param League $league
+     * @param string $final_round
+     * @return void
+     */
+    private function reset_consolation(Fixture $fixture, League $league, string $final_round): void
+    {
+        $event_repository = new Event_Repository();
+        $event = $event_repository->find_by_id($league->get_event_id());
+        if (!$event) {
+            return;
+        }
+
+        $consolation_league_ids = $event->get_leagues(['consolation' => true]);
+        if (empty($consolation_league_ids)) {
+            return;
+        }
+
+        $placeholder = '2_' . $final_round . '_' . $fixture->get_id();
+
+        foreach ($consolation_league_ids as $c_league_id) {
+            // Find fixtures in consolation where the winner or loser of the reset match might have been moved.
+            // Since we don't know who the loser was, we check both teams.
+            $teams_to_check = [(string)$fixture->get_home_team(), (string)$fixture->get_away_team()];
+            
+            foreach ($teams_to_check as $team_id) {
+                if (empty($team_id) || !is_numeric($team_id)) {
+                    continue;
+                }
+
+                $c_fixtures = $this->fixture_repository->find_by_league_and_team(
+                    (int)$c_league_id,
+                    $fixture->get_season(),
+                    $team_id
+                );
+
+                foreach ($c_fixtures as $c_fixture) {
+                    // If this team is in a consolation fixture, but we are resetting the source match,
+                    // we should probably put the placeholder back.
+                    if ($c_fixture->get_home_team() === $team_id) {
+                        $c_fixture->set_home_team($placeholder);
+                    } elseif ($c_fixture->get_away_team() === $team_id) {
+                        $c_fixture->set_away_team($placeholder);
+                    }
+                    $this->fixture_repository->save($c_fixture);
+                }
+            }
+        }
     }
 
     /**
@@ -182,99 +459,6 @@ class Knockout_Progression_Service
             $fixture->set_home_team($team_id);
         } else {
             $fixture->set_away_team($team_id);
-        }
-    }
-
-    /**
-     * Move losing entrants to a consolation draw if applicable.
-     *
-     * @param Stage $stage
-     * @param Fixture $fixture
-     * @param League|null $league
-     * @return void
-     */
-    public function handle_consolation(Stage $stage, Fixture $fixture, ?League $league = null): void
-    {
-        $championship = $stage->get_championship();
-        if (!$championship || $championship->is_consolation()) {
-            return;
-        }
-
-        // Only handle consolation for the first few rounds as per legacy logic (round < 3)
-        $final_round = $fixture->get_final();
-        $round_data = $championship->get_finals($final_round);
-        if (!$round_data || $round_data['round'] >= 3) {
-            return;
-        }
-
-        if (!$league) {
-            $league_repository = new League_Repository();
-            $league = $league_repository->find_by_id($championship->league_id());
-        }
-
-        if (!$league) {
-            return;
-        }
-
-        $event_repository = new Event_Repository();
-        $event = $event_repository->find_by_id($league->get_event_id());
-        if (!$event) {
-            return;
-        }
-
-        // Identify consolation leagues in this event
-        $consolation_league_ids = $event->get_leagues(['consolation' => true]);
-        if (empty($consolation_league_ids)) {
-            return;
-        }
-
-        $loser_id = $fixture->get_loser_id();
-        if (empty($loser_id)) {
-            return;
-        }
-
-        $team_ref = '2_' . $final_round . '_' . $fixture->get_id();
-
-        foreach ($consolation_league_ids as $c_league_id) {
-            $c_league = (new League_Repository())->find_by_id($c_league_id);
-            if (!$c_league) {
-                continue;
-            }
-
-            // Find the placeholder team in a consolation league
-            $c_teams = $c_league->get_league_teams([
-                'team_name'        => $team_ref,
-                'reset_query_args' => true,
-            ]);
-
-            if (empty($c_teams)) {
-                continue;
-            }
-
-            $c_team = $c_teams[0];
-            $fixture_repository = new Fixture_Repository();
-            
-            // Find fixtures in consolation where this placeholder is assigned
-            // We use league->get_matches here for now as there's no simple repo way yet for team_id search,
-            // but we'll convert to Fixture objects
-            $c_matches = $c_league->get_matches([
-                'team_id' => $c_team->id,
-                'final'   => 'all',
-            ]);
-
-            foreach ($c_matches as $c_match_data) {
-                $c_fixture = $fixture_repository->find_by_id($c_match_data->id);
-                if (!$c_fixture) {
-                    continue;
-                }
-
-                if ($c_fixture->get_home_team() === (string)$c_team->id) {
-                    $c_fixture->set_home_team((string)$loser_id);
-                } elseif ($c_fixture->get_away_team() === (string)$c_team->id) {
-                    $c_fixture->set_away_team((string)$loser_id);
-                }
-                $fixture_repository->save($c_fixture);
-            }
         }
     }
 }

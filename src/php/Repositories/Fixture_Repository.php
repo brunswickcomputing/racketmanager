@@ -312,6 +312,30 @@ class Fixture_Repository {
         );
     }
     /**
+     * Find fixtures by league, season and team ID (can be numeric or placeholder).
+     *
+     * @param int $league_id
+     * @param string $season
+     * @param string $team_id
+     * @return Fixture[]
+     */
+    public function find_by_league_and_team( int $league_id, string $season, string $team_id ): array {
+        $query = $this->wpdb->prepare(
+            "SELECT * FROM $this->table_name WHERE `league_id` = %d AND `season` = %s AND (`home_team` = %s OR `away_team` = %s)",
+            $league_id,
+            $season,
+            $team_id,
+            $team_id
+        );
+        $results = $this->wpdb->get_results( $query );
+
+        return array_map(
+            fn( $row ) => new Fixture( $row ),
+            $results
+        );
+    }
+
+    /**
      * Count how many other matches a player has played on the same match day.
      *
      * @param string $season

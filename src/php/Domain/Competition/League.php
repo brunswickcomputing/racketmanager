@@ -1142,14 +1142,17 @@ class League {
         $this->current_season = $data;
         $this->num_match_days = $data['num_match_days'] ?? 0;
 
-        if ( 'championship' === ($this->mode ?? '') ) {
-            $settings              = Championship_Settings::from_array( $this->settings );
-            $factory               = new Championship_Factory();
-            $this->championship    = $factory->create( $this, $settings );
-        }
-
         $this->set_team_query_arg( 'season', $this->current_season['name'] );
         $this->set_match_query_arg( 'season', $this->current_season['name'] );
+
+        // Refresh team count for the newly set season before rebuilding championship
+        $this->set_num_teams( true );
+
+        if ( 'championship' === ( $this->mode ?? '' ) ) {
+            $settings           = Championship_Settings::from_array( $this->settings );
+            $factory            = new Championship_Factory();
+            $this->championship = $factory->create( $this, $settings );
+        }
     }
 
     /**

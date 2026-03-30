@@ -11,7 +11,12 @@ namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Championship_Settings;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Domain\Racketmanager_Match;
+use Racketmanager\Domain\Team;
+use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Championship_Factory;
+use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Schedule_Round_Robin;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -912,23 +917,30 @@ class League {
                             $match->notify_team_withdrawal( $team_id );
                         }
 
-                        $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
-                        $fixture = $fixture_repository->find_by_id( $match->id );
+                        $fixture_repository = new Fixture_Repository();
+                        $fixture            = $fixture_repository->find_by_id( $match->id );
                         if ( $fixture ) {
-                            $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
-                            $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
-                            $score_validator = new \Racketmanager\Services\Validator\Score_Validation_Service();
-                            $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
-                            $request = new \Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $match->confirmed );
+                            global $racketmanager;
+                            $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
+                            $request        = new Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $match->confirmed );
                             $result_manager->handle_fixture_result_update( $fixture, $request );
                         }
                     } else {
-                        $match_confirmed = 'Y';
-                        $home_team_score = 0;
-                        $away_team_score = 0;
-                        $status          = Util_Lookup::get_match_status_code( 'cancelled' );
-                        $match->update_result( $home_team_score, $away_team_score, $match->custom, $match_confirmed, $status );
-                        $match->update_league_with_result();
+                        $fixture_repository = new Fixture_Repository();
+                        $fixture            = $fixture_repository->find_by_id( $match->id );
+                        if ( $fixture ) {
+                            global $racketmanager;
+                            $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
+                            $result_data    = [
+                                'home_points' => 0,
+                                'away_points' => 0,
+                                'status'      => Util_Lookup::get_match_status_code( 'cancelled' ),
+                                'custom'      => $match->custom,
+                                'sets'        => [],
+                            ];
+                            $result         = Result_Factory::from_array( $result_data, $match->home_team, $match->away_team );
+                            $result_manager->confirm_result( $fixture, '', null, $result );
+                        }
                     }
                 }
             }
@@ -2586,23 +2598,26 @@ class League {
                 $points_home   = isset( $home_points[$match_id] ) ? floatval( $home_points[$match_id] ) : null;
                 $points_away   = isset( $away_points[$match_id] ) ? floatval( $away_points[$match_id] ) : null;
 
-                $fixture_repository = new \Racketmanager\Repositories\Fixture_Repository();
+                $fixture_repository = new Fixture_Repository();
                 $fixture = $fixture_repository->find_by_id( $match_id );
                 if ( $fixture ) {
-                    $result_service = new \Racketmanager\Services\Result_Service( $fixture_repository );
-                    $progression_service = new \Racketmanager\Services\Competition\Knockout_Progression_Service();
-                    $score_validator = new \Racketmanager\Services\Validator\Score_Validation_Service();
-                    $result_manager = new \Racketmanager\Services\Fixture\Fixture_Result_Manager( $result_service, $progression_service, $this->league_service, $score_validator );
+                    global $racketmanager;
+                    $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
 
                     $result_data = [
                         'home_points' => $points_home,
                         'away_points' => $points_away,
-                        'status' => $match->status,
-                        'custom' => $c,
-                        'sets'   => $c['sets'] ?? $match->sets
+                        'status'      => $match->status,
+                        'custom'      => $c,
+                        'sets'        => $c['sets'] ?? $match->sets,
                     ];
-                    $result = \Racketmanager\Services\Result_Factory::from_array($result_data, $match->home_team, $match->away_team);
-                    $result_manager->update_result($fixture, $result, $confirmed);
+                    $result = Result_Factory::from_array( $result_data, $match->home_team, $match->away_team );
+
+                    if ( 'Y' === $confirmed ) {
+                        $result_manager->confirm_result( $fixture, '', null, $result );
+                    } else {
+                        $result_manager->update_result( $fixture, $result, $confirmed );
+                    }
                     ++$num_matches;
                 }
             }

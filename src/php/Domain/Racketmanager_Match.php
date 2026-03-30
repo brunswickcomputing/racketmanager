@@ -9,14 +9,11 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Championship_Manager;
-use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Result_Calculator;
-use Racketmanager\Services\Result_Factory;
-use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator_Fixture;

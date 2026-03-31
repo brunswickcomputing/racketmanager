@@ -500,6 +500,131 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         unset($GLOBALS['wp_stubs_teams'][200]);
     }
 
+    public function test_handle_team_result_update_sets_date_result_entered(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->stage_id = 1;
+        $fixture_data->season = '2026';
+        $fixture_data->date_result_entered = null;
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)
+                       ->disableOriginalConstructor()
+                       ->onlyMethods(['get_id', 'get_name', 'get_event_id', 'get_point_rule'])
+                       ->addMethods(['get_competition_type'])
+                       ->getMock();
+        $league->method('get_id')->willReturn(456);
+        $league->method('get_name')->willReturn('Test League');
+        $league->method('get_event_id')->willReturn(10);
+        $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
+        $league->method('get_competition_type')->willReturn('league');
+        $league->num_sets_to_win = 2;
+        $league->num_sets = 3;
+        $league->num_rubbers = 1;
+
+        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
+                      ->disableOriginalConstructor()
+                      ->getMock();
+        $event->competition = (object)['type' => 'league'];
+        $league->event = $event;
+
+        $this->league_service->method('get_league')->willReturn($league);
+
+        $fixture_repo = $this->createMock(\Racketmanager\Repositories\League_Repository::class);
+        $fixture_repo->method('find_by_id')->willReturn($league);
+
+        $home_team = (object)['club_id' => 10, 'is_withdrawn' => false];
+        $away_team = (object)['club_id' => 20, 'is_withdrawn' => false];
+        $GLOBALS['wp_stubs_teams'][100] = $home_team;
+        $GLOBALS['wp_stubs_teams'][200] = $away_team;
+
+        $rubber_result = new \Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result(
+            rubber_id: 10,
+            home_points: 2.0,
+            away_points: 0.0,
+            winner_id: 100,
+            players: [],
+            sets: [],
+            status: 0,
+            custom: [],
+            stats: ['sets' => ['home' => 2, 'away' => 0], 'games' => ['home' => 12, 'away' => 0]]
+        );
+
+        $this->rubber_manager->method('handle_rubber_update')
+             ->willReturn($rubber_result);
+
+        $this->result_service->expects($this->once())
+             ->method('apply_to_fixture')
+             ->willReturnCallback(function($f, $r, $c) {
+                 $f->set_result($r);
+                 $f->set_confirmed($c);
+             });
+
+        $request = new Team_Result_Update_Request(
+            match_id: 123,
+            match_status: 'completed',
+            rubber_statuses: ['1' => 'share'],
+            match_comments: ['comments'],
+            rubber_ids: [1 => 10],
+            rubber_types: [1 => 'S'],
+            players: [1 => []],
+            sets: [1 => []]
+        );
+
+        $this->assertNull($fixture->get_date_result_entered());
+
+        $this->manager->handle_team_result_update($fixture, $request, $fixture_repo);
+
+        $this->assertNotNull($fixture->get_date_result_entered());
+        $this->assertStringMatchesFormat('%d-%d-%d %d:%d:%d', $fixture->get_date_result_entered());
+
+        unset($GLOBALS['wp_stubs_teams'][100]);
+        unset($GLOBALS['wp_stubs_teams'][200]);
+    }
+
+    public function test_handle_fixture_result_update_sets_date_result_entered(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->date_result_entered = null;
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)
+                       ->disableOriginalConstructor()
+                       ->onlyMethods(['get_id', 'get_point_rule'])
+                       ->addMethods(['get_competition_type'])
+                       ->getMock();
+        $league->method('get_id')->willReturn(456);
+        $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
+        $league->method('get_competition_type')->willReturn('tournament');
+        $league->num_sets_to_win = 2;
+        $league->num_sets = 3;
+        $league->num_rubbers = 0;
+        $league->is_championship = true;
+
+        $this->league_service->method('get_league')->willReturn($league);
+
+        $fixture_repo = $this->createMock(\Racketmanager\Repositories\League_Repository::class);
+        $fixture_repo->method('find_by_id')->willReturn($league);
+
+        $this->score_validator->method('get_error')->willReturn(false);
+
+        $request = new Fixture_Result_Update_Request(123, ['set_1_home' => 6, 'set_1_away' => 0], 'completed', 'P');
+
+        $this->assertNull($fixture->get_date_result_entered());
+
+        $this->manager->handle_fixture_result_update($fixture, $request);
+
+        $this->assertNotNull($fixture->get_date_result_entered());
+        $this->assertStringMatchesFormat('%d-%d-%d %d:%d:%d', $fixture->get_date_result_entered());
+    }
+
     public function test_handle_team_result_confirmation_updates_fixture(): void {
         $fixture_data = new stdClass();
         $fixture_data->id = 123;

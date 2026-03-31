@@ -278,6 +278,10 @@ class Fixture_Result_Manager {
 
         $result = Result_Factory::from_array($result_data, $fixture->get_home_team(), $fixture->get_away_team());
 
+        if ( ! $fixture->get_date_result_entered() ) {
+            $fixture->set_date_result_entered( date( 'Y-m-d H:i:s' ) );
+        }
+
         if ( 'Y' === $request->confirmed ) {
             return $this->confirm_result( $fixture, '', null, $result );
         }
@@ -392,6 +396,10 @@ class Fixture_Result_Manager {
         if ( empty( $fixture->get_confirmed() ) ) {
             $confirmed = 'P'; // Pending
             $fixture->set_updated_by( $is_update_allowed->user_team );
+        }
+
+        if ( ! $fixture->get_date_result_entered() ) {
+            $fixture->set_date_result_entered( date( 'Y-m-d H:i:s' ) );
         }
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );

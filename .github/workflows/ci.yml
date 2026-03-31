@@ -38,7 +38,7 @@ jobs:
           path: qodana-results-php
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@6bb031afdd8d862073d7b39c5f00c707730473ef  # github/codeql-action@v3.28.10
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: qodana-results-php/qodana.sarif.json
@@ -70,7 +70,7 @@ jobs:
           path: qodana-results-js
 
       - name: Upload JS SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@6bb031afdd8d862073d7b39c5f00c707730473ef  # github/codeql-action@v3.28.10
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: qodana-results-js/qodana.sarif.json

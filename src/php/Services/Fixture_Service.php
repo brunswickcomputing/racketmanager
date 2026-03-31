@@ -181,7 +181,7 @@ class Fixture_Service {
     }
 
     /**
-     * Set fixture date based on start date, day, and time
+     * Set the fixture date based on start date, day, and time
      *
      * @param Fixture $fixture
      * @param string $start_date

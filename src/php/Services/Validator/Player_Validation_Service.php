@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Validator;
 
-use Exception;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Results_Checker;
@@ -28,9 +27,9 @@ class Player_Validation_Service {
         Results_Checker_Repository $results_checker_repository,
         ?Fixture_Repository $fixture_repository = null
     ) {
-        $this->registration_service = $registration_service;
+        $this->registration_service       = $registration_service;
         $this->results_checker_repository = $results_checker_repository;
-        $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
+        $this->fixture_repository         = $fixture_repository ?? new Fixture_Repository();
     }
 
     /**
@@ -40,14 +39,15 @@ class Player_Validation_Service {
      * @param string $status e.g. 'share', 'walkover_player1'
      * @param array $players Current player assignments
      * @param array $dummy_players Preloaded dummy players by team and gender
+     *
      * @return array Updated player assignments
      */
     public function apply_dummy_players( string $match_type, string $status, array $players, array $dummy_players ): array {
         return match ( $status ) {
-            'share'            => $this->apply_share_dummy_players( $match_type, $players, $dummy_players ),
+            'share' => $this->apply_share_dummy_players( $match_type, $players, $dummy_players ),
             'walkover_player1' => $this->apply_walkover_dummy_players( 'home', $match_type, $players, $dummy_players ),
             'walkover_player2' => $this->apply_walkover_dummy_players( 'away', $match_type, $players, $dummy_players ),
-            default            => $players,
+            default => $players,
         };
     }
 
@@ -63,6 +63,18 @@ class Player_Validation_Service {
         $players['away']['2'] = $dummy_players['away']['share'][ $genders[1] ]->roster_id ?? $players['away']['1'];
 
         return $players;
+    }
+
+    /**
+     * Get genders for this match type.
+     */
+    private function get_genders_for_match_type( string $match_type ): array {
+        return match ( $match_type ) {
+            'MD', 'BD' => [ 'male', 'male' ],
+            'WD', 'GD' => [ 'female', 'female' ],
+            'XD' => [ 'male', 'female' ],
+            default => [ 'unknown', 'unknown' ],
+        };
     }
 
     /**
@@ -88,29 +100,18 @@ class Player_Validation_Service {
     }
 
     /**
-     * Get genders for this match type.
-     */
-    private function get_genders_for_match_type( string $match_type ): array {
-        return match ( $match_type ) {
-            'MD', 'BD' => [ 'male', 'male' ],
-            'WD', 'GD' => [ 'female', 'female' ],
-            'XD'       => [ 'male', 'female' ],
-            default    => [ 'unknown', 'unknown' ],
-        };
-    }
-
-    /**
      * Run all player and result checks for a fixture.
      *
      * @param Fixture $fixture
      * @param League $league
      * @param array $rubbers Array of Rubber objects or rubber update result arrays
      * @param array $options Configuration options (passed to avoid global dependency)
+     *
      * @return void
      */
     public function run_fixture_checks( Fixture $fixture, League $league, array $rubbers, array $options = [] ): void {
         $this->results_checker_repository->delete_by_fixture_id( (int) $fixture->get_id() );
-        
+
         $check_options = $options['checks'] ?? [];
         $prev_wtns     = [];
 
@@ -122,10 +123,10 @@ class Player_Validation_Service {
             }
 
             $check_results = $this->run_rubber_player_checks( $fixture, $league, $rubber, $options );
-            
+
             if ( ! empty( $league->event->competition->rules['wtn_check'] ) && ! empty( $check_options['wtn_check'] ) ) {
                 $this->check_wtn_order( $fixture, $rubber, $rubber_players, $check_results['wtns'], $prev_wtns );
-                
+
                 foreach ( $check_results['wtns'] as $opponent => $wtn ) {
                     $prev_wtns[ $opponent ] = $wtn;
                 }
@@ -141,12 +142,14 @@ class Player_Validation_Service {
     private function ensure_rubber_players_loaded( object|array &$rubber ): array {
         if ( is_array( $rubber ) ) {
             $this->reload_rubber_array_players( $rubber );
+
             return $rubber['players'];
         }
 
         if ( empty( $rubber->players ) ) {
             $rubber->get_players();
         }
+
         return $rubber->players;
     }
 
@@ -180,44 +183,6 @@ class Player_Validation_Service {
     }
 
     /**
-     * Check WTN order for a rubber compared to previous rubbers.
-     */
-    private function check_wtn_order( Fixture $fixture, object|array $rubber, array $rubber_players, array $wtns, array $prev_wtns ): void {
-        if ( empty( $prev_wtns ) ) {
-            return;
-        }
-
-        $rubber_number = is_array( $rubber ) ? ( $rubber['rubber_number'] ?? 0 ) : $rubber->get_rubber_number();
-
-        foreach ( $wtns as $opponent => $wtn ) {
-            if ( isset( $prev_wtns[ $opponent ] ) && $wtn < $prev_wtns[ $opponent ] ) {
-                $this->add_wtn_order_violations( $fixture, $opponent, $rubber, $rubber_players, $rubber_number, $wtn, $prev_wtns[ $opponent ] );
-            }
-        }
-    }
-
-    /**
-     * Add WTN order violations for a specific team.
-     */
-    private function add_wtn_order_violations( Fixture $fixture, string $opponent, object|array $rubber, array $rubber_players, int $rubber_number, float $wtn, float $prev_wtn ): void {
-        $team_id = 'home' === $opponent ? $fixture->get_home_team() : $fixture->get_away_team();
-        $message = sprintf(
-            __( 'Players out of order. Rubber %1$d has wtn %2$.1f - previous rubber has wtn %3$.1f', 'racketmanager' ),
-            $rubber_number,
-            $wtn,
-            $prev_wtn
-        );
-        
-        $players = $rubber_players[ $opponent ] ?? [];
-        foreach ( $players as $player ) {
-            if ( $player ) {
-                $rubber_id = is_array( $rubber ) ? ( $rubber['id'] ?? 0 ) : $rubber->get_id();
-                $this->add_player_result_check( $fixture, (int) $team_id, (int) $player->id, $message, (int) $rubber_id );
-            }
-        }
-    }
-
-    /**
      * Run individual player checks for a rubber.
      *
      * Migrated from Rubber::check_players()
@@ -226,6 +191,7 @@ class Player_Validation_Service {
      * @param League $league
      * @param object|array $rubber
      * @param array $options Configuration options
+     *
      * @return array
      */
     private function run_rubber_player_checks( Fixture $fixture, League $league, object|array $rubber, array $options = [] ): array {
@@ -277,6 +243,7 @@ class Player_Validation_Service {
         $this->check_match_day_play( $player, $context );
 
         $type = substr( $context->league->event->get_type(), 1, 1 );
+
         return isset( $player->wtn[ $type ] ) ? floatval( $player->wtn[ $type ] ) : 40.9;
     }
 
@@ -289,9 +256,9 @@ class Player_Validation_Service {
         }
 
         $player_options = $context->options['player'] ?? [];
-        $gender = match ( $player->gender ) {
-            'M'     => 'male',
-            'F'     => 'female',
+        $gender         = match ( $player->gender ) {
+            'M' => 'male',
+            'F' => 'female',
             default => 'unknown',
         };
 
@@ -301,6 +268,21 @@ class Player_Validation_Service {
         }
 
         return true;
+    }
+
+    /**
+     * Add a player result check entry.
+     */
+    private function add_player_result_check( Fixture $fixture, int $team_id, int $player_id, string $error, int $rubber_id ): void {
+        $check              = new Results_Checker();
+        $check->match_id    = (int) $fixture->get_id();
+        $check->league_id   = (int) $fixture->get_league_id();
+        $check->team_id     = $team_id;
+        $check->player_id   = $player_id;
+        $check->rubber_id   = $rubber_id;
+        $check->description = $error;
+
+        $this->results_checker_repository->save( $check );
     }
 
     /**
@@ -329,8 +311,8 @@ class Player_Validation_Service {
      */
     private function should_check_lead_time( League $league, object $player, array $check_options ): bool {
         return ! empty( $league->event->competition->rules['leadTimecheck'] )
-            && ! empty( $check_options['leadTimecheck'] )
-            && isset( $check_options['rosterLeadTime'], $player->approval_date );
+               && ! empty( $check_options['leadTimecheck'] )
+               && isset( $check_options['rosterLeadTime'], $player->approval_date );
     }
 
     /**
@@ -340,8 +322,8 @@ class Player_Validation_Service {
         try {
             $match_date  = new DateTime( $context->fixture->get_date() );
             $roster_date = new DateTime( $player->approval_date );
-            $date_diff = $roster_date->diff( $match_date );
-            $interval  = ( $date_diff->days * 24 ) + $date_diff->h;
+            $date_diff   = $roster_date->diff( $match_date );
+            $interval    = ( $date_diff->days * 24 ) + $date_diff->h;
 
             if ( $interval < $required_hours ) {
                 $error = sprintf( __( 'registered with club only %d hours before fixture', 'racketmanager' ), $interval );
@@ -366,12 +348,13 @@ class Player_Validation_Service {
 
         if ( empty( $player->age ) ) {
             $this->add_player_result_check( $context->fixture, $context->team_id, (int) $player->id, __( 'no age provided', 'racketmanager' ), $context->rubber_id );
+
             return;
         }
 
         $player_age = $this->calculate_effective_player_age( $player, $context->competition_season, $context->event_season );
         $age_check  = Util::check_age_within_limit( $player_age, (int) $context->league->event->age_limit, (string) $player->gender, (int) $context->league->event->age_offset );
-        
+
         if ( ! $age_check->valid ) {
             $this->add_player_result_check( $context->fixture, $context->team_id, (int) $player->id, $age_check->msg, $context->rubber_id );
         }
@@ -382,9 +365,9 @@ class Player_Validation_Service {
      */
     private function should_check_age_limit( League $league, array $check_options ): bool {
         return ! empty( $league->event->competition->rules['ageLimitCheck'] )
-            && ! empty( $check_options['ageLimitCheck'] )
-            && ! empty( $league->event->age_limit )
-            && 'open' !== $league->event->age_limit;
+               && ! empty( $check_options['ageLimitCheck'] )
+               && ! empty( $league->event->age_limit )
+               && 'open' !== $league->event->age_limit;
     }
 
     /**
@@ -392,11 +375,11 @@ class Player_Validation_Service {
      */
     private function calculate_effective_player_age( object $player, ?array $competition_season, ?array $event_season ): int {
         $date_end = $competition_season['date_end'] ?? ( ! empty( $event_season['match_dates'] ) ? end( $event_season['match_dates'] ) : null );
-        
+
         if ( $date_end && isset( $player->year_of_birth ) ) {
             return intval( substr( $date_end, 0, 4 ) ) - intval( $player->year_of_birth );
         }
-        
+
         return (int) ( $player->age ?? 0 );
     }
 
@@ -433,11 +416,50 @@ class Player_Validation_Service {
     }
 
     /**
+     * Check WTN order for a rubber compared to previous rubbers.
+     */
+    private function check_wtn_order( Fixture $fixture, object|array $rubber, array $rubber_players, array $wtns, array $prev_wtns ): void {
+        if ( empty( $prev_wtns ) ) {
+            return;
+        }
+
+        $rubber_number = is_array( $rubber ) ? ( $rubber['rubber_number'] ?? 0 ) : $rubber->get_rubber_number();
+
+        foreach ( $wtns as $opponent => $wtn ) {
+            if ( isset( $prev_wtns[ $opponent ] ) && $wtn < $prev_wtns[ $opponent ] ) {
+                $this->add_wtn_order_violations( $fixture, $opponent, $rubber, $rubber_players, $rubber_number, $wtn, $prev_wtns[ $opponent ] );
+            }
+        }
+    }
+
+    /**
+     * Add WTN order violations for a specific team.
+     */
+    private function add_wtn_order_violations( Fixture $fixture, string $opponent, object|array $rubber, array $rubber_players, int $rubber_number, float $wtn, float $prev_wtn ): void {
+        $team_id = 'home' === $opponent ? $fixture->get_home_team() : $fixture->get_away_team();
+        $message = sprintf(
+            __( 'Players out of order. Rubber %1$d has wtn %2$.1f - previous rubber has wtn %3$.1f', 'racketmanager' ),
+            $rubber_number,
+            $wtn,
+            $prev_wtn
+        );
+
+        $players = $rubber_players[ $opponent ] ?? [];
+        foreach ( $players as $player ) {
+            if ( $player ) {
+                $rubber_id = is_array( $rubber ) ? ( $rubber['id'] ?? 0 ) : $rubber->get_id();
+                $this->add_player_result_check( $fixture, (int) $team_id, (int) $player->id, $message, (int) $rubber_id );
+            }
+        }
+    }
+
+    /**
      * Run result timeout check.
      *
      * @param Fixture $fixture
      * @param League $league
      * @param array $options Configuration options
+     *
      * @return void
      */
     private function run_result_timeout_check( Fixture $fixture, League $league, array $options = [] ): void {
@@ -446,7 +468,7 @@ class Player_Validation_Service {
         }
 
         $result_timeout = $this->get_result_timeout( $league, $options );
-        
+
         if ( $result_timeout && $fixture->get_date_result_entered() ) {
             $this->validate_result_timeout( $fixture, $result_timeout );
         }
@@ -457,7 +479,8 @@ class Player_Validation_Service {
      */
     private function get_result_timeout( League $league, array $options ): ?int {
         $competition_options = $options[ $league->event->competition->type ] ?? [];
-        $timeout = $competition_options['resultTimeout'] ?? null;
+        $timeout             = $competition_options['resultTimeout'] ?? null;
+
         return $timeout !== null ? (int) $timeout : null;
     }
 
@@ -478,38 +501,21 @@ class Player_Validation_Service {
                     $this->add_match_result_check( $fixture, (int) $fixture->get_home_team(), $reason );
                 }
             }
-        } catch ( Exception $e ) {
+        } catch ( DateMalformedStringException $e ) {
             $this->add_match_result_check( $fixture, (int) $fixture->get_home_team(), $e->getMessage() );
         }
-    }
-
-    /**
-     * Add a player result check entry.
-     */
-    private function add_player_result_check( Fixture $fixture, int $team_id, int $player_id, string $error, int $rubber_id ): void {
-        $check = new Results_Checker( null );
-        $check->match_id = (int) $fixture->get_id();
-        $check->league_id = (int) $fixture->get_league_id();
-        $check->team_id = $team_id;
-        $check->player_id = $player_id;
-        $check->rubber_id = $rubber_id;
-        $check->description = $error;
-        $check->status = 0;
-        
-        $this->results_checker_repository->save( $check );
     }
 
     /**
      * Add a match result check entry.
      */
     private function add_match_result_check( Fixture $fixture, int $team_id, string $error ): void {
-        $check = new Results_Checker( null );
-        $check->match_id = (int) $fixture->get_id();
-        $check->league_id = (int) $fixture->get_league_id();
-        $check->team_id = $team_id;
+        $check              = new Results_Checker();
+        $check->match_id    = (int) $fixture->get_id();
+        $check->league_id   = (int) $fixture->get_league_id();
+        $check->team_id     = $team_id;
         $check->description = $error;
-        $check->status = 0;
-        
+
         $this->results_checker_repository->save( $check );
     }
 

@@ -190,7 +190,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
         $method = $reflection->getMethod('is_any_team_withdrawn');
-        $method->setAccessible(true);
 
         $this->assertTrue($method->invoke($this->manager, $fixture));
     }
@@ -217,7 +216,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
         $method = $reflection->getMethod('is_any_team_withdrawn');
-        $method->setAccessible(true);
 
         $this->assertTrue($method->invoke($this->manager, $fixture));
     }
@@ -244,7 +242,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
         $method = $reflection->getMethod('is_any_team_withdrawn');
-        $method->setAccessible(true);
 
         $this->assertFalse($method->invoke($this->manager, $fixture));
     }
@@ -825,7 +822,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $reflection = new \ReflectionClass(Fixture_Result_Manager::class);
         $method = $reflection->getMethod('handle_player_warnings');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->manager, $fixture);
 

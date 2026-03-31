@@ -323,6 +323,7 @@ class Fixture_Result_Manager {
                 $rubber_result = $this->process_rubber_update( $fixture, $request, (int) $ix, $is_withdrawn, $is_cancelled, $dummy_players );
 
                 $updated_rubbers[ (int) $request->rubber_ids[ $ix ] ] = [
+                    'id'          => $rubber_id,
                     'players'     => $rubber_result->players,
                     'homepoints'  => $rubber_result->home_points,
                     'awaypoints'  => $rubber_result->away_points,

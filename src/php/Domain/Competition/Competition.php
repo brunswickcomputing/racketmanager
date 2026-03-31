@@ -552,13 +552,17 @@ class Competition {
     }
 
     public static function from_database( object $row ): self {
+        return self::from_object( $row );
+    }
+
+    public static function from_object( object $row ): self {
         return new self(
-            $row->name,
-            $row->type,
-            $row->age_group,
-            ( empty( $row->seasons ) ? array() : json_decode( $row->seasons, true ) ) ? : array(),
-            json_decode($row->settings, true) ?: array(),
-            (int) $row->id
+            $row->name ?? '',
+            $row->type ?? '',
+            $row->age_group ?? '',
+            ( empty( $row->seasons ) ? array() : ( is_array( $row->seasons ) ? $row->seasons : json_decode( $row->seasons, true ) ) ) ?: array(),
+            ( empty( $row->settings ) ? array() : ( is_array( $row->settings ) ? $row->settings : json_decode( $row->settings, true ) ) ) ?: array(),
+            isset( $row->id ) ? (int) $row->id : null
         );
     }
 

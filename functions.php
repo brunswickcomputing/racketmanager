@@ -8,25 +8,19 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Domain\Charge;
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Club_Player;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Message;
 use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Error;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Results_Report;
 use Racketmanager\Domain\Fixture\Rubber;
-use Racketmanager\Domain\Season;
 use Racketmanager\Domain\Team;
-use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Domain\User;
 use Racketmanager\Repositories\Club_Repository;
@@ -35,11 +29,11 @@ use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Exporter;
 
 /**
- * Send debug code to the Javascript console
+ * Send debug code to the JavaScript console
  *
- * @param object|array|string|null $data Optional message that will be sent the error_log before the backtrace.
+ * @param object|array|string|int|null $data Optional message that will be sent the error_log before the backtrace.
  */
-function debug_to_console( object|array|string|null $data ): void {
+function debug_to_console( object|array|string|int|null $data ): void {
     if ( is_array( $data ) || is_object( $data ) ) {
         if ( is_array( $data ) ) {
             error_log( 'PHP: array' ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -169,7 +163,7 @@ function racketmanager_download(): void {
 }
 add_action( 'init', 'Racketmanager\racketmanager_download' );
 /**
- * Get current page url
+ * Get the current page url
  */
 function wp_get_current_url(): ?string {
     if ( isset( $_SERVER['REQUEST_URI'] ) ) {
@@ -222,16 +216,10 @@ function get_competition( Competition|int|string|null $competition = null, ?stri
     if ( $competition instanceof Competition ) {
         $_competition = $competition;
     } elseif ( is_object( $competition ) ) {
-        // check if specific sports class exists.
         if ( ! isset( $competition->sport ) ) {
             $competition->sport = '';
         }
-        $instance = 'Racketmanager\sports\Competition_' . ucfirst( $competition->sport );
-        if ( class_exists( $instance ) ) {
-            $_competition = new $instance( $competition );
-        } else {
-            $_competition = new Competition( $competition );
-        }
+        $_competition = Competition::from_object( $competition );
     } else {
         $_competition = Competition::get_instance( $competition, $search_term );
     }
@@ -259,16 +247,7 @@ function get_event( int|string|Event|null $event = null, string $search_term = '
     if ( $event instanceof Event ) {
         $_event = $event;
     } elseif ( is_object( $event ) ) {
-        // check if specific sports class exists.
-        if ( ! isset( $event->competition->sport ) ) {
-            $event->competition->sport = '';
-        }
-        $instance = 'Racketmanager\sports\Event_' . ucfirst( $event->competition->sport );
-        if ( class_exists( $instance ) ) {
-            $_event = new $instance( $event );
-        } else {
-            $_event = new Event( $event );
-        }
+        $_event = new Event( $event );
     } else {
         $_event = Event::get_instance( $event, $search_term );
     }
@@ -294,16 +273,7 @@ function get_league( object|int|string|null $league = null ): ?League {
     if ( $league instanceof League ) {
         $_league = $league;
     } elseif ( is_object( $league ) ) {
-        // check if specific sports class exists.
-        if ( ! isset( $league->sport ) ) {
-            $league->sport = '';
-        }
-        $instance = 'Racketmanager\sports\League_' . ucfirst( $league->sport );
-        if ( class_exists( $instance ) ) {
-            $_league = new $instance( $league );
-        } else {
-            $_league = new League( $league );
-        }
+        $_league = new League( $league );
     } else {
         $_league = League::get_instance( $league );
     }
@@ -317,7 +287,7 @@ function get_league( object|int|string|null $league = null ): ?League {
 /**
  * Get Racketmanager_Match object
  *
- * @param object|int|null $match Match ID or match object. Defaults to global $match.
+ * @param object|int|null $match Match ID or a match object. Defaults to global $match.
  *
  * @return Racketmanager_Match|null Racketmanager_Match|null
  */
@@ -494,7 +464,7 @@ function get_league_team( object|int|null $league_team = null ): League_Team|nul
     return $_league_team;
 }
 /**
- * Get results report object
+ * Get a results report object
  *
  * @param object|int|null $results_report results_report ID or results_report object. Defaults to global $results_report.
  *
@@ -520,7 +490,7 @@ function get_results_report( object|int|null $results_report = null ): Results_R
     return $_results_report;
 }
 /**
- * Get results check object
+ * Get a results check object
  *
  * @param int|null|object $results_check results_check ID or results_check object. Defaults to global $results_check.
  * @return object|null results_check|null

@@ -4,7 +4,7 @@ version: "1.0"
 profile:
   name: qodana.starter
 
-linter: jetbrains/qodana-js:2024.3
+linter: jetbrains/qodana-js-community:2024.3
 
 include:
   - name: SomeInspectionId

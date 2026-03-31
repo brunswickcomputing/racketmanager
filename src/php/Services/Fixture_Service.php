@@ -39,7 +39,7 @@ class Fixture_Service {
         $this->rubber_repository    = $repository_provider->get_rubber_repository();
         $this->notification_service = $service_provider->get_notification_service();
 
-        $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $service_provider );
+        $this->permission_service = $service_provider->get_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $service_provider );
         $this->detail_service     = $service_provider->get_fixture_detail_service() ?? new Fixture_Detail_Service( $repository_provider, $service_provider );
     }
 

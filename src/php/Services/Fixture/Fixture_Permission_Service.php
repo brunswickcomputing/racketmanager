@@ -82,12 +82,12 @@ class Fixture_Permission_Service {
      */
     private function build_permission_response( bool $can_update, string $type = '', string $team = '', string $message = '', bool $approval = false, bool $update = false ): object {
         return (object) [
-            'user_can_update'     => $can_update,
+            'user_can_update'     => (bool) $can_update,
             'user_type'           => $type,
             'user_team'           => $team,
             'message'             => $message,
-            'match_approval_mode' => $approval,
-            'match_update'        => $update,
+            'match_approval_mode' => (bool) $approval,
+            'match_update'        => (bool) $update,
         ];
     }
 
@@ -103,7 +103,7 @@ class Fixture_Permission_Service {
             'home_team' => $home_team,
             'away_team' => $away_team,
             'league'    => $league,
-            'userid'    => get_current_user_id(),
+            'userid'    => $this->get_current_user_id(),
         ];
     }
 
@@ -111,23 +111,46 @@ class Fixture_Permission_Service {
      * Main permission evaluation logic.
      */
     private function evaluate_permissions( Fixture $fixture, object $context ): object {
-        if ( current_user_can( 'manage_racketmanager' ) ) {
+        if ( $this->current_user_can( 'manage_racketmanager' ) ) {
             return $this->build_permission_response( true, 'admin', '', '', false, 'P' === $fixture->get_confirmed() );
+        }
+
+        if ( empty( $context->home_team ) || empty( $context->away_team ) || empty( $context->home_team->get_club_id() ) || empty( $context->away_team->get_club_id() ) ) {
+            return $this->build_permission_response( false, '', '', 'notTeamSet' );
         }
 
         return $this->evaluate_non_admin_permissions( $fixture, $context );
     }
 
     /**
+     * Wrapper for current_user_can to allow mocking.
+     */
+    protected function current_user_can( string $capability ): bool {
+        return current_user_can( $capability );
+    }
+
+    /**
+     * Wrapper for get_current_user_id to allow mocking.
+     */
+    protected function get_current_user_id(): int {
+        return get_current_user_id();
+    }
+
+    /**
      * Evaluate permissions for non-admin users.
      */
     private function evaluate_non_admin_permissions( Fixture $fixture, object $context ): object {
-        if ( empty( $context->home_team ) || empty( $context->away_team ) || empty( $context->home_team->get_club_id() ) || empty( $context->away_team->get_club_id() ) ) {
-            return $this->build_permission_response( false, '', '', 'notTeamSet' );
-        }
-
         $user_role = $this->identify_user_role( $fixture, $context );
         if ( ! $user_role->type ) {
+            $comp_type = $context->league->event->competition->type;
+            $options = $this->get_options();
+            $capability = $options[ $comp_type ]['matchCapability'] ?? 'none';
+            $entry     = $options[ $comp_type ]['resultEntry'] ?? 'home';
+
+            if ( 'player' === $capability ) {
+                return $this->evaluate_regular_player_permissions( $fixture, $context, $entry );
+            }
+
             return $this->build_permission_response( false, '', '', 'notCaptain' );
         }
 
@@ -184,10 +207,18 @@ class Fixture_Permission_Service {
      */
     private function evaluate_role_permissions( Fixture $fixture, object $context, object $user_role ): object {
         $comp_type = $context->league->event->competition->type;
-        $capability = $this->options[ $comp_type ]['matchCapability'] ?? 'none';
-        $entry     = $this->options[ $comp_type ]['resultEntry'] ?? 'home';
+        $options = $this->get_options();
+        $capability = $options[ $comp_type ]['matchCapability'] ?? 'none';
+        $entry     = $options[ $comp_type ]['resultEntry'] ?? 'home';
 
         return $this->dispatch_role_evaluation( $fixture, $context, $user_role, $capability, $entry );
+    }
+
+    /**
+     * Wrapper for options to allow mocking.
+     */
+    protected function get_options(): array {
+        return $this->options;
     }
 
     /**
@@ -221,8 +252,9 @@ class Fixture_Permission_Service {
      */
     private function evaluate_captain_permissions( Fixture $fixture, object $user_role, string $entry ): object {
         if ( 'home' === $user_role->team ) {
-            $can_update = 'P' === $fixture->get_confirmed() || empty( $fixture->get_winner_id() );
-            return $this->build_permission_response( $can_update, $user_role->type, 'home', '', false, $can_update );
+            $can_update = 'P' === $fixture->get_confirmed() && empty( $fixture->get_winner_id() );
+            $message = ! $can_update ? 'matchAlreadyConfirmed' : '';
+            return $this->build_permission_response( $can_update, $user_role->type, 'home', $message, false, $can_update );
         }
 
         return $this->evaluate_away_captain_permissions( $fixture, $user_role, $entry );
@@ -244,10 +276,14 @@ class Fixture_Permission_Service {
      */
     private function evaluate_away_captain_entry_permissions( Fixture $fixture, object $user_role, string $entry ): object {
         if ( 'home' === $entry ) {
-            return $this->build_permission_response( 'P' === $fixture->get_confirmed(), $user_role->type, 'away', '', 'P' === $fixture->get_confirmed() );
+            $can_update = 'P' === $fixture->get_confirmed() && empty( $fixture->get_winner_id() );
+            $message = ! $can_update ? 'notHomeCaptain' : '';
+            return $this->build_permission_response( $can_update, $user_role->type, 'away', $message, $can_update );
         }
         if ( 'either' === $entry ) {
-            return $this->build_permission_response( true, $user_role->type, 'away' );
+            $can_update = 'P' === $fixture->get_confirmed() || empty( $fixture->get_winner_id() );
+            $message = ! $can_update ? 'matchAlreadyConfirmed' : '';
+            return $this->build_permission_response( $can_update, $user_role->type, 'away', $message );
         }
         return $this->build_permission_response( false, $user_role->type, $user_role->team );
     }

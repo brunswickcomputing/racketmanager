@@ -121,6 +121,10 @@ class Service_Provider {
         return $this->settings_service;
     }
 
+    public function get_permission_service(): ?Fixture_Permission_Service {
+        return $this->fixture_permission_service;
+    }
+
     public function get_fixture_service(): ?Fixture_Service {
         return $this->fixture_service;
     }

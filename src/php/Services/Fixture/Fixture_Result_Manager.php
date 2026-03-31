@@ -137,9 +137,9 @@ class Fixture_Result_Manager {
     private Fixture_Repository|null $fixture_repository;
 
     /**
-     * @var Fixture_Service
+     * @var Fixture_Permission_Service
      */
-    private Fixture_Service $fixture_service;
+    private Fixture_Permission_Service $permission_service;
 
     /**
      * @param Service_Provider $service_provider
@@ -168,7 +168,7 @@ class Fixture_Result_Manager {
         $this->club_repository            = $repository_provider->get_club_repository();
         $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
-        $this->fixture_service = $service_provider->get_fixture_service();
+        $this->permission_service = $service_provider->get_permission_service();
 
         $this->notification_service = $service_provider->get_notification_service();
         if ( ! $this->notification_service ) {
@@ -869,7 +869,7 @@ class Fixture_Result_Manager {
      * @return object
      */
     public function is_update_allowed( Fixture $fixture ): object {
-        return $this->fixture_service->is_update_allowed( $fixture );
+        return $this->permission_service->is_update_allowed( $fixture );
     }
 
     /**

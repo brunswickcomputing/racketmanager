@@ -312,8 +312,10 @@ final class Validator_Fixture extends Validator {
      */
     public function can_player_enter_result( object $is_update_allowed, array $match_players ): object {
         if ( ! $is_update_allowed->user_can_update ) {
-            $this->error = true;
-            $this->msg   = __( 'Result entry not permitted', 'racketmanager' );
+            $this->error  = true;
+            $this->status = 403;
+            $this->msg    = $is_update_allowed->message ?? __( 'Result entry not permitted', 'racketmanager' );
+            $this->err_msgs[] = $this->msg;
             return $this;
         }
 

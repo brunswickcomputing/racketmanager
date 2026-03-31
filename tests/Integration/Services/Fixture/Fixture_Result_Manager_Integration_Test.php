@@ -36,6 +36,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $notification_service;
     private $settings_service;
     private $manager;
+    private $permission_service;
     private $league_team_repository;
     private $team_repository;
     private $player_repository;
@@ -128,6 +129,29 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $service_provider->set_rubber_manager( $this->rubber_manager );
         $service_provider->set_settings_service( $this->settings_service );
         $service_provider->set_fixture_service( $this->fixture_service_mock );
+
+        $this->permission_service = $this->createMock(\Racketmanager\Services\Fixture\Fixture_Permission_Service::class);
+        $this->permission_service->method('is_update_allowed')->willReturnCallback(function($fixture) {
+            if ($fixture->get_id() === 999) {
+                return (object)[
+                    'user_can_update' => false,
+                    'user_type' => 'none',
+                    'user_team' => 'none',
+                    'message' => 'Result entry not permitted',
+                    'match_approval_mode' => false,
+                    'match_update' => false
+                ];
+            }
+            return (object)[
+                'user_can_update' => true,
+                'user_type' => 'admin',
+                'user_team' => 'home',
+                'message' => '',
+                'match_approval_mode' => false,
+                'match_update' => true
+            ];
+        });
+        $service_provider->set_fixture_permission_service($this->permission_service);
 
         $this->manager = new Fixture_Result_Manager(
             $service_provider,

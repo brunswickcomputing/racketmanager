@@ -27,7 +27,6 @@ jobs:
           linter: jetbrains/qodana-php:2024.3
           pr-mode: true
           args: |
-            --project-dir=.
             --results-dir=qodana-results-php
           
       - name: Upload Qodana PHP Report
@@ -103,13 +102,13 @@ jobs:
           # Show installed standards after configuration
           "$PHPCS_HOME"/vendor/bin/phpcs -i
 
-      - name: Run PHPCS (non-blocking; auto-detect path)
+      - name: Run PHPCS (non-blocking)
         run: |
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
-          if [ -f "wp-content/plugins/racketmanager/phpcs.xml" ]; then
-            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=wp-content/plugins/racketmanager/phpcs.xml wp-content/plugins/racketmanager
-          elif [ -f "phpcs.xml" ]; then
+          if [ -f "phpcs.xml" ]; then
             "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml .
+          elif [ -f "phpcs.xml.dist" ]; then
+            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml.dist .
           else
             echo "PHPCS ruleset not found; skipping."
           fi
@@ -132,30 +131,11 @@ jobs:
       - name: Install Composer deps (optimize)
         run: |
           set -euo pipefail
-          if [ -f "racketmanager.php" ]; then
-            PLUGIN_DIR="."
-          elif [ -f "wp-content/plugins/racketmanager/racketmanager.php" ]; then
-            PLUGIN_DIR="wp-content/plugins/racketmanager"
-          else
-            echo "Could not locate plugin root (racketmanager.php)."
-            pwd; ls -la
-            exit 1
-          fi
-          composer install --no-dev --prefer-dist -o --working-dir="$PLUGIN_DIR"
-
+          composer install --no-dev --prefer-dist -o
       - name: Bootstrap plugin and instantiate core class
         run: |
           set -euo pipefail
-          if [ -f "racketmanager.php" ]; then
-            PLUGIN_DIR="."
-          elif [ -f "wp-content/plugins/racketmanager/racketmanager.php" ]; then
-            PLUGIN_DIR="wp-content/plugins/racketmanager"
-          else
-            echo "Could not locate plugin root (racketmanager.php)."
-            pwd; ls -la
-            exit 1
-          fi
-          php -r "chdir(getenv('PLUGIN_DIR') ?: '$PLUGIN_DIR'); require 'racketmanager.php'; \\Racketmanager\\RacketManager::get_instance(); if (!class_exists('Racketmanager\\\\Player')) { throw new Exception('Player class missing'); } if (!method_exists('Racketmanager\\\\Player','get_instance')) { throw new Exception('Player::get_instance missing'); } if (!class_exists('Racketmanager\\\\Club')) { throw new Exception('Club class missing'); } if (!method_exists('Racketmanager\\\\Club','get_instance')) { throw new Exception('Club::get_instance missing'); } if (!class_exists('Racketmanager\\\\Tournament')) { throw new Exception('Tournament class missing'); } if (!class_exists('Racketmanager\\\\Charges')) { throw new Exception('Charges class missing'); } if (!class_exists('Racketmanager\\\\Invoice')) { throw new Exception('Invoice class missing'); } if (!class_exists('Racketmanager\\\\Tournament_Entry')) { throw new Exception('Tournament_Entry class missing'); } echo 'OK';"
+          php -r "require 'racketmanager.php'; \\Racketmanager\\RacketManager::get_instance(); if (!class_exists('Racketmanager\\\\Player')) { throw new Exception('Player class missing'); } if (!method_exists('Racketmanager\\\\Player','get_instance')) { throw new Exception('Player::get_instance missing'); } if (!class_exists('Racketmanager\\\\Club')) { throw new Exception('Club class missing'); } if (!method_exists('Racketmanager\\\\Club','get_instance')) { throw new Exception('Club::get_instance missing'); } if (!class_exists('Racketmanager\\\\Tournament')) { throw new Exception('Tournament class missing'); } if (!class_exists('Racketmanager\\\\Charges')) { throw new Exception('Charges class missing'); } if (!class_exists('Racketmanager\\\\Invoice')) { throw new Exception('Invoice class missing'); } if (!class_exists('Racketmanager\\\\Tournament_Entry')) { throw new Exception('Tournament_Entry class missing'); } echo 'OK';"
 
   phpunit:
     name: PHPUnit (Tests)
@@ -177,24 +157,20 @@ jobs:
         id: composer-cache
         run: |
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-        working-directory: wp-content/plugins/racketmanager
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('wp-content/plugins/racketmanager/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
-        working-directory: wp-content/plugins/racketmanager
 
       - name: Run Unit Tests
         run: vendor/bin/phpunit --testsuite Unit
-        working-directory: wp-content/plugins/racketmanager
 
       - name: Run Integration Tests
         run: vendor/bin/phpunit --testsuite Integration
-        working-directory: wp-content/plugins/racketmanager

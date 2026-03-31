@@ -176,12 +176,17 @@ class Registration_Repository {
      * @return Club_Player|null
      */
     public function find( $club_player_id ): ?Club_Player {
-        $row = $this->wpdb->get_row(
-            $this->wpdb->prepare(
-                "SELECT * FROM $this->table_name WHERE id = %d",
-                $club_player_id
-            )
-        );
+        $key = md5( $club_player_id );
+        $row = wp_cache_get( $key, 'club_players' );
+        if ( ! $row ) {
+            $row = $this->wpdb->get_row(
+                $this->wpdb->prepare(
+                    "SELECT * FROM $this->table_name WHERE id = %d",
+                    $club_player_id
+                )
+            );
+            wp_cache_set( $key, $row, 'club_players' );
+        }
         return $row ? new Club_Player( $row ) : null;
     }
 
@@ -204,6 +209,7 @@ class Registration_Repository {
      * Finds all Club IDs where the given player has any type of registration.
      *
      * @param int $player_id
+     * @param int|null $club_id
      *
      * @return int[] Array of Club IDs.
      */

@@ -8,6 +8,8 @@ namespace Racketmanager\Repositories;
  */
 class Repository_Provider {
     private ?League_Repository $league_repository = null;
+    private ?Event_Repository $event_repository = null;
+    private ?Competition_Repository $competition_repository = null;
     private ?League_Team_Repository $league_team_repository = null;
     private ?Team_Repository $team_repository = null;
     private ?Player_Repository $player_repository = null;
@@ -19,6 +21,8 @@ class Repository_Provider {
 
     public function __construct(
         ?League_Repository $league_repository = null,
+        ?Event_Repository $event_repository = null,
+        ?Competition_Repository $competition_repository = null,
         ?League_Team_Repository $league_team_repository = null,
         ?Team_Repository $team_repository = null,
         ?Player_Repository $player_repository = null,
@@ -29,6 +33,8 @@ class Repository_Provider {
         ?Club_Repository $club_repository = null
     ) {
         $this->league_repository = $league_repository;
+        $this->event_repository = $event_repository;
+        $this->competition_repository = $competition_repository;
         $this->league_team_repository = $league_team_repository;
         $this->team_repository = $team_repository;
         $this->player_repository = $player_repository;
@@ -39,7 +45,15 @@ class Repository_Provider {
         $this->club_repository = $club_repository;
     }
 
-    public function get_league_repository(): League_Repository {
+   	public function get_event_repository(): Event_Repository {
+   		return $this->event_repository ??= new Event_Repository();
+   	}
+
+   	public function get_competition_repository(): Competition_Repository {
+   		return $this->competition_repository ??= new Competition_Repository();
+   	}
+
+   	public function get_league_repository(): League_Repository {
         return $this->league_repository ??= new League_Repository();
     }
 

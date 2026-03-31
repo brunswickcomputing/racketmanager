@@ -1044,6 +1044,14 @@ class Rubber {
         $return['wtns'] = $player_wtns;
         return $return;
     }
+    public function is_walkover(): bool {
+        return 2 === $this->status;
+    }
+
+    public function is_shared(): bool {
+        return 4 === $this->status;
+    }
+
     /**
      * Reset rubber result function
      *

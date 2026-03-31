@@ -13,11 +13,14 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
+use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Util\Util;
+use Racketmanager\Util\Util_Lookup;
 use stdClass;
 
 /**
@@ -26,11 +29,15 @@ use stdClass;
 class Fixture_Service {
 
     private Fixture_Repository $fixture_repository;
+    private Rubber_Repository $rubber_repository;
+    private ?Notification_Service $notification_service;
     private Fixture_Permission_Service $permission_service;
     private Fixture_Detail_Service $detail_service;
 
     public function __construct( Repository_Provider $repository_provider, Service_Provider $service_provider ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
+        $this->rubber_repository    = $repository_provider->get_rubber_repository();
+        $this->notification_service = $service_provider->get_notification_service();
 
         $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $service_provider );
         $this->detail_service     = $service_provider->get_fixture_detail_service() ?? new Fixture_Detail_Service( $repository_provider, $service_provider );
@@ -163,7 +170,76 @@ class Fixture_Service {
     }
 
     /**
-     * Reset finals fixtures for a tournament
+     * Update fixture location
+     *
+     * @param Fixture $fixture
+     * @param string $location
+     */
+    public function update_fixture_location( Fixture $fixture, string $location ): void {
+        $fixture->set_location( $location );
+        $this->fixture_repository->save( $fixture );
+    }
+
+    /**
+     * Set fixture date based on start date, day, and time
+     *
+     * @param Fixture $fixture
+     * @param string $start_date
+     * @param string|null $match_day
+     * @param string|null $match_time
+     */
+    public function set_fixture_date( Fixture $fixture, string $start_date, ?string $match_day, ?string $match_time ): void {
+        if ( strlen( $start_date ) > 10 ) {
+            $start_date = substr( $start_date, 0, 10 );
+        }
+        if ( ! empty( $match_day ) ) {
+            $day        = Util_Lookup::get_match_day_number( $match_day );
+            $match_date = Util::amend_date( $start_date, $day );
+        } else {
+            $match_date = $start_date;
+        }
+        if ( empty( $match_time ) ) {
+            $match_time = '00:00';
+        }
+        $match_date = $match_date . ' ' . $match_time;
+        $this->update_fixture_date( $fixture, $match_date );
+    }
+
+    /**
+     * Update fixture date and synchronize associated rubbers
+     *
+     * @param Fixture $fixture
+     * @param string $new_date
+     * @param string|null $original_date
+     */
+    public function update_fixture_date( Fixture $fixture, string $new_date, ?string $original_date = null ): void {
+        if ( empty( $new_date ) ) {
+            return;
+        }
+
+        $fixture->set_date( $new_date );
+
+        if ( ! empty( $original_date ) && empty( $fixture->get_date_original() ) ) {
+            $fixture->set_date_original( $original_date );
+        }
+
+        $this->fixture_repository->save( $fixture );
+
+        // Synchronize rubbers
+        $rubbers = $this->rubber_repository->find_by_fixture_id( $fixture->get_id() );
+        foreach ( $rubbers as $rubber ) {
+            $rubber->set_date( $new_date );
+            $this->rubber_repository->save( $rubber );
+        }
+
+        // Notify if date was changed from an original date
+        if ( ! empty( $fixture->get_date_original() ) && $this->notification_service ) {
+            $this->notification_service->send_date_change_notification( $fixture );
+        }
+    }
+
+    /**
+     * Reset the final's fixtures for a tournament
      *
      * @param int $tournament_id
      * @param string $fixture_date
@@ -221,7 +297,7 @@ class Fixture_Service {
     }
 
     /**
-     * Find finals fixtures for a tournament
+     * Find a final's fixtures for a tournament
      *
      * @param int $tournament_id
      *

@@ -106,13 +106,11 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		] );
 
 		$repository_provider = new Repository_Provider(
-			$league_repo,
-			$event_repo,
-			$competition_repo,
-			null,
-			$team_repo,
-			null,
-			$rubber_repo
+			league_repository: $league_repo,
+			event_repository: $event_repo,
+			competition_repository: $competition_repo,
+			team_repository: $team_repo,
+			rubber_repository: $rubber_repo
 		);
 
 		$service = new Result_Reporting_Service( $repository_provider );

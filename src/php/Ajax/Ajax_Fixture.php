@@ -512,6 +512,8 @@ class Ajax_Fixture extends Ajax {
 
         $repository_provider = new Repository_Provider(
             $c->get( 'league_repository' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'competition_repository' ),
             $c->get( 'league_team_repository' ),
             $c->get( 'team_repository' ),
             $c->get( 'player_repository' ),

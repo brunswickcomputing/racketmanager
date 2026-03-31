@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
@@ -93,9 +95,9 @@ class Results_Checker {
     /**
      * Match
      *
-     * @var Racketmanager_Match|null
+     * @var Fixture|null
      */
-    public null|Racketmanager_Match $match = null;
+    public null|Fixture $match = null;
     /**
      * Player
      *
@@ -294,12 +296,14 @@ class Results_Checker {
             $comment  = __( 'Penalty', 'racketmanager' ) . ': ';
             $comment .= sprintf( _n( '%d point deduction for', '%d points deduction for', $penalty, 'racketmanager' ), $penalty ) . ' ';
         } else {
-            $comment = null;
+            $comment = '';
         }
         $comment           .= $this->description;
-        $comments['result'] = $comment;
-        $match->set_comments( $comments );
-        $match->update_result_with_penalty( 'home', $penalty );
+        $match->set_comments( $comment );
+
+        $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
+        $result_manager->apply_penalty( $match, 'home', $penalty );
+
         $match->update_league_with_result();
         $organisation_name = $racketmanager->site_name;
         $headers           = array();

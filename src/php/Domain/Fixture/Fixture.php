@@ -10,6 +10,7 @@
 namespace Racketmanager\Domain\Fixture;
 
 use Racketmanager\Domain\Result\Result;
+use Racketmanager\Repositories\Rubber_Repository;
 
 /**
  * Class Fixture
@@ -958,5 +959,15 @@ class Fixture {
         }
 
         $this->set_status_flags();
+    }
+    /**
+     * Get rubbers for this fixture.
+     *
+     * @param int|null $player_id
+     * @return Rubber[]
+     */
+    public function get_rubbers( ?int $player_id = null ): array {
+        $rubber_repository = new Rubber_Repository();
+        return $rubber_repository->find_by_fixture_id( (int) $this->id, $player_id );
     }
 }

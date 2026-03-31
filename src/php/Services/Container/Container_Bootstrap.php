@@ -155,6 +155,8 @@ final class Container_Bootstrap {
         $c->set( 'fixture_permission_service', function ( Simple_Container $c ) {
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),
@@ -183,6 +185,8 @@ final class Container_Bootstrap {
         $c->set( 'fixture_detail_service', function ( Simple_Container $c ) {
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),
@@ -211,6 +215,8 @@ final class Container_Bootstrap {
         $c->set( 'fixture_service', function ( Simple_Container $c ) {
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),
@@ -308,9 +314,15 @@ final class Container_Bootstrap {
             );
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
             $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
+            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+            $service_provider->set_team_service( $c->get( 'team_service' ) );
+            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
 
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),
@@ -338,9 +350,16 @@ final class Container_Bootstrap {
                 $c->get( 'registration_service' )
             );
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+            $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
+            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+            $service_provider->set_team_service( $c->get( 'team_service' ) );
+            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
 
             $repository_provider = new Repository_Provider(
                 $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
                 $c->get( 'player_repository' ),

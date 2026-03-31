@@ -127,12 +127,20 @@ class Fixture_Repository {
     }
 
     /**
-     * Delete a fixture by ID.
+     * Delete a fixture by ID, including its associated rubbers.
      *
      * @param int $id
      * @return bool
      */
     public function delete( int $id ): bool {
+        // Delete associated rubbers first
+        $rubbers_table = $this->wpdb->prefix . 'racketmanager_rubbers';
+        $this->wpdb->delete(
+            $rubbers_table,
+            array( 'match_id' => $id ),
+            array( '%d' )
+        );
+
         $deleted = $this->wpdb->delete(
             $this->table_name,
             array( 'id' => $id ),

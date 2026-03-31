@@ -1285,16 +1285,12 @@ final class Admin_League extends Admin_Display {
 
             $matches = array();
             if ( isset( $_GET['edit'] ) ) {
-                $reset        = isset( $_GET['reset'] );
                 $match_id     = intval( $_GET['edit'] );
                 $match        = get_match( $match_id );
                 $mode         = 'edit';
                 $edit         = true;
                 $form_title   = __( 'Edit Match', 'racketmanager' );
                 $submit_title = $form_title;
-                if ( $reset ) {
-                    $match->reset_result();
-                }
                 if ( isset( $match->final_round ) && '' !== $match->final_round ) {
                     $cup             = true;
                     $single_cup_game = true;
@@ -1714,7 +1710,7 @@ final class Admin_League extends Admin_Display {
                     $league?->add_team( $team, $latest_season, $rank, $status, $profile );
                 } elseif ( isset( $_POST['constitutionAction'] ) && 'update' === $_POST['constitutionAction'] ) {
                     $league_team = get_league_team( $table_id );
-                    if ( $league_id !== $league_team->league_id || $rank !== intval( $league_team->rank ) || $status !== $league_team->status || $profile !== $league_team->profile ) {
+                    if ( $league_id !== $league_team->league_id || $rank !== intval( $league_team->rank ) || $status !== $league_team->status || $profile !== $league_team->get_profile() ) {
                         $league_team?->set_constitution_rank( $league_id, $rank, $status, $profile );
                         ++$updates;
                     }

@@ -12,7 +12,7 @@ namespace Racketmanager\Domain\Competition;
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Championship_Settings;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\Racketmanager_Match;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Championship_Factory;
@@ -1993,8 +1993,10 @@ class League {
             foreach ( $matches as $i => $match ) {
                 $match        = get_match( $match->id );
                 $class        = ( 'alternate' === $class ) ? '' : 'alternate';
-                $match->class = $class;
-                if ( $player ) {
+                if ( $match ) {
+                    $match->class = $class;
+                }
+                if ( $player && $match ) {
                     $match->rubbers = $match->get_rubbers( $player );
                 }
 

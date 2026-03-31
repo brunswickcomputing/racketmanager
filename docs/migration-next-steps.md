@@ -1,74 +1,53 @@
-### Analysis and Plan for Next Steps: Move Away from Match Class Map
+### Analysis of `Racketmanager_Match` Usage
 
-Following the strategy outlined in `move-away-from-match-class-map.md`, specifically **Section 8: Best minimal version**, I have analyzed the current project structure and defined a phased plan to migrate from the monolithic `Racketmanager_Match` class towards a more granular, domain-driven architecture.
+The legacy `Racketmanager_Match` class is a "God Object" of over 3,400 lines that originally handled domain logic, scoring, orchestration, and persistence. While a significant portion of its orchestration logic has already been migrated to modern services (like `Fixture_Result_Manager` and `Notification_Service`), the class is still directly used in several key areas of the codebase:
 
-#### Current State Analysis
-- **`Racketmanager_Match`**: Currently acts as a "God object" (3494 lines), handling domain logic (results, scoring), persistence (CRUD), and orchestration (notifications, progression).
-- **Domain Classes**: Classes like `Fixture`, `Result`, and `Rubber` exist but are often tightly coupled to database logic or are not yet using specialized value objects (like `Set_Score`).
-- **Services**: `Result_Service`, `Fixture_Service`, and `Championship_Manager` already exist but need alignment with the new domain models to handle orchestration.
-- **Repositories**: `Fixture_Repository`, `Result_Repository`, and `Rubber_Repository` are present but might need updates to support refined domain models.
+1.  **Entry Points:**
+    *   `functions.php`: The global `get_match()` helper is the primary factory, directly instantiating `Racketmanager_Match`.
+    *   `Admin_Import::import_fixtures()`: Directly instantiates and uses `Racketmanager_Match` to add new fixtures.
+    *   `League::get_matches()`: This is a major legacy method that queries the database and returns an array of `Racketmanager_Match` objects. It is used extensively for front-end displays and standing calculations.
 
-#### Proposed Plan (Based on Minimal Version)
+2.  **Domain & Persistence:**
+    *   `Results_Checker`: Has a public property `$match` typed as `Racketmanager_Match`.
+    *   `Racketmanager_Match.php`: Still contains all CRUD logic (`add()`, `update()`, `delete()`, `update_legs()`) and low-level result persistence (`update_result_tie()`, `set_confirmed()`).
 
-The plan focuses on the "Most important migration path" (Section 9) and "Phase" recommendations (Section 6) from the document.
+3.  **Service & Documentation References:**
+    *   References remain in `Results_Checker.php`, `Scoring_Context.php`, `Standings_Service.php`, and `League.php`.
+    *   Extensive documentation (`docs/migration-next-steps.md`, `docs/match-migration-plan.md`) tracks the ongoing effort to move away from this class.
 
-##### Phase 1: Core Domain Refinement (Structural Foundations) - [COMPLETE]
-The goal is to introduce missing abstractions and refine existing core models.
+---
 
-1.  **Create `Set_Score` Value Object**: [DONE]
-   - Location: `src/php/Domain/Scoring/Set_Score.php`
-   - Purpose: Encapsulate home/away games and tiebreak scores.
-   - Note: Refined to handle `null` for non-played sets and 1-based indexing for template compatibility.
-2.  **Introduce `Entrant` Abstractions**: [DONE]
-   - Location: `src/php/Domain/Entrant/`
-   - Actions: Create `Entrant` interface, `Team_Entrant`, and `Player_Entrant` implementations to abstract "who" is competing.
-3.  **Introduce `Stage` Domain Model**: [DONE]
-   - Location: `src/php/Domain/Competition/Stage.php`
-   - Purpose: Abstract "divisions," "draws," and "brackets" into a single concept.
-4.  **Refine `Result` and `Rubber`**: [IN PROGRESS]
-   - Update `Result` to use `Set_Score` objects instead of raw arrays. [DONE]
-   - Ensure `Rubber` correctly references the new `Result` model. [TO DO]
-   - Note: `Result_Factory` and `Result_Calculator` updated to support `Set_Score` and 1-based indexing.
+### Proposed Migration Plan
 
-##### Phase 2: Orchestration & Services (Functional Extraction) - [IN PROGRESS]
-The goal is to move complex logic out of `Racketmanager_Match` into specialized services.
+This plan builds upon the existing `docs/match-migration-plan.md` (specifically Phases 7 and 8) to complete the transition to the modern `Fixture` domain model.
 
-1.  **Create `Fixture_Result_Manager` Service**: [IN PROGRESS]
-   - Location: `src/php/Services/Fixture/Fixture_Result_Manager.php`
-   - Actions: Migrate `update_result()`, `confirm_result()`, and validation logic from `Racketmanager_Match`.
-   - Status: `handle_single_result_update()` implemented. Logic from `handle_result_update()` has been migrated.
-2.  **Create `Standings_Service`**: [SKELETON CREATED]
-   - Location: `src/php/Services/Standings/Standings_Service.php`
-   - Actions: Centralize league table calculation logic, currently scattered in `League_Service` or `Racketmanager_Match`.
-3.  **Align `Knockout_Progression_Service`**: [IN PROGRESS]
-   - Location: `src/php/Services/Competition/Knockout_Progression_Service.php`
-   - Actions: Ensure `Championship_Manager` or a new progression service uses the `Stage` and `Fixture` domain models for advancing winners.
-   - Status: `progress_winner()` and `reset_progression()` implemented. Integrated into `Fixture_Result_Manager`. Refactored `Result_Service` to remove duplicated progression logic, centralizing it in the progression service.
-4.  **Refine `Set_Score` Value Object**: [DONE]
-   - Status: Implemented `ArrayAccess` to maintain compatibility with legacy templates (`round-draw.php`, etc.) while migrating to object-oriented domain models.
-   - Verification: Added `Set_Score_Test` to verify `ArrayAccess` aliases, winning logic, and immutability. Verified `Result_Factory_Test` correctly handles the new model.
-5.  **Refine Fixture Result Reset Logic**: [DONE]
-   - Status: Updated `Fixture::reset_result()` to ensure the `confirmed` flag is set to `null`. Refined `Fixture_Result_Manager` and `Result_Service` to ensure consistent state transitions and persistence during result resets.
-   - Verification: Updated `Fixture_Result_Manager_Test` and `Result_Service_Test` to verify `confirmed` flag is cleared, persistence is triggered, and notifications are suppressed on reset.
-   - Key Fix: Fixed `Result_Service::apply_to_fixture` which was incorrectly auto-confirming and notifying on resets.
+#### Phase 1: Repository & Factory Transition (In Progress)
+The goal of stopping new instances of `Racketmanager_Match` from being created at the primary entry points is partially achieved.
+*   **Update `get_match()` Helper:** In Progress. The global helper in `functions.php` still returns `Racketmanager_Match`.
+*   **Introduce `Fixture_Repository::find()`:** Done. Standardized retrieval by ID through the repository.
+*   **Update `League::get_matches()`:** In Progress. Still returns an array of `Racketmanager_Match` objects.
 
-##### Phase 3: Repository & Persistence Cleanup
-Decouple domain objects from the database.
+#### Phase 2: Refactor Legacy CRUD & Imports (Completed)
+Standardized persistence logic and decoupled it from the domain class.
+*   **Migrate CRUD to `Fixture_Repository`:** Done. `save()`, `delete()`, and `find()` now handle domain object persistence.
+*   **Orchestration in Services:** Done. Business logic like updating legs or applying penalties is now orchestrated through `Fixture_Result_Manager` or `Fixture_Service`.
+*   **Refactor `Admin_Import::import_fixtures()`:** Done. Updated to use `Fixture_Service::create_fixture()` instead of direct instantiation.
+*   **Update `Results_Checker`:** Done. `$match` property is now a `Fixture` object.
 
-1.  **Update Repositories**:
-   - Ensure `Fixture_Repository`, `Result_Repository`, and `Rubber_Repository` handle the mapping between the refined domain objects and the database, removing persistence methods (like `add()`, `update()`) from the Domain classes themselves.
+#### Phase 3: Result & Metadata Persistence (In Progress)
+Finalize the decoupling of result-related persistence.
+*   **Migrate Result Persistence:** Move remaining logic like `update_result_tie()` and `update_result_database()` to `Fixture_Repository` or a specialized `Result_Repository`. Note: Several methods (e.g., `set_confirmed()`, `reset_result()`) have already been removed from the legacy class during the migration.
+*   **Migrate Result Checks:** Move remaining methods like `delete_result_check()` and `delete_results_report()` to a new repository (e.g., `Results_Checker_Repository`).
+*   **Update `League` logic:** Refactor `update_league_with_result()` and other remaining orchestration in the `League` class to use modern services.
 
-#### Recommended Implementation Steps
-1.  **Step 1 (Immediate)**: Create new Domain directories and skeleton classes for `Entrant`, `Stage`, and `Set_Score`. [DONE]
-2.  **Step 2**: Refactor `Racketmanager_Match::update_result()` by extracting its core logic into the new `Fixture_Result_Manager` service. [COMPLETE]
-   - `Racketmanager_Match::handle_result_update()` has been removed.
-   - `Fixture_Result_Manager::handle_single_result_update()` has been created to encapsulate this logic.
-   - External callers (`Ajax_Match::ajax_update_match_result()`, `League::withdraw_team()`, `League::update_match_results()`) have been migrated to use `Fixture_Result_Manager` and `Result_Service` directly.
-   - `Racketmanager_Match::update_result()` is currently kept only for internal use by `handle_team_result_update()`.
-3.  **Step 3**: Introduce `Set_Score` into the `Result` domain model and update `Result_Calculator` to produce these objects. [DONE]
-   - Status: Update `Result_Factory` and `Result_Calculator` to support `Set_Score` and 1-based indexing.
-4.  **Step 4**: Extract team match result processing (league-based results with multiple rubbers) into `Fixture_Result_Manager`. [IN PROGRESS]
-   - This involves migrating `Racketmanager_Match::handle_team_result_update()`.
-5.  **Step 5**: Gradually deprecate `Racketmanager_Match` methods in favor of the new domain-service-repository pattern. [IN PROGRESS]
+#### Phase 4: Final Deprecation & Cleanup
+*   **Mark as `@deprecated`:** Add `@deprecated` tags to all remaining methods in `Racketmanager_Match` once they have been migrated.
+*   **Cleanup Documentation:** Update the migration docs (`docs/match-migration-plan.md`) to mark these final steps as completed.
+*   **Remove Class:** Once all external references (including those in templates) are gone, the `Racketmanager_Match.php` file can be safely removed.
 
-This approach follows the "minimal version" to avoid over-engineering while providing a clear path away from the overloaded legacy match class.
+### Summary of Key Files to Refactor
+*   `functions.php`: `get_match()`
+*   `src/php/Admin/Admin_Import.php`: `import_fixtures()`
+*   `src/php/Domain/Competition/League.php`: `get_matches()`
+*   `src/php/Domain/Results_Checker.php`: `$match` property
+*   `src/php/Domain/Racketmanager_Match.php`: Remaining CRUD and persistence methods.

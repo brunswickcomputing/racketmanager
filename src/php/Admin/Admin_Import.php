@@ -9,7 +9,11 @@
 
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Racketmanager_Match;
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
@@ -214,26 +218,28 @@ class Admin_Import extends Admin_Display {
      * @param string $season season.
      */
     private function import_fixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
-        $league = get_league( $league_id );
-        $i      = 0;
-        $x      = 0;
+        $league          = get_league( $league_id );
+        $fixture_service = new Fixture_Service( new Repository_Provider(), new Service_Provider() );
+        $i               = 0;
+        $x               = 0;
         foreach ( $contents as $record ) {
             $line = explode( $delimiter, $record );
             // ignore header and empty lines.
             if ( $i > 0 && count( $line ) > 1 ) {
-                $match            = new stdClass();
-                $match->league_id = $league->id;
-                $date             = ( ! empty( $line[6] ) ) ? $line[0] . ' ' . $line[6] : $line[0] . ' 00:00';
-                $match->match_day = $line[1] ?? '';
-                $match->date      = trim( $date );
-                $match->season    = $season;
-                $match->home_team = $this->racketmanager->get_team_id( $line[2] );
-                $match->away_team = $this->racketmanager->get_team_id( $line[3] );
-                if ( ! empty( $match->home_team )  && ! empty( $match->away_team ) ) {
-                    $match->location = $line[4] ?? '';
-                    $match->group    = $line[5] ?? '';
-                    $match = new Racketmanager_Match( $match );
-                    if ( ! empty( $match->id ) ) {
+                $match_data            = new stdClass();
+                $match_data->league_id = $league->id;
+                $date                  = ( ! empty( $line[6] ) ) ? $line[0] . ' ' . $line[6] : $line[0] . ' 00:00';
+                $match_data->match_day = $line[1] ?? '';
+                $match_data->date      = trim( $date );
+                $match_data->season    = $season;
+                $match_data->home_team = $this->racketmanager->get_team_id( $line[2] );
+                $match_data->away_team = $this->racketmanager->get_team_id( $line[3] );
+                if ( ! empty( $match_data->home_team ) && ! empty( $match_data->away_team ) ) {
+                    $match_data->location = $line[4] ?? '';
+                    $match_data->group    = $line[5] ?? '';
+                    $fixture              = new Fixture( $match_data );
+                    $fixture              = $fixture_service->create_fixture( $fixture, $league );
+                    if ( ! empty( $fixture->get_id() ) ) {
                         ++$x;
                     }
                 }

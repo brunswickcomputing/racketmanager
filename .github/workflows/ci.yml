@@ -22,11 +22,10 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
 
       - name: Run Qodana PHP
-        uses: JetBrains/qodana-action@b60a4b9259f448dd00f2ca4763db5677d69ba868  # JetBrains/qodana-action@v2024.3.4
+        uses: JetBrains/qodana-action@v2024.3.4
         with:
           pr-mode: true
           args: |
-            --project-dir=.
             --results-dir=qodana-results-php
             --config=qodana.yaml
           
@@ -53,17 +52,16 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
 
       - name: Run Qodana JS
-        uses: JetBrains/qodana-action@b60a4b9259f448dd00f2ca4763db5677d69ba868  # JetBrains/qodana-action@v2024.3.4
+        uses: JetBrains/qodana-action@v2024.3.4
         with:
           pr-mode: true
           args: |
-            --project-dir=.
             --results-dir=qodana-results-js
             --config=qodana-js.yaml
             --save-report
 
       - name: Upload Qodana JS Report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # actions/upload-artifact@v5.0.0
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: qodana-js-report

@@ -1,0 +1,22 @@
+# Qodana configuration for JavaScript/TypeScript analysis (ESLint)
+version: "1.0"
+
+profile:
+  name: qodana.starter
+
+linter: jetbrains/qodana-js-community:latest
+
+include:
+  - name: SomeInspectionId
+    paths:
+      - src/js
+
+exclude:
+  - name: SomeInspectionId
+    paths:
+      - node_modules
+      - dist
+
+# Optionally install plugins before run
+#plugins:
+#  - id: <plugin.id>

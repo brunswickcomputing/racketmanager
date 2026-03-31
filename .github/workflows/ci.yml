@@ -24,10 +24,11 @@ jobs:
       - name: Run Qodana PHP
         uses: JetBrains/qodana-action@b60a4b9259f448dd00f2ca4763db5677d69ba868  # JetBrains/qodana-action@v2024.3.4
         with:
-          linter: jetbrains/qodana-php:2024.3
           pr-mode: true
           args: |
+            --project-dir=.
             --results-dir=qodana-results-php
+            --config=qodana.yaml
           
       - name: Upload Qodana PHP Report
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # actions/upload-artifact@v5.0.0
@@ -37,7 +38,7 @@ jobs:
           path: qodana-results-php
 
       - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@f47c8e6a9bd05ef3ee422fc8d8663be7fe4bdc61  # github/codeql-action@v3
+        uses: github/codeql-action/upload-sarif@6bb031afdd8d862073d7b39c5f00c707730473ef  # github/codeql-action@v3.28.10
         if: always()
         with:
           sarif_file: qodana-results-php/qodana.sarif.json
@@ -54,11 +55,11 @@ jobs:
       - name: Run Qodana JS
         uses: JetBrains/qodana-action@b60a4b9259f448dd00f2ca4763db5677d69ba868  # JetBrains/qodana-action@v2024.3.4
         with:
-          linter: jetbrains/qodana-js:2024.3
           pr-mode: true
           args: |
             --project-dir=.
             --results-dir=qodana-results-js
+            --config=qodana-js.yaml
             --save-report
 
       - name: Upload Qodana JS Report
@@ -69,7 +70,7 @@ jobs:
           path: qodana-results-js
 
       - name: Upload JS SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@f47c8e6a9bd05ef3ee422fc8d8663be7fe4bdc61  # github/codeql-action@v3
+        uses: github/codeql-action/upload-sarif@6bb031afdd8d862073d7b39c5f00c707730473ef  # github/codeql-action@v3.28.10
         if: always()
         with:
           sarif_file: qodana-results-js/qodana.sarif.json
@@ -95,7 +96,7 @@ jobs:
           COMPOSER_NO_INTERACTION: 1
         run: |
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer global require "squizlabs/php_codesniffer:^3.10" "wp-coding-standards/wpcs:^3.0" "phpcsstandards/phpcsutils:^1.0" "phpcompatibility/php-compatibility:dev-develop"
+          composer global require "squizlabs/php_codesniffer:3.10.3" "wp-coding-standards/wpcs:3.1.0" "phpcsstandards/phpcsutils:1.0.12" "phpcompatibility/php-compatibility:10.0.1"
           PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
           "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs,\
           "$PHPCS_HOME"/vendor/phpcompatibility/php-compatibility

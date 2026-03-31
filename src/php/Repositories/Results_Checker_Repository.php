@@ -127,11 +127,12 @@ class Results_Checker_Repository {
     public function has_results_check( int $fixture_id ): bool {
         return (bool) $this->wpdb->get_var(
             $this->wpdb->prepare(
-                "SELECT count(*) FROM $this->table_name WHERE `match_id` = %d",
+                "SELECT count(*) FROM $this->table_name WHERE `match_id` = %d WHERE status IS NULL",
                 $fixture_id
             )
         );
     }
+
     /**
      * Delete results checker entries for a given fixture ID.
      *

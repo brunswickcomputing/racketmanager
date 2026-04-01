@@ -43,7 +43,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $league_repository_repo;
     private $rubber_repository;
     private $results_checker_repository;
+    private $results_report_repository;
     private $fixture_repository;
+    private $result_reporting_service;
 
     private $fixture_service_mock;
 
@@ -64,7 +66,9 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->league_repository_repo = $this->createMock(\Racketmanager\Repositories\League_Repository::class);
         $this->rubber_repository = $this->createMock(\Racketmanager\Repositories\Rubber_Repository::class);
         $this->results_checker_repository = $this->createMock(\Racketmanager\Repositories\Results_Checker_Repository::class);
+        $this->results_report_repository = $this->createMock(\Racketmanager\Repositories\Results_Report_Repository::class);
         $this->fixture_repository = $this->createMock(\Racketmanager\Repositories\Fixture_Repository::class);
+        $this->result_reporting_service = $this->createMock(\Racketmanager\Services\Result\Result_Reporting_Service::class);
 
         $reg_service = $this->createMock(\Racketmanager\Services\Registration_Service::class);
         $reg_service->method('get_dummy_players')->willReturn([]);
@@ -98,6 +102,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             player_repository: $this->player_repository,
             rubber_repository: $this->rubber_repository,
             results_checker_repository: $this->results_checker_repository,
+            results_report_repository: $this->results_report_repository,
             fixture_repository: $this->fixture_repository
         );
 
@@ -129,6 +134,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $service_provider->set_rubber_manager( $this->rubber_manager );
         $service_provider->set_settings_service( $this->settings_service );
         $service_provider->set_fixture_service( $this->fixture_service_mock );
+        $service_provider->set_result_reporting_service( $this->result_reporting_service );
 
         $this->permission_service = $this->createMock(\Racketmanager\Services\Fixture\Fixture_Permission_Service::class);
         $this->permission_service->method('is_update_allowed')->willReturnCallback(function($fixture) {
@@ -984,5 +990,19 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->assertEquals( 20, $fixture->get_winner_id_tie() );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::PENALTY_APPLIED ) );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::TIE_UPDATED ) );
+    }
+    public function test_confirm_result_manages_report(): void {
+        $fixture = new Fixture( (object) [ 'id' => 123, 'league_id' => 1, 'home_points' => 2, 'away_points' => 1, 'confirmed' => 'Y' ] );
+        
+        $this->results_report_repository->expects( $this->once() )
+            ->method( 'delete_by_fixture_id' )
+            ->with( 123 );
+
+        $this->result_reporting_service->expects( $this->once() )
+            ->method( 'report_result' )
+            ->with( $fixture )
+            ->willReturn( (object) [ 'report' => 'data' ] );
+
+        $this->manager->confirm_result( $fixture );
     }
 }

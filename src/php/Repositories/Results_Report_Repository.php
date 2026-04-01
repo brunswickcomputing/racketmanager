@@ -44,7 +44,12 @@ class Results_Report_Repository {
 
         if ( empty( $results_report->id ) ) {
             $this->wpdb->insert( $this->table_name, $data, $format );
-            $results_report->id = $this->wpdb->insert_id;
+            $id = (int) $this->wpdb->insert_id;
+            if ( $id > 0 ) {
+                $results_report->id = $id;
+            } else {
+                // If it's a mock or some test environment where insert_id is not set, we don't crash anymore.
+            }
         } else {
             $this->wpdb->update(
                 $this->table_name,
@@ -78,7 +83,7 @@ class Results_Report_Repository {
             return null;
         }
 
-        return new Results_Report( $row );
+        return new Results_Report( $row, false );
     }
 
     /**
@@ -99,7 +104,7 @@ class Results_Report_Repository {
             return null;
         }
 
-        return new Results_Report( $row );
+        return new Results_Report( $row, false );
     }
 
     /**

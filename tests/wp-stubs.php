@@ -2,6 +2,12 @@
 declare(strict_types=1);
 
 namespace Racketmanager {
+    if ( ! function_exists( 'Racketmanager\show_alert' ) ) {
+        function show_alert( string $message, string $type = 'info' ): string {
+            return sprintf( "<div class='alert alert-%s'>%s</div>", $type, $message );
+        }
+    }
+
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
         class RacketManager {
             public static $container;
@@ -104,6 +110,9 @@ namespace {
             public $get_results_callback;
             public $get_row_callback;
             public $update_callback;
+            public $insert_id = 0;
+            private $data = [];
+            private $last_id = 0;
 
             public function prepare( $query, ...$args ) {
                 if ( empty($args) ) return $query;
@@ -130,19 +139,66 @@ namespace {
             }
             public function get_row( $query, $output = 'OBJECT' ) { 
                 if ( $this->get_row_callback ) return ($this->get_row_callback)($query);
-                return null; 
+                $results = $this->get_results($query, $output);
+                return !empty($results) ? $results[0] : null;
             }
             public function get_results( $query, $output = 'OBJECT' ) { 
                 if ( $this->get_results_callback ) return ($this->get_results_callback)($query);
+                
+                // Very simple mock query parser for tests
+                if (preg_match('/SELECT \* FROM (\w+) WHERE `id` = (\d+)/', $query, $matches)) {
+                    $table = $matches[1];
+                    $id = (int)$matches[2];
+                    $found = array_filter($this->data[$table] ?? [], fn($row) => $row->id == $id);
+                    return array_values($found);
+                }
+                if (preg_match('/SELECT \* FROM (\w+) WHERE `match_id` = (\d+)/', $query, $matches)) {
+                    $table = $matches[1];
+                    $match_id = (int)$matches[2];
+                    $found = array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) == $match_id);
+                    return array_values($found);
+                }
+                
                 return array(); 
             }
-            public function get_var( $query, $x = 0, $y = 0 ) { return null; }
-            public function insert( $table, $data, $format = null ) { return true; }
-            public function update( $table, $data, $where, $format = null, $where_format = null ) { 
-                if ( $this->update_callback ) return ($this->update_callback)($table, $data, $where);
+            public function get_var( $query, $x = 0, $y = 0 ) { 
+                if (preg_match('/SELECT count\(\*\) FROM (\w+) WHERE match_id = (\d+)/', $query, $matches)) {
+                    $table = $matches[1];
+                    $match_id = (int)$matches[2];
+                    return count(array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) == $match_id));
+                }
+                if (preg_match('/SELECT count\(\*\) FROM (\w+) WHERE `match_id` = (\d+)/', $query, $matches)) {
+                    $table = $matches[1];
+                    $match_id = (int)$matches[2];
+                    return count(array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) == $match_id));
+                }
+                return null; 
+            }
+            public function insert( $table, $data, $format = null ) { 
+                $this->last_id++;
+                $this->insert_id = $this->last_id;
+                $row = (object)$data;
+                $row->id = $this->insert_id;
+                $this->data[$table][] = $row;
                 return true; 
             }
-            public function delete( $table, $where, $where_format = null ) { return true; }
+            public function update( $table, $data, $where, $format = null, $where_format = null ) { 
+                if ( $this->update_callback ) return ($this->update_callback)($table, $data, $where);
+                if (isset($where['id'])) {
+                    foreach ($this->data[$table] ?? [] as $row) {
+                        if ($row->id == $where['id']) {
+                            foreach ($data as $k => $v) $row->$k = $v;
+                        }
+                    }
+                }
+                return true; 
+            }
+            public function delete( $table, $where, $where_format = null ) { 
+                if (isset($where['match_id'])) {
+                    $this->data[$table] = array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) != $where['match_id']);
+                }
+                return true; 
+            }
             public function show_errors() {}
             public function hide_errors() {}
         }
@@ -239,6 +295,11 @@ namespace {
     if ( ! function_exists( 'current_time' ) ) {
         function current_time( string $type, $gmt = 0 ): string {
             return date( 'Y-m-d H:i:s' );
+        }
+    }
+
+    if ( ! function_exists( 'show_alert' ) ) {
+        function show_alert( string $message, string $type = 'info' ): void {
         }
     }
 

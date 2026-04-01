@@ -153,21 +153,21 @@ class Results_Checker {
      *
      * @param object|null $results_checker results_checker object.
      */
-    public function __construct( ?object $results_checker = null ) {
+    public function __construct( ?object $results_checker = null, bool $persist = true ) {
         if ( ! is_null( $results_checker ) ) {
             foreach ( get_object_vars( $results_checker ) as $key => $value ) {
                 $this->$key = $value;
             }
-            if ( ! isset( $this->id ) ) {
+            if ( $persist && ! isset( $this->id ) ) {
                 $this->add();
             }
             $this->match = get_match( $this->match_id );
             $this->team  = null;
-            if ( $this->team_id > 0 ) {
-                if ( $this->team_id === intval( $this->match->home_team ) ) {
-                    $this->team = $this->match->teams['home'];
-                } elseif ( $this->team_id === intval( $this->match->away_team ) ) {
-                    $this->team = $this->match->teams['away'];
+            if ( $this->team_id > 0 && ! empty( $this->match ) ) {
+                if ( $this->team_id === intval( $this->match->home_team ?? 0 ) ) {
+                    $this->team = $this->match->teams['home'] ?? null;
+                } elseif ( $this->team_id === intval( $this->match->away_team ?? 0 ) ) {
+                    $this->team = $this->match->teams['away'] ?? null;
                 }
             }
             if ( ! empty( $this->player_id ) ) {
@@ -197,6 +197,11 @@ class Results_Checker {
      */
     public function add(): void {
         global $wpdb;
+
+        if ( isset( $this->id ) ) {
+            return;
+        }
+
         if ( empty( $this->player_id ) ) {
             $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(

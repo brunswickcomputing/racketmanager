@@ -56,7 +56,12 @@ class Results_Checker_Repository {
 
         if ( empty( $results_checker->id ) ) {
             $this->wpdb->insert( $this->table_name, $data, $format );
-            $results_checker->id = $this->wpdb->insert_id;
+            $id = (int) $this->wpdb->insert_id;
+            if ( $id > 0 ) {
+                $results_checker->id = $id;
+            } else {
+                // If it's a mock or some test environment where insert_id is not set, we don't crash anymore.
+            }
         } else {
             $data['updated_date'] = current_time( 'mysql' );
             $format[] = '%s'; // updated_date
@@ -93,7 +98,7 @@ class Results_Checker_Repository {
             return null;
         }
 
-        return new Results_Checker( $row );
+        return new Results_Checker( $row, false );
     }
 
     /**
@@ -112,7 +117,7 @@ class Results_Checker_Repository {
 
         $checkers = [];
         foreach ( $results as $row ) {
-            $checkers[] = new Results_Checker( $row );
+            $checkers[] = new Results_Checker( $row, false );
         }
 
         return $checkers;

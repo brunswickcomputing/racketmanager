@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Fixture;
 
+use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\League_Service;
@@ -32,6 +33,7 @@ class Service_Provider {
     private ?Fixture_Service $fixture_service = null;
     private ?Team_Service $team_service = null;
     private ?Competition_Service $competition_service = null;
+    private ?Result_Reporting_Service $result_reporting_service = null;
     private ?Fixture_Permission_Service $fixture_permission_service = null;
     private ?Fixture_Detail_Service $fixture_detail_service = null;
 
@@ -75,6 +77,14 @@ class Service_Provider {
 
     public function set_competition_service( ?Competition_Service $competition_service ): void {
         $this->competition_service = $competition_service;
+    }
+
+    public function set_result_reporting_service( ?Result_Reporting_Service $result_reporting_service ): void {
+        $this->result_reporting_service = $result_reporting_service;
+    }
+
+    public function get_result_reporting_service(): ?Result_Reporting_Service {
+        return $this->result_reporting_service;
     }
 
     public function set_fixture_permission_service( ?Fixture_Permission_Service $fixture_permission_service ): void {

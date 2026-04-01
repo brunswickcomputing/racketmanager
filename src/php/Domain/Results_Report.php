@@ -18,7 +18,7 @@ class Results_Report {
      *
      * @var int
      */
-    public int $id;
+    public int $id = 0;
     /**
      * Season
      *
@@ -74,7 +74,7 @@ class Results_Report {
      *
      * @param object|null $results_report results_report object.
      */
-    public function __construct( ?object $results_report = null ) {
+    public function __construct( ?object $results_report = null, bool $persist = true ) {
         if ( ! is_null( $results_report ) ) {
             foreach ( get_object_vars( $results_report ) as $key => $value ) {
                 $this->$key = $value;
@@ -85,7 +85,7 @@ class Results_Report {
             if ( ! isset( $this->result_object ) && isset( $this->data )) {
                 $this->result_object = wp_json_encode( $this->data );
             }
-            if ( ! isset( $this->id ) ) {
+            if ( $persist && ! isset( $this->id ) ) {
                 $this->add();
             }
         }
@@ -96,6 +96,10 @@ class Results_Report {
      */
     private function add(): void {
         global $wpdb;
+
+        if ( isset( $this->id ) ) {
+            return;
+        }
 
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(

@@ -31,17 +31,19 @@ use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
-use Racketmanager\Services\Fixture_Service;
 
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Services\Result\Result_Reporting_Service;
+use Racketmanager\Domain\Results_Report;
+use Racketmanager\Repositories\Results_Report_Repository;
+use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
-use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
@@ -84,62 +86,66 @@ class Fixture_Result_Manager {
     /**
      * @var Rubber_Result_Manager|null
      */
-    private Rubber_Result_Manager|null $rubber_manager;
+    private ?Rubber_Result_Manager $rubber_manager;
 
     /**
      * @var Registration_Service|null
      */
-    private Registration_Service|null $registration_service;
+    private ?Registration_Service $registration_service;
 
     /**
      * @var Notification_Service|null
      */
-    private Notification_Service|null $notification_service;
+    private ?Notification_Service $notification_service;
 
     /**
      * @var Team_Repository|null
      */
-    private Team_Repository|null $team_repository;
+    private ?Team_Repository $team_repository;
 
     /**
      * @var Player_Repository|null
      */
-    private Player_Repository|null $player_repository;
+    private ?Player_Repository $player_repository;
 
     /**
      * @var League_Team_Repository|null
      */
-    private League_Team_Repository|null $league_team_repository;
+    private ?League_Team_Repository $league_team_repository;
 
     /**
      * @var Rubber_Repository|null
      */
-    private Rubber_Repository|null $rubber_repository;
+    private ?Rubber_Repository $rubber_repository;
 
     /**
      * @var League_Repository|null
      */
-    private League_Repository|null $league_repository;
+    private ?League_Repository $league_repository;
 
     /**
      * @var Club_Repository|null
      */
-    private Club_Repository|null $club_repository;
+    private ?Club_Repository $club_repository;
 
     /**
      * @var Results_Checker_Repository|null
      */
-    private Results_Checker_Repository|null $results_checker_repository;
+    private ?Results_Checker_Repository $results_checker_repository;
 
     /**
      * @var Fixture_Repository|null
      */
-    private Fixture_Repository|null $fixture_repository;
+    private ?Fixture_Repository $fixture_repository;
 
     /**
      * @var Fixture_Permission_Service
      */
     private Fixture_Permission_Service $permission_service;
+
+    /** @var Result_Reporting_Service */
+    private Result_Reporting_Service $result_reporting_service;
+    private Results_Report_Repository $results_report_repository;
 
     /**
      * @param Service_Provider $service_provider
@@ -149,6 +155,8 @@ class Fixture_Result_Manager {
         Service_Provider $service_provider,
         Repository_Provider $repository_provider
     ) {
+        $this->results_report_repository = $repository_provider->get_results_report_repository();
+        $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
         $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
         $this->progression_service = $service_provider->get_progression_service() ?? new Knockout_Progression_Service();
         $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );
@@ -828,6 +836,18 @@ class Fixture_Result_Manager {
             if ( $league ) {
                 $options = $this->settings_service->get_all_options();
                 $this->player_validator->run_fixture_checks( $fixture, $league, $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id() ), $options );
+            }
+        }
+
+        if ( 'Y' === $fixture->get_confirmed() ) {
+            $this->results_report_repository->delete_by_fixture_id( (int) $fixture->get_id() );
+            $report_data = $this->result_reporting_service->report_result( $fixture );
+            if ( $report_data ) {
+                $report = new Results_Report( (object) [
+                    'match_id' => $fixture->get_id(),
+                    'data'     => $report_data,
+                ], false );
+                $this->results_report_repository->save( $report );
             }
         }
 

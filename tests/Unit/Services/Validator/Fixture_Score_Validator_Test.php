@@ -26,7 +26,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             $this->validator = new Score_Validation_Service();
         }
 
-        private function get_set_info($overrides = []): stdClass
+        private static function get_set_info($overrides = []): stdClass
         {
             $info = new stdClass();
             $info->set_type = 'standard';
@@ -83,180 +83,180 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             }
         }
 
-        public function scores_provider(): array
+        public static function scores_provider(): array
         {
             return [
                 // Valid scores
                 'standard 6-0' => [
                     ['player1' => 6, 'player2' => 0, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     null
                 ],
                 'standard 6-4' => [
                     ['player1' => 6, 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     null
                 ],
                 'standard 7-5' => [
                     ['player1' => 7, 'player2' => 5, 'tiebreak' => ''],
-                    $this->get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 5, 'tiebreak_set' => 6]),
+                    self::get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 5, 'tiebreak_set' => 6]),
                     null,
                     null
                 ],
                 'standard 7-6 with tiebreak' => [
                     ['player1' => 7, 'player2' => 6, 'tiebreak' => '7'],
-                    $this->get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6]),
+                    self::get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6]),
                     null,
                     null
                 ],
                 'retired 3-2' => [
                     ['player1' => 3, 'player2' => 2, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'retired_player1',
                     null
                 ],
                 // Invalid scores
                 'standard 6-5 (missing tiebreak)' => [
                     ['player1' => 6, 'player2' => 5, 'tiebreak' => ''],
-                    $this->get_set_info(['tiebreak_allowed' => true]),
+                    self::get_set_info(['tiebreak_allowed' => true]),
                     null,
                     'set_1_tiebreak'
                 ],
                 'standard 8-6 (too high)' => [
                     ['player1' => 8, 'player2' => 6, 'tiebreak' => ''],
-                    $this->get_set_info(['max_win' => 6, 'min_win' => 6, 'max_loss' => 4, 'tiebreak_allowed' => false]),
+                    self::get_set_info(['max_win' => 6, 'min_win' => 6, 'max_loss' => 4, 'tiebreak_allowed' => false]),
                     null,
                     'set_1_player1'
                 ],
                 'tied scores' => [
                     ['player1' => 5, 'player2' => 5, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     'set_1_player1'
                 ],
                 'empty scores' => [
                     ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     'set_1_player1'
                 ],
                 '7-6 missing tiebreak (explicitly required)' => [
                     ['player1' => 7, 'player2' => 6, 'tiebreak' => ''],
-                    $this->get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6, 'tiebreak_required' => true]),
+                    self::get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6, 'tiebreak_required' => true]),
                     null,
                     'set_1_tiebreak'
                 ],
                 // Tiebreak score validation
                 'valid numeric tiebreak' => [
                     ['player1' => 7, 'player2' => 6, 'tiebreak' => '10'],
-                    $this->get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6]),
+                    self::get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6]),
                     null,
                     null
                 ],
                 // Retired / Abandoned scenarios
                 'abandoned set (completed by default)' => [
                     ['player1' => 2, 'player2' => 1, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'abandoned',
                     null
                 ],
                 'retired set with low score (allowed by current logic)' => [
                     ['player1' => 2, 'player2' => 1, 'tiebreak' => ''],
-                    $this->get_set_info(['min_win' => 6]),
+                    self::get_set_info(['min_win' => 6]),
                     'retired_player1',
                     null
                 ],
                 // Additional scenarios for match_score (indirectly via validate_set)
                 'share status clears scores' => [
                     ['player1' => 6, 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'share',
                     null
                 ],
                 'null set type expects empty scores' => [
                     ['player1' => 6, 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(['set_type' => 'null']),
+                    self::get_set_info(['set_type' => 'null']),
                     null,
                     'set_1_player1'
                 ],
                 // New scenarios for validate_set
                 'walkover home clears scores' => [
                     ['player1' => 6, 'player2' => 0, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'walkover_player1',
                     null
                 ],
                 'walkover away clears scores' => [
                     ['player1' => 0, 'player2' => 6, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'walkover_player2',
                     null
                 ],
                 'walkover null set type empty scores' => [
                     ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-                    $this->get_set_info(['set_type' => 'null']),
+                    self::get_set_info(['set_type' => 'null']),
                     'walkover_player1',
                     null
                 ],
                 'cancelled status nulls scores' => [
                     ['player1' => 6, 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'cancelled',
                     null
                 ],
                 'withdrawn status clears scores' => [
                     ['player1' => 6, 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'withdrawn',
                     null
                 ],
                 'shared score S-S' => [
                     ['player1' => 'S', 'player2' => 'S', 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     null
                 ],
                 'shared score missing on player1' => [
                     ['player1' => 6, 'player2' => 'S', 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     'set_1_player1'
                 ],
                 'shared score missing on player2' => [
                     ['player1' => 'S', 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     'set_1_player2'
                 ],
                 'empty scores with retirement allowed' => [
                     ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'retired_player1',
                     null
                 ],
                 'empty score player 1' => [
                     ['player1' => '', 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     null
                 ],
                 'empty score player 2' => [
                     ['player1' => 6, 'player2' => '', 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     null
                 ],
                 'both scores empty' => [
                     ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     null,
                     'set_1_player1'
                 ],
                 'partially empty scores with retirement' => [
                     ['player1' => '', 'player2' => 4, 'tiebreak' => ''],
-                    $this->get_set_info(),
+                    self::get_set_info(),
                     'retired_player1',
                     null
                 ],

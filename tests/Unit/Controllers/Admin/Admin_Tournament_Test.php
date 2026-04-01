@@ -63,8 +63,13 @@ final class Admin_Tournament_Test extends TestCase {
         $controller->method( 'teams_page' )->willReturn( $result );
 
         ob_start();
-        $this->admin_tournament->display_teams_list();
-        $output = ob_get_clean();
+        try {
+            $this->admin_tournament->display_teams_list();
+            $output = ob_get_clean();
+        } catch ( \Throwable $e ) {
+            ob_end_clean();
+            throw $e;
+        }
 
         $this->assertStringContainsString( 'Test message', $output );
     }
@@ -76,8 +81,15 @@ final class Admin_Tournament_Test extends TestCase {
 
         $this->container->set( 'tournament_competition_config_admin_controller', $controller );
 
-        $comp_ser = sprintf( 'O:%d:"Racketmanager\Domain\Competition\Competition":0:{}', strlen(  'Racketmanager\Domain\Competition\Competition' ) );
-        $vm = unserialize( sprintf( 'O:%d:"Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model":5:{s:11:"competition";%ss:10:"tournament";N;s:13:"rules_options";a:0:{}s:5:"clubs";a:0:{}s:3:"tab";s:7:"general";}', strlen( 'Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model' ), $comp_ser ) );
+        $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
+        $vm = new \Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model(
+            $competition,
+            null,
+            [],
+            [],
+            [],
+            'general'
+        );
 
         $controller->expects( self::once() )
             ->method( 'handle' )
@@ -93,8 +105,13 @@ final class Admin_Tournament_Test extends TestCase {
 
         $this->container->set( 'tournament_event_config_admin_controller', $controller );
 
-        $comp_ser = sprintf( 'O:%d:"Racketmanager\Domain\Competition\Competition":0:{}', strlen(  'Racketmanager\Domain\Competition\Competition' ) );
-        $vm = unserialize( sprintf( 'O:%d:"Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model":4:{s:11:"competition";%ss:5:"event";O:8:"stdClass":0:{}s:10:"tournament";N;s:9:"new_event";b:0;}', strlen( 'Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model' ), $comp_ser ) );
+        $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
+        $vm = new \Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model(
+            $competition,
+            new \stdClass(),
+            null,
+            false
+        );
 
         $controller->expects( self::once() )
             ->method( 'handle' )
@@ -110,7 +127,17 @@ final class Admin_Tournament_Test extends TestCase {
 
         $this->container->set( 'tournament_team_admin_controller', $controller );
 
-        $vm = unserialize( sprintf( 'O:%d:"Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model":9:{s:4:"team";O:8:"stdClass":0:{}s:6:"league";N;s:10:"tournament";N;s:5:"clubs";a:0:{}s:10:"form_title";s:0:""s:11:"form_action";s:0:""s:4:"file";s:8:"team.php"s:6:"season";s:0:""s:10:"match_days";a:0:{}}', strlen( 'Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model' ) ) );
+        $vm = new \Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model(
+            new \stdClass(),
+            null,
+            null,
+            [],
+            '',
+            '',
+            'team.php',
+            '',
+            []
+        );
 
         $controller->expects( self::once() )
             ->method( 'handle' )

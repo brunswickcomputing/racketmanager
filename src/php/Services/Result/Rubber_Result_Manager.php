@@ -147,8 +147,8 @@ class Rubber_Result_Manager {
 
         $rubber->set_home_points( (float) $calc_result->home );
         $rubber->set_away_points( (float) $calc_result->away );
-        $rubber->set_winner_id( (string) $calc_result->winner );
-        $rubber->set_loser_id( (string) $calc_result->loser );
+        $rubber->set_winner_id( (int) $calc_result->winner );
+        $rubber->set_loser_id( (int) $calc_result->loser );
         $rubber->set_custom( $custom );
         $rubber->set_status( $status );
 

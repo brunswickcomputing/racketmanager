@@ -200,8 +200,8 @@ class Result_Reporting_Service_Test extends TestCase {
 
 		$rubber = $this->createMock( Rubber::class );
 		$rubber->method('get_id')->willReturn(101);
-		$rubber->method('get_winner_id')->willReturn('1');
-		$rubber->method('get_loser_id')->willReturn('2');
+		$rubber->method('get_winner_id')->willReturn(1);
+		$rubber->method('get_loser_id')->willReturn(2);
 		$rubber->method('get_status')->willReturn(1);
 		$rubber->method('is_walkover')->willReturn(false);
 		$rubber->method('is_shared')->willReturn(false);

@@ -2970,7 +2970,7 @@ class League {
                                     }
                                     if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
                                         if ( 'MTB' === $set_type ) {
-                                            if ( $rubber->loser_id === strval( $team_id ) ) {
+                                            if ( $rubber->loser_id === $team_id ) {
                                                 ++$data['games_allowed'];
                                             }
                                         } else {
@@ -2979,7 +2979,7 @@ class League {
                                     }
                                     if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
                                         if ( 'MTB' === $set_type ) {
-                                            if ( $rubber->winner_id === strval( $team_id ) ) {
+                                            if ( $rubber->winner_id === $team_id ) {
                                                 ++$data['games_won'];
                                             }
                                         } else {
@@ -3000,8 +3000,8 @@ class League {
                             ++$data['rubbers_shared'];
                             ++$rubbers_shared;
                         }
-                        if ( $rubber->winner_id === strval( $team_id ) || '-1' === $rubber->winner_id ) { // winning team.
-                            if ( $rubber->winner_id === strval( $team_id ) ) {
+                        if ( $rubber->winner_id === $team_id || -1 === $rubber->winner_id ) { // winning team.
+                            if ( $rubber->winner_id === $team_id ) {
                                 ++$data['rubbers_won'];
                                 ++$rubbers_won;
                             }
@@ -3009,7 +3009,7 @@ class League {
                                 $data['sets_won']            += $walkover_sets;
                                 $data['games_won']           += $walkover_games;
                                 $data['straight_set']['win'] += 1;
-                            } elseif ( $match->home_team === strval( $team_id ) ) {   // home team.
+                            } elseif ( $match->home_team === $team_id ) {   // home team.
                                 if ( $data['sets_won'] > '0' ) {
                                     if ( $rubber->away_points > '0' ) {
                                         $data['split_set']['win'] += 1;
@@ -3024,7 +3024,7 @@ class League {
                             } elseif ( $data['sets_won'] > '0' ) {                                  // home team straight set win.
                                 $data['straight_set']['win'] += 1;
                             }
-                        } elseif ( $rubber->loser_id === strval( $team_id ) ) { // losing team.
+                        } elseif ( $rubber->loser_id === $team_id ) { // losing team.
                             ++$rubbers_lost;
                             if ( $rubber->is_walkover ) {
                                 $data['sets_allowed']         += $walkover_sets;
@@ -3032,7 +3032,7 @@ class League {
                                 $data['no_player']            += 1;
                                 $data['straight_set']['lost'] += 1;
                                 ++$walkovers;
-                            } elseif ( $match->home_team === strval( $team_id ) ) {   // team loss.
+                            } elseif ( $match->home_team === $team_id ) {   // team loss.
                                 if ( $rubber->home_points > '0' ) {
                                     $data['split_set']['lost'] += 1;
                                 } else {
@@ -3072,14 +3072,14 @@ class League {
                         $data['games_won']     += $match->sets[ $j ][ $player_ref ];
                     }
                     if ( $this->num_sets > 1 && '' !== $match->sets[ $this->num_sets ]['player1'] && '' !== $match->sets[ $this->num_sets ]['player2'] ) {
-                        if ( $match->winner_id === strval( $team_id ) ) {
+                        if ( $match->winner_id === $team_id ) {
                             $data['split_set']['win'] += 1;
-                        } elseif ( $match->loser_id === strval( $team_id ) ) {
+                        } elseif ( $match->loser_id === $team_id ) {
                             $data['split_set']['lost'] += 1;
                         }
-                    } elseif ( $match->winner_id === strval( $team_id ) ) {
+                    } elseif ( $match->winner_id === $team_id ) {
                         $data['straight_set']['win'] += 1;
-                    } elseif ( $match->loser_id === strval( $team_id ) ) {
+                    } elseif ( $match->loser_id === $team_id ) {
                         $data['straight_set']['lost'] += 1;
                     }
                 }

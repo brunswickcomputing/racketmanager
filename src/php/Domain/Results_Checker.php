@@ -407,8 +407,8 @@ class Results_Checker {
             $result                  = $rubber->calculate_result( $points );
             $rubber->home_points     = $result->home;
             $rubber->away_points     = $result->away;
-            $rubber->winner_id       = $result->winner;
-            $rubber->loser_id        = $result->loser;
+            $rubber->winner_id       = intval( $result->winner );
+            $rubber->loser_id        = intval( $result->loser );
             $rubber->custom['stats'] = $stats;
             $rubber->status          = '1';
             $rubber->update_result();

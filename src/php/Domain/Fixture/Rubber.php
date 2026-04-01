@@ -159,15 +159,15 @@ class Rubber {
     /**
      * Winner id variable
      *
-     * @var string
+     * @var int
      */
-    public string $winner_id;
+    public int $winner_id;
     /**
      * Loser id variable
      *
-     * @var string
+     * @var int
      */
-    public string $loser_id;
+    public int $loser_id;
     /**
      * Reverse rubbers variable
      *
@@ -542,38 +542,38 @@ class Rubber {
     /**
      * Get winner id.
      *
-     * @return string
+     * @return int
      */
-    public function get_winner_id(): string {
-        return $this->winner_id;
+    public function get_winner_id(): int {
+        return (int) $this->winner_id;
     }
 
     /**
      * Set winner id.
      *
-     * @param string $winner_id
+     * @param int $winner_id
      * @return void
      */
-    public function set_winner_id( string $winner_id ): void {
+    public function set_winner_id( int $winner_id ): void {
         $this->winner_id = $winner_id;
     }
 
     /**
      * Get loser id.
      *
-     * @return string
+     * @return int
      */
-    public function get_loser_id(): string {
-        return $this->loser_id;
+    public function get_loser_id(): int {
+        return (int) $this->loser_id;
     }
 
     /**
      * Set loser id.
      *
-     * @param string $loser_id
+     * @param int $loser_id
      * @return void
      */
-    public function set_loser_id( string $loser_id ): void {
+    public function set_loser_id( int $loser_id ): void {
         $this->loser_id = $loser_id;
     }
 

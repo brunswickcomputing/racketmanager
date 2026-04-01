@@ -36,7 +36,7 @@ class Result_Reporting_Service {
     /**
      * Report result for a match
      *
-     * @param Fixture     $fixture          The fixture to report.
+     * @param Fixture $fixture The fixture to report.
      * @param string|null $competition_code competition code (optional).
      *
      * @return object|null
@@ -68,7 +68,7 @@ class Result_Reporting_Service {
         $result->venue      = '';
         $result->event_name = $event->name;
 
-        $event_season = empty( $event->get_season_by_name( $fixture->get_season() ) ) ? null : $event->get_season_by_name( $fixture->get_season() );
+        $event_season             = empty( $event->get_season_by_name( $fixture->get_season() ) ) ? null : $event->get_season_by_name( $fixture->get_season() );
         $result->grade            = $event_season['grade'] ?? $competition->settings['grade'] ?? null;
         $result->event_end_date   = $competition->date_end;
         $result->event_start_date = $competition->date_start;
@@ -90,13 +90,13 @@ class Result_Reporting_Service {
      * Populate event details into the result object
      *
      * @param object $result Result object.
-     * @param object $event  Event object.
+     * @param object $event Event object.
      */
     private function populate_event_details( object $result, object $event ): void {
         $result->age_group = match ( $event->age_limit ) {
-            '8', '9', '10', '11', '12', '14', '16', '18', '21'               => $event->age_limit . ' & Under',
+            '8', '9', '10', '11', '12', '14', '16', '18', '21' => $event->age_limit . ' & Under',
             '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85' => $event->age_limit . ' & Over',
-            default                                        => 'Open',
+            default => 'Open',
         };
 
         $result->event_type = 'Singles';
@@ -116,11 +116,11 @@ class Result_Reporting_Service {
     /**
      * Populate draw details into the result object
      *
-     * @param object  $result      Result object.
-     * @param object  $league      League object.
-     * @param object  $event       Event object.
-     * @param object  $competition Competition object.
-     * @param Fixture $fixture     Fixture object.
+     * @param object $result Result object.
+     * @param object $league League object.
+     * @param object $event Event object.
+     * @param object $competition Competition object.
+     * @param Fixture $fixture Fixture object.
      */
     private function populate_draw_details( object $result, object $league, object $event, object $competition, Fixture $fixture ): void {
         $result->draw_name = $league->title;
@@ -134,13 +134,13 @@ class Result_Reporting_Service {
             $result->draw_stage = $fixture->get_league_id() === $event->primary_league ? 'MD - Main draw' : 'CD - Consolation draw';
             $result->draw_size  = $league->championship->num_teams_first_round;
             $result->round      = match ( $fixture->get_final() ) {
-                'final'   => 'F',
-                'semi'    => 'SF',
+                'final' => 'F',
+                'semi' => 'SF',
                 'quarter' => 'QF',
                 'last-16' => 'R16',
                 'last-32' => 'R32',
                 'last-64' => 'R64',
-                default   => 'RR1',
+                default => 'RR1',
             };
         }
     }
@@ -148,8 +148,8 @@ class Result_Reporting_Service {
     /**
      * Process rubbers for a fixture and add to result matches
      *
-     * @param object  $result  Result object.
-     * @param object  $event   Event object.
+     * @param object $result Result object.
+     * @param object $event Event object.
      * @param Fixture $fixture Fixture object.
      */
     private function process_rubbers( object $result, object $event, Fixture $fixture ): void {
@@ -193,15 +193,42 @@ class Result_Reporting_Service {
     }
 
     /**
+     * Calculate rubber winner based on sets
+     *
+     * @param object $rubber Rubber object.
+     * @param Fixture $fixture Fixture object.
+     *
+     * @return int|null
+     */
+    private function calculate_rubber_winner( object $rubber, Fixture $fixture ): ?int {
+        $score_home = 0;
+        $score_away = 0;
+        foreach ( $rubber->get_custom()['sets'] ?? [] as $set ) {
+            if ( $set['player1'] > $set['player2'] ) {
+                ++ $score_home;
+            } elseif ( $set['player2'] > $set['player1'] ) {
+                ++ $score_away;
+            }
+        }
+        if ( $score_home > $score_away ) {
+            return $fixture->get_home_team();
+        } elseif ( $score_away > $score_home ) {
+            return $fixture->get_away_team();
+        }
+
+        return null;
+    }
+
+    /**
      * Identify winning and losing teams and players
      *
-     * @param string  $winner_id Winner ID.
-     * @param Fixture $fixture   Fixture object.
+     * @param int $winner_id Winner ID.
+     * @param Fixture $fixture Fixture object.
      *
      * @return array
      */
-    private function identify_winning_and_losing_sides( string $winner_id, Fixture $fixture ): array {
-        if ( $winner_id === (string) $fixture->get_home_team() ) {
+    private function identify_winning_and_losing_sides( int $winner_id, Fixture $fixture ): array {
+        if ( (string) $winner_id === (string) $fixture->get_home_team() ) {
             return [
                 'winning_team'   => 'home',
                 'winning_player' => 'player1',
@@ -222,58 +249,145 @@ class Result_Reporting_Service {
      * Populate player info into the result match
      *
      * @param object $result_match Result match object.
-     * @param object $rubber       Rubber object.
-     * @param object $event        Event object.
-     * @param array  $sides        Sides mapping.
+     * @param object $rubber Rubber object.
+     * @param object $event Event object.
+     * @param array $sides Sides mapping.
      */
     private function populate_player_info( object $result_match, object $rubber, object $event, array $sides ): void {
         $winning_team = $sides['winning_team'];
         $losing_team  = $sides['losing_team'];
 
-        $result_match->winner_name   = $rubber->players[ $winning_team ][ '1' ]->display_name ?? '';
-        $result_match->winner_lta_no = $rubber->players[ $winning_team ][ '1' ]->btm ?? '';
-        $result_match->loser_name    = $rubber->players[ $losing_team ][ '1' ]->display_name ?? '';
-        $result_match->loser_lta_no  = $rubber->players[ $losing_team ][ '1' ]->btm ?? '';
+        $result_match->winner_name   = $rubber->players[ $winning_team ]['1']->display_name ?? '';
+        $result_match->winner_lta_no = $rubber->players[ $winning_team ]['1']->btm ?? '';
+        $result_match->loser_name    = $rubber->players[ $losing_team ]['1']->display_name ?? '';
+        $result_match->loser_lta_no  = $rubber->players[ $losing_team ]['1']->btm ?? '';
 
         if ( 'D' === substr( $event->type, 1, 1 ) ) {
-            $result_match->winnerpartner        = $rubber->players[ $winning_team ][ '2' ]->display_name ?? '';
-            $result_match->winnerpartner_lta_no = $rubber->players[ $winning_team ][ '2' ]->btm ?? '';
-            $result_match->loserpartner         = $rubber->players[ $losing_team ][ '2' ]->display_name ?? '';
-            $result_match->loserpartner_lta_no  = $rubber->players[ $losing_team ][ '2' ]->btm ?? '';
+            $result_match->winnerpartner        = $rubber->players[ $winning_team ]['2']->display_name ?? '';
+            $result_match->winnerpartner_lta_no = $rubber->players[ $winning_team ]['2']->btm ?? '';
+            $result_match->loserpartner         = $rubber->players[ $losing_team ]['2']->display_name ?? '';
+            $result_match->loserpartner_lta_no  = $rubber->players[ $losing_team ]['2']->btm ?? '';
         }
     }
 
     /**
-     * Calculate rubber winner based on sets
+     * Produce scores for reporting results
      *
-     * @param object  $rubber  Rubber object.
-     * @param Fixture $fixture Fixture object.
+     * @param object $result_match match result object.
+     * @param array $sets sets.
+     * @param string $winning_player winning player reference.
+     * @param string $losing_player losing player reference.
      *
-     * @return string|null
+     * @return object updated result_match object.
      */
-    private function calculate_rubber_winner( object $rubber, Fixture $fixture ): ?string {
-        $score_home = 0;
-        $score_away = 0;
-        foreach ( $rubber->get_custom()['sets'] ?? [] as $set ) {
-            if ( $set['player1'] > $set['player2'] ) {
-                ++$score_home;
-            } elseif ( $set['player2'] > $set['player1'] ) {
-                ++$score_away;
+    private function report_result_scores( object $result_match, array $sets, string $winning_player, string $losing_player ): object {
+        for ( $s = 1; $s <= 5; $s ++ ) {
+            $set = $sets[ $s ] ?? null;
+
+            if ( $set instanceof Set_Score ) {
+                $this->process_set_score_object( $result_match, $set, $s, $winning_player, $losing_player );
+            } elseif ( is_array( $set ) && ( ! empty( $set[ $winning_player ] ) || ! empty( $set[ $losing_player ] ) ) ) {
+                $this->process_set_score_array( $result_match, $set, $s, $winning_player, $losing_player );
+            } else {
+                $this->populate_empty_set( $result_match, $s );
             }
         }
-        if ( $score_home > $score_away ) {
-            return $fixture->get_home_team();
-        } elseif ( $score_away > $score_home ) {
-            return $fixture->get_away_team();
+
+        return $result_match;
+    }
+
+    /**
+     * Process a Set_Score object and update result_match
+     *
+     * @param object $result_match Result match object.
+     * @param Set_Score $set Set score object.
+     * @param int $s Set number.
+     * @param string $winning_player Winning player key.
+     * @param string $losing_player Losing player key.
+     */
+    private function process_set_score_object( object $result_match, Set_Score $set, int $s, string $winning_player, string $losing_player ): void {
+        $p1 = 'player1' === $winning_player ? $set->get_home_games() : $set->get_away_games();
+        $p2 = 'player1' === $losing_player ? $set->get_home_games() : $set->get_away_games();
+        $tb = 'player1' === $winning_player ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
+
+        if ( $s > 1 ) {
+            $result_match->score .= ' ';
         }
-        return null;
+
+        $result_match->score .= $p1 . '-' . $p2;
+        if ( ! empty( $tb ) ) {
+            $result_match->score             .= '(' . $tb . ')';
+            $result_match->{'tiebreak' . $s} = $tb;
+        } else {
+            $result_match->{'tiebreak' . $s} = '';
+        }
+
+        $result_match->{'set' . $s . 'team1'} = $p1;
+        $result_match->{'set' . $s . 'team2'} = $p2;
+    }
+
+    /**
+     * Process a set score array and update result_match
+     *
+     * @param object $result_match Result match object.
+     * @param array $set Set score array.
+     * @param int $s Set number.
+     * @param string $winning_player Winning player key.
+     * @param string $losing_player Losing player key.
+     */
+    private function process_set_score_array( object $result_match, array $set, int $s, string $winning_player, string $losing_player ): void {
+        if ( $s > 1 ) {
+            $result_match->score .= ' ';
+        }
+
+        $match_tiebreak = false;
+        if ( ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) || ( 3 === $s && '1' === (string) $set[ $winning_player ] && '0' === (string) $set[ $losing_player ] ) ) {
+            $result_match->score .= '[';
+            $match_tiebreak      = true;
+        }
+
+        if ( $match_tiebreak && ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) ) {
+            $set[ $winning_player ] = 10;
+            $set[ $losing_player ]  = 8;
+        }
+
+        if ( '7' === (string) $set[ $winning_player ] && '6' === (string) $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
+            $set['tiebreak'] = 5;
+        }
+
+        $result_match->score .= $set[ $winning_player ] . '-' . $set[ $losing_player ];
+        if ( ! empty( $set['tiebreak'] ) ) {
+            $result_match->score             .= '(' . $set['tiebreak'] . ')';
+            $result_match->{'tiebreak' . $s} = $set['tiebreak'];
+        } else {
+            $result_match->{'tiebreak' . $s} = '';
+        }
+
+        if ( $match_tiebreak ) {
+            $result_match->score .= ']';
+        }
+
+        $result_match->{'set' . $s . 'team1'} = $set[ $winning_player ];
+        $result_match->{'set' . $s . 'team2'} = $set[ $losing_player ];
+    }
+
+    /**
+     * Populate empty set values
+     *
+     * @param object $result_match Result match object.
+     * @param int $s Set number.
+     */
+    private function populate_empty_set( object $result_match, int $s ): void {
+        $result_match->{'set' . $s . 'team1'} = '';
+        $result_match->{'set' . $s . 'team2'} = '';
+        $result_match->{'tiebreak' . $s}      = '';
     }
 
     /**
      * Process fixture match when no rubbers and add to result matches
      *
-     * @param object  $result  Result object.
-     * @param object  $event   Event object.
+     * @param object $result Result object.
+     * @param object $event Event object.
      * @param Fixture $fixture Fixture object.
      */
     private function process_fixture_match( object $result, object $event, Fixture $fixture ): void {
@@ -304,20 +418,20 @@ class Result_Reporting_Service {
             'away' => $away_team,
         ];
 
-        $result_match->winner_name          = $teams[ $winning_team ]->get_players()[ '1' ]->display_name ?? '';
-        $result_match->winner_lta_no        = $teams[ $winning_team ]->get_players()[ '1' ]->btm ?? '';
-        $result_match->loser_name           = $teams[ $losing_team ]->get_players()[ '1' ]->display_name ?? '';
-        $result_match->loser_lta_no         = $teams[ $losing_team ]->get_players()[ '1' ]->btm ?? '';
+        $result_match->winner_name          = $teams[ $winning_team ]->get_players()['1']->display_name ?? '';
+        $result_match->winner_lta_no        = $teams[ $winning_team ]->get_players()['1']->btm ?? '';
+        $result_match->loser_name           = $teams[ $losing_team ]->get_players()['1']->display_name ?? '';
+        $result_match->loser_lta_no         = $teams[ $losing_team ]->get_players()['1']->btm ?? '';
         $result_match->winnerpartner        = '';
         $result_match->winnerpartner_lta_no = '';
         $result_match->loserpartner         = '';
         $result_match->loserpartner_lta_no  = '';
 
         if ( 'D' === substr( $event->type, 1, 1 ) ) {
-            $result_match->winnerpartner        = $teams[ $winning_team ]->get_players()[ '2' ]->display_name ?? '';
-            $result_match->winnerpartner_lta_no = $teams[ $winning_team ]->get_players()[ '2' ]->btm ?? '';
-            $result_match->loserpartner         = $teams[ $losing_team ]->get_players()[ '2' ]->display_name ?? '';
-            $result_match->loserpartner_lta_no  = $teams[ $losing_team ]->get_players()[ '2' ]->btm ?? '';
+            $result_match->winnerpartner        = $teams[ $winning_team ]->get_players()['2']->display_name ?? '';
+            $result_match->winnerpartner_lta_no = $teams[ $winning_team ]->get_players()['2']->btm ?? '';
+            $result_match->loserpartner         = $teams[ $losing_team ]->get_players()['2']->display_name ?? '';
+            $result_match->loserpartner_lta_no  = $teams[ $losing_team ]->get_players()['2']->btm ?? '';
         }
 
         $result_match->score      = '';
@@ -334,118 +448,5 @@ class Result_Reporting_Service {
         }
 
         $result->matches[] = $result_match;
-    }
-
-    /**
-     * Produce scores for reporting results
-     *
-     * @param object $result_match   match result object.
-     * @param array  $sets           sets.
-     * @param string $winning_player winning player reference.
-     * @param string $losing_player  losing player reference.
-     *
-     * @return object updated result_match object.
-     */
-    private function report_result_scores( object $result_match, array $sets, string $winning_player, string $losing_player ): object {
-        for ( $s = 1; $s <= 5; $s++ ) {
-            $set = $sets[ $s ] ?? null;
-
-            if ( $set instanceof Set_Score ) {
-                $this->process_set_score_object( $result_match, $set, $s, $winning_player, $losing_player );
-            } elseif ( is_array( $set ) && ( ! empty( $set[ $winning_player ] ) || ! empty( $set[ $losing_player ] ) ) ) {
-                $this->process_set_score_array( $result_match, $set, $s, $winning_player, $losing_player );
-            } else {
-                $this->populate_empty_set( $result_match, $s );
-            }
-        }
-
-        return $result_match;
-    }
-
-    /**
-     * Process a Set_Score object and update result_match
-     *
-     * @param object    $result_match   Result match object.
-     * @param Set_Score $set            Set score object.
-     * @param int       $s              Set number.
-     * @param string    $winning_player Winning player key.
-     * @param string    $losing_player  Losing player key.
-     */
-    private function process_set_score_object( object $result_match, Set_Score $set, int $s, string $winning_player, string $losing_player ): void {
-        $p1 = 'player1' === $winning_player ? $set->get_home_games() : $set->get_away_games();
-        $p2 = 'player1' === $losing_player ? $set->get_home_games() : $set->get_away_games();
-        $tb = 'player1' === $winning_player ? $set->get_home_tiebreak() : $set->get_away_tiebreak();
-
-        if ( $s > 1 ) {
-            $result_match->score .= ' ';
-        }
-
-        $result_match->score .= $p1 . '-' . $p2;
-        if ( ! empty( $tb ) ) {
-            $result_match->score           .= '(' . $tb . ')';
-            $result_match->{'tiebreak' . $s} = $tb;
-        } else {
-            $result_match->{'tiebreak' . $s} = '';
-        }
-
-        $result_match->{'set' . $s . 'team1'} = $p1;
-        $result_match->{'set' . $s . 'team2'} = $p2;
-    }
-
-    /**
-     * Process a set score array and update result_match
-     *
-     * @param object $result_match   Result match object.
-     * @param array  $set            Set score array.
-     * @param int    $s              Set number.
-     * @param string $winning_player Winning player key.
-     * @param string $losing_player  Losing player key.
-     */
-    private function process_set_score_array( object $result_match, array $set, int $s, string $winning_player, string $losing_player ): void {
-        if ( $s > 1 ) {
-            $result_match->score .= ' ';
-        }
-
-        $match_tiebreak = false;
-        if ( ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) || ( 3 === $s && '1' === (string) $set[ $winning_player ] && '0' === (string) $set[ $losing_player ] ) ) {
-            $result_match->score .= '[';
-            $match_tiebreak       = true;
-        }
-
-        if ( $match_tiebreak && ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) ) {
-            $set[ $winning_player ] = 10;
-            $set[ $losing_player ]  = 8;
-        }
-
-        if ( '7' === (string) $set[ $winning_player ] && '6' === (string) $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
-            $set['tiebreak'] = 5;
-        }
-
-        $result_match->score .= $set[ $winning_player ] . '-' . $set[ $losing_player ];
-        if ( ! empty( $set['tiebreak'] ) ) {
-            $result_match->score           .= '(' . $set['tiebreak'] . ')';
-            $result_match->{'tiebreak' . $s} = $set['tiebreak'];
-        } else {
-            $result_match->{'tiebreak' . $s} = '';
-        }
-
-        if ( $match_tiebreak ) {
-            $result_match->score .= ']';
-        }
-
-        $result_match->{'set' . $s . 'team1'} = $set[ $winning_player ];
-        $result_match->{'set' . $s . 'team2'} = $set[ $losing_player ];
-    }
-
-    /**
-     * Populate empty set values
-     *
-     * @param object $result_match Result match object.
-     * @param int    $s            Set number.
-     */
-    private function populate_empty_set( object $result_match, int $s ): void {
-        $result_match->{'set' . $s . 'team1'} = '';
-        $result_match->{'set' . $s . 'team2'} = '';
-        $result_match->{'tiebreak' . $s}     = '';
     }
 }

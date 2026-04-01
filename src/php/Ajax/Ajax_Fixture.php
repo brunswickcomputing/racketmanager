@@ -535,6 +535,10 @@ class Ajax_Fixture extends Ajax {
         );
         $service_provider->set_settings_service( $c->get( 'settings_service' ) );
         $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
+        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+        $service_provider->set_team_service( $c->get( 'team_service' ) );
+        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
 
         return new Fixture_Result_Manager(
             $service_provider,

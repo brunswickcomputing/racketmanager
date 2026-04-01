@@ -26,6 +26,25 @@ use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
 use stdClass;
 
+interface Event_Mock_Interface {
+    public function get_season_by_name();
+    public function competition_obj();
+}
+
+class League_Mock extends \Racketmanager\Domain\Competition\League {
+    public function get_competition_type(): string { return 'league'; }
+    public function update_standings(string $season): void {}
+}
+
+class Tournament_Mock extends \Racketmanager\Domain\Competition\League {
+    public function get_competition_type(): string { return 'tournament'; }
+}
+
+class Event_Mock extends \Racketmanager\Domain\Competition\Event {
+    public function competition_obj() { return $this->competition; }
+    public function get_season_by_name(string $name): ?array { return []; }
+}
+
 class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $result_service;
     private $progression_service;
@@ -107,7 +126,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         );
 
         $this->fixture_service_mock = $this->createMock(\Racketmanager\Services\Fixture_Service::class);
-        $this->fixture_service_mock->method('is_update_allowed')->will($this->returnCallback(function($fixture) {
+        $this->fixture_service_mock->method('is_update_allowed')->willReturnCallback(function($fixture) {
             if ($fixture->get_id() === 999) {
                 return (object)[
                     'user_can_update' => false,
@@ -120,7 +139,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                 'user_type' => 'admin',
                 'user_team' => 'home'
             ];
-        }));
+        });
 
         $service_provider = new Fixture_Service_Provider(
             result_service: $this->result_service,
@@ -426,16 +445,14 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->getMockBuilder(League::class)
+        $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
                        ->onlyMethods(['get_id', 'get_name', 'get_event_id', 'get_point_rule'])
-                       ->addMethods(['get_competition_type'])
                        ->getMock();
         $league->method('get_id')->willReturn(456);
         $league->method('get_name')->willReturn('Test League');
         $league->method('get_event_id')->willReturn(10);
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
-        $league->method('get_competition_type')->willReturn('league');
         $league->num_sets_to_win = 2;
         $league->num_sets = 3;
         $league->num_rubbers = 1;
@@ -514,16 +531,14 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->date_result_entered = null;
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->getMockBuilder(League::class)
+        $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
                        ->onlyMethods(['get_id', 'get_name', 'get_event_id', 'get_point_rule'])
-                       ->addMethods(['get_competition_type'])
                        ->getMock();
         $league->method('get_id')->willReturn(456);
         $league->method('get_name')->willReturn('Test League');
         $league->method('get_event_id')->willReturn(10);
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
-        $league->method('get_competition_type')->willReturn('league');
         $league->num_sets_to_win = 2;
         $league->num_sets = 3;
         $league->num_rubbers = 1;
@@ -598,14 +613,12 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->date_result_entered = null;
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->getMockBuilder(League::class)
+        $league = $this->getMockBuilder(Tournament_Mock::class)
                        ->disableOriginalConstructor()
                        ->onlyMethods(['get_id', 'get_point_rule'])
-                       ->addMethods(['get_competition_type'])
                        ->getMock();
         $league->method('get_id')->willReturn(456);
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
-        $league->method('get_competition_type')->willReturn('tournament');
         $league->num_sets_to_win = 2;
         $league->num_sets = 3;
         $league->num_rubbers = 0;
@@ -637,13 +650,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->confirmed = null;
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->getMockBuilder(League::class)
+        $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
                        ->onlyMethods(['get_id'])
-                       ->addMethods(['get_competition_type'])
                        ->getMock();
         $league->method('get_id')->willReturn(456);
-        $league->method('get_competition_type')->willReturn('league');
         $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
                       ->disableOriginalConstructor()
                       ->getMock();
@@ -844,11 +855,13 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture = new Fixture($fixture_data);
 
-        $league = $this->createMock(League::class);
+        $league = $this->getMockBuilder(League_Mock::class)
+                       ->disableOriginalConstructor()
+                       ->onlyMethods(['get_id'])
+                       ->getMock();
         $league->method('get_id')->willReturn(456);
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
-                      ->addMethods(['competition_obj'])
-                      ->onlyMethods(['get_season_by_name'])
+        $event = $this->getMockBuilder(Event_Mock::class)
+                      ->onlyMethods(['get_season_by_name', 'competition_obj'])
                       ->disableOriginalConstructor()
                       ->getMock();
         $competition = $this->getMockBuilder(\Racketmanager\Domain\Competition\Competition::class)

@@ -13,6 +13,7 @@ namespace {
 namespace Racketmanager\Tests\Unit\Services\Validator {
 
     use PHPUnit\Framework\TestCase;
+    use PHPUnit\Framework\Attributes\DataProvider;
     use Racketmanager\Services\Validator\Score_Validation_Service;
     use stdClass;
 
@@ -45,9 +46,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             return $info;
         }
 
-        /**
-         * @dataProvider scores_provider
-         */
+        #[DataProvider('scores_provider')]
         public function test_validate_set(array $set, object $set_info, ?string $match_status, ?string $expected_err_field): void
         {
             $result = $this->validator->validate_set($set, 'set_1_', $set_info, $match_status);

@@ -14,6 +14,22 @@ use stdClass;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
+interface Result_Service_Mock_Interface {
+    public function get_options();
+    public function get_confirmation_email();
+    public function load_template();
+}
+
+class RacketManager_Mock implements Result_Service_Mock_Interface {
+    public string $site_name = '';
+    public string $site_url = '';
+    public $shortcodes;
+
+    public function get_options() {}
+    public function get_confirmation_email() {}
+    public function load_template() {}
+}
+
 class Result_Service_Test extends TestCase {
     private $fixture_repository;
     private $team_repository;
@@ -26,8 +42,8 @@ class Result_Service_Test extends TestCase {
         $this->service = new Result_Service($this->fixture_repository, $this->team_repository);
 
         global $racketmanager;
-        $racketmanager = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['get_options', 'get_confirmation_email'])
+        $racketmanager = $this->getMockBuilder(RacketManager_Mock::class)
+            ->onlyMethods(['get_options', 'get_confirmation_email'])
             ->getMock();
         $racketmanager->method('get_options')->willReturn([
             'league' => ['resultConfirmation' => 'manual'],
@@ -36,9 +52,10 @@ class Result_Service_Test extends TestCase {
         $racketmanager->method('get_confirmation_email')->willReturn('test@example.com');
         $racketmanager->site_name = 'Test Site';
         $racketmanager->site_url = 'http://example.com';
-        $racketmanager->shortcodes = $this->getMockBuilder(stdClass::class)
-            ->addMethods(['load_template'])
+        $racketmanager->shortcodes = $this->getMockBuilder(RacketManager_Mock::class)
+            ->onlyMethods(['load_template'])
             ->getMock();
+        $racketmanager->shortcodes->method('load_template')->willReturn('Email Content');
     }
 
     public function test_apply_to_fixture_saves_fixture(): void {

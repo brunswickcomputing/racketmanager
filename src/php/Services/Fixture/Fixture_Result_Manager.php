@@ -561,7 +561,7 @@ class Fixture_Result_Manager {
         $update_standings       = false;
 
         if ( 'A' === $request->result_confirm ) {
-            $result_confirmation = $this->settings_service->get_option( $league->get_competition_type() ?: 'league', 'resultConfirmation', 'manual' );
+            $result_confirmation = $this->settings_service->get_option( $league->get_competition_type(), 'resultConfirmation', 'manual' );
             if ( 'auto' === $result_confirmation ) {
                 $update_standings       = true;
                 $final_confirmed_status = 'Y';
@@ -594,10 +594,10 @@ class Fixture_Result_Manager {
      * Get the league associated with a fixture.
      *
      * @param Fixture $fixture
-     * @return object
+     * @return League
      * @throws League_Not_Found_Exception
      */
-    private function get_league_for_fixture( Fixture $fixture ): object {
+    private function get_league_for_fixture( Fixture $fixture ): League {
         $league_id = $fixture->get_league_id();
         $league    = $league_id ? $this->league_service->get_league( $league_id ) : null;
         if ( ! $league ) {

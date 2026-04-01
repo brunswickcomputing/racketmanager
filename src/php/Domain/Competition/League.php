@@ -519,6 +519,15 @@ class League {
     public string $competition_type = '';
 
     /**
+     * Get the competition type.
+     *
+     * @return string
+     */
+    public function get_competition_type(): string {
+        return $this->competition_type ?: 'league';
+    }
+
+    /**
      * Type
      *
      * @var string
@@ -692,6 +701,7 @@ class League {
         $this->num_sets_to_win = floor( $this->num_sets / 2 ) + 1;
         $this->num_rubbers     = $event->num_rubbers;
         $this->type            = $event->type;
+        $this->competition_type = $event->competition->type;
         $this->point_rule      = $event->competition->settings['point_rule'];
         $this->sport           = $event->competition->settings['sport'];
         $this->scoring         = $event->scoring ?? null;

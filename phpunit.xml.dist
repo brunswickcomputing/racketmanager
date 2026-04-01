@@ -3,6 +3,11 @@
   bootstrap="tests/bootstrap.php"
   colors="true"
   cacheDirectory=".phpunit.cache"
+  displayDetailsOnPhpunitDeprecations="false"
+  displayDetailsOnTestsThatTriggerDeprecations="false"
+  displayDetailsOnTestsThatTriggerErrors="false"
+  displayDetailsOnTestsThatTriggerNotices="false"
+  displayDetailsOnTestsThatTriggerWarnings="false"
 >
   <testsuites>
     <testsuite name="Unit">
@@ -12,4 +17,14 @@
       <directory>tests/Integration</directory>
     </testsuite>
   </testsuites>
+  <source ignoreIndirectDeprecations="true" restrictNotices="false" restrictWarnings="true">
+    <include>
+      <directory>src/php</directory>
+    </include>
+  </source>
+  <php>
+    <ini name="display_errors" value="On" />
+    <ini name="display_startup_errors" value="On" />
+    <ini name="error_reporting" value="-1" />
+  </php>
 </phpunit>

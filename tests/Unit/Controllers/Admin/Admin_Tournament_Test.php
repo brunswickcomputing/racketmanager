@@ -11,6 +11,11 @@ use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 
+interface Admin_Controller_Mock_Interface {
+    public function teams_page();
+    public function handle();
+}
+
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Admin_Tournament_Test extends TestCase {
@@ -45,9 +50,7 @@ final class Admin_Tournament_Test extends TestCase {
     }
 
     public function test_display_teams_list_calls_apply_result_message(): void {
-        $controller = $this->getMockBuilder( \stdClass::class )
-            ->addMethods( [ 'teams_page' ] )
-            ->getMock();
+        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
 
         $this->container->set( 'tournament_teams_admin_controller', $controller );
 
@@ -75,9 +78,7 @@ final class Admin_Tournament_Test extends TestCase {
     }
 
     public function test_display_competition_config_page_routes_correctly(): void {
-        $controller = $this->getMockBuilder( \stdClass::class )
-            ->addMethods( [ 'handle' ] )
-            ->getMock();
+        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
 
         $this->container->set( 'tournament_competition_config_admin_controller', $controller );
 
@@ -99,9 +100,7 @@ final class Admin_Tournament_Test extends TestCase {
     }
 
     public function test_display_event_config_page_routes_correctly(): void {
-        $controller = $this->getMockBuilder( \stdClass::class )
-            ->addMethods( [ 'handle' ] )
-            ->getMock();
+        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
 
         $this->container->set( 'tournament_event_config_admin_controller', $controller );
 
@@ -121,9 +120,7 @@ final class Admin_Tournament_Test extends TestCase {
     }
 
     public function test_display_team_page_routes_correctly(): void {
-        $controller = $this->getMockBuilder( \stdClass::class )
-            ->addMethods( [ 'handle' ] )
-            ->getMock();
+        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
 
         $this->container->set( 'tournament_team_admin_controller', $controller );
 

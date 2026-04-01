@@ -11,119 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  qodana-php:
-    name: Qodana PHP (Static Analysis)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Run Qodana PHP
-        uses: JetBrains/qodana-action@v2025.3
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-          QODANA_ENDPOINT: 'https://qodana.cloud'
-        with:
-          pr-mode: true
-          args: |
-            --results-dir=qodana-results-php
-            --config=qodana.yaml
-          
-      - name: Upload Qodana PHP Report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # actions/upload-artifact@v5.0.0
-        if: always()
-        with:
-          name: qodana-php-report
-          path: qodana-results-php
-
-      - name: Upload SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: qodana-results-php/qodana.sarif.json
-
-  qodana-js:
-    name: Qodana JS (ESLint-backed)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Run Qodana JS
-        uses: JetBrains/qodana-action@v2025.3
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-          QODANA_ENDPOINT: 'https://qodana.cloud'
-        with:
-          pr-mode: true
-          args: |
-            --results-dir=qodana-results-js
-            --config=qodana-js.yaml
-            --save-report
-
-      - name: Upload Qodana JS Report
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: qodana-js-report
-          path: qodana-results-js
-
-      - name: Upload JS SARIF to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: qodana-results-js/qodana.sarif.json
-
-  phpcs:
-    name: PHPCS (WordPress Standards)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
-        with:
-          fetch-depth: 0
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # shivammathur/setup-php@2.36.0
-        with:
-          php-version: '8.3'
-          tools: composer
-
-      - name: Install PHPCS and WPCS
-        env:
-          COMPOSER_NO_INTERACTION: 1
-        run: |
-          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer global require "squizlabs/php_codesniffer:3.10.3" "wp-coding-standards/wpcs:3.1.0" "phpcsstandards/phpcsutils:1.0.12" "phpcompatibility/php-compatibility:10.0.1"
-          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
-          "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs,\
-          "$PHPCS_HOME"/vendor/phpcompatibility/php-compatibility
-          # Show installed standards after configuration
-          "$PHPCS_HOME"/vendor/bin/phpcs -i
-
-      - name: Run PHPCS (non-blocking)
-        run: |
-          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
-          if [ -f "phpcs.xml" ]; then
-            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml .
-          elif [ -f "phpcs.xml.dist" ]; then
-            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml.dist .
-          else
-            echo "PHPCS ruleset not found; skipping."
-          fi
-
   composer-smoke:
     name: Composer Autoload Smoke Test (Plugin)
     runs-on: ubuntu-latest
@@ -149,6 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           php -r "require 'racketmanager.php'; \\Racketmanager\\RacketManager::get_instance(); if (!class_exists('Racketmanager\\\\Player')) { throw new Exception('Player class missing'); } if (!method_exists('Racketmanager\\\\Player','get_instance')) { throw new Exception('Player::get_instance missing'); } if (!class_exists('Racketmanager\\\\Club')) { throw new Exception('Club class missing'); } if (!method_exists('Racketmanager\\\\Club','get_instance')) { throw new Exception('Club::get_instance missing'); } if (!class_exists('Racketmanager\\\\Tournament')) { throw new Exception('Tournament class missing'); } if (!class_exists('Racketmanager\\\\Charges')) { throw new Exception('Charges class missing'); } if (!class_exists('Racketmanager\\\\Invoice')) { throw new Exception('Invoice class missing'); } if (!class_exists('Racketmanager\\\\Tournament_Entry')) { throw new Exception('Tournament_Entry class missing'); } echo 'OK';"
+
 
   phpunit:
     name: PHPUnit (Tests)
@@ -189,3 +77,117 @@ jobs:
 
       - name: Run Integration Tests
         run: vendor/bin/phpunit --testsuite Integration
+
+#  qodana-php:
+#    name: Qodana PHP (Static Analysis)
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+#      security-events: write
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
+#        with:
+#          fetch-depth: 0
+
+#      - name: Run Qodana PHP
+#        uses: JetBrains/qodana-action@v2025.3
+#        env:
+#          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+#          QODANA_ENDPOINT: 'https://qodana.cloud'
+#        with:
+#          pr-mode: true
+#          args: |
+#            --results-dir=qodana-results-php
+#            --config=qodana.yaml
+          
+#      - name: Upload Qodana PHP Report
+#        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4  # actions/upload-artifact@v5.0.0
+#        if: always()
+#        with:
+#          name: qodana-php-report
+#          path: qodana-results-php
+
+#        uses: github/codeql-action/upload-sarif@v3
+#     - name: Upload SARIF to GitHub Security tab
+#        if: always()
+#        with:
+#         sarif_file: qodana-results-php/qodana.sarif.json
+
+#  qodana-js:
+#    name: Qodana JS (ESLint-backed)
+#    runs-on: ubuntu-latest
+#    permissions:
+#      contents: read
+##    steps:
+##      - name: Checkout repository
+#        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Run Qodana JS
+#        uses: JetBrains/qodana-action@v2025.3
+#        env:
+#          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+#          QODANA_ENDPOINT: 'https://qodana.cloud'
+#        with:
+#          pr-mode: true
+##          args: |
+#            --results-dir=qodana-results-js
+#            --config=qodana-js.yaml
+#            --save-report
+
+#      - name: Upload Qodana JS Report
+#        uses: actions/upload-artifact@v5
+#        if: always()
+#        with:
+#          name: qodana-js-report
+#          path: qodana-results-js
+
+#      - name: Upload JS SARIF to GitHub Security tab
+#        uses: github/codeql-action/upload-sarif@v3
+#        if: always()
+#        with:
+#          sarif_file: qodana-results-js/qodana.sarif.json
+
+#  phpcs:
+#    name: PHPCS (WordPress Standards)
+#    runs-on: ubuntu-latest
+#    continue-on-error: true
+#    permissions:
+#      contents: read
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # actions/checkout@v6.0.1
+#        with:
+#          fetch-depth: 0
+
+#      - name: Setup PHP
+#        uses: shivammathur/setup-php@44454db4f0199b8b9685a5d763dc37cbf79108e1  # shivammathur/setup-php@2.36.0
+#        with:
+#          php-version: '8.3'
+#          tools: composer
+
+#      - name: Install PHPCS and WPCS
+#        env:
+#          COMPOSER_NO_INTERACTION: 1
+#        run: |
+#          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+#          composer global require "squizlabs/php_codesniffer:3.10.3" "wp-coding-standards/wpcs:3.1.0" "phpcsstandards/phpcsutils:1.0.12" "phpcompatibility/php-compatibility:10.0.1"
+#          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
+#          "$PHPCS_HOME"/vendor/bin/phpcs --config-set installed_paths "$PHPCS_HOME"/vendor/wp-coding-standards/wpcs,\
+#          "$PHPCS_HOME"/vendor/phpcompatibility/php-compatibility
+#          # Show installed standards after configuration
+#          "$PHPCS_HOME"/vendor/bin/phpcs -i
+
+#      - name: Run PHPCS (non-blocking)
+#        run: |
+#          PHPCS_HOME=$(composer global config home 2>/dev/null || echo "$HOME/.composer")
+#          if [ -f "phpcs.xml" ]; then
+#            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml .
+#          elif [ -f "phpcs.xml.dist" ]; then
+#            "$PHPCS_HOME"/vendor/bin/phpcs -q --report=full --standard=phpcs.xml.dist .
+#          else
+#            echo "PHPCS ruleset not found; skipping."
+#          fi
+

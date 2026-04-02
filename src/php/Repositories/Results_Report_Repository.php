@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Results_Report;
+use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Results Report repository
  */
-class Results_Report_Repository {
+class Results_Report_Repository implements Results_Report_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -29,9 +30,9 @@ class Results_Report_Repository {
      * Save a results report entry.
      *
      * @param Results_Report $results_report
-     * @return void
+     * @return int|bool
      */
-    public function save( Results_Report $results_report ): void {
+    public function save( Results_Report $results_report ) {
         $data = array(
             'match_id'      => $results_report->match_id,
             'result_object' => $results_report->result_object,
@@ -43,15 +44,14 @@ class Results_Report_Repository {
         );
 
         if ( empty( $results_report->id ) ) {
-            $this->wpdb->insert( $this->table_name, $data, $format );
-            $id = (int) $this->wpdb->insert_id;
-            if ( $id > 0 ) {
-                $results_report->id = $id;
-            } else {
-                // If it's a mock or some test environment where insert_id is not set, we don't crash anymore.
+            $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
+            if ( $inserted ) {
+                $results_report->id = (int) $this->wpdb->insert_id;
+                return $results_report->id;
             }
+            return false;
         } else {
-            $this->wpdb->update(
+            return $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(
@@ -61,7 +61,7 @@ class Results_Report_Repository {
                 array(
                     '%d',
                 )
-            );
+            ) !== false;
         }
     }
 
@@ -111,13 +111,13 @@ class Results_Report_Repository {
      * Delete results report entries for a given fixture ID.
      *
      * @param int $fixture_id
-     * @return void
+     * @return bool
      */
-    public function delete_by_fixture_id( int $fixture_id ): void {
-        $this->wpdb->delete(
+    public function delete_by_fixture_id( int $fixture_id ): bool {
+        return $this->wpdb->delete(
             $this->table_name,
             array( 'match_id' => $fixture_id ),
             array( '%d' )
-        );
+        ) !== false;
     }
 }

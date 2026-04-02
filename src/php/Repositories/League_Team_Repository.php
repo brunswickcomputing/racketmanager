@@ -12,13 +12,14 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\DTO\League\League_Standings_DTO;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League_Team;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use stdClass;
 use wpdb;
 
 /**
  * Class to implement the League team repository
  */
-class League_Team_Repository {
+class League_Team_Repository implements League_Team_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
     private string $season_compare;
@@ -30,7 +31,7 @@ class League_Team_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_league_teams';
     }
 
-    public function save( League_Team $league_team ): int|bool {
+    public function save( League_Team $league_team ) {
         $data = array(
             'team_id'        => $league_team->get_team_id(),
             'league_id'      => $league_team->get_league_id(),
@@ -80,14 +81,17 @@ class League_Team_Repository {
             '%s',
         );
         if ( empty( $league_team->get_id() ) ) {
-            $result = $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format
             );
-            $league_team->set_id( $this->wpdb->insert_id );
-            wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
-            return $result !== false;
+            if ( $inserted ) {
+                $league_team->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
             wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
             return $this->wpdb->update(
@@ -100,12 +104,12 @@ class League_Team_Repository {
                 array(
                     '%d'
                 ) // Where format
-            );
+            ) !== false;
         }
     }
 
-    public function delete( int $id ): int|bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 
     public function find_by_id( $league_team_id ): ?League_Team {
@@ -127,7 +131,7 @@ class League_Team_Repository {
             }
             $league_team = new League_Team( $league_team );
 
-            wp_cache_set( $league_team->id, $league_team, 'league-teams' );
+            wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
         }
 
         return $league_team;
@@ -141,7 +145,7 @@ class League_Team_Repository {
      *
      * @return int[] Array of Club IDs.
      */
-    public function find_club_ids_where_player_is_captain( int $player_id, ?int $club_id ):array {
+    public function find_club_ids_where_player_is_captain( int $player_id, ?int $club_id = null ): array {
         // Need to join the league team entry table with the main teams table to get the club_id
         $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
         $sql = "SELECT DISTINCT t.club_id FROM $this->table_name lte INNER JOIN $teams_table t ON lte.team_id = t.id WHERE lte.captain = %d";
@@ -208,7 +212,7 @@ class League_Team_Repository {
      *
      * @return array
      */
-    public function get_clubs_by_event_id( ?int $event_id, ?int $season ): array {
+    public function get_clubs_by_event_id( ?int $event_id, ?int $season = null ): array {
         $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
         $clubs_table   = $this->wpdb->prefix . 'racketmanager_clubs';
         $teams_table   = $this->wpdb->prefix . 'racketmanager_teams';
@@ -239,7 +243,7 @@ class League_Team_Repository {
      *
      * @return array
      */
-    public function get_clubs_by_competition_id( ?int $competition_id, ?int $season ): array {
+    public function get_clubs_by_competition_id( ?int $competition_id, ?int $season = null ): array {
         $events_table = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table = $this->wpdb->prefix . 'racketmanager_leagues';
         $clubs_table   = $this->wpdb->prefix . 'racketmanager_clubs';

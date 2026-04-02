@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Results Checker repository
  */
-class Results_Checker_Repository {
+class Results_Checker_Repository implements Results_Checker_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -29,9 +30,9 @@ class Results_Checker_Repository {
      * Save a results checker entry.
      *
      * @param Results_Checker $results_checker
-     * @return void
+     * @return int|bool
      */
-    public function save( Results_Checker $results_checker ): void {
+    public function save( Results_Checker $results_checker ) {
         $data = array(
             'league_id'   => $results_checker->league_id,
             'match_id'    => $results_checker->match_id,
@@ -55,18 +56,17 @@ class Results_Checker_Repository {
         );
 
         if ( empty( $results_checker->id ) ) {
-            $this->wpdb->insert( $this->table_name, $data, $format );
-            $id = (int) $this->wpdb->insert_id;
-            if ( $id > 0 ) {
-                $results_checker->id = $id;
-            } else {
-                // If it's a mock or some test environment where insert_id is not set, we don't crash anymore.
+            $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
+            if ( $inserted ) {
+                $results_checker->id = (int) $this->wpdb->insert_id;
+                return $results_checker->id;
             }
+            return false;
         } else {
             $data['updated_date'] = current_time( 'mysql' );
             $format[] = '%s'; // updated_date
 
-            $this->wpdb->update(
+            return $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(
@@ -76,7 +76,7 @@ class Results_Checker_Repository {
                 array(
                     '%d',
                 )
-            );
+            ) !== false;
         }
     }
 
@@ -142,13 +142,13 @@ class Results_Checker_Repository {
      * Delete results checker entries for a given fixture ID.
      *
      * @param int $fixture_id
-     * @return void
+     * @return bool
      */
-    public function delete_by_fixture_id( int $fixture_id ): void {
-        $this->wpdb->delete(
+    public function delete_by_fixture_id( int $fixture_id ): bool {
+        return $this->wpdb->delete(
             $this->table_name,
             array( 'match_id' => $fixture_id ),
             array( '%d' )
-        );
+        ) !== false;
     }
 }

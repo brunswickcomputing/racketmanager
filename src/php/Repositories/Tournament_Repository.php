@@ -13,6 +13,7 @@ use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Util\Util;
 use stdClass;
 use wpdb;
@@ -20,7 +21,7 @@ use wpdb;
 /**
  * Class to implement the Tournament repository
  */
-class Tournament_Repository {
+class Tournament_Repository implements Tournament_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
     private string $competition_table;
@@ -32,7 +33,7 @@ class Tournament_Repository {
         $this->competition_table = $this->wpdb->prefix . 'racketmanager_competitions';
     }
 
-    public function save( Tournament $tournament ): bool|int {
+    public function save( Tournament $tournament ) {
         $data        = array(
             'name'             => $tournament->get_name(),
             'competition_id'   => $tournament->get_competition_id(),
@@ -72,11 +73,13 @@ class Tournament_Repository {
             '%s',
         );
         if ( empty( $tournament->get_id() ) ) {
-            $result = $this->wpdb->insert( $this->table_name, $data, $data_format );
-            $tournament->set_id( $this->wpdb->insert_id );
-            wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
-
-            return $result !== false;
+            $inserted = $this->wpdb->insert( $this->table_name, $data, $data_format );
+            if ( $inserted ) {
+                $tournament->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
             wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
 
@@ -87,9 +90,8 @@ class Tournament_Repository {
                 $data_format, array(
                     '%d'
                 ) // Where format
-            );
+            ) !== false;
         }
-
     }
 
     public function find_by_id( $tournament_id, $search_term = 'id' ): ?Tournament {
@@ -281,8 +283,8 @@ class Tournament_Repository {
         return $players;
     }
 
-    public function delete( int $tournament_id ): int|false {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $tournament_id ), array( '%d' ) );
+    public function delete( int $tournament_id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $tournament_id ), array( '%d' ) ) !== false;
     }
 
     public function find_events_by_tournament_with_details( int $tournament_id ): array {

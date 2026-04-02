@@ -11,12 +11,13 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Competition repository
  */
-class Competition_Repository {
+class Competition_Repository implements Competition_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
     private string $events_table;
@@ -51,7 +52,7 @@ class Competition_Repository {
      *
      * @return int|bool
      */
-    public function save( Competition $competition ): int|bool {
+    public function save( Competition $competition ) {
         $data = array(
             'name'      => $competition->get_name(),
             'settings'  => json_encode( $competition->get_settings() ), // Store settings as JSON
@@ -67,14 +68,17 @@ class Competition_Repository {
             '%s',
         );
         if ( empty( $competition->get_id() ) ) {
-            $result = $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format,
             );
-            $competition->set_id( $this->wpdb->insert_id );
-            wp_cache_set( $competition->get_id(), $competition, 'competitions' );
-            return $result !== false;
+            if ( $inserted ) {
+                $competition->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $competition->get_id(), $competition, 'competitions' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
             wp_cache_set( $competition->get_id(), $competition, 'competitions' );
             return $this->wpdb->update(
@@ -87,7 +91,7 @@ class Competition_Repository {
                 array(
                     '%d'
                 ) // Where format
-            );
+            ) !== false;
         }
     }
 
@@ -206,8 +210,8 @@ class Competition_Repository {
      *
      * @return void
      */
-    public function delete( int $competition_id ): void {
-        $this->wpdb->delete( $this->table_name, array( 'id' => $competition_id ), array( '%d' ) );
+    public function delete( int $competition_id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $competition_id ), array( '%d' ) ) !== false;
     }
 
     /**
@@ -219,7 +223,7 @@ class Competition_Repository {
      *
      * @return Competition_Overview_DTO|null
      */
-    public function get_competition_overview( int $competition_id, int $season, ?int $min_fixtures = 1 ): ?Competition_Overview_DTO {
+    public function get_competition_overview( int $competition_id, int $season, ?int $min_fixtures = null ): ?Competition_Overview_DTO {
         $player_activity_subquery = $this->wpdb->prepare(
             "SELECT l.event_id, rp.player_id FROM $this->rubber_players_table rp INNER JOIN $this->rubbers_table r ON rp.rubber_id = r.id INNER JOIN $this->fixtures_table f ON r.match_id = f.id AND f.season = %d INNER JOIN $this->leagues_table l ON f.league_id = l.id GROUP BY l.event_id, rp.player_id HAVING COUNT(rp.id) >= %d",
             $season,

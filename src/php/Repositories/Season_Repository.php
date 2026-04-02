@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Season;
+use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Season repository
  */
-class Season_Repository {
+class Season_Repository implements Season_Repository_Interface {
 
     private wpdb $wpdb;
     private string $table_name;
@@ -36,7 +37,7 @@ class Season_Repository {
      *
      * @return bool|int
      */
-    public function save( Season $season ): bool|int {
+    public function save( Season $season ) {
         $data        = array(
             'name' => $season->get_name(),
         );
@@ -44,15 +45,17 @@ class Season_Repository {
             '%s',
         );
         if ( empty( $season->get_id() ) ) {
-            $result = $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format,
             );
-            $season->set_id( $this->wpdb->insert_id );
-            wp_cache_set( $season->get_id(), $season, 'seasons' );
-
-            return $result !== false;
+            if ( $inserted ) {
+                $season->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $season->get_id(), $season, 'seasons' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
             wp_cache_set( $season->get_id(), $season, 'seasons' );
 
@@ -66,9 +69,8 @@ class Season_Repository {
                 array(
                     '%d'
                 ) // Where format
-            );
+            ) !== false;
         }
-
     }
 
     /**
@@ -135,8 +137,8 @@ class Season_Repository {
      *
      * @return int|false
      */
-    public function delete( int $id ): int|false {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 
 }

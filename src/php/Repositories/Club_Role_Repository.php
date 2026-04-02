@@ -32,9 +32,9 @@ class Club_Role_Repository {
      * The save action is explicit, not in the Club Role constructor.
      * @param Club_Role $club_role The club role object to save.
      */
-    public function save( Club_Role $club_role ): void {
+    public function save( Club_Role $club_role ) {
         if ( $club_role->get_id() === null ) {
-            $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
                     'club_id' => $club_role->get_club_id(),
@@ -47,22 +47,23 @@ class Club_Role_Repository {
                     '%d', // Format for user_id (integer)
                 )
             );
-            $club_role->set_id( $this->wpdb->insert_id );
+            if ( $inserted ) {
+                $club_role->set_id( $this->wpdb->insert_id );
+                wp_cache_flush_group( 'club-roles' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
-            $this->wpdb->update(
+            $updated = $this->wpdb->update(
                 $this->table_name,
                 array('user_id' => $club_role->get_user_id() ), // Data to update
                 array('id' => $club_role->get_id() ),            // Where clause
                 array('%d'),                                  // Data format
                 array('%d')                                   // Where format
             );
+            wp_cache_flush_group( 'club-roles' );
+            return $updated !== false;
         }
-        wp_cache_flush_group( 'club-roles' );
-
-        // Optional: Update the user object with the new ID
-        // if ($user->getId() === null && $this->wpdb->insert_id) {
-        //     // This requires the ID property to be mutable or passed back
-        // }
     }
 
     /**
@@ -176,13 +177,14 @@ class Club_Role_Repository {
      *
      * @return void
      */
-    public function delete_for_role( $id ): void {
-        $this->wpdb->delete(
+    public function delete_for_role( $id ): bool {
+        $deleted = $this->wpdb->delete(
             $this->table_name,
             array( 'id' => $id ),
             array( '%d' )
         );
         wp_cache_flush_group( 'club-roles' );
+        return $deleted !== false;
     }
 
     /**
@@ -192,13 +194,14 @@ class Club_Role_Repository {
      *
      * @return void
      */
-    public function delete_for_club( int $club_id ): void {
-        $this->wpdb->delete(
+    public function delete_for_club( int $club_id ): bool {
+        $deleted = $this->wpdb->delete(
             $this->table_name,
             array( 'club_id' => $club_id ),
             array( '%d' )
         );
         wp_cache_flush_group( 'club-roles' );
+        return $deleted !== false;
     }
 
     /**

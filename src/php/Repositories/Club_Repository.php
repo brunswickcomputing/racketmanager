@@ -12,13 +12,14 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\DTO\Club\Club_Competition_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
 
 /**
  * Class to implement the Club repository
  */
-class Club_Repository {
+class Club_Repository implements Club_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -33,10 +34,10 @@ class Club_Repository {
      * The save action is explicit, not in the Club constructor.
      * @param Club $club The club object to save.
      */
-    public function save( Club $club ): void {
+    public function save( Club $club ) {
         //`id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode`
         if ( $club->get_id() === null ) {
-            $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
                     'name'       => $club->get_name(),
@@ -59,10 +60,15 @@ class Club_Repository {
                     '%s', // Format for shortcode (string)
                 )
             );
-            $club->set_id( $this->wpdb->insert_id );
+            if ( $inserted ) {
+                $club->set_id( $this->wpdb->insert_id );
+                wp_cache_flush_group( 'clubs' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
             // UPDATE: Use wpdb->update with the prepare logic built-in
-            $this->wpdb->update(
+            $updated = $this->wpdb->update(
                 $this->table_name,
                 array( 'name'       => $club->get_name(),
                        'website'    => $club->get_website(),
@@ -85,8 +91,9 @@ class Club_Repository {
                 ),                                          // Data format
                 array('%d')                                 // Where format
             );
+            wp_cache_flush_group( 'clubs' );
+            return $updated !== false;
         }
-        wp_cache_flush_group( 'clubs' );
     }
 
     /**
@@ -281,14 +288,14 @@ class Club_Repository {
      * @return bool
      */
     public function delete( int $club_id ): bool {
-        $result = $this->wpdb->query(
+        $deleted = $this->wpdb->query(
             $this->wpdb->prepare(
                 "DELETE FROM $this->table_name WHERE `id` = %d",
                 $club_id
             )
         );
         wp_cache_flush_group( 'clubs' );
-        return $result !== false;
+        return $deleted !== false;
     }
 
     /**

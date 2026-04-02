@@ -11,12 +11,13 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Competition\Event_Details_DTO;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Event repository
  */
-class Event_Repository {
+class Event_Repository implements Event_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -26,9 +27,9 @@ class Event_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_events';
     }
 
-    public function save( Event $event ): void {
+    public function save( Event $event ) {
         if ( empty( $event->get_id() ) ) {
-            $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
                     'name'           => $event->get_name(),
@@ -50,9 +51,13 @@ class Event_Repository {
                     '%d',
                 )
             );
-            $event->set_id( $this->wpdb->insert_id );
+            if ( $inserted ) {
+                $event->set_id( $this->wpdb->insert_id );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
-            $this->wpdb->update(
+            return $this->wpdb->update(
                 $this->table_name,
                 array(
                     'name'           => $event->get_name(),
@@ -79,7 +84,7 @@ class Event_Repository {
                 array(
                     '%d'
                 ) // Where format
-            );
+            ) !== false;
         }
     }
 
@@ -140,8 +145,8 @@ class Event_Repository {
         return $events;
     }
 
-    public function delete( int $event_id ): void {
-        $this->wpdb->delete( $this->table_name, array( 'id' => $event_id ), array( '%d' ) );
+    public function delete( int $event_id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $event_id ), array( '%d' ) ) !== false;
     }
 
     /**

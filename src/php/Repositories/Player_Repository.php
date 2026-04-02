@@ -13,6 +13,7 @@ use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use WP_User;
@@ -21,7 +22,7 @@ use wpdb;
 /**
  * Class to implement the Player repository
  */
-class Player_Repository {
+class Player_Repository implements Player_Repository_Interface {
     const string META_KEY_GENDER = 'gender';
     const string META_KEY_BTM = 'btm';
     const string META_KEY_YOB = 'year_of_birth';
@@ -41,9 +42,9 @@ class Player_Repository {
      *
      * @param Player $player
      *
-     * @return void
+     * @return int|bool
      */
-    public function add( Player $player ): void {
+    public function add( Player $player ) {
         $userdata                    = array();
         $userdata['first_name']      = $player->get_firstname();
         $userdata['last_name']       = $player->get_surname();
@@ -68,8 +69,10 @@ class Player_Repository {
             if ( isset( $player->year_of_birth ) && $player->year_of_birth > '' ) {
                 update_user_meta( $user_id, 'year_of_birth', $player->get_year_of_birth() );
             }
+            return $user_id;
         }
 
+        return false;
     }
 
     /**
@@ -80,8 +83,8 @@ class Player_Repository {
      *
      * @return void
      */
-    public function save_btm( int $player_id, int $btm ): void {
-        update_user_meta( $player_id, self::META_KEY_BTM, $btm );
+    public function save_btm( int $player_id, int $btm ): bool {
+        return update_user_meta( $player_id, self::META_KEY_BTM, $btm ) !== false;
     }
 
     /**
@@ -92,8 +95,8 @@ class Player_Repository {
      *
      * @return void
      */
-    public function save_contact_no( int $player_id, string $contact_no ): void {
-        update_user_meta( $player_id, 'contactno', $contact_no );
+    public function save_contact_no( int $player_id, string $contact_no ): bool {
+        return update_user_meta( $player_id, 'contactno', $contact_no ) !== false;
     }
 
     /**
@@ -105,7 +108,8 @@ class Player_Repository {
      * @return void
      * @throws Player_Update_Exception
      */
-    public function update( Player $player, array $updates ): void {
+    public function update( Player $player, array $updates ): bool {
+        $success = true;
         if ( isset( $updates['core'] ) ) {
             $user_data                  = array();
             $user_data['first_name']    = $player->get_firstname();
@@ -118,6 +122,7 @@ class Player_Repository {
             if ( is_wp_error( $user_id ) ) {
                 throw new Player_Update_Exception( $user_id->get_error_message() );
             }
+            $success = $user_id !== 0;
         }
         $user_id = $player->get_id();
         if ( isset( $updates[ self::META_KEY_GENDER ] ) ) {
@@ -154,6 +159,7 @@ class Player_Repository {
             }
         }
         wp_cache_delete( $player->get_id(), 'players' );
+        return $success;
     }
 
     /**
@@ -163,7 +169,7 @@ class Player_Repository {
      *
      * @return array
      */
-    public function find_all( array $args ): array {
+    public function find_all( array $args = array() ): array {
         $defaults       = array(
             'active' => false,
             'name'   => false,
@@ -215,7 +221,7 @@ class Player_Repository {
      *
      * @return array
      */
-    private function get_active_players(): array {
+    public function get_active_players(): array {
         $sql     = "SELECT DISTINCT `player_id` FROM {$this->wpdb->prefix}racketmanager_rubber_players UNION SELECT DISTINCT `player_id` FROM {$this->wpdb->prefix}racketmanager_tournament_entries ORDER BY `player_id`";
         $players = wp_cache_get( md5( $sql ), 'players' );
         if ( ! $players ) {
@@ -384,8 +390,8 @@ class Player_Repository {
      *
      * @return void
      */
-    public function delete( int $player_id ): void {
-        wp_delete_user( $player_id );
+    public function delete( int $player_id ): bool {
+        return wp_delete_user( $player_id );
     }
 
     /**

@@ -35,7 +35,7 @@ use Racketmanager\Services\Settings_Service;
 
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Result\Result_Reporting_Service;
@@ -120,9 +120,9 @@ class Fixture_Result_Manager {
     private ?Rubber_Repository $rubber_repository;
 
     /**
-     * @var League_Repository|null
+     * @var League_Repository_Interface|null
      */
-    private ?League_Repository $league_repository;
+    private ?League_Repository_Interface $league_repository;
 
     /**
      * @var Club_Repository|null
@@ -303,13 +303,13 @@ class Fixture_Result_Manager {
      *
      * @param Fixture $fixture
      * @param Team_Result_Update_Request $request
-     * @param League_Repository|null $league_repository Optional league repository for testing.
+     * @param League_Repository_Interface|null $league_repository Optional league repository for testing.
      *
      * @return Team_Result_Response
      * @throws Fixture_Validation_Exception
      * @throws League_Not_Found_Exception
      */
-    public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request, ?League_Repository $league_repository = null ): Team_Result_Response {
+    public function handle_team_result_update( Fixture $fixture, Team_Result_Update_Request $request, ?League_Repository_Interface $league_repository = null ): Team_Result_Response {
         $league = $this->get_league_for_fixture( $fixture );
 
         $is_update_allowed = $this->is_update_allowed( $fixture );
@@ -542,12 +542,12 @@ class Fixture_Result_Manager {
      *
      * @param Fixture $fixture
      * @param Team_Result_Confirmation_Request $request
-     * @param League_Repository|null $league_repository Optional league repository for testing.
+     * @param League_Repository_Interface|null $league_repository Optional league repository for testing.
      *
      * @return Team_Result_Response
      * @throws League_Not_Found_Exception
      */
-    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository $league_repository = null ): Team_Result_Response {
+    public function handle_team_result_confirmation( Fixture $fixture, Team_Result_Confirmation_Request $request, ?League_Repository_Interface $league_repository = null ): Team_Result_Response {
         $validator = new Validator_Fixture();
         $validator = $validator->result_confirm( $request->result_confirm, $request->confirm_comments );
         if ( ! empty( $validator->error ) ) {
@@ -751,10 +751,10 @@ class Fixture_Result_Manager {
      * @param Fixture $fixture The fixture to update.
      * @param Result $result The new result.
      * @param string|null $confirmed Confirmation status ('Y', 'N', or null).
-     * @param League_Repository|null $league_repository Optional league repository for testing.
+     * @param League_Repository_Interface|null $league_repository Optional league repository for testing.
      * @return Fixture_Update_Response
      */
-    public function update_result( Fixture $fixture, Result $result, ?string $confirmed = null, ?League_Repository $league_repository = null ): Fixture_Update_Response {
+    public function update_result( Fixture $fixture, Result $result, ?string $confirmed = null, ?League_Repository_Interface $league_repository = null ): Fixture_Update_Response {
         $this->result_service->apply_to_fixture( $fixture, $result, $confirmed );
 
         $outcomes = [ Fixture_Update_Status::SAVED ];
@@ -888,11 +888,11 @@ class Fixture_Result_Manager {
      * @param string $actioned_by
      * @param string|null $confirm_comments
      * @param Result|null $result Optional result to apply.
-     * @param League_Repository|null $league_repository Optional league repository for testing.
+     * @param League_Repository_Interface|null $league_repository Optional league repository for testing.
      * @return Fixture_Update_Response
      * @throws League_Not_Found_Exception
      */
-    public function confirm_result( Fixture $fixture, string $actioned_by = '', ?string $confirm_comments = null, ?Result $result = null, ?League_Repository $league_repository = null ): Fixture_Update_Response {
+    public function confirm_result( Fixture $fixture, string $actioned_by = '', ?string $confirm_comments = null, ?Result $result = null, ?League_Repository_Interface $league_repository = null ): Fixture_Update_Response {
         if ( ! $result ) {
             $result = new Result(
                 home_points: (float) ( $fixture->get_home_points() ?? 0 ),

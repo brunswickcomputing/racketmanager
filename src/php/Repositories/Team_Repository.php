@@ -13,12 +13,13 @@ use QM_DB;
 use Racketmanager\Domain\DTO\Team\Team_Competition_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Team repository
  */
-class Team_Repository {
+class Team_Repository implements Team_Repository_Interface {
     private QM_DB|wpdb $wpdb;
     private string $team_table;
     private string $team_players_table;
@@ -79,7 +80,7 @@ class Team_Repository {
      *
      * @return array
      */
-    public function find_by_club( int $club_id, ?string $type ): array {
+    public function find_by_club( int $club_id, ?string $type = null ): array {
         $query    = "SELECT * FROM $this->team_table WHERE club_id = %d";
         $params[] = $club_id;
         if ( $type ) {
@@ -121,7 +122,7 @@ class Team_Repository {
      *
      * @return int|false
      */
-    public function save( Team $team ): int|false {
+    public function save( Team $team ) {
         $data       = array(
             'title'     => $team->get_name(),
             'stadium'   => $team->get_stadium(),
@@ -138,15 +139,14 @@ class Team_Repository {
         );
 
         if ( $team->get_id() === null ) {
-            $result = $this->wpdb->insert( $this->team_table, $data, $data_types );
-            if ( false === $result ) {
-                return false;
+            $inserted = $this->wpdb->insert( $this->team_table, $data, $data_types );
+            if ( $inserted ) {
+                $insert_id = $this->wpdb->insert_id;
+                $team->set_id( $insert_id );
+                wp_cache_set( $insert_id, $team, 'teams' );
+                return $insert_id;
             }
-            $insert_id = $this->wpdb->insert_id;
-            $team->set_id( $insert_id );
-            wp_cache_set( $insert_id, $team, 'teams' );
-
-            return $insert_id;
+            return false;
         } else {
             // UPDATE: Use wpdb->update with the prepare logic built-in
             wp_cache_set( $team->get_id(), $team, 'teams' );
@@ -154,7 +154,7 @@ class Team_Repository {
             return $this->wpdb->update( $this->team_table, $data, array( 'id' => $team->get_id() ),            // Where clause
                 $data_types,                                // Data format
                 array( '%d' )                                 // Where format
-            );
+            ) !== false;
         }
     }
 
@@ -292,12 +292,17 @@ class Team_Repository {
     /**
      * Saves a team using the existing upsert and handles player assignments.
      */
-    public function save_team_players( int $team_id, array $player_ids ): void {
+    public function save_team_players( int $team_id, array $player_ids ): bool {
+        $success = true;
         foreach ( $player_ids as $player_id ) {
-            $this->wpdb->insert( $this->team_players_table, [
+            $inserted = $this->wpdb->insert( $this->team_players_table, [
                     'team_id'   => $team_id,
                     'player_id' => absint( $player_id )
                 ], [ '%d', '%d' ] );
+            if ( $inserted === false ) {
+                $success = false;
+            }
         }
+        return $success;
     }
 }

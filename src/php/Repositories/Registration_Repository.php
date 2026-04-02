@@ -33,12 +33,12 @@ class Registration_Repository {
      *
      * @param Club_Player $club_player
      *
-     * @return void
+     * @return int|bool
      */
-    public function save( Club_Player $club_player ): void {
+    public function save( Club_Player $club_player ) {
         //`id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`
         if ( $club_player->get_id() === null ) {
-            $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
                     'player_id'      => $club_player->get_player_id(),
@@ -65,9 +65,14 @@ class Registration_Repository {
                     '%s', // Format for status (string)
                 )
             );
-            $club_player->set_id( $this->wpdb->insert_id );
+            if ( $inserted ) {
+                $club_player->set_id( $this->wpdb->insert_id );
+                wp_cache_flush_group( 'club_players' );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
-            $this->wpdb->update(
+            $updated = $this->wpdb->update(
                 $this->table_name,
                 array(
                     'player_id'      => $club_player->get_player_id(),
@@ -100,8 +105,9 @@ class Registration_Repository {
                     '%d'
                 )
             );
+            wp_cache_flush_group( 'club_players' );
+            return $updated !== false;
         }
-        wp_cache_flush_group( 'club_players' );
     }
 
     /**
@@ -195,14 +201,14 @@ class Registration_Repository {
      *
      * @param $club_id
      *
-     * @return void
+     * @return bool
      */
-    public function delete_for_club( $club_id ): void {
-        $this->wpdb->delete(
+    public function delete_for_club( $club_id ): bool {
+        return $this->wpdb->delete(
             $this->table_name,
             array( 'club_id' => $club_id ),
             array( '%d' )
-        );
+        ) !== false;
     }
 
     /**

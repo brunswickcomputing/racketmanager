@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the fixture repository
  */
-class Fixture_Repository {
+class Fixture_Repository implements Fixture_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -25,7 +26,7 @@ class Fixture_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_matches';
     }
 
-    public function save( Fixture $fixture ): bool {
+    public function save( Fixture $fixture ) {
         $data = array(
             'group'               => $fixture->get_group(),
             'date'                => $fixture->get_date(),
@@ -108,11 +109,11 @@ class Fixture_Repository {
             );
             if ( $inserted ) {
                 $fixture->set_id( $this->wpdb->insert_id );
+                return $this->wpdb->insert_id;
             }
-
-            return (bool) $inserted;
+            return false;
         } else {
-            $updated = $this->wpdb->update(
+            return (bool) $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(
@@ -121,8 +122,6 @@ class Fixture_Repository {
                 $format,
                 array( '%d' )
             );
-
-            return $updated !== false && $updated > 0;
         }
     }
 
@@ -152,7 +151,7 @@ class Fixture_Repository {
             wp_cache_delete( $id . '_legacy', 'fixtures' );
         }
 
-        return $deleted !== false;
+        return (bool) $deleted;
     }
 
     /**
@@ -280,15 +279,15 @@ class Fixture_Repository {
         return $results;
     }
 
-    public function delete_by_league_and_season( int $league_id, string $season ): void {
-        $this->wpdb->delete(
+    public function delete_by_league_and_season( int $league_id, string $season ): bool {
+        return $this->wpdb->delete(
             $this->table_name,
             array(
                 'league_id' => $league_id,
                 'season'    => $season,
             ),
             array( '%d', '%s' )
-        );
+        ) !== false;
     }
 
     /**

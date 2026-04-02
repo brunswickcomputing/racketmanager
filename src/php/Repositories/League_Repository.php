@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the League repository
  */
-class League_Repository {
+class League_Repository implements League_Repository_Interface {
     private ?wpdb $wpdb = null;
     private ?string $table_name = null;
 
@@ -27,7 +28,7 @@ class League_Repository {
         }
     }
 
-    public function save( League $league ): void {
+    public function save( League $league ) {
         $data = array(
             'title'    => $league->get_name(),
             'settings' => maybe_serialize( $league->get_settings() ),
@@ -43,14 +44,18 @@ class League_Repository {
             '%d',
         );
         if ( empty( $league->get_id() ) ) {
-            $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format
             );
-            $league->set_id( $this->wpdb->insert_id );
+            if ( $inserted ) {
+                $league->set_id( $this->wpdb->insert_id );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
-            $this->wpdb->update(
+            return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
@@ -60,7 +65,7 @@ class League_Repository {
                 array(
                     '%d'
                 ) // Where format
-            );
+            ) !== false;
         }
     }
 
@@ -157,5 +162,18 @@ class League_Repository {
         $result = $wpdb->get_var($query);
 
         return $result ? (int) $result : null;
+    }
+
+    /**
+     * Delete a league by its ID.
+     *
+     * @param int $id
+     * @return void
+     */
+    public function delete( int $id ): bool {
+        if ( $this->wpdb ) {
+            return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
+        }
+        return false;
     }
 }

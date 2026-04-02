@@ -34,11 +34,11 @@ class Player_Error_Repository {
      *
      * @param Player_Error $player_error
      *
-     * @return void
+     * @return int|bool
      */
-    public function save( Player_Error $player_error ): void {
+    public function save( Player_Error $player_error ) {
         if ( empty( $player_error->get_id() ) ) {
-            $this->wpdb->insert(
+            $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
                     'player_id'    => $player_error->get_player_id(),
@@ -51,11 +51,13 @@ class Player_Error_Repository {
                     '%s'
                 )
             );
-            if ( $player_error->get_id() === null && $this->wpdb->insert_id) {
+            if ( $inserted ) {
                 $player_error->set_id($this->wpdb->insert_id);
+                return $this->wpdb->insert_id;
             }
+            return false;
         } else {
-            $this->wpdb->update(
+            return $this->wpdb->update(
                 $this->table_name,
                 array(
                     'player_id'    => $player_error->get_player_id(),
@@ -71,7 +73,7 @@ class Player_Error_Repository {
                     '%s'
                 ),
                 array( '%d' )
-            );
+            ) !== false;
         }
     }
 
@@ -124,16 +126,16 @@ class Player_Error_Repository {
      *
      * @param $player_error_id
      *
-     * @return void
+     * @return bool
      */
-    public function delete( $player_error_id ): void {
-        $this->wpdb->delete(
+    public function delete( $player_error_id ): bool {
+        return $this->wpdb->delete(
             $this->table_name,
             array(
                 'id' => $player_error_id
             ),
             array( '%d' )
-        );
+        ) !== false;
     }
 
     /**
@@ -141,16 +143,16 @@ class Player_Error_Repository {
      *
      * @param $player_id
      *
-     * @return void
+     * @return bool
      */
-    public function delete_for_player( $player_id ): void {
-        $this->wpdb->delete(
+    public function delete_for_player( $player_id ): bool {
+        return $this->wpdb->delete(
             $this->table_name,
             array(
                 'player_id' => $player_id
             ),
             array( '%d' )
-        );
+        ) !== false;
     }
 
 }

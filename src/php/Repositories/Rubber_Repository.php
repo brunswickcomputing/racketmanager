@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the rubber repository
  */
-class Rubber_Repository {
+class Rubber_Repository implements Rubber_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
     private string $players_table_name;
@@ -27,7 +28,7 @@ class Rubber_Repository {
         $this->players_table_name = $this->wpdb->prefix . 'racketmanager_rubber_players';
     }
 
-    public function save( Rubber $rubber ): void {
+    public function save( Rubber $rubber ) {
         $data = array(
             'date'          => $rubber->get_date(),
             'match_id'      => $rubber->get_match_id(),
@@ -59,10 +60,14 @@ class Rubber_Repository {
         );
 
         if ( empty( $rubber->get_id() ) ) {
-            $this->wpdb->insert( $this->table_name, $data, $format );
-            $rubber->set_id( $this->wpdb->insert_id );
+            $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
+            if ( $inserted ) {
+                $rubber->set_id( $this->wpdb->insert_id );
+                return $this->wpdb->insert_id;
+            }
+            return false;
         } else {
-            $this->wpdb->update(
+            return $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(
@@ -72,7 +77,7 @@ class Rubber_Repository {
                 array(
                     '%d',
                 )
-            );
+            ) !== false;
         }
     }
 
@@ -155,5 +160,18 @@ class Rubber_Repository {
         );
 
         return (int) $this->wpdb->get_var( $sql );
+    }
+    /**
+     * Delete rubbers for a given fixture ID.
+     *
+     * @param int $fixture_id
+     * @return bool
+     */
+    public function delete_by_fixture_id( int $fixture_id ): bool {
+        return $this->wpdb->delete(
+            $this->table_name,
+            array( 'match_id' => $fixture_id ),
+            array( '%d' )
+        ) !== false;
     }
 }

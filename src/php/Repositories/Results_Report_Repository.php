@@ -32,7 +32,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
      * @param Results_Report $results_report
      * @return int|bool
      */
-    public function save( Results_Report $results_report ) {
+    public function save( object $results_report ): int|bool {
         $data = array(
             'match_id'      => $results_report->match_id,
             'result_object' => $results_report->result_object,
@@ -71,7 +71,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
      * @param int $id
      * @return Results_Report|null
      */
-    public function find_by_id( int $id ): ?Results_Report {
+    public function find_by_id( $id ): ?Results_Report {
         $row = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
@@ -119,5 +119,9 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
             array( 'match_id' => $fixture_id ),
             array( '%d' )
         ) !== false;
+    }
+
+    public function delete( int $id ): bool {
+        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 }

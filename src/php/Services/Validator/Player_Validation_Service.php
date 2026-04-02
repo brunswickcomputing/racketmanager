@@ -7,8 +7,9 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
 use DateTime;
@@ -19,13 +20,13 @@ use DateMalformedStringException;
  */
 class Player_Validation_Service {
     private Registration_Service $registration_service;
-    private Results_Checker_Repository $results_checker_repository;
-    private Fixture_Repository $fixture_repository;
+    private Results_Checker_Repository_Interface $results_checker_repository;
+    private Fixture_Repository_Interface $fixture_repository;
 
     public function __construct(
         Registration_Service $registration_service,
-        Results_Checker_Repository $results_checker_repository,
-        ?Fixture_Repository $fixture_repository = null
+        Results_Checker_Repository_Interface $results_checker_repository,
+        ?Fixture_Repository_Interface $fixture_repository = null
     ) {
         $this->registration_service       = $registration_service;
         $this->results_checker_repository = $results_checker_repository;

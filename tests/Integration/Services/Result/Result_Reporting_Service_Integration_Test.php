@@ -10,12 +10,12 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Team;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\Competition_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use stdClass;
 
@@ -89,19 +89,19 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 			->getMock();
 		$away_team->method( 'get_players' )->willReturn( [ '1' => (object)[ 'display_name' => 'Int Player 2', 'btm' => 'BTM2' ] ] );
 
-		$league_repo = $this->createMock( League_Repository::class );
+		$league_repo = $this->createMock( League_Repository_Interface::class );
 		$league_repo->method( 'find_by_id' )->with( 101 )->willReturn( $league );
 
-		$event_repo = $this->createMock( Event_Repository::class );
+		$event_repo = $this->createMock( Event_Repository_Interface::class );
 		$event_repo->method( 'find_by_id' )->with( 201 )->willReturn( $event );
 
-		$competition_repo = $this->createMock( Competition_Repository::class );
+		$competition_repo = $this->createMock( Competition_Repository_Interface::class );
 		$competition_repo->method( 'find_by_id' )->with( 301 )->willReturn( $competition );
 
-		$rubber_repo = $this->createStub( Rubber_Repository::class );
+		$rubber_repo = $this->createStub( Rubber_Repository_Interface::class );
 		$rubber_repo->method( 'find_by_fixture_id' )->willReturn( [] );
 
-		$team_repo = $this->createStub( Team_Repository::class );
+		$team_repo = $this->createStub( Team_Repository_Interface::class );
 		$team_repo->method( 'find_by_id' )->willReturnMap( [
 			[ 10, $home_team ],
 			[ 20, $away_team ],

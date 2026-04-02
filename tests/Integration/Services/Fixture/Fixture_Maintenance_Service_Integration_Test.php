@@ -10,14 +10,14 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Maintenance_Service_Integration_Test extends TestCase {
@@ -34,8 +34,8 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $this->notification_service = $this->createMock(Notification_Service::class);
         $this->settings_service = $this->createMock(Settings_Service::class);
         $this->fixture_result_manager = $this->createMock(Fixture_Result_Manager::class);
-        $this->league_repository = $this->createMock(League_Repository::class);
-        $this->results_checker_repository = $this->createMock(Results_Checker_Repository::class);
+        $this->league_repository = $this->createMock(League_Repository_Interface::class);
+        $this->results_checker_repository = $this->createMock(Results_Checker_Repository_Interface::class);
 
         $service_provider = new Fixture_Service_Provider(
             result_service: $this->createMock(\Racketmanager\Services\Result_Service::class),

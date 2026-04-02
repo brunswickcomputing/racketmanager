@@ -9,10 +9,10 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Tournament_Entry_Repository;
-use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -29,7 +29,7 @@ final
 class Tournament_Service_Test extends TestCase {
 
     public function test_bulk_remove_tournaments_success(): void {
-        $repo    = $this->createMock( Tournament_Repository::class );
+        $repo    = $this->createMock( Tournament_Repository_Interface::class );
         $service = $this->get_mocked_service( $repo );
 
         $service->expects( self::exactly( 2 ) )
@@ -52,10 +52,10 @@ class Tournament_Service_Test extends TestCase {
                         $this->createMock( RacketManager::class ),
                         $tournament_repository,
                         $this->createMock( Charge_Repository::class ),
-                        $this->createMock( Event_Repository::class ),
+                        $this->createMock( Event_Repository_Interface::class ),
                         $this->createMock( Fixture_Service::class ),
-                        $this->createMock( League_Team_Repository::class ),
-                        $this->createMock( Tournament_Entry_Repository::class ),
+                        $this->createMock( League_Team_Repository_Interface::class ),
+                        $this->createMock( Tournament_Entry_Repository_Interface::class ),
                         $this->createMock( Competition_Service::class ),
                         $this->createMock( Player_Service::class ),
                         $this->createMock( Club_Service::class ),
@@ -67,7 +67,7 @@ class Tournament_Service_Test extends TestCase {
     }
 
     public function test_bulk_remove_tournaments_with_not_found(): void {
-        $repo    = $this->createMock( Tournament_Repository::class );
+        $repo    = $this->createMock( Tournament_Repository_Interface::class );
         $service = $this->get_mocked_service( $repo );
 
         $service->expects( self::exactly( 2 ) )

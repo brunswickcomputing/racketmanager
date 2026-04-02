@@ -7,8 +7,11 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
@@ -33,8 +36,8 @@ class Fixture_Service_Test extends TestCase {
     private Fixture_Service $service;
 
     protected function setUp(): void {
-        $this->fixture_repository = $this->createMock( Fixture_Repository::class );
-        $this->rubber_repository = $this->createMock( Rubber_Repository::class );
+        $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
+        $this->rubber_repository = $this->createMock( Rubber_Repository_Interface::class );
         $this->notification_service = $this->createMock( Notification_Service::class );
         $this->registration_service = $this->createMock( Registration_Service::class );
         $this->competition_service = $this->createMock( Competition_Service::class );
@@ -43,9 +46,9 @@ class Fixture_Service_Test extends TestCase {
         $this->repository_provider = $this->createMock( Repository_Provider::class );
         $this->repository_provider->method( 'get_fixture_repository' )->willReturn( $this->fixture_repository );
         $this->repository_provider->method( 'get_rubber_repository' )->willReturn( $this->rubber_repository );
-        $this->repository_provider->method( 'get_league_repository' )->willReturn( $this->createMock( \Racketmanager\Repositories\League_Repository::class ) );
-        $this->repository_provider->method( 'get_team_repository' )->willReturn( $this->createMock( \Racketmanager\Repositories\Team_Repository::class ) );
-        $this->repository_provider->method( 'get_club_repository' )->willReturn( $this->createMock( \Racketmanager\Repositories\Club_Repository::class ) );
+        $this->repository_provider->method( 'get_league_repository' )->willReturn( $this->createMock( League_Repository_Interface::class ) );
+        $this->repository_provider->method( 'get_team_repository' )->willReturn( $this->createMock( Team_Repository_Interface::class ) );
+        $this->repository_provider->method( 'get_club_repository' )->willReturn( $this->createMock( Club_Repository_Interface::class ) );
 
         $this->service_provider = $this->createMock( Service_Provider::class );
         $this->service_provider->method( 'get_notification_service' )->willReturn( $this->notification_service );

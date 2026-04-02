@@ -9,8 +9,8 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
@@ -27,8 +27,8 @@ class Player_Validation_Service_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->registration_service = $this->createMock( Registration_Service::class );
-        $this->results_checker_repository = $this->createMock( Results_Checker_Repository::class );
-        $this->fixture_repository = $this->createMock( Fixture_Repository::class );
+        $this->results_checker_repository = $this->createMock( Results_Checker_Repository_Interface::class );
+        $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $this->service = new Player_Validation_Service(
             $this->registration_service,
             $this->results_checker_repository,

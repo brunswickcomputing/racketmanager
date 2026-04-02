@@ -33,10 +33,10 @@ use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Charge_Repository;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Invoice_Repository;
-use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Invoice_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Services\Validator\Validator_Finance;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Messages;
@@ -50,18 +50,18 @@ use WP_Error;
  */
 class Finance_Service {
     private RacketManager $racketmanager;
-    private Charge_Repository $charge_repository;
-    private Invoice_Repository $invoice_repository;
-    private Club_Repository $club_repository;
+    private Charge_Repository_Interface $charge_repository;
+    private Invoice_Repository_Interface $invoice_repository;
+    private Club_Repository_Interface $club_repository;
     private Competition_Service $competition_service;
     private Player_Service $player_service;
-    private Tournament_Repository $tournament_repository;
+    private Tournament_Repository_Interface $tournament_repository;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Charge_Repository $charge_repository, Invoice_Repository $invoice_repository, Club_Repository $club_repository, Tournament_Repository $tournament_repository, Competition_Service $competition_service, Player_Service $player_service ) {
+    public function __construct( RacketManager $plugin_instance, Charge_Repository_Interface $charge_repository, Invoice_Repository_Interface $invoice_repository, Club_Repository_Interface $club_repository, Tournament_Repository_Interface $tournament_repository, Competition_Service $competition_service, Player_Service $player_service ) {
         $this->racketmanager         = $plugin_instance;
         $this->charge_repository     = $charge_repository;
         $this->invoice_repository    = $invoice_repository;

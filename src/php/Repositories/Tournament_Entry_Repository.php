@@ -10,13 +10,14 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Tournament_Entry;
+use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
 
 /**
  * Class to implement the Tournament Entry repository
  */
-class Tournament_Entry_Repository {
+class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interface {
 
     private wpdb $wpdb;
     private string $table_name;
@@ -27,17 +28,17 @@ class Tournament_Entry_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_tournament_entries';
     }
 
-    public function find_by_id( null|int $tournament_entry_id ): ?Tournament_Entry {
-        if ( ! $tournament_entry_id ) {
+    public function find_by_id( $id ): ?Tournament_Entry {
+        if ( ! $id ) {
             return null;
         }
-        $tournament_entry = wp_cache_get( $tournament_entry_id, 'tournament_entries' );
+        $tournament_entry = wp_cache_get( $id, 'tournament_entries' );
 
         if ( ! $tournament_entry ) {
             $tournament_entry = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM `$this->table_name` WHERE `id` = %d LIMIT 1",
-                    $tournament_entry_id
+                    $id
                 )
             );
 
@@ -47,7 +48,7 @@ class Tournament_Entry_Repository {
 
             $tournament_entry = new Tournament_Entry( $tournament_entry );
 
-            wp_cache_set( $tournament_entry_id, $tournament_entry, 'tournament_entries' );
+            wp_cache_set( $id, $tournament_entry, 'tournament_entries' );
         }
 
         return $tournament_entry;
@@ -80,7 +81,7 @@ class Tournament_Entry_Repository {
 
     }
 
-    public function save( Tournament_Entry $tournament_entry ): int|bool {
+    public function save( object $tournament_entry ): int|bool {
         $data        = array(
             'tournament_id' => $tournament_entry->get_tournament_id(),
             'player_id'     => $tournament_entry->get_player_id(),
@@ -126,8 +127,8 @@ class Tournament_Entry_Repository {
         }
     }
 
-    public function delete( int $id ): int|bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
+    public function delete( int $id ): bool {
+        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 
     public function find_by_tournament( int $tournament_id, ?string $status = null ): array {

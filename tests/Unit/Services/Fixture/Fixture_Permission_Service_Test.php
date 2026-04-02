@@ -10,11 +10,11 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Services\Registration_Service;
@@ -34,11 +34,11 @@ class Fixture_Permission_Service_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         
-        $this->fixture_repository = $this->createStub( Fixture_Repository::class );
+        $this->fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
         $this->registration_service = $this->createStub( Registration_Service::class );
-        $this->league_repository = $this->createMock( League_Repository::class );
-        $this->team_repository = $this->createStub( Team_Repository::class );
-        $this->club_repository = $this->createStub( Club_Repository::class );
+        $this->league_repository = $this->createMock( League_Repository_Interface::class );
+        $this->team_repository = $this->createStub( Team_Repository_Interface::class );
+        $this->club_repository = $this->createStub( Club_Repository_Interface::class );
         
         $this->repository_provider = $this->createStub( Repository_Provider::class );
         $this->repository_provider->method( 'get_fixture_repository' )->willReturn( $this->fixture_repository );

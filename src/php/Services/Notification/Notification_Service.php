@@ -5,11 +5,11 @@ namespace Racketmanager\Services\Notification;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Player;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\RacketManager;
 use function Racketmanager\captain_result_notification;
@@ -26,37 +26,37 @@ class Notification_Service {
     /**
      * League Repository.
      *
-     * @var League_Repository
+     * @var League_Repository_Interface
      */
-    private League_Repository $league_repository;
+    private League_Repository_Interface $league_repository;
 
     /**
      * League Team Repository.
      *
-     * @var League_Team_Repository
+     * @var League_Team_Repository_Interface
      */
-    private League_Team_Repository $league_team_repository;
+    private League_Team_Repository_Interface $league_team_repository;
 
     /**
      * Team Repository.
      *
-     * @var Team_Repository
+     * @var Team_Repository_Interface
      */
-    private Team_Repository $team_repository;
+    private Team_Repository_Interface $team_repository;
 
     /**
      * Player Repository.
      *
-     * @var Player_Repository
+     * @var Player_Repository_Interface
      */
-    private Player_Repository $player_repository;
+    private Player_Repository_Interface $player_repository;
 
     /**
      * Club Repository.
      *
-     * @var Club_Repository
+     * @var Club_Repository_Interface
      */
-    private Club_Repository $club_repository;
+    private Club_Repository_Interface $club_repository;
 
     /**
      * Settings Service.
@@ -75,20 +75,20 @@ class Notification_Service {
     /**
      * Constructor.
      *
-     * @param League_Repository      $league_repository
-     * @param League_Team_Repository $league_team_repository
-     * @param Team_Repository        $team_repository
-     * @param Player_Repository      $player_repository
-     * @param Club_Repository        $club_repository
+     * @param League_Repository_Interface      $league_repository
+     * @param League_Team_Repository_Interface $league_team_repository
+     * @param Team_Repository_Interface        $team_repository
+     * @param Player_Repository_Interface      $player_repository
+     * @param Club_Repository_Interface        $club_repository
      * @param Settings_Service       $settings_service
      * @param RacketManager          $app
      */
     public function __construct(
-        League_Repository $league_repository,
-        League_Team_Repository $league_team_repository,
-        Team_Repository $team_repository,
-        Player_Repository $player_repository,
-        Club_Repository $club_repository,
+        League_Repository_Interface $league_repository,
+        League_Team_Repository_Interface $league_team_repository,
+        Team_Repository_Interface $team_repository,
+        Player_Repository_Interface $player_repository,
+        Club_Repository_Interface $club_repository,
         Settings_Service $settings_service,
         RacketManager $app
     ) {

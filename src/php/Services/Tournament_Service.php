@@ -34,11 +34,11 @@ use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Charge_Repository;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Tournament_Entry_Repository;
-use Racketmanager\Repositories\Tournament_Repository;
+use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Entry_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Services\Validator\Validator_Tournament;
 use Racketmanager\Util\Util;
@@ -53,12 +53,12 @@ use function Racketmanager\get_league;
  */
 class Tournament_Service {
     private RacketManager $racketmanager;
-    private Tournament_Repository $tournament_repository;
-    private Charge_Repository $charge_repository;
-    private Event_Repository $event_repository;
+    private Tournament_Repository_Interface $tournament_repository;
+    private Charge_Repository_Interface $charge_repository;
+    private Event_Repository_Interface $event_repository;
     private Fixture_Service $fixture_service;
-    private League_Team_Repository $league_team_repository;
-    private Tournament_Entry_Repository $tournament_entry_repository;
+    private League_Team_Repository_Interface $league_team_repository;
+    private Tournament_Entry_Repository_Interface $tournament_entry_repository;
     private Competition_Service $competition_service;
     private Player_Service $player_service;
     private Club_Service $club_service;
@@ -69,7 +69,7 @@ class Tournament_Service {
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Tournament_Repository $tournament_repository, Charge_Repository $charge_repository, Event_Repository $event_repository, Fixture_Service $fixture_service, League_Team_Repository $league_team_repository, Tournament_Entry_Repository $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service, Finance_Service $finance_service, League_Service $league_service ) {
+    public function __construct( RacketManager $plugin_instance, Tournament_Repository_Interface $tournament_repository, Charge_Repository_Interface $charge_repository, Event_Repository_Interface $event_repository, Fixture_Service $fixture_service, League_Team_Repository_Interface $league_team_repository, Tournament_Entry_Repository_Interface $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service, Finance_Service $finance_service, League_Service $league_service ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
         $this->charge_repository           = $charge_repository;

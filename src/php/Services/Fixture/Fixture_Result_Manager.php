@@ -33,11 +33,17 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
 
-use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\Club_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Player_Repository;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Domain\Results_Report;
 use Racketmanager\Repositories\Results_Report_Repository;
@@ -100,24 +106,24 @@ class Fixture_Result_Manager {
     private ?Notification_Service $notification_service;
 
     /**
-     * @var Team_Repository|null
+     * @var Team_Repository_Interface|null
      */
-    private ?Team_Repository $team_repository;
+    private ?Team_Repository_Interface $team_repository;
 
     /**
-     * @var Player_Repository|null
+     * @var Player_Repository_Interface|null
      */
-    private ?Player_Repository $player_repository;
+    private ?Player_Repository_Interface $player_repository;
 
     /**
-     * @var League_Team_Repository|null
+     * @var League_Team_Repository_Interface|null
      */
-    private ?League_Team_Repository $league_team_repository;
+    private ?League_Team_Repository_Interface $league_team_repository;
 
     /**
-     * @var Rubber_Repository|null
+     * @var Rubber_Repository_Interface|null
      */
-    private ?Rubber_Repository $rubber_repository;
+    private ?Rubber_Repository_Interface $rubber_repository;
 
     /**
      * @var League_Repository_Interface|null
@@ -125,19 +131,19 @@ class Fixture_Result_Manager {
     private ?League_Repository_Interface $league_repository;
 
     /**
-     * @var Club_Repository|null
+     * @var Club_Repository_Interface|null
      */
-    private ?Club_Repository $club_repository;
+    private ?Club_Repository_Interface $club_repository;
 
     /**
-     * @var Results_Checker_Repository|null
+     * @var Results_Checker_Repository_Interface|null
      */
-    private ?Results_Checker_Repository $results_checker_repository;
+    private ?Results_Checker_Repository_Interface $results_checker_repository;
 
     /**
-     * @var Fixture_Repository|null
+     * @var Fixture_Repository_Interface|null
      */
-    private ?Fixture_Repository $fixture_repository;
+    private ?Fixture_Repository_Interface $fixture_repository;
 
     /**
      * @var Fixture_Permission_Service
@@ -146,7 +152,7 @@ class Fixture_Result_Manager {
 
     /** @var Result_Reporting_Service */
     private Result_Reporting_Service $result_reporting_service;
-    private Results_Report_Repository $results_report_repository;
+    private Results_Report_Repository_Interface $results_report_repository;
 
     /**
      * @param Service_Provider $service_provider

@@ -12,8 +12,8 @@ namespace Racketmanager\Services;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
@@ -28,8 +28,8 @@ use stdClass;
  */
 class Fixture_Service {
 
-    private Fixture_Repository $fixture_repository;
-    private Rubber_Repository $rubber_repository;
+    private Fixture_Repository_Interface $fixture_repository;
+    private Rubber_Repository_Interface $rubber_repository;
     private ?Notification_Service $notification_service;
     private Fixture_Permission_Service $permission_service;
     private Fixture_Detail_Service $detail_service;

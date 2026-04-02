@@ -15,9 +15,9 @@ use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 /**
  * Interface to implement the Competition repository
  */
-interface Competition_Repository_Interface {
-    public function save( Competition $competition );
-    public function find_by_id( int|string|null $competition_id ): ?Competition;
+interface Competition_Repository_Interface extends Repository_Interface {
+    public function save( object $competition );
+    public function find_by_id( $id ): ?Competition;
     public function find_all(): array;
     public function find_by( array $criteria ): array;
     public function find_competitions_with_summary( $age_group, $type ): array;

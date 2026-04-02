@@ -11,11 +11,11 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\Competition_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use stdClass;
 
@@ -51,13 +51,13 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->method('get_season_by_name')->willReturn(null);
 		$competition->competition_code = null;
 
-		$league_repo = $this->createStub( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository_Interface::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
-		$event_repo = $this->createStub( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository_Interface::class );
 		$event_repo->method('find_by_id')->willReturn($event);
 
-		$competition_repo = $this->createStub( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
 
 		$repository_provider = $this->createStub( Repository_Provider::class );
@@ -123,16 +123,16 @@ class Result_Reporting_Service_Test extends TestCase {
 		$away_team = $this->createStub( Team::class );
 		$away_team->method('get_players')->willReturn(['1' => $player2]);
 
-		$league_repo = $this->createStub( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository_Interface::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
-		$event_repo = $this->createStub( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository_Interface::class );
 		$event_repo->method('find_by_id')->willReturn($event);
 
-		$competition_repo = $this->createStub( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
 
-		$team_repo = $this->createStub( Team_Repository::class );
+		$team_repo = $this->createStub( Team_Repository_Interface::class );
 		$team_repo->method('find_by_id')->willReturnMap([
 			[1, $home_team],
 			[2, $away_team],
@@ -210,16 +210,16 @@ class Result_Reporting_Service_Test extends TestCase {
 			'away' => ['1' => $player2],
 		];
 
-		$league_repo = $this->createStub( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository_Interface::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
-		$event_repo = $this->createStub( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository_Interface::class );
 		$event_repo->method('find_by_id')->willReturn($event);
 
-		$competition_repo = $this->createStub( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
 
-		$rubber_repo = $this->createStub( Rubber_Repository::class );
+		$rubber_repo = $this->createStub( Rubber_Repository_Interface::class );
 		$rubber_repo->method('find_by_fixture_id')->willReturn([$rubber]);
 
 		$repository_provider = $this->createStub( Repository_Provider::class );
@@ -288,13 +288,13 @@ class Result_Reporting_Service_Test extends TestCase {
 		$away_team = $this->createStub( Team::class );
 		$away_team->method('get_players')->willReturn(['1' => $player2]);
 
-		$league_repo = $this->createStub( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository_Interface::class );
 		$league_repo->method('find_by_id')->willReturn($league);
-		$event_repo = $this->createStub( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository_Interface::class );
 		$event_repo->method('find_by_id')->willReturn($event);
-		$competition_repo = $this->createStub( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
-		$team_repo = $this->createStub( Team_Repository::class );
+		$team_repo = $this->createStub( Team_Repository_Interface::class );
 		$team_repo->method('find_by_id')->willReturnMap([ [1, $home_team], [2, $away_team] ]);
 
 		$repository_provider = $this->createStub( Repository_Provider::class );

@@ -22,8 +22,8 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Overview\Tournament_Overview_Action_Handler_Interface;
 use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
@@ -41,8 +41,8 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
         private League_Service $league_service,
         private Fixture_Service $fixture_service,
         private Tournament_Service $tournament_service,
-        private League_Team_Repository $league_team_repository,
-        private Team_Repository $team_repository,
+        private League_Team_Repository_Interface $league_team_repository,
+        private Team_Repository_Interface $team_repository,
     ) {
     }
 

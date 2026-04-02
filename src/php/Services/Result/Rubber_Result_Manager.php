@@ -7,6 +7,7 @@ use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Scoring\Scoring_Context;
@@ -20,13 +21,13 @@ use function Racketmanager\get_rubber;
 class Rubber_Result_Manager {
     private Score_Validation_Service $score_validator;
     private League_Service $league_service;
-    private Rubber_Repository $rubber_repository;
+    private Rubber_Repository_Interface $rubber_repository;
     private Player_Validation_Service $player_validator;
 
     public function __construct(
         Score_Validation_Service $score_validator,
         League_Service $league_service,
-        ?Rubber_Repository $rubber_repository = null,
+        ?Rubber_Repository_Interface $rubber_repository = null,
         ?Player_Validation_Service $player_validator = null
     ) {
         $this->score_validator   = $score_validator;

@@ -10,8 +10,8 @@ use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Team;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
@@ -44,8 +44,8 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_service         = $this->createMock( League_Service::class );
         $fixture_service        = $this->createMock( Fixture_Service::class );
         $tournament_service     = $this->createMock( Tournament_Service::class );
-        $league_team_repository = $this->createMock( League_Team_Repository::class );
-        $team_repository        = $this->createMock( Team_Repository::class );
+        $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $team_repository        = $this->createMock( Team_Repository_Interface::class );
 
         $league_team_repository->method( 'find_by_id' )
                                ->with( $league_team_id )
@@ -103,8 +103,8 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $fixture_service = $this->createMock( Fixture_Service::class );
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $league_team_repository = $this->createMock( League_Team_Repository::class );
-        $team_repository = $this->createMock( Team_Repository::class );
+        $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $team_repository = $this->createMock( Team_Repository_Interface::class );
 
         // Mock Team_Repository::find_by_id to return null (team doesn't exist by name)
         $team_repository->expects( self::once() )
@@ -159,8 +159,8 @@ class Championship_Admin_Integration_Test extends TestCase {
         $league_service = $this->createMock( League_Service::class );
         $fixture_service = $this->createMock( Fixture_Service::class );
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $league_team_repository = $this->createMock( League_Team_Repository::class );
-        $team_repository = $this->createMock( Team_Repository::class );
+        $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $team_repository = $this->createMock( Team_Repository_Interface::class );
 
         $team_repository->expects( self::once() )
             ->method( 'find_by_id' )

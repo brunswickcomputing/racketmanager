@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Charge;
+use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Domain\DTO\Finance\Charge_Details_DTO;
 use Racketmanager\Domain\DTO\Finance\Charges_With_Totals_DTO;
 use Racketmanager\Util\Util;
@@ -18,7 +19,7 @@ use wpdb;
 /**
  * Class to implement the Charge repository
  */
-class Charge_Repository {
+class Charge_Repository implements Charge_Repository_Interface {
 
     private wpdb $wpdb;
     private string $table_name;
@@ -29,7 +30,7 @@ class Charge_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_charges';
     }
 
-    public function save( Charge $charge ): int|bool {
+    public function save( object $charge ): int|bool {
         $data        = array(
             'competition_id'  => $charge->get_competition_id(),
             'season'          => $charge->get_season(),
@@ -73,7 +74,7 @@ class Charge_Repository {
         }
     }
 
-    public function find_by_id( null|int|string $charge_id ): ?Charge {
+    public function find_by_id( $charge_id ): ?Charge {
         if ( ! $charge_id ) {
             return null;
         }
@@ -198,8 +199,8 @@ class Charge_Repository {
         );
     }
 
-    public function delete( int $charge_id ): int|bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $charge_id ), array( '%d' ) );
+    public function delete( int $charge_id ): bool {
+        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $charge_id ), array( '%d' ) );
     }
 
 }

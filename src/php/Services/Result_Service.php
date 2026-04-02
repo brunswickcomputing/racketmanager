@@ -4,23 +4,23 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league;
 
 class Result_Service {
     /**
-     * @var Fixture_Repository
+     * @var Fixture_Repository_Interface
      */
-    private Fixture_Repository $fixture_repository;
+    private Fixture_Repository_Interface $fixture_repository;
 
     /**
-     * @var Team_Repository
+     * @var Team_Repository_Interface
      */
-    private Team_Repository $team_repository;
+    private Team_Repository_Interface $team_repository;
 
-    public function __construct( Fixture_Repository $fixture_repository, Team_Repository $team_repository ) {
+    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository ) {
         $this->fixture_repository = $fixture_repository;
         $this->team_repository    = $team_repository;
     }

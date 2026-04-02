@@ -9,10 +9,10 @@ use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Util\Util;
@@ -22,9 +22,9 @@ use Racketmanager\Util\Util;
  */
 class Fixture_Detail_Service {
 
-    private Fixture_Repository $fixture_repository;
-    private League_Repository $league_repository;
-    private Team_Repository $team_repository;
+    private Fixture_Repository_Interface $fixture_repository;
+    private League_Repository_Interface $league_repository;
+    private Team_Repository_Interface $team_repository;
     private Competition_Service $competition_service;
     private Team_Service $team_service;
     private Fixture_Permission_Service $permission_service;

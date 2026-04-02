@@ -9,11 +9,12 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Services\Registration_Service;
@@ -38,18 +39,18 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
             }
         };
 
-        $this->fixture_repository = $this->createStub( Fixture_Repository::class );
+        $this->fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
         $this->registration_service = $this->createStub( Registration_Service::class );
-        $this->league_repository = $this->createStub( League_Repository::class );
-        $this->team_repository = $this->createStub( Team_Repository::class );
-        $this->club_repository = $this->createStub( Club_Repository::class );
+        $this->league_repository = $this->createStub( League_Repository_Interface::class );
+        $this->team_repository = $this->createStub( Team_Repository_Interface::class );
+        $this->club_repository = $this->createStub( Club_Repository_Interface::class );
         
         $this->repository_provider = new Repository_Provider(
             fixture_repository: $this->fixture_repository,
             league_repository: $this->league_repository,
             team_repository: $this->team_repository,
             club_repository: $this->club_repository,
-            rubber_repository: $this->createStub( \Racketmanager\Repositories\Rubber_Repository::class )
+            rubber_repository: $this->createStub( Rubber_Repository_Interface::class )
         );
 
         $this->service_provider = new Service_Provider(

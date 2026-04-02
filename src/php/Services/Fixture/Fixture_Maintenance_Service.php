@@ -6,10 +6,10 @@ namespace Racketmanager\Services\Fixture;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Notification\Notification_Service;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
-use Racketmanager\Services\Settings_Service;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Domain\Result\Result;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Results_Checker;
 
@@ -18,8 +18,8 @@ use Racketmanager\Domain\Results_Checker;
  */
 class Fixture_Maintenance_Service {
 
-    private League_Repository $league_repository;
-    private Results_Checker_Repository $results_checker_repository;
+    private League_Repository_Interface $league_repository;
+    private Results_Checker_Repository_Interface $results_checker_repository;
     private Notification_Service $notification_service;
     private Settings_Service $settings_service;
     private Fixture_Result_Manager $fixture_result_manager;

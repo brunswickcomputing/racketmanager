@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
 
 /**
@@ -16,11 +16,11 @@ use Racketmanager\Services\Registration_Service;
  */
 class Fixture_Permission_Service {
 
-    private Fixture_Repository $fixture_repository;
+    private Fixture_Repository_Interface $fixture_repository;
     private Registration_Service $registration_service;
-    private League_Repository $league_repository;
-    private Team_Repository $team_repository;
-    private Club_Repository $club_repository;
+    private League_Repository_Interface $league_repository;
+    private Team_Repository_Interface $team_repository;
+    private Club_Repository_Interface $club_repository;
     private array $options;
 
     public function __construct( Repository_Provider $repository_provider, Service_Provider $service_provider ) {

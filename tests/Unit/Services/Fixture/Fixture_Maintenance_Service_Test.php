@@ -9,11 +9,11 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Results_Checker;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
@@ -39,11 +39,11 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     private Fixture_Maintenance_Service $service;
 
     protected function setUp(): void {
-        $this->fixture_repository = $this->createStub( Fixture_Repository::class );
-        $this->league_repository = $this->createMock( League_Repository::class );
-        $this->club_repository = $this->createStub( Club_Repository::class );
-        $this->team_repository = $this->createStub( Team_Repository::class );
-        $this->results_checker_repository = $this->createMock( Results_Checker_Repository::class );
+        $this->fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $this->league_repository = $this->createMock( League_Repository_Interface::class );
+        $this->club_repository = $this->createStub( Club_Repository_Interface::class );
+        $this->team_repository = $this->createStub( Team_Repository_Interface::class );
+        $this->results_checker_repository = $this->createMock( Results_Checker_Repository_Interface::class );
         $this->notification_service = $this->createMock( Notification_Service::class );
         $this->settings_service = $this->createStub( Settings_Service::class );
         $this->fixture_result_manager = $this->createStub( Fixture_Result_Manager::class );

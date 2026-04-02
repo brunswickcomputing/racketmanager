@@ -11,13 +11,14 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Finance\Invoice_Details_DTO;
 use Racketmanager\Domain\Invoice;
+use Racketmanager\Repositories\Interfaces\Invoice_Repository_Interface;
 use Racketmanager\Util\Util;
 use wpdb;
 
 /**
  * Class to implement the Invoice repository
  */
-class Invoice_Repository {
+class Invoice_Repository implements Invoice_Repository_Interface {
 
     private wpdb $wpdb;
     private string $table_name;
@@ -28,17 +29,17 @@ class Invoice_Repository {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_invoices';
     }
 
-    public function find_by_id( null|int $invoice_id ): ?Invoice {
-        if ( ! $invoice_id ) {
+    public function find_by_id( $id ): ?Invoice {
+        if ( ! $id ) {
             return null;
         }
-        $invoice = wp_cache_get( $invoice_id, 'invoices' );
+        $invoice = wp_cache_get( $id, 'invoices' );
 
         if ( ! $invoice ) {
             $invoice = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM `$this->table_name` WHERE `id` = %d LIMIT 1",
-                    $invoice_id
+                    $id
                 )
             );
 
@@ -48,7 +49,7 @@ class Invoice_Repository {
 
             $invoice = new Invoice( $invoice );
 
-            wp_cache_set( $invoice_id, $invoice, 'invoices' );
+            wp_cache_set( $id, $invoice, 'invoices' );
         }
 
         return $invoice;
@@ -175,7 +176,7 @@ class Invoice_Repository {
 
     }
 
-    public function save( Invoice $invoice ): int|bool {
+    public function save( object $invoice ): int|bool {
         $data        = array(
             'charge_id'         => $invoice->get_charge_id(),
             'billable_id'       => $invoice->get_billable_id(),
@@ -229,8 +230,8 @@ class Invoice_Repository {
         }
     }
 
-    public function delete( int $invoice_id ): int|bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $invoice_id ), array( '%d' ) );
+    public function delete( int $id ): bool {
+        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 
     public function has_invoices( int $charge_id ): bool {

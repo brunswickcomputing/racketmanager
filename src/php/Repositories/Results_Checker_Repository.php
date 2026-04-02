@@ -32,7 +32,7 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
      * @param Results_Checker $results_checker
      * @return int|bool
      */
-    public function save( Results_Checker $results_checker ) {
+    public function save( object $results_checker ): int|bool {
         $data = array(
             'league_id'   => $results_checker->league_id,
             'match_id'    => $results_checker->match_id,
@@ -86,7 +86,7 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
      * @param int $id
      * @return Results_Checker|null
      */
-    public function find_by_id( int $id ): ?Results_Checker {
+    public function find_by_id( $id ): ?Results_Checker {
         $row = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
@@ -150,5 +150,9 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
             array( 'match_id' => $fixture_id ),
             array( '%d' )
         ) !== false;
+    }
+
+    public function delete( int $id ): bool {
+        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 }

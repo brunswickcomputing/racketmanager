@@ -154,23 +154,6 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         return (bool) $deleted;
     }
 
-    /**
-     * Insert a new fixture.
-     *
-     * @param array $data
-     * @param array|null $format
-     * @return int|bool The insert ID or false on failure.
-     */
-    public function insert( array $data, ?array $format = null ) {
-        $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
-
-        if ( $inserted ) {
-            return $this->wpdb->insert_id;
-        }
-
-        return false;
-    }
-
     public function find_by_id( $fixture_id ): ?Fixture {
         $row = $this->find_raw_by_id( $fixture_id );
 
@@ -319,7 +302,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         );
     }
     /**
-     * Find fixtures by league, season and team ID (can be numeric or placeholder).
+     * Find fixtures by league, season, and team ID (can be numeric or placeholder).
      *
      * @param int $league_id
      * @param string $season

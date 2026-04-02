@@ -19,13 +19,13 @@ use Racketmanager\Exceptions\Database_Operation_Exception;
 use Racketmanager\Exceptions\Duplicate_Competition_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Competition_Repository;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Season_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Services\Validator\Validator_Plan;
@@ -42,20 +42,20 @@ use function Racketmanager\get_match;
  * Class to implement the Competition Management Service
  */
 class Competition_Service {
-    private Competition_Repository $competition_repository;
-    private Event_Repository $event_repository;
-    private League_Team_Repository $league_team_repository;
-    private League_Repository $league_repository;
+    private Competition_Repository_Interface $competition_repository;
+    private Event_Repository_Interface $event_repository;
+    private League_Team_Repository_Interface $league_team_repository;
+    private League_Repository_Interface $league_repository;
     private RacketManager $racketmanager;
-    private Team_Repository $team_repository;
-    private Club_Repository $club_repository;
-    private Season_Repository $season_repository;
+    private Team_Repository_Interface $team_repository;
+    private Club_Repository_Interface $club_repository;
+    private Season_Repository_Interface $season_repository;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository $competition_repository, Club_Repository $club_repository, Event_Repository $event_repository, League_Repository $league_repository , League_Team_Repository $league_team_repository, Season_Repository $season_repository , Team_Repository $team_repository ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->club_repository        = $club_repository;

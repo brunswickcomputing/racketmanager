@@ -76,11 +76,11 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
-use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\RacketManager;
@@ -99,11 +99,11 @@ class Notification_Service_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->league_repository = $this->createMock(League_Repository::class);
-        $this->league_team_repository = $this->createMock(League_Team_Repository::class);
-        $this->team_repository = $this->createMock(Team_Repository::class);
-        $this->player_repository = $this->createMock(Player_Repository::class);
-        $this->club_repository = $this->createMock(Club_Repository::class);
+        $this->league_repository = $this->createMock(League_Repository_Interface::class);
+        $this->league_team_repository = $this->createMock(League_Team_Repository_Interface::class);
+        $this->team_repository = $this->createMock(Team_Repository_Interface::class);
+        $this->player_repository = $this->createMock(Player_Repository_Interface::class);
+        $this->club_repository = $this->createMock(Club_Repository_Interface::class);
         $this->settings_service = $this->createStub(Settings_Service::class);
         $this->app = $this->createMock(RacketManager::class);
 

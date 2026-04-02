@@ -33,7 +33,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $this->competition_table = $this->wpdb->prefix . 'racketmanager_competitions';
     }
 
-    public function save( Tournament $tournament ) {
+    public function save( object $tournament ) {
         $data        = array(
             'name'             => $tournament->get_name(),
             'competition_id'   => $tournament->get_competition_id(),
@@ -94,22 +94,22 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         }
     }
 
-    public function find_by_id( $tournament_id, $search_term = 'id' ): ?Tournament {
-        if ( ! $tournament_id ) {
+    public function find_by_id( $id, $search_term = 'id' ): ?Tournament {
+        if ( ! $id ) {
             return null;
         }
         if ( 'shortcode' === $search_term ) {
-            $search_terms   = explode( ',', $tournament_id );
+            $search_terms   = explode( ',', $id );
             $competition_id = $search_terms[0];
             $season         = $search_terms[1];
             $search         = $this->wpdb->prepare( '`competition_id` = %d AND `season` = %s', intval( $competition_id ), $season );
-        } elseif ( is_numeric( $tournament_id ) ) {
-            $tournament_id = (int) $tournament_id;
-            $search        = $this->wpdb->prepare( '`id` = %d', $tournament_id );
+        } elseif ( is_numeric( $id ) ) {
+            $id     = (int) $id;
+            $search = $this->wpdb->prepare( '`id` = %d', $id );
         } else {
-            $search = $this->wpdb->prepare( '`name` = %s', $tournament_id );
+            $search = $this->wpdb->prepare( '`name` = %s', $id );
         }
-        $tournament = wp_cache_get( $tournament_id, 'tournaments' );
+        $tournament = wp_cache_get( $id, 'tournaments' );
 
         if ( ! $tournament ) {
             $tournament = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -118,7 +118,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
                 return null;
             }
             $tournament = new Tournament( $tournament );
-            wp_cache_set( $tournament_id, $tournament, 'tournaments' );
+            wp_cache_set( $id, $tournament, 'tournaments' );
         }
 
         return $tournament;

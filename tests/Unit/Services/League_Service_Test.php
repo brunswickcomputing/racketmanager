@@ -13,10 +13,10 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Has_Matches_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\League_Service;
 use stdClass;
 
@@ -34,10 +34,10 @@ class League_Service_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->league_repository      = $this->createMock( League_Repository::class );
-        $this->event_repository       = $this->createMock( Event_Repository::class );
-        $this->league_team_repository = $this->createMock( League_Team_Repository::class );
-        $this->team_repository        = $this->createMock( Team_Repository::class );
+        $this->league_repository      = $this->createMock( League_Repository_Interface::class );
+        $this->event_repository       = $this->createMock( Event_Repository_Interface::class );
+        $this->league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
+        $this->team_repository        = $this->createMock( Team_Repository_Interface::class );
         $plugin_instance              = $this->createMock( RacketManager::class );
 
         $this->service = new League_Service(

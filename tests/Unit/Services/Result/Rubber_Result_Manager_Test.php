@@ -10,6 +10,7 @@ if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
     eval( 'namespace Racketmanager\Domain { function maybe_unserialize($data) { return $data; } }' );
 }
 
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -34,7 +35,7 @@ class Rubber_Result_Manager_Test extends TestCase {
         parent::setUp();
         $this->score_validator = $this->createMock(Score_Validation_Service::class);
         $this->league_service  = $this->createMock(League_Service::class);
-        $this->rubber_repository = $this->createMock(\Racketmanager\Repositories\Rubber_Repository::class);
+        $this->rubber_repository = $this->createMock(Rubber_Repository_Interface::class);
         $this->player_validator = $this->createMock(Player_Validation_Service::class);
         $this->manager = new Rubber_Result_Manager(
             $this->score_validator,

@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Team;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result_Service;
 use stdClass;
 
@@ -39,8 +39,8 @@ class Result_Service_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->fixture_repository = $this->createMock(Fixture_Repository::class);
-        $this->team_repository = $this->createMock(Team_Repository::class);
+        $this->fixture_repository = $this->createMock(Fixture_Repository_Interface::class);
+        $this->team_repository = $this->createMock(Team_Repository_Interface::class);
         $this->service = new Result_Service($this->fixture_repository, $this->team_repository);
 
         global $racketmanager;

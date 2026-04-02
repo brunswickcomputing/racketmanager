@@ -10,22 +10,22 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Has_Matches_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Event_Repository;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use stdClass;
 use function Racketmanager\debug_to_console;
 
 class League_Service {
 
     private RacketManager $racketmanager;
-    private League_Team_Repository $league_team_repository;
-    private League_Repository $league_repository;
-    private Event_Repository $event_repository;
-    private Team_Repository $team_repository;
+    private League_Team_Repository_Interface $league_team_repository;
+    private League_Repository_Interface $league_repository;
+    private Event_Repository_Interface $event_repository;
+    private Team_Repository_Interface $team_repository;
 
-    public function __construct( RacketManager $plugin_instance, League_Repository $league_repository, Event_Repository $event_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository ) {
+    public function __construct( RacketManager $plugin_instance, League_Repository_Interface $league_repository, Event_Repository_Interface $event_repository, League_Team_Repository_Interface $league_team_repository, Team_Repository_Interface $team_repository ) {
         $this->racketmanager          = $plugin_instance;
         $this->league_repository      = $league_repository;
         $this->event_repository       = $event_repository;

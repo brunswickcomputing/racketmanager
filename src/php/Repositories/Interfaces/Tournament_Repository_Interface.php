@@ -16,9 +16,9 @@ use stdClass;
 /**
  * Interface to implement the Tournament repository
  */
-interface Tournament_Repository_Interface {
-    public function save( Tournament $tournament );
-    public function find_by_id( $tournament_id, $search_term = 'id' ): ?Tournament;
+interface Tournament_Repository_Interface extends Repository_Interface {
+    public function save( object $tournament );
+    public function find_by_id( $id, $search_term = 'id' ): ?Tournament;
     public function find_tournament_overview( int $tournament_id ): ?stdClass;
     public function find_active( ?string $age_group = null ): ?Tournament;
     public function find_by( array $criteria ): array;

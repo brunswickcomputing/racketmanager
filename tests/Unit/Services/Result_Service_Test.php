@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Team;
@@ -30,6 +31,7 @@ class RacketManager_Mock implements Result_Service_Mock_Interface {
     public function load_template() {}
 }
 
+#[AllowMockObjectsWithoutExpectations]
 class Result_Service_Test extends TestCase {
     private $fixture_repository;
     private $team_repository;

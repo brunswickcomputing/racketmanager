@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Racketmanager_Match;
@@ -45,6 +46,7 @@ class Event_Mock extends \Racketmanager\Domain\Competition\Event {
     public function get_season_by_name(string $name): ?array { return []; }
 }
 
+#[AllowMockObjectsWithoutExpectations]
 class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $result_service;
     private $progression_service;

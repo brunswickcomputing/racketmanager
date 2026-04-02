@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Services\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\Competition\League;
@@ -18,6 +19,7 @@ use Racketmanager\Services\Tournament_Service;
 use ReflectionClass;
 use stdClass;
 
+#[AllowMockObjectsWithoutExpectations]
 class Championship_Admin_Integration_Test extends TestCase {
 
     private function create_real_instance_without_constructor( string $class_name ) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Setup_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Setup_Page_View_Model;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
@@ -18,7 +19,9 @@ use WP_Error;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Tournament_Setup_Admin_Controller_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Setup_Admin_Controller_Test extends TestCase {
 
     private $tournament_service;
     private $action_guard;

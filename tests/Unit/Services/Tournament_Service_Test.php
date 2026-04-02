@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Charge_Repository;
@@ -23,7 +24,9 @@ use Racketmanager\Util\Util_Messages;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
-final class Tournament_Service_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Service_Test extends TestCase {
 
     public function test_bulk_remove_tournaments_success(): void {
         $repo    = $this->createMock( Tournament_Repository::class );

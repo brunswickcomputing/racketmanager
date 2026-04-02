@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
@@ -18,6 +19,7 @@ use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
 
+#[AllowMockObjectsWithoutExpectations]
 class Fixture_Maintenance_Service_Integration_Test extends TestCase {
     private $notification_service;
     private $settings_service;

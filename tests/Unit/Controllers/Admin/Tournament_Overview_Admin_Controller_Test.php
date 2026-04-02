@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Overview_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Overview_Page_View_Model;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
@@ -17,7 +18,9 @@ use function Racketmanager\seo_url;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Tournament_Overview_Admin_Controller_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Overview_Admin_Controller_Test extends TestCase {
 
     public function test_overview_page_returns_view_model(): void {
         global $racketmanager;

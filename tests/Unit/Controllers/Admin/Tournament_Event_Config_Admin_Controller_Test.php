@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Event_Config_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition;
@@ -17,7 +18,9 @@ use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
 
     private $tournament_service;
     private $competition_service;
@@ -25,9 +28,9 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
     private $controller;
 
     protected function setUp(): void {
-        $this->tournament_service = $this->createMock( Tournament_Service::class );
+        $this->tournament_service = $this->createStub( Tournament_Service::class );
         $this->competition_service = $this->createMock( Competition_Service::class );
-        $this->guard = $this->createMock( Action_Guard_Interface::class );
+        $this->guard = $this->createStub( Action_Guard_Interface::class );
 
         $this->controller = new Tournament_Event_Config_Admin_Controller(
             $this->tournament_service,
@@ -48,7 +51,7 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_GET['competition_id'] = '123';
         $_GET['event_id'] = '999';
 
-        $competition = $this->createMock( Competition::class );
+        $competition = $this->createStub( Competition::class );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willThrowException( new Event_Not_Found_Exception() );
 
@@ -62,8 +65,8 @@ final class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $_GET['competition_id'] = '123';
         $_GET['event_id'] = '456';
 
-        $competition = $this->createMock( Competition::class );
-        $event = $this->createMock( Event::class );
+        $competition = $this->createStub( Competition::class );
+        $event = $this->createStub( Event::class );
         $event->settings = [];
         $event->num_sets = 3;
         $event->num_rubbers = 6;

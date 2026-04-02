@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
@@ -22,6 +23,7 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 
+#[AllowMockObjectsWithoutExpectations]
 class Fixture_Maintenance_Service_Test extends TestCase {
 
     private $fixture_repository;
@@ -37,20 +39,20 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     private Fixture_Maintenance_Service $service;
 
     protected function setUp(): void {
-        $this->fixture_repository = $this->createMock( Fixture_Repository::class );
+        $this->fixture_repository = $this->createStub( Fixture_Repository::class );
         $this->league_repository = $this->createMock( League_Repository::class );
-        $this->club_repository = $this->createMock( Club_Repository::class );
-        $this->team_repository = $this->createMock( Team_Repository::class );
+        $this->club_repository = $this->createStub( Club_Repository::class );
+        $this->team_repository = $this->createStub( Team_Repository::class );
         $this->results_checker_repository = $this->createMock( Results_Checker_Repository::class );
         $this->notification_service = $this->createMock( Notification_Service::class );
-        $this->settings_service = $this->createMock( Settings_Service::class );
-        $this->fixture_result_manager = $this->createMock( Fixture_Result_Manager::class );
+        $this->settings_service = $this->createStub( Settings_Service::class );
+        $this->fixture_result_manager = $this->createStub( Fixture_Result_Manager::class );
 
-        $this->service_provider = $this->createMock( Service_Provider::class );
+        $this->service_provider = $this->createStub( Service_Provider::class );
         $this->service_provider->method( 'get_notification_service' )->willReturn( $this->notification_service );
         $this->service_provider->method( 'get_settings_service' )->willReturn( $this->settings_service );
 
-        $this->repository_provider = $this->createMock( Repository_Provider::class );
+        $this->repository_provider = $this->createStub( Repository_Provider::class );
         $this->repository_provider->method( 'get_fixture_repository' )->willReturn( $this->fixture_repository );
         $this->repository_provider->method( 'get_league_repository' )->willReturn( $this->league_repository );
         $this->repository_provider->method( 'get_club_repository' )->willReturn( $this->club_repository );
@@ -65,11 +67,11 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     }
 
     public function test_chase_match_result_sends_notification(): void {
-        $fixture = $this->createMock( Fixture::class );
+        $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_league_id' )->willReturn( 1 );
 
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object) [
             'type' => 'league'
         ];
@@ -89,11 +91,11 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     }
 
     public function test_chase_match_approval_sends_notification(): void {
-        $fixture = $this->createMock( Fixture::class );
+        $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_league_id' )->willReturn( 1 );
 
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object) [
             'type' => 'league'
         ];
@@ -113,13 +115,13 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     }
 
     public function test_complete_result_confirms_result(): void {
-        $fixture = $this->createMock( Fixture::class );
+        $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_league_id' )->willReturn( 1 );
         $fixture->method( 'get_home_points' )->willReturn( '5.0' );
         $fixture->method( 'get_away_points' )->willReturn( '3.0' );
 
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object) [
             'type' => 'league'
         ];
@@ -136,13 +138,13 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     }
 
     public function test_check_result_timeout_saves_to_checker_on_timeout(): void {
-        $fixture = $this->createMock( Fixture::class );
+        $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_league_id' )->willReturn( 1 );
         $fixture->method( 'get_date' )->willReturn( '2023-01-01 10:00:00' );
         $fixture->method( 'get_date_result_entered' )->willReturn( '2023-01-02 11:00:00' ); // 25 hours later
 
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object) [
             'type' => 'league',
             'rules' => [ 'resultTimeout' => 24 ]

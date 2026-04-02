@@ -38,18 +38,18 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
             }
         };
 
-        $this->fixture_repository = $this->createMock( Fixture_Repository::class );
-        $this->registration_service = $this->createMock( Registration_Service::class );
-        $this->league_repository = $this->createMock( League_Repository::class );
-        $this->team_repository = $this->createMock( Team_Repository::class );
-        $this->club_repository = $this->createMock( Club_Repository::class );
+        $this->fixture_repository = $this->createStub( Fixture_Repository::class );
+        $this->registration_service = $this->createStub( Registration_Service::class );
+        $this->league_repository = $this->createStub( League_Repository::class );
+        $this->team_repository = $this->createStub( Team_Repository::class );
+        $this->club_repository = $this->createStub( Club_Repository::class );
         
         $this->repository_provider = new Repository_Provider(
             fixture_repository: $this->fixture_repository,
             league_repository: $this->league_repository,
             team_repository: $this->team_repository,
             club_repository: $this->club_repository,
-            rubber_repository: $this->createMock( \Racketmanager\Repositories\Rubber_Repository::class )
+            rubber_repository: $this->createStub( \Racketmanager\Repositories\Rubber_Repository::class )
         );
 
         $this->service_provider = new Service_Provider(
@@ -79,7 +79,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         $fixture = new Fixture( (object)[ 'id' => 1, 'confirmed' => 'P', 'league_id' => 100 ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
-        $league = $this->createMock( League::class );
+        $league = $this->createStub( League::class );
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
         $this->service->mock_current_user_can = true;
@@ -101,15 +101,15 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object)[ 'type' => 'standard' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
-        $home_team = $this->createMock( Team::class );
+        $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createMock( Team::class );
+        $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_club_id' )->willReturn( 2000 );
 
         $this->team_repository->method( 'find_by_id' )->willReturnMap([
@@ -140,15 +140,15 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object)[ 'type' => 'standard' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
-        $home_team = $this->createMock( Team::class );
+        $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createMock( Team::class );
+        $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_club_id' )->willReturn( 2000 );
 
         $this->team_repository->method( 'find_by_id' )->willReturnMap([
@@ -179,15 +179,15 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object)[ 'type' => 'standard' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
-        $home_team = $this->createMock( Team::class );
+        $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createMock( Team::class );
+        $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_club_id' )->willReturn( 2000 );
 
         $this->team_repository->method( 'find_by_id' )->willReturnMap([
@@ -223,15 +223,15 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object)[ 'type' => 'standard' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
-        $home_team = $this->createMock( Team::class );
+        $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createMock( Team::class );
+        $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_club_id' )->willReturn( 2000 );
 
         $this->team_repository->method( 'find_by_id' )->willReturnMap([
@@ -239,9 +239,9 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
             [ 300, $away_team ]
         ]);
 
-        $home_club = $this->createMock( Club::class );
+        $home_club = $this->createStub( Club::class );
         $home_club->match_secretary = (object)[ 'id' => 30 ];
-        $away_club = $this->createMock( Club::class );
+        $away_club = $this->createStub( Club::class );
         
         $this->club_repository->method( 'find' )->willReturnMap([
             [ 1000, 'id', $home_club ],
@@ -272,15 +272,15 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
-        $league = $this->createMock( League::class );
-        $event = $this->createMock( Event::class );
+        $league = $this->createStub( League::class );
+        $event = $this->createStub( Event::class );
         $event->competition = (object)[ 'type' => 'standard' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
-        $home_team = $this->createMock( Team::class );
+        $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createMock( Team::class );
+        $away_team = $this->createStub( Team::class );
         $away_team->method( 'get_club_id' )->willReturn( 2000 );
 
         $this->team_repository->method( 'find_by_id' )->willReturnMap([

@@ -12,6 +12,7 @@ if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
 
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Rubber;
@@ -21,6 +22,7 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\League_Service;
 use stdClass;
 
+#[AllowMockObjectsWithoutExpectations]
 class Rubber_Result_Manager_Test extends TestCase {
     private $score_validator;
     private $league_service;

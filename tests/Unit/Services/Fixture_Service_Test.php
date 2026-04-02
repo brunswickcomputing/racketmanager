@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Repositories\Fixture_Repository;
@@ -18,6 +19,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 
+#[AllowMockObjectsWithoutExpectations]
 class Fixture_Service_Test extends TestCase {
 
     private $fixture_repository;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Admin_Tournament;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\RacketManager;
@@ -18,7 +19,8 @@ interface Admin_Controller_Mock_Interface {
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Admin_Tournament_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations] final
+class Admin_Tournament_Test extends TestCase {
 
     private $racketmanager;
     private $renderer;
@@ -29,11 +31,11 @@ final class Admin_Tournament_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->racketmanager = $this->createMock( RacketManager::class );
+        $this->racketmanager = $this->createStub( RacketManager::class );
         $this->renderer = $this->getMockBuilder( View_Renderer_Interface::class )
             ->onlyMethods( [ 'render' ] )
             ->getMock();
-        $this->flash_store = $this->createMock( Admin_Flash_Message_Store::class );
+        $this->flash_store = $this->createStub( Admin_Flash_Message_Store::class );
         $this->message_service = new Admin_Message_Service( $this->flash_store );
         $this->container = new Simple_Container();
         $this->racketmanager->container = $this->container;
@@ -50,7 +52,7 @@ final class Admin_Tournament_Test extends TestCase {
     }
 
     public function test_display_teams_list_calls_apply_result_message(): void {
-        $controller = $this->createMock( Admin_Controller_Mock_Interface::class );
+        $controller = $this->createStub( Admin_Controller_Mock_Interface::class );
 
         $this->container->set( 'tournament_teams_admin_controller', $controller );
 
@@ -82,7 +84,7 @@ final class Admin_Tournament_Test extends TestCase {
 
         $this->container->set( 'tournament_competition_config_admin_controller', $controller );
 
-        $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
+        $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
         $vm = new \Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model(
             $competition,
             null,
@@ -104,7 +106,7 @@ final class Admin_Tournament_Test extends TestCase {
 
         $this->container->set( 'tournament_event_config_admin_controller', $controller );
 
-        $competition = $this->createMock( \Racketmanager\Domain\Competition\Competition::class );
+        $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
         $vm = new \Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model(
             $competition,
             new \stdClass(),

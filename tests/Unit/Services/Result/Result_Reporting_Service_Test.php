@@ -36,31 +36,31 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_returns_null_if_no_competition_code(): void {
-		$fixture = $this->createMock( Fixture::class );
+		$fixture = $this->createStub( Fixture::class );
 		$fixture->method('get_league_id')->willReturn(10);
 		$fixture->method('get_season')->willReturn('2024');
 
-		$league = $this->createMock( League::class );
+		$league = $this->createStub( League::class );
 		$league->method('get_event_id')->willReturn(20);
 
-		$event = $this->createMock( Event::class );
+		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
 		$event->method('get_season_by_name')->willReturn(null);
 
-		$competition = $this->createMock( Competition::class );
+		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(null);
 		$competition->competition_code = null;
 
-		$league_repo = $this->createMock( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
-		$event_repo = $this->createMock( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository::class );
 		$event_repo->method('find_by_id')->willReturn($event);
 
-		$competition_repo = $this->createMock( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
 
-		$repository_provider = $this->createMock( Repository_Provider::class );
+		$repository_provider = $this->createStub( Repository_Provider::class );
 		$repository_provider->method('get_league_repository')->willReturn($league_repo);
 		$repository_provider->method('get_event_repository')->willReturn($event_repo);
 		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
@@ -72,7 +72,7 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_basic_structure(): void {
-		$fixture = $this->createMock( Fixture::class );
+		$fixture = $this->createStub( Fixture::class );
 		$fixture->method('get_id')->willReturn(1);
 		$fixture->method('get_league_id')->willReturn(10);
 		$fixture->method('get_season')->willReturn('2024');
@@ -87,7 +87,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$fixture->method('is_cancelled')->willReturn(false);
 		$fixture->method('get_custom')->willReturn([]);
 
-		$competition = $this->createMock( Competition::class );
+		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123']);
 		$competition->name = 'Test Competition';
 		$competition->date_start = '2024-01-01';
@@ -95,7 +95,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->type = 'league';
 		$competition->settings = ['grade' => 4];
 
-		$event = $this->createMock( Event::class );
+		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
 		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
 		$event->name = 'Test Event';
@@ -103,7 +103,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$event->type = 'MS';
 		$event->primary_league = 10;
 
-		$league = $this->createMock( League::class );
+		$league = $this->createStub( League::class );
 		$league->method('get_event_id')->willReturn(20);
 		$league->title = 'Test League';
 		$league->num_teams_total = 8;
@@ -117,28 +117,28 @@ class Result_Reporting_Service_Test extends TestCase {
 		$player2->display_name = 'Player Two';
 		$player2->btm = '654321';
 
-		$home_team = $this->createMock( Team::class );
+		$home_team = $this->createStub( Team::class );
 		$home_team->method('get_players')->willReturn(['1' => $player1]);
 		
-		$away_team = $this->createMock( Team::class );
+		$away_team = $this->createStub( Team::class );
 		$away_team->method('get_players')->willReturn(['1' => $player2]);
 
-		$league_repo = $this->createMock( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
-		$event_repo = $this->createMock( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository::class );
 		$event_repo->method('find_by_id')->willReturn($event);
 
-		$competition_repo = $this->createMock( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
 
-		$team_repo = $this->createMock( Team_Repository::class );
+		$team_repo = $this->createStub( Team_Repository::class );
 		$team_repo->method('find_by_id')->willReturnMap([
 			[1, $home_team],
 			[2, $away_team],
 		]);
 
-		$repository_provider = $this->createMock( Repository_Provider::class );
+		$repository_provider = $this->createStub( Repository_Provider::class );
 		$repository_provider->method('get_league_repository')->willReturn($league_repo);
 		$repository_provider->method('get_event_repository')->willReturn($event_repo);
 		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
@@ -156,7 +156,7 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_with_rubbers(): void {
-		$fixture = $this->createMock( Fixture::class );
+		$fixture = $this->createStub( Fixture::class );
 		$fixture->method('get_id')->willReturn(1);
 		$fixture->method('get_league_id')->willReturn(10);
 		$fixture->method('get_season')->willReturn('2024');
@@ -169,7 +169,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$fixture->method('is_cancelled')->willReturn(false);
 		$fixture->method('is_withdrawn')->willReturn(false);
 
-		$competition = $this->createMock( Competition::class );
+		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123']);
 		$competition->name = 'Test Competition';
 		$competition->date_start = '2024-01-01';
@@ -177,14 +177,14 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->type = 'league';
 		$competition->settings = ['grade' => 4];
 
-		$event = $this->createMock( Event::class );
+		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
 		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
 		$event->name = 'Test Event';
 		$event->age_limit = 'Open';
 		$event->type = 'MS';
 
-		$league = $this->createMock( League::class );
+		$league = $this->createStub( League::class );
 		$league->method('get_event_id')->willReturn(20);
 		$league->title = 'Test League';
 		$league->num_teams_total = 8;
@@ -198,7 +198,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$player2->display_name = 'Rubber Loser';
 		$player2->btm = '222';
 
-		$rubber = $this->createMock( Rubber::class );
+		$rubber = $this->createStub( Rubber::class );
 		$rubber->method('get_id')->willReturn(101);
 		$rubber->method('get_winner_id')->willReturn(1);
 		$rubber->method('get_loser_id')->willReturn(2);
@@ -210,19 +210,19 @@ class Result_Reporting_Service_Test extends TestCase {
 			'away' => ['1' => $player2],
 		];
 
-		$league_repo = $this->createMock( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
-		$event_repo = $this->createMock( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository::class );
 		$event_repo->method('find_by_id')->willReturn($event);
 
-		$competition_repo = $this->createMock( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
 
-		$rubber_repo = $this->createMock( Rubber_Repository::class );
+		$rubber_repo = $this->createStub( Rubber_Repository::class );
 		$rubber_repo->method('find_by_fixture_id')->willReturn([$rubber]);
 
-		$repository_provider = $this->createMock( Repository_Provider::class );
+		$repository_provider = $this->createStub( Repository_Provider::class );
 		$repository_provider->method('get_league_repository')->willReturn($league_repo);
 		$repository_provider->method('get_event_repository')->willReturn($event_repo);
 		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
@@ -238,7 +238,7 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_with_scores(): void {
-		$fixture = $this->createMock( Fixture::class );
+		$fixture = $this->createStub( Fixture::class );
 		$fixture->method('get_id')->willReturn(1);
 		$fixture->method('get_league_id')->willReturn(10);
 		$fixture->method('get_season')->willReturn('2024');
@@ -257,7 +257,7 @@ class Result_Reporting_Service_Test extends TestCase {
 			]
 		]);
 
-		$competition = $this->createMock( Competition::class );
+		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123']);
 		$competition->name = 'Test Competition';
 		$competition->date_start = '2024-01-01';
@@ -265,14 +265,14 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->type = 'league';
 		$competition->settings = ['grade' => 4];
 
-		$event = $this->createMock( Event::class );
+		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
 		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
 		$event->name = 'Test Event';
 		$event->age_limit = 'Open';
 		$event->type = 'MS';
 
-		$league = $this->createMock( League::class );
+		$league = $this->createStub( League::class );
 		$league->method('get_event_id')->willReturn(20);
 		$league->title = 'Test League';
 		$league->num_teams_total = 8;
@@ -283,21 +283,21 @@ class Result_Reporting_Service_Test extends TestCase {
 		$player2 = new stdClass();
 		$player2->display_name = 'Loser';
 
-		$home_team = $this->createMock( Team::class );
+		$home_team = $this->createStub( Team::class );
 		$home_team->method('get_players')->willReturn(['1' => $player1]);
-		$away_team = $this->createMock( Team::class );
+		$away_team = $this->createStub( Team::class );
 		$away_team->method('get_players')->willReturn(['1' => $player2]);
 
-		$league_repo = $this->createMock( League_Repository::class );
+		$league_repo = $this->createStub( League_Repository::class );
 		$league_repo->method('find_by_id')->willReturn($league);
-		$event_repo = $this->createMock( Event_Repository::class );
+		$event_repo = $this->createStub( Event_Repository::class );
 		$event_repo->method('find_by_id')->willReturn($event);
-		$competition_repo = $this->createMock( Competition_Repository::class );
+		$competition_repo = $this->createStub( Competition_Repository::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
-		$team_repo = $this->createMock( Team_Repository::class );
+		$team_repo = $this->createStub( Team_Repository::class );
 		$team_repo->method('find_by_id')->willReturnMap([ [1, $home_team], [2, $away_team] ]);
 
-		$repository_provider = $this->createMock( Repository_Provider::class );
+		$repository_provider = $this->createStub( Repository_Provider::class );
 		$repository_provider->method('get_league_repository')->willReturn($league_repo);
 		$repository_provider->method('get_event_repository')->willReturn($event_repo);
 		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);

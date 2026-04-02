@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Enums\Team_Profile;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
@@ -21,7 +22,9 @@ use stdClass;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
-final class League_Service_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class League_Service_Test extends TestCase {
 
     private League_Service $service;
     private $league_repository;

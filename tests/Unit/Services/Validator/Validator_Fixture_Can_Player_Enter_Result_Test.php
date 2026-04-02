@@ -13,6 +13,7 @@ namespace {
 namespace Racketmanager\Tests\Unit\Services\Validator {
 
     use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use Racketmanager\Services\Validator\Validator_Fixture;
     use Racketmanager\Services\Registration_Service;
     use Racketmanager\Services\Competition_Service;
@@ -21,7 +22,8 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
     use Racketmanager\Exceptions\Player_Not_Found_Exception;
     use stdClass;
 
-    class Validator_Fixture_Can_Player_Enter_Result_Test extends TestCase {
+    #[AllowMockObjectsWithoutExpectations]
+class Validator_Fixture_Can_Player_Enter_Result_Test extends TestCase {
         private $validator;
         private $registration_service;
         private $competition_service;
@@ -31,9 +33,9 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
         protected function setUp(): void {
             parent::setUp();
             $this->registration_service = $this->createMock( Registration_Service::class );
-            $this->competition_service  = $this->createMock( Competition_Service::class );
-            $this->club_service         = $this->createMock( Club_Service::class );
-            $this->player_service       = $this->createMock( Player_Service::class );
+            $this->competition_service  = $this->createStub( Competition_Service::class );
+            $this->club_service         = $this->createStub( Club_Service::class );
+            $this->player_service       = $this->createStub( Player_Service::class );
 
             // Mock DI container
             $container = new class($this) {
@@ -61,7 +63,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
                 case 'player_service':
                     return $this->player_service;
                 default:
-                    return $this->createMock(stdClass::class);
+                    return $this->createStub(stdClass::class);
             }
         }
 

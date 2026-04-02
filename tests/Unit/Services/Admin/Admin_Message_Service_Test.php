@@ -12,12 +12,15 @@ namespace Racketmanager {
 namespace Racketmanager\Tests\Unit\Services\Admin {
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Admin_Message_Service_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Admin_Message_Service_Test extends TestCase {
 
     public function test_set_message_stores_correct_type(): void {
         $flash_store = $this->createMock( Admin_Flash_Message_Store::class );

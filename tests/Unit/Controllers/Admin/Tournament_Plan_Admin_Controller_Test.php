@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Plan_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Plan_Page_View_Model;
 use Racketmanager\Domain\Tournament;
@@ -16,7 +17,9 @@ use WP_Error;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Tournament_Plan_Admin_Controller_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Plan_Admin_Controller_Test extends TestCase {
 
     protected function tearDown(): void {
         unset( $_SERVER['REQUEST_METHOD'] );

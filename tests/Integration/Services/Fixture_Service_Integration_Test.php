@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Services;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Repositories\Fixture_Repository;
@@ -17,6 +18,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\League_Service;
 
+#[AllowMockObjectsWithoutExpectations]
 class Fixture_Service_Integration_Test extends TestCase {
     private $fixture_repository;
     private $rubber_repository;
@@ -34,16 +36,16 @@ class Fixture_Service_Integration_Test extends TestCase {
         $this->fixture_repository = $this->createMock( Fixture_Repository::class );
         $this->rubber_repository = $this->createMock( Rubber_Repository::class );
         $this->notification_service = $this->createMock( Notification_Service::class );
-        $this->registration_service = $this->createMock( Registration_Service::class );
-        $this->competition_service = $this->createMock( Competition_Service::class );
-        $this->team_service = $this->createMock( Team_Service::class );
+        $this->registration_service = $this->createStub( Registration_Service::class );
+        $this->competition_service = $this->createStub( Competition_Service::class );
+        $this->team_service = $this->createStub( Team_Service::class );
         
         $this->repository_provider = new Repository_Provider(
             fixture_repository: $this->fixture_repository,
             rubber_repository: $this->rubber_repository,
-            league_repository: $this->createMock( \Racketmanager\Repositories\League_Repository::class ),
-            team_repository: $this->createMock( \Racketmanager\Repositories\Team_Repository::class ),
-            club_repository: $this->createMock( \Racketmanager\Repositories\Club_Repository::class )
+            league_repository: $this->createStub( \Racketmanager\Repositories\League_Repository::class ),
+            team_repository: $this->createStub( \Racketmanager\Repositories\Team_Repository::class ),
+            club_repository: $this->createStub( \Racketmanager\Repositories\Club_Repository::class )
         );
 
         $this->service_provider = new Fixture_Service_Provider(

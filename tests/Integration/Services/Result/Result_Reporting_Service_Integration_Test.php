@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Integration\Services\Result;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
@@ -18,6 +19,7 @@ use Racketmanager\Repositories\Team_Repository;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use stdClass;
 
+#[AllowMockObjectsWithoutExpectations]
 class Result_Reporting_Service_Integration_Test extends TestCase {
 
 	protected function setUp(): void {
@@ -96,10 +98,10 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		$competition_repo = $this->createMock( Competition_Repository::class );
 		$competition_repo->method( 'find_by_id' )->with( 301 )->willReturn( $competition );
 
-		$rubber_repo = $this->createMock( Rubber_Repository::class );
+		$rubber_repo = $this->createStub( Rubber_Repository::class );
 		$rubber_repo->method( 'find_by_fixture_id' )->willReturn( [] );
 
-		$team_repo = $this->createMock( Team_Repository::class );
+		$team_repo = $this->createStub( Team_Repository::class );
 		$team_repo->method( 'find_by_id' )->willReturnMap( [
 			[ 10, $home_team ],
 			[ 20, $away_team ],

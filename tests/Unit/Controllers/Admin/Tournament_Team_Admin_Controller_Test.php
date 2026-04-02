@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Team_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Team_Page_View_Model;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
@@ -16,7 +17,9 @@ use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Tournament_Team_Admin_Controller_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Team_Admin_Controller_Test extends TestCase {
 
     private $tournament_service;
     private $league_service;
@@ -27,10 +30,10 @@ final class Tournament_Team_Admin_Controller_Test extends TestCase {
 
     protected function setUp(): void {
         $this->tournament_service = $this->createMock( Tournament_Service::class );
-        $this->league_service     = $this->createMock( League_Service::class );
+        $this->league_service     = $this->createStub( League_Service::class );
         $this->team_service       = $this->createMock( Team_Service::class );
-        $this->club_service       = $this->createMock( Club_Service::class );
-        $this->guard              = $this->createMock( Action_Guard_Interface::class );
+        $this->club_service       = $this->createStub( Club_Service::class );
+        $this->guard              = $this->createStub( Action_Guard_Interface::class );
 
         $this->controller = new Tournament_Team_Admin_Controller(
             $this->tournament_service,

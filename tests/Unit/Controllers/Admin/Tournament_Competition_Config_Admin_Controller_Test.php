@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Admin\Controllers\Tournament_Competition_Config_Admin_Controller;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
@@ -16,7 +17,9 @@ use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
-final class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
+#[AllowMockObjectsWithoutExpectations]
+final
+class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
 
     private $tournament_service;
     private $competition_service;

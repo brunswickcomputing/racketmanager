@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services\Validator;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
@@ -16,6 +17,7 @@ use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
 use Racketmanager\Domain\Results_Checker;
 use stdClass;
 
+#[AllowMockObjectsWithoutExpectations]
 class Player_Validation_Service_Test extends TestCase {
     private $registration_service;
     private $results_checker_repository;

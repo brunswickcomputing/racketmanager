@@ -244,7 +244,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         $home_club->match_secretary = (object)[ 'id' => 30 ];
         $away_club = $this->createStub( Club::class );
         
-        $this->club_repository->method( 'find' )->willReturnMap([
+        $this->club_repository->method( 'find_by_id' )->willReturnMap([
             [ 1000, 'id', $home_club ],
             [ 2000, 'id', $away_club ]
         ]);

@@ -206,7 +206,7 @@ class Notification_Service {
                 $email_to[] = $captain_email;
             }
 
-            $club = $this->club_repository->find( (int) $data['home_team']->get_club_id() );
+            $club = $this->club_repository->find_by_id( (int) $data['home_team']->get_club_id() );
             if ( $club && isset( $club->match_secretary->email ) ) {
                 $data['headers'][] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
             }
@@ -242,7 +242,7 @@ class Notification_Service {
                 $email_to[] = $captain_email;
             }
 
-            $club = $this->club_repository->find( (int) $opponent_team->get_club_id() );
+            $club = $this->club_repository->find_by_id( (int) $opponent_team->get_club_id() );
             if ( $club && isset( $club->match_secretary->email ) ) {
                 $data['headers'][] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
             }
@@ -341,7 +341,7 @@ class Notification_Service {
     private function get_club_secretary_email( int $team_id ): ?string {
         $league_team = $this->league_team_repository->find_by_id( $team_id );
         if ( $league_team ) {
-            $club = $this->club_repository->find( $league_team->club_id );
+            $club = $this->club_repository->find_by_id( $league_team->club_id );
             return $club?->match_secretary->email ?? null;
         }
 

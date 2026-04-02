@@ -29,19 +29,21 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
     /**
      * Save a results checker entry.
      *
-     * @param Results_Checker $results_checker
+     * @param object $entity
+     *
      * @return int|bool
      */
-    public function save( object $results_checker ): int|bool {
+    public function save( object $entity ): bool|int {
+        /** @var Results_Checker $entity */
         $data = array(
-            'league_id'   => $results_checker->league_id,
-            'match_id'    => $results_checker->match_id,
-            'team_id'     => $results_checker->team_id,
-            'player_id'   => $results_checker->player_id,
-            'rubber_id'   => $results_checker->rubber_id,
-            'description' => $results_checker->description,
-            'status'      => $results_checker->status,
-            'updated_user'=> $results_checker->updated_user,
+            'league_id'    => $entity->league_id,
+            'match_id'     => $entity->match_id,
+            'team_id'      => $entity->team_id,
+            'player_id'    => $entity->player_id,
+            'rubber_id'    => $entity->rubber_id,
+            'description'  => $entity->description,
+            'status'       => $entity->status,
+            'updated_user' => $entity->updated_user,
         );
 
         $format = array(
@@ -55,11 +57,11 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
             '%d', // updated_user
         );
 
-        if ( empty( $results_checker->id ) ) {
+        if ( empty( $entity->id ) ) {
             $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
             if ( $inserted ) {
-                $results_checker->id = (int) $this->wpdb->insert_id;
-                return $results_checker->id;
+                $entity->id = (int) $this->wpdb->insert_id;
+                return $entity->id;
             }
             return false;
         } else {
@@ -70,7 +72,7 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
                 $this->table_name,
                 $data,
                 array(
-                    'id' => $results_checker->id,
+                    'id' => $entity->id,
                 ),
                 $format,
                 array(
@@ -83,10 +85,11 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
     /**
      * Find a results checker by ID.
      *
-     * @param int $id
+     * @param int|string|null $id
+     *
      * @return Results_Checker|null
      */
-    public function find_by_id( $id ): ?Results_Checker {
+    public function find_by_id( int|string|null $id ): ?Results_Checker {
         $row = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",

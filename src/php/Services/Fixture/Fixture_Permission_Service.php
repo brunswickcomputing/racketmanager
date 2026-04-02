@@ -173,8 +173,8 @@ class Fixture_Permission_Service {
      * Identify if the user is a match secretary for either club.
      */
     private function identify_secretary_role( object $context ): object {
-        $home_club = $this->club_repository->find( $context->home_team->get_club_id() );
-        $away_club = $this->club_repository->find( $context->away_team->get_club_id() );
+        $home_club = $this->club_repository->find_by_id( $context->home_team->get_club_id() );
+        $away_club = $this->club_repository->find_by_id( $context->away_team->get_club_id() );
 
         if ( isset( $home_club->match_secretary->id ) && intval( $home_club->match_secretary->id ) === $context->userid ) {
             return (object) [ 'type' => 'matchsecretary', 'team' => 'home' ];

@@ -21,7 +21,7 @@ use wpdb;
  */
 class Team_Repository implements Team_Repository_Interface {
     private QM_DB|wpdb $wpdb;
-    private string $team_table;
+    private string $table_name;
     private string $team_players_table;
 
     /**
@@ -30,37 +30,37 @@ class Team_Repository implements Team_Repository_Interface {
     public function __construct() {
         global $wpdb;
         $this->wpdb               = $wpdb;
-        $this->team_table         = $this->wpdb->prefix . 'racketmanager_teams';
+        $this->table_name         = $this->wpdb->prefix . 'racketmanager_teams';
         $this->team_players_table = $this->wpdb->prefix . 'racketmanager_team_players';
     }
 
     /**
      * Find a team by ID
      *
-     * @param int|string|null $team_id
+     * @param int|string|null $id
      *
      * @return Team|null
      */
-    public function find_by_id( int|string|null $team_id ): ?Team {
-        if ( is_numeric( $team_id ) ) {
-            $search = $this->wpdb->prepare( '`id` = %d', $team_id );
+    public function find_by_id( int|string|null $id ): ?Team {
+        if ( is_numeric( $id ) ) {
+            $search = $this->wpdb->prepare( '`id` = %d', $id );
         } else {
-            $search = $this->wpdb->prepare( '`title` = %s', $team_id );
+            $search = $this->wpdb->prepare( '`title` = %s', $id );
         }
-        if ( ! $team_id ) {
+        if ( ! $id ) {
             return null;
         }
-        $team = wp_cache_get( $team_id, 'teams' );
+        $team = wp_cache_get( $id, 'teams' );
 
         if ( ! $team ) {
-            if ( -1 === $team_id ) {
+            if ( -1 === $id ) {
                 $team = (object) array(
-                    'id'    => $team_id,
+                    'id'    => $id,
                     'title' => __( 'Bye', 'racketmanager' ),
                 );
             } else {
                 $team = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM $this->team_table WHERE " . $search . ' LIMIT 1' );
+                    "SELECT `id`, `title`, `stadium`, `home`, `roster`, `profile`, `status`, `club_id`, `type`, `team_type` FROM $this->table_name WHERE " . $search . ' LIMIT 1' );
             }
             if ( ! $team ) {
                 return null;
@@ -81,7 +81,7 @@ class Team_Repository implements Team_Repository_Interface {
      * @return array
      */
     public function find_by_club( int $club_id, ?string $type = null ): array {
-        $query    = "SELECT * FROM $this->team_table WHERE club_id = %d";
+        $query    = "SELECT * FROM $this->table_name WHERE club_id = %d";
         $params[] = $club_id;
         if ( $type ) {
             $query    .= " AND type = '%s'";
@@ -103,10 +103,10 @@ class Team_Repository implements Team_Repository_Interface {
     public function find_for_players( string $type ): array {
         $results = $this->wpdb->get_results(
             $this->wpdb->prepare(
-                "SELECT * 
-                        FROM $this->team_table 
-                        WHERE team_type = 'P' 
-                          AND type = %s 
+                "SELECT *
+                        FROM $this->table_name
+                        WHERE team_type = 'P'
+                          AND type = %s
                         ORDER BY title",
                 $type
             )
@@ -118,17 +118,18 @@ class Team_Repository implements Team_Repository_Interface {
     /**
      * Save a team.
      *
-     * @param Team $team
+     * @param object $entity
      *
      * @return int|false
      */
-    public function save( Team $team ) {
+    public function save( object $entity ): bool|int {
+        /** @var Team $entity */
         $data       = array(
-            'title'     => $team->get_name(),
-            'stadium'   => $team->get_stadium(),
-            'club_id'   => $team->get_club_id(),
-            'type'      => $team->get_type(),
-            'team_type' => $team->get_team_type(),
+            'title'     => $entity->get_name(),
+            'stadium'   => $entity->get_stadium(),
+            'club_id'   => $entity->get_club_id(),
+            'type'      => $entity->get_type(),
+            'team_type' => $entity->get_team_type(),
         );
         $data_types = array(
             '%s', // Format for name (string)
@@ -138,20 +139,20 @@ class Team_Repository implements Team_Repository_Interface {
             '%s', // Format for team_type (string)
         );
 
-        if ( $team->get_id() === null ) {
-            $inserted = $this->wpdb->insert( $this->team_table, $data, $data_types );
+        if ( $entity->get_id() === null ) {
+            $inserted = $this->wpdb->insert( $this->table_name, $data, $data_types );
             if ( $inserted ) {
                 $insert_id = $this->wpdb->insert_id;
-                $team->set_id( $insert_id );
-                wp_cache_set( $insert_id, $team, 'teams' );
+                $entity->set_id( $insert_id );
+                wp_cache_set( $insert_id, $entity, 'teams' );
                 return $insert_id;
             }
             return false;
         } else {
             // UPDATE: Use wpdb->update with the prepare logic built-in
-            wp_cache_set( $team->get_id(), $team, 'teams' );
+            wp_cache_set( $entity->get_id(), $entity, 'teams' );
 
-            return $this->wpdb->update( $this->team_table, $data, array( 'id' => $team->get_id() ),            // Where clause
+            return $this->wpdb->update( $this->table_name, $data, array( 'id' => $entity->get_id() ),            // Where clause
                 $data_types,                                // Data format
                 array( '%d' )                                 // Where format
             ) !== false;
@@ -166,7 +167,7 @@ class Team_Repository implements Team_Repository_Interface {
      * @return bool
      */
     public function has_teams( int $club_id ): bool {
-        $count = $this->wpdb->query( $this->wpdb->prepare( "SELECT COUNT(*) FROM $this->team_table WHERE `club_id` = %d", $club_id ) );
+        $count = $this->wpdb->query( $this->wpdb->prepare( "SELECT COUNT(*) FROM $this->table_name WHERE `club_id` = %d", $club_id ) );
 
         return $count > 0;
     }
@@ -184,7 +185,7 @@ class Team_Repository implements Team_Repository_Interface {
         // We look for names starting with the shortcode followed by a space and digits
         $prefix_like = $this->wpdb->esc_like( $club_shortcode ) . ' ' . $this->wpdb->esc_like( $type ) . ' %';
         $query       = $this->wpdb->prepare( "SELECT MAX(CAST(SUBSTRING_INDEX(title, ' ', -1) AS UNSIGNED))
-             FROM $this->team_table
+             FROM $this->table_name
              WHERE `title` LIKE %s", $prefix_like );
 
         $max_sequence = (int) $this->wpdb->get_var( $query );
@@ -204,7 +205,7 @@ class Team_Repository implements Team_Repository_Interface {
     public function find_captain( int $club_id, int $player ): bool {
         $tables_table = $this->wpdb->prefix . 'racketmanager_league_teams';
 
-        $count = $this->wpdb->get_var( $this->wpdb->prepare( "SELECT count(*) FROM $this->team_table t, $tables_table t1 WHERE t.`club_id` = %d AND t.`team_type` IS NULL AND t.`id` = t1.`team_id` AND t1.`captain` = %d", $club_id, $player ) );
+        $count = $this->wpdb->get_var( $this->wpdb->prepare( "SELECT count(*) FROM $this->table_name t, $tables_table t1 WHERE t.`club_id` = %d AND t.`team_type` IS NULL AND t.`id` = t1.`team_id` AND t1.`captain` = %d", $club_id, $player ) );
 
         return $count > 0;
     }
@@ -223,7 +224,7 @@ class Team_Repository implements Team_Repository_Interface {
         $events_table         = $this->wpdb->prefix . 'racketmanager_events';
         $leagues_table        = $this->wpdb->prefix . 'racketmanager_leagues';
         $league_teams_table   = $this->wpdb->prefix . 'racketmanager_league_teams';
-        $teams_table          = $this->team_table;
+        $teams_table          = $this->table_name;
         $rubber_players_table = $this->wpdb->prefix . 'racketmanager_rubber_players';
         $rubbers_table        = $this->wpdb->prefix . 'racketmanager_rubbers';
         $matches_table        = $this->wpdb->prefix . 'racketmanager_matches';
@@ -304,5 +305,16 @@ class Team_Repository implements Team_Repository_Interface {
             }
         }
         return $success;
+    }
+
+    /**
+     * Delete a team by its ID.
+     *
+     * @param int $id
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 }

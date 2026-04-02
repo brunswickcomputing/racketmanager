@@ -28,7 +28,7 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
         $this->table_name = $this->wpdb->prefix . 'racketmanager_tournament_entries';
     }
 
-    public function find_by_id( $id ): ?Tournament_Entry {
+    public function find_by_id( int|string|null $id ): ?Tournament_Entry {
         if ( ! $id ) {
             return null;
         }
@@ -55,7 +55,7 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
 
     }
 
-    public function find_by_tournament_and_player( $tournament_id, $player_id ): ?Tournament_Entry {
+    public function find_by_tournament_and_player( int $tournament_id, int $player_id ): ?Tournament_Entry {
         $tournament_entry_key = $tournament_id . '_' . $player_id;
         $tournament_entry     = wp_cache_get( $tournament_entry_key, 'tournament_entries' );
 
@@ -81,13 +81,14 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
 
     }
 
-    public function save( object $tournament_entry ): int|bool {
+    public function save( object $entity ): int|bool {
+        /** @var Tournament_Entry $entity */
         $data        = array(
-            'tournament_id' => $tournament_entry->get_tournament_id(),
-            'player_id'     => $tournament_entry->get_player_id(),
-            'status'        => $tournament_entry->get_status(),
-            'fee'           => $tournament_entry->get_fee(),
-            'club_id'       => $tournament_entry->get_club_id(),
+            'tournament_id' => $entity->get_tournament_id(),
+            'player_id'     => $entity->get_player_id(),
+            'status'        => $entity->get_status(),
+            'fee'           => $entity->get_fee(),
+            'club_id'       => $entity->get_club_id(),
         );
         $data_format = array(
             '%d',
@@ -96,7 +97,7 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
             '%d',
             '%d',
         );
-        if ( empty( $tournament_entry->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $result = $this->wpdb->insert(
                 $this->table_name,
                 $data,
@@ -106,18 +107,18 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
                 return false;
             }
             $insert_id = $this->wpdb->insert_id;
-            $tournament_entry->set_id( $insert_id );
-            wp_cache_set( $insert_id, $tournament_entry, 'tournament_entries' );
+            $entity->set_id( $insert_id );
+            wp_cache_set( $insert_id, $entity, 'tournament_entries' );
 
             return $insert_id;
         } else {
-            wp_cache_set( $tournament_entry->get_id(), $tournament_entry, 'tournament_entries' );
+            wp_cache_set( $entity->get_id(), $entity, 'tournament_entries' );
 
             return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
-                    'id' => $tournament_entry->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -140,8 +141,6 @@ class Tournament_Entry_Repository implements Tournament_Entry_Repository_Interfa
         $charge_table             = $this->wpdb->prefix . 'racketmanager_charges';
         $tournament_table         = $this->wpdb->prefix . 'racketmanager_tournaments';
         $search_terms             = array();
-        $search_args              = array();
-        $search_args[]            = $tournament_id;
 
         $invoice_status_subquery = $this->wpdb->prepare(
             "SELECT i.`status`

@@ -14,10 +14,10 @@ use Racketmanager\Domain\Fixture\Fixture;
 /**
  * Interface to implement the Fixture repository
  */
-interface Fixture_Repository_Interface {
-    public function save( Fixture $fixture );
+interface Fixture_Repository_Interface extends Repository_Interface {
+    public function save( object $entity ): bool|int;
     public function delete( int $id ): bool;
-    public function find_by_id( $fixture_id ): ?Fixture;
+    public function find_by_id( $id ): ?Fixture;
     public function find_raw_by_id( int $fixture_id, bool $legacy = false ): ?object;
     public function find_finals_fixtures_for_tournament( int $tournament_id ): array;
     public function find_fixtures_for_player_by_tournament( int $player_id, int $tournament_id ): array;

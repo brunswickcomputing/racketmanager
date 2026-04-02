@@ -53,7 +53,7 @@ class Team_Service {
      * @return array
      */
     public function get_teams_for_club( ?int $club_id, $type = null ): array {
-        if ( ! $this->club_repository->find( $club_id ) ) {
+        if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
 
@@ -95,7 +95,7 @@ class Team_Service {
             return new Team_Details_DTO( $team, null, null );
         }
 
-        $club = $this->club_repository->find( $team->get_club_id() );
+        $club = $this->club_repository->find_by_id( $team->get_club_id() );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $team->get_club_id() ) );
         }
@@ -131,7 +131,7 @@ class Team_Service {
 
     public function amend_team_for_club( ?string $team_id, ?int $club_id, ?string $type ): bool|WP_Error {
         try {
-            $club = $this->club_repository->find( $club_id );
+            $club = $this->club_repository->find_by_id( $club_id );
             $team = $this->get_team_by_id( $team_id );
         } catch ( Club_Not_Found_Exception $e ) {
             throw new Club_Not_Found_Exception( $e->getMessage() );
@@ -197,7 +197,7 @@ class Team_Service {
 
         if ( is_array( $clubs ) ) {
             foreach ( $clubs as $club_id ) {
-                $club_obj = $this->club_repository->find( $club_id );
+                $club_obj = $this->club_repository->find_by_id( $club_id );
                 if ( ! $club_obj ) {
                     continue;
                 }

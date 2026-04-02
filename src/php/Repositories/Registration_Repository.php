@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club_Player;
+use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Club_Player repository
  */
-class Registration_Repository {
+class Registration_Repository implements Registration_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -31,11 +32,13 @@ class Registration_Repository {
     /**
      * Save a club player.
      *
-     * @param Club_Player $club_player
+     * @param object $entity
      *
      * @return int|bool
      */
-    public function save( Club_Player $club_player ) {
+    public function save( object $entity ): bool|int {
+        /** @var Club_Player $club_player */
+        $club_player = $entity;
         //`id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`
         if ( $club_player->get_id() === null ) {
             $inserted = $this->wpdb->insert(
@@ -113,15 +116,15 @@ class Registration_Repository {
     /**
      * Find a club player by its ID.
      *
-     * @param $club_player_id
+     * @param $id
      *
      * @return Club_Player|null
      */
-    public function find_by_id( $club_player_id ): ?Club_Player {
+    public function find_by_id( $id ): ?Club_Player {
         $row   = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT `id`, `player_id`, `system_record`, `club_id`, `removed_date`, `removed_user`, `created_date`, `created_user`, `requested_date`, `requested_user`, `status` FROM $this->table_name WHERE id = %d",
-                $club_player_id
+                $id
             )
         );
         return $row ? new Club_Player( $row ) : null;
@@ -177,11 +180,11 @@ class Registration_Repository {
     /**
      * Find a club player by its ID.
      *
-     * @param $club_player_id
+     * @param int $club_player_id
      *
      * @return Club_Player|null
      */
-    public function find( $club_player_id ): ?Club_Player {
+    public function find( int $club_player_id ): ?Club_Player {
         $key = md5( $club_player_id );
         $row = wp_cache_get( $key, 'club_players' );
         if ( ! $row ) {
@@ -197,13 +200,27 @@ class Registration_Repository {
     }
 
     /**
+     * Delete a registration by its ID.
+     *
+     * @param int $id
+     * @return bool True on success, false on failure.
+     */
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete(
+            $this->table_name,
+            array( 'id' => $id ),
+            array( '%d' )
+        ) !== false;
+    }
+
+    /**
      * Delete all club players for a club.
      *
-     * @param $club_id
+     * @param int $club_id
      *
      * @return bool
      */
-    public function delete_for_club( $club_id ): bool {
+    public function delete_for_club( int $club_id ): bool {
         return $this->wpdb->delete(
             $this->table_name,
             array( 'club_id' => $club_id ),

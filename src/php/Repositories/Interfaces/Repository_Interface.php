@@ -16,10 +16,11 @@ interface Repository_Interface {
     /**
      * Find an entity by its ID.
      *
-     * @param int|string $id
+     * @param int|string|null $id
+     *
      * @return object|null
      */
-    public function find_by_id( $id ): ?object;
+    public function find_by_id( int|string|null $id ): ?object;
 
     /**
      * Save an entity.
@@ -27,7 +28,7 @@ interface Repository_Interface {
      * @param object $entity
      * @return int|bool The insert ID (int) for new entities, or success (bool) for updates.
      */
-    public function save( object $entity );
+    public function save( object $entity ): bool|int;
 
     /**
      * Delete an entity by its ID.

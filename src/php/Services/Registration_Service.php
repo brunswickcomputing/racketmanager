@@ -16,9 +16,9 @@ use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Registration_Repository;
 use stdClass;
 use WP_Error;
 use function Racketmanager\club_players_notification;
@@ -27,7 +27,7 @@ use function Racketmanager\club_players_notification;
  * Class to implement the Club Player Management Service
  */
 class Registration_Service {
-    private Registration_Repository $club_player_repository;
+    private Registration_Repository_Interface $club_player_repository;
     private Player_Repository $player_repository;
     private Club_Repository $club_repository;
     private Player_Service $player_service;
@@ -37,12 +37,12 @@ class Registration_Service {
      * Constructor
      *
      * @param $plugin_instance
-     * @param Registration_Repository $club_player_repository
+     * @param Registration_Repository_Interface $club_player_repository
      * @param Player_Repository $player_repository
      * @param Club_Repository $club_repository
      * @param Player_Service $player_service
      */
-    public function __construct( $plugin_instance, Registration_Repository $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service ) {
+    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
@@ -74,7 +74,7 @@ class Registration_Service {
      * @return Club_Player|WP_Error
      */
     public function register_player_to_club( ?int $club_id, ?int $registered_by_userId = null ): string|WP_Error {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( __( 'Club not found', 'racketmanager' ) );
         }
@@ -210,7 +210,7 @@ class Registration_Service {
     private function create_club_player_dto( int $registration_id ): Club_Player_DTO {
         $registration       = $this->club_player_repository->find( $registration_id );
         $player             = $this->player_repository->find( $registration->player_id );
-        $club               = $this->club_repository->find( $registration->club_id );
+        $club               = $this->club_repository->find_by_id( $registration->club_id );
         $registered_by_name = null;
         $removed_by_name    = null;
         $approved_by_name   = null;
@@ -239,7 +239,7 @@ class Registration_Service {
      * @return Club_Player_DTO|null
      */
     public function get_player_for_club( int $club_id, int $player_id ): ?Club_Player_DTO {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( __( 'Club not found', 'racketmanager' ) );
         }

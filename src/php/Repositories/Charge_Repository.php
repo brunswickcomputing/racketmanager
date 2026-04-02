@@ -30,14 +30,15 @@ class Charge_Repository implements Charge_Repository_Interface {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_charges';
     }
 
-    public function save( object $charge ): int|bool {
+    public function save( object $entity ): int|bool {
+        /** @var Charge $entity */
         $data        = array(
-            'competition_id'  => $charge->get_competition_id(),
-            'season'          => $charge->get_season(),
-            'date'            => $charge->get_date(),
-            'status'          => $charge->get_status(),
-            'fee_competition' => $charge->get_fee_competition(),
-            'fee_event'       => $charge->get_fee_event(),
+            'competition_id'  => $entity->get_competition_id(),
+            'season'          => $entity->get_season(),
+            'date'            => $entity->get_date(),
+            'status'          => $entity->get_status(),
+            'fee_competition' => $entity->get_fee_competition(),
+            'fee_event'       => $entity->get_fee_event(),
         );
         $data_format = array(
             '%d',
@@ -47,24 +48,24 @@ class Charge_Repository implements Charge_Repository_Interface {
             '%d',
             '%d',
         );
-        if ( empty( $charge->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $result = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format,
             );
-            $charge->set_id( $this->wpdb->insert_id );
-            wp_cache_set( $charge->get_id(), $charge, 'charges' );
+            $entity->set_id( $this->wpdb->insert_id );
+            wp_cache_set( $entity->get_id(), $entity, 'charges' );
 
             return $result !== false;
         } else {
-            wp_cache_set( $charge->get_id(), $charge, 'charges' );
+            wp_cache_set( $entity->get_id(), $entity, 'charges' );
 
             return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
-                    'id' => $charge->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -74,17 +75,17 @@ class Charge_Repository implements Charge_Repository_Interface {
         }
     }
 
-    public function find_by_id( $charge_id ): ?Charge {
-        if ( ! $charge_id ) {
+    public function find_by_id( int|string|null $id ): ?Charge {
+        if ( ! $id ) {
             return null;
         }
-        if ( is_numeric( $charge_id ) ) {
+        if ( is_numeric( $id ) ) {
             $search = $this->wpdb->prepare(
                 '`id` = %d',
-                intval( $charge_id )
+                intval( $id )
             );
         } else {
-            $search_terms   = explode( '_', $charge_id );
+            $search_terms   = explode( '_', $id );
             $competition_id = $search_terms[0];
             $season         = $search_terms[1];
             $search         = $this->wpdb->prepare(
@@ -93,7 +94,7 @@ class Charge_Repository implements Charge_Repository_Interface {
                 $season,
             );
         }
-        $charge = wp_cache_get( $charge_id, 'charges' );
+        $charge = wp_cache_get( $id, 'charges' );
 
         if ( ! $charge ) {
             $charge = $this->wpdb->get_row(
@@ -199,8 +200,8 @@ class Charge_Repository implements Charge_Repository_Interface {
         );
     }
 
-    public function delete( int $charge_id ): bool {
-        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $charge_id ), array( '%d' ) );
+    public function delete( int $id ): bool {
+        return (bool) $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 
 }

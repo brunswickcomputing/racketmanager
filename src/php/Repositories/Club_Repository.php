@@ -32,22 +32,26 @@ class Club_Repository implements Club_Repository_Interface {
     /**
      * Inserts a new club into the database.
      * The save action is explicit, not in the Club constructor.
-     * @param Club $club The club object to save.
+     *
+     * @param object $entity The club object to save.
+     *
+     * @return bool|int
      */
-    public function save( Club $club ) {
+    public function save( object $entity ): bool|int {
+        /** @var Club $entity */
         //`id`, `name`, `website`, `type`, `address`, `contactno`, `founded`, `facilities`, `shortcode`
-        if ( $club->get_id() === null ) {
+        if ( $entity->get_id() === null ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
-                    'name'       => $club->get_name(),
-                    'website'    => $club->get_website(),
-                    'type'       => $club->get_type(),
-                    'address'    => $club->get_address(),
-                    'contactno'  => $club->get_contact_no(),
-                    'founded'    => $club->get_founded(),
-                    'facilities' => $club->get_facilities(),
-                    'shortcode'  => $club->get_shortcode(),
+                    'name'       => $entity->get_name(),
+                    'website'    => $entity->get_website(),
+                    'type'       => $entity->get_type(),
+                    'address'    => $entity->get_address(),
+                    'contactno'  => $entity->get_contact_no(),
+                    'founded'    => $entity->get_founded(),
+                    'facilities' => $entity->get_facilities(),
+                    'shortcode'  => $entity->get_shortcode(),
                 ),
                 array(
                     '%s', // Format for name (string)
@@ -61,7 +65,7 @@ class Club_Repository implements Club_Repository_Interface {
                 )
             );
             if ( $inserted ) {
-                $club->set_id( $this->wpdb->insert_id );
+                $entity->set_id( $this->wpdb->insert_id );
                 wp_cache_flush_group( 'clubs' );
                 return $this->wpdb->insert_id;
             }
@@ -70,16 +74,16 @@ class Club_Repository implements Club_Repository_Interface {
             // UPDATE: Use wpdb->update with the prepare logic built-in
             $updated = $this->wpdb->update(
                 $this->table_name,
-                array( 'name'       => $club->get_name(),
-                       'website'    => $club->get_website(),
-                       'type'       => $club->get_type(),
-                       'address'    => $club->get_address(),
-                       'contactno'  => $club->get_contact_no(),
-                       'founded'    => $club->get_founded(),
-                       'facilities' => $club->get_facilities(),
-                       'shortcode'  => $club->get_shortcode()
+                array( 'name'       => $entity->get_name(),
+                       'website'    => $entity->get_website(),
+                       'type'       => $entity->get_type(),
+                       'address'    => $entity->get_address(),
+                       'contactno'  => $entity->get_contact_no(),
+                       'founded'    => $entity->get_founded(),
+                       'facilities' => $entity->get_facilities(),
+                       'shortcode'  => $entity->get_shortcode()
                     ), // Data to update
-                array('id' => $club->get_id() ),            // Where clause
+                array('id' => $entity->get_id() ),            // Where clause
                 array( '%s',
                     '%s',
                     '%s',
@@ -104,7 +108,7 @@ class Club_Repository implements Club_Repository_Interface {
      *
      * @return Club|null The user object or null if not found.
      */
-    public function find( null|int|string $id, string $search_term = 'id' ): ?Club {
+    public function find_by_id( null|int|string $id, string $search_term = 'id' ): ?Club {
         if ( empty( $id ) ) {
             return null;
         }
@@ -283,15 +287,15 @@ class Club_Repository implements Club_Repository_Interface {
     /**
      * Delete club from the database.
      *
-     * @param int $club_id
+     * @param int $id
      *
      * @return bool
      */
-    public function delete( int $club_id ): bool {
+    public function delete( int $id ): bool {
         $deleted = $this->wpdb->query(
             $this->wpdb->prepare(
                 "DELETE FROM $this->table_name WHERE `id` = %d",
-                $club_id
+                $id
             )
         );
         wp_cache_flush_group( 'clubs' );

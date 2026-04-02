@@ -31,30 +31,31 @@ class League_Team_Repository implements League_Team_Repository_Interface {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_league_teams';
     }
 
-    public function save( League_Team $league_team ) {
+    public function save( object $entity ): bool|int {
+        /** @var League_Team $entity */
         $data = array(
-            'team_id'        => $league_team->get_team_id(),
-            'league_id'      => $league_team->get_league_id(),
-            'season'         => $league_team->get_season(),
-            'captain'        => $league_team->get_captain(),
-            'match_day'      => $league_team->get_match_day(),
-            'match_time'     => $league_team->get_match_time(),
-            'points_plus'    => $league_team->get_points_plus(),
-            'points_minus'   => $league_team->get_points_minus(),
-            'points_2_plus'  => $league_team->get_points_2_plus(),
-            'points_2_minus' => $league_team->get_points_2_minus(),
-            'add_points'     => $league_team->get_add_points(),
-            'done_matches'   => $league_team->get_done_matches(),
-            'won_matches'    => $league_team->get_won_matches(),
-            'draw_matches'   => $league_team->get_drawn_matches(),
-            'lost_matches'   => $league_team->get_lost_matches(),
-            'diff'           => $league_team->get_diff(),
-            'group'          => $league_team->get_group(),
-            'rank'           => $league_team->get_rank(),
-            'profile'        => $league_team->get_profile(),
-            'status'         => $league_team->get_status(),
-            'rating'         => $league_team->get_rating(),
-            'custom'         => maybe_serialize( $league_team->get_custom() ),
+            'team_id'        => $entity->get_team_id(),
+            'league_id'      => $entity->get_league_id(),
+            'season'         => $entity->get_season(),
+            'captain'        => $entity->get_captain(),
+            'match_day'      => $entity->get_match_day(),
+            'match_time'     => $entity->get_match_time(),
+            'points_plus'    => $entity->get_points_plus(),
+            'points_minus'   => $entity->get_points_minus(),
+            'points_2_plus'  => $entity->get_points_2_plus(),
+            'points_2_minus' => $entity->get_points_2_minus(),
+            'add_points'     => $entity->get_add_points(),
+            'done_matches'   => $entity->get_done_matches(),
+            'won_matches'    => $entity->get_won_matches(),
+            'draw_matches'   => $entity->get_drawn_matches(),
+            'lost_matches'   => $entity->get_lost_matches(),
+            'diff'           => $entity->get_diff(),
+            'group'          => $entity->get_group(),
+            'rank'           => $entity->get_rank(),
+            'profile'        => $entity->get_profile(),
+            'status'         => $entity->get_status(),
+            'rating'         => $entity->get_rating(),
+            'custom'         => maybe_serialize( $entity->get_custom() ),
         );
         $data_format = array(
             '%d',
@@ -80,25 +81,25 @@ class League_Team_Repository implements League_Team_Repository_Interface {
             '%f',
             '%s',
         );
-        if ( empty( $league_team->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format
             );
             if ( $inserted ) {
-                $league_team->set_id( $this->wpdb->insert_id );
-                wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
+                $entity->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $entity->get_id(), $entity, 'league-teams' );
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            wp_cache_set( $league_team->get_id(), $league_team, 'league-teams' );
+            wp_cache_set( $entity->get_id(), $entity, 'league-teams' );
             return $this->wpdb->update(
                 $this->table_name,
                 $data,
                 array(
-                    'id' => $league_team->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -112,17 +113,17 @@ class League_Team_Repository implements League_Team_Repository_Interface {
         return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 
-    public function find_by_id( $league_team_id ): ?League_Team {
-        if ( empty( $league_team_id ) ) {
+    public function find_by_id( $id ): ?League_Team {
+        if ( empty( $id ) ) {
             return null;
         }
-        $league_team = wp_cache_get( $league_team_id, 'league-teams' );
+        $league_team = wp_cache_get( $id, 'league-teams' );
 
         if ( ! $league_team ) {
             $league_team = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
-                    $league_team_id
+                    $id
                 )
             );
 

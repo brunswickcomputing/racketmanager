@@ -26,41 +26,42 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_matches';
     }
 
-    public function save( Fixture $fixture ) {
+    public function save( object $entity ): bool|int {
+        /** @var Fixture $entity */
         $data = array(
-            'group'               => $fixture->get_group(),
-            'date'                => $fixture->get_date(),
-            'date_original'       => $fixture->get_date_original(),
-            'home_team'           => $fixture->get_home_team(),
-            'away_team'           => $fixture->get_away_team(),
-            'match_day'           => $fixture->get_match_day(),
-            'location'            => $fixture->get_location(),
-            'host'                => $fixture->get_host(),
-            'league_id'           => $fixture->get_league_id(),
-            'season'              => $fixture->get_season(),
-            'home_points'         => $fixture->get_home_points(),
-            'away_points'         => $fixture->get_away_points(),
-            'winner_id'           => $fixture->get_winner_id(),
-            'loser_id'            => $fixture->get_loser_id(),
-            'status'              => $fixture->get_status(),
-            'linked_match'        => $fixture->get_linked_match(),
-            'leg'                 => $fixture->get_leg(),
-            'winner_id_tie'       => $fixture->get_winner_id_tie(),
-            'loser_id_tie'        => $fixture->get_loser_id_tie(),
-            'home_points_tie'     => $fixture->get_home_points_tie(),
-            'away_points_tie'     => $fixture->get_away_points_tie(),
-            'post_id'             => $fixture->get_post_id(),
-            'final'               => $fixture->get_final(),
-            'custom'              => maybe_serialize( $fixture->get_custom() ),
-            'confirmed'           => $fixture->get_confirmed(),
-            'home_captain'        => $fixture->get_home_captain(),
-            'away_captain'        => $fixture->get_away_captain(),
-            'comments'            => $fixture->get_comments(),
+            'group'               => $entity->get_group(),
+            'date'                => $entity->get_date(),
+            'date_original'       => $entity->get_date_original(),
+            'home_team'           => $entity->get_home_team(),
+            'away_team'           => $entity->get_away_team(),
+            'match_day'           => $entity->get_match_day(),
+            'location'            => $entity->get_location(),
+            'host'                => $entity->get_host(),
+            'league_id'           => $entity->get_league_id(),
+            'season'              => $entity->get_season(),
+            'home_points'         => $entity->get_home_points(),
+            'away_points'         => $entity->get_away_points(),
+            'winner_id'           => $entity->get_winner_id(),
+            'loser_id'            => $entity->get_loser_id(),
+            'status'              => $entity->get_status(),
+            'linked_match'        => $entity->get_linked_match(),
+            'leg'                 => $entity->get_leg(),
+            'winner_id_tie'       => $entity->get_winner_id_tie(),
+            'loser_id_tie'        => $entity->get_loser_id_tie(),
+            'home_points_tie'     => $entity->get_home_points_tie(),
+            'away_points_tie'     => $entity->get_away_points_tie(),
+            'post_id'             => $entity->get_post_id(),
+            'final'               => $entity->get_final(),
+            'custom'              => maybe_serialize( $entity->get_custom() ),
+            'confirmed'           => $entity->get_confirmed(),
+            'home_captain'        => $entity->get_home_captain(),
+            'away_captain'        => $entity->get_away_captain(),
+            'comments'            => $entity->get_comments(),
             'updated'             => current_time( 'mysql' ),
             'updated_user'        => get_current_user_id(),
         );
 
-        if ( ! empty( $fixture->get_home_points() ) || ! empty( $fixture->get_away_points() ) ) {
+        if ( ! empty( $entity->get_home_points() ) || ! empty( $entity->get_away_points() ) ) {
             $data['date_result_entered'] = current_time( 'mysql' );
         }
 
@@ -101,14 +102,14 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             $format[] = '%s';
         }
 
-        if ( empty( $fixture->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $format
             );
             if ( $inserted ) {
-                $fixture->set_id( $this->wpdb->insert_id );
+                $entity->set_id( $this->wpdb->insert_id );
                 return $this->wpdb->insert_id;
             }
             return false;
@@ -117,7 +118,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
                 $this->table_name,
                 $data,
                 array(
-                    'id' => $fixture->get_id()
+                    'id' => $entity->get_id()
                 ),
                 $format,
                 array( '%d' )
@@ -154,8 +155,8 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         return (bool) $deleted;
     }
 
-    public function find_by_id( $fixture_id ): ?Fixture {
-        $row = $this->find_raw_by_id( $fixture_id );
+    public function find_by_id( $id ): ?Fixture {
+        $row = $this->find_raw_by_id( $id );
 
         if ( ! $row ) {
             return null;

@@ -19,17 +19,17 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
  * Provides access to various repositories in the system.
  */
 class Repository_Provider {
-    private ?League_Repository_Interface $league_repository = null;
-    private ?Event_Repository_Interface $event_repository = null;
-    private ?Competition_Repository_Interface $competition_repository = null;
-    private ?League_Team_Repository_Interface $league_team_repository = null;
-    private ?Team_Repository_Interface $team_repository = null;
-    private ?Player_Repository_Interface $player_repository = null;
-    private ?Rubber_Repository_Interface $rubber_repository = null;
-    private ?Results_Checker_Repository_Interface $results_checker_repository = null;
-    private ?Results_Report_Repository_Interface $results_report_repository = null;
-    private ?Fixture_Repository_Interface $fixture_repository = null;
-    private ?Club_Repository_Interface $club_repository = null;
+    private ?League_Repository_Interface $league_repository;
+    private ?Event_Repository_Interface $event_repository;
+    private ?Competition_Repository_Interface $competition_repository;
+    private ?League_Team_Repository_Interface $league_team_repository;
+    private ?Team_Repository_Interface $team_repository;
+    private ?Player_Repository_Interface $player_repository;
+    private ?Rubber_Repository_Interface $rubber_repository;
+    private ?Results_Checker_Repository_Interface $results_checker_repository;
+    private ?Results_Report_Repository_Interface $results_report_repository;
+    private ?Fixture_Repository_Interface $fixture_repository;
+    private ?Club_Repository_Interface $club_repository;
 
     public function __construct(
         ?League_Repository_Interface $league_repository = null,

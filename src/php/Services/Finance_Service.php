@@ -371,7 +371,7 @@ class Finance_Service {
                 $contact = null;
             }
             try {
-                $club             = $this->club_repository->find( $invoice->billable_id );
+                $club             = $this->club_repository->find_by_id( $invoice->billable_id );
                 $billable_name    = $club->get_shortcode();
                 $billable_address = $club->get_address();
             } catch ( Club_Not_Found_Exception ) {

@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Club_Role;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use wpdb;
@@ -17,7 +18,7 @@ use wpdb;
 /**
  * Class to implement the Club_Role repository
  */
-class Club_Role_Repository {
+class Club_Role_Repository implements Club_Role_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
@@ -30,9 +31,11 @@ class Club_Role_Repository {
     /**
      * Inserts a new club role into the database.
      * The save action is explicit, not in the Club Role constructor.
-     * @param Club_Role $club_role The club role object to save.
+     * @param object $entity The club role object to save.
      */
-    public function save( Club_Role $club_role ) {
+    public function save( object $entity ): bool|int {
+        /** @var Club_Role $club_role */
+        $club_role = $entity;
         if ( $club_role->get_id() === null ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
@@ -69,6 +72,17 @@ class Club_Role_Repository {
     /**
      * Retrieves an existing club role from the database by ID.
      *
+     * @param int|string|null $id The user ID.
+     *
+     * @return Club_Role|null The user object or null if not found.
+     */
+    public function find_by_id( int|string|null $id ): ?Club_Role {
+        return $this->find( (int) $id );
+    }
+
+    /**
+     * Retrieves an existing club role from the database by ID.
+     *
      * @param int $id The user ID.
      *
      * @return Club_Role|null The user object or null if not found.
@@ -95,6 +109,20 @@ class Club_Role_Repository {
         }
 
         return null; // Club role not found
+    }
+
+    /**
+     * Delete a club role by its ID.
+     *
+     * @param int $id
+     * @return bool True on success, false on failure.
+     */
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete(
+            $this->table_name,
+            array( 'id' => $id ),
+            array( '%d' )
+        ) !== false;
     }
 
     /**
@@ -142,12 +170,12 @@ class Club_Role_Repository {
     /**
      * Build club roles from the database query
      *
-     * @param $sql
-     * @param $group
+     * @param string $sql
+     * @param string $group
      *
      * @return array
      */
-    private function build_club_roles( $sql, $group = null ): array {
+    public function build_club_roles( string $sql, string $group ): array {
         $club_roles = array();
         $roles      = $this->wpdb->get_results(
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -173,11 +201,11 @@ class Club_Role_Repository {
     /**
      * Delete a club role from the database.
      *
-     * @param $id
+     * @param int $id
      *
-     * @return void
+     * @return bool
      */
-    public function delete_for_role( $id ): bool {
+    public function delete_for_role( int $id ): bool {
         $deleted = $this->wpdb->delete(
             $this->table_name,
             array( 'id' => $id ),
@@ -192,7 +220,7 @@ class Club_Role_Repository {
      *
      * @param int $club_id
      *
-     * @return void
+     * @return bool
      */
     public function delete_for_club( int $club_id ): bool {
         $deleted = $this->wpdb->delete(
@@ -220,6 +248,7 @@ class Club_Role_Repository {
      *
      * @param int $user_id
      * @param string $role_name
+     * @param int|null $club_id
      *
      * @return int[] Array of Club IDs.
      */

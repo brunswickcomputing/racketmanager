@@ -33,25 +33,26 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $this->competition_table = $this->wpdb->prefix . 'racketmanager_competitions';
     }
 
-    public function save( object $tournament ) {
+    public function save( object $entity ): bool|int {
+        /** @var Tournament $entity */
         $data        = array(
-            'name'             => $tournament->get_name(),
-            'competition_id'   => $tournament->get_competition_id(),
-            'season'           => $tournament->get_season(),
-            'venue'            => $tournament->get_venue(),
-            'date_end'         => $tournament->get_end_date(),
-            'date_closing'     => $tournament->get_closing_date(),
-            'date_withdrawal'  => $tournament->get_withdrawal_date(),
-            'date_open'        => $tournament->get_open_date(),
-            'date_start'       => $tournament->get_start_date(),
-            'competition_code' => $tournament->get_competition_code(),
-            'grade'            => $tournament->get_grade(),
-            'num_entries'      => $tournament->get_num_entries(),
-            'numcourts'        => $tournament->get_num_courts(),
-            'starttime'        => $tournament->get_start_time(),
-            'timeincrement'    => $tournament->get_time_increment(),
-            'orderofplay'      => maybe_serialize( $tournament->get_order_of_play() ),
-            'information'      => json_encode( $tournament->get_information() ),
+            'name'             => $entity->get_name(),
+            'competition_id'   => $entity->get_competition_id(),
+            'season'           => $entity->get_season(),
+            'venue'            => $entity->get_venue(),
+            'date_end'         => $entity->get_end_date(),
+            'date_closing'     => $entity->get_closing_date(),
+            'date_withdrawal'  => $entity->get_withdrawal_date(),
+            'date_open'        => $entity->get_open_date(),
+            'date_start'       => $entity->get_start_date(),
+            'competition_code' => $entity->get_competition_code(),
+            'grade'            => $entity->get_grade(),
+            'num_entries'      => $entity->get_num_entries(),
+            'numcourts'        => $entity->get_num_courts(),
+            'starttime'        => $entity->get_start_time(),
+            'timeincrement'    => $entity->get_time_increment(),
+            'orderofplay'      => maybe_serialize( $entity->get_order_of_play() ),
+            'information'      => json_encode( $entity->get_information() ),
         );
         $data_format = array(
             '%s',
@@ -72,20 +73,20 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             '%s',
             '%s',
         );
-        if ( empty( $tournament->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert( $this->table_name, $data, $data_format );
             if ( $inserted ) {
-                $tournament->set_id( $this->wpdb->insert_id );
-                wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
+                $entity->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $entity->get_id(), $entity, 'tournaments' );
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
+            wp_cache_set( $entity->get_id(), $entity, 'tournaments' );
 
             return $this->wpdb->update( $this->table_name, $data, // Data to update
                 array(
-                    'id' => $tournament->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format, array(
                     '%d'
@@ -94,7 +95,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         }
     }
 
-    public function find_by_id( $id, $search_term = 'id' ): ?Tournament {
+    public function find_by_id( int|string|null $id, string $search_term = 'id' ): ?Tournament {
         if ( ! $id ) {
             return null;
         }
@@ -283,8 +284,8 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         return $players;
     }
 
-    public function delete( int $tournament_id ): bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $tournament_id ), array( '%d' ) ) !== false;
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 
     public function find_events_by_tournament_with_details( int $tournament_id ): array {
@@ -439,7 +440,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         }
     }
 
-    public function find_finalists_for_tournament( $tournament_id ): array {
+    public function find_finalists_for_tournament( int $tournament_id ): array {
         $fixtures_table     = $this->wpdb->prefix . 'racketmanager_matches';
         $tournaments_table  = $this->wpdb->prefix . 'racketmanager_tournaments';
         $events_table       = $this->wpdb->prefix . 'racketmanager_events';
@@ -479,7 +480,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         return array_map( fn( $row ) => new Players_List_DTO( $row ), $results );
     }
 
-    public function find_winners_for_tournament( $tournament_id ): array {
+    public function find_winners_for_tournament( int $tournament_id ): array {
         $fixtures_table           = $this->wpdb->prefix . 'racketmanager_matches';
         $tournaments_table        = $this->wpdb->prefix . 'racketmanager_tournaments';
         $tournament_entries_table = $this->wpdb->prefix . 'racketmanager_tournament_entries';

@@ -12,18 +12,20 @@ interface Charge_Repository_Interface extends Repository_Interface {
     /**
      * Save a charge.
      *
-     * @param Charge $charge
+     * @param object $entity
+     *
      * @return int|bool
      */
-    public function save( object $charge ): int|bool;
+    public function save( object $entity ): int|bool;
 
     /**
      * Find a charge by ID.
      *
      * @param int|string|null $id
+     *
      * @return Charge|null
      */
-    public function find_by_id( $id ): ?Charge;
+    public function find_by_id( int|string|null $id ): ?Charge;
 
     /**
      * Find charges by criteria.

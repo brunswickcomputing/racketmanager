@@ -25,11 +25,11 @@ use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
-use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
-use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Services\Contracts\Wtn_Api_Client_Interface;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util_Messages;
@@ -43,21 +43,21 @@ use function Racketmanager\get_club;
 class Player_Service {
     private Player_Repository $player_repository;
     private ?RacketManager $racketmanager;
-    private ?Player_Error_Repository $player_error_repository;
+    private ?Player_Error_Repository_Interface $player_error_repository;
     /**
      * @var mixed|null
      */
     private null|Wtn_Api_Client_Interface $wtn_api_client;
-    private ?Club_Role_Repository $club_role_repository;
+    private ?Club_Role_Repository_Interface $club_role_repository;
     private League_Team_Repository $league_team_repository;
     private Club_Repository $club_repository;
-    private Registration_Repository $registration_repository;
+    private Registration_Repository_Interface $registration_repository;
 
     /**
      * Constructor
      *
      */
-    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository $player_error_repository, Club_Role_Repository $club_role_repository, Wtn_Api_Client_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository $registration_repository ) {
+    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository_Interface $player_error_repository, Club_Role_Repository_Interface $club_role_repository, Wtn_Api_Client_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository_Interface $registration_repository ) {
         $this->racketmanager           = $plugin_instance;
         $this->player_repository       = $player_repository;
         $this->player_error_repository = $player_error_repository;
@@ -468,7 +468,7 @@ class Player_Service {
      * Get the latest WTN for a list of players
      *
      * @param $players
-     * @param $club_id
+     * @param int|null $club_id
      *
      * @return void
      */
@@ -650,7 +650,7 @@ class Player_Service {
 
         $clubs = [];
         foreach ( $combined_club_ids as $club_id ) {
-            $club = $this->club_repository->find( $club_id );
+            $club = $this->club_repository->find_by_id( $club_id );
             if ( $club ) {
                 $clubs[] = $club;
             }

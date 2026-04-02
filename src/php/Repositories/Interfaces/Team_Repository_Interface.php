@@ -15,11 +15,11 @@ use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
 /**
  * Interface to implement the Team repository
  */
-interface Team_Repository_Interface {
-    public function find_by_id( int|string|null $team_id ): ?Team;
+interface Team_Repository_Interface extends Repository_Interface {
+    public function find_by_id( int|string|null $id ): ?Team;
     public function find_by_club( int $club_id, ?string $type = null ): array;
     public function find_for_players( string $type ): array;
-    public function save( Team $team );
+    public function save( object $entity ): bool|int;
     public function has_teams( int $club_id ): bool;
     public function find_next_sequence_number( string $club_shortcode, string $type ): int;
     public function find_captain( int $club_id, int $player ): bool;

@@ -12,18 +12,20 @@ interface Invoice_Repository_Interface extends Repository_Interface {
     /**
      * Save an invoice.
      *
-     * @param Invoice $invoice
+     * @param object $entity
+     *
      * @return int|bool
      */
-    public function save( object $invoice ): int|bool;
+    public function save( object $entity ): int|bool;
 
     /**
      * Find an invoice by ID.
      *
      * @param int|string|null $id
+     *
      * @return Invoice|null
      */
-    public function find_by_id( $id ): ?Invoice;
+    public function find_by_id( int|string|null $id ): ?Invoice;
 
     /**
      * Find invoices by criteria.
@@ -36,9 +38,10 @@ interface Invoice_Repository_Interface extends Repository_Interface {
     /**
      * Find an invoice by charge and billable.
      *
-     * @param int $charge_id
-     * @param int $billable_id
+     * @param int|null $charge_id
+     * @param int|null $billable_id
      * @param string $billable_type
+     *
      * @return Invoice|null
      */
     public function find_by_charge_and_billable( ?int $charge_id, ?int $billable_id, string $billable_type ): ?Invoice;

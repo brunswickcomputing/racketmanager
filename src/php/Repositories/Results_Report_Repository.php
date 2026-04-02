@@ -29,13 +29,15 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
     /**
      * Save a results report entry.
      *
-     * @param Results_Report $results_report
+     * @param object $entity
+     *
      * @return int|bool
      */
-    public function save( object $results_report ): int|bool {
+    public function save( object $entity ): int|bool {
+        /** @var Results_Report $entity */
         $data = array(
-            'match_id'      => $results_report->match_id,
-            'result_object' => $results_report->result_object,
+            'match_id'      => $entity->match_id,
+            'result_object' => $entity->result_object,
         );
 
         $format = array(
@@ -43,11 +45,11 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
             '%s', // result_object
         );
 
-        if ( empty( $results_report->id ) ) {
+        if ( empty( $entity->id ) ) {
             $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
             if ( $inserted ) {
-                $results_report->id = (int) $this->wpdb->insert_id;
-                return $results_report->id;
+                $entity->id = (int) $this->wpdb->insert_id;
+                return $entity->id;
             }
             return false;
         } else {
@@ -55,7 +57,7 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
                 $this->table_name,
                 $data,
                 array(
-                    'id' => $results_report->id,
+                    'id' => $entity->id,
                 ),
                 $format,
                 array(
@@ -68,10 +70,11 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
     /**
      * Find a results report by ID.
      *
-     * @param int $id
+     * @param int|string|null $id
+     *
      * @return Results_Report|null
      */
-    public function find_by_id( $id ): ?Results_Report {
+    public function find_by_id( int|string|null $id ): ?Results_Report {
         $row = $this->wpdb->get_row(
             $this->wpdb->prepare(
                 "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",

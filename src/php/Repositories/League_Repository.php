@@ -28,13 +28,14 @@ class League_Repository implements League_Repository_Interface {
         }
     }
 
-    public function save( League $league ) {
+    public function save( object $entity ): bool|int {
+        /** @var League $entity */
         $data = array(
-            'title'    => $league->get_name(),
-            'settings' => maybe_serialize( $league->get_settings() ),
-            'seasons'  => maybe_serialize( $league->get_seasons() ),
-            'sequence' => $league->get_sequence(),
-            'event_id' => $league->get_event_id(),
+            'title'    => $entity->get_name(),
+            'settings' => maybe_serialize( $entity->get_settings() ),
+            'seasons'  => maybe_serialize( $entity->get_seasons() ),
+            'sequence' => $entity->get_sequence(),
+            'event_id' => $entity->get_event_id(),
         );
         $data_format = array(
             '%s',
@@ -43,14 +44,14 @@ class League_Repository implements League_Repository_Interface {
             '%s',
             '%d',
         );
-        if ( empty( $league->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format
             );
             if ( $inserted ) {
-                $league->set_id( $this->wpdb->insert_id );
+                $entity->set_id( $this->wpdb->insert_id );
                 return $this->wpdb->insert_id;
             }
             return false;
@@ -59,7 +60,7 @@ class League_Repository implements League_Repository_Interface {
                 $this->table_name,
                 $data, // Data to update
                 array(
-                    'id' => $league->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -69,22 +70,18 @@ class League_Repository implements League_Repository_Interface {
         }
     }
 
-    public function find_by_id( $league_id ): ?League {
-        if ( empty( $league_id ) ) {
+    public function find_by_id( $id ): ?League {
+        if ( empty( $id ) ) {
             return null;
         }
 
-        if ( isset( $GLOBALS['wp_stubs_leagues'][$league_id] ) ) {
-            return $GLOBALS['wp_stubs_leagues'][$league_id];
-        }
-
-        $league = wp_cache_get( $league_id, 'leagues' );
+        $league = wp_cache_get( $id, 'leagues' );
 
         if ( ! $league && $this->wpdb ) {
             $league = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
-                    $league_id
+                    $id
                 )
             );
 
@@ -168,7 +165,8 @@ class League_Repository implements League_Repository_Interface {
      * Delete a league by its ID.
      *
      * @param int $id
-     * @return void
+     *
+     * @return bool
      */
     public function delete( int $id ): bool {
         if ( $this->wpdb ) {

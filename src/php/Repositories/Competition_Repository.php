@@ -48,17 +48,18 @@ class Competition_Repository implements Competition_Repository_Interface {
     /**
      * Save a competition.
      *
-     * @param Competition $competition
+     * @param object $entity
      *
      * @return int|bool
      */
-    public function save( Competition $competition ) {
+    public function save( object $entity ): bool|int {
+        /** @var Competition $entity */
         $data = array(
-            'name'      => $competition->get_name(),
-            'settings'  => json_encode( $competition->get_settings() ), // Store settings as JSON
-            'seasons'   => json_encode( $competition->get_seasons() ), // Store seasons as JSON in DB
-            'type'      => $competition->get_type(),
-            'age_group' => $competition->get_age_group(),
+            'name'      => $entity->get_name(),
+            'settings'  => json_encode( $entity->get_settings() ), // Store settings as JSON
+            'seasons'   => json_encode( $entity->get_seasons() ), // Store seasons as JSON in DB
+            'type'      => $entity->get_type(),
+            'age_group' => $entity->get_age_group(),
         );
         $data_format = array(
             '%s',
@@ -67,25 +68,25 @@ class Competition_Repository implements Competition_Repository_Interface {
             '%s',
             '%s',
         );
-        if ( empty( $competition->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format,
             );
             if ( $inserted ) {
-                $competition->set_id( $this->wpdb->insert_id );
-                wp_cache_set( $competition->get_id(), $competition, 'competitions' );
+                $entity->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $entity->get_id(), $entity, 'competitions' );
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            wp_cache_set( $competition->get_id(), $competition, 'competitions' );
+            wp_cache_set( $entity->get_id(), $entity, 'competitions' );
             return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
-                    'id' => $competition->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -98,27 +99,27 @@ class Competition_Repository implements Competition_Repository_Interface {
     /**
      * Find a competition by its ID.
      *
-     * @param int|string|null $competition_id
+     * @param int|string|null $id
      *
      * @return Competition|null
      */
-    public function find_by_id( int|string|null $competition_id ): ?Competition {
-        if ( empty( $competition_id ) ) {
+    public function find_by_id( int|string|null $id ): ?Competition {
+        if ( empty( $id ) ) {
             return null;
         }
-        if ( is_numeric( $competition_id ) ) {
-            $competition_id = (int) $competition_id;
+        if ( is_numeric( $id ) ) {
+            $id     = (int) $id;
             $search = '`id` = %d';
         } else {
             $search = '`name` = %s';
         }
-        $competition = wp_cache_get( $competition_id, 'competitions' );
+        $competition = wp_cache_get( $id, 'competitions' );
 
         if ( ! $competition ) {
             $row = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE $search LIMIT 1",
-                    $competition_id
+                    $id
                 )
             );
 
@@ -206,12 +207,12 @@ class Competition_Repository implements Competition_Repository_Interface {
     /**
      * Delete a competition from the database.
      *
-     * @param int $competition_id
+     * @param int $id
      *
-     * @return void
+     * @return bool
      */
-    public function delete( int $competition_id ): bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $competition_id ), array( '%d' ) ) !== false;
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 
     /**

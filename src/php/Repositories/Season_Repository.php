@@ -33,37 +33,38 @@ class Season_Repository implements Season_Repository_Interface {
     /**
      * Save a season.
      *
-     * @param Season $season
+     * @param object $entity
      *
      * @return bool|int
      */
-    public function save( Season $season ) {
+    public function save( object $entity ): bool|int {
+        /** @var Season $entity */
         $data        = array(
-            'name' => $season->get_name(),
+            'name' => $entity->get_name(),
         );
         $data_format = array(
             '%s',
         );
-        if ( empty( $season->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format,
             );
             if ( $inserted ) {
-                $season->set_id( $this->wpdb->insert_id );
-                wp_cache_set( $season->get_id(), $season, 'seasons' );
+                $entity->set_id( $this->wpdb->insert_id );
+                wp_cache_set( $entity->get_id(), $entity, 'seasons' );
                 return $this->wpdb->insert_id;
             }
             return false;
         } else {
-            wp_cache_set( $season->get_id(), $season, 'seasons' );
+            wp_cache_set( $entity->get_id(), $entity, 'seasons' );
 
             return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
-                    'id' => $season->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -76,27 +77,28 @@ class Season_Repository implements Season_Repository_Interface {
     /**
      * Find a season by its ID.
      *
-     * @param int|string|null $season_id
+     * @param int|string|null $id
+     * @param string $type
      *
      * @return Season|null
      */
-    public function find_by_id( null|int|string $season_id, string $type = 'id' ): ?Season {
-        if ( ! $season_id ) {
+    public function find_by_id( int|string|null $id, string $type = 'id' ): ?Season {
+        if ( ! $id ) {
             return null;
         }
         if ( 'id' === $type ) {
-            $season_id = (int) $season_id;
-            $search    = $this->wpdb->prepare(
+            $id     = (int) $id;
+            $search = $this->wpdb->prepare(
                 '`id` = %d',
-                $season_id
+                $id
             );
         } else {
             $search = $this->wpdb->prepare(
                 '`name` = %s',
-                $season_id
+                $id
             );
         }
-        $season = wp_cache_get( $season_id, 'seasons' );
+        $season = wp_cache_get( $id, 'seasons' );
 
         if ( ! $season ) {
             $season = $this->wpdb->get_row(
@@ -107,7 +109,7 @@ class Season_Repository implements Season_Repository_Interface {
                 return null;
             }
             $season = new Season( $season );
-            wp_cache_set( $season_id, $season, 'seasons' );
+            wp_cache_set( $id, $season, 'seasons' );
         }
 
         return $season;
@@ -135,7 +137,7 @@ class Season_Repository implements Season_Repository_Interface {
      *
      * @param int $id
      *
-     * @return int|false
+     * @return bool
      */
     public function delete( int $id ): bool {
         return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;

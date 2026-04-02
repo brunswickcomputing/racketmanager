@@ -14,6 +14,8 @@ use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Exceptions\Club_Has_Teams_Exception;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
@@ -31,9 +33,9 @@ use stdClass;
  * Class to implement the Club Management Service
  */
 class Club_Service {
-    private Club_Role_Repository $club_role_repository;
+    private Club_Role_Repository_Interface $club_role_repository;
     private Club_Repository $club_repository;
-    private Registration_Repository $club_player_repository;
+    private Registration_Repository_Interface $club_player_repository;
     private Player_Repository $player_repository;
     private Team_Repository $team_repository;
     private Player_Service $player_service;
@@ -42,7 +44,7 @@ class Club_Service {
      * Constructor
      *
      */
-    public function __construct( Club_Repository $club_repository, Registration_Repository $club_player_repository, Club_Role_Repository $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Player_Service $player_service ) {
+    public function __construct( Club_Repository $club_repository, Registration_Repository_Interface $club_player_repository, Club_Role_Repository_Interface $club_role_repository, Player_Repository $player_repository, Team_Repository $team_repository, Player_Service $player_service ) {
         $this->club_repository        = $club_repository;
         $this->club_role_repository   = $club_role_repository;
         $this->club_player_repository = $club_player_repository;
@@ -74,7 +76,7 @@ class Club_Service {
      * @return Club|bool
      */
     public function update_club( int $id, object $club_updated ): Club|bool {
-        $club = $this->club_repository->find( $id );
+        $club = $this->club_repository->find_by_id( $id );
         if ( ! $club ) {
             return false;
         }
@@ -148,7 +150,7 @@ class Club_Service {
      * @return Club
      */
     public function get_club( $club_id ): Club {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -164,7 +166,7 @@ class Club_Service {
      * @return Club
      */
     public function get_club_by_shortcode( $club_id ): Club {
-        $club = $this->club_repository->find( $club_id, 'shortcode' );
+        $club = $this->club_repository->find_by_id( $club_id, 'shortcode' );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_shortcode_not_found( $club_id ) );
         }
@@ -180,7 +182,7 @@ class Club_Service {
      * @throws Exception
      */
     public function remove_club( int $club_id ): void {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -344,7 +346,7 @@ class Club_Service {
      * @return Club_Details_DTO
      */
     public function get_club_details( int $club_id ): Club_Details_DTO {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -365,7 +367,7 @@ class Club_Service {
      */
     public function is_user_match_secretary( int $user_id, int $club_id ): bool {
         // Ensure user and club exist (optional but good practice)
-        if ( ! $this->club_repository->find( $club_id ) ) {
+        if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             return false;
         }
         $role_assignment = $this->club_role_repository->search( array( 'club' => $club_id, 'role' => 1, 'user' => $user_id ) );
@@ -453,7 +455,7 @@ class Club_Service {
      */
     public function is_player_captain( int $club_id, int $player ): bool {
         // Ensure user and club exist (optional but good practice)
-        if ( ! $this->club_repository->find( $club_id ) ) {
+        if ( ! $this->club_repository->find_by_id( $club_id ) ) {
             return false;
         }
         if ( ! $this->player_repository->find( $player ) ) {
@@ -473,7 +475,7 @@ class Club_Service {
      * @return Team The newly created Team object.
      */
     public function create_team( ?int $club_id, string $type ): Team {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }

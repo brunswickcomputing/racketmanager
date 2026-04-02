@@ -484,7 +484,7 @@ class Competition_Entry_Service {
      * @return bool
      */
     public function league_entry_valid( int $club_id, object $club_entry ): bool {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -610,7 +610,7 @@ class Competition_Entry_Service {
      * @return void
      */
     public function send_entry_form( int $club_id, array $template_args, object $club_entry, string $email_from, string $template, string $email_subject, array $headers ): void {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -725,7 +725,7 @@ class Competition_Entry_Service {
      * @param object $club_entry club cup entry object.
      */
     public function cup_entry_valid( int $club_id, object $club_entry ): void {
-        $club = $this->club_repository->find( $club_id );
+        $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( Util_Messages::club_not_found( $club_id ) );
         }
@@ -1225,7 +1225,7 @@ class Competition_Entry_Service {
         }
 
         // Perform age check (Since we didn't return above, we know they are in the same team or no team)
-//        if ( isset( $partner ) && $partner->age < $event->min_age ) {
+//        if ( isset( $partner ) && $partner->age < $event->min_age) {
 //            $validator->set_errors( $err_field, __( 'Partner does not meet the age requirement.', 'racketmanager' ) );
 //        }
         return true;

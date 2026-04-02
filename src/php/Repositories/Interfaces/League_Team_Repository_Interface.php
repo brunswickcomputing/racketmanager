@@ -15,10 +15,10 @@ use stdClass;
 /**
  * Interface to implement the League Team repository
  */
-interface League_Team_Repository_Interface {
-    public function save( League_Team $league_team );
+interface League_Team_Repository_Interface extends Repository_Interface {
+    public function save( object $entity ): bool|int;
     public function delete( int $id ): bool;
-    public function find_by_id( $league_team_id ): ?League_Team;
+    public function find_by_id( $id ): ?League_Team;
     public function find_club_ids_where_player_is_captain( int $player_id, ?int $club_id = null ): array;
     public function find_by_event_id( ?int $event_id, ?int $season = null, ?int $team_id = null, ?int $club_id = null ): array;
     public function get_clubs_by_event_id( ?int $event_id, ?int $season = null ): array;

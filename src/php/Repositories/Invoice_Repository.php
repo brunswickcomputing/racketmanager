@@ -29,7 +29,7 @@ class Invoice_Repository implements Invoice_Repository_Interface {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_invoices';
     }
 
-    public function find_by_id( $id ): ?Invoice {
+    public function find_by_id( int|string|null $id ): ?Invoice {
         if ( ! $id ) {
             return null;
         }
@@ -176,19 +176,20 @@ class Invoice_Repository implements Invoice_Repository_Interface {
 
     }
 
-    public function save( object $invoice ): int|bool {
+    public function save( object $entity ): int|bool {
+        /** @var Invoice $entity */
         $data        = array(
-            'charge_id'         => $invoice->get_charge_id(),
-            'billable_id'       => $invoice->get_billable_id(),
-            'billable_type'     => $invoice->get_billable_type(),
-            'invoice_number'    => $invoice->get_invoice_number(),
-            'date'              => $invoice->get_date(),
-            'date_due'          => $invoice->get_date_due(),
-            'status'            => $invoice->get_status(),
-            'amount'            => $invoice->get_amount(),
-            'payment_reference' => $invoice->get_payment_reference(),
-            'purchase_order'    => $invoice->get_purchase_order(),
-            'details'           => $invoice->get_details(),
+            'charge_id'         => $entity->get_charge_id(),
+            'billable_id'       => $entity->get_billable_id(),
+            'billable_type'     => $entity->get_billable_type(),
+            'invoice_number'    => $entity->get_invoice_number(),
+            'date'              => $entity->get_date(),
+            'date_due'          => $entity->get_date_due(),
+            'status'            => $entity->get_status(),
+            'amount'            => $entity->get_amount(),
+            'payment_reference' => $entity->get_payment_reference(),
+            'purchase_order'    => $entity->get_purchase_order(),
+            'details'           => $entity->get_details(),
         );
         $data_format = array(
             '%d',
@@ -203,24 +204,24 @@ class Invoice_Repository implements Invoice_Repository_Interface {
             '%s',
             '%s',
         );
-        if ( empty( $invoice->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $result = $this->wpdb->insert(
                 $this->table_name,
                 $data,
                 $data_format,
             );
-            $invoice->set_id( $this->wpdb->insert_id );
-            wp_cache_set( $invoice->get_id(), $invoice, 'invoices' );
+            $entity->set_id( $this->wpdb->insert_id );
+            wp_cache_set( $entity->get_id(), $entity, 'invoices' );
 
             return $result !== false;
         } else {
-            wp_cache_set( $invoice->get_id(), $invoice, 'invoices' );
+            wp_cache_set( $entity->get_id(), $entity, 'invoices' );
 
             return $this->wpdb->update(
                 $this->table_name,
                 $data, // Data to update
                 array(
-                    'id' => $invoice->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 $data_format,
                 array(
@@ -255,7 +256,6 @@ class Invoice_Repository implements Invoice_Repository_Interface {
     public function find_tournament_paid_total_by_player( int $player_id, int $tournament_id ): float {
         $tournaments_table = $this->wpdb->prefix . 'racketmanager_tournaments';
         $charges_table     = $this->wpdb->prefix . 'racketmanager_charges';
-        global $wpdb;
 
         $query = $this->wpdb->prepare(
             "SELECT COALESCE(SUM(i.amount), 0)

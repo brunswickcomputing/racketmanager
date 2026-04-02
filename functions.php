@@ -191,7 +191,7 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
         $_club = new Club( $club );
     } else {
         $club_repository = new Club_Repository();
-        $_club           = $club_repository->find( $club, $search_term );
+        $_club           = $club_repository->find_by_id( $club, $search_term );
     }
     if ( ! $_club ) {
         return null;

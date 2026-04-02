@@ -36,6 +36,9 @@ use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Registration_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\Interfaces\Club_Role_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
 use Racketmanager\Repositories\Results_Checker_Repository;
@@ -96,10 +99,10 @@ final class Container_Bootstrap {
 
     private static function register_repositories( Simple_Container $c ): void {
         $c->set( 'club_repository', fn() => new Club_Repository() );
-        $c->set( 'registration_repository', fn() => new Registration_Repository() );
-        $c->set( 'club_role_repository', fn() => new Club_Role_Repository() );
+        $c->set( 'registration_repository', fn(): Registration_Repository_Interface => new Registration_Repository() );
+        $c->set( 'club_role_repository', fn(): Club_Role_Repository_Interface => new Club_Role_Repository() );
         $c->set( 'player_repository', fn() => new Player_Repository() );
-        $c->set( 'player_error_repository', fn() => new Player_Error_Repository() );
+        $c->set( 'player_error_repository', fn(): Player_Error_Repository_Interface => new Player_Error_Repository() );
         $c->set( 'team_repository', fn() => new Team_Repository() );
         $c->set( 'event_repository', fn() => new Event_Repository() );
         $c->set( 'fixture_repository', fn() => new Fixture_Repository() );

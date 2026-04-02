@@ -421,7 +421,7 @@ class Notification_Service_Test extends TestCase {
 
         $club = $this->createStub(\Racketmanager\Domain\Club::class);
         $club->match_secretary = (object)['email' => 'secretary@example.com'];
-        $this->club_repository->method('find')->with(10)->willReturn($club);
+        $this->club_repository->method( 'find_by_id' )->with(10)->willReturn($club);
 
         $GLOBALS['wp_mail_calls'] = [];
         $this->service->send_result_notification($fixture, 'P', 'Test', 'home');
@@ -534,7 +534,7 @@ class Notification_Service_Test extends TestCase {
         $league_team = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
         $league_team->club_id = 10;
         $this->league_team_repository->method('find_by_id')->willReturn($league_team);
-        $this->club_repository->method('find')->willReturn(null);
+        $this->club_repository->method( 'find_by_id' )->willReturn(null);
         $GLOBALS['wp_mail_calls'] = [];
         $this->service->send_result_notification($fixture, 'P', 'Test', 'home');
         $this->assertEquals('admin@example.com', $GLOBALS['wp_mail_calls'][0]['to']);
@@ -542,7 +542,7 @@ class Notification_Service_Test extends TestCase {
         // Case 3: Club has no match secretary email
         $club = $this->createStub(\Racketmanager\Domain\Club::class);
         $club->match_secretary = null;
-        $this->club_repository->method('find')->willReturn($club);
+        $this->club_repository->method( 'find_by_id' )->willReturn($club);
         $GLOBALS['wp_mail_calls'] = [];
         $this->service->send_result_notification($fixture, 'P', 'Test', 'home');
         $this->assertEquals('admin@example.com', $GLOBALS['wp_mail_calls'][0]['to']);

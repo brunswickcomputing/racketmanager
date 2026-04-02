@@ -28,20 +28,21 @@ class Rubber_Repository implements Rubber_Repository_Interface {
         $this->players_table_name = $this->wpdb->prefix . 'racketmanager_rubber_players';
     }
 
-    public function save( Rubber $rubber ) {
+    public function save( object $entity ): bool|int {
+        /** @var Rubber $entity */
         $data = array(
-            'date'          => $rubber->get_date(),
-            'match_id'      => $rubber->get_match_id(),
-            'rubber_number' => $rubber->get_rubber_number(),
-            'type'          => $rubber->get_type(),
-            'group'         => $rubber->get_group(),
-            'home_points'   => $rubber->get_home_points(),
-            'away_points'   => $rubber->get_away_points(),
-            'winner_id'     => $rubber->get_winner_id(),
-            'loser_id'      => $rubber->get_loser_id(),
-            'post_id'       => $rubber->get_post_id(),
-            'custom'        => maybe_serialize( $rubber->get_custom() ),
-            'status'        => $rubber->get_status(),
+            'date'          => $entity->get_date(),
+            'match_id'      => $entity->get_match_id(),
+            'rubber_number' => $entity->get_rubber_number(),
+            'type'          => $entity->get_type(),
+            'group'         => $entity->get_group(),
+            'home_points'   => $entity->get_home_points(),
+            'away_points'   => $entity->get_away_points(),
+            'winner_id'     => $entity->get_winner_id(),
+            'loser_id'      => $entity->get_loser_id(),
+            'post_id'       => $entity->get_post_id(),
+            'custom'        => maybe_serialize( $entity->get_custom() ),
+            'status'        => $entity->get_status(),
         );
 
         $format = array(
@@ -59,10 +60,10 @@ class Rubber_Repository implements Rubber_Repository_Interface {
             '%d', // status
         );
 
-        if ( empty( $rubber->get_id() ) ) {
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert( $this->table_name, $data, $format );
             if ( $inserted ) {
-                $rubber->set_id( $this->wpdb->insert_id );
+                $entity->set_id( $this->wpdb->insert_id );
                 return $this->wpdb->insert_id;
             }
             return false;
@@ -71,7 +72,7 @@ class Rubber_Repository implements Rubber_Repository_Interface {
                 $this->table_name,
                 $data,
                 array(
-                    'id' => $rubber->get_id(),
+                    'id' => $entity->get_id(),
                 ),
                 $format,
                 array(
@@ -81,17 +82,17 @@ class Rubber_Repository implements Rubber_Repository_Interface {
         }
     }
 
-    public function find_by_id( $rubber_id ): ?Rubber {
-        if ( empty( $rubber_id ) ) {
+    public function find_by_id( $id ): ?Rubber {
+        if ( empty( $id ) ) {
             return null;
         }
-        $rubber = wp_cache_get( $rubber_id, 'rubbers' );
+        $rubber = wp_cache_get( $id, 'rubbers' );
 
         if ( ! $rubber ) {
             $rubber = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE `id` = %d LIMIT 1",
-                    $rubber_id
+                    $id
                 )
             );
 
@@ -173,5 +174,16 @@ class Rubber_Repository implements Rubber_Repository_Interface {
             array( 'match_id' => $fixture_id ),
             array( '%d' )
         ) !== false;
+    }
+
+    /**
+     * Delete a rubber by its ID.
+     *
+     * @param int $id
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 }

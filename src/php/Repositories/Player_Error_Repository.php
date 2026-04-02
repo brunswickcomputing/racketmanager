@@ -10,12 +10,13 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Player_Error;
+use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use wpdb;
 
 /**
  * Class to implement the Player_Error repository
  */
-class Player_Error_Repository {
+class Player_Error_Repository implements Player_Error_Repository_Interface {
 
     private wpdb $wpdb;
     private string $table_name;
@@ -32,11 +33,13 @@ class Player_Error_Repository {
     /**
      * Save a player error.
      *
-     * @param Player_Error $player_error
+     * @param object $entity
      *
      * @return int|bool
      */
-    public function save( Player_Error $player_error ) {
+    public function save( object $entity ): bool|int {
+        /** @var Player_Error $player_error */
+        $player_error = $entity;
         if ( empty( $player_error->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
@@ -80,11 +83,22 @@ class Player_Error_Repository {
     /**
      * Find a player error by its ID.
      *
-     * @param $player_error_id
+     * @param int|string|null $id
      *
      * @return Player_Error|null
      */
-    public function find( $player_error_id ): ?Player_Error {
+    public function find_by_id( int|string|null $id ): ?Player_Error {
+        return $this->find( $id );
+    }
+
+    /**
+     * Find a player error by its ID.
+     *
+     * @param int $player_error_id
+     *
+     * @return Player_Error|null
+     */
+    public function find( int $player_error_id ): ?Player_Error {
         $query = $this->wpdb->prepare(
             "SELECT id, player_id, message, created_date FROM $this->table_name WHERE id = %d",
             $player_error_id
@@ -96,11 +110,11 @@ class Player_Error_Repository {
     /**
      * Find all player errors with details.
      *
-     * @param $message
+     * @param string|null $message
      *
      * @return array
      */
-    public function find_all_with_details( $message = null ): array {
+    public function find_all_with_details( string $message = null ): array {
         $search = null;
         $code = match( $message ) {
             'no_player' => 'Player not found',
@@ -141,11 +155,11 @@ class Player_Error_Repository {
     /**
      * Delete player errors for a player.
      *
-     * @param $player_id
+     * @param int $player_id
      *
      * @return bool
      */
-    public function delete_for_player( $player_id ): bool {
+    public function delete_for_player( int $player_id ): bool {
         return $this->wpdb->delete(
             $this->table_name,
             array(

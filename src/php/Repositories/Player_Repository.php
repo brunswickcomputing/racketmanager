@@ -44,7 +44,7 @@ class Player_Repository implements Player_Repository_Interface {
      *
      * @return int|bool
      */
-    public function add( Player $player ) {
+    public function add( Player $player ): bool|int {
         $userdata                    = array();
         $userdata['first_name']      = $player->get_firstname();
         $userdata['last_name']       = $player->get_surname();
@@ -81,7 +81,7 @@ class Player_Repository implements Player_Repository_Interface {
      * @param int $player_id
      * @param int $btm
      *
-     * @return void
+     * @return bool
      */
     public function save_btm( int $player_id, int $btm ): bool {
         return update_user_meta( $player_id, self::META_KEY_BTM, $btm ) !== false;
@@ -93,7 +93,7 @@ class Player_Repository implements Player_Repository_Interface {
      * @param int $player_id
      * @param string $contact_no
      *
-     * @return void
+     * @return bool
      */
     public function save_contact_no( int $player_id, string $contact_no ): bool {
         return update_user_meta( $player_id, 'contactno', $contact_no ) !== false;
@@ -105,8 +105,7 @@ class Player_Repository implements Player_Repository_Interface {
      * @param Player $player
      * @param array $updates
      *
-     * @return void
-     * @throws Player_Update_Exception
+     * @return bool
      */
     public function update( Player $player, array $updates ): bool {
         $success = true;
@@ -386,12 +385,12 @@ class Player_Repository implements Player_Repository_Interface {
     /**
      * Delete a player from the database.
      *
-     * @param int $player_id
+     * @param int $id
      *
-     * @return void
+     * @return bool
      */
-    public function delete( int $player_id ): bool {
-        return wp_delete_user( $player_id );
+    public function delete( int $id ): bool {
+        return wp_delete_user( $id );
     }
 
     /**
@@ -604,4 +603,25 @@ class Player_Repository implements Player_Repository_Interface {
         return $players;
     }
 
+    /**
+     * Find an entity by its ID.
+     *
+     * @param int|string|null $id
+     *
+     * @return object|null
+     */
+    public function find_by_id( int|string|null $id ): ?object {
+        return null;
+    }
+
+    /**
+     * Save an entity.
+     *
+     * @param object $entity
+     *
+     * @return int|bool The insert ID (int) for new entities, or success (bool) for updates.
+     */
+    public function save( object $entity ): bool|int {
+        return false;
+    }
 }

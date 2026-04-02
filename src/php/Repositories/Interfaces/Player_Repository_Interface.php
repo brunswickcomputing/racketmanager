@@ -15,7 +15,7 @@ use WP_User;
 /**
  * Interface to implement the Player repository
  */
-interface Player_Repository_Interface {
+interface Player_Repository_Interface extends Repository_Interface {
     public function add( Player $player );
     public function save_btm( int $player_id, int $btm ): bool;
     public function save_contact_no( int $player_id, string $contact_no ): bool;
@@ -28,7 +28,7 @@ interface Player_Repository_Interface {
     public function find_by_login( $player_id ): false|WP_User;
     public function find_by_name( $player_id ): false|WP_User;
     public function has_club_associations( int $player_id ): bool;
-    public function delete( int $player_id ): bool;
+    public function delete( int $id ): bool;
     public function find_player_ids_by_club( int $club_id ): array;
     public function find_club_players_with_details(?int $club_id = null, ?string $status = null, ?string $gender = null, ?string $active = null, bool $system = false, ?int $max_age = null, ?int $min_age = null): array;
     public function get_titles( $player_id ): array;

@@ -27,19 +27,20 @@ class Event_Repository implements Event_Repository_Interface {
         $this->table_name = $this->wpdb->prefix . 'racketmanager_events';
     }
 
-    public function save( Event $event ) {
-        if ( empty( $event->get_id() ) ) {
+    public function save( object $entity ): bool|int {
+        /** @var Event $entity */
+        if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert(
                 $this->table_name,
                 array(
-                    'name'           => $event->get_name(),
-                    'settings'       => maybe_serialize( $event->get_settings() ),
+                    'name'           => $entity->get_name(),
+                    'settings'       => maybe_serialize( $entity->get_settings() ),
                     // Persist seasons as JSON
-                    'seasons'        => $event->get_seasons_json(),
-                    'type'           => $event->get_type(),
-                    'num_sets'       => $event->get_num_sets(),
-                    'num_rubbers'    => $event->get_num_rubbers(),
-                    'competition_id' => $event->get_competition_id(),
+                    'seasons'        => $entity->get_seasons_json(),
+                    'type'           => $entity->get_type(),
+                    'num_sets'       => $entity->get_num_sets(),
+                    'num_rubbers'    => $entity->get_num_rubbers(),
+                    'competition_id' => $entity->get_competition_id(),
                 ),
                 array(
                     '%s',
@@ -52,7 +53,7 @@ class Event_Repository implements Event_Repository_Interface {
                 )
             );
             if ( $inserted ) {
-                $event->set_id( $this->wpdb->insert_id );
+                $entity->set_id( $this->wpdb->insert_id );
                 return $this->wpdb->insert_id;
             }
             return false;
@@ -60,17 +61,17 @@ class Event_Repository implements Event_Repository_Interface {
             return $this->wpdb->update(
                 $this->table_name,
                 array(
-                    'name'           => $event->get_name(),
-                    'settings'       => maybe_serialize( $event->get_settings() ),
+                    'name'           => $entity->get_name(),
+                    'settings'       => maybe_serialize( $entity->get_settings() ),
                     // Persist seasons as JSON
-                    'seasons'        => $event->get_seasons_json(),
-                    'type'           => $event->get_type(),
-                    'num_sets'       => $event->get_num_sets(),
-                    'num_rubbers'    => $event->get_num_rubbers(),
-                    'competition_id' => $event->get_competition_id(),
+                    'seasons'        => $entity->get_seasons_json(),
+                    'type'           => $entity->get_type(),
+                    'num_sets'       => $entity->get_num_sets(),
+                    'num_rubbers'    => $entity->get_num_rubbers(),
+                    'competition_id' => $entity->get_competition_id(),
                 ), // Data to update
                 array(
-                    'id' => $event->get_id()
+                    'id' => $entity->get_id()
                 ), // Where clause
                 array(
                     '%s',
@@ -88,14 +89,14 @@ class Event_Repository implements Event_Repository_Interface {
         }
     }
 
-    public function find_by_id( $event_id ): ?Event {
-        if ( empty( $event_id ) ) {
+    public function find_by_id( $id ): ?Event {
+        if ( empty( $id ) ) {
             return null;
         }
-        $event = wp_cache_get( $event_id, 'events' );
+        $event = wp_cache_get( $id, 'events' );
 
         if ( ! $event ) {
-            if ( is_numeric( $event_id ) ) {
+            if ( is_numeric( $id ) ) {
                 $search = "`id` = %d";
             } else {
                 $search = "`name` = %s";
@@ -103,7 +104,7 @@ class Event_Repository implements Event_Repository_Interface {
             $event = $this->wpdb->get_row(
                 $this->wpdb->prepare(
                     "SELECT * FROM $this->table_name WHERE $search LIMIT 1",
-                    $event_id
+                    $id
                 )
             );
 
@@ -145,8 +146,8 @@ class Event_Repository implements Event_Repository_Interface {
         return $events;
     }
 
-    public function delete( int $event_id ): bool {
-        return $this->wpdb->delete( $this->table_name, array( 'id' => $event_id ), array( '%d' ) ) !== false;
+    public function delete( int $id ): bool {
+        return $this->wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) ) !== false;
     }
 
     /**

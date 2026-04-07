@@ -21,7 +21,7 @@ class Fixture_Permission_Service {
     private League_Repository_Interface $league_repository;
     private Team_Repository_Interface $team_repository;
     private Club_Repository_Interface $club_repository;
-    private array $options;
+    private array $options = [];
 
     public function __construct( Repository_Provider $repository_provider, Service_Provider $service_provider ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
@@ -31,7 +31,12 @@ class Fixture_Permission_Service {
         $this->club_repository      = $repository_provider->get_club_repository();
         
         global $racketmanager;
-        $this->options = $racketmanager ? $racketmanager->get_options() : [];
+        if ( $racketmanager && method_exists( $racketmanager, 'get_options' ) ) {
+            $options = $racketmanager->get_options();
+            if ( is_array( $options ) ) {
+                $this->options = $options;
+            }
+        }
     }
 
     /**

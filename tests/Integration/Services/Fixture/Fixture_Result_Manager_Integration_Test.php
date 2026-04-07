@@ -1028,4 +1028,36 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->manager->confirm_result( $fixture );
     }
+
+    public function test_handle_fixture_result_update_assigns_home_captain(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 123;
+
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 1;
+        $fixture_data->home_captain = null;
+        $fixture = new Fixture( $fixture_data );
+
+        $league = $this->createStub( League::class );
+        $this->league_service->method( 'get_league' )->willReturn( $league );
+
+        $this->permission_service->method( 'is_update_allowed' )->willReturn( (object) [
+            'user_team' => 'home'
+        ] );
+
+        $request = new Fixture_Result_Update_Request(
+            fixture_id: 123,
+            sets: [],
+            match_status: 'played',
+            confirmed: 'N'
+        );
+
+        $this->score_validator->method( 'get_err_msgs' )->willReturn( [] );
+
+        $this->manager->handle_fixture_result_update( $fixture, $request );
+
+        $this->assertEquals( 123, $fixture->get_home_captain() );
+        
+        unset( $GLOBALS['wp_stubs_get_current_user_id'] );
+    }
 }

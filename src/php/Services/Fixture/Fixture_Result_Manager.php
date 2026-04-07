@@ -297,6 +297,8 @@ class Fixture_Result_Manager {
             $fixture->set_date_result_entered( date( 'Y-m-d H:i:s' ) );
         }
 
+        $this->assign_captain_to_fixture( $fixture, $is_update_allowed->user_team );
+
         if ( 'Y' === $request->confirmed ) {
             return $this->confirm_result( $fixture, '', null, $result );
         }
@@ -342,6 +344,8 @@ class Fixture_Result_Manager {
         if ( ! $fixture->get_date_result_entered() ) {
             $fixture->set_date_result_entered( date( 'Y-m-d H:i:s' ) );
         }
+
+        $this->assign_captain_to_fixture( $fixture, $is_update_allowed->user_team );
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );
 
@@ -909,7 +913,7 @@ class Fixture_Result_Manager {
             );
         }
 
-        return $this->apply_confirmation_to_fixture(
+        $response = $this->apply_confirmation_to_fixture(
             $fixture,
             new Fixture_Confirmation_Context(
                 status: 'Y',
@@ -921,6 +925,31 @@ class Fixture_Result_Manager {
                 league_repository: $league_repository
             )
         );
+
+        return $response;
+    }
+
+    /**
+     * Assign the current user as the captain for the fixture if not already set.
+     *
+     * @param Fixture $fixture
+     * @param string $team 'home' or 'away'
+     */
+    private function assign_captain_to_fixture( Fixture $fixture, string $team ): void {
+        if ( 'home' !== $team && 'away' !== $team ) {
+            return;
+        }
+
+        $current_user_id = get_current_user_id();
+        if ( ! $current_user_id ) {
+            return;
+        }
+
+        if ( 'home' === $team && ! $fixture->get_home_captain() ) {
+            $fixture->set_home_captain( (string) $current_user_id );
+        } elseif ( 'away' === $team && ! $fixture->get_away_captain() ) {
+            $fixture->set_away_captain( (string) $current_user_id );
+        }
     }
 
     /**

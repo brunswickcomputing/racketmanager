@@ -12,7 +12,6 @@ namespace Racketmanager\Domain;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Util\Util;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_rubber;
 
@@ -152,8 +151,9 @@ class Results_Checker {
      * Construct class instance
      *
      * @param object|null $results_checker results_checker object.
+     * @param bool $persist (deprecated) Whether to automatically persist the object.
      */
-    public function __construct( ?object $results_checker = null, bool $persist = true ) {
+    public function __construct( ?object $results_checker = null, bool $persist = false ) {
         if ( ! is_null( $results_checker ) ) {
             foreach ( get_object_vars( $results_checker ) as $key => $value ) {
                 $this->$key = $value;
@@ -161,13 +161,14 @@ class Results_Checker {
             if ( $persist && ! isset( $this->id ) ) {
                 $this->add();
             }
-            $this->match = get_match( $this->match_id );
-            $this->team  = null;
+            $fixture_repository = new Fixture_Repository();
+            $this->match        = $fixture_repository->find_by_id( $this->match_id );
+            $this->team         = null;
             if ( $this->team_id > 0 && ! empty( $this->match ) ) {
-                if ( $this->team_id === intval( $this->match->home_team ?? 0 ) ) {
-                    $this->team = $this->match->teams['home'] ?? null;
-                } elseif ( $this->team_id === intval( $this->match->away_team ?? 0 ) ) {
-                    $this->team = $this->match->teams['away'] ?? null;
+                 if ( $this->team_id === intval( $this->match->get_home_team() ?? 0 ) ) {
+                    $this->team = $teams['home'] ?? null;
+                } elseif ( $this->team_id === intval( $this->match->get_away_team() ?? 0 ) ) {
+                    $this->team = $teams['away'] ?? null;
                 }
             }
             if ( ! empty( $this->player_id ) ) {
@@ -194,6 +195,7 @@ class Results_Checker {
     }
     /**
      * Add new results checker entry
+     * @deprecated Use Results_Checker_Repository::save()
      */
     public function add(): void {
         global $wpdb;
@@ -230,6 +232,7 @@ class Results_Checker {
     }
     /**
      * Delete results checker
+     * @deprecated Use Results_Checker_Repository::delete()
      */
     public function delete(): void {
         global $wpdb;

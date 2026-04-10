@@ -13,6 +13,9 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Results_Checker;
 
+use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Domain\Results_Report;
+
 /**
  * Service for fixture maintenance tasks like chasing missing results and auto-confirming.
  */
@@ -20,6 +23,7 @@ class Fixture_Maintenance_Service {
 
     private League_Repository_Interface $league_repository;
     private Results_Checker_Repository_Interface $results_checker_repository;
+    private Results_Report_Repository_Interface $results_report_repository;
     private Notification_Service $notification_service;
     private Settings_Service $settings_service;
     private Fixture_Result_Manager $fixture_result_manager;
@@ -31,6 +35,7 @@ class Fixture_Maintenance_Service {
     ) {
         $this->league_repository          = $repository_provider->get_league_repository();
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
+        $this->results_report_repository  = $repository_provider->get_results_report_repository();
         $this->notification_service       = $service_provider->get_notification_service();
         $this->settings_service           = $service_provider->get_settings_service();
         $this->fixture_result_manager     = $fixture_result_manager;
@@ -171,5 +176,38 @@ class Fixture_Maintenance_Service {
                 }
             }
         }
+    }
+
+    /**
+     * Delete results checker entries for a fixture.
+     *
+     * @param int $fixture_id
+     */
+    public function delete_result_checks( int $fixture_id ): void {
+        $this->results_checker_repository->delete_by_fixture_id( $fixture_id );
+    }
+
+    /**
+     * Delete results report for a fixture.
+     *
+     * @param int $fixture_id
+     */
+    public function delete_result_report( int $fixture_id ): void {
+        $this->results_report_repository->delete_by_fixture_id( $fixture_id );
+    }
+
+    /**
+     * Save a results report for a fixture.
+     *
+     * @param int $fixture_id
+     * @param object $data
+     */
+    public function save_result_report( int $fixture_id, object $data ): void {
+        $report = new Results_Report();
+        $report->match_id = $fixture_id;
+        $report->data = $data;
+        $report->result_object = wp_json_encode( $data );
+        
+        $this->results_report_repository->save( $report );
     }
 }

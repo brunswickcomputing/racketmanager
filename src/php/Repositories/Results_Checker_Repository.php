@@ -135,7 +135,7 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
     public function has_results_check( int $fixture_id ): bool {
         return (bool) $this->wpdb->get_var(
             $this->wpdb->prepare(
-                "SELECT count(*) FROM $this->table_name WHERE `match_id` = %d WHERE status IS NULL",
+                "SELECT count(*) FROM $this->table_name WHERE `match_id` = %d AND status IS NULL",
                 $fixture_id
             )
         );

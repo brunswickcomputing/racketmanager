@@ -73,8 +73,9 @@ class Results_Report {
      * Construct class instance
      *
      * @param object|null $results_report results_report object.
+     * @param bool $persist (deprecated) Whether to automatically persist the object.
      */
-    public function __construct( ?object $results_report = null, bool $persist = true ) {
+    public function __construct( ?object $results_report = null, bool $persist = false ) {
         if ( ! is_null( $results_report ) ) {
             foreach ( get_object_vars( $results_report ) as $key => $value ) {
                 $this->$key = $value;
@@ -93,6 +94,7 @@ class Results_Report {
 
     /**
      * Add new results report
+     * @deprecated Use Results_Report_Repository::save()
      */
     private function add(): void {
         global $wpdb;
@@ -112,6 +114,7 @@ class Results_Report {
     }
     /**
      * Delete results report
+     * @deprecated Use Results_Report_Repository::delete()
      */
     public function delete(): void {
         global $wpdb;

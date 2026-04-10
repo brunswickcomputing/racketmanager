@@ -14,6 +14,7 @@ use Racketmanager\Domain\Result\Result;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -32,6 +33,7 @@ class Fixture_Result_Manager_Test extends TestCase {
 
     private $fixture_repository;
     private $results_report_repository;
+    private $fixture_maintenance_service;
     private $league_repository;
     private $league_service;
     private $result_reporting_service;
@@ -73,6 +75,8 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->settings_service = $this->createMock( Settings_Service::class );
 
         $this->service_provider = $this->createStub( Service_Provider::class );
+        $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
+        $this->service_provider->method( 'get_fixture_maintenance_service' )->willReturn( $this->fixture_maintenance_service );
         $this->service_provider->method( 'get_league_service' )->willReturn( $this->league_service );
         $this->service_provider->method( 'get_result_reporting_service' )->willReturn( $this->result_reporting_service );
         $this->service_provider->method( 'get_permission_service' )->willReturn( $this->permission_service );
@@ -123,8 +127,8 @@ class Fixture_Result_Manager_Test extends TestCase {
         $fixture->method( 'get_id' )->willReturn( 100 );
         $fixture->method( 'get_confirmed' )->willReturn( 'Y' );
         
-        $this->results_report_repository->expects( $this->once() )
-            ->method( 'delete_by_fixture_id' )
+        $this->fixture_maintenance_service->expects( $this->once() )
+            ->method( 'delete_result_report' )
             ->with( 100 );
             
         $this->result_reporting_service->expects( $this->once() )
@@ -132,8 +136,9 @@ class Fixture_Result_Manager_Test extends TestCase {
             ->with( $fixture )
             ->willReturn( (object) [ 'some' => 'data' ] );
             
-        $this->results_report_repository->expects( $this->once() )
-            ->method( 'save' );
+        $this->fixture_maintenance_service->expects( $this->once() )
+            ->method( 'save_result_report' )
+            ->with( 100, (object) [ 'some' => 'data' ] );
 
         $this->manager->confirm_result( $fixture, 'admin' );
     }

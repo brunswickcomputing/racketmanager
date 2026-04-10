@@ -36,6 +36,7 @@ class Service_Provider {
     private ?Result_Reporting_Service $result_reporting_service = null;
     private ?Fixture_Permission_Service $fixture_permission_service = null;
     private ?Fixture_Detail_Service $fixture_detail_service = null;
+    private ?Fixture_Maintenance_Service $fixture_maintenance_service = null;
 
     public function __construct(
         ?Result_Service $result_service = null,
@@ -153,5 +154,13 @@ class Service_Provider {
 
     public function get_fixture_detail_service(): ?Fixture_Detail_Service {
         return $this->fixture_detail_service;
+    }
+
+    public function set_fixture_maintenance_service( ?Fixture_Maintenance_Service $fixture_maintenance_service ): void {
+        $this->fixture_maintenance_service = $fixture_maintenance_service;
+    }
+
+    public function get_fixture_maintenance_service(): ?Fixture_Maintenance_Service {
+        return $this->fixture_maintenance_service;
     }
 }

@@ -14,6 +14,8 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Domain\Results_Report;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
@@ -31,6 +33,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     private $club_repository;
     private $team_repository;
     private $results_checker_repository;
+    private $results_report_repository;
     private $notification_service;
     private $settings_service;
     private $fixture_result_manager;
@@ -44,6 +47,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $this->club_repository = $this->createStub( Club_Repository_Interface::class );
         $this->team_repository = $this->createStub( Team_Repository_Interface::class );
         $this->results_checker_repository = $this->createMock( Results_Checker_Repository_Interface::class );
+        $this->results_report_repository = $this->createMock( Results_Report_Repository_Interface::class );
         $this->notification_service = $this->createMock( Notification_Service::class );
         $this->settings_service = $this->createStub( Settings_Service::class );
         $this->fixture_result_manager = $this->createStub( Fixture_Result_Manager::class );
@@ -58,12 +62,30 @@ class Fixture_Maintenance_Service_Test extends TestCase {
         $this->repository_provider->method( 'get_club_repository' )->willReturn( $this->club_repository );
         $this->repository_provider->method( 'get_team_repository' )->willReturn( $this->team_repository );
         $this->repository_provider->method( 'get_results_checker_repository' )->willReturn( $this->results_checker_repository );
+        $this->repository_provider->method( 'get_results_report_repository' )->willReturn( $this->results_report_repository );
 
         $this->service = new Fixture_Maintenance_Service(
             $this->service_provider,
             $this->repository_provider,
             $this->fixture_result_manager
         );
+    }
+
+    public function test_delete_result_report_calls_repository(): void {
+        $this->results_report_repository->expects( $this->once() )
+            ->method( 'delete_by_fixture_id' )
+            ->with( 321 );
+        $this->service->delete_result_report( 321 );
+    }
+
+    public function test_save_result_report_calls_repository(): void {
+        $data = (object) [ 'k' => 'v' ];
+        $this->results_report_repository->expects( $this->once() )
+            ->method( 'save' )
+            ->with( $this->callback( function ( $report ) use ( $data ) {
+                return $report instanceof Results_Report && $report->match_id === 654 && wp_json_encode( $data ) === $report->result_object;
+            } ) );
+        $this->service->save_result_report( 654, $data );
     }
 
     public function test_chase_match_result_sends_notification(): void {

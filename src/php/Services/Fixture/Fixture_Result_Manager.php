@@ -45,6 +45,7 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Result\Result_Reporting_Service;
+use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Domain\Results_Report;
 use Racketmanager\Repositories\Results_Report_Repository;
 use Racketmanager\Repositories\Team_Repository;
@@ -153,6 +154,7 @@ class Fixture_Result_Manager {
     /** @var Result_Reporting_Service */
     private Result_Reporting_Service $result_reporting_service;
     private Results_Report_Repository_Interface $results_report_repository;
+    private Fixture_Maintenance_Service $fixture_maintenance_service;
 
     /**
      * @param Service_Provider $service_provider
@@ -164,6 +166,7 @@ class Fixture_Result_Manager {
     ) {
         $this->results_report_repository = $repository_provider->get_results_report_repository();
         $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
+        $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service() ?? new Fixture_Maintenance_Service( $service_provider, $repository_provider, $this );
         $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
         $this->progression_service = $service_provider->get_progression_service() ?? new Knockout_Progression_Service();
         $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );
@@ -877,14 +880,10 @@ class Fixture_Result_Manager {
         }
 
         if ( 'Y' === $fixture->get_confirmed() ) {
-            $this->results_report_repository->delete_by_fixture_id( (int) $fixture->get_id() );
+            $this->fixture_maintenance_service->delete_result_report( (int) $fixture->get_id() );
             $report_data = $this->result_reporting_service->report_result( $fixture );
             if ( $report_data ) {
-                $report = new Results_Report( (object) [
-                    'match_id' => $fixture->get_id(),
-                    'data'     => $report_data,
-                ], false );
-                $this->results_report_repository->save( $report );
+                $this->fixture_maintenance_service->save_result_report( (int) $fixture->get_id(), $report_data );
             }
         }
 

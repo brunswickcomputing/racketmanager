@@ -18,6 +18,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
@@ -73,6 +74,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $rubber_repository;
     private $results_checker_repository;
     private $results_report_repository;
+    private $fixture_maintenance_service;
     private $fixture_repository;
     private $result_reporting_service;
 
@@ -164,6 +166,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $service_provider->set_settings_service( $this->settings_service );
         $service_provider->set_fixture_service( $this->fixture_service_mock );
         $service_provider->set_result_reporting_service( $this->result_reporting_service );
+        $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
+        $service_provider->set_fixture_maintenance_service( $this->fixture_maintenance_service );
 
         $this->permission_service = $this->createMock(\Racketmanager\Services\Fixture\Fixture_Permission_Service::class);
         $this->permission_service->method('is_update_allowed')->willReturnCallback(function($fixture) {
@@ -1017,14 +1021,18 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     public function test_confirm_result_manages_report(): void {
         $fixture = new Fixture( (object) [ 'id' => 123, 'league_id' => 1, 'home_points' => 2, 'away_points' => 1, 'confirmed' => 'Y' ] );
         
-        $this->results_report_repository->expects( $this->once() )
-            ->method( 'delete_by_fixture_id' )
+        $this->fixture_maintenance_service->expects( $this->once() )
+            ->method( 'delete_result_report' )
             ->with( 123 );
 
         $this->result_reporting_service->expects( $this->once() )
             ->method( 'report_result' )
             ->with( $fixture )
             ->willReturn( (object) [ 'report' => 'data' ] );
+
+        $this->fixture_maintenance_service->expects( $this->once() )
+            ->method( 'save_result_report' )
+            ->with( 123, (object) [ 'report' => 'data' ] );
 
         $this->manager->confirm_result( $fixture );
     }

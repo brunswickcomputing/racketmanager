@@ -63,7 +63,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         };
 
         $this->service = $this->getMockBuilder( Fixture_Permission_Service::class )
-            ->setConstructorArgs( [ $this->repository_provider, $this->service_provider ] )
+            ->setConstructorArgs( [ $this->repository_provider, $this->registration_service ] )
             ->onlyMethods( [ 'current_user_can', 'get_current_user_id', 'get_options' ] )
             ->getMock();
 

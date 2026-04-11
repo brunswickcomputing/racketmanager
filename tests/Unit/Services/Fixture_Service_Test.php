@@ -22,6 +22,8 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 
+use Racketmanager\Services\Tournament_Service;
+
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Service_Test extends TestCase {
 
@@ -50,13 +52,33 @@ class Fixture_Service_Test extends TestCase {
         $this->repository_provider->method( 'get_team_repository' )->willReturn( $this->createMock( Team_Repository_Interface::class ) );
         $this->repository_provider->method( 'get_club_repository' )->willReturn( $this->createMock( Club_Repository_Interface::class ) );
 
-        $this->service_provider = $this->createMock( Service_Provider::class );
-        $this->service_provider->method( 'get_notification_service' )->willReturn( $this->notification_service );
-        $this->service_provider->method( 'get_registration_service' )->willReturn( $this->registration_service );
-        $this->service_provider->method( 'get_competition_service' )->willReturn( $this->competition_service );
-        $this->service_provider->method( 'get_team_service' )->willReturn( $this->team_service );
+        $permission_service = new Fixture_Permission_Service( $this->repository_provider, $this->registration_service );
+        $detail_service = new Fixture_Detail_Service(
+            $this->repository_provider,
+            $this->competition_service,
+            $this->team_service,
+            $permission_service
+        );
 
-        $this->service = new Fixture_Service( $this->repository_provider, $this->service_provider );
+        $this->service = new Fixture_Service(
+            $this->repository_provider,
+            $this->service_provider_mock( $permission_service, $detail_service ),
+            $permission_service,
+            $detail_service
+        );
+    }
+
+    private function service_provider_mock( $permission_service, $detail_service ) {
+        $service_provider = $this->createMock( Service_Provider::class );
+        $service_provider->method( 'get_notification_service' )->willReturn( $this->notification_service );
+        $service_provider->method( 'get_registration_service' )->willReturn( $this->registration_service );
+        $service_provider->method( 'get_competition_service' )->willReturn( $this->competition_service );
+        $service_provider->method( 'get_team_service' )->willReturn( $this->team_service );
+
+        $service_provider->method( 'get_fixture_permission_service' )->willReturn( $permission_service );
+        $service_provider->method( 'get_fixture_detail_service' )->willReturn( $detail_service );
+
+        return $service_provider;
     }
 
     public function test_update_fixture_location_updates_and_saves(): void {

@@ -771,3 +771,73 @@ There is no automatic PHP-side build. The JavaScript bundle is produced on deman
   - Throw domain-/service-specific exceptions rather than generic Exception.
   - Catch and translate exceptions at boundaries (AJAX/REST controllers) into appropriate wp_send_json_* responses.
   - Keep exceptions thin (no heavy logic); include actionable messages and codes where appropriate.
+
+The architectural relationship between these components in a proper Domain-Driven Design (DDD) approach ensures a clear separation of concerns, improved testability, and a robust data flow. Based on the recent refactoring of the `Results_Checker` module, here is the established relationship and the role of each component:
+
+### 1. Domain Objects (Entities)
+Entities represent the **core business concepts** and their state.
+- **Role**: They hold the "source of truth" for the domain's data and internal business rules.
+- **Relationship**:
+  - They should be decoupled from the database and presentation layers.
+  - To remain "lightweight," they should store **IDs of related objects** (e.g., `$match_id`, `$player_id`) rather than the full objects themselves. This prevents deep, unnecessary hydration of the object graph when only the core entity is needed.
+  - They are often instantiated from a **DTO** or an array of data.
+
+### 2. Data Transfer Objects (DTOs)
+DTOs are simple, typed containers used to **move data between layers**.
+- **Role**: They act as a "contract" for data passing, ensuring that the receiver gets exactly what it expects without needing to know about the source (e.g., a database row or a form submission).
+- **Relationship**:
+  - **Repository → Entity**: The Repository fetches raw data, maps it to a DTO (like `Results_Checker_Data`), and passes that DTO to the Entity's constructor.
+  - **Service → Repository**: When creating or updating, a Service might pass a DTO to the Repository to ensure type-safe data persistence.
+
+### 3. View Models
+View Models are **pure data structures** designed specifically for the template/UI.
+- **Role**: They contain only the final, formatted strings and booleans needed for display (e.g., `$formatted_date`, `$match_link`).
+- **Relationship**:
+  - They contain **zero logic**. If a template needs to decide whether to show a button or how to format a URL, that logic should have already been processed and stored in the View Model.
+  - They are the output of a **Presenter**.
+
+### 4. Presenters
+Presenters are services that bridge the gap between **Domain Entities** and **View Models**.
+- **Role**: They handle the "translation" and "hydration" logic required for display.
+- **Relationship**:
+  - **Entity + Repositories → View Model**: The Presenter takes a Domain Entity, uses various Repositories to fetch related objects (like a `Fixture` or `Player` based on IDs in the entity), formats the data (dates, URLs, translations), and returns a populated **View Model**.
+  - This keeps the Domain Entity clean and the Template logic-less.
+
+### 5. Enums
+Enums provide **type-safety and semantic meaning** to statuses and categories.
+- **Role**: They replace "magic numbers" (like `status = 1`) with human-readable, typed constants (like `Results_Checker_Status::APPROVED`).
+- **Relationship**:
+  - Used by the **Entity** to enforce valid states.
+  - Used by the **Presenter** (often via a `match` expression) to determine which human-readable label or CSS class to include in the **View Model**.
+
+---
+
+### Recent Refactorings (2026-04)
+
+The project has undergone several key refactorings to improve maintainability, reduce complexity, and enforce stricter coding standards:
+
+#### 1. Results Checker Presentation Layer
+- **Cognitive Complexity & Return Limits**: The `Results_Checker_Presenter` has been refactored to strictly adhere to a maximum of **3 return statements per method**. Logic was extracted into private helper methods (`resolve_match_link`, `generate_match_title`, etc.) to keep methods focused and readable.
+- **Constant Management**: Introduced class constants (`MATCH_URL`, `LEAGUE_URL`, etc.) for repeated URL-related literals to improve maintainability and follow WordPress translation standards.
+- **Link Generation Logic**: The logic for generating match links (Box leagues, Tournaments, Standard leagues) has been fully modernized, mirroring and decoupling from legacy `Racketmanager_Match::set_link()`.
+
+#### 2. Notification Service
+- **Logic Deduplication**: Extracted shared logic for fixture-related notifications (league retrieval, fixture validation, email header preparation) into a new private helper method `prepare_notification_base_data`, significantly reducing code duplication between `send_next_match_notification` and `send_date_change_notification`.
+- **Result Error Notifications**: Updated `send_result_error_notification` to correctly identify and notify both the team captain and the club's match secretary, replacing reliance on the legacy `home_captain` property while maintaining it as a fallback.
+
+#### 3. Container Bootstrap
+- **Modular Service Registration**: The `Container_Bootstrap::register_services` method was refactored into focused sub-methods (`register_core_services`, `register_fixture_services`, `register_result_services`) to adhere to line length limits (under 150 lines) and improve readability.
+- **Provider Refactoring**: Extracted repetitive instantiation of `Repository_Provider` and `Fixture_Service_Provider` into helper methods to streamline dependency registration.
+- **Circular Dependency Resolution**: Refactored `Fixture_Service`, `Fixture_Permission_Service`, and `Fixture_Detail_Service` to use explicit constructor-based dependency injection. This broke infinite recursion loops in the service container caused by indirect circular lookups via the `Fixture_Service_Provider`.
+
+---
+
+### Summary of the Flow
+
+1.  **Repository** fetches database row → Maps to **DTO** → Instantiates **Domain Entity**.
+2.  **Controller** gets **Domain Entity** from Repository.
+3.  **Controller** passes **Domain Entity** to **Presenter**.
+4.  **Presenter** hydrates related data via other Repositories → Formats everything into a **View Model**.
+5.  **Template** receives the **View Model** and simply echoes its properties.
+
+This structure ensures that your **Domain Entity** stays pure, your **Repository** handles persistence, your **Presenter** handles formatting, and your **View Model** ensures the UI is decoupled from the underlying domain logic.

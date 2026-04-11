@@ -5,6 +5,7 @@ namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
@@ -29,13 +30,18 @@ class Fixture_Detail_Service {
     private Team_Service $team_service;
     private Fixture_Permission_Service $permission_service;
 
-    public function __construct( Repository_Provider $repository_provider, Service_Provider $service_provider ) {
+    public function __construct( 
+        Repository_Provider $repository_provider, 
+        Competition_Service $competition_service,
+        Team_Service $team_service,
+        Fixture_Permission_Service $permission_service
+    ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
         $this->league_repository    = $repository_provider->get_league_repository();
         $this->team_repository      = $repository_provider->get_team_repository();
-        $this->competition_service  = $service_provider->get_competition_service();
-        $this->team_service         = $service_provider->get_team_service();
-        $this->permission_service   = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $service_provider );
+        $this->competition_service  = $competition_service;
+        $this->team_service         = $team_service;
+        $this->permission_service   = $permission_service;
     }
 
     /**
@@ -66,11 +72,15 @@ class Fixture_Detail_Service {
 
             $is_update_allowed = $this->permission_service->is_update_allowed( $fixture );
 
+            $link          = $this->get_match_link( $fixture, $league, $home_team, $away_team );
+            $score_display = $this->generate_score_display( $fixture, $event );
+            $status_flags  = $this->generate_status_flags( $fixture );
+
         } catch ( Fixture_Not_Found_Exception|League_Not_Found_Exception|Event_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
             throw new Fixture_Not_Found_Exception( $e->getMessage() );
         }
 
-        return new Fixture_Details_DTO( $fixture, $league, $event, $competition, $home_team, $away_team, $prev_home_match_title, $prev_away_match_title, $is_update_allowed );
+        return new Fixture_Details_DTO( $fixture, $league, $event, $competition, $home_team, $away_team, $prev_home_match_title, $prev_away_match_title, $is_update_allowed, $link, $score_display, $status_flags );
     }
 
     /**
@@ -92,8 +102,8 @@ class Fixture_Detail_Service {
         if ( ! $league ) {
             throw new League_Not_Found_Exception();
         }
-        $event       = $this->competition_service->get_event_by_id( $league->event->id );
-        $competition = $this->competition_service->get_by_id( $event->competition->id );
+        $event       = $this->competition_service->get_event_by_id( $league->get_event_id() );
+        $competition = $this->competition_service->get_by_id( $event->get_competition_id() );
 
         return [ $league, $event, $competition ];
     }
@@ -180,7 +190,8 @@ class Fixture_Detail_Service {
             'orderby' => [ 'id' => 'ASC' ],
         ];
 
-        if ( ! empty( $league->event->current_season['home_away'] ) ) {
+        $seasons = $league->get_seasons();
+        if ( ! empty( $seasons[ $season ]['home_away'] ) ) {
             $args['leg'] = '2';
         }
 
@@ -224,5 +235,147 @@ class Fixture_Detail_Service {
         }
 
         return $this->resolve_placeholder_title( $team_id, $season, $league, $final ) ?? __( 'Unknown', 'racketmanager' );
+    }
+
+    /**
+     * Get the match link for a fixture.
+     */
+    private function get_match_link( Fixture $match, object $league, ?object $home_team, ?object $away_team ): string {
+        $type = $league->get_competition_type();
+
+        if ( 'tournament' === $type ) {
+            return $this->get_tournament_link( $match, $league );
+        }
+
+        return $this->resolve_match_link( $match, $league, $home_team, $away_team );
+    }
+
+    /**
+     * Resolve match link for a fixture.
+     */
+    private function resolve_match_link( Fixture $match, object $league, ?object $home_team, ?object $away_team ): string {
+        $type = $league->get_competition_type();
+
+        if ( 'box' === $type ) {
+            $url  = home_url( '/league/' );
+            $url .= Util::seo_url( $league->get_name() ) . '/match/' . $match->get_id() . '/';
+            return $url;
+        }
+
+        return $this->generate_standard_match_link( $match, $league, $home_team, $away_team );
+    }
+
+    /**
+     * Get the tournament link for a fixture.
+     */
+    private function get_tournament_link( Fixture $match, object $league ): string {
+        $url  = home_url( '/tournament/' );
+        $url .= Util::seo_url( (string) $league->get_id() ) . '/';
+        $url .= Util::seo_url( $league->get_name() ) . '/';
+        $url .= 'match-' . $match->get_id() . '/';
+
+        return $url;
+    }
+
+    /**
+     * Generate a standard match link for a fixture.
+     */
+    private function generate_standard_match_link( Fixture $match, object $league, ?object $home_team, ?object $away_team ): string {
+        $url  = home_url( '/league/' );
+        $url .= Util::seo_url( (string) $league->get_id() ) . '/';
+        $url .= Util::seo_url( $league->get_name() ) . '/';
+        $url .= Util::seo_url( $match->get_season() ) . '/';
+
+        if ( $home_team && $away_team ) {
+            $url .= Util::seo_url( $home_team->team->get_name() ) . '-v-' . Util::seo_url( $away_team->team->get_name() ) . '/';
+        }
+
+        if ( $match->get_leg() ) {
+            $url .= 'leg-' . $match->get_leg() . '/';
+        }
+
+        return $url;
+    }
+
+    /**
+     * Generate the score display for a fixture.
+     */
+    private function generate_score_display( Fixture $fixture, object $event ): ?string {
+        if ( $this->is_fixture_walkover( $fixture, $event ) ) {
+            return __( 'Walkover', 'racketmanager' );
+        }
+
+        $home_points = $fixture->get_home_points();
+        $away_points = $fixture->get_away_points();
+
+        if ( null === $home_points && null === $away_points ) {
+            return null;
+        }
+
+        return $event->get_num_rubbers() ? sprintf( '%g - %g', $home_points, $away_points ) : $this->format_set_scores( $fixture );
+    }
+
+    /**
+     * Check if a fixture is a walkover.
+     */
+    private function is_fixture_walkover( Fixture $fixture, object $event ): bool {
+        if ( $fixture->is_walkover() ) {
+            return true;
+        }
+
+        if ( null === $fixture->get_home_points() && null === $fixture->get_away_points() ) {
+            return $fixture->get_winner_id() && ( '-1' === $fixture->get_home_team() || '-1' === $fixture->get_away_team() );
+        }
+
+        return $event->get_num_rubbers() && ( '-1' === $fixture->get_home_team() || '-1' === $fixture->get_away_team() );
+    }
+
+    /**
+     * Format set scores for a fixture.
+     */
+    private function format_set_scores( Fixture $fixture ): string {
+        $custom = $fixture->get_custom();
+        $sets   = $custom['sets'] ?? array();
+        if ( empty( $sets ) ) {
+            return $fixture->is_walkover() ? __( 'Walkover', 'racketmanager' ) : sprintf( '%g - %g', $fixture->get_home_points(), $fixture->get_away_points() );
+        }
+
+        $set_scores = array();
+        foreach ( $sets as $set ) {
+            if ( $set instanceof Set_Score ) {
+                $set_scores[] = sprintf( '%d-%d', $set->get_home_games(), $set->get_away_games() );
+            } elseif ( isset( $set['player1'], $set['player2'] ) && '' !== $set['player1'] && '' !== $set['player2'] ) {
+                $set_scores[] = sprintf( '%s-%s', $set['player1'], $set['player2'] );
+            }
+        }
+
+        return implode( ' ', $set_scores );
+    }
+
+    /**
+     * Generate status flags for a fixture.
+     */
+    private function generate_status_flags( Fixture $fixture ): array {
+        $flags = array();
+        if ( $fixture->is_walkover() ) {
+            $flags[] = 'walkover';
+        }
+        if ( $fixture->is_retired() ) {
+            $flags[] = 'retired';
+        }
+        if ( $fixture->is_shared() ) {
+            $flags[] = 'shared';
+        }
+        if ( $fixture->is_abandoned() ) {
+            $flags[] = 'abandoned';
+        }
+        if ( $fixture->is_withdrawn() ) {
+            $flags[] = 'withdrawn';
+        }
+        if ( $fixture->is_cancelled() ) {
+            $flags[] = 'cancelled';
+        }
+
+        return $flags;
     }
 }

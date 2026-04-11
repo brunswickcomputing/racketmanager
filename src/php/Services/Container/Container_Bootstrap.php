@@ -201,41 +201,55 @@ final class Container_Bootstrap {
 
     private static function register_fixture_services( Simple_Container $c ): void {
         $c->set( 'fixture_permission_service', function ( Simple_Container $c ) {
-            return new Fixture_Permission_Service( self::get_repository_provider( $c ), self::get_fixture_service_provider( $c ) );
+            return new Fixture_Permission_Service( self::get_repository_provider( $c ), $c->get( 'registration_service' ) );
         } );
 
         $c->set( 'fixture_detail_service', function ( Simple_Container $c ) {
-            return new Fixture_Detail_Service( self::get_repository_provider( $c ), self::get_fixture_service_provider( $c ) );
+            return new Fixture_Detail_Service(
+                self::get_repository_provider( $c ),
+                $c->get( 'competition_service' ),
+                $c->get( 'team_service' ),
+                $c->get( 'fixture_permission_service' )
+            );
+        } );
+
+        $c->set( 'fixture_service_provider', function ( Simple_Container $c ) {
+            $service_provider = new Fixture_Service_Provider(
+                $c->get( 'result_service' ),
+                $c->get( 'knockout_progression_service' ),
+                $c->get( 'league_service' ),
+                $c->get( 'score_validation_service' ),
+                $c->get( 'player_validation_service' ),
+                $c->get( 'notification_service' ),
+                $c->get( 'registration_service' )
+            );
+            $service_provider->set_team_service( $c->get( 'team_service' ) );
+            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+
+            return $service_provider;
         } );
 
         $c->set( 'fixture_service', function ( Simple_Container $c ) {
-            $service_provider = self::get_fixture_service_provider( $c );
-            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-
-            return new Fixture_Service( self::get_repository_provider( $c ), $service_provider );
+            return new Fixture_Service(
+                self::get_repository_provider( $c ),
+                $c->get( 'fixture_service_provider' ),
+                $c->get( 'fixture_permission_service' ),
+                $c->get( 'fixture_detail_service' )
+            );
         } );
 
         $c->set( 'fixture_result_manager', function ( Simple_Container $c ) {
-            $service_provider = self::get_fixture_service_provider( $c );
+            $service_provider = $c->get( 'fixture_service_provider' );
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
-            $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
-            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-            $service_provider->set_team_service( $c->get( 'team_service' ) );
-            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
 
             return new Fixture_Result_Manager( $service_provider, self::get_repository_provider( $c ) );
         } );
 
         $c->set( 'fixture_maintenance_service', function ( Simple_Container $c ) {
-            $service_provider = self::get_fixture_service_provider( $c );
+            $service_provider = $c->get( 'fixture_service_provider' );
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
-            $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
-            $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-            $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-            $service_provider->set_team_service( $c->get( 'team_service' ) );
-            $service_provider->set_competition_service( $c->get( 'competition_service' ) );
 
             return new Fixture_Maintenance_Service( $service_provider, self::get_repository_provider( $c ), $c->get( 'fixture_result_manager' ) );
         } );
@@ -266,7 +280,7 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'results_checker_presenter', function ( Simple_Container $c ) {
-            return new Results_Checker_Presenter( $c->get( 'fixture_repository' ), $c->get( 'player_repository' ), $c->get( 'team_repository' ), $c->get( 'league_repository' ), $c->get( 'fixture_detail_service' ), $c->get( 'tournament_service' ) );
+            return new Results_Checker_Presenter( $c->get( 'fixture_repository' ), $c->get( 'player_repository' ), $c->get( 'team_repository' ), $c->get( 'league_repository' ), $c->get( 'fixture_detail_service' ) );
         } );
     }
 
@@ -284,22 +298,6 @@ final class Container_Bootstrap {
             $c->get( 'fixture_repository' ),
             $c->get( 'club_repository' )
         );
-    }
-
-    private static function get_fixture_service_provider( Simple_Container $c ): Fixture_Service_Provider {
-        $service_provider = new Fixture_Service_Provider(
-            $c->get( 'result_service' ),
-            $c->get( 'knockout_progression_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'score_validation_service' ),
-            $c->get( 'player_validation_service' ),
-            $c->get( 'notification_service' ),
-            $c->get( 'registration_service' )
-        );
-        $service_provider->set_team_service( $c->get( 'team_service' ) );
-        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
-
-        return $service_provider;
     }
 
     private static function register_admin_tournament_controllers( Simple_Container $c ): void {

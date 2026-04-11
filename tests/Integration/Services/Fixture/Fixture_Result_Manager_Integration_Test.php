@@ -78,8 +78,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $fixture_repository;
     private $result_reporting_service;
 
-    private $fixture_service_mock;
-
     protected function setUp(): void {
         parent::setUp();
         $this->result_service = $this->createMock(Result_Service::class);
@@ -137,22 +135,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             fixture_repository: $this->fixture_repository
         );
 
-        $this->fixture_service_mock = $this->createMock(\Racketmanager\Services\Fixture_Service::class);
-        $this->fixture_service_mock->method('is_update_allowed')->willReturnCallback(function($fixture) {
-            if ($fixture->get_id() === 999) {
-                return (object)[
-                    'user_can_update' => false,
-                    'user_type' => 'none',
-                    'user_team' => 'none'
-                ];
-            }
-            return (object)[
-                'user_can_update' => true,
-                'user_type' => 'admin',
-                'user_team' => 'home'
-            ];
-        });
-
         $service_provider = new Fixture_Service_Provider(
             result_service: $this->result_service,
             progression_service: $this->progression_service,
@@ -164,7 +146,6 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $service_provider->set_player_validator( $this->player_validator );
         $service_provider->set_rubber_manager( $this->rubber_manager );
         $service_provider->set_settings_service( $this->settings_service );
-        $service_provider->set_fixture_service( $this->fixture_service_mock );
         $service_provider->set_result_reporting_service( $this->result_reporting_service );
         $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
         $service_provider->set_fixture_maintenance_service( $this->fixture_maintenance_service );

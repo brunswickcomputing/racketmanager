@@ -31,16 +31,20 @@ class Fixture_Service {
     private Fixture_Repository_Interface $fixture_repository;
     private Rubber_Repository_Interface $rubber_repository;
     private ?Notification_Service $notification_service;
-    private Fixture_Permission_Service $permission_service;
-    private Fixture_Detail_Service $detail_service;
+    private ?Fixture_Permission_Service $permission_service;
+    private ?Fixture_Detail_Service $detail_service;
 
-    public function __construct( Repository_Provider $repository_provider, Service_Provider $service_provider ) {
+    public function __construct(
+        Repository_Provider $repository_provider,
+        Service_Provider $service_provider,
+        ?Fixture_Permission_Service $permission_service = null,
+        ?Fixture_Detail_Service $detail_service = null
+    ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
         $this->rubber_repository    = $repository_provider->get_rubber_repository();
         $this->notification_service = $service_provider->get_notification_service();
-
-        $this->permission_service = $service_provider->get_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $service_provider );
-        $this->detail_service     = $service_provider->get_fixture_detail_service() ?? new Fixture_Detail_Service( $repository_provider, $service_provider );
+        $this->permission_service   = $permission_service ?: $service_provider->get_fixture_permission_service();
+        $this->detail_service       = $detail_service ?: $service_provider->get_fixture_detail_service();
     }
 
     /**

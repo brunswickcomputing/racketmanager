@@ -84,7 +84,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->service_provider->method( 'get_fixture_maintenance_service' )->willReturn( $this->fixture_maintenance_service );
         $this->service_provider->method( 'get_league_service' )->willReturn( $this->league_service );
         $this->service_provider->method( 'get_result_reporting_service' )->willReturn( $this->result_reporting_service );
-        $this->service_provider->method( 'get_permission_service' )->willReturn( $this->permission_service );
+        $this->service_provider->method( 'get_fixture_permission_service' )->willReturn( $this->permission_service );
         $this->service_provider->method( 'get_score_validator' )->willReturn( $this->score_validator );
         $this->service_provider->method( 'get_result_service' )->willReturn( $this->result_service );
         $this->service_provider->method( 'get_player_validator' )->willReturn( $this->player_validator );

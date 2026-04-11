@@ -34,7 +34,6 @@ use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
 
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
@@ -45,13 +44,6 @@ use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Result\Result_Reporting_Service;
-use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
-use Racketmanager\Domain\Results_Report;
-use Racketmanager\Repositories\Results_Report_Repository;
-use Racketmanager\Repositories\Team_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
-use Racketmanager\Repositories\Results_Checker_Repository;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use Racketmanager\Util\Util_Lookup;
 use Racketmanager\Util\Util_Messages;
@@ -186,7 +178,7 @@ class Fixture_Result_Manager {
         $this->club_repository            = $repository_provider->get_club_repository();
         $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
-        $this->permission_service = $service_provider->get_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $service_provider );
+        $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $this->registration_service );
 
         $this->notification_service = $service_provider->get_notification_service();
         if ( ! $this->notification_service ) {
@@ -912,7 +904,7 @@ class Fixture_Result_Manager {
             );
         }
 
-        $response = $this->apply_confirmation_to_fixture(
+        return $this->apply_confirmation_to_fixture(
             $fixture,
             new Fixture_Confirmation_Context(
                 status: 'Y',
@@ -925,7 +917,6 @@ class Fixture_Result_Manager {
             )
         );
 
-        return $response;
     }
 
     /**

@@ -41,6 +41,7 @@ namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
@@ -49,7 +50,6 @@ use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Player;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
-use Racketmanager\Services\Tournament_Service;
 use stdClass;
 
 class Results_Checker_Presenter_Test extends TestCase {
@@ -59,7 +59,6 @@ class Results_Checker_Presenter_Test extends TestCase {
     private $team_repository;
     private $league_repository;
     private $fixture_detail_service;
-    private $tournament_service;
 
     protected function setUp(): void {
         parent::setUp();
@@ -68,15 +67,13 @@ class Results_Checker_Presenter_Test extends TestCase {
         $this->team_repository    = $this->createStub( Team_Repository_Interface::class );
         $this->league_repository  = $this->createStub( League_Repository_Interface::class );
         $this->fixture_detail_service = $this->createStub( Fixture_Detail_Service::class );
-        $this->tournament_service = $this->createStub( Tournament_Service::class );
         
         $this->presenter = new Results_Checker_Presenter(
             $this->fixture_repository,
             $this->player_repository,
             $this->team_repository,
             $this->league_repository,
-            $this->fixture_detail_service,
-            $this->tournament_service
+            $this->fixture_detail_service
         );
     }
 
@@ -127,6 +124,20 @@ class Results_Checker_Presenter_Test extends TestCase {
         $this->player_repository->method( 'find' )->willReturn( $player );
         $this->league_repository->method( 'find_by_id' )->willReturn( $league );
         
+        $details = new Fixture_Details_DTO(
+            $match,
+            $league,
+            $league->event,
+            $league->event->competition ?? $this->createStub(\Racketmanager\Domain\Competition\Competition::class),
+            null,
+            null,
+            null,
+            null,
+            null,
+            '/match/league-a/2026/day/team-a-vs-team-a/'
+        );
+        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( $details );
+
         $this->fixture_detail_service->method('get_team_name_or_placeholder')
             ->willReturnMap([
                 ['10', '2026', $league, null, 'Team 10'],
@@ -157,11 +168,10 @@ class Results_Checker_Presenter_Test extends TestCase {
         $match->season = '2026';
         $match->match_day = 5;
 
-        $competition = (object)['type' => 'league'];
+        $competition = $this->createStub(\Racketmanager\Domain\Competition\Competition::class);
         $event = $this->createStub(\Racketmanager\Domain\Competition\Event::class);
-        $event->competition = $competition;
-        $event->is_box = false;
-
+        $event->method('get_competition_id')->willReturn(1); // competition->id
+        
         $league = $this->createStub(\Racketmanager\Domain\Competition\League::class);
         $league->title = 'League A';
         $league->event = $event;
@@ -181,6 +191,20 @@ class Results_Checker_Presenter_Test extends TestCase {
         $checker = new Results_Checker();
         $checker->match_id = 100;
         $this->fixture_repository->method('find_by_id')->willReturn($match);
+
+        $details = new Fixture_Details_DTO(
+            $match,
+            $league,
+            $event,
+            $competition,
+            null,
+            null,
+            null,
+            null,
+            null,
+            '/match/league-a/2026/day5/home-team-vs-away-team/'
+        );
+        $this->fixture_detail_service->method('get_fixture_with_details')->willReturn($details);
 
         $view_model = $this->presenter->present($checker, 'all');
 
@@ -205,6 +229,20 @@ class Results_Checker_Presenter_Test extends TestCase {
         $checker = new Results_Checker();
         $checker->match_id = 100;
         $this->fixture_repository->method('find_by_id')->willReturn($match);
+
+        $details = new Fixture_Details_DTO(
+            $match,
+            $league,
+            $event,
+            $this->createStub(\Racketmanager\Domain\Competition\Competition::class),
+            null,
+            null,
+            null,
+            null,
+            null,
+            '/league/box-league/match/100/'
+        );
+        $this->fixture_detail_service->method('get_fixture_with_details')->willReturn($details);
 
         $view_model = $this->presenter->present($checker, 'all');
 

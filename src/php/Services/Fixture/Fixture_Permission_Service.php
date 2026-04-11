@@ -23,9 +23,9 @@ class Fixture_Permission_Service {
     private Club_Repository_Interface $club_repository;
     private array $options = [];
 
-    public function __construct( Repository_Provider $repository_provider, Service_Provider $service_provider ) {
+    public function __construct( Repository_Provider $repository_provider, Registration_Service $registration_service ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
-        $this->registration_service = $service_provider->get_registration_service();
+        $this->registration_service = $registration_service;
         $this->league_repository    = $repository_provider->get_league_repository();
         $this->team_repository      = $repository_provider->get_team_repository();
         $this->club_repository      = $repository_provider->get_club_repository();
@@ -83,16 +83,16 @@ class Fixture_Permission_Service {
     }
 
     /**
-     * Build standard permission response object.
+     * Build a standard permission response object.
      */
     private function build_permission_response( bool $can_update, string $type = '', string $team = '', string $message = '', bool $approval = false, bool $update = false ): object {
         return (object) [
-            'user_can_update'     => (bool) $can_update,
+            'user_can_update'     => $can_update,
             'user_type'           => $type,
             'user_team'           => $team,
             'message'             => $message,
-            'match_approval_mode' => (bool) $approval,
-            'match_update'        => (bool) $update,
+            'match_approval_mode' => $approval,
+            'match_update'        => $update,
         ];
     }
 

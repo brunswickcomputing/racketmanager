@@ -8,23 +8,19 @@
 
 namespace Racketmanager\Ajax;
 
-use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
-use Racketmanager\Repositories\Results_Checker_Repository;
-use Racketmanager\Repositories\Team_Repository;
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
-use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
+use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Validator\Score_Validation_Service;
+use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use stdClass;
 use function Racketmanager\get_match;
@@ -41,7 +37,7 @@ use function Racketmanager\show_match_card;
  * @author Paul Moffat
  */
 class Ajax_Fixture extends Ajax {
-    public string $no_match_id ;
+    public string $no_match_id;
     public string $no_modal;
     public string $not_played;
     public string $match_not_found;
@@ -81,6 +77,7 @@ class Ajax_Fixture extends Ajax {
         $this->not_played      = __( 'Not played', 'racketmanager' );
         $this->match_not_found = __( 'Match not found', 'racketmanager' );
     }
+
     /**
      * Build screen to allow printing of match cards
      */
@@ -95,18 +92,19 @@ class Ajax_Fixture extends Ajax {
         $return = $validator->get_details();
         wp_send_json_error( $return->msg, $return->status );
     }
+
     /**
      * Build screen to allow match status to be captured
      */
     #[NoReturn]
     public function match_status_options(): void {
-        $output = null;
+        $output    = null;
         $validator = new Validator_Fixture();
         $validator = $validator->check_security_token();
         if ( empty( $validator->error ) ) {
-            $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
-            $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $status   = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
+            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
+            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $status    = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
             $validator = $validator->modal( $modal );
             $validator = $validator->match( $match_id );
             if ( empty( $validator->error ) ) {
@@ -121,14 +119,15 @@ class Ajax_Fixture extends Ajax {
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         wp_die();
     }
+
     /**
      * Set match status
      */
     public function set_match_status(): void {
-        $return         = new stdClass();
-        $error_field    = 'score_status';
-        $validator      = new Validator_Fixture();
-        $validator      = $validator->check_security_token( 'racketmanager_nonce', 'match-status' );
+        $return      = new stdClass();
+        $error_field = 'score_status';
+        $validator   = new Validator_Fixture();
+        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-status' );
         if ( empty( $validator->error ) ) {
             $modal        = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
             $match_id     = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
@@ -151,399 +150,6 @@ class Ajax_Fixture extends Ajax {
         $return      = $validator->get_details();
         $return->msg = __( 'Unable to set match status', 'racketmanager' );
         wp_send_json_error( $return, $return->status );
-    }
-    /**
-     * Build screen to show the selected match option
-     */
-    #[NoReturn]
-    public function show_match_option(): void {
-        $output    = null;
-        $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
-        if ( empty( $validator->error ) ) {
-            $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
-            $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $option   = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
-            $output   = match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
-        }
-        if ( ! empty( $validator->error ) ) {
-            $output = show_alert( $validator->msg, 'danger', 'modal' );
-            status_header( $validator->status );
-        }
-        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        wp_die();
-    }
-    /**
-     * Set the match date function
-     *
-     * @return void
-     */
-    public function set_match_date(): void {
-        $match_id      = null;
-        $modal         = null;
-        $schedule_date = null;
-        $match         = null;
-        $error_field   = 'schedule-date';
-        $validator     = new Validator_Fixture();
-        $validator     = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
-        if ( empty( $validator->error ) ) {
-            $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $match_id      = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-            $schedule_date = isset( $_POST['schedule-date'] ) ? sanitize_text_field( wp_unslash( $_POST['schedule-date'] ) ) : null;
-            $validator     = $validator->modal( $modal, $error_field );
-            $validator     = $validator->match( $match_id, $error_field );
-        }
-        if ( empty( $validator->error ) ) {
-            $match     = get_match( $match_id );
-            $validator = $validator->scheduled_date( $schedule_date, $match->date );
-        }
-        if ( empty( $validator->error ) ) {
-            if ( strlen( $schedule_date ) === 10 ) {
-                $schedule_date_fmt = mysql2date( 'D j M', $schedule_date );
-            } else {
-                $schedule_date_fmt = mysql2date( 'j F Y H:i', $schedule_date );
-            }
-            $match         = $match->update_match_date( $schedule_date, $match->date );
-            $match->status = 5;
-            $match->set_status( $match->status );
-            $return                         = new stdClass();
-            $return->msg                    = __( 'Match schedule updated', 'racketmanager' );
-            $return->modal                  = $modal;
-            $return->match_id               = $match_id;
-            $return->schedule_date          = $schedule_date;
-            $return->schedule_date_formated = $schedule_date_fmt;
-            wp_send_json_success( $return );
-        }
-        $return      = $validator->get_details();
-        if ( empty( $return->msg ) ) {
-            $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
-        }
-        wp_send_json_error( $return, $return->status );
-    }
-    /**
-     * Switch home and away teams function
-     *
-     * @return void
-     */
-    public function switch_home_away(): void {
-        $modal     = null;
-        $match_id  = null;
-        $error_field   = 'schedule-date';
-        $validator     = new Validator_Fixture();
-        $validator     = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
-        if ( empty( $validator->error ) ) {
-            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-            $validator = $validator->modal( $modal, $error_field );
-            $validator = $validator->match( $match_id, $error_field );
-        }
-        if ( empty( $validator->error ) ) {
-            $match = get_match( $match_id );
-            $old_home   = $match->home_team;
-            $old_away   = $match->away_team;
-            $season_dtl = $match->league->event->get_season_by_name( $match->season );
-            $match_date = $season_dtl['match_dates'][ $match->match_day - 1 ];
-            if ( $match_date ) {
-                $match->update_match_date( $match_date );
-                $match->set_teams( $old_away, $old_home );
-                $return           = new stdClass();
-                $return->msg      = __( 'Home and away teams switched', 'racketmanager' );
-                $return->modal    = $modal;
-                $return->match_id = $match_id;
-                $return->link     = $match->link;
-                wp_send_json_success( $return );
-            } else {
-                $validator->error      = true;
-                $validator->err_flds[] = 'schedule-date';
-                $validator->err_msgs[] = __( 'Match day not found', 'racketmanager' );
-            }
-        }
-        $return = $validator->get_details();
-        if ( empty( $return->msg ) ) {
-            $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
-        }
-        wp_send_json_error( $return, $return->status );
-    }
-    /**
-     * Reset match function
-     *
-     * @return void
-     */
-    public function reset_match_result(): void {
-        // 1. Initialize the Validator (fluent interface)
-        $validator = new Validator_Fixture();
-
-        // 2. Map global POST data to a Domain DTO
-        // The DTO factory handles basic extraction and sanitization.
-        $request = Fixture_Reset_Request::from_post( $_POST );
-
-        // 3. Execute Security & Existence Validation
-        // We chain checks to ensure we have a valid nonce, a valid modal identifier,
-        // and that the fixture actually exists in the database.
-        $validator->check_security_token( 'racketmanager_nonce', 'match-option' )
-                  ->modal( $request->modal )
-                  ->fixture( $request->fixture_id );
-
-        // 4. Handle Validation Failures
-        if ( ! empty( $validator->error ) ) {
-            // Automatically returns standardized error object and HTTP status (e.g. 404 or 403)
-            wp_send_json_error( $validator->get_details(), $validator->get_status() );
-        }
-
-        try {
-            // 5. Load the Rich Domain Entity
-            // We use the repository to get a fully hydrated Fixture object.
-            $fixture_repository = new Fixture_Repository();
-            $fixture            = $fixture_repository->find_by_id( $request->fixture_id );
-
-            // 6. Delegate Business Logic to the Domain Service
-            // The manager handles: resetting scores, updating standings (Leagues),
-            // and reverting progression (Championships/Knockouts).
-            $fixture_result_manager = $this->get_fixture_result_manager();
-            $response               = $fixture_result_manager->reset_result( $fixture );
-
-            // 7. Determine the Success Message (Domain-aware)
-            $presenter = new Fixture_Presenter();
-            $message   = $presenter->get_reset_message( $response->status );
-
-            // 8. Send Success Response
-            wp_send_json_success( [
-                'msg'      => $message,
-                'modal'    => $request->modal,
-                'match_id' => $response->fixture_id,
-            ] );
-        } catch ( League_Not_Found_Exception $e ) {
-            // 9. Centralized Exception Handling
-            wp_send_json_error( [ 'msg' => $e->getMessage() ], 500 );
-        }
-    }
-
-    /**
-     * Show rubber status options
-     */
-    #[NoReturn]
-    public function match_rubber_status_options(): void {
-        $output = null;
-        $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
-        if ( empty( $validator->error ) ) {
-            $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : null;
-            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $validator = $validator->modal( $modal );
-            $validator = $validator->rubber( $rubber_id );
-            if ( empty( $validator->error ) ) {
-                $output = rubber_status_modal( $rubber_id, array( 'status' => $status, 'modal' => $modal ) );
-            }
-        }
-        if ( ! empty( $validator->error ) ) {
-            $return = $validator->get_details();
-            if ( empty( $return->msg ) ) {
-                $return->msg = implode( '<br> ', $return->err_msgs );
-            }
-            $output = show_alert( $return->msg, 'danger', 'modal' );
-            status_header( $return->status );
-        }
-        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        wp_die();
-    }
-    /**
-     * Set match rubber status
-     */
-    public function set_match_rubber_status(): void {
-        $return      = new stdClass();
-        $error_field = 'score_status';
-        $validator   = new Validator_Fixture();
-        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-rubber-status' );
-        if ( empty( $validator->error ) ) {
-            $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $rubber_number = isset( $_POST['rubber_number'] ) ? intval( $_POST['rubber_number'] ) : null;
-            $score_status  = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $home_team     = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
-            $away_team     = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
-            $validator     = $validator->modal( $modal, $error_field );
-            $validator     = $validator->rubber_number( $rubber_number, $error_field );
-            $validator     = $validator->score_status( $score_status );
-            if ( empty( $validator->error ) ) {
-                $status_dtls            = $this->set_status_details( $score_status, $home_team, $away_team );
-                $return->score_status   = $status_dtls->status;
-                $return->status_message = $status_dtls->message;
-                $return->status_class   = $status_dtls->class;
-                $return->modal          = $modal;
-                $return->rubber_number  = $rubber_number;
-                wp_send_json_success( $return );
-            }
-        }
-        $return = $validator->get_details();
-        if ( empty( $return->msg ) ) {
-            $return->msg = __( 'Unable to set score status', 'racketmanager' );
-        }
-        wp_send_json_error( $return, $return->status );
-    }
-    /**
-     * Update match header
-     */
-    public function update_match_header(): void {
-        $match_id  = null;
-        $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
-        if ( empty( $validator->error ) ) {
-            $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-            $validator = $validator->match( $match_id );
-        }
-        if ( empty( $validator->error ) ) {
-            $edit_mode = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
-            $output    = match_header( $match_id, array( 'edit' => $edit_mode ) );
-            wp_send_json_success( $output );
-        }
-        $return = $validator->get_details();
-        wp_send_json_error( $return, $return->status );
-    }
-    /**
-     * Update match details
-     */
-    public function update_fixture_result(): void {
-        $validator = new Validator_Fixture();
-        $validator->check_security_token( 'racketmanager_nonce', 'scores-match' );
-
-        $validator->error  = false;
-        $validator->status = 400;
-
-        try {
-            $request    = Fixture_Result_Update_Request::from_post( $_POST );
-            $fixture_id = $request->fixture_id;
-            $validator->fixture( $fixture_id );
-
-            if ( empty( $validator->error ) ) {
-                $fixture_repository = new Fixture_Repository();
-                $fixture            = $fixture_repository->find_by_id( $fixture_id );
-                if ( $fixture ) {
-                    $result_manager      = $this->get_fixture_result_manager();
-
-                    $response = $result_manager->handle_fixture_result_update( $fixture, $request );
-
-                    $presenter = new Fixture_Presenter();
-                    $msg       = $presenter->get_update_message( $response );
-
-                    $return = array(
-                        'msg'         => $msg,
-                        'home_points' => $fixture->get_home_points(),
-                        'away_points' => $fixture->get_away_points(),
-                        'winner_id'   => $fixture->get_winner_id(),
-                        'sets'        => $request->sets,
-                    );
-                    wp_send_json_success( $return );
-                }
-            }
-        } catch ( Fixture_Validation_Exception $e ) {
-            $validator->error    = true;
-            $validator->msg      = __( 'Unable to update result', 'racketmanager' );
-            $validator->err_msgs = $e->get_error_msgs();
-            $validator->err_flds = $e->get_error_flds();
-        } catch ( Exception $e ) {
-            $validator->error = true;
-            $validator->msg   = $e->getMessage();
-        }
-        wp_send_json_error( $validator, $validator->status ?? 400 );
-    }
-
-    /**
-     * Update match details for team matches only
-     */
-    public function update_team_match(): void {
-        $validator = new Validator_Fixture();
-        $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match' );
-
-        try {
-            $fixture_id = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
-            $validator->fixture( $fixture_id );
-
-            $action    = isset( $_POST['updateRubber'] ) ? sanitize_text_field( wp_unslash( $_POST['updateRubber'] ) ) : null;
-            $validator->result_action( $action );
-
-            if ( empty( $validator->error ) ) {
-                $fixture_repository = new Fixture_Repository();
-                $fixture            = $fixture_repository->find_by_id( $fixture_id );
-
-                if ( $fixture ) {
-                    $result_manager      = $this->get_fixture_result_manager();
-
-                    switch ( $action ) {
-                        case 'results':
-                            $request   = Team_Result_Update_Request::from_post( $_POST );
-                            $validator = $result_manager->handle_team_result_update( $fixture, $request );
-                            break;
-                        case 'confirm':
-                            $request   = Team_Result_Confirmation_Request::from_post( $_POST );
-                            $validator = $result_manager->handle_team_result_confirmation( $fixture, $request );
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        } catch ( Exception $e ) {
-            $validator->error = true;
-            $validator->msg   = $e->getMessage();
-        }
-
-        if ( ! empty( $validator->error ) ) {
-            $return = $validator;
-            if ( empty( $return->msg ) ) {
-                $return->msg = __( 'Unable to save result', 'racketmanager' );
-            }
-            $return->rubbers = $validator->rubbers ?? array();
-            wp_send_json_error( $return, $return->status ?? 400 );
-        }
-
-        $return           = $validator;
-        $return->rubbers  = $validator->rubbers ?? array();
-        $return->status   = $validator->status ?? 200;
-        $return->warnings = $validator->warnings ?? array();
-        wp_send_json_success( $return );
-    }
-    /**
-     * Get the Fixture Result Manager with its dependencies.
-     *
-     * @return Fixture_Result_Manager
-     */
-    private function get_fixture_result_manager(): Fixture_Result_Manager {
-        $c = $this->racketmanager->container;
-
-        $repository_provider = new Repository_Provider(
-            $c->get( 'league_repository' ),
-            $c->get( 'event_repository' ),
-            $c->get( 'competition_repository' ),
-            $c->get( 'league_team_repository' ),
-            $c->get( 'team_repository' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'rubber_repository' ),
-            $c->get( 'results_checker_repository' ),
-            $c->get( 'results_report_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'club_repository' )
-        );
-
-        $service_provider = new Fixture_Service_Provider(
-            $c->get( 'result_service' ),
-            $c->get( 'knockout_progression_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'score_validation_service' ),
-            $c->get( 'player_validation_service' ),
-            $c->get( 'notification_service' ),
-            $c->get( 'registration_service' )
-        );
-        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
-        $service_provider->set_fixture_service( $c->get( 'fixture_service' ) );
-        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-        $service_provider->set_team_service( $c->get( 'team_service' ) );
-        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
-
-        return new Fixture_Result_Manager(
-            $service_provider,
-            $repository_provider
-        );
     }
 
     /**
@@ -633,6 +239,382 @@ class Ajax_Fixture extends Ajax {
         $status_dtls->message = $status_message;
         $status_dtls->class   = $status_class;
         $status_dtls->status  = $status;
+
         return $status_dtls;
+    }
+
+    /**
+     * Build screen to show the selected match option
+     */
+    #[NoReturn]
+    public function show_match_option(): void {
+        $output    = null;
+        $validator = new Validator_Fixture();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $match_id = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
+            $modal    = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $option   = isset( $_POST['option'] ) ? sanitize_text_field( wp_unslash( $_POST['option'] ) ) : null;
+            $output   = match_option_modal( array( 'option' => $option, 'modal' => $modal, 'match_id' => $match_id ) );
+        }
+        if ( ! empty( $validator->error ) ) {
+            $output = show_alert( $validator->msg, 'danger', 'modal' );
+            status_header( $validator->status );
+        }
+        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        wp_die();
+    }
+
+    /**
+     * Set the match date function
+     *
+     * @return void
+     */
+    public function set_match_date(): void {
+        $match_id      = null;
+        $modal         = null;
+        $schedule_date = null;
+        $match         = null;
+        $error_field   = 'schedule-date';
+        $validator     = new Validator_Fixture();
+        $validator     = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
+        if ( empty( $validator->error ) ) {
+            $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $match_id      = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            $schedule_date = isset( $_POST['schedule-date'] ) ? sanitize_text_field( wp_unslash( $_POST['schedule-date'] ) ) : null;
+            $validator     = $validator->modal( $modal, $error_field );
+            $validator     = $validator->match( $match_id, $error_field );
+        }
+        if ( empty( $validator->error ) ) {
+            $match     = get_match( $match_id );
+            $validator = $validator->scheduled_date( $schedule_date, $match->date );
+        }
+        if ( empty( $validator->error ) ) {
+            if ( strlen( $schedule_date ) === 10 ) {
+                $schedule_date_fmt = mysql2date( 'D j M', $schedule_date );
+            } else {
+                $schedule_date_fmt = mysql2date( 'j F Y H:i', $schedule_date );
+            }
+            $match         = $match->update_match_date( $schedule_date, $match->date );
+            $match->status = 5;
+            $match->set_status( $match->status );
+            $return                         = new stdClass();
+            $return->msg                    = __( 'Match schedule updated', 'racketmanager' );
+            $return->modal                  = $modal;
+            $return->match_id               = $match_id;
+            $return->schedule_date          = $schedule_date;
+            $return->schedule_date_formated = $schedule_date_fmt;
+            wp_send_json_success( $return );
+        }
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
+        }
+        wp_send_json_error( $return, $return->status );
+    }
+
+    /**
+     * Switch home and away teams function
+     *
+     * @return void
+     */
+    public function switch_home_away(): void {
+        $modal       = null;
+        $match_id    = null;
+        $error_field = 'schedule-date';
+        $validator   = new Validator_Fixture();
+        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-option' );
+        if ( empty( $validator->error ) ) {
+            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            $validator = $validator->modal( $modal, $error_field );
+            $validator = $validator->match( $match_id, $error_field );
+        }
+        if ( empty( $validator->error ) ) {
+            $match      = get_match( $match_id );
+            $old_home   = $match->home_team;
+            $old_away   = $match->away_team;
+            $season_dtl = $match->league->event->get_season_by_name( $match->season );
+            $match_date = $season_dtl['match_dates'][ $match->match_day - 1 ];
+            if ( $match_date ) {
+                $match->update_match_date( $match_date );
+                $match->set_teams( $old_away, $old_home );
+                $return           = new stdClass();
+                $return->msg      = __( 'Home and away teams switched', 'racketmanager' );
+                $return->modal    = $modal;
+                $return->match_id = $match_id;
+                $return->link     = $match->link;
+                wp_send_json_success( $return );
+            } else {
+                $validator->error      = true;
+                $validator->err_flds[] = 'schedule-date';
+                $validator->err_msgs[] = __( 'Match day not found', 'racketmanager' );
+            }
+        }
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to update match schedule', 'racketmanager' );
+        }
+        wp_send_json_error( $return, $return->status );
+    }
+
+    /**
+     * Reset match function
+     *
+     * @return void
+     */
+    public function reset_match_result(): void {
+        // 1. Initialize the Validator (fluent interface)
+        $validator = new Validator_Fixture();
+
+        // 2. Map global POST data to a Domain DTO
+        // The DTO factory handles basic extraction and sanitization.
+        $request = Fixture_Reset_Request::from_post( $_POST );
+
+        // 3. Execute Security & Existence Validation
+        // We chain checks to ensure we have a valid nonce, a valid modal identifier,
+        // and that the fixture actually exists in the database.
+        $validator->check_security_token( 'racketmanager_nonce', 'match-option' )->modal( $request->modal )->fixture( $request->fixture_id );
+
+        // 4. Handle Validation Failures
+        if ( ! empty( $validator->error ) ) {
+            // Automatically returns standardized error object and HTTP status (e.g. 404 or 403)
+            wp_send_json_error( $validator->get_details(), $validator->get_status() );
+        }
+
+        try {
+            // 5. Load the Rich Domain Entity
+            // We use the repository to get a fully hydrated Fixture object.
+            $fixture_repository = new Fixture_Repository();
+            $fixture            = $fixture_repository->find_by_id( $request->fixture_id );
+
+            // 6. Delegate Business Logic to the Domain Service
+            // The manager handles: resetting scores, updating standings (Leagues),
+            // and reverting progression (Championships/Knockouts).
+            $fixture_result_manager = $this->get_fixture_result_manager();
+            $response               = $fixture_result_manager->reset_result( $fixture );
+
+            // 7. Determine the Success Message (Domain-aware)
+            $presenter = new Fixture_Presenter();
+            $message   = $presenter->get_reset_message( $response->status );
+
+            // 8. Send Success Response
+            wp_send_json_success( [
+                'msg'      => $message,
+                'modal'    => $request->modal,
+                'match_id' => $response->fixture_id,
+            ] );
+        } catch ( League_Not_Found_Exception $e ) {
+            // 9. Centralized Exception Handling
+            wp_send_json_error( [ 'msg' => $e->getMessage() ], 500 );
+        }
+    }
+
+    /**
+     * Get the Fixture Result Manager with its dependencies.
+     *
+     * @return Fixture_Result_Manager
+     */
+    private function get_fixture_result_manager(): Fixture_Result_Manager {
+        $c = $this->racketmanager->container;
+
+        $repository_provider = new Repository_Provider( $c->get( 'league_repository' ), $c->get( 'event_repository' ), $c->get( 'competition_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), $c->get( 'player_repository' ), $c->get( 'rubber_repository' ), $c->get( 'results_checker_repository' ), $c->get( 'results_report_repository' ), $c->get( 'fixture_repository' ), $c->get( 'club_repository' ) );
+
+        $service_provider = new Fixture_Service_Provider( $c->get( 'result_service' ), $c->get( 'knockout_progression_service' ), $c->get( 'league_service' ), $c->get( 'score_validation_service' ), $c->get( 'player_validation_service' ), $c->get( 'notification_service' ), $c->get( 'registration_service' ) );
+        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+        $service_provider->set_team_service( $c->get( 'team_service' ) );
+        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+        return new Fixture_Result_Manager( $service_provider, $repository_provider );
+    }
+
+    /**
+     * Show rubber status options
+     */
+    #[NoReturn]
+    public function match_rubber_status_options(): void {
+        $output    = null;
+        $validator = new Validator_Fixture();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : null;
+            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+            $validator = $validator->modal( $modal );
+            $validator = $validator->rubber( $rubber_id );
+            if ( empty( $validator->error ) ) {
+                $output = rubber_status_modal( $rubber_id, array( 'status' => $status, 'modal' => $modal ) );
+            }
+        }
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator->get_details();
+            if ( empty( $return->msg ) ) {
+                $return->msg = implode( '<br> ', $return->err_msgs );
+            }
+            $output = show_alert( $return->msg, 'danger', 'modal' );
+            status_header( $return->status );
+        }
+        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        wp_die();
+    }
+
+    /**
+     * Set match rubber status
+     */
+    public function set_match_rubber_status(): void {
+        $return      = new stdClass();
+        $error_field = 'score_status';
+        $validator   = new Validator_Fixture();
+        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-rubber-status' );
+        if ( empty( $validator->error ) ) {
+            $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
+            $rubber_number = isset( $_POST['rubber_number'] ) ? intval( $_POST['rubber_number'] ) : null;
+            $score_status  = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
+            $home_team     = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
+            $away_team     = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
+            $validator     = $validator->modal( $modal, $error_field );
+            $validator     = $validator->rubber_number( $rubber_number, $error_field );
+            $validator     = $validator->score_status( $score_status );
+            if ( empty( $validator->error ) ) {
+                $status_dtls            = $this->set_status_details( $score_status, $home_team, $away_team );
+                $return->score_status   = $status_dtls->status;
+                $return->status_message = $status_dtls->message;
+                $return->status_class   = $status_dtls->class;
+                $return->modal          = $modal;
+                $return->rubber_number  = $rubber_number;
+                wp_send_json_success( $return );
+            }
+        }
+        $return = $validator->get_details();
+        if ( empty( $return->msg ) ) {
+            $return->msg = __( 'Unable to set score status', 'racketmanager' );
+        }
+        wp_send_json_error( $return, $return->status );
+    }
+
+    /**
+     * Update match header
+     */
+    public function update_match_header(): void {
+        $match_id  = null;
+        $validator = new Validator_Fixture();
+        $validator = $validator->check_security_token();
+        if ( empty( $validator->error ) ) {
+            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            $validator = $validator->match( $match_id );
+        }
+        if ( empty( $validator->error ) ) {
+            $edit_mode = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
+            $output    = match_header( $match_id, array( 'edit' => $edit_mode ) );
+            wp_send_json_success( $output );
+        }
+        $return = $validator->get_details();
+        wp_send_json_error( $return, $return->status );
+    }
+
+    /**
+     * Update match details
+     */
+    public function update_fixture_result(): void {
+        $validator = new Validator_Fixture();
+        $validator->check_security_token( 'racketmanager_nonce', 'scores-match' );
+
+        $validator->error  = false;
+        $validator->status = 400;
+
+        try {
+            $request    = Fixture_Result_Update_Request::from_post( $_POST );
+            $fixture_id = $request->fixture_id;
+            $validator->fixture( $fixture_id );
+
+            if ( empty( $validator->error ) ) {
+                $fixture_repository = new Fixture_Repository();
+                $fixture            = $fixture_repository->find_by_id( $fixture_id );
+                if ( $fixture ) {
+                    $result_manager = $this->get_fixture_result_manager();
+
+                    $response = $result_manager->handle_fixture_result_update( $fixture, $request );
+
+                    $presenter = new Fixture_Presenter();
+                    $msg       = $presenter->get_update_message( $response );
+
+                    $return = array(
+                        'msg'         => $msg,
+                        'home_points' => $fixture->get_home_points(),
+                        'away_points' => $fixture->get_away_points(),
+                        'winner_id'   => $fixture->get_winner_id(),
+                        'sets'        => $request->sets,
+                    );
+                    wp_send_json_success( $return );
+                }
+            }
+        } catch ( Fixture_Validation_Exception $e ) {
+            $validator->error    = true;
+            $validator->msg      = __( 'Unable to update result', 'racketmanager' );
+            $validator->err_msgs = $e->get_error_msgs();
+            $validator->err_flds = $e->get_error_flds();
+        } catch ( Exception $e ) {
+            $validator->error = true;
+            $validator->msg   = $e->getMessage();
+        }
+        wp_send_json_error( $validator, $validator->status ?? 400 );
+    }
+
+    /**
+     * Update match details for team matches only
+     */
+    public function update_team_match(): void {
+        $validator = new Validator_Fixture();
+        $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match' );
+
+        try {
+            $fixture_id = isset( $_POST['current_match_id'] ) ? intval( $_POST['current_match_id'] ) : 0;
+            $validator->fixture( $fixture_id );
+
+            $action = isset( $_POST['updateRubber'] ) ? sanitize_text_field( wp_unslash( $_POST['updateRubber'] ) ) : null;
+            $validator->result_action( $action );
+
+            if ( empty( $validator->error ) ) {
+                $fixture_repository = new Fixture_Repository();
+                $fixture            = $fixture_repository->find_by_id( $fixture_id );
+
+                if ( $fixture ) {
+                    $result_manager = $this->get_fixture_result_manager();
+
+                    switch ( $action ) {
+                        case 'results':
+                            $request   = Team_Result_Update_Request::from_post( $_POST );
+                            $validator = $result_manager->handle_team_result_update( $fixture, $request );
+                            break;
+                        case 'confirm':
+                            $request   = Team_Result_Confirmation_Request::from_post( $_POST );
+                            $validator = $result_manager->handle_team_result_confirmation( $fixture, $request );
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        } catch ( Exception $e ) {
+            $validator->error = true;
+            $validator->msg   = $e->getMessage();
+        }
+
+        if ( ! empty( $validator->error ) ) {
+            $return = $validator;
+            if ( empty( $return->msg ) ) {
+                $return->msg = __( 'Unable to save result', 'racketmanager' );
+            }
+            $return->rubbers = $validator->rubbers ?? array();
+            wp_send_json_error( $return, $return->status ?? 400 );
+        }
+
+        $return           = $validator;
+        $return->rubbers  = $validator->rubbers ?? array();
+        $return->status   = $validator->status ?? 200;
+        $return->warnings = $validator->warnings ?? array();
+        wp_send_json_success( $return );
     }
 }

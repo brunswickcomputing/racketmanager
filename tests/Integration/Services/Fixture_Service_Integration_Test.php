@@ -19,6 +19,9 @@ use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;
+use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Services\Fixture\Fixture_Permission_Service;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Service_Integration_Test extends TestCase {
@@ -41,7 +44,7 @@ class Fixture_Service_Integration_Test extends TestCase {
         $this->registration_service = $this->createStub( Registration_Service::class );
         $this->competition_service = $this->createStub( Competition_Service::class );
         $this->team_service = $this->createStub( Team_Service::class );
-        
+
         $this->repository_provider = new Repository_Provider(
             league_repository: $this->createStub( League_Repository_Interface::class ),
             team_repository: $this->createStub( Team_Repository_Interface::class ),
@@ -57,7 +60,18 @@ class Fixture_Service_Integration_Test extends TestCase {
         $this->service_provider->set_competition_service( $this->competition_service );
         $this->service_provider->set_team_service( $this->team_service );
 
-        $this->service = new Fixture_Service( $this->repository_provider, $this->service_provider );
+        $permission_service = new Fixture_Permission_Service( $this->repository_provider, $this->registration_service );
+        $this->service_provider->set_fixture_permission_service( $permission_service );
+        
+        $detail_service = new Fixture_Detail_Service(
+            $this->repository_provider,
+            $this->competition_service,
+            $this->team_service,
+            $permission_service
+        );
+        $this->service_provider->set_fixture_detail_service( $detail_service );
+
+        $this->service = new Fixture_Service( $this->repository_provider, $this->service_provider, $permission_service, $detail_service );
     }
 
     public function test_update_fixture_location(): void {

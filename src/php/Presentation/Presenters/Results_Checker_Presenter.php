@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Presentation\Presenters;
 
-use Exception;
-use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Enums\Results_Checker_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Results_Checker;
@@ -14,19 +12,12 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
-use Racketmanager\Services\Tournament_Service;
 use function Racketmanager\seo_url;
 
 /**
  * Presenter for Results Checker
  */
 readonly class Results_Checker_Presenter {
-    /**
-     * URL constants
-     */
-    private const string MATCH_URL = '/match/';
-    private const string LEAGUE_URL = '/league/';
-    private const string TOURNAMENT_URL = '/tournament/';
     private const string RESULT_SUFFIX = 'result/';
 
     /**
@@ -35,10 +26,9 @@ readonly class Results_Checker_Presenter {
      * @param Team_Repository_Interface $team_repository Team repository.
      * @param League_Repository_Interface $league_repository League repository.
      * @param Fixture_Detail_Service $fixture_detail_service Fixture detail service.
-     * @param Tournament_Service $tournament_service Tournament service.
      */
     public function __construct(
-        private Fixture_Repository_Interface $fixture_repository, private Player_Repository_Interface $player_repository, private Team_Repository_Interface $team_repository, private League_Repository_Interface $league_repository, private Fixture_Detail_Service $fixture_detail_service, private Tournament_Service $tournament_service
+        private Fixture_Repository_Interface $fixture_repository, private Player_Repository_Interface $player_repository, private Team_Repository_Interface $team_repository, private League_Repository_Interface $league_repository, private Fixture_Detail_Service $fixture_detail_service
     ) {
     }
 
@@ -94,85 +84,16 @@ readonly class Results_Checker_Presenter {
      * @return string
      */
     private function get_match_link( ?Fixture $match ): string {
-        $league = $match ? $this->league_repository->find_by_id( $match->league_id ) : null;
-        if ( ! $league ) {
+        if ( ! $match ) {
+            return '';
+        }
+
+        $details = $this->fixture_detail_service->get_fixture_with_details( $match );
+        if ( ! $details ) {
             return ( $match->link ?? '' ) . self::RESULT_SUFFIX;
         }
 
-        $link = $this->resolve_match_link( $match, $league );
-        if ( empty( $link ) ) {
-            return ( $match->link ?? '' ) . self::RESULT_SUFFIX;
-        }
-
-        if ( ! empty( $match->leg ) ) {
-            $link .= 'leg-' . $match->leg . '/';
-        }
-
-        return $link . self::RESULT_SUFFIX;
-    }
-
-    /**
-     * Resolve the match link based on the league type
-     *
-     * @param Fixture $match Match.
-     * @param League $league League.
-     *
-     * @return string
-     */
-    private function resolve_match_link( Fixture $match, League $league ): string {
-        if ( ! empty( $league->event->is_box ) ) {
-            return self::LEAGUE_URL . seo_url( $league->title ) . self::MATCH_URL . $match->id . '/';
-        }
-
-        if ( 'tournament' === ( $league->event->competition->type ?? '' ) ) {
-            return $this->get_tournament_link( $match, $league );
-        }
-
-        $home_team = $this->team_repository->find_by_id( $match->home_team );
-        $away_team = $this->team_repository->find_by_id( $match->away_team );
-
-        return ( $home_team && $away_team ) ? $this->generate_standard_match_link( $match, $league, $home_team, $away_team ) : '';
-    }
-
-    /**
-     * Get tournament link
-     *
-     * @param Fixture $match Match.
-     * @param League $league League.
-     *
-     * @return string
-     */
-    private function get_tournament_link( Fixture $match, League $league ): string {
-        $tournament_code = $league->event->competition->id . ',' . $match->season;
-        try {
-            $tournament = $this->tournament_service->get_tournament( $tournament_code, 'shortcode' );
-            $home_team  = $this->team_repository->find_by_id( $match->home_team );
-            $away_team  = $this->team_repository->find_by_id( $match->away_team );
-
-            if ( $tournament && $home_team && $away_team ) {
-                return self::TOURNAMENT_URL . seo_url( $tournament->name ) . self::MATCH_URL . seo_url( $league->title ) . '/' . seo_url( $home_team->get_name() ) . '-vs-' . seo_url( $away_team->get_name() ) . '/' . $match->id . '/';
-            }
-        } catch ( Exception ) {
-            // Fallback to default link logic
-        }
-
-        return self::LEAGUE_URL . seo_url( $league->title ) . self::MATCH_URL . $match->id . '/';
-    }
-
-    /**
-     * Generate a standard match link
-     *
-     * @param Fixture $match Match.
-     * @param League $league League.
-     * @param mixed $home_team Home team.
-     * @param mixed $away_team Away team.
-     *
-     * @return string
-     */
-    private function generate_standard_match_link( Fixture $match, League $league, mixed $home_team, mixed $away_team ): string {
-        $match_ref = ! empty( $league->is_championship ) ? $match->final : 'day' . $match->match_day;
-
-        return self::MATCH_URL . seo_url( $league->title ) . '/' . $match->season . '/' . $match_ref . '/' . seo_url( $home_team->get_name() ) . '-vs-' . seo_url( $away_team->get_name() ) . '/';
+        return $details->link . self::RESULT_SUFFIX;
     }
 
     /**

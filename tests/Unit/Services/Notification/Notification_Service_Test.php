@@ -71,6 +71,7 @@ namespace Racketmanager\Tests\Unit\Services\Notification {
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
@@ -747,6 +748,118 @@ class Notification_Service_Test extends TestCase {
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertEquals('away-captain@example.com', $mail['to']);
+    }
+
+    public function test_send_result_error_notification_enhanced(): void {
+        $checker = new Results_Checker();
+        $checker->description = 'Penalty for late result';
+        $checker->league_id   = 456;
+
+        $fixture_data = new stdClass();
+        $fixture_data->id          = 123;
+        $fixture_data->league_id   = 456;
+        $fixture_data->match_title = 'Home v Away';
+        $fixture_data->home_team   = '100';
+        $fixture_data->season      = '2026';
+        $fixture = new Fixture( $fixture_data );
+        $fixture->match_title = 'Home v Away';
+
+        $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $event = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->getMock();
+        $event->competition = (object) [ 'type' => 'league' ];
+        $league->event = $event;
+        $this->league_repository->method( 'find_by_id' )->with( 456 )->willReturn( $league );
+
+        $this->app->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
+
+        // Mock Captain
+        $league_team = $this->getMockBuilder( League_Team::class )->disableOriginalConstructor()->getMock();
+        $league_team->method( 'get_captain' )->willReturn( 5 );
+        $league_team->club_id = 10;
+        $this->league_team_repository->method( 'find_by_team_league_and_season' )
+            ->with( 100, 456, 2026 )
+            ->willReturn( $league_team );
+        
+        // Match secretary lookup uses find_by_id(team_id)
+        $this->league_team_repository->method( 'find_by_id' )
+            ->with( 100 )
+            ->willReturn( $league_team );
+
+        $captain = $this->createStub( Player::class );
+        $captain->method( 'get_email' )->willReturn( 'captain@example.com' );
+        $this->player_repository->method( 'find' )->with( 5, 'id' )->willReturn( $captain );
+
+        // Mock Match Secretary
+        $club = $this->getMockBuilder( \Racketmanager\Domain\Club::class )->disableOriginalConstructor()->getMock();
+        $club->match_secretary = (object)[
+            'display_name' => 'Match Sec',
+            'email' => 'secretary@example.com'
+        ];
+        $this->club_repository->method( 'find_by_id' )->with( 10 )->willReturn( $club );
+
+        $GLOBALS['wp_mail_calls'] = [];
+
+        $this->service->send_result_error_notification( $checker, $fixture, 2.0 );
+
+        $this->assertCount( 1, $GLOBALS['wp_mail_calls'] );
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        
+        $this->assertContains( 'captain@example.com', $mail['to'] );
+        $found_cc = false;
+        foreach ( $mail['headers'] as $header ) {
+            if ( str_contains( $header, 'secretary@example.com' ) ) {
+                $found_cc = true;
+                break;
+            }
+        }
+        $this->assertTrue( $found_cc, 'Secretary email not found in headers' );
+    }
+
+    public function test_send_result_error_notification(): void {
+        $checker = $this->createMock( Results_Checker::class );
+        $checker->description = 'Test error description';
+        $checker->league_id   = 456;
+
+        $fixture_data = new stdClass();
+        $fixture_data->id          = 123;
+        $fixture_data->league_id   = 456;
+        $fixture_data->match_title = 'Home v Away';
+        $fixture_data->home_captain = 5;
+        $fixture = new Fixture( $fixture_data );
+        $fixture->match_title = 'Home v Away';
+
+        $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $event = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->getMock();
+        $event->competition = (object) [ 'type' => 'league' ];
+        $league->event = $event;
+        $this->league_repository->method( 'find_by_id' )->with( 456 )->willReturn( $league );
+
+        $this->app->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
+        $this->app->site_name = 'Test Site';
+
+        // Mock get_userdata for wp_mail recipient resolution
+        if ( ! function_exists( 'Racketmanager\Tests\Unit\Services\Notification\get_userdata' ) ) {
+            eval( 'namespace Racketmanager\Services\Notification { function get_userdata($id) { 
+                if ($id === 5) {
+                    return (object)["user_email" => "captain@example.com"];
+                }
+                return null;
+            } }' );
+        }
+
+        $GLOBALS['wp_mail_calls'] = [];
+
+        $this->service->send_result_error_notification( $checker, $fixture, 2.0 );
+
+        $this->assertCount( 1, $GLOBALS['wp_mail_calls'] );
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertEquals( [ 'captain@example.com' ], $mail['to'] );
+        $this->assertStringContainsString( '[Test Site] Result Error: Home v Away', $mail['subject'] );
+        $this->assertStringContainsString( 'Test error description', $mail['message'] );
+        $this->assertStringContainsString( '2 points', $mail['message'] );
+        $this->assertStringContainsString( 'From: Test Site <admin@example.com>', $mail['headers'][0] );
     }
 }
 }

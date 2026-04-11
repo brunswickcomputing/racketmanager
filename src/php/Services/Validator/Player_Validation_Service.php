@@ -5,6 +5,7 @@ namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\DTOs\Results_Checker_Data;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\DTO\Player\Validation_Context_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -275,13 +276,15 @@ class Player_Validation_Service {
      * Add a player result check entry.
      */
     private function add_player_result_check( Fixture $fixture, int $team_id, int $player_id, string $error, int $rubber_id ): void {
-        $check              = new Results_Checker();
-        $check->match_id    = (int) $fixture->get_id();
-        $check->league_id   = (int) $fixture->get_league_id();
-        $check->team_id     = $team_id;
-        $check->player_id   = $player_id;
-        $check->rubber_id   = $rubber_id;
-        $check->description = $error;
+        $data = new Results_Checker_Data(
+            league_id: (int) $fixture->get_league_id(),
+            match_id: (int) $fixture->get_id(),
+            team_id: $team_id,
+            player_id: $player_id,
+            rubber_id: $rubber_id,
+            description: $error
+        );
+        $check = new Results_Checker( $data );
 
         $this->results_checker_repository->save( $check );
     }
@@ -476,7 +479,7 @@ class Player_Validation_Service {
     }
 
     /**
-     * Get result timeout value from options.
+     * Get the result timeout value from options.
      */
     private function get_result_timeout( League $league, array $options ): ?int {
         $competition_options = $options[ $league->event->competition->type ] ?? [];
@@ -511,11 +514,13 @@ class Player_Validation_Service {
      * Add a match result check entry.
      */
     private function add_match_result_check( Fixture $fixture, int $team_id, string $error ): void {
-        $check              = new Results_Checker();
-        $check->match_id    = (int) $fixture->get_id();
-        $check->league_id   = (int) $fixture->get_league_id();
-        $check->team_id     = $team_id;
-        $check->description = $error;
+        $data = new Results_Checker_Data(
+            league_id: (int) $fixture->get_league_id(),
+            match_id: (int) $fixture->get_id(),
+            team_id: $team_id,
+            description: $error
+        );
+        $check = new Results_Checker( $data );
 
         $this->results_checker_repository->save( $check );
     }

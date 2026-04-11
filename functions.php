@@ -504,8 +504,12 @@ function get_result_check( object|int|null $results_check = null ): ?object {
         $_results_check = $results_check;
     } elseif ( is_object( $results_check ) ) {
         $_results_check = new Results_Checker( $results_check );
+    } elseif ( $results_check ) {
+        global $racketmanager;
+        $repository     = $racketmanager->container->get( 'results_checker_repository' );
+        $_results_check = $repository->find_by_id( $results_check );
     } else {
-        $_results_check = Results_Checker::get_instance( $results_check );
+        $_results_check = null;
     }
 
     if ( ! $_results_check ) {

@@ -31,6 +31,7 @@ class Admin_Result extends Admin_Display {
     public function handle_display( ?string $view ): void {
         $this->display_results_page();
     }
+
     /**
      * Show RacketManager results page
      */
@@ -49,20 +50,29 @@ class Admin_Result extends Admin_Display {
                 if ( current_user_can( 'update_results' ) ) {
                     check_admin_referer( 'results-checker-bulk' );
                     if ( isset( $_POST['resultsChecker'] ) && isset( $_POST['action'] ) ) {
+                        $manager    = $racketmanager->container->get( 'results_checker_manager' );
+                        $repository = $racketmanager->container->get( 'results_checker_repository' );
                         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                         foreach ( $_POST['resultsChecker'] as $i => $results_checker_id ) {
                             $result_check = get_result_check( $results_checker_id );
                             if ( $result_check ) {
                                 if ( 'approve' === $_POST['action'] ) {
-                                    $result_check->approve();
+                                    $manager->approve( $result_check );
                                 } elseif ( 'handle' === $_POST['action'] ) {
-                                    $result_check->handle();
+                                    $manager->handle( $result_check );
                                 } elseif ( 'delete' === $_POST['action'] ) {
-                                    $result_check->delete();
+                                    $repository->delete( $result_check->id );
                                 }
                             } else {
                                 $this->set_message( __( 'Result check not found', 'racketmanager' ), true );
                             }
+                        }
+                        if ( 'approve' === $_POST['action'] ) {
+                            $this->set_message( __( 'Result check(s) approved', 'racketmanager' ) );
+                        } elseif ( 'handle' === $_POST['action'] ) {
+                            $this->set_message( __( 'Result check(s) handled', 'racketmanager' ) );
+                        } elseif ( 'delete' === $_POST['action'] ) {
+                            $this->set_message( __( 'Result check(s) deleted', 'racketmanager' ) );
                         }
                     } else {
                         $this->set_message( __( 'No actions flagged', 'racketmanager' ), true );
@@ -81,9 +91,11 @@ class Admin_Result extends Admin_Display {
                     'status'      => $results_check_filter,
                 )
             );
-            $competitions = $this->competition_service->get_league_competitions();
-            $seasons      = $this->season_service->get_all_seasons();
-            $events       = array();
+            $presenter        = $racketmanager->container->get( 'results_checker_presenter' );
+            $results_checkers = $presenter->present_collection( $results_checkers, $results_check_filter );
+            $competitions     = $this->competition_service->get_league_competitions();
+            $seasons          = $this->season_service->get_all_seasons();
+            $events           = array();
             foreach ( $competitions as $competition ) {
                 try {
                     $competition_events = $this->competition_service->get_events_for_competition( $competition->id );

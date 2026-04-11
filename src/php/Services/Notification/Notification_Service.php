@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services\Notification;
 
+use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Player;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
@@ -174,6 +174,67 @@ class Notification_Service {
         }
 
         wp_mail( $email_to, $subject, $message, $headers );
+    }
+
+    /**
+     * Send a result error/penalty notification.
+     *
+     * @param Results_Checker $checker
+     * @param Fixture         $match
+     * @param float           $penalty
+     */
+    public function send_result_error_notification( Results_Checker $checker, Fixture $match, float $penalty ): void {
+        $organisation_name = $this->app->site_name;
+        $league            = $this->league_repository->find_by_id( $match->get_league_id() );
+        if ( ! $league ) {
+            return;
+        }
+
+        $email_from = $this->app->get_confirmation_email( $league->event->competition->type );
+        $headers    = array( 'From: ' . $organisation_name . ' <' . $email_from . '>' );
+
+        $subject = sprintf(
+            /* translators: 1: organisation name, 2: match title */
+            __( '[%1$s] Result Error: %2$s', 'racketmanager' ),
+            $organisation_name,
+            $match->match_title
+        );
+
+        $message = sprintf(
+            /* translators: 1: match title, 2: description, 3: penalty */
+            __( "The result for %1\$s has been flagged with the following error:\n\n%2\$s\n\nA penalty of %3\$s points has been applied.", 'racketmanager' ),
+            $match->match_title,
+            $checker->description,
+            $penalty
+        );
+
+        $emails = array();
+        $team_id = (int) $match->get_home_team();
+        if ( $team_id > 0 ) {
+            $captain_email = $this->get_team_captain_email( $team_id, (int) $league->id, (int) $match->get_season() );
+            if ( $captain_email ) {
+                $emails[] = $captain_email;
+            }
+
+            $league_team = $this->league_team_repository->find_by_id( $team_id );
+            if ( $league_team ) {
+                $club = $this->club_repository->find_by_id( $league_team->club_id );
+                if ( $club && isset( $club->match_secretary->email ) ) {
+                    $headers[] = RACKETMANAGER_CC_EMAIL . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
+                }
+            }
+        }
+
+        if ( empty( $emails ) && ! empty( $match->home_captain ) ) {
+            $user_info = get_userdata( $match->home_captain );
+            if ( $user_info ) {
+                $emails[] = $user_info->user_email;
+            }
+        }
+
+        if ( ! empty( $emails ) ) {
+            wp_mail( $emails, $subject, $message, $headers );
+        }
     }
 
     /**
@@ -376,31 +437,49 @@ class Notification_Service {
     }
 
     /**
+     * Prepare common notification data like league, emails, and headers.
+     *
+     * @param Fixture $fixture
+     * @return array|null Returns array containing [league, email_to, admin_email, headers] or null on failure.
+     */
+    private function prepare_notification_base_data( Fixture $fixture ): ?array {
+        $league   = $this->league_repository->find_by_id( $fixture->get_league_id() );
+        $email_to = $this->get_fixture_emails( $fixture );
+
+        if ( ! $league || empty( $email_to ) || -1 === (int) $fixture->get_home_team() || -1 === (int) $fixture->get_away_team() ) {
+            return null;
+        }
+
+        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
+        $headers     = array(
+            $this->app->get_from_user_email(),
+            RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>',
+        );
+
+        return [
+            'league'      => $league,
+            'email_to'    => $email_to,
+            'admin_email' => $admin_email,
+            'headers'     => $headers,
+        ];
+    }
+
+    /**
      * Notify teams when their next match is confirmed (e.g. in knockout draws).
      *
      * @param Fixture $fixture
      * @return void
      */
     public function send_next_match_notification( Fixture $fixture ): void {
-        $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
-        if ( ! $league ) {
+        $base_data = $this->prepare_notification_base_data( $fixture );
+        if ( ! $base_data ) {
             return;
         }
 
-        // Skip if either team is not set, or if it's a 'S' team type (legacy condition)
-        if ( -1 === (int) $fixture->get_home_team() || -1 === (int) $fixture->get_away_team() ) {
-            return;
-        }
-
-        $email_to = $this->get_fixture_emails( $fixture );
-        if ( empty( $email_to ) ) {
-            return;
-        }
-
-        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
-        $headers     = array();
-        $headers[]   = $this->app->get_from_user_email();
-        $headers[]   = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+        $league      = $base_data['league'];
+        $email_to    = $base_data['email_to'];
+        $admin_email = $base_data['admin_email'];
+        $headers     = $base_data['headers'];
 
         $message_args = array(
             'competition_type' => $league->event->competition->type,
@@ -437,24 +516,15 @@ class Notification_Service {
      * @return void
      */
     public function send_date_change_notification( Fixture $fixture ): void {
-        $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
-        if ( ! $league ) {
+        $base_data = $this->prepare_notification_base_data( $fixture );
+        if ( ! $base_data ) {
             return;
         }
 
-        if ( -1 === (int) $fixture->get_home_team() || -1 === (int) $fixture->get_away_team() ) {
-            return;
-        }
-
-        $email_to = $this->get_fixture_emails( $fixture );
-        if ( empty( $email_to ) ) {
-            return;
-        }
-
-        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
-        $headers     = array();
-        $headers[]   = $this->app->get_from_user_email();
-        $headers[]   = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
+        $league      = $base_data['league'];
+        $email_to    = $base_data['email_to'];
+        $admin_email = $base_data['admin_email'];
+        $headers     = $base_data['headers'];
 
         $round_name = '';
         if ( $league->is_championship && $league->championship ) {

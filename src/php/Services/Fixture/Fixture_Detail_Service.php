@@ -140,7 +140,7 @@ class Fixture_Detail_Service {
     /**
      * Resolve placeholder title for fixtures
      */
-    private function resolve_placeholder_title( string $team_ref, string $season, object $league, ?string $fixture_final = null ): ?string {
+    public function resolve_placeholder_title( string $team_ref, string $season, object $league, ?string $fixture_final = null ): ?string {
         $team  = explode( '_', $team_ref );
         $final = $team[1] ?? null;
         if ( empty( $final ) ) {
@@ -217,7 +217,7 @@ class Fixture_Detail_Service {
     /**
      * Get team name or resolve recursively if placeholder.
      */
-    private function get_team_name_or_placeholder( $team_id, string $season, object $league, ?string $final ): string {
+    public function get_team_name_or_placeholder( $team_id, string $season, object $league, ?string $final ): string {
         if ( is_numeric( $team_id ) ) {
             $team = $this->team_repository->find_by_id( (int) $team_id );
             return $team ? $team->get_name() : __( 'Unknown', 'racketmanager' );

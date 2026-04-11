@@ -21,6 +21,20 @@ use Racketmanager\Repositories\Rubber_Repository;
 class Fixture {
 
     /**
+     * Match title
+     *
+     * @var string|null
+     */
+    public ?string $match_title = null;
+
+    /**
+     * Link
+     *
+     * @var string|null
+     */
+    public ?string $link = null;
+
+    /**
      * Id
      *
      * @var int|null

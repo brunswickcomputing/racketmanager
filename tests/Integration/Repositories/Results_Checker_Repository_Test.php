@@ -32,6 +32,7 @@ namespace Racketmanager\Tests\Integration\Repositories;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Domain\DTOs\Results_Checker_Data;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use stdClass;
 
@@ -67,17 +68,18 @@ class Results_Checker_Repository_Test extends TestCase {
     }
 
     public function test_save_and_find_by_id(): void {
-        $data = new stdClass();
-        $data->league_id = 1;
-        $data->match_id = 12345;
-        $data->team_id = 2;
-        $data->player_id = 3;
-        $data->rubber_id = 4;
-        $data->description = 'Test Error';
-        $data->status = 0;
-        $data->updated_user = 5;
+        $data = new Results_Checker_Data(
+            league_id: 1,
+            match_id: 12345,
+            team_id: 2,
+            player_id: 3,
+            rubber_id: 4,
+            description: 'Test Error',
+            status: 0,
+            updated_user: 5
+        );
 
-        $checker = new Results_Checker( $data, false );
+        $checker = new Results_Checker( $data );
         $this->repository->save( $checker );
 
         $this->assertNotEmpty( $checker->id );
@@ -89,19 +91,27 @@ class Results_Checker_Repository_Test extends TestCase {
     }
 
     public function test_delete_by_fixture_id(): void {
-        $data = new stdClass();
-        $data->match_id = 12345;
-        $data->league_id = 1;
-        $data->team_id = 2;
-        $data->player_id = 3;
-        $data->rubber_id = 4;
-        $data->description = 'Error 1';
+        $data = new Results_Checker_Data(
+            match_id: 12345,
+            league_id: 1,
+            team_id: 2,
+            player_id: 3,
+            rubber_id: 4,
+            description: 'Error 1'
+        );
         
-        $checker1 = new Results_Checker( $data, false );
+        $checker1 = new Results_Checker( $data );
         $this->repository->save( $checker1 );
 
-        $data->description = 'Error 2';
-        $checker2 = new Results_Checker( $data, false );
+        $data2 = new Results_Checker_Data(
+            match_id: 12345,
+            league_id: 1,
+            team_id: 2,
+            player_id: 3,
+            rubber_id: 4,
+            description: 'Error 2'
+        );
+        $checker2 = new Results_Checker( $data2 );
         $this->repository->save( $checker2 );
 
         $count = (int) $this->wpdb->get_var( "SELECT count(*) FROM {$this->wpdb->prefix}racketmanager_results_checker WHERE match_id = 12345" );
@@ -114,15 +124,16 @@ class Results_Checker_Repository_Test extends TestCase {
     }
 
     public function test_find_by_fixture_id(): void {
-        $data = new stdClass();
-        $data->match_id = 12345;
-        $data->league_id = 1;
-        $data->team_id = 2;
-        $data->player_id = 3;
-        $data->rubber_id = 4;
-        $data->description = 'Error 1';
+        $data = new Results_Checker_Data(
+            match_id: 12345,
+            league_id: 1,
+            team_id: 2,
+            player_id: 3,
+            rubber_id: 4,
+            description: 'Error 1'
+        );
         
-        $checker1 = new Results_Checker( $data, false );
+        $checker1 = new Results_Checker( $data );
         $this->repository->save( $checker1 );
 
         $checkers = $this->repository->find_by_fixture_id( 12345 );

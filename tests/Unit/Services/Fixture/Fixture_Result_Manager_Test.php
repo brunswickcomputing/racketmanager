@@ -25,6 +25,9 @@ use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
+use Racketmanager\Domain\Competition\Stage;
+use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Settings_Service;
 
@@ -42,6 +45,7 @@ class Fixture_Result_Manager_Test extends TestCase {
     private $result_service;
     private $player_validator;
     private $settings_service;
+    private $progression_service;
     private $service_provider;
     private $repository_provider;
     private Fixture_Result_Manager $manager;
@@ -73,6 +77,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->result_service = $this->createMock( Result_Service::class );
         $this->player_validator = $this->createMock( Player_Validation_Service::class );
         $this->settings_service = $this->createMock( Settings_Service::class );
+        $this->progression_service = $this->createMock( Knockout_Progression_Service::class );
 
         $this->service_provider = $this->createStub( Service_Provider::class );
         $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
@@ -84,11 +89,73 @@ class Fixture_Result_Manager_Test extends TestCase {
         $this->service_provider->method( 'get_result_service' )->willReturn( $this->result_service );
         $this->service_provider->method( 'get_player_validator' )->willReturn( $this->player_validator );
         $this->service_provider->method( 'get_settings_service' )->willReturn( $this->settings_service );
+        $this->service_provider->method( 'get_progression_service' )->willReturn( $this->progression_service );
 
         $this->manager = new Fixture_Result_Manager(
             $this->service_provider,
             $this->repository_provider
         );
+    }
+
+    public function test_update_result_triggers_league_standings_update(): void {
+        $fixture = $this->createMock( Fixture::class );
+        $fixture->method( 'get_league_id' )->willReturn( 1 );
+        $fixture->method( 'get_season' )->willReturn( '2026' );
+        
+        $result = $this->createMock( Result::class );
+        
+        $league = $this->createMock( League::class );
+        $league->method( 'get_id' )->willReturn( 1 );
+        $league->method( 'get_name' )->willReturn( 'Test League' );
+        $league->method( 'get_event_id' )->willReturn( 10 );
+        $league->is_championship = false;
+        
+        $this->league_repository->method( 'find_by_id' )->with( 1 )->willReturn( $league );
+        
+        $this->result_service->expects( $this->once() )
+            ->method( 'apply_to_fixture' )
+            ->with( $fixture, $result, 'Y' );
+            
+        $league->expects( $this->once() )
+            ->method( 'update_standings' )
+            ->with( '2026' );
+            
+        $response = $this->manager->update_result( $fixture, $result, 'Y' );
+        
+        $this->assertContains( Fixture_Update_Status::SAVED, $response->outcomes );
+        $this->assertContains( Fixture_Update_Status::TABLE_UPDATED, $response->outcomes );
+    }
+
+    public function test_update_result_triggers_championship_progression(): void {
+        $fixture = $this->createMock( Fixture::class );
+        $fixture->method( 'get_league_id' )->willReturn( 1 );
+        
+        $result = $this->createMock( Result::class );
+        
+        $league = $this->createMock( League::class );
+        $league->method( 'get_id' )->willReturn( 1 );
+        $league->method( 'get_name' )->willReturn( 'Test Championship' );
+        $league->method( 'get_event_id' )->willReturn( 10 );
+        $league->is_championship = true;
+        
+        $this->league_repository->method( 'find_by_id' )->with( 1 )->willReturn( $league );
+        
+        $this->result_service->expects( $this->once() )
+            ->method( 'apply_to_fixture' )
+            ->with( $fixture, $result, 'Y' );
+            
+        $this->progression_service->expects( $this->once() )
+            ->method( 'progress_winner' )
+            ->with( $this->isInstanceOf( Stage::class ), $fixture, $league );
+            
+        $this->progression_service->expects( $this->once() )
+            ->method( 'handle_consolation' )
+            ->with( $this->isInstanceOf( Stage::class ), $fixture, $league );
+            
+        $response = $this->manager->update_result( $fixture, $result, 'Y' );
+        
+        $this->assertContains( Fixture_Update_Status::SAVED, $response->outcomes );
+        $this->assertContains( Fixture_Update_Status::PROGRESSED, $response->outcomes );
     }
 
     public function test_handle_fixture_result_update_assigns_home_captain(): void {

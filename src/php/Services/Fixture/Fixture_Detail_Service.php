@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Fixture;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -63,10 +64,12 @@ class Fixture_Detail_Service {
                 return null;
             }
 
+            $fixture->rubbers = $fixture->get_rubbers();
+
             [ $league, $event, $competition ] = $this->get_competition_context( (int) $fixture->get_league_id() );
 
-            $home_team = $this->get_team_details_for_fixture( $fixture->get_home_team() );
-            $away_team = $this->get_team_details_for_fixture( $fixture->get_away_team() );
+            $home_team = $this->get_team_details_for_fixture( $fixture->get_home_team(), $league, $fixture->get_season() );
+            $away_team = $this->get_team_details_for_fixture( $fixture->get_away_team(), $league, $fixture->get_season() );
 
             [ $prev_home_match_title, $prev_away_match_title ] = $this->resolve_tournament_placeholders( $fixture, $league, $is_tournament );
 
@@ -75,12 +78,13 @@ class Fixture_Detail_Service {
             $link          = $this->get_match_link( $fixture, $league, $home_team, $away_team );
             $score_display = $this->generate_score_display( $fixture, $event );
             $status_flags  = $this->generate_status_flags( $fixture );
+            $match_title   = $this->generate_match_title( $fixture, $home_team, $away_team, $prev_home_match_title, $prev_away_match_title );
 
         } catch ( Fixture_Not_Found_Exception|League_Not_Found_Exception|Event_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
             throw new Fixture_Not_Found_Exception( $e->getMessage() );
         }
 
-        return new Fixture_Details_DTO( $fixture, $league, $event, $competition, $home_team, $away_team, $prev_home_match_title, $prev_away_match_title, $is_update_allowed, $link, $score_display, $status_flags );
+        return new Fixture_Details_DTO( $fixture, $league, $event, $competition, $home_team, $away_team, $prev_home_match_title, $prev_away_match_title, $is_update_allowed, $link, $score_display, $status_flags, $match_title );
     }
 
     /**
@@ -111,16 +115,21 @@ class Fixture_Detail_Service {
     /**
      * Get team details for a fixture team.
      */
-    private function get_team_details_for_fixture( string|int|null $team_id ): ?object {
+    private function get_team_details_for_fixture( string|int|null $team_id, object $league, string $season ): ?Team_Details_DTO {
         if ( empty( $team_id ) ) {
             return null;
         }
 
-        if ( is_numeric( $team_id ) ) {
-            return $this->team_service->get_team_details( (int) $team_id );
+        $dto = is_numeric( $team_id )
+            ? $this->team_service->get_team_details( (int) $team_id )
+            : $this->team_service->derive_team_details( (string) $team_id );
+
+        if ( $dto && is_numeric( $team_id ) && method_exists( $league, 'get_status' ) ) {
+            $status = $league->get_status( (int) $team_id, $season );
+            $dto->is_withdrawn = ( 'W' === $status );
         }
 
-        return $this->team_service->derive_team_details( (string) $team_id );
+        return $dto;
     }
 
     /**
@@ -377,5 +386,15 @@ class Fixture_Detail_Service {
         }
 
         return $flags;
+    }
+
+    /**
+     * Generate match title for a fixture.
+     */
+    private function generate_match_title( Fixture $fixture, ?object $home_team, ?object $away_team, ?string $prev_home_title, ?string $prev_away_title ): string {
+        $home = $home_team ? $home_team->team->get_name() : ( $prev_home_title ?? __( 'Unknown', 'racketmanager' ) );
+        $away = $away_team ? $away_team->team->get_name() : ( $prev_away_title ?? __( 'Unknown', 'racketmanager' ) );
+
+        return $home . ' v ' . $away;
     }
 }

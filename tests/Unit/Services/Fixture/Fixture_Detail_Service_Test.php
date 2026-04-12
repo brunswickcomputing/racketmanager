@@ -19,6 +19,8 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Domain\Team;
+use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
@@ -67,6 +69,7 @@ class Fixture_Detail_Service_Test extends TestCase {
     }
 
     public function test_get_fixture_with_details_populates_new_fields(): void {
+        $this->configure_default_team_service();
         $fixture_id = 1;
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_league_id' )->willReturn( 10 );
@@ -94,6 +97,11 @@ class Fixture_Detail_Service_Test extends TestCase {
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
+        $default_team = $this->createStub( Team::class );
+        $default_team->method( 'get_name' )->willReturn( 'Unknown' );
+        $this->team_service->method( 'get_team_details' )->willReturn( new Team_Details_DTO( $default_team, null, null ) );
+        $this->team_service->method( 'derive_team_details' )->willReturn( new Team_Details_DTO( $default_team, null, null ) );
+
         $dto = $this->service->get_fixture_with_details( $fixture_id );
 
         $this->assertInstanceOf( Fixture_Details_DTO::class, $dto );
@@ -103,7 +111,49 @@ class Fixture_Detail_Service_Test extends TestCase {
         $this->assertStringContainsString( '2026', $dto->link );
     }
 
+    public function test_get_fixture_with_details_populates_withdrawn_status(): void {
+        $fixture_id = 1;
+        $fixture = $this->createStub( Fixture::class );
+        $fixture->method( 'get_league_id' )->willReturn( 10 );
+        $fixture->method( 'get_season' )->willReturn( '2026' );
+        $fixture->method( 'get_home_team' )->willReturn( '100' );
+        $fixture->method( 'get_away_team' )->willReturn( '200' );
+
+        $league = $this->createMock( League::class );
+        $league->method( 'get_id' )->willReturn( 10 );
+        $league->method( 'get_event_id' )->willReturn( 20 );
+        $league->method( 'get_status' )->willReturnMap([
+            [ 100, '2026', 'W' ], // Home team withdrawn
+            [ 200, '2026', 'A' ], // Away team active
+        ]);
+
+        $event = $this->createStub( Event::class );
+        $event->method( 'get_competition_id' )->willReturn( 30 );
+        $competition = $this->createStub( Competition::class );
+
+        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
+        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+        $home_team_obj = $this->createStub( Team::class );
+        $home_team_dto = new Team_Details_DTO( $home_team_obj, null, null );
+        $away_team_obj = $this->createStub( Team::class );
+        $away_team_dto = new Team_Details_DTO( $away_team_obj, null, null );
+
+        $this->team_service->method( 'get_team_details' )->willReturnMap([
+            [ 100, $home_team_dto ],
+            [ 200, $away_team_dto ],
+        ]);
+
+        $dto = $this->service->get_fixture_with_details( $fixture_id );
+
+        $this->assertTrue( $dto->home_team->is_withdrawn );
+        $this->assertFalse( $dto->away_team->is_withdrawn );
+    }
+
     public function test_generate_score_display_handles_walkover(): void {
+        $this->configure_default_team_service();
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'is_walkover' )->willReturn( true );
         $fixture->method( 'get_home_points' )->willReturn( "10" );
@@ -130,6 +180,7 @@ class Fixture_Detail_Service_Test extends TestCase {
     }
 
     public function test_generate_score_display_handles_set_scores(): void {
+        $this->configure_default_team_service();
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_home_points' )->willReturn( "2" );
         $fixture->method( 'get_away_points' )->willReturn( "1" );
@@ -161,6 +212,7 @@ class Fixture_Detail_Service_Test extends TestCase {
     }
 
     public function test_generate_score_display_handles_implicit_walkover(): void {
+        $this->configure_default_team_service();
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'is_walkover' )->willReturn( false );
         $fixture->method( 'get_home_points' )->willReturn( null );
@@ -186,6 +238,7 @@ class Fixture_Detail_Service_Test extends TestCase {
     }
 
     public function test_generate_score_display_handles_points_based_walkover(): void {
+        $this->configure_default_team_service();
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'is_walkover' )->willReturn( false );
         $fixture->method( 'get_home_points' )->willReturn( "10" );
@@ -207,6 +260,14 @@ class Fixture_Detail_Service_Test extends TestCase {
 
         $dto = $this->service->get_fixture_with_details( 1 );
         $this->assertEquals( 'Walkover', $dto->score_display );
+    }
+
+    private function configure_default_team_service(): void {
+        $default_team = $this->createStub( Team::class );
+        $default_team->method( 'get_name' )->willReturn( 'Unknown' );
+        $default_dto = new Team_Details_DTO( $default_team, null, null );
+        $this->team_service->method( 'get_team_details' )->willReturn( $default_dto );
+        $this->team_service->method( 'derive_team_details' )->willReturn( $default_dto );
     }
 }
 }

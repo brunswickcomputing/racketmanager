@@ -17,6 +17,7 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
@@ -67,6 +68,7 @@ class Shortcodes {
     protected Tournament_Service $tournament_service;
     protected Competition_Entry_Service $competition_entry_service;
     protected Fixture_Service $fixture_service;
+    protected Fixture_Detail_Service $fixture_detail_service;
 
     /**
      * Initialise shortcodes
@@ -103,6 +105,7 @@ class Shortcodes {
         $this->tournament_service        = $c->get( 'tournament_service' );
         $this->competition_entry_service = $c->get( 'competition_entry_service' );
         $this->fixture_service           = $c->get( 'fixture_service' );
+        $this->fixture_detail_service    = $c->get( 'fixture_detail_service' );
     }
 
     /**

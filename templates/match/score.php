@@ -7,14 +7,18 @@
 
 namespace Racketmanager;
 
-/** @var object $match */
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
+
+/** @var Fixture_Details_DTO $dto */
+/** @var Fixture $match */
 /** @var string $score_class */
 /** @var string $link_title */
 /** @var float  $score_team_1 */
 /** @var float  $score_team_2 */
 /** @var bool   $home_away */
 ?>
-<a href="<?php echo esc_html( $match->link ); ?>">
+<a href="<?php echo esc_html( $dto->link ); ?>">
     <span class="score <?php echo esc_attr( $score_class ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $link_title ); ?>">
         <span class="is-team-1"><?php echo esc_html( sprintf( '%g', $score_team_1 ) ); ?></span>
         <?php

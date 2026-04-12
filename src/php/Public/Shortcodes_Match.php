@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use stdClass;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
@@ -42,8 +43,9 @@ class Shortcodes_Match extends Shortcodes {
         $modal    = $args['modal'];
         $valid    = true;
         $msg      = null;
-        $match    = get_match( $match_id );
-        if ( $match ) {
+        $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $match_id );
+        if ( $dto ) {
+            $match = $dto->fixture;
             switch ( $option ) {
                 case 'schedule_match':
                     $title  = __( '(Re)schedule match', 'racketmanager' );
@@ -78,6 +80,7 @@ class Shortcodes_Match extends Shortcodes {
                 return $this->load_template(
                     $filename,
                     array(
+                        'dto'    => $dto,
                         'match'  => $match,
                         'title'  => $title,
                         'modal'  => $modal,
@@ -116,29 +119,30 @@ class Shortcodes_Match extends Shortcodes {
         $status   = $args['status'];
         $template = $args['template'];
         $modal    = $args['modal'];
-        $match    = get_match( $match_id );
-        if ( $match ) {
+        $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $match_id );
+        if ( $dto ) {
+            $match = $dto->fixture;
             if ( empty( $status ) ) {
-                if ( $match->is_walkover ) {
-                    if ( 'home' === $match->walkover ) {
+                if ( $match->is_walkover() ) {
+                    if ( 'home' === $match->get_walkover() ) {
                         $status = 'walkover_player1';
                     } else {
                         $status = 'walkover_player2';
                     }
-                } elseif ( $match->is_retired ) {
-                    if ( 'home' === $match->retired ) {
+                } elseif ( $match->is_retired() ) {
+                    if ( 'home' === $match->get_retired() ) {
                         $status = 'retired_player1';
                     } else {
                         $status = 'retired_player2';
                     }
-                } elseif ( $match->is_shared ) {
+                } elseif ( $match->is_shared() ) {
                     $status = 'share';
                 } else {
                     $status = null;
                 }
             }
-            $home_name      = $match->teams['home']->title;
-            $away_name      = $match->teams['away']->title;
+            $home_name      = $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' );
+            $away_name      = $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' );
             $select         = array();
             $option         = new stdClass();
             $option->value  = 'walkover_player2';
@@ -152,7 +156,7 @@ class Shortcodes_Match extends Shortcodes {
             /* translators: %s: Away team name */
             $option->desc = sprintf( $this->not_played_no_opponent, $away_name );
             $select[]     = $option;
-            if ( $match->league->event->competition->is_player_entry ) {
+            if ( $dto->competition->is_player_entry ) {
                 $option         = new stdClass();
                 $option->value  = 'retired_player1';
                 $option->select = 'retired_player1';
@@ -176,7 +180,7 @@ class Shortcodes_Match extends Shortcodes {
             $option->select = 'share';
             $option->desc   = $this->not_played;
             $select[]       = $option;
-            if ( $match->league->event->competition->is_team_entry ) {
+            if ( $dto->competition->is_team_entry ) {
                 $option         = new stdClass();
                 $option->value  = 'abandoned';
                 $option->select = 'abandoned';
@@ -193,6 +197,7 @@ class Shortcodes_Match extends Shortcodes {
             return $this->load_template(
                 $filename,
                 array(
+                    'dto'    => $dto,
                     'match'  => $match,
                     'status' => $status,
                     'modal'  => $modal,
@@ -230,10 +235,11 @@ class Shortcodes_Match extends Shortcodes {
         $modal     = $args['modal'];
         $rubber    = get_rubber( $rubber_id );
         if ( $rubber ) {
-            $match          = get_match( $rubber->match_id );
-            if ( $match ) {
-                $home_name      = $match->teams['home']->title;
-                $away_name      = $match->teams['away']->title;
+            $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $rubber->match_id );
+            if ( $dto ) {
+                $match          = $dto->fixture;
+                $home_name      = $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' );
+                $away_name      = $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' );
                 $select         = array();
                 $option         = new stdClass();
                 $option->value  = 'walkover_player2';
@@ -296,6 +302,7 @@ class Shortcodes_Match extends Shortcodes {
                 return $this->load_template(
                     $filename,
                     array(
+                        'dto'    => $dto,
                         'match'  => $match,
                         'status' => $status,
                         'modal'  => $modal,
@@ -332,13 +339,15 @@ class Shortcodes_Match extends Shortcodes {
         $match_id = $args['id'];
         $template = $args['template'];
         if ( $match_id ) {
-            $match = get_match( $match_id );
-            if ( $match ) {
-                if ( ! empty( $match->league->num_rubbers ) ) {
+            $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $match_id );
+            if ( $dto ) {
+                $match = $dto->fixture;
+                if ( ! empty( $dto->league->num_rubbers ) ) {
                     $match->rubbers = $match->get_rubbers();
                     $template       = 'rubbers';
                 }
                 $sponsor_html                  = '';
+                $template_args['dto']          = $dto;
                 $template_args['match']        = $match;
                 $template_args['sponsor_html'] = $sponsor_html;
                 $filename                      = ( ! empty( $template ) ) ? 'match-card-' . $template : 'match-card';
@@ -382,14 +391,15 @@ class Shortcodes_Match extends Shortcodes {
         $template    = $args['template'];
         $msg         = null;
         if ( $match_id ) {
-            $match = get_match( $match_id );
-            if ( $match ) {
+            $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $match_id );
+            if ( $dto ) {
+                $match = $dto->fixture;
                 $score_team_1 = null;
                 $score_team_2 = null;
                 // unplayed match.
-                if ( null === $match->home_points && null === $match->away_points ) {
-                    $date      = str_starts_with( $match->date, '0000-00-00' ) ? 'N/A' : mysql2date( 'D d/m/Y', $match->date );
-                    $match_day = isset( $match->match_day ) ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day : '';
+                if ( null === $match->get_home_points() && null === $match->get_away_points() ) {
+                    $date      = str_starts_with( $match->get_date(), '0000-00-00' ) ? 'N/A' : mysql2date( 'D d/m/Y', $match->get_date() );
+                    $match_day = $match->get_match_day() ? __( 'Match Day', 'racketmanager' ) . ' ' . $match->get_match_day() : '';
                     if ( $home_away ) {
                         $output = "<span class='unplayedMatch'>" . $match_day . '<br/>' . $date . '</span><br/>';
                     } else {
@@ -397,29 +407,30 @@ class Shortcodes_Match extends Shortcodes {
                     }
                     return $output;
                     // match at home.
-                } elseif ( strval( $team_id ) === $match->home_team ) {
-                    $score_team_1 = $match->home_points;
-                    $score_team_2 = $match->away_points;
+                } elseif ( strval( $team_id ) === $match->get_home_team() ) {
+                    $score_team_1 = $match->get_home_points();
+                    $score_team_2 = $match->get_away_points();
                     // match away.
-                } elseif ( strval( $opponent_id ) === $match->home_team ) {
-                    $score_team_1 = $match->away_points;
-                    $score_team_2 = $match->home_points;
+                } elseif ( strval( $opponent_id ) === $match->get_home_team() ) {
+                    $score_team_1 = $match->get_away_points();
+                    $score_team_2 = $match->get_home_points();
                 }
                 if ( empty( $msg ) ) {
-                    if ( strval( $team_id ) === $match->winner_id ) {
+                    if ( strval( $team_id ) === (string) $match->get_winner_id() ) {
                         $score_class = 'winner';
-                    } elseif ( strval( $team_id ) === $match->loser_id ) {
+                    } elseif ( strval( $team_id ) === (string) $match->get_loser_id() ) {
                         $score_class = 'loser';
-                    } elseif ( '-1' === $match->winner_id ) {
+                    } elseif ( -1 === $match->get_winner_id() ) {
                         $score_class = 'tie';
                     } else {
                         $score_class = null;
                     }
                     if ( $home_away ) {
-                        $link_title = __( 'Match Day', 'racketmanager' ) . ' ' . $match->match_day;
+                        $link_title = __( 'Match Day', 'racketmanager' ) . ' ' . $match->get_match_day();
                     } else {
                         $link_title = '';
                     }
+                    $template_args['dto']          = $dto;
                     $template_args['match']        = $match;
                     $template_args['score_class']  = $score_class;
                     $template_args['link_title']   = $link_title;
@@ -463,8 +474,10 @@ class Shortcodes_Match extends Shortcodes {
         $edit     = $args['edit'];
         $template = $args['template'];
         if ( $match_id ) {
-            $match = get_match( $match_id );
-            if ( $match ) {
+            $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $match_id );
+            if ( $dto ) {
+                $match                      = $dto->fixture;
+                $template_args['dto']       = $dto;
                 $template_args['match']     = $match;
                 $template_args['edit_mode'] = $edit;
                 $filename               = ! empty( $template ) ? 'match-header-' . $template : 'match-header';
@@ -503,13 +516,14 @@ class Shortcodes_Match extends Shortcodes {
         $player_id = $args['player'];
         $template  = $args['template'];
         if ( $match_id ) {
-            $match = get_match( $match_id );
-            if ( $match ) {
-                if ( '' === $match->final_round ) {
+            $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $match_id );
+            if ( $dto ) {
+                $match = $dto->fixture;
+                if ( null === $match->get_final() ) {
                     $match->round = '';
                     $match->type  = 'league';
                 } else {
-                    $match->round = $match->final_round;
+                    $match->round = $match->get_final();
                     $match->type  = 'tournament';
                 }
                 $match_args = null;
@@ -521,10 +535,11 @@ class Shortcodes_Match extends Shortcodes {
                     }
                 }
                 $match->rubbers = $match->get_rubbers( $match_args );
-                $is_update_allowed                  = $match->is_update_allowed();
+                $is_update_allowed                  = $dto->is_update_allowed;
+                $template_args['dto']               = $dto;
                 $template_args['match']             = $match;
                 $template_args['is_update_allowed'] = $is_update_allowed;
-                if ( ! empty( $match->league->num_rubbers ) ) {
+                if ( ! empty( $dto->league->num_rubbers ) ) {
                     $template = 'teams-scores';
                 }
                 $filename = ! empty( $template ) ? 'detail-' . $template : 'detail';

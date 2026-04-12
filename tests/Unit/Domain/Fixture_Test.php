@@ -53,4 +53,30 @@ final class Fixture_Test extends TestCase {
         $this->assertTrue($fixture->is_cancelled());
         $this->assertFalse($fixture->is_shared());
     }
+
+    public function test_is_pending_reflects_winner_id(): void {
+        $fixture = new Fixture((object)[ 'winner_id' => null ]);
+        $this->assertTrue($fixture->is_pending());
+
+        $fixture = new Fixture((object)[ 'winner_id' => 0 ]);
+        $this->assertTrue($fixture->is_pending());
+
+        $fixture = new Fixture((object)[ 'winner_id' => 123 ]);
+        $this->assertFalse($fixture->is_pending());
+
+        $result = new Result(home_points: 3, away_points: 0, winner_id: 456);
+        $fixture->set_result($result);
+        $this->assertFalse($fixture->is_pending());
+
+        $fixture->reset_result();
+        $this->assertTrue($fixture->is_pending());
+    }
+
+    public function test_start_time_is_set_from_constructor(): void {
+        $fixture = new Fixture((object)[ 'start_time' => '10:00' ]);
+        $this->assertEquals('10:00', $fixture->get_start_time());
+
+        $fixture->set_start_time('11:30');
+        $this->assertEquals('11:30', $fixture->get_start_time());
+    }
 }

@@ -266,6 +266,13 @@ class Fixture {
     public ?string $updated_by = null;
 
     /**
+     * Start time
+     *
+     * @var string|null
+     */
+    public ?string $start_time = null;
+
+    /**
      * Is walkover?
      *
      * @var bool
@@ -306,6 +313,20 @@ class Fixture {
      * @var bool
      */
     public bool $is_cancelled = false;
+
+    /**
+     * Is pending
+     *
+     * @var bool
+     */
+    public bool $is_pending = false;
+
+    /**
+     * Rubbers
+     *
+     * @var array|null
+     */
+    public ?array $rubbers = null;
 
     /**
      * Fixture constructor.
@@ -349,6 +370,7 @@ class Fixture {
         $this->away_captain        = $fixture->away_captain ?? null;
         $this->comments            = $fixture->comments ?? null;
         $this->updated_by          = $fixture->updated_by ?? null;
+        $this->start_time          = $fixture->start_time ?? null;
         $this->set_status_flags();
     }
 
@@ -816,6 +838,20 @@ class Fixture {
     }
 
     /**
+     * @return string|null
+     */
+    public function get_start_time(): ?string {
+        return $this->start_time;
+    }
+
+    /**
+     * @param string|null $start_time
+     */
+    public function set_start_time( ?string $start_time ): void {
+        $this->start_time = $start_time;
+    }
+
+    /**
      * @return bool
      */
     public function is_walkover(): bool {
@@ -858,6 +894,34 @@ class Fixture {
     }
 
     /**
+     * @return bool
+     */
+    public function is_pending(): bool {
+        return $this->is_pending;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function get_walkover(): ?string {
+        return $this->custom['walkover'] ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function get_retired(): ?string {
+        return $this->custom['retired'] ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function get_shared(): ?string {
+        return $this->custom['shared'] ?? null;
+    }
+
+    /**
      * Set status flags
      *
      * @return void
@@ -869,6 +933,8 @@ class Fixture {
         $this->is_abandoned = false;
         $this->is_cancelled = false;
         $this->is_withdrawn = false;
+        $this->is_pending   = empty( $this->winner_id );
+
         if ( ! empty( $this->status ) ) {
             switch ( $this->status ) {
                 case 1:

@@ -7,8 +7,12 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
+
 /** @var object $rubber */
-/** @var object $match */
+/** @var Fixture_Details_DTO $dto */
+/** @var Fixture $match */
 /** @var string $modal */
 /** @var array  $select */
 /** @var string $status */
@@ -19,8 +23,8 @@ namespace Racketmanager;
             <?php wp_nonce_field( 'match-rubber-status', 'racketmanager_nonce' ); ?>
             <input type="hidden" name="rubber_id" value="<?php echo esc_attr( $rubber->id ); ?>" />
             <input type="hidden" name="rubber_number" value="<?php echo esc_attr( $rubber->rubber_number ); ?>" />
-            <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
-            <input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
+            <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->get_home_team() ); ?>" />
+            <input type="hidden" name="away_team" value="<?php echo esc_attr( $match->get_away_team() ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php esc_html_e( 'Score status', 'racketmanager' ); ?> - <?php echo esc_html( $rubber->title ); ?></h4>

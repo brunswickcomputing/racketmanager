@@ -2427,4 +2427,59 @@ class Racketmanager_Match {
         wp_mail( $email_to, $subject, $email_message, $headers );
         return true;
     }
+
+    public function get_id(): int {
+        return $this->id;
+    }
+    public function get_home_team(): string {
+        return $this->home_team;
+    }
+    public function get_away_team(): string {
+        return $this->away_team;
+    }
+    public function get_date(): string {
+        return $this->date;
+    }
+    public function get_match_day(): ?int {
+        return $this->match_day;
+    }
+    public function get_winner_id(): ?string {
+        return $this->winner_id;
+    }
+    public function get_loser_id(): ?string {
+        return $this->loser_id;
+    }
+    public function is_pending(): bool {
+        return $this->is_pending;
+    }
+    public function get_status(): ?int {
+        return $this->status;
+    }
+    public function get_confirmed(): ?string {
+        return $this->confirmed;
+    }
+    public function get_home_points(): ?float {
+        return $this->home_points;
+    }
+    public function get_away_points(): ?float {
+        return $this->away_points;
+    }
+    public function get_start_time(): ?string {
+        return $this->start_time;
+    }
+    public function get_final(): ?string {
+        return $this->final;
+    }
+    public function get_leg(): ?string {
+        return $this->leg;
+    }
+    public function get_custom(): array {
+        return (array) $this->custom;
+    }
+    public function get_season(): string {
+        return $this->season;
+    }
+    public function get_host(): ?string {
+        return $this->host ?? null;
+    }
 }

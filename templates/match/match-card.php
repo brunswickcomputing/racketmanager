@@ -7,28 +7,31 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Util\Util;
 
-/** @var object $match */
+/** @var Fixture_Details_DTO $dto */
+/** @var Fixture $match */
 /** @var object $sponsor_html */
 ?>
 <div id="matchRubbers" class="rubber-block">
     <div id="matchHeader">
-        <div class="leagueTitle"><?php echo esc_html( $match->league->title ); ?></div>
-        <div class="matchDate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
+        <div class="leagueTitle"><?php echo esc_html( $dto->league->title ); ?></div>
+        <div class="matchDate"><?php echo esc_html( substr( $match->get_date(), 0, 10 ) ); ?></div>
         <div class="matchday">
             <?php
-            if ( $match->league->event->competition->is_championship ) {
-                echo esc_html( Util::get_final_name( $match->final_round ) );
+            if ( $dto->competition->is_championship ) {
+                echo esc_html( Util::get_final_name( $match->get_final() ) );
             } else {
-                echo 'Week' . esc_html( $match->match_day );
+                echo 'Week' . esc_html( $match->get_match_day() );
             }
             ?>
         </div>
         <div class="matchTitle">
             <?php
-            if ( ! $match->league->event->competition->is_championship ) {
-                echo esc_html( $match->match_title );
+            if ( ! $dto->competition->is_championship ) {
+                echo esc_html( $dto->match_title );
             }
             ?>
         </div>
@@ -41,18 +44,18 @@ use Racketmanager\Util\Util;
             <thead class="table-dark">
                 <tr>
                     <th style="text-align: center;" colspan="1"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
-                    <th style="text-align: center;" colspan="<?php echo esc_html( $match->league->num_sets ); ?>"><?php esc_html_e( 'Sets', 'racketmanager' ); ?></th>
+                    <th style="text-align: center;" colspan="<?php echo esc_html( $dto->league->num_sets ); ?>"><?php esc_html_e( 'Sets', 'racketmanager' ); ?></th>
                     <th style="text-align: center;" colspan="1"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
                 </tr>
             </thead>
-            <tbody class="rubber-table" id="the-list-rubbers-<?php echo esc_html( $match->id ); ?>" >
+            <tbody class="rubber-table" id="the-list-rubbers-<?php echo esc_html( $match->get_id() ); ?>" >
 
                 <tr class="rtr">
                     <td class="rtd">
-                        <?php echo esc_html( $match->teams['home']->title ); ?>
+                        <?php echo esc_html( $dto->home_team ? $dto->home_team->team->get_name() : '' ); ?>
                     </td>
 
-                    <?php for ( $i = 1; $i <= $match->league->num_sets; $i++ ) { ?>
+                    <?php for ( $i = 1; $i <= $dto->league->num_sets; $i++ ) { ?>
                         <td class="rtd">
                             <label for="set_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Player 1 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" />
                             :
@@ -61,14 +64,14 @@ use Racketmanager\Util\Util;
                     <?php } ?>
 
                     <td class="rtd">
-                        <?php echo esc_html( $match->teams['away']->title ); ?>
+                        <?php echo esc_html( $dto->away_team ? $dto->away_team->team->get_name() : '' ); ?>
                     </td>
                 </tr>
                 <tr>
                     <td class="rtd">
                         <label for="home_sig" class="visually-hidden"><?php esc_html_e( 'Home signature', 'racketmanager' ); ?></label><input class="player" name="home_sig" id="home_sig" placeholder="Home Captain Signature" />
                     </td>
-                    <td colspan="<?php echo intval( $match->league->num_sets ); ?>" class="rtd" style="text-align: center;">
+                    <td colspan="<?php echo intval( $dto->league->num_sets ); ?>" class="rtd" style="text-align: center;">
                         <label for="home_points" class="visually-hidden"><?php esc_html_e( 'Home points', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="home_points" name="home_points" />
                         :
                         <label for="away_points" class="visually-hidden"><?php esc_html_e( 'Away points', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="away_points" name="away_points" />

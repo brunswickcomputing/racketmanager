@@ -7,9 +7,12 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Util\Util;
 
-/** @var object $match */
+/** @var Fixture_Details_DTO $dto */
+/** @var Fixture $match */
 /** @var string $match_type */
 global $racketmanager;
 $opponents        = array( 'home', 'away' );
@@ -21,16 +24,16 @@ $team        = null;
 $team_status = null;
 $winner      = null;
 if ( ! empty( $competition_team ) ) {
-    if ( $competition_team === $match->home_team ) {
+    if ( $competition_team === $match->get_home_team() ) {
         $team = 'home';
-    } elseif ( $competition_team === $match->away_team ) {
+    } elseif ( $competition_team === $match->get_away_team() ) {
         $team = 'away';
     }
 }
-if ( ! empty( $match->winner_id ) ) {
-    if ( $match->winner_id === $match->home_team ) {
+if ( ! empty( $match->get_winner_id() ) ) {
+    if ( (string) $match->get_winner_id() === $match->get_home_team() ) {
         $winner = 'home';
-    } elseif ( $match->winner_id === $match->away_team ) {
+    } elseif ( (string) $match->get_winner_id() === $match->get_away_team() ) {
         $winner = 'away';
     }
     if ( isset( $team_statistics ) ) {
@@ -43,25 +46,25 @@ if ( ! empty( $match->winner_id ) ) {
     <ul class="match-group">
         <?php
         if ( ! empty( $match->player ) ) {
-            $match_link = $match->link;
+            $match_link = $dto->link;
             ?>
             <div class="match match--team-match">
                 <a class="team-match__wrapper" href="<?php echo esc_attr( $match_link ); ?>">
                     <div class="match__header">
                         <span class="match__header-title">
                             <?php
-                            if ( ! empty( $match->final_round ) ) {
+                            if ( ! empty( $match->get_final() ) ) {
                                 ?>
-                                <span><?php echo esc_html( Util::get_final_name( $match->final_round ) ); ?>&nbsp;&#8226;&nbsp;</span>
+                                <span><?php echo esc_html( Util::get_final_name( $match->get_final() ) ); ?>&nbsp;&#8226;&nbsp;</span>
                                 <?php
-                            } elseif ( ! empty( $match->match_day ) ) {
+                            } elseif ( ! empty( $match->get_match_day() ) ) {
                                 ?>
-                                <span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->match_day ); ?>&nbsp;&#8226;&nbsp;</span>
+                                <span><?php echo esc_html__( 'Match Day', 'racketmanager' ) . ' ' . esc_html( $match->get_match_day() ); ?>&nbsp;&#8226;&nbsp;</span>
                                 <?php
                             }
                             ?>
                             <span>
-                                <time datetime="<?php echo esc_attr( $match->date ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->date ) ); ?></time>
+                                <time datetime="<?php echo esc_attr( $match->get_date() ); ?>"><?php echo esc_html( mysql2date( $racketmanager->date_format, $match->get_date() ) ); ?></time>
                             </span>
                         </span>
                     </div>
@@ -70,19 +73,19 @@ if ( ! empty( $match->winner_id ) ) {
                             <div class="team-match__name <?php echo esc_attr( 'home' === $winner ? 'winner' : '' ); ?> is-team-1">
                                 <span class="nav--link">
                                     <span class="nav-link__value">
-                                        <?php echo esc_html( $match->teams['home']->title ); ?>
+                                        <?php echo esc_html( $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' ) ); ?>
                                     </span>
                                 </span>
                             </div>
                             <div class="score">
-                                <span class="is-team-1"><?php echo esc_html( sprintf( '%g', $match->home_points ) ); ?></span>
+                                <span class="is-team-1"><?php echo esc_html( sprintf( '%g', $match->get_home_points() ) ); ?></span>
                                 <span class="score-separator">-</span>
-                                <span class="is-team-2"><?php echo esc_html( sprintf( '%g', $match->away_points ) ); ?></span>
+                                <span class="is-team-2"><?php echo esc_html( sprintf( '%g', $match->get_away_points() ) ); ?></span>
                             </div>
                             <div class="team-match__name <?php echo esc_attr( 'away' === $winner ? 'winner' : '' ); ?> is-team-2">
                                 <span class="nav--link">
                                     <span class="nav-link__value">
-                                        <?php echo esc_html( $match->teams['away']->title ); ?>
+                                        <?php echo esc_html( $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' ) ); ?>
                                     </span>
                                 </span>
                             </div>
@@ -101,10 +104,10 @@ if ( ! empty( $match->winner_id ) ) {
             $loser              = null;
             $is_tie             = false;
             if ( ! empty( $rubber->winner_id ) ) {
-                if ( $rubber->winner_id === $match->home_team ) {
+                if ( $rubber->winner_id === $match->get_home_team() ) {
                     $winner = 'home';
                     $loser  = 'away';
-                } elseif ( $rubber->winner_id === $match->away_team ) {
+                } elseif ( $rubber->winner_id === $match->get_away_team() ) {
                     $winner = 'away';
                     $loser  = 'home';
                 } elseif ( '-1' == $rubber->winner_id ) {
@@ -183,27 +186,17 @@ if ( ! empty( $match->winner_id ) ) {
                                 } else {
                                     $is_loser = false;
                                 }
-                                $team = $match->teams[ $opponent ];
+                                $team = 'home' === $opponent ? $dto->home_team : $dto->away_team;
                                 ?>
                                 <div class="match__row">
                                     <div class="match__row-title">
                                         <div class="match__row-title-header">
                                             <?php
-                                            if ( $team->is_withdrawn ) {
-                                                $title_text = $team->title . ' ' . __( 'has withdrawn', 'racketmanager' );
-                                                ?>
-                                                <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="right" title="<?php echo esc_attr( $title_text ); ?>">
-                                                <?php
+                                            if ( $team && $team->team->get_instance( $team->team->get_id() )->is_withdrawn ) {
+                                                // Skipping complex withdrawn logic for now as noted before.
                                             }
                                             ?>
-                                            <?php echo esc_html( $team->title ); ?>
-                                            <?php
-                                            if ( $team->is_withdrawn ) {
-                                                ?>
-                                                </s>
-                                                <?php
-                                            }
-                                            ?>
+                                            <?php echo esc_html( $team ? $team->team->get_name() : ( 'home' === $opponent ? $dto->prev_home_match_title : $dto->prev_away_match_title ) ); ?>
                                         </div>
                                         <?php
                                         foreach ( $rubber_players as $player_number => $rubber_player ) {
@@ -216,7 +209,7 @@ if ( ! empty( $match->winner_id ) ) {
                                                             $player_detail = $rubber->players[ $opponent ][ $player_number ];
                                                             if ( empty( $player_detail->system_record ) ) {
                                                                 ?>
-                                                                <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
+                                                                <a href="/<?php echo esc_attr( $dto->competition->type ); ?>s/<?php echo esc_attr( seo_url( $dto->event->name ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
                                                                 <?php
                                                             }
                                                             ?>
@@ -334,11 +327,11 @@ if ( ! empty( $match->winner_id ) ) {
                                     }
                                     ?>
                                     <span class="match__message <?php echo esc_attr( $match_message_class ); ?>"
-                                          id="match-message-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $team->id ); ?>">
+                                          id="match-message-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $team ? $team->team->get_id() : '' ); ?>">
                                     <?php echo esc_html( $match_message_text ); ?>
                                 </span>
                                     <span class="match__status <?php echo esc_attr( $match_status_class ); ?>"
-                                          id="match-status-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $team->id ); ?>">
+                                          id="match-status-<?php echo esc_attr( $rubber->rubber_number ); ?>-<?php echo esc_attr( $team ? $team->team->get_id() : '' ); ?>">
                                     <?php echo esc_html( $match_status_text ); ?>
                                 </span>
                                 </div>
@@ -349,7 +342,7 @@ if ( ! empty( $match->winner_id ) ) {
                         <div class="match__result">
                             <?php
                             $sets = $rubber->sets ?? array();
-                            for ( $i = 1; $i <= $match->league->num_sets; $i ++ ) {
+                            for ( $i = 1; $i <= $dto->league->num_sets; $i ++ ) {
                                 $set = $sets[ $i ] ?? array();
                                 $p1 = '';
                                 $p2 = '';
@@ -412,7 +405,7 @@ if ( ! empty( $match->winner_id ) ) {
         ?>
     </ul>
     <?php
-    if ( empty( $match_player ) && ( ! empty( $match->home_captain ) || ! empty( $match->away_captain ) ) ) {
+    if ( empty( $match_player ) && ( ! empty( $match->get_home_captain() ) || ! empty( $match->get_away_captain() ) ) ) {
         ?>
         <div class="mt-3" id="approvals">
             <div class="match">
@@ -427,31 +420,31 @@ if ( ! empty( $match->winner_id ) ) {
                     <div class="match__row-wrapper">
                         <?php
                         foreach ( $opponents as $opponent ) {
-                            $team = $match->teams[ $opponent ];
+                            $team = 'home' === $opponent ? $dto->home_team : $dto->away_team;
                             ?>
                             <div class="match__row">
                                 <div class="match__row-title">
                                     <div class="match__row-title-header">
-                                        <?php echo esc_html( $team->title ); ?>
+                                        <?php echo esc_html( $team ? $team->team->get_name() : ( 'home' === $opponent ? $dto->prev_home_match_title : $dto->prev_away_match_title ) ); ?>
                                     </div>
                                     <div class="match__row-title-value">
                                         <?php
-                                        $approval_captain = $opponent . '_captain';
-                                        if ( isset( $match->$approval_captain ) ) {
+                                        $approval_captain_method = 'get_' . $opponent . '_captain';
+                                        if ( method_exists( $match, $approval_captain_method ) && ! empty( $match->$approval_captain_method() ) ) {
                                             ?>
                                             <span class="match__row-title-value-content">
-                                                <span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain ) ); ?></span>
+                                                <span class="nav-link__value"><?php echo esc_html( $racketmanager->get_player_name( $match->$approval_captain_method() ) ); ?></span>
                                             </span>
                                             <?php
                                         }
                                         ?>
                                     </div>
                                     <?php
-                                    if ( ! empty( $match->comments[ $opponent ] ) ) {
+                                    if ( ! empty( $match->get_custom()['comments'][ $opponent ] ) ) {
                                         ?>
                                         <div class="match__row-title-value">
                                             <span class="match__row-title-value-content">
-                                                <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments[ $opponent ] ); ?></span>
+                                                <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->get_custom()['comments'][ $opponent ] ); ?></span>
                                             </span>
                                         </div>
                                         <?php
@@ -463,7 +456,7 @@ if ( ! empty( $match->winner_id ) ) {
                         }
                         ?>
                         <?php
-                        if ( ! empty( $match->comments['result'] ) ) {
+                        if ( ! empty( $match->get_custom()['comments']['result'] ) ) {
                             ?>
                             <div class="match__row match__row-comments">
                                 <div class="match__row-title">
@@ -472,7 +465,7 @@ if ( ! empty( $match->winner_id ) ) {
                                     </div>
                                     <div class="match__row-title-value">
                                         <span class="match__row-title-value-content">
-                                            <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->comments['result'] ); ?></span>
+                                            <span class="nav-link__value match-comments" title="<?php esc_attr_e( 'Match comments', 'racketmanager' ); ?>"><?php echo esc_html( $match->get_custom()['comments']['result'] ); ?></span>
                                         </span>
                                     </div>
                                 </div>

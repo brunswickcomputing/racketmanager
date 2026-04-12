@@ -7,7 +7,11 @@
 
 namespace Racketmanager;
 
-/** @var object $match */
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
+
+/** @var Fixture_Details_DTO $dto */
+/** @var Fixture $match */
 /** @var string $modal */
 /** @var string $title */
 /** @var string $option */
@@ -18,9 +22,9 @@ namespace Racketmanager;
     <div class="modal-content">
         <form id="match-option" class="" action="#" method="post">
             <?php wp_nonce_field( 'match-option', 'racketmanager_nonce' ); ?>
-            <input type="hidden" name="match_id" value="<?php echo esc_attr( $match->id ); ?>" />
-            <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
-            <input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
+            <input type="hidden" name="match_id" value="<?php echo esc_attr( $match->get_id() ); ?>" />
+            <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->get_home_team() ); ?>" />
+            <input type="hidden" name="away_team" value="<?php echo esc_attr( $match->get_away_team() ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php echo esc_html( $title ); ?></h4>
@@ -31,12 +35,12 @@ namespace Racketmanager;
                     <?php
                     require_once RACKETMANAGER_PATH . 'templates/includes/matches-teams-match.php';
                     if ( 'schedule_match' === $option ) {
-                        if ( empty( $match->start_time ) ) {
+                        if ( empty( $match->get_start_time() ) ) {
                             $date_input_type = 'date';
-                            $date_input      = substr( $match->date, 0, 10 );
+                            $date_input      = substr( $match->get_date(), 0, 10 );
                         } else {
                             $date_input_type = 'datetime-local';
-                            $date_input      = $match->date;
+                            $date_input      = $match->get_date();
                         }
                         ?>
                         <div class="strike mb-3">
@@ -95,7 +99,7 @@ namespace Racketmanager;
                             $data_action = 'reset-match-result';
                         }
                     ?>
-                    <button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $data_action ); ?>" data-is-tournament="<?php echo empty( $match->league->event->competition->is_tournament ) ? 'false' : 'true'; ?>"><?php echo esc_html( $button ); ?></button>
+                    <button type="button" class="btn btn-primary" id="actionButton" data-action="<?php echo esc_attr( $data_action ); ?>" data-is-tournament="<?php echo empty( $dto->competition->is_tournament ) ? 'false' : 'true'; ?>"><?php echo esc_html( $button ); ?></button>
                     <?php
                 }
                 ?>

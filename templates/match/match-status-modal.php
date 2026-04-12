@@ -7,7 +7,11 @@
 
 namespace Racketmanager;
 
-/** @var object $match */
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
+use Racketmanager\Domain\Fixture\Fixture;
+
+/** @var Fixture_Details_DTO $dto */
+/** @var Fixture $match */
 /** @var string $modal */
 /** @var array  $select */
 /** @var string $status */
@@ -16,9 +20,9 @@ namespace Racketmanager;
     <div class="modal-content">
         <form id="match-status" class="" action="#" method="post">
             <?php wp_nonce_field( 'match-status', 'racketmanager_nonce' ); ?>
-            <input type="hidden" name="match_id" value="<?php echo esc_attr( $match->id ); ?>" />
-            <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->home_team ); ?>" />
-            <input type="hidden" name="away_team" value="<?php echo esc_attr( $match->away_team ); ?>" />
+            <input type="hidden" name="match_id" value="<?php echo esc_attr( $match->get_id() ); ?>" />
+            <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->get_home_team() ); ?>" />
+            <input type="hidden" name="away_team" value="<?php echo esc_attr( $match->get_away_team() ); ?>" />
             <input type="hidden" name="modal" value="<?php echo esc_attr( $modal ); ?>" />
             <div class="modal-header modal__header">
                 <h4 class="modal-title"><?php esc_html_e( 'Match status', 'racketmanager' ); ?></h4>
@@ -58,7 +62,7 @@ namespace Racketmanager;
                                         </dl>
                                     </li>
                                     <?php
-                                    if ( ! $match->league->num_rubbers ) {
+                                    if ( ! $dto->league->num_rubbers ) {
                                         ?>
                                         <li class="list__item">
                                             <dl>
@@ -82,7 +86,7 @@ namespace Racketmanager;
                                         </dl>
                                     </li>
                                     <?php
-                                    if ( $match->league->event->competition->is_team_entry ) {
+                                    if ( $dto->competition->is_team_entry ) {
                                         ?>
                                         <li class="list__item">
                                             <dl>

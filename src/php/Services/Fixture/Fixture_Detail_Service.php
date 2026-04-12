@@ -31,8 +31,8 @@ class Fixture_Detail_Service {
     private Team_Service $team_service;
     private Fixture_Permission_Service $permission_service;
 
-    public function __construct( 
-        Repository_Provider $repository_provider, 
+    public function __construct(
+        Repository_Provider $repository_provider,
         Competition_Service $competition_service,
         Team_Service $team_service,
         Fixture_Permission_Service $permission_service
@@ -78,7 +78,7 @@ class Fixture_Detail_Service {
             $link          = $this->get_fixture_link( $fixture, $league, $home_team, $away_team );
             $score_display = $this->generate_score_display( $fixture, $event );
             $status_flags  = $this->generate_status_flags( $fixture );
-            $fixture_title   = $this->generate_fixture_title( $fixture, $home_team, $away_team, $prev_home_fixture_title, $prev_away_fixture_title );
+            $fixture_title = $this->generate_fixture_title( $home_team, $away_team, $prev_home_fixture_title, $prev_away_fixture_title );
 
         } catch ( Fixture_Not_Found_Exception|League_Not_Found_Exception|Event_Not_Found_Exception|Competition_Not_Found_Exception $e ) {
             throw new Fixture_Not_Found_Exception( $e->getMessage() );
@@ -193,18 +193,13 @@ class Fixture_Detail_Service {
      * Resolve the placeholder title for a final round.
      */
     private function resolve_final_placeholder_title( array $team, string $season, object $league ): ?string {
-        $args = [
-            'final'   => $team[1],
-            'season'  => $season,
-            'orderby' => [ 'id' => 'ASC' ],
-        ];
-
+        $leg     = null;
         $seasons = $league->get_seasons();
         if ( ! empty( $seasons[ $season ]['home_away'] ) ) {
-            $args['leg'] = '2';
+            $leg = 2;
         }
 
-        $prev_fixtures = $league->get_matches( $args );
+        $prev_fixtures = $this->fixture_repository->find_by_league_and_final( (int) $league->get_id(), $season, (string) $team[1], $leg );
         if ( ! $prev_fixtures ) {
             return $this->build_standard_placeholder_title( $team );
         }
@@ -217,13 +212,8 @@ class Fixture_Detail_Service {
      */
     private function resolve_placeholder_from_previous_fixture( array $team, string $season, object $league, array $prev_fixtures ): ?string {
         $fixture_ref  = (int) ( $team[2] ?? 1 ) - 1;
-        $prev_fixture_raw = $prev_fixtures[ $fixture_ref ] ?? null;
+        $prev_fixture = $prev_fixtures[ $fixture_ref ] ?? null;
 
-        if ( ! $prev_fixture_raw ) {
-            return null;
-        }
-
-        $prev_fixture = $this->fixture_repository->find_by_id( $prev_fixture_raw->id );
         if ( ! $prev_fixture ) {
             return null;
         }
@@ -391,7 +381,7 @@ class Fixture_Detail_Service {
     /**
      * Generate fixture title for a fixture.
      */
-    private function generate_fixture_title( Fixture $fixture, ?object $home_team, ?object $away_team, ?string $prev_home_title, ?string $prev_away_title ): string {
+    private function generate_fixture_title( ?object $home_team, ?object $away_team, ?string $prev_home_title, ?string $prev_away_title ): string {
         $home = $home_team ? $home_team->team->get_name() : ( $prev_home_title ?? __( 'Unknown', 'racketmanager' ) );
         $away = $away_team ? $away_team->team->get_name() : ( $prev_away_title ?? __( 'Unknown', 'racketmanager' ) );
 

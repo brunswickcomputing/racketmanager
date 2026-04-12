@@ -119,8 +119,8 @@ class Knockout_Progression_Service
         $this->update_fixture_team($next_fixture, $is_home, (string)$winner_id);
         $this->fixture_repository->save($next_fixture);
 
-        if ($next_fixture->get_linked_match()) {
-            $linked_fixture = $this->fixture_repository->find_by_id($next_fixture->get_linked_match());
+        if ($next_fixture->get_linked_fixture()) {
+            $linked_fixture = $this->fixture_repository->find_by_id($next_fixture->get_linked_fixture());
             if ($linked_fixture) {
                 $this->update_fixture_team($linked_fixture, $is_home, (string)$winner_id);
                 $this->fixture_repository->save($linked_fixture);
@@ -129,7 +129,7 @@ class Knockout_Progression_Service
 
         // Notify teams if both teams are now set
         if ($this->notification_service && is_numeric($next_fixture->get_home_team()) && is_numeric($next_fixture->get_away_team())) {
-            $this->notification_service->send_next_match_notification($next_fixture);
+            $this->notification_service->send_next_fixture_notification($next_fixture);
         }
 
         // Special case for third place playoff
@@ -175,7 +175,7 @@ class Knockout_Progression_Service
         $this->fixture_repository->save($third_fixture);
 
         if ($this->notification_service && is_numeric($third_fixture->get_home_team()) && is_numeric($third_fixture->get_away_team())) {
-            $this->notification_service->send_next_match_notification($third_fixture);
+            $this->notification_service->send_next_fixture_notification($third_fixture);
         }
     }
 
@@ -306,7 +306,7 @@ class Knockout_Progression_Service
                 $this->fixture_repository->save($c_fixture);
 
                 if ($this->notification_service && is_numeric($c_fixture->get_home_team()) && is_numeric($c_fixture->get_away_team())) {
-                    $this->notification_service->send_next_match_notification($c_fixture);
+                    $this->notification_service->send_next_fixture_notification($c_fixture);
                 }
             }
         }
@@ -380,8 +380,8 @@ class Knockout_Progression_Service
         $this->update_fixture_team($next_fixture, $is_home, $placeholder);
         $repository->save($next_fixture);
 
-        if ($next_fixture->get_linked_match()) {
-            $linked_fixture = $repository->find_by_id($next_fixture->get_linked_match());
+        if ($next_fixture->get_linked_fixture()) {
+            $linked_fixture = $repository->find_by_id($next_fixture->get_linked_fixture());
             if ($linked_fixture) {
                 $this->update_fixture_team($linked_fixture, $is_home, $placeholder);
                 $repository->save($linked_fixture);

@@ -25,32 +25,32 @@ readonly class Fixture_Details_DTO {
     public Competition $competition;
     public ?Team_Details_DTO $home_team;
     public ?Team_Details_DTO $away_team;
-    public ?string $prev_home_match_title;
-    public ?string $prev_away_match_title;
+    public ?string $prev_home_fixture_title;
+    public ?string $prev_away_fixture_title;
     public ?object $is_update_allowed;
     public string $link;
     public ?string $score_display;
     public array $status_flags;
-    public string $match_title;
+    public string $fixture_title;
 
     /**
      * Fixture_Details_DTO constructor.
      *
      */
-    public function __construct( Fixture $fixture, League $league, Event $event, Competition $competition, ?Team_Details_DTO $home_team = null, ?Team_Details_DTO $away_team = null, ?string $prev_home_match_title = null, ?string $prev_away_match_title = null, ?object $is_update_allowed = null, string $link = '', ?string $score_display = null, array $status_flags = array(), string $match_title = '' ) {
-        $this->fixture                = $fixture;
-        $this->league                 = $league;
-        $this->event                  = $event;
-        $this->competition            = $competition;
-        $this->home_team              = $home_team;
-        $this->away_team              = $away_team;
-        $this->prev_home_match_title  = $prev_home_match_title;
-        $this->prev_away_match_title  = $prev_away_match_title;
-        $this->is_update_allowed      = $is_update_allowed;
-        $this->link                   = $link;
-        $this->score_display          = $score_display;
-        $this->status_flags           = $status_flags;
-        $this->match_title            = $match_title;
+    public function __construct( Fixture $fixture, League $league, Event $event, Competition $competition, ?Team_Details_DTO $home_team = null, ?Team_Details_DTO $away_team = null, ?string $prev_home_fixture_title = null, ?string $prev_away_fixture_title = null, ?object $is_update_allowed = null, string $link = '', ?string $score_display = null, array $status_flags = array(), string $fixture_title = '' ) {
+        $this->fixture                 = $fixture;
+        $this->league                  = $league;
+        $this->event                   = $event;
+        $this->competition             = $competition;
+        $this->home_team               = $home_team;
+        $this->away_team               = $away_team;
+        $this->prev_home_fixture_title = $prev_home_fixture_title;
+        $this->prev_away_fixture_title = $prev_away_fixture_title;
+        $this->is_update_allowed       = $is_update_allowed;
+        $this->link                    = $link;
+        $this->score_display           = $score_display;
+        $this->status_flags            = $status_flags;
+        $this->fixture_title           = $fixture_title;
     }
 
 }

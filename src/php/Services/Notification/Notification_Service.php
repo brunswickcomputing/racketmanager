@@ -105,11 +105,11 @@ class Notification_Service {
      * Send result notification for a fixture.
      *
      * @param Fixture $fixture
-     * @param string $match_status
-     * @param string $match_message
-     * @param string|false $match_updated_by
+     * @param string $fixture_status
+     * @param string $fixture_message
+     * @param string|false $fixture_updated_by
      */
-    public function send_result_notification( Fixture $fixture, string $match_status, string $match_message, string|false $match_updated_by = false ): void {
+    public function send_result_notification( Fixture $fixture, string $fixture_status, string $fixture_message, string|false $fixture_updated_by = false ): void {
         $league = $this->league_repository->find_by_id( $fixture->get_league_id() );
         if ( ! $league ) {
             return;
@@ -136,14 +136,14 @@ class Notification_Service {
         }
 
         $headers = array();
-        // Match title construction
+        // Fixture title construction
         $home_team = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
         $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
-        $match_title = $this->get_match_title( $home_team, $away_team );
+        $fixture_title = $this->get_fixture_title( $home_team, $away_team );
 
-        $subject = $this->app->site_name . ' - ' . $league->title . ' - ' . $match_title . ' - ' . $match_message;
+        $subject = $this->app->site_name . ' - ' . $league->title . ' - ' . $fixture_title . ' - ' . $fixture_message;
 
-        $confirmation_email = $this->get_confirmation_email( $fixture, $match_status, (string) $match_updated_by, $result_notification );
+        $confirmation_email = $this->get_confirmation_email( $fixture, $fixture_status, (string) $fixture_updated_by, $result_notification );
 
         if ( $confirmation_email ) {
             $email_to  = $confirmation_email;
@@ -161,13 +161,13 @@ class Notification_Service {
             $email_to  = $admin_email;
             $headers[] = $this->app->get_from_user_email();
 
-            if ( 'Y' === $match_status ) {
+            if ( 'Y' === $fixture_status ) {
                 // To replace has_result_check(), we'd need to migrate that logic too.
                 // For now, let's see if we can use the fixture status or similar.
                 // In legacy, it checked a separate results_checker table.
                 $message_args['complete'] = true;
-                $subject                 .= ' - ' . __( 'Match complete', 'racketmanager' );
-            } elseif ( 'C' === $match_status ) {
+                $subject                 .= ' - ' . __( 'Fixture complete', 'racketmanager' );
+            } elseif ( 'C' === $fixture_status ) {
                 $message_args['challenge'] = true;
             }
             $message = result_notification( $fixture->get_id(), $message_args );
@@ -180,12 +180,12 @@ class Notification_Service {
      * Send a result error/penalty notification.
      *
      * @param Results_Checker $checker
-     * @param Fixture         $match
+     * @param Fixture         $fixture
      * @param float           $penalty
      */
-    public function send_result_error_notification( Results_Checker $checker, Fixture $match, float $penalty ): void {
+    public function send_result_error_notification( Results_Checker $checker, Fixture $fixture, float $penalty ): void {
         $organisation_name = $this->app->site_name;
-        $league            = $this->league_repository->find_by_id( $match->get_league_id() );
+        $league            = $this->league_repository->find_by_id( $fixture->get_league_id() );
         if ( ! $league ) {
             return;
         }
@@ -194,24 +194,24 @@ class Notification_Service {
         $headers    = array( 'From: ' . $organisation_name . ' <' . $email_from . '>' );
 
         $subject = sprintf(
-            /* translators: 1: organisation name, 2: match title */
+            /* translators: 1: organisation name, 2: fixture title */
             __( '[%1$s] Result Error: %2$s', 'racketmanager' ),
             $organisation_name,
-            $match->match_title
+            $fixture->fixture_title
         );
 
         $message = sprintf(
-            /* translators: 1: match title, 2: description, 3: penalty */
+            /* translators: 1: fixture title, 2: description, 3: penalty */
             __( "The result for %1\$s has been flagged with the following error:\n\n%2\$s\n\nA penalty of %3\$s points has been applied.", 'racketmanager' ),
-            $match->match_title,
+            $fixture->fixture_title,
             $checker->description,
             $penalty
         );
 
         $emails = array();
-        $team_id = (int) $match->get_home_team();
+        $team_id = (int) $fixture->get_home_team();
         if ( $team_id > 0 ) {
-            $captain_email = $this->get_team_captain_email( $team_id, (int) $league->id, (int) $match->get_season() );
+            $captain_email = $this->get_team_captain_email( $team_id, (int) $league->id, (int) $fixture->get_season() );
             if ( $captain_email ) {
                 $emails[] = $captain_email;
             }
@@ -225,8 +225,8 @@ class Notification_Service {
             }
         }
 
-        if ( empty( $emails ) && ! empty( $match->home_captain ) ) {
-            $user_info = get_userdata( $match->home_captain );
+        if ( empty( $emails ) && ! empty( $fixture->home_captain ) ) {
+            $user_info = get_userdata( $fixture->home_captain );
             if ( $user_info ) {
                 $emails[] = $user_info->user_email;
             }
@@ -244,7 +244,7 @@ class Notification_Service {
      * @param object|null $away_team
      * @return string
      */
-    private function get_match_title( ?object $home_team, ?object $away_team ): string {
+    private function get_fixture_title( ?object $home_team, ?object $away_team ): string {
         return ( $home_team && $away_team ) ? $home_team->get_name() . ' v ' . $away_team->get_name() : '';
     }
 
@@ -274,7 +274,7 @@ class Notification_Service {
         }
 
         if ( ! empty( $email_to ) ) {
-            $email_subject = __( 'Match result pending', 'racketmanager' ) . ' - ' . $data['match_title'] . ' - ' . $data['league']->title;
+            $email_subject = __( 'Fixture result pending', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $data['league']->title;
             $email_message = result_outstanding_notification( $fixture->get_id(), $args );
             wp_mail( $email_to, $email_subject, $email_message, $data['headers'] );
         }
@@ -292,10 +292,10 @@ class Notification_Service {
             return;
         }
 
-        $email_to         = array();
-        $match_updated_by = $fixture->get_updated_by();
-        $opponent_team_id = 'home' === $match_updated_by ? (int) $fixture->get_away_team() : (int) $fixture->get_home_team();
-        $opponent_team    = $this->team_repository->find_by_id( $opponent_team_id );
+        $email_to           = array();
+        $fixture_updated_by = $fixture->get_updated_by();
+        $opponent_team_id   = 'home' === $fixture_updated_by ? (int) $fixture->get_away_team() : (int) $fixture->get_home_team();
+        $opponent_team      = $this->team_repository->find_by_id( $opponent_team_id );
 
         if ( $opponent_team ) {
             $captain_email = $this->get_team_captain_email( (int) $opponent_team->get_id(), (int) $data['league']->id, (int) $fixture->get_season() );
@@ -310,7 +310,7 @@ class Notification_Service {
         }
 
         if ( ! empty( $email_to ) ) {
-            $email_subject = __( 'Match result approval', 'racketmanager' ) . ' - ' . $data['match_title'] . ' - ' . $data['league']->title;
+            $email_subject = __( 'Fixture result approval', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $data['league']->title;
             $email_message = captain_result_notification( $fixture->get_id(), $args );
             wp_mail( $email_to, $email_subject, $email_message, $data['headers'] );
         }
@@ -340,15 +340,15 @@ class Notification_Service {
 
         $home_team = $this->team_repository->find_by_id( (int) $fixture->get_home_team() );
         $away_team = $this->team_repository->find_by_id( (int) $fixture->get_away_team() );
-        $match_title = $this->get_match_title( $home_team, $away_team );
+        $fixture_title = $this->get_fixture_title( $home_team, $away_team );
 
         return array(
-            'league'      => $league,
-            'admin_email' => $admin_email,
-            'headers'     => $headers,
-            'home_team'   => $home_team,
-            'away_team'   => $away_team,
-            'match_title' => $match_title,
+            'league'        => $league,
+            'admin_email'   => $admin_email,
+            'headers'       => $headers,
+            'home_team'     => $home_team,
+            'away_team'     => $away_team,
+            'fixture_title' => $fixture_title,
         );
     }
 
@@ -470,7 +470,7 @@ class Notification_Service {
      * @param Fixture $fixture
      * @return void
      */
-    public function send_next_match_notification( Fixture $fixture ): void {
+    public function send_next_fixture_notification( Fixture $fixture ): void {
         $base_data = $this->prepare_notification_base_data( $fixture );
         if ( ! $base_data ) {
             return;
@@ -499,7 +499,7 @@ class Notification_Service {
         }
 
         $email_message = match_notification( $fixture->get_id(), $message_args );
-        $subject       = __( 'Match Details', 'racketmanager' ) . ( $round_name ? ' - ' . $round_name : '' );
+        $subject       = __( 'Fixture Details', 'racketmanager' ) . ( $round_name ? ' - ' . $round_name : '' );
 
         if ( $fixture->get_leg() ) {
             $subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $fixture->get_leg();
@@ -532,7 +532,7 @@ class Notification_Service {
         }
 
         $message_args = array(
-            'match'            => $fixture->get_id(),
+            'fixture'          => $fixture->get_id(),
             'round'            => $round_name,
             'new_date'         => $fixture->get_date(),
             'original_date'    => $fixture->get_date_original(),
@@ -550,7 +550,7 @@ class Notification_Service {
             $delay                  = true;
         }
 
-        $subject = __( 'Match Date Change', 'racketmanager' );
+        $subject = __( 'Fixture Date Change', 'racketmanager' );
         if ( $delay ) {
             $subject .= ' ' . __( 'DELAY', 'racketmanager' );
         }
@@ -594,14 +594,14 @@ class Notification_Service {
             return;
         }
 
-        $match_title = $home_team->get_name() . ' v ' . $away_team->get_name();
-        $subject     = $racketmanager->site_name . ' - ' . $league->title . ' - ' . $match_title . ' - ' . __( 'Team withdrawn', 'racketmanager' );
+        $fixture_title = $home_team->get_name() . ' v ' . $away_team->get_name();
+        $subject       = $racketmanager->site_name . ' - ' . $league->title . ' - ' . $fixture_title . ' - ' . __( 'Team withdrawn', 'racketmanager' );
         $headers     = array();
         $headers[]   = $racketmanager->get_from_user_email();
         $headers[]   = RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>';
 
         $message_args = array(
-            'match'   => $fixture->get_id(),
+            'fixture' => $fixture->get_id(),
             'team_id' => $team_id,
         );
 

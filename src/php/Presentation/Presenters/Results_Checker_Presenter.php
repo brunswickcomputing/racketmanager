@@ -108,8 +108,8 @@ readonly class Results_Checker_Presenter {
             return '';
         }
 
-        if ( ! empty( $match->match_title ) ) {
-            return $match->match_title;
+        if ( ! empty( $match->fixture_title ) ) {
+            return $match->fixture_title;
         }
 
         return $this->generate_match_title( $match );

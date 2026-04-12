@@ -129,7 +129,7 @@ class Fixture_Service {
         $new_fixture = clone $fixture;
         $weeks_diff  = empty( $competition_season['home_away_diff'] ) ? 2 : $competition_season['home_away_diff'];
         $new_fixture->set_date( Util::amend_date( $fixture->get_date(), $weeks_diff, '+', 'weeks' ) );
-        $new_fixture->set_linked_match( $fixture->get_id() );
+        $new_fixture->set_linked_fixture( $fixture->get_id() );
         $new_fixture->set_leg( 2 ); // Explicitly setting it to 2
 
         if ( ! empty( $fixture->get_host() ) ) {
@@ -139,7 +139,7 @@ class Fixture_Service {
         $new_fixture->set_id( null );
         $this->create_fixture( $new_fixture, $league );
 
-        $fixture->set_linked_match( $new_fixture->get_id() );
+        $fixture->set_linked_fixture( $new_fixture->get_id() );
         $this->fixture_repository->save( $fixture );
     }
 

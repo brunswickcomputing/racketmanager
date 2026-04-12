@@ -29,7 +29,7 @@ $points_span = 2 + intval( $dto->league->num_sets );
                     }
                     ?>
                 </div>
-                <div class="matchTitle"><?php echo esc_html( $dto->match_title ); ?></div>
+                <div class="matchTitle"><?php echo esc_html( $dto->fixture_title ); ?></div>
             </div>
             <form id="match-rubbers" action="#" method="post">
                 <?php wp_nonce_field( 'rubbers-match' ); ?>

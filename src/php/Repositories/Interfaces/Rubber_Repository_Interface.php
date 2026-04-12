@@ -20,4 +20,5 @@ interface Rubber_Repository_Interface extends Repository_Interface {
     public function find_by_fixture_id( int $fixture_id, ?int $player_id = null ): array;
     public function count_by_fixture_id( int $fixture_id, ?int $player_id = null ): int;
     public function delete_by_fixture_id( int $fixture_id ): bool;
+    public function update_date_by_fixture_id( int $fixture_id, string $date ): bool;
 }

@@ -44,7 +44,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             'winner_id'           => $entity->get_winner_id(),
             'loser_id'            => $entity->get_loser_id(),
             'status'              => $entity->get_status(),
-            'linked_match'        => $entity->get_linked_match(),
+            'linked_match'        => $entity->get_linked_fixture(),
             'leg'                 => $entity->get_leg(),
             'winner_id_tie'       => $entity->get_winner_id_tie(),
             'loser_id_tie'        => $entity->get_loser_id_tie(),

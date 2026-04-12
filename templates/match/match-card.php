@@ -31,7 +31,7 @@ use Racketmanager\Util\Util;
         <div class="matchTitle">
             <?php
             if ( ! $dto->competition->is_championship ) {
-                echo esc_html( $dto->match_title );
+                echo esc_html( $dto->fixture_title );
             }
             ?>
         </div>

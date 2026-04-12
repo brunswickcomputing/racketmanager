@@ -185,7 +185,7 @@ class Notification_Service_Test extends TestCase {
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertEquals('admin@example.com', $mail['to']);
         $this->assertStringContainsString('Championship League - Home Team v Away Team - Result confirmed', $mail['subject']);
-        $this->assertStringContainsString('Match complete', $mail['subject']);
+        $this->assertStringContainsString('Fixture complete', $mail['subject']);
     }
 
     public function test_send_result_notification_with_confirmation_recipient(): void {
@@ -619,13 +619,13 @@ class Notification_Service_Test extends TestCase {
         ]);
 
         $GLOBALS['wp_mail_calls'] = [];
-        $this->service->send_next_match_notification($fixture);
+        $this->service->send_next_fixture_notification($fixture);
 
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertContains('home@example.com', $mail['to']);
         $this->assertContains('away@example.com', $mail['to']);
-        $this->assertStringContainsString('Match Details', $mail['subject']);
+        $this->assertStringContainsString('Fixture Details', $mail['subject']);
         $this->assertStringContainsString('Leg 1', $mail['subject']);
     }
 
@@ -663,7 +663,7 @@ class Notification_Service_Test extends TestCase {
 
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
-        $this->assertStringContainsString('Match Date Change', $mail['subject']);
+        $this->assertStringContainsString('Fixture Date Change', $mail['subject']);
     }
 
     public function test_send_date_change_notification_tournament_delay(): void {
@@ -762,7 +762,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team   = '100';
         $fixture_data->season      = '2026';
         $fixture = new Fixture( $fixture_data );
-        $fixture->match_title = 'Home v Away';
+        $fixture->fixture_title = 'Home v Away';
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -827,7 +827,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->match_title = 'Home v Away';
         $fixture_data->home_captain = 5;
         $fixture = new Fixture( $fixture_data );
-        $fixture->match_title = 'Home v Away';
+        $fixture->fixture_title = 'Home v Away';
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
         $league->id = 456;

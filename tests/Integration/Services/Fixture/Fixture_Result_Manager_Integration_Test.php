@@ -930,7 +930,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $response = $this->manager->update_legs( $fixture, 1, 456 );
 
         $this->assertEquals( 1, $fixture->get_leg() );
-        $this->assertEquals( 456, $fixture->get_linked_match() );
+        $this->assertEquals( 456, $fixture->get_linked_fixture() );
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::LEGS_UPDATED ) );
     }
 

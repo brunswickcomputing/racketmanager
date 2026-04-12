@@ -21,11 +21,11 @@ use Racketmanager\Repositories\Rubber_Repository;
 class Fixture {
 
     /**
-     * Match title
+     * Fixture title
      *
      * @var string|null
      */
-    public ?string $match_title = null;
+    public ?string $fixture_title = null;
 
     /**
      * Link
@@ -147,11 +147,11 @@ class Fixture {
     public ?int $status = null;
 
     /**
-     * Linked match
+     * Linked fixture
      *
      * @var int|null
      */
-    public ?int $linked_match = null;
+    public ?int $linked_fixture = null;
 
     /**
      * Leg
@@ -353,7 +353,7 @@ class Fixture {
         $this->winner_id           = $fixture->winner_id ?? null;
         $this->loser_id            = $fixture->loser_id ?? null;
         $this->status              = $fixture->status ?? null;
-        $this->linked_match        = $fixture->linked_match ?? null;
+        $this->linked_fixture        = $fixture->linked_match ?? null;
         $this->leg                 = $fixture->leg ?? null;
         $this->winner_id_tie       = $fixture->winner_id_tie ?? null;
         $this->loser_id_tie        = $fixture->loser_id_tie ?? null;
@@ -602,15 +602,15 @@ class Fixture {
     /**
      * @return int|null
      */
-    public function get_linked_match(): ?int {
-        return $this->linked_match;
+    public function get_linked_fixture(): ?int {
+        return $this->linked_fixture;
     }
 
     /**
-     * @param int|null $linked_match
+     * @param int|null $linked_fixture
      */
-    public function set_linked_match( ?int $linked_match ): void {
-        $this->linked_match = $linked_match;
+    public function set_linked_fixture( ?int $linked_fixture ): void {
+        $this->linked_fixture = $linked_fixture;
     }
 
     /**

@@ -990,11 +990,11 @@ class Fixture_Result_Manager {
      * @return Fixture|null
      */
     private function validate_tie_update( Fixture $fixture ): ?Fixture {
-        if ( 2 !== $fixture->get_leg() || ! $fixture->get_linked_match() ) {
+        if ( 2 !== $fixture->get_leg() || ! $fixture->get_linked_fixture() ) {
             return null;
         }
 
-        $linked_fixture = $this->fixture_repository->find_by_id( $fixture->get_linked_match() );
+        $linked_fixture = $this->fixture_repository->find_by_id( $fixture->get_linked_fixture() );
         if ( ! $linked_fixture || ! $linked_fixture->get_winner_id() ) {
             return null;
         }
@@ -1012,7 +1012,7 @@ class Fixture_Result_Manager {
      */
     public function update_legs( Fixture $fixture, int $leg, int $linked_match_id ): Fixture_Update_Response {
         $fixture->set_leg( $leg );
-        $fixture->set_linked_match( $linked_match_id );
+        $fixture->set_linked_fixture( $linked_match_id );
         $this->fixture_repository->save( $fixture );
 
         return new Fixture_Update_Response( [ Fixture_Update_Status::LEGS_UPDATED ] );

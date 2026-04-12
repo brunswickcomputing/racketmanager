@@ -1,6 +1,12 @@
 <?php
 declare( strict_types=1 );
 
+namespace {
+    if ( ! defined( 'ABSPATH' ) ) {
+        define( 'ABSPATH', 1 );
+    }
+}
+
 namespace Racketmanager\Services\Fixture {
     function home_url( string $path = '' ): string {
         return 'https://example.com' . $path;

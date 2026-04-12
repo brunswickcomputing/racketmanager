@@ -177,6 +177,23 @@ class Rubber_Repository implements Rubber_Repository_Interface {
     }
 
     /**
+     * Update rubber dates for a given fixture ID.
+     *
+     * @param int $fixture_id
+     * @param string $date
+     * @return bool
+     */
+    public function update_date_by_fixture_id( int $fixture_id, string $date ): bool {
+        return $this->wpdb->update(
+            $this->table_name,
+            array( 'date' => $date ),
+            array( 'match_id' => $fixture_id ),
+            array( '%s' ),
+            array( '%d' )
+        ) !== false;
+    }
+
+    /**
      * Delete a rubber by its ID.
      *
      * @param int $id

@@ -42,7 +42,7 @@ class Fixture_Maintenance_Service_Test extends TestCase {
     private Fixture_Maintenance_Service $service;
 
     protected function setUp(): void {
-        $this->fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
+        $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $this->league_repository = $this->createMock( League_Repository_Interface::class );
         $this->club_repository = $this->createStub( Club_Repository_Interface::class );
         $this->team_repository = $this->createStub( Team_Repository_Interface::class );
@@ -181,5 +181,37 @@ class Fixture_Maintenance_Service_Test extends TestCase {
             ->with( $this->isInstanceOf( Results_Checker::class ) );
 
         $this->service->check_result_timeout( $fixture );
+    }
+
+    public function test_delete_fixture_calls_repository(): void {
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'delete' )
+            ->with( 123 )
+            ->willReturn( true );
+        $this->assertTrue( $this->service->delete_fixture( 123 ) );
+    }
+
+    public function test_update_fixture_status_calls_repository(): void {
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'update_status' )
+            ->with( 123, 5 )
+            ->willReturn( true );
+        $this->assertTrue( $this->service->update_fixture_status( 123, 5 ) );
+    }
+
+    public function test_update_fixture_teams_calls_repository(): void {
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'update_teams' )
+            ->with( 123, 'Team A', 'Team B' )
+            ->willReturn( true );
+        $this->assertTrue( $this->service->update_fixture_teams( 123, 'Team A', 'Team B' ) );
+    }
+
+    public function test_update_fixture_date_calls_repository(): void {
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'update_date' )
+            ->with( 123, '2023-01-01', '2022-12-31' )
+            ->willReturn( true );
+        $this->assertTrue( $this->service->update_fixture_date( 123, '2023-01-01', '2022-12-31' ) );
     }
 }

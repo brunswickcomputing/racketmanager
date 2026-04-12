@@ -19,6 +19,7 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Validator\Validator_Fixture;
@@ -295,9 +296,10 @@ class Ajax_Fixture extends Ajax {
             } else {
                 $schedule_date_fmt = mysql2date( 'j F Y H:i', $schedule_date );
             }
-            $match         = $match->update_match_date( $schedule_date, $match->date );
-            $match->status = 5;
-            $match->set_status( $match->status );
+            $maintenance_service = $this->get_fixture_maintenance_service();
+            $maintenance_service->update_fixture_date( $match_id, $schedule_date, $match->date );
+            $maintenance_service->update_fixture_status( $match_id, 5 );
+
             $return                         = new stdClass();
             $return->msg                    = __( 'Match schedule updated', 'racketmanager' );
             $return->modal                  = $modal;
@@ -337,8 +339,10 @@ class Ajax_Fixture extends Ajax {
             $season_dtl = $match->league->event->get_season_by_name( $match->season );
             $match_date = $season_dtl['match_dates'][ $match->match_day - 1 ];
             if ( $match_date ) {
-                $match->update_match_date( $match_date );
-                $match->set_teams( $old_away, $old_home );
+                $maintenance_service = $this->get_fixture_maintenance_service();
+                $maintenance_service->update_fixture_date( $match_id, $match_date );
+                $maintenance_service->update_fixture_teams( $match_id, (string) $old_away, (string) $old_home );
+
                 $return           = new stdClass();
                 $return->msg      = __( 'Home and away teams switched', 'racketmanager' );
                 $return->modal    = $modal;
@@ -408,6 +412,49 @@ class Ajax_Fixture extends Ajax {
             // 9. Centralized Exception Handling
             wp_send_json_error( [ 'msg' => $e->getMessage() ], 500 );
         }
+    }
+
+    /**
+     * Get the Fixture Maintenance Service with its dependencies.
+     *
+     * @return Fixture_Maintenance_Service
+     */
+    private function get_fixture_maintenance_service(): Fixture_Maintenance_Service {
+        $c = $this->racketmanager->container;
+
+        $repository_provider = new Repository_Provider(
+            $c->get( 'league_repository' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'competition_repository' ),
+            $c->get( 'league_team_repository' ),
+            $c->get( 'team_repository' ),
+            $c->get( 'player_repository' ),
+            $c->get( 'rubber_repository' ),
+            $c->get( 'results_checker_repository' ),
+            $c->get( 'results_report_repository' ),
+            $c->get( 'fixture_repository' ),
+            $c->get( 'club_repository' )
+        );
+
+        $service_provider = new Fixture_Service_Provider(
+            $c->get( 'result_service' ),
+            $c->get( 'knockout_progression_service' ),
+            $c->get( 'league_service' ),
+            $c->get( 'score_validation_service' ),
+            $c->get( 'player_validation_service' ),
+            $c->get( 'notification_service' ),
+            $c->get( 'registration_service' )
+        );
+        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+        $service_provider->set_team_service( $c->get( 'team_service' ) );
+        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+        $fixture_result_manager = new Fixture_Result_Manager( $service_provider, $repository_provider );
+        $service_provider->set_fixture_maintenance_service( new Fixture_Maintenance_Service( $service_provider, $repository_provider, $fixture_result_manager ) );
+
+        return $service_provider->get_fixture_maintenance_service();
     }
 
     /**

@@ -250,7 +250,7 @@ class Shortcodes_League extends Shortcodes {
         $league->set_group( $group );
 
         $team_args           = array( 'orderby' => array( 'rank' => 'ASC' ) );
-        $team_args['status'] = 1;
+        $team_args['active'] = true;
         if ( $group ) {
             $team_args['group'] = $group;
         }

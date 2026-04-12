@@ -361,4 +361,69 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             $club_player_id
         ) );
     }
+
+    public function update_status( int $id, int $status ): bool {
+        $updated = $this->wpdb->update(
+            $this->table_name,
+            array( 'status' => $status ),
+            array( 'id' => $id ),
+            array( '%d' ),
+            array( '%d' )
+        );
+
+        if ( false !== $updated ) {
+            wp_cache_delete( $id, 'fixtures' );
+            wp_cache_delete( $id . '_legacy', 'fixtures' );
+            return true;
+        }
+
+        return false;
+    }
+
+    public function update_teams( int $id, string $home_team, string $away_team ): bool {
+        $updated = $this->wpdb->update(
+            $this->table_name,
+            array(
+                'home_team' => $home_team,
+                'away_team' => $away_team,
+            ),
+            array( 'id' => $id ),
+            array( '%s', '%s' ),
+            array( '%d' )
+        );
+
+        if ( false !== $updated ) {
+            wp_cache_delete( $id, 'fixtures' );
+            wp_cache_delete( $id . '_legacy', 'fixtures' );
+            return true;
+        }
+
+        return false;
+    }
+
+    public function update_date( int $id, string $date, ?string $original_date = null ): bool {
+        $data = array( 'date' => $date );
+        $format = array( '%s' );
+
+        if ( null !== $original_date ) {
+            $data['date_original'] = $original_date;
+            $format[] = '%s';
+        }
+
+        $updated = $this->wpdb->update(
+            $this->table_name,
+            $data,
+            array( 'id' => $id ),
+            $format,
+            array( '%d' )
+        );
+
+        if ( false !== $updated ) {
+            wp_cache_delete( $id, 'fixtures' );
+            wp_cache_delete( $id . '_legacy', 'fixtures' );
+            return true;
+        }
+
+        return false;
+    }
 }

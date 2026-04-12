@@ -12,6 +12,10 @@ namespace Racketmanager\Admin;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
@@ -708,6 +712,49 @@ final class Admin_League extends Admin_Display {
         }
     }
     /**
+     * Get the Fixture Maintenance Service with its dependencies.
+     *
+     * @return Fixture_Maintenance_Service
+     */
+    private function get_fixture_maintenance_service(): Fixture_Maintenance_Service {
+        $c = $this->racketmanager->container;
+
+        $repository_provider = new Repository_Provider(
+            $c->get( 'league_repository' ),
+            $c->get( 'event_repository' ),
+            $c->get( 'competition_repository' ),
+            $c->get( 'league_team_repository' ),
+            $c->get( 'team_repository' ),
+            $c->get( 'player_repository' ),
+            $c->get( 'rubber_repository' ),
+            $c->get( 'results_checker_repository' ),
+            $c->get( 'results_report_repository' ),
+            $c->get( 'fixture_repository' ),
+            $c->get( 'club_repository' )
+        );
+
+        $service_provider = new Fixture_Service_Provider(
+            $c->get( 'result_service' ),
+            $c->get( 'knockout_progression_service' ),
+            $c->get( 'league_service' ),
+            $c->get( 'score_validation_service' ),
+            $c->get( 'player_validation_service' ),
+            $c->get( 'notification_service' ),
+            $c->get( 'registration_service' )
+        );
+        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+        $service_provider->set_team_service( $c->get( 'team_service' ) );
+        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+        $fixture_result_manager = new Fixture_Result_Manager( $service_provider, $repository_provider );
+        $service_provider->set_fixture_maintenance_service( new Fixture_Maintenance_Service( $service_provider, $repository_provider, $fixture_result_manager ) );
+
+        return $service_provider->get_fixture_maintenance_service();
+    }
+
+    /**
      * Delete matches for event
      *
      * @param int $event event to be deleted.
@@ -733,11 +780,11 @@ final class Admin_League extends Admin_Display {
             $success = false;
         } else {
             $leagues = $event->get_leagues();
+            $maintenance_service = $this->get_fixture_maintenance_service();
             foreach ( $leagues as $league ) {
                 $matches = $league->get_matches( array( 'season' => $season ) );
                 foreach ( $matches as $match ) {
-                    $match = get_match( $match->id );
-                    $match->delete();
+                    $maintenance_service->delete_fixture( (int) $match->id );
                 }
             }
             $this->set_message( __( 'Matches deleted', 'racketmanager' ) );
@@ -1497,9 +1544,9 @@ final class Admin_League extends Admin_Display {
         }
         $messages = array();
         if ( isset( $_POST['match'] ) ) {
+            $maintenance_service = $this->get_fixture_maintenance_service();
             foreach ( $_POST['match'] as $match_id ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-                $match = get_match( $match_id );
-                $match->delete();
+                $maintenance_service->delete_fixture( (int) $match_id );
                 /* translators: %d: Match id */
                 $messages[] = ( sprintf( __( 'Match id %d deleted', 'racketmanager' ), $match_id ) );
                 $message    = implode( '<br>', $messages );

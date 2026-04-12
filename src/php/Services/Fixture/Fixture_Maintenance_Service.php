@@ -16,11 +16,14 @@ use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use Racketmanager\Domain\Results_Report;
 
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+
 /**
  * Service for fixture maintenance tasks like chasing missing results and auto-confirming.
  */
 class Fixture_Maintenance_Service {
 
+    private Fixture_Repository_Interface $fixture_repository;
     private League_Repository_Interface $league_repository;
     private Results_Checker_Repository_Interface $results_checker_repository;
     private Results_Report_Repository_Interface $results_report_repository;
@@ -33,6 +36,7 @@ class Fixture_Maintenance_Service {
         Repository_Provider $repository_provider,
         Fixture_Result_Manager $fixture_result_manager
     ) {
+        $this->fixture_repository         = $repository_provider->get_fixture_repository();
         $this->league_repository          = $repository_provider->get_league_repository();
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
         $this->results_report_repository  = $repository_provider->get_results_report_repository();
@@ -209,5 +213,50 @@ class Fixture_Maintenance_Service {
         $report->result_object = wp_json_encode( $data );
         
         $this->results_report_repository->save( $report );
+    }
+
+    /**
+     * Delete a fixture.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function delete_fixture( int $id ): bool {
+        return $this->fixture_repository->delete( $id );
+    }
+
+    /**
+     * Update fixture status.
+     *
+     * @param int $id
+     * @param int $status
+     * @return bool
+     */
+    public function update_fixture_status( int $id, int $status ): bool {
+        return $this->fixture_repository->update_status( $id, $status );
+    }
+
+    /**
+     * Update fixture teams.
+     *
+     * @param int $id
+     * @param string $home_team
+     * @param string $away_team
+     * @return bool
+     */
+    public function update_fixture_teams( int $id, string $home_team, string $away_team ): bool {
+        return $this->fixture_repository->update_teams( $id, $home_team, $away_team );
+    }
+
+    /**
+     * Update fixture date.
+     *
+     * @param int $id
+     * @param string $date
+     * @param string|null $original_date
+     * @return bool
+     */
+    public function update_fixture_date( int $id, string $date, ?string $original_date = null ): bool {
+        return $this->fixture_repository->update_date( $id, $date, $original_date );
     }
 }

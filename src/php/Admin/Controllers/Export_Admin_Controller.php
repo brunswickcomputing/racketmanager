@@ -4,9 +4,6 @@ namespace Racketmanager\Admin\Controllers;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
-use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
-use Racketmanager\Services\Exporter;
 
 /**
  * Class Export_Admin_Controller
@@ -16,7 +13,6 @@ use Racketmanager\Services\Exporter;
 class Export_Admin_Controller {
 
     private RacketManager $racketmanager;
-    private Exporter $exporter;
 
     /**
      * Export_Admin_Controller constructor.
@@ -25,7 +21,6 @@ class Export_Admin_Controller {
      */
     public function __construct( RacketManager $racketmanager ) {
         $this->racketmanager = $racketmanager;
-        $this->exporter      = $this->racketmanager->container->get( 'exporter' );
     }
 
     /**
@@ -44,52 +39,22 @@ class Export_Admin_Controller {
 
         $type = isset( $_GET['racketmanager_export'] ) ? sanitize_text_field( wp_unslash( $_GET['racketmanager_export'] ) ) : '';
 
-        if ( 'calendar' !== $type && ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'racketmanager' ) );
-        }
-
-        $criteria = $this->prepare_criteria_from_globals();
-
-        $content      = '';
-        $filename     = 'export';
-        $content_type = 'text/plain';
-
         switch ( $type ) {
             case 'calendar':
-                $content      = $this->exporter->calendar( $criteria );
-                $content_type = Export_Formatter_Interface::CONTENT_TYPE_ICS;
-                $filename     = 'calendar.ics';
-                break;
+                $this->delegate_to_rest( 'calendar' );
+                return;
             case 'fixtures':
-                $content = $this->exporter->fixtures( $criteria );
-                if ( 'csv' === $criteria->format ) {
-                    $content_type = Export_Formatter_Interface::CONTENT_TYPE_CSV;
-                    $filename     = 'fixtures.csv';
-                } else {
-                    $content_type = Export_Formatter_Interface::CONTENT_TYPE_JSON;
-                    $filename     = 'fixtures.json';
-                }
-                break;
+                $this->delegate_to_rest( 'fixtures' );
+                return;
             case 'results':
-                $content = $this->exporter->results( $criteria );
-                if ( 'csv' === $criteria->format ) {
-                    $content_type = Export_Formatter_Interface::CONTENT_TYPE_CSV;
-                    $filename     = 'results.csv';
-                } else {
-                    $content_type = Export_Formatter_Interface::CONTENT_TYPE_JSON;
-                    $filename     = 'results.json';
-                }
-                break;
+                $this->delegate_to_rest( 'results' );
+                return;
             case 'report_results':
-                $content      = $this->exporter->report_results( $criteria );
-                $content_type = Export_Formatter_Interface::CONTENT_TYPE_CSV;
-                $filename     = 'report_results.csv';
-                break;
+                $this->delegate_to_rest( 'report-results' );
+                return;
             default:
                 wp_die( esc_html__( 'Export function not found', 'racketmanager' ) );
         }
-
-        $this->send_response( $content, $filename, $content_type );
     }
 
     /**
@@ -105,6 +70,7 @@ class Export_Admin_Controller {
             header( 'Content-Type: ' . $content_type );
             header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
         }
+
         echo $content;
         $this->terminate();
     }
@@ -118,21 +84,29 @@ class Export_Admin_Controller {
     }
 
     /**
-     * Prepare Export_Criteria from global $_GET.
+     * Delegate the request to the REST API internally.
      *
-     * @return Export_Criteria
+     * @param string $path
      */
-    private function prepare_criteria_from_globals(): Export_Criteria {
-        $criteria = new Export_Criteria();
-        $criteria->league_id      = isset( $_GET['league_id'] ) ? (int) $_GET['league_id'] : null;
-        $criteria->season         = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : null;
-        $criteria->club_id        = isset( $_GET['club_id'] ) ? (int) $_GET['club_id'] : null;
-        $criteria->competition_id = isset( $_GET['competition_id'] ) ? (int) $_GET['competition_id'] : null;
-        $criteria->team_id        = isset( $_GET['team_id'] ) ? (int) $_GET['team_id'] : null;
-        $criteria->date_from      = isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : null;
-        $criteria->date_to        = isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : null;
-        $criteria->format         = isset( $_GET['format'] ) ? sanitize_text_field( wp_unslash( $_GET['format'] ) ) : 'json';
+    protected function delegate_to_rest( string $path ): void {
+        $request = new \WP_REST_Request( 'GET', '/racketmanager/v1/export/' . $path );
+        $request->set_query_params( $_GET );
+        $response = rest_do_request( $request );
 
-        return $criteria;
+        if ( is_wp_error( $response ) ) {
+            wp_die( esc_html( $response->get_error_message() ) );
+        }
+
+        $headers      = $response->get_headers();
+        $content_type = isset( $headers['Content-Type'] ) ? $headers['Content-Type'] : 'text/plain';
+        $filename     = 'export';
+
+        if ( isset( $headers['Content-Disposition'] ) ) {
+            if ( preg_match( '/filename="([^"]+)"/', $headers['Content-Disposition'], $matches ) ) {
+                $filename = $matches[1];
+            }
+        }
+
+        $this->send_response( (string) $response->get_data(), $filename, $content_type );
     }
 }

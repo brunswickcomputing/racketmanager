@@ -90,7 +90,7 @@ namespace Racketmanager;
                                 }
                                 if ( ! empty( $competition_code ) ) {
                                     ?>
-                                    <a href="/index.php?competition_id=<?php echo esc_html( $competition->id ); ?>&season=<?php echo esc_html( $key ); ?>&competition_code=<?php echo esc_attr( $competition_code ); ?>&racketmanager_export=report_results" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+                                    <a href="<?php echo esc_url( add_query_arg( array( 'competition_id' => $competition->id, 'season' => $key, 'competition_code' => $competition_code, '_wpnonce' => wp_create_nonce( 'wp_rest' ) ), rest_url( 'racketmanager/v1/export/report-results' ) ) ); ?>" class="btn btn-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
                                         <span class="nav-link__value text-uppercase">
                                             <?php esc_html_e( 'Report results', 'racketmanager' ); ?>
                                         </span>

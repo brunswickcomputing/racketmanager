@@ -19,6 +19,7 @@ namespace Racketmanager\Tests\Unit\Rest {
     use stdClass;
     use WP_REST_Request;
     use WP_REST_Response;
+    use WP_REST_Server;
 
     #[AllowMockObjectsWithoutExpectations]
     final class Export_Controller_Test extends TestCase {
@@ -111,15 +112,74 @@ namespace Racketmanager\Tests\Unit\Rest {
             self::assertSame( 'application/json', $headers['Content-Type'] );
         }
 
-        public function test_get_item_permissions_check_allows_calendar_publicly(): void {
+        public function test_get_report_results_calls_exporter_and_returns_csv_response(): void {
+            $request = new WP_REST_Request( 'GET', '/racketmanager/v1/export/report-results' );
+            
+            $this->exporter->expects( self::once() )
+                ->method( 'report_results' )
+                ->willReturn( 'Match,Score,Player1' );
+
+            $controller = new Export_Controller( $this->racketmanager );
+            $response = $controller->get_report_results( $request );
+
+            self::assertInstanceOf( WP_REST_Response::class, $response );
+            self::assertSame( 'Match,Score,Player1', $response->get_data() );
+            
+            $headers = $response->get_headers();
+            self::assertSame( Export_Formatter_Interface::CONTENT_TYPE_CSV, $headers['Content-Type'] );
+            self::assertSame( 'attachment; filename="report_results.csv"', $headers['Content-Disposition'] );
+        }
+
+        public function test_get_item_permissions_check_allows_public_exports(): void {
             $controller = new Export_Controller( $this->racketmanager );
 
-            $request = new WP_REST_Request( 'GET', '/racketmanager/v1/export/calendar' );
-            self::assertTrue( $controller->get_item_permissions_check( $request ) );
+            $request_calendar = new WP_REST_Request( 'GET', '/racketmanager/v1/export/calendar' );
+            self::assertTrue( $controller->get_item_permissions_check( $request_calendar ) );
 
             $request_results = new WP_REST_Request( 'GET', '/racketmanager/v1/export/results' );
-            // By default returns current_user_can('manage_options') which is false in stubs unless mocked
-            self::assertFalse( $controller->get_item_permissions_check( $request_results ) );
+            self::assertTrue( $controller->get_item_permissions_check( $request_results ) );
+
+            $request_fixtures = new WP_REST_Request( 'GET', '/racketmanager/v1/export/fixtures' );
+            self::assertTrue( $controller->get_item_permissions_check( $request_fixtures ) );
+
+            $request_report = new WP_REST_Request( 'GET', '/racketmanager/v1/export/report-results' );
+            self::assertTrue( $controller->get_item_permissions_check( $request_report ) );
+        }
+
+        public function test_serve_raw_export_sends_headers_and_echos_data_for_csv(): void {
+            $controller = new Export_Controller( $this->racketmanager );
+            $request = new WP_REST_Request( 'GET', '/racketmanager/v1/export/report-results' );
+            $request->set_route( '/racketmanager/v1/export/report-results' );
+
+            $response = new WP_REST_Response( 'Match,Score', 200, [ 'Content-Type' => Export_Formatter_Interface::CONTENT_TYPE_CSV ] );
+            
+            $server = $this->createMock( WP_REST_Server::class );
+            $server->expects( self::once() )
+                ->method( 'send_headers' )
+                ->with( self::callback( function( $headers ) {
+                    return is_array( $headers ) && $headers['Content-Type'] === Export_Formatter_Interface::CONTENT_TYPE_CSV;
+                } ) );
+
+            ob_start();
+            $result = $controller->serve_raw_export( false, $response, $request, $server );
+            $output = ob_get_clean();
+
+            self::assertTrue( $result );
+            self::assertSame( 'Match,Score', $output );
+        }
+
+        public function test_serve_raw_export_skips_non_export_routes(): void {
+            $controller = new Export_Controller( $this->racketmanager );
+            $request = new WP_REST_Request( 'GET', '/other/v1/route' );
+            $request->set_route( '/other/v1/route' );
+
+            $response = new WP_REST_Response( '[]' );
+            $server = $this->createMock( WP_REST_Server::class );
+            $server->expects( self::never() )->method( 'send_headers' );
+
+            $result = $controller->serve_raw_export( false, $response, $request, $server );
+
+            self::assertFalse( $result );
         }
     }
 }

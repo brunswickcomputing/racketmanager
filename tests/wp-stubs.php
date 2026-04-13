@@ -296,6 +296,18 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'rest_do_request' ) ) {
+        function rest_do_request( $request ) {
+            return $GLOBALS['wp_stubs_rest_do_request_return'] ?? new WP_REST_Response();
+        }
+    }
+
+    if ( ! function_exists( 'rest_url' ) ) {
+        function rest_url( string $path = '' ): string {
+            return 'https://example.test/wp-json/' . ltrim( $path, '/' );
+        }
+    }
+
     if ( ! function_exists( 'current_time' ) ) {
         function current_time( string $type, $gmt = 0 ): string {
             return date( 'Y-m-d H:i:s' );
@@ -611,6 +623,10 @@ namespace {
                 return $this->params[ $key ] ?? null;
             }
 
+            public function set_query_params( $params ) {
+                $this->params = array_merge( $this->params, $params );
+            }
+
             public function get_route() {
                 return $this->route;
             }
@@ -665,6 +681,10 @@ namespace {
         eval('
         class WP_REST_Server {
             const READABLE = "GET";
+
+            public function send_header( $key, $value ) {}
+            public function send_headers( $headers ) {}
+            public function serve_request( $path = null ) {}
         }
         ');
     }

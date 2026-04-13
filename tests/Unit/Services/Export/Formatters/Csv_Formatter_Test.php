@@ -24,7 +24,7 @@ class Csv_Formatter_Test extends TestCase {
 
 		$result = $this->formatter->format( $data, $options );
 
-		$expected = "Name,Score\nJohn,10\nJane,20\n";
+		$expected = "Name,Score\r\nJohn,10\r\nJane,20\r\n";
 		$this->assertEquals( $expected, $result );
 	}
 
@@ -35,7 +35,7 @@ class Csv_Formatter_Test extends TestCase {
 
 		$result = $this->formatter->format( $data );
 
-		$expected = "John,10\n";
+		$expected = "John,10\r\n";
 		$this->assertEquals( $expected, $result );
 	}
 

@@ -21,11 +21,11 @@ class Ics_Formatter implements Export_Formatter_Interface {
     public function format( array $data, array $options = array() ): string {
         $date_format = 'Ymd\THis';
 
-        $contents  = "BEGIN:VCALENDAR\n";
-        $contents .= "VERSION:2.0\n";
-        $contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\n";
-        $contents .= "CALSCALE:GREGORIAN\n";
-        $contents .= 'DTSTAMP:' . gmdate( $date_format ) . "\n";
+        $contents  = "BEGIN:VCALENDAR\r\n";
+        $contents .= "VERSION:2.0\r\n";
+        $contents .= "PRODID:-//TENNIS CALENDAR//NONSGML Events //EN\r\n";
+        $contents .= "CALSCALE:GREGORIAN\r\n";
+        $contents .= 'DTSTAMP:' . gmdate( $date_format ) . "\r\n";
 
         foreach ( $data as $event ) {
             $event = (object) $event;
@@ -42,14 +42,14 @@ class Ics_Formatter implements Export_Formatter_Interface {
             }
             $location = property_exists( $event, 'location' ) ? $event->location : '';
 
-            $contents .= "BEGIN:VEVENT\n";
-            $contents .= 'UID:' . $uid . "\n";
-            $contents .= 'DTSTAMP:' . mysql2date( $date_format, $date ) . "\n";
-            $contents .= 'DTSTART:' . mysql2date( $date_format, $date ) . "\n";
-            $contents .= 'DTEND:' . gmdate( $date_format, strtotime( '+2 hours', strtotime( $date ) ) ) . "\n";
-            $contents .= 'SUMMARY:' . $summary . "\n";
-            $contents .= 'LOCATION:' . $location . "\n";
-            $contents .= "END:VEVENT\n";
+            $contents .= "BEGIN:VEVENT\r\n";
+            $contents .= 'UID:' . $uid . "\r\n";
+            $contents .= 'DTSTAMP:' . mysql2date( $date_format, $date ) . "\r\n";
+            $contents .= 'DTSTART:' . mysql2date( $date_format, $date ) . "\r\n";
+            $contents .= 'DTEND:' . gmdate( $date_format, strtotime( '+2 hours', strtotime( $date ) ) ) . "\r\n";
+            $contents .= 'SUMMARY:' . $summary . "\r\n";
+            $contents .= 'LOCATION:' . $location . "\r\n";
+            $contents .= "END:VEVENT\r\n";
         }
 
         $contents .= 'END:VCALENDAR';

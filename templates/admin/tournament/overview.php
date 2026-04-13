@@ -79,7 +79,7 @@ if ( $vm ) {
             }
             if ( ! empty( $overview->competition_code ) && 'end' === $overview->phase ) {
                 ?>
-                <a href="/index.php?tournament_id=<?php echo esc_html( $overview->id ); ?>&season=<?php echo esc_html( $overview->season ); ?>&competition_code=<?php echo esc_html( $overview->competition_code ); ?>&racketmanager_export=report_results" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
+                <a href="<?php echo esc_url( add_query_arg( array( 'tournament_id' => $overview->id, 'season' => $overview->season, 'competition_code' => $overview->competition_code, '_wpnonce' => wp_create_nonce( 'wp_rest' ) ), rest_url( 'racketmanager/v1/export/report-results' ) ) ); ?>" class="btn btn-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Report results', 'racketmanager' ); ?>" >
                     <span class="nav-link__value">
                         <?php esc_html_e( 'Report results', 'racketmanager' ); ?>
                     </span>

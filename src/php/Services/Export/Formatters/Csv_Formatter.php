@@ -15,11 +15,11 @@ class Csv_Formatter implements Export_Formatter_Interface {
 
         // Check for headers in options.
         if ( ! empty( $options['headers'] ) ) {
-            fputcsv( $output, (array) $options['headers'], ',', '"', "" );
+            fputcsv( $output, (array) $options['headers'], ',', '"', "", "\r\n" );
         }
 
         foreach ( $data as $row ) {
-            fputcsv( $output, (array) $row, ',', '"', "" );
+            fputcsv( $output, (array) $row, ',', '"', "", "\r\n" );
         }
 
         rewind( $output );

@@ -59,11 +59,14 @@ final class Export_Admin_Controller_Test extends TestCase {
         $this->assertTrue(true);
     }
 
-    public function test_handle_export_calendar_works(): void {
+    public function test_handle_export_calendar_delegates_to_rest(): void {
         $_GET['racketmanager_export'] = 'calendar';
         $GLOBALS['wp_stubs_current_user_can'] = true;
 
-        $this->exporter->method( 'calendar' )->willReturn( 'ICS CONTENT' );
+        $response = new \WP_REST_Response( 'ICS FROM REST' );
+        $response->header( 'Content-Type', 'text/calendar' );
+        $response->header( 'Content-Disposition', 'attachment; filename="calendar.ics"' );
+        $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
         $controller = $this->getMockBuilder( Export_Admin_Controller::class )
             ->setConstructorArgs( [$this->racketmanager] )
@@ -76,15 +79,18 @@ final class Export_Admin_Controller_Test extends TestCase {
         $controller->handle_export();
         $output = ob_get_clean();
         
-        self::assertSame( 'ICS CONTENT', $output );
+        self::assertSame( 'ICS FROM REST', $output );
         unset($GLOBALS['wp_stubs_current_user_can']);
+        unset($GLOBALS['wp_stubs_rest_do_request_return']);
     }
 
-    public function test_handle_export_report_results_works(): void {
+    public function test_handle_export_report_results_works_for_non_admins(): void {
         $_GET['racketmanager_export'] = 'report_results';
-        $GLOBALS['wp_stubs_current_user_can'] = true;
+        $GLOBALS['wp_stubs_current_user_can'] = false; // Mock non-admin
 
-        $this->exporter->method( 'report_results' )->willReturn( 'CSV CONTENT' );
+        $response = new \WP_REST_Response( 'CSV FROM REST' );
+        $response->header( 'Content-Type', 'text/csv' );
+        $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
         $controller = $this->getMockBuilder( Export_Admin_Controller::class )
             ->setConstructorArgs( [$this->racketmanager] )
@@ -97,7 +103,32 @@ final class Export_Admin_Controller_Test extends TestCase {
         $controller->handle_export();
         $output = ob_get_clean();
         
-        self::assertSame( 'CSV CONTENT', $output );
+        self::assertSame( 'CSV FROM REST', $output );
         unset($GLOBALS['wp_stubs_current_user_can']);
+        unset($GLOBALS['wp_stubs_rest_do_request_return']);
+    }
+
+    public function test_handle_export_results_delegates_to_rest(): void {
+        $_GET['racketmanager_export'] = 'results';
+        $GLOBALS['wp_stubs_current_user_can'] = true;
+
+        $response = new \WP_REST_Response( 'JSON FROM REST' );
+        $response->header( 'Content-Type', 'application/json' );
+        $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
+
+        $controller = $this->getMockBuilder( Export_Admin_Controller::class )
+            ->setConstructorArgs( [$this->racketmanager] )
+            ->onlyMethods( ['terminate'] )
+            ->getMock();
+        
+        $controller->expects( self::once() )->method( 'terminate' );
+
+        ob_start();
+        $controller->handle_export();
+        $output = ob_get_clean();
+        
+        self::assertSame( 'JSON FROM REST', $output );
+        unset($GLOBALS['wp_stubs_current_user_can']);
+        unset($GLOBALS['wp_stubs_rest_do_request_return']);
     }
 }

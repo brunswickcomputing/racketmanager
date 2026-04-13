@@ -42,8 +42,8 @@ class Ics_Formatter implements Export_Formatter_Interface {
 
             $contents .= "BEGIN:VEVENT\n";
             $contents .= 'UID:' . $uid . "\n";
-            $contents .= 'DTSTAMP:' . mysql2date( $date_format, $date ) . "\n";
-            $contents .= 'DTSTART:' . mysql2date( $date_format, $date ) . "\n";
+            $contents .= 'DTSTAMP:' . \mysql2date( $date_format, $date ) . "\n";
+            $contents .= 'DTSTART:' . \mysql2date( $date_format, $date ) . "\n";
             $contents .= 'DTEND:' . gmdate( $date_format, strtotime( '+2 hours', strtotime( $date ) ) ) . "\n";
             $contents .= 'SUMMARY:' . $summary . "\n";
             $contents .= 'LOCATION:' . $location . "\n";

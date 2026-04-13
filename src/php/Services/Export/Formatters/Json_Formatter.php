@@ -11,7 +11,7 @@ class Json_Formatter implements Export_Formatter_Interface {
      * @return string The formatted content.
      */
     public function format( array $data, array $options = array() ): string {
-        return (string) wp_json_encode( $data );
+        return (string) \wp_json_encode( $data );
     }
 
     /**

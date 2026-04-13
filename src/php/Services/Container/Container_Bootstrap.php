@@ -61,8 +61,10 @@ use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Services\Exporter;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Services\Season_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -92,6 +94,7 @@ final class Container_Bootstrap {
         self::register_repositories( $c );
         self::register_external_clients( $c );
         self::register_services( $c, $app );
+        self::register_exporter_services( $c );
         self::register_admin_controllers( $c );
         self::register_admin_draw_controllers( $c );
         self::register_admin_tournament_controllers( $c );
@@ -256,6 +259,10 @@ final class Container_Bootstrap {
     }
 
     private static function register_result_services( Simple_Container $c ): void {
+        $c->set( 'result_reporting_service', function ( Simple_Container $c ) {
+            return new Result_Reporting_Service( self::get_repository_provider( $c ) );
+        } );
+
         $c->set( 'result_service', function ( Simple_Container $c ) {
             return new Result_Service( $c->get( 'fixture_repository' ), $c->get( 'team_repository' ) );
         } );
@@ -281,6 +288,17 @@ final class Container_Bootstrap {
 
         $c->set( 'results_checker_presenter', function ( Simple_Container $c ) {
             return new Results_Checker_Presenter( $c->get( 'fixture_repository' ), $c->get( 'player_repository' ), $c->get( 'team_repository' ), $c->get( 'league_repository' ), $c->get( 'fixture_detail_service' ) );
+        } );
+    }
+
+    private static function register_exporter_services( Simple_Container $c ): void {
+        $c->set( 'exporter', function ( Simple_Container $c ) {
+            return new Exporter(
+                $c->get( 'fixture_repository' ),
+                $c->get( 'result_reporting_service' ),
+                $c->get( 'fixture_detail_service' ),
+                $c->get( 'club_repository' )
+            );
         } );
     }
 

@@ -42,24 +42,50 @@ class Result_Reporting_Service {
      * @return object|null
      */
     public function report_result( Fixture $fixture, ?string $competition_code = null ): ?object {
-        global $racketmanager;
-
-        $league_repository      = $this->repository_provider->get_league_repository();
-        $event_repository       = $this->repository_provider->get_event_repository();
-        $competition_repository = $this->repository_provider->get_competition_repository();
-
-        $league      = $league_repository->find_by_id( $fixture->get_league_id() );
-        $event       = $event_repository->find_by_id( $league->get_event_id() );
-        $competition = $competition_repository->find_by_id( $event->get_competition_id() );
-
-        if ( empty( $competition_code ) ) {
-            $competition_season = empty( $competition->get_season_by_name( $fixture->get_season() ) ) ? null : $competition->get_season_by_name( $fixture->get_season() );
-            $competition_code   = empty( $competition_season['competition_code'] ) ? ( $competition->competition_code ?? null ) : $competition_season['competition_code'];
+        $context = $this->get_fixture_context( $fixture );
+        
+        if ( $context && empty( $competition_code ) ) {
+            $competition_code = $context['competition_season']['competition_code'] ?? $context['competition']->competition_code ?? null;
         }
 
-        if ( empty( $competition_code ) ) {
+        if ( ! $context || empty( $competition_code ) ) {
             return null;
         }
+
+        $result = $this->initialize_result_object(
+            $context['competition'],
+            $context['competition_season'],
+            $competition_code,
+            $context['event'],
+            $fixture->get_season()
+        );
+
+        $this->populate_event_details( $result, $context['event'] );
+        $this->populate_draw_details( $result, $context['league'], $context['event'], $context['competition'], $fixture );
+
+        $result->matches = array();
+        if ( empty( $context['league']->num_rubbers ) ) {
+            $this->process_fixture_match( $result, $context['event'], $fixture );
+        } else {
+            $this->process_rubbers( $result, $context['event'], $fixture );
+        }
+
+        return $result;
+    }
+
+    /**
+     * Initialize the result object with basic competition details
+     *
+     * @param object $competition Competition object.
+     * @param array $competition_season Competition season details.
+     * @param string $competition_code Competition code.
+     * @param object $event Event object.
+     * @param string $fixture_season Fixture season name.
+     *
+     * @return object Initialized result object.
+     */
+    private function initialize_result_object( object $competition, array $competition_season, string $competition_code, object $event, string $fixture_season ): object {
+        global $racketmanager;
 
         $result             = new stdClass();
         $result->tournament = $racketmanager->site_name . ' ' . $competition->name;
@@ -68,22 +94,41 @@ class Result_Reporting_Service {
         $result->venue      = '';
         $result->event_name = $event->name;
 
-        $event_season             = empty( $event->get_season_by_name( $fixture->get_season() ) ) ? null : $event->get_season_by_name( $fixture->get_season() );
+        $event_season             = $event->get_season_by_name( $fixture_season );
         $result->grade            = $event_season['grade'] ?? $competition->settings['grade'] ?? null;
-        $result->event_end_date   = $competition->date_end;
-        $result->event_start_date = $competition->date_start;
-
-        $this->populate_event_details( $result, $event );
-        $this->populate_draw_details( $result, $league, $event, $competition, $fixture );
-
-        $result->matches = array();
-        if ( empty( $league->num_rubbers ) ) {
-            $this->process_fixture_match( $result, $event, $fixture );
-        } else {
-            $this->process_rubbers( $result, $event, $fixture );
-        }
+        $result->event_end_date   = $competition_season['date_end'];
+        $result->event_start_date = $competition_season['date_start'];
 
         return $result;
+    }
+
+    /**
+     * Get the competition context for a fixture
+     *
+     * @param Fixture $fixture The fixture.
+     *
+     * @return array|null [league, event, competition, competition_season] or null if not found.
+     */
+    private function get_fixture_context( Fixture $fixture ): ?array {
+        $league_repository      = $this->repository_provider->get_league_repository();
+        $event_repository       = $this->repository_provider->get_event_repository();
+        $competition_repository = $this->repository_provider->get_competition_repository();
+
+        $league = $league_repository->find_by_id( $fixture->get_league_id() );
+        $event  = $league ? $event_repository->find_by_id( $league->get_event_id() ) : null;
+        $competition = $event ? $competition_repository->find_by_id( $event->get_competition_id() ) : null;
+        $competition_season = $competition?->get_season_by_name( $fixture->get_season() );
+
+        if ( empty( $competition_season ) ) {
+            return null;
+        }
+
+        return [
+            'league'             => $league,
+            'event'              => $event,
+            'competition'        => $competition,
+            'competition_season' => $competition_season,
+        ];
     }
 
     /**
@@ -254,7 +299,7 @@ class Result_Reporting_Service {
             $losing_player  = $sides['losing_player'];
 
             $rubber->get_players();
-            $this->populate_player_info( $result_match, $rubber, $event, $sides );
+            $this->populate_player_info( $result_match, $rubber->players, $event, $sides );
 
             $result_match->score      = '';
             $result_match->score_code = $rubber->get_status() === 3 ? 'Retired' : '';
@@ -282,13 +327,15 @@ class Result_Reporting_Service {
                 ++ $score_away;
             }
         }
+        
+        $winner_id = null;
         if ( $score_home > $score_away ) {
-            return $fixture->get_home_team();
+            $winner_id = $fixture->get_home_team();
         } elseif ( $score_away > $score_home ) {
-            return $fixture->get_away_team();
+            $winner_id = $fixture->get_away_team();
         }
 
-        return null;
+        return $winner_id;
     }
 
     /**
@@ -321,25 +368,52 @@ class Result_Reporting_Service {
      * Populate player info into the result match
      *
      * @param object $result_match Result match object.
-     * @param object $rubber Rubber object.
+     * @param array $players Players array.
      * @param object $event Event object.
      * @param array $sides Sides mapping.
      */
-    private function populate_player_info( object $result_match, object $rubber, object $event, array $sides ): void {
+    private function populate_player_info( object $result_match, array $players, object $event, array $sides ): void {
         $winning_team = $sides['winning_team'];
         $losing_team  = $sides['losing_team'];
 
-        $result_match->winner_name   = $rubber->players[ $winning_team ]['1']->display_name ?? '';
-        $result_match->winner_lta_no = $rubber->players[ $winning_team ]['1']->btm ?? '';
-        $result_match->loser_name    = $rubber->players[ $losing_team ]['1']->display_name ?? '';
-        $result_match->loser_lta_no  = $rubber->players[ $losing_team ]['1']->btm ?? '';
+        $result_match->winner_name   = $players[ $winning_team ]['1']->display_name ?? '';
+        $result_match->winner_lta_no = $players[ $winning_team ]['1']->btm ?? '';
+        $result_match->loser_name    = $players[ $losing_team ]['1']->display_name ?? '';
+        $result_match->loser_lta_no  = $players[ $losing_team ]['1']->btm ?? '';
+
+        $result_match->winnerpartner        = '';
+        $result_match->winnerpartner_lta_no = '';
+        $result_match->loserpartner         = '';
+        $result_match->loserpartner_lta_no  = '';
 
         if ( 'D' === substr( $event->type, 1, 1 ) ) {
-            $result_match->winnerpartner        = $rubber->players[ $winning_team ]['2']->display_name ?? '';
-            $result_match->winnerpartner_lta_no = $rubber->players[ $winning_team ]['2']->btm ?? '';
-            $result_match->loserpartner         = $rubber->players[ $losing_team ]['2']->display_name ?? '';
-            $result_match->loserpartner_lta_no  = $rubber->players[ $losing_team ]['2']->btm ?? '';
+            $result_match->winnerpartner        = $players[ $winning_team ]['2']->display_name ?? '';
+            $result_match->winnerpartner_lta_no = $players[ $winning_team ]['2']->btm ?? '';
+            $result_match->loserpartner         = $players[ $losing_team ]['2']->display_name ?? '';
+            $result_match->loserpartner_lta_no  = $players[ $losing_team ]['2']->btm ?? '';
         }
+    }
+
+    /**
+     * Calculate score code for a fixture
+     *
+     * @param Fixture $fixture Fixture object.
+     * @param string $score Formatted score string.
+     *
+     * @return string Score code.
+     */
+    private function calculate_fixture_score_code( Fixture $fixture, string $score ): string {
+        $code = '';
+
+        if ( $fixture->is_retired() ) {
+            $code = 'R';
+        } elseif ( empty( $score ) ) {
+            $code = 'W';
+        } elseif ( $fixture->is_shared() || $fixture->is_cancelled() ) {
+            $code = 'N';
+        }
+
+        return $code;
     }
 
     /**
@@ -412,20 +486,12 @@ class Result_Reporting_Service {
             $result_match->score .= ' ';
         }
 
-        $match_tiebreak = false;
-        if ( ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) || ( 3 === $s && '1' === (string) $set[ $winning_player ] && '0' === (string) $set[ $losing_player ] ) ) {
+        $match_tiebreak = $this->is_match_tiebreak( $set, $s, $winning_player, $losing_player );
+        if ( $match_tiebreak ) {
             $result_match->score .= '[';
-            $match_tiebreak      = true;
         }
 
-        if ( $match_tiebreak && ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) ) {
-            $set[ $winning_player ] = 10;
-            $set[ $losing_player ]  = 8;
-        }
-
-        if ( '7' === (string) $set[ $winning_player ] && '6' === (string) $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
-            $set['tiebreak'] = 5;
-        }
+        $set = $this->normalize_set_array( $set, $winning_player, $losing_player, $match_tiebreak );
 
         $result_match->score .= $set[ $winning_player ] . '-' . $set[ $losing_player ];
         if ( ! empty( $set['tiebreak'] ) ) {
@@ -441,6 +507,47 @@ class Result_Reporting_Service {
 
         $result_match->{'set' . $s . 'team1'} = $set[ $winning_player ];
         $result_match->{'set' . $s . 'team2'} = $set[ $losing_player ];
+    }
+
+    /**
+     * Check if a set is a match tiebreak
+     *
+     * @param array $set Set score array.
+     * @param int $s Set number.
+     * @param string $winning_player Winning player key.
+     * @param string $losing_player Losing player key.
+     *
+     * @return bool
+     */
+    private function is_match_tiebreak( array $set, int $s, string $winning_player, string $losing_player ): bool {
+        if ( isset( $set['settype'] ) && 'MTB' === $set['settype'] ) {
+            return true;
+        }
+
+        return 3 === $s && '1' === (string) $set[ $winning_player ] && '0' === (string) $set[ $losing_player ];
+    }
+
+    /**
+     * Normalize the set score array for reporting
+     *
+     * @param array $set Set score array.
+     * @param string $winning_player Winning player key.
+     * @param string $losing_player Losing player key.
+     * @param bool $match_tiebreak Whether it's a match tiebreak.
+     *
+     * @return array Normalized set array.
+     */
+    private function normalize_set_array( array $set, string $winning_player, string $losing_player, bool $match_tiebreak ): array {
+        if ( $match_tiebreak && ( empty( $set['settype'] ) || 'MTB' !== $set['settype'] ) ) {
+            $set[ $winning_player ] = 10;
+            $set[ $losing_player ]  = 8;
+        }
+
+        if ( '7' === (string) $set[ $winning_player ] && '6' === (string) $set[ $losing_player ] && empty( $set['tiebreak'] ) ) {
+            $set['tiebreak'] = 5;
+        }
+
+        return $set;
     }
 
     /**
@@ -463,61 +570,42 @@ class Result_Reporting_Service {
      * @param Fixture $fixture Fixture object.
      */
     private function process_fixture_match( object $result, object $event, Fixture $fixture ): void {
-        if ( $fixture->is_walkover() || '-1' === (string) $fixture->get_home_team() || '-1' === (string) $fixture->get_away_team() ) {
+        $winner_id = $fixture->get_winner_id();
+        $is_invalid = $fixture->is_walkover() || '-1' === (string) $fixture->get_home_team() || '-1' === (string) $fixture->get_away_team();
+
+        if ( $is_invalid || empty( $winner_id ) ) {
             return;
         }
 
         $result_match        = new stdClass();
         $result_match->match = $fixture->get_id();
 
-        if ( (string) $fixture->get_winner_id() === (string) $fixture->get_home_team() ) {
-            $winning_team   = 'home';
-            $winning_player = 'player1';
-            $losing_team    = 'away';
-            $losing_player  = 'player2';
-        } else {
-            $winning_team   = 'away';
-            $winning_player = 'player2';
-            $losing_team    = 'home';
-            $losing_player  = 'player1';
-        }
+        $sides = $this->identify_winning_and_losing_sides( $winner_id, $fixture );
 
         $team_repository = $this->repository_provider->get_team_repository();
         $home_team       = $team_repository->find_by_id( (int) $fixture->get_home_team() );
         $away_team       = $team_repository->find_by_id( (int) $fixture->get_away_team() );
-        $teams           = [
-            'home' => $home_team,
-            'away' => $away_team,
+
+        $home_players = $home_team->get_players();
+        $away_players = $away_team->get_players();
+
+        $players = [
+            'home' => [
+                '1' => $home_players[0] ?? null,
+                '2' => $home_players[1] ?? null,
+            ],
+            'away' => [
+                '1' => $away_players[0] ?? null,
+                '2' => $away_players[1] ?? null,
+            ],
         ];
 
-        $result_match->winner_name          = $teams[ $winning_team ]->get_players()['1']->display_name ?? '';
-        $result_match->winner_lta_no        = $teams[ $winning_team ]->get_players()['1']->btm ?? '';
-        $result_match->loser_name           = $teams[ $losing_team ]->get_players()['1']->display_name ?? '';
-        $result_match->loser_lta_no         = $teams[ $losing_team ]->get_players()['1']->btm ?? '';
-        $result_match->winnerpartner        = '';
-        $result_match->winnerpartner_lta_no = '';
-        $result_match->loserpartner         = '';
-        $result_match->loserpartner_lta_no  = '';
-
-        if ( 'D' === substr( $event->type, 1, 1 ) ) {
-            $result_match->winnerpartner        = $teams[ $winning_team ]->get_players()['2']->display_name ?? '';
-            $result_match->winnerpartner_lta_no = $teams[ $winning_team ]->get_players()['2']->btm ?? '';
-            $result_match->loserpartner         = $teams[ $losing_team ]->get_players()['2']->display_name ?? '';
-            $result_match->loserpartner_lta_no  = $teams[ $losing_team ]->get_players()['2']->btm ?? '';
-        }
+        $this->populate_player_info( $result_match, $players, $event, $sides );
 
         $result_match->score      = '';
         $result_match->match_date = mysql2date( 'Y-m-d', $fixture->get_date() );
-        $result_match             = $this->report_result_scores( $result_match, $fixture->get_custom()['sets'] ?? [], $winning_player, $losing_player );
-        $result_match->score_code = '';
-
-        if ( $fixture->is_retired() ) {
-            $result_match->score_code = 'R';
-        } elseif ( empty( $result_match->score ) ) {
-            $result_match->score_code = 'W';
-        } elseif ( $fixture->is_shared() || $fixture->is_cancelled() ) {
-            $result_match->score_code = 'N';
-        }
+        $result_match             = $this->report_result_scores( $result_match, $fixture->get_custom()['sets'] ?? [], $sides['winning_player'], $sides['losing_player'] );
+        $result_match->score_code = $this->calculate_fixture_score_code( $fixture, $result_match->score );
 
         $result->matches[] = $result_match;
     }

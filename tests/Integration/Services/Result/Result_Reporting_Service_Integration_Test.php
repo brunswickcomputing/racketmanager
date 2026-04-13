@@ -71,7 +71,11 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 		$competition->method( 'get_id' )->willReturn( 301 );
-		$competition->method( 'get_season_by_name' )->willReturn( [ 'competition_code' => 'INT-COMP' ] );
+		$competition->method( 'get_season_by_name' )->willReturn( [
+			'competition_code' => 'INT-COMP',
+			'date_start'       => '2024-01-01',
+			'date_end'         => '2024-12-31',
+		] );
 		$competition->name = 'Int Competition';
 		$competition->type = 'league';
 		$competition->competition_code = 'COMP-CODE';
@@ -82,12 +86,12 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		$home_team = $this->getMockBuilder( Team::class )
 			->disableOriginalConstructor()
 			->getMock();
-		$home_team->method( 'get_players' )->willReturn( [ '1' => (object)[ 'display_name' => 'Int Player 1', 'btm' => 'BTM1' ] ] );
+		$home_team->method( 'get_players' )->willReturn( [ (object)[ 'display_name' => 'Int Player 1', 'btm' => 'BTM1' ] ] );
 
 		$away_team = $this->getMockBuilder( Team::class )
 			->disableOriginalConstructor()
 			->getMock();
-		$away_team->method( 'get_players' )->willReturn( [ '1' => (object)[ 'display_name' => 'Int Player 2', 'btm' => 'BTM2' ] ] );
+		$away_team->method( 'get_players' )->willReturn( [ (object)[ 'display_name' => 'Int Player 2', 'btm' => 'BTM2' ] ] );
 
 		$league_repo = $this->createMock( League_Repository_Interface::class );
 		$league_repo->method( 'find_by_id' )->with( 101 )->willReturn( $league );

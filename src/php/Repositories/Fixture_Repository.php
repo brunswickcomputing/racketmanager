@@ -442,7 +442,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         }
 
         if ( $criteria->competition_id ) {
-            $league_table = $this->wpdb->prefix . 'racketmanager';
+            $league_table = $this->wpdb->prefix . 'racketmanager_leagues';
             $event_table  = $this->wpdb->prefix . 'racketmanager_events';
             $where[] = $this->wpdb->prepare(
                 "m.league_id IN (SELECT id FROM $league_table WHERE event_id IN (SELECT id FROM $event_table WHERE competition_id = %d))",

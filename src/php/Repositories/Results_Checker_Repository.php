@@ -133,7 +133,8 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
         );
 
         $checkers = [];
-        foreach ( $results as $row ) {
+        if ( is_array( $results ) ) {
+            foreach ( $results as $row ) {
             $data = new Results_Checker_Data(
                 id: (int) $row->id,
                 league_id: (int) $row->league_id,
@@ -148,6 +149,7 @@ class Results_Checker_Repository implements Results_Checker_Repository_Interface
             );
             $checkers[] = new Results_Checker( $data );
         }
+    }
 
         return $checkers;
     }

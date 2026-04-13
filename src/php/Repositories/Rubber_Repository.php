@@ -129,8 +129,10 @@ class Rubber_Repository implements Rubber_Repository_Interface {
         $results = $this->wpdb->get_results( $sql );
 
         $rubbers = [];
-        foreach ( $results as $row ) {
-            $rubbers[] = new Rubber( $row );
+        if ( is_array( $results ) ) {
+            foreach ( $results as $row ) {
+                $rubbers[] = new Rubber( $row );
+            }
         }
 
         return $rubbers;

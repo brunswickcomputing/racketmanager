@@ -77,13 +77,85 @@ class Result_Reporting_Service {
         $this->populate_draw_details( $result, $league, $event, $competition, $fixture );
 
         $result->matches = array();
-        if ( ! empty( $league->num_rubbers ) ) {
-            $this->process_rubbers( $result, $event, $fixture );
-        } else {
+        if ( empty( $league->num_rubbers ) ) {
             $this->process_fixture_match( $result, $event, $fixture );
+        } else {
+            $this->process_rubbers( $result, $event, $fixture );
         }
 
         return $result;
+    }
+
+    /**
+     * Report results for multiple fixtures
+     *
+     * @param Fixture[]   $fixtures         The fixtures to report.
+     * @param string|null $competition_code competition code (optional).
+     *
+     * @return array
+     */
+    public function report_fixtures( array $fixtures, ?string $competition_code = null ): array {
+        $all_results = array();
+
+        foreach ( $fixtures as $fixture ) {
+            $report = $this->report_result( $fixture, $competition_code );
+            if ( ! $report ) {
+                continue;
+            }
+
+            $common = array(
+                $report->tournament,
+                $report->code,
+                $report->organiser,
+                $report->venue,
+                $report->event_name,
+                $report->grade,
+                $report->event_start_date,
+                $report->event_end_date,
+                $report->age_group,
+                $report->event_type,
+                $report->gender,
+                $report->draw_name,
+                $report->draw_type,
+                $report->draw_stage,
+                $report->draw_size,
+                $report->round,
+            );
+
+            foreach ( $report->matches as $match ) {
+                $all_results[] = array_merge( $common, array(
+                    $match->match,
+                    $match->winner_name,
+                    $match->winner_lta_no,
+                    $match->winnerpartner,
+                    $match->winnerpartner_lta_no,
+                    $match->loser_name,
+                    $match->loser_lta_no,
+                    $match->loserpartner,
+                    $match->loserpartner_lta_no,
+                    $match->score,
+                    $match->score_code,
+                    $match->match_date,
+                    $match->set1team1,
+                    $match->set1team2,
+                    $match->set2team1,
+                    $match->set2team2,
+                    $match->set3team1,
+                    $match->set3team2,
+                    $match->set4team1,
+                    $match->set4team2,
+                    $match->set5team1,
+                    $match->set5team2,
+                    $match->tiebreak1,
+                    $match->tiebreak2,
+                    $match->tiebreak3,
+                    $match->tiebreak4,
+                    $match->tiebreak5,
+                ) );
+            }
+        }
+
+        return $all_results;
     }
 
     /**

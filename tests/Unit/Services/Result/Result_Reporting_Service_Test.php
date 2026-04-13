@@ -1,9 +1,17 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit\Services\Result;
+namespace {
+	if ( ! function_exists( 'mysql2date' ) ) {
+		function mysql2date( $format, $date ): string {
+			return date( $format, strtotime( $date ) );
+		}
+	}
+}
 
-use PHPUnit\Framework\TestCase;
+namespace Racketmanager\Tests\Unit\Services\Result {
+
+	use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Competition\League;
@@ -18,12 +26,6 @@ use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use stdClass;
-
-if ( ! function_exists( 'mysql2date' ) ) {
-	function mysql2date( $format, $date ) {
-		return date( $format, strtotime( $date ) );
-	}
-}
 
 class Result_Reporting_Service_Test extends TestCase {
 
@@ -67,7 +69,7 @@ class Result_Reporting_Service_Test extends TestCase {
 
 		$service = new Result_Reporting_Service($repository_provider);
 		
-		$result = $service->report_result( $fixture, null );
+		$result = $service->report_result( $fixture );
 		$this->assertNull( $result );
 	}
 
@@ -315,4 +317,5 @@ class Result_Reporting_Service_Test extends TestCase {
 		$this->assertEquals( 6, $result->matches[0]->set2team2 );
 		$this->assertEquals( 5, $result->matches[0]->tiebreak2 );
 	}
+}
 }

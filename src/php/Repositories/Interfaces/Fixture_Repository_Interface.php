@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories\Interfaces;
 
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Services\Export\DTO\Export_Criteria;
 
 /**
  * Interface to implement the Fixture repository
@@ -28,4 +29,5 @@ interface Fixture_Repository_Interface extends Repository_Interface {
     public function update_status( int $id, int $status ): bool;
     public function update_teams( int $id, string $home_team, string $away_team ): bool;
     public function update_date( int $id, string $date, ?string $original_date = null ): bool;
+    public function find_by_criteria( Export_Criteria $criteria ): array;
 }

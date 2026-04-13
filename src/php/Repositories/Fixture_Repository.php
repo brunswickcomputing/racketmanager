@@ -11,7 +11,9 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Export\DTO\Export_Criteria;
 use wpdb;
+
 
 /**
  * Class to implement the fixture repository
@@ -425,5 +427,69 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         }
 
         return false;
+    }
+
+    public function find_by_criteria( Export_Criteria $criteria ): array {
+        $sql = "SELECT id FROM $this->table_name AS m";
+        $where = array( '1=1' );
+
+        if ( $criteria->league_id ) {
+            $where[] = $this->wpdb->prepare( 'm.league_id = %d', $criteria->league_id );
+        }
+
+        if ( $criteria->season ) {
+            $where[] = $this->wpdb->prepare( 'm.season = %s', $criteria->season );
+        }
+
+        if ( $criteria->competition_id ) {
+            $league_table = $this->wpdb->prefix . 'racketmanager';
+            $event_table  = $this->wpdb->prefix . 'racketmanager_events';
+            $where[] = $this->wpdb->prepare(
+                "m.league_id IN (SELECT id FROM $league_table WHERE event_id IN (SELECT id FROM $event_table WHERE competition_id = %d))",
+                $criteria->competition_id
+            );
+        }
+
+        if ( $criteria->club_id ) {
+            $team_table = $this->wpdb->prefix . 'racketmanager_teams';
+            $where[] = $this->wpdb->prepare(
+                " (m.home_team IN (SELECT id FROM $team_table WHERE club_id = %d) OR m.away_team IN (SELECT id FROM $team_table WHERE club_id = %d))",
+                $criteria->club_id,
+                $criteria->club_id
+            );
+        }
+
+        if ( $criteria->team_id ) {
+            $where[] = $this->wpdb->prepare(
+                '(m.home_team = %d OR m.away_team = %d)',
+                $criteria->team_id,
+                $criteria->team_id
+            );
+        }
+
+        if ( $criteria->date_from ) {
+            $where[] = $this->wpdb->prepare( 'm.date >= %s', $criteria->date_from );
+        }
+
+        if ( $criteria->date_to ) {
+            $where[] = $this->wpdb->prepare( 'm.date <= %s', $criteria->date_to );
+        }
+
+        $sql .= ' WHERE ' . implode( ' AND ', $where );
+        $sql .= ' ORDER BY m.match_day ASC, m.date ASC';
+
+        $results = $this->wpdb->get_results( $sql );
+
+        $fixtures = array();
+        if ( ! empty( $results ) ) {
+            foreach ( $results as $row ) {
+                $fixture = $this->find_by_id( (int) $row->id );
+                if ( $fixture ) {
+                    $fixtures[] = $fixture;
+                }
+            }
+        }
+
+        return $fixtures;
     }
 }

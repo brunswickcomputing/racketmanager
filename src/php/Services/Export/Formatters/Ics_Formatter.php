@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Services\Export\Formatters;
 
+use function mysql2date;
+
 class Ics_Formatter implements Export_Formatter_Interface {
     /**
      * Formats the given data for export.
@@ -42,8 +44,8 @@ class Ics_Formatter implements Export_Formatter_Interface {
 
             $contents .= "BEGIN:VEVENT\n";
             $contents .= 'UID:' . $uid . "\n";
-            $contents .= 'DTSTAMP:' . \mysql2date( $date_format, $date ) . "\n";
-            $contents .= 'DTSTART:' . \mysql2date( $date_format, $date ) . "\n";
+            $contents .= 'DTSTAMP:' . mysql2date( $date_format, $date ) . "\n";
+            $contents .= 'DTSTART:' . mysql2date( $date_format, $date ) . "\n";
             $contents .= 'DTEND:' . gmdate( $date_format, strtotime( '+2 hours', strtotime( $date ) ) ) . "\n";
             $contents .= 'SUMMARY:' . $summary . "\n";
             $contents .= 'LOCATION:' . $location . "\n";
@@ -61,7 +63,7 @@ class Ics_Formatter implements Export_Formatter_Interface {
      * @return string
      */
     public function get_content_type(): string {
-        return 'text/calendar';
+        return self::CONTENT_TYPE_ICS;
     }
 
     /**

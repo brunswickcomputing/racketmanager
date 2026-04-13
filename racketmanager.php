@@ -16,6 +16,8 @@
 namespace Racketmanager;
 
 // Abort if this file is called directly.
+use WP_CLI;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -116,3 +118,10 @@ add_action( 'plugins_loaded', function () {
     global $racketmanager;
     $racketmanager = $instance;
 }, 5 );
+
+// -----------------------------------------------------------------------------
+// WP-CLI Support
+// -----------------------------------------------------------------------------
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+    WP_CLI::add_command( 'racketmanager export', 'Racketmanager\Cli\Export_Command' );
+}

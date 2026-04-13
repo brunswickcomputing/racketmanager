@@ -9,66 +9,68 @@ namespace Racketmanager {
     }
 
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
-        class RacketManager {
-            public static $container;
-            public $shortcodes;
-            public array $options = [];
+        eval('
+            class RacketManager {
+                public static $container;
+                public $shortcodes;
+                public array $options = [];
 
-            public function __construct() {
-                $this->shortcodes = new class {
-                    public function load_template( string $slug, array $args = [], string $sub_directory = '' ): string {
-                        return 'Template: ' . $slug;
-                    }
-                };
-                self::$container  = new class {
-                    public function get( string $id ): object {
-                        try {
-                            switch ( $id ) {
-                                case 'competition_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Competition_Service' ))->newInstanceWithoutConstructor();
-                                case 'club_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Club_Service' ))->newInstanceWithoutConstructor();
-                                case 'player_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Player_Service' ))->newInstanceWithoutConstructor();
-                                case 'registration_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Registration_Service' ))->newInstanceWithoutConstructor();
-                                case 'event_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Event_Service' ))->newInstanceWithoutConstructor();
-                                case 'league_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\League_Service' ))->newInstanceWithoutConstructor();
-                                case 'fixture_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Fixture_Service' ))->newInstanceWithoutConstructor();
-                                case 'team_service':
-                                    return (new \ReflectionClass( 'Racketmanager\Services\Team_Service' ))->newInstanceWithoutConstructor();
-                            }
-                        } catch ( \ReflectionException $e ) {
+                public function __construct() {
+                    $this->shortcodes = new class {
+                        public function load_template( string $slug, array $args = [], string $sub_directory = "" ): string {
+                            return "Template: " . $slug;
                         }
-                        return new \stdClass();
-                    }
-                };
-            }
+                    };
+                    self::$container  = new class {
+                        public function get( string $id ): object {
+                            try {
+                                switch ( $id ) {
+                                    case "competition_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Competition_Service" ))->newInstanceWithoutConstructor();
+                                    case "club_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Club_Service" ))->newInstanceWithoutConstructor();
+                                    case "player_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Player_Service" ))->newInstanceWithoutConstructor();
+                                    case "registration_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Registration_Service" ))->newInstanceWithoutConstructor();
+                                    case "event_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Event_Service" ))->newInstanceWithoutConstructor();
+                                    case "league_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\League_Service" ))->newInstanceWithoutConstructor();
+                                    case "fixture_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Fixture_Service" ))->newInstanceWithoutConstructor();
+                                    case "team_service":
+                                        return (new \ReflectionClass( "Racketmanager\Services\Team_Service" ))->newInstanceWithoutConstructor();
+                                }
+                            } catch ( \ReflectionException $e ) {
+                            }
+                            return new \stdClass();
+                        }
+                    };
+                }
 
-            public function get_options(): array {
-                return [
-                    'league'     => [
-                        'resultConfirmation' => 'manual',
-                    ],
-                    'tournament' => [
-                        'resultConfirmation' => 'manual',
-                    ],
-                ];
-            }
+                public function get_options(): array {
+                    return [
+                        "league"     => [
+                            "resultConfirmation" => "manual",
+                        ],
+                        "tournament" => [
+                            "resultConfirmation" => "manual",
+                        ],
+                    ];
+                }
 
-            public function get_confirmation_email( string $type ): string {
-                return 'admin@example.test';
-            }
+                public function get_confirmation_email( string $type ): string {
+                    return "admin@example.test";
+                }
 
-            public function set_message( string $message ): void {}
-            public function load_options(): void {
-                $this->options = [];
-                $this->date_format = 'Y-m-d';
+                public function set_message( string $message ): void {}
+                public function load_options(): void {
+                    $this->options = [];
+                    $this->date_format = "Y-m-d";
+                }
             }
-        }
+        ');
     }
 }
 
@@ -101,12 +103,13 @@ namespace {
     }
 
     if ( ! class_exists( 'wpdb' ) ) {
+        eval('
         class wpdb {
-            public $prefix = 'wp_';
-            public $racketmanager_teams = 'wp_racketmanager_teams';
-            public $racketmanager_league_teams = 'wp_racketmanager_league_teams';
-            public $racketmanager_results_checker = 'wp_racketmanager_results_checker';
-            public $racketmanager_matches = 'wp_racketmanager_matches';
+            public $prefix = "wp_";
+            public $racketmanager_teams = "wp_racketmanager_teams";
+            public $racketmanager_league_teams = "wp_racketmanager_league_teams";
+            public $racketmanager_results_checker = "wp_racketmanager_results_checker";
+            public $racketmanager_matches = "wp_racketmanager_matches";
             public $get_results_callback;
             public $get_row_callback;
             public $update_callback;
@@ -121,15 +124,15 @@ namespace {
                 $prepared_args = [];
                 foreach ($args as $arg) {
                     if (is_string($arg)) {
-                        $prepared_args[] = "'" . addslashes($arg) . "'";
+                        $prepared_args[] = "\'" . addslashes($arg) . "\'";
                     } else {
                         $prepared_args[] = $arg;
                     }
                 }
 
-                $query = str_replace( "'%s'", '%s', $query );
-                $query = str_replace( '%d', '%s', $query );
-                $query = str_replace( '%f', '%s', $query );
+                $query = str_replace( "\'%s\'", "%s", $query );
+                $query = str_replace( "%d", "%s", $query );
+                $query = str_replace( "%f", "%s", $query );
                 
                 try {
                     return vsprintf( $query, $prepared_args );
@@ -137,22 +140,22 @@ namespace {
                     return $query;
                 }
             }
-            public function get_row( $query, $output = 'OBJECT' ) { 
+            public function get_row( $query, $output = "OBJECT" ) { 
                 if ( $this->get_row_callback ) return ($this->get_row_callback)($query);
                 $results = $this->get_results($query, $output);
                 return !empty($results) ? $results[0] : null;
             }
-            public function get_results( $query, $output = 'OBJECT' ) { 
+            public function get_results( $query, $output = "OBJECT" ) { 
                 if ( $this->get_results_callback ) return ($this->get_results_callback)($query);
                 
                 // Very simple mock query parser for tests
-                if (preg_match('/SELECT \* FROM (\w+) WHERE `id` = (\d+)/', $query, $matches)) {
+                if (preg_match("/SELECT \* FROM (\w+) WHERE `id` = (\d+)/", $query, $matches)) {
                     $table = $matches[1];
                     $id = (int)$matches[2];
                     $found = array_filter($this->data[$table] ?? [], fn($row) => $row->id == $id);
                     return array_values($found);
                 }
-                if (preg_match('/SELECT \* FROM (\w+) WHERE `match_id` = (\d+)/', $query, $matches)) {
+                if (preg_match("/SELECT \* FROM (\w+) WHERE `match_id` = (\d+)/", $query, $matches)) {
                     $table = $matches[1];
                     $match_id = (int)$matches[2];
                     $found = array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) == $match_id);
@@ -162,12 +165,12 @@ namespace {
                 return array(); 
             }
             public function get_var( $query, $x = 0, $y = 0 ) { 
-                if (preg_match('/SELECT count\(\*\) FROM (\w+) WHERE match_id = (\d+)/', $query, $matches)) {
+                if (preg_match("/SELECT count\(\*\) FROM (\w+) WHERE match_id = (\d+)/", $query, $matches)) {
                     $table = $matches[1];
                     $match_id = (int)$matches[2];
                     return count(array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) == $match_id));
                 }
-                if (preg_match('/SELECT count\(\*\) FROM (\w+) WHERE `match_id` = (\d+)/', $query, $matches)) {
+                if (preg_match("/SELECT count\(\*\) FROM (\w+) WHERE `match_id` = (\d+)/", $query, $matches)) {
                     $table = $matches[1];
                     $match_id = (int)$matches[2];
                     return count(array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) == $match_id));
@@ -184,9 +187,9 @@ namespace {
             }
             public function update( $table, $data, $where, $format = null, $where_format = null ) { 
                 if ( $this->update_callback ) return ($this->update_callback)($table, $data, $where);
-                if (isset($where['id'])) {
+                if (isset($where["id"])) {
                     foreach ($this->data[$table] ?? [] as $row) {
-                        if ($row->id == $where['id']) {
+                        if ($row->id == $where["id"]) {
                             foreach ($data as $k => $v) $row->$k = $v;
                         }
                     }
@@ -194,14 +197,15 @@ namespace {
                 return true; 
             }
             public function delete( $table, $where, $where_format = null ) { 
-                if (isset($where['match_id'])) {
-                    $this->data[$table] = array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) != $where['match_id']);
+                if (isset($where["match_id"])) {
+                    $this->data[$table] = array_filter($this->data[$table] ?? [], fn($row) => ($row->match_id ?? null) != $where["match_id"]);
                 }
                 return true; 
             }
             public function show_errors() {}
             public function hide_errors() {}
         }
+        ');
     }
 
     if ( ! isset( $GLOBALS['wpdb'] ) ) {
@@ -543,20 +547,21 @@ namespace {
     }
 
     if ( ! class_exists( 'WP_Error' ) ) {
+        eval('
         class WP_Error {
             public array $errors = array();
 
-            public function __construct( $code = '', $message = '', $data = '' ) {
+            public function __construct( $code = "", $message = "", $data = "" ) {
                 if ( ! empty( $code ) ) {
                     $this->add( $code, $message, $data );
                 }
             }
 
-            public function add( $code, $message, $data = '' ): void {
+            public function add( $code, $message, $data = "" ): void {
                 $this->errors[ $code ][] = $message;
             }
 
-            public function get_error_messages( $code = '' ) {
+            public function get_error_messages( $code = "" ) {
                 if ( empty( $code ) ) {
                     $all = array();
                     foreach ( $this->errors as $messages ) {
@@ -571,17 +576,89 @@ namespace {
                 return array_keys( $this->errors );
             }
 
-            public function get_error_message( $code = '' ): mixed {
+            public function get_error_message( $code = "" ): mixed {
                 $messages = $this->get_error_messages( $code );
-                return $messages[0] ?? '';
+                return $messages[0] ?? "";
             }
         }
+        ');
     }
 
     if ( ! function_exists( 'is_wp_error' ) ) {
         function is_wp_error( $thing ): bool {
             return $thing instanceof WP_Error;
         }
+    }
+
+    if ( ! class_exists( 'WP_REST_Request' ) ) {
+        eval('
+        class WP_REST_Request {
+            private $method;
+            private $route;
+            private $params = [];
+
+            public function __construct( $method = "", $route = "", $params = [] ) {
+                $this->method = $method;
+                $this->route  = $route;
+                $this->params = $params;
+            }
+
+            public function set_param( $key, $value ) {
+                $this->params[ $key ] = $value;
+            }
+
+            public function get_param( $key ) {
+                return $this->params[ $key ] ?? null;
+            }
+        }
+        ');
+    }
+
+    if ( ! class_exists( 'WP_REST_Response' ) ) {
+        eval('
+        class WP_REST_Response {
+            private $data;
+            private $status;
+            private $headers = [];
+
+            public function __construct( $data = null, $status = 200, $headers = [] ) {
+                $this->data    = $data;
+                $this->status  = $status;
+                $this->headers = $headers;
+            }
+
+            public function header( $key, $value ) {
+                $this->headers[ $key ] = $value;
+            }
+
+            public function get_status() {
+                return $this->status;
+            }
+
+            public function get_data() {
+                return $this->data;
+            }
+
+            public function get_headers() {
+                return $this->headers;
+            }
+        }
+        ');
+    }
+
+    if ( ! class_exists( 'WP_REST_Controller' ) ) {
+        eval('
+        class WP_REST_Controller {
+        }
+        ');
+    }
+
+    if ( ! class_exists( 'WP_REST_Server' ) ) {
+        eval('
+        class WP_REST_Server {
+            const READABLE = "GET";
+        }
+        ');
     }
 }
 

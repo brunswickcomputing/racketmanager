@@ -35,7 +35,7 @@ class Csv_Formatter implements Export_Formatter_Interface {
      * @return string
      */
     public function get_content_type(): string {
-        return 'text/csv';
+        return self::CONTENT_TYPE_CSV;
     }
 
     /**

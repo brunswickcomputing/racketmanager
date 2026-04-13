@@ -147,58 +147,8 @@ add_action( 'init', 'Racketmanager\create_new_url_querystring' );
 function racketmanager_download(): void {
     global $racketmanager;
     if ( isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $criteria = new Export_Criteria();
-        $criteria->league_id      = isset( $_GET['league_id'] ) ? (int) $_GET['league_id'] : null;
-        $criteria->season         = isset( $_GET['season'] ) ? sanitize_text_field( $_GET['season'] ) : null;
-        $criteria->club_id        = isset( $_GET['club_id'] ) ? (int) $_GET['club_id'] : null;
-        $criteria->competition_id = isset( $_GET['competition_id'] ) ? (int) $_GET['competition_id'] : null;
-        $criteria->team_id        = isset( $_GET['team_id'] ) ? (int) $_GET['team_id'] : null;
-        $criteria->date_from      = isset( $_GET['date_from'] ) ? sanitize_text_field( $_GET['date_from'] ) : null;
-        $criteria->date_to        = isset( $_GET['date_to'] ) ? sanitize_text_field( $_GET['date_to'] ) : null;
-        $criteria->format         = isset( $_GET['format'] ) ? sanitize_text_field( $_GET['format'] ) : 'json';
-
-        $exporter = $racketmanager->container->get( 'exporter' );
-
-        $type = $_GET['racketmanager_export']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $content = '';
-        $filename = 'export';
-        $content_type = 'text/plain';
-
-        if ( 'calendar' === $type ) {
-            $content = $exporter->calendar( $criteria );
-            $content_type = 'text/calendar';
-            $filename = 'calendar.ics';
-        } elseif ( 'fixtures' === $type ) {
-            $content = $exporter->fixtures( $criteria );
-            if ( 'csv' === $criteria->format ) {
-                $content_type = 'text/csv';
-                $filename = 'fixtures.csv';
-            } else {
-                $content_type = 'application/json';
-                $filename = 'fixtures.json';
-            }
-        } elseif ( 'results' === $type ) {
-            $content = $exporter->results( $criteria );
-            if ( 'csv' === $criteria->format ) {
-                $content_type = 'text/csv';
-                $filename = 'results.csv';
-            } else {
-                $content_type = 'application/json';
-                $filename = 'results.json';
-            }
-        } elseif ( 'report_results' === $type ) {
-            $content = $exporter->report_results( $criteria );
-            $content_type = 'text/csv';
-            $filename = 'report_results.csv';
-        } else {
-            esc_html_e( 'Export function not found', 'racketmanager' );
-            exit();
-        }
-
-        header( 'Content-Type: ' . $content_type );
-        header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-        echo $content;
-        exit();
+        $controller = new \Racketmanager\Admin\Controllers\Export_Admin_Controller( $racketmanager );
+        $controller->handle_export();
     }
 }
 add_action( 'init', 'Racketmanager\racketmanager_download' );

@@ -4,6 +4,7 @@ namespace Racketmanager\Tests\Unit\Services\Export\Formatters;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\Export\Formatters\Csv_Formatter;
+use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
 
 class Csv_Formatter_Test extends TestCase {
 	private Csv_Formatter $formatter;
@@ -39,7 +40,7 @@ class Csv_Formatter_Test extends TestCase {
 	}
 
 	public function test_get_content_type() {
-		$this->assertEquals( 'text/csv', $this->formatter->get_content_type() );
+  $this->assertEquals( Export_Formatter_Interface::CONTENT_TYPE_CSV, $this->formatter->get_content_type() );
 	}
 
 	public function test_get_file_extension() {

@@ -2,6 +2,8 @@
 
 namespace Racketmanager\Services\Export\Formatters;
 
+use function wp_json_encode;
+
 class Json_Formatter implements Export_Formatter_Interface {
     /**
      * Formats the given data for export.
@@ -11,7 +13,7 @@ class Json_Formatter implements Export_Formatter_Interface {
      * @return string The formatted content.
      */
     public function format( array $data, array $options = array() ): string {
-        return (string) \wp_json_encode( $data );
+        return (string) wp_json_encode( $data );
     }
 
     /**
@@ -20,7 +22,7 @@ class Json_Formatter implements Export_Formatter_Interface {
      * @return string
      */
     public function get_content_type(): string {
-        return 'application/json';
+        return self::CONTENT_TYPE_JSON;
     }
 
     /**

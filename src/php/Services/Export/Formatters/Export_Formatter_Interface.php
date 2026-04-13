@@ -3,6 +3,11 @@
 namespace Racketmanager\Services\Export\Formatters;
 
 interface Export_Formatter_Interface {
+
+    public const string CONTENT_TYPE_CSV  = 'text/csv';
+    public const string CONTENT_TYPE_JSON = 'application/json';
+    public const string CONTENT_TYPE_ICS  = 'text/calendar';
+
     /**
      * Formats the given data for export.
      *

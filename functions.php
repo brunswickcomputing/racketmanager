@@ -142,17 +142,6 @@ function create_new_url_querystring(): void {
 add_action( 'init', 'Racketmanager\create_new_url_querystring' );
 
 /**
- * Create calendar download
- */
-function racketmanager_download(): void {
-    global $racketmanager;
-    if ( isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $controller = new \Racketmanager\Admin\Controllers\Export_Admin_Controller( $racketmanager );
-        $controller->handle_export();
-    }
-}
-add_action( 'init', 'Racketmanager\racketmanager_download' );
-/**
  * Get the current page url
  */
 function wp_get_current_url(): ?string {

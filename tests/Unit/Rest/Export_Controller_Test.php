@@ -110,5 +110,16 @@ namespace Racketmanager\Tests\Unit\Rest {
             $headers = $response->get_headers();
             self::assertSame( 'application/json', $headers['Content-Type'] );
         }
+
+        public function test_get_item_permissions_check_allows_calendar_publicly(): void {
+            $controller = new Export_Controller( $this->racketmanager );
+
+            $request = new WP_REST_Request( 'GET', '/racketmanager/v1/export/calendar' );
+            self::assertTrue( $controller->get_item_permissions_check( $request ) );
+
+            $request_results = new WP_REST_Request( 'GET', '/racketmanager/v1/export/results' );
+            // By default returns current_user_can('manage_options') which is false in stubs unless mocked
+            self::assertFalse( $controller->get_item_permissions_check( $request_results ) );
+        }
     }
 }

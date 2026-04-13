@@ -86,6 +86,10 @@ class Export_Controller extends WP_REST_Controller {
      * @return bool
      */
     public function get_item_permissions_check( $request ): bool {
+        if ( str_ends_with( $request->get_route(), '/calendar' ) ) {
+            return true;
+        }
+
         return current_user_can( 'manage_options' );
     }
 

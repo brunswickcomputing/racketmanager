@@ -97,7 +97,7 @@ add_action( 'plugins_loaded', __NAMESPACE__ . '\\define_tables', 0 );
 // Output buffering for exports (kept behavior)
 // -----------------------------------------------------------------------------
 function maybe_buffer_export(): void {
-    if ( isset( $_POST['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+    if ( isset( $_POST['racketmanager_export'] ) || isset( $_GET['racketmanager_export'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended
         ob_start();
     }
 }

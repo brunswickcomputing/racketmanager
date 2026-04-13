@@ -42,12 +42,13 @@ class Export_Admin_Controller {
             check_admin_referer( 'racketmanager_export_nonce' );
         }
 
-        if ( ! current_user_can( 'manage_options' ) ) {
+        $type = isset( $_GET['racketmanager_export'] ) ? sanitize_text_field( wp_unslash( $_GET['racketmanager_export'] ) ) : '';
+
+        if ( 'calendar' !== $type && ! current_user_can( 'manage_options' ) ) {
             wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'racketmanager' ) );
         }
 
         $criteria = $this->prepare_criteria_from_globals();
-        $type     = sanitize_text_field( wp_unslash( $_GET['racketmanager_export'] ) );
 
         $content      = '';
         $filename     = 'export';

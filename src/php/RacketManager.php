@@ -728,6 +728,16 @@ class RacketManager {
         $this->rewrites                 = new Rewrites();
         $this->login                    = new Login();
         Rest_Routes::single( $this );
+        $this->handle_exports();
+    }
+    /**
+     * Handle export requests.
+     */
+    public function handle_exports(): void {
+        if ( isset( $_GET['racketmanager_export'] ) ) {
+            $controller = new \Racketmanager\Admin\Controllers\Export_Admin_Controller( $this );
+            $controller->handle_export();
+        }
     }
     /**
      * Load shortcodes

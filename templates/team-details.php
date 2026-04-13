@@ -147,7 +147,17 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                     <div class="module__banner">
                         <h3 class="module__title"><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h3>
                         <div class="module__aside">
-                            <a href="/index.php?league_id=<?php echo esc_html( $object->id ); ?>&team_id=<?php echo esc_html( $team->get_id() ); ?>&team=<?php echo esc_html( seo_url( $team->get_name() ) ); ?>&season=<?php echo esc_html( $object->current_season['name'] ); ?>&racketmanager_export=calendar" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
+                            <?php
+                            $calendar_url = add_query_arg(
+                                array(
+                                    'league_id' => $object->id,
+                                    'team_id'   => $team->get_id(),
+                                    'season'    => $object->current_season['name'],
+                                ),
+                                rest_url( 'racketmanager/v1/export/calendar' )
+                            );
+                            ?>
+                            <a href="<?php echo esc_url( $calendar_url ); ?>" class="btn btn--link calendar-add" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php esc_html_e( 'Add Matches to Calendar', 'racketmanager' ); ?>" >
                                 <svg width="32" height="32" class="icon ">
                                     <use xlink:href="<?php echo esc_url( RACKETMANAGER_URL . 'assets/icons/bootstrap-icons.svg#calendar-fill' ); ?>"></use>
                                 </svg>

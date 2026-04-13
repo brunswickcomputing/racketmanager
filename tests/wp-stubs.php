@@ -610,6 +610,14 @@ namespace {
             public function get_param( $key ) {
                 return $this->params[ $key ] ?? null;
             }
+
+            public function get_route() {
+                return $this->route;
+            }
+
+            public function set_route( $route ) {
+                $this->route = $route;
+            }
         }
         ');
     }

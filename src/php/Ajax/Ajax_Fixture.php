@@ -126,124 +126,14 @@ class Ajax_Fixture extends Ajax {
      * Set match status
      */
     public function set_match_status(): void {
-        $return      = new stdClass();
-        $error_field = 'score_status';
-        $validator   = new Validator_Fixture();
-        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-status' );
-        if ( empty( $validator->error ) ) {
-            $modal        = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $match_id     = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
-            $match_status = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $validator    = $validator->modal( $modal, $error_field );
-            $validator    = $validator->match( $match_id, $error_field );
-            $validator    = $validator->match_status( $match_status, $error_field, true );
-            if ( empty( $validator->error ) ) {
-                $match                  = get_match( $match_id );
-                $status_dtls            = $this->set_status_details( $match_status, $match->home_team, $match->away_team );
-                $return->match_id       = $match_id;
-                $return->match_status   = $status_dtls->status;
-                $return->status_message = $status_dtls->message;
-                $return->status_class   = $status_dtls->class;
-                $return->modal          = $modal;
-                $return->num_rubbers    = $match->num_rubbers;
-                wp_send_json_success( $return );
-            }
-        }
-        $return      = $validator->get_details();
-        $return->msg = __( 'Unable to set match status', 'racketmanager' );
-        wp_send_json_error( $return, $return->status );
+        $adapter = new Fixture_Ajax_Adapter(
+            $this->racketmanager->container,
+            new Security_Service(),
+            new Json_Response_Factory()
+        );
+        $adapter->set_match_status();
     }
 
-    /**
-     * Function to set match or rubber status details
-     *
-     * @param string $status status value.
-     * @param int $home_team home team id.
-     * @param int $away_team away_team id.
-     */
-    public function set_status_details( string $status, int $home_team, int $away_team ): object {
-        $status_message = array();
-        $status_class   = array();
-        $status_values  = explode( '_', $status );
-        $status_value   = $status_values[0];
-        $player_ref     = $status_values[1] ?? null;
-        $winner         = null;
-        $loser          = null;
-        $score_message  = null;
-        switch ( $status_value ) {
-            case 'walkover':
-                $score_message = __( 'Walkover', 'racketmanager' );
-                if ( 'player2' === $player_ref ) {
-                    $winner = $away_team;
-                    $loser  = $home_team;
-                } elseif ( 'player1' === $player_ref ) {
-                    $winner = $home_team;
-                    $loser  = $away_team;
-                }
-                break;
-            case 'retired':
-                $score_message = __( 'Retired', 'racketmanager' );
-                if ( 'player1' === $player_ref ) {
-                    $winner = $away_team;
-                    $loser  = $home_team;
-                } elseif ( 'player2' === $player_ref ) {
-                    $winner = $home_team;
-                    $loser  = $away_team;
-                }
-                break;
-            case 'invalid':
-                $score_message = __( 'Invalid player', 'racketmanager' );
-                if ( 'player1' === $player_ref ) {
-                    $winner = $away_team;
-                    $loser  = $home_team;
-                } elseif ( 'player2' === $player_ref ) {
-                    $winner = $home_team;
-                    $loser  = $away_team;
-                }
-                break;
-            case 'share':
-                $score_message = $this->not_played;
-                break;
-            case 'abandoned':
-                $score_message = __( 'Abandoned', 'racketmanager' );
-                break;
-            case 'cancelled':
-                $score_message = __( 'Cancelled', 'racketmanager' );
-                break;
-            case 'none':
-                $status = '';
-                break;
-            default:
-                break;
-        }
-        if ( $winner ) {
-            $status_message[ $winner ] = '';
-            $status_message[ $loser ]  = $score_message;
-            $status_class[ $winner ]   = 'winner';
-            $status_class[ $loser ]    = 'loser';
-        } elseif ( 'share' === $status_value || 'cancelled' === $status_value || 'invalid' === $status_value ) {
-            $status_message[ $home_team ] = $score_message;
-            $status_message[ $away_team ] = $score_message;
-            $status_class[ $home_team ]   = 'tie';
-            $status_class[ $away_team ]   = 'tie';
-        } elseif ( 'abandoned' === $status_value ) {
-            $status_message[ $home_team ] = $score_message;
-            $status_message[ $away_team ] = $score_message;
-            $status_class[ $home_team ]   = '';
-            $status_class[ $away_team ]   = '';
-        } else {
-            $status_message[ $home_team ] = '';
-            $status_message[ $away_team ] = '';
-            $status_class[ $home_team ]   = '';
-            $status_class[ $away_team ]   = '';
-        }
-        $status_dtls          = new stdClass();
-        $status_dtls->message = $status_message;
-        $status_dtls->class   = $status_class;
-        $status_dtls->status  = $status;
-
-        return $status_dtls;
-    }
 
     /**
      * Build screen to show the selected match option
@@ -364,55 +254,15 @@ class Ajax_Fixture extends Ajax {
     }
 
     /**
-     * Reset match function
-     *
-     * @return void
+     * Reset result and draw for fixture
      */
     public function reset_match_result(): void {
-        // 1. Initialize the Validator (fluent interface)
-        $validator = new Validator_Fixture();
-
-        // 2. Map global POST data to a Domain DTO
-        // The DTO factory handles basic extraction and sanitization.
-        $request = Fixture_Reset_Request::from_post( $_POST );
-
-        // 3. Execute Security & Existence Validation
-        // We chain checks to ensure we have a valid nonce, a valid modal identifier,
-        // and that the fixture actually exists in the database.
-        $validator->check_security_token( 'racketmanager_nonce', 'match-option' )->modal( $request->modal )->fixture( $request->fixture_id );
-
-        // 4. Handle Validation Failures
-        if ( ! empty( $validator->error ) ) {
-            // Automatically returns standardized error object and HTTP status (e.g. 404 or 403)
-            wp_send_json_error( $validator->get_details(), $validator->get_status() );
-        }
-
-        try {
-            // 5. Load the Rich Domain Entity
-            // We use the repository to get a fully hydrated Fixture object.
-            $fixture_repository = new Fixture_Repository();
-            $fixture            = $fixture_repository->find_by_id( $request->fixture_id );
-
-            // 6. Delegate Business Logic to the Domain Service
-            // The manager handles: resetting scores, updating standings (Leagues),
-            // and reverting progression (Championships/Knockouts).
-            $fixture_result_manager = $this->get_fixture_result_manager();
-            $response               = $fixture_result_manager->reset_result( $fixture );
-
-            // 7. Determine the Success Message (Domain-aware)
-            $presenter = new Fixture_Presenter();
-            $message   = $presenter->get_reset_message( $response->status );
-
-            // 8. Send Success Response
-            wp_send_json_success( [
-                'msg'      => $message,
-                'modal'    => $request->modal,
-                'match_id' => $response->fixture_id,
-            ] );
-        } catch ( League_Not_Found_Exception $e ) {
-            // 9. Centralized Exception Handling
-            wp_send_json_error( [ 'msg' => $e->getMessage() ], 500 );
-        }
+        $adapter = new Fixture_Ajax_Adapter(
+            $this->racketmanager->container,
+            new Security_Service(),
+            new Json_Response_Factory()
+        );
+        $adapter->reset_match_result();
     }
 
     /**
@@ -512,34 +362,12 @@ class Ajax_Fixture extends Ajax {
      * Set match rubber status
      */
     public function set_match_rubber_status(): void {
-        $return      = new stdClass();
-        $error_field = 'score_status';
-        $validator   = new Validator_Fixture();
-        $validator   = $validator->check_security_token( 'racketmanager_nonce', 'match-rubber-status' );
-        if ( empty( $validator->error ) ) {
-            $modal         = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $rubber_number = isset( $_POST['rubber_number'] ) ? intval( $_POST['rubber_number'] ) : null;
-            $score_status  = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $home_team     = isset( $_POST['home_team'] ) ? intval( $_POST['home_team'] ) : null;
-            $away_team     = isset( $_POST['away_team'] ) ? intval( $_POST['away_team'] ) : null;
-            $validator     = $validator->modal( $modal, $error_field );
-            $validator     = $validator->rubber_number( $rubber_number, $error_field );
-            $validator     = $validator->score_status( $score_status );
-            if ( empty( $validator->error ) ) {
-                $status_dtls            = $this->set_status_details( $score_status, $home_team, $away_team );
-                $return->score_status   = $status_dtls->status;
-                $return->status_message = $status_dtls->message;
-                $return->status_class   = $status_dtls->class;
-                $return->modal          = $modal;
-                $return->rubber_number  = $rubber_number;
-                wp_send_json_success( $return );
-            }
-        }
-        $return = $validator->get_details();
-        if ( empty( $return->msg ) ) {
-            $return->msg = __( 'Unable to set score status', 'racketmanager' );
-        }
-        wp_send_json_error( $return, $return->status );
+        $adapter = new Fixture_Ajax_Adapter(
+            $this->racketmanager->container,
+            new Security_Service(),
+            new Json_Response_Factory()
+        );
+        $adapter->set_match_rubber_status();
     }
 
     /**

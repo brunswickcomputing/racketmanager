@@ -11,11 +11,12 @@ namespace Racketmanager\Ajax;
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
-use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
+use Racketmanager\Infrastructure\Security\Security_Service;
+use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Repository_Provider;
@@ -565,48 +566,12 @@ class Ajax_Fixture extends Ajax {
      * Update match details
      */
     public function update_fixture_result(): void {
-        $validator = new Validator_Fixture();
-        $validator->check_security_token( 'racketmanager_nonce', 'scores-match' );
-
-        $validator->error  = false;
-        $validator->status = 400;
-
-        try {
-            $request    = Fixture_Result_Update_Request::from_post( $_POST );
-            $fixture_id = $request->fixture_id;
-            $validator->fixture( $fixture_id );
-
-            if ( empty( $validator->error ) ) {
-                $fixture_repository = new Fixture_Repository();
-                $fixture            = $fixture_repository->find_by_id( $fixture_id );
-                if ( $fixture ) {
-                    $result_manager = $this->get_fixture_result_manager();
-
-                    $response = $result_manager->handle_fixture_result_update( $fixture, $request );
-
-                    $presenter = new Fixture_Presenter();
-                    $msg       = $presenter->get_update_message( $response );
-
-                    $return = array(
-                        'msg'         => $msg,
-                        'home_points' => $fixture->get_home_points(),
-                        'away_points' => $fixture->get_away_points(),
-                        'winner_id'   => $fixture->get_winner_id(),
-                        'sets'        => $request->sets,
-                    );
-                    wp_send_json_success( $return );
-                }
-            }
-        } catch ( Fixture_Validation_Exception $e ) {
-            $validator->error    = true;
-            $validator->msg      = __( 'Unable to update result', 'racketmanager' );
-            $validator->err_msgs = $e->get_error_msgs();
-            $validator->err_flds = $e->get_error_flds();
-        } catch ( Exception $e ) {
-            $validator->error = true;
-            $validator->msg   = $e->getMessage();
-        }
-        wp_send_json_error( $validator, $validator->status ?? 400 );
+        $adapter = new Fixture_Ajax_Adapter(
+            $this->racketmanager->container,
+            new Security_Service(),
+            new Json_Response_Factory()
+        );
+        $adapter->update_fixture_result();
     }
 
     /**

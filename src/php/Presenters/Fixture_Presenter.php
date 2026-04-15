@@ -6,7 +6,25 @@ use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 
+use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Application\Fixture\DTOs\Fixture_Result_Read_Model;
+
 class Fixture_Presenter {
+
+    public function map_to_result_read_model(
+        Fixture $fixture,
+        Fixture_Update_Response $response,
+        Fixture_Result_Update_Request $request
+    ): Fixture_Result_Read_Model {
+        return new Fixture_Result_Read_Model(
+            $this->get_update_message( $response ),
+            $fixture->get_home_points(),
+            $fixture->get_away_points(),
+            $fixture->get_winner_id(),
+            $request->sets
+        );
+    }
 
     public function get_reset_message( Fixture_Reset_Status $status ): string {
         return match ( $status ) {

@@ -352,6 +352,12 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'wp_verify_nonce' ) ) {
+        function wp_verify_nonce( $nonce, $action = -1 ) {
+            return $GLOBALS['wp_stubs_wp_verify_nonce_return'] ?? true;
+        }
+    }
+
     if ( ! function_exists( 'wp_die' ) ) {
         function wp_die( $message = '', $title = '', $args = array() ) {
             die( $message );

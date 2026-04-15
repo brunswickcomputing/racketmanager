@@ -1,13 +1,13 @@
 <?php
 /**
- * Exporter API: exporter
+ * Export_Service API: exporter
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Exporter
+ * @subpackage Export_Service
  */
 
-namespace Racketmanager\Services;
+namespace Racketmanager\Services\Export;
 
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -20,9 +20,9 @@ use Racketmanager\Services\Result\Result_Reporting_Service;
 use stdClass;
 
 /**
- * Class to implement the Exporter object
+ * Class to implement the Export_Service object
  */
-class Exporter {
+class Export_Service {
 
     private Fixture_Repository_Interface $fixture_repository;
     private Result_Reporting_Service $result_reporting_service;

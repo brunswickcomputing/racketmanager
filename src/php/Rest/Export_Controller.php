@@ -5,7 +5,7 @@ namespace Racketmanager\Rest;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
-use Racketmanager\Services\Exporter;
+use Racketmanager\Services\Export\Export_Service;
 use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -19,7 +19,7 @@ use WP_REST_Server;
 class Export_Controller extends WP_REST_Controller {
 
     private RacketManager $racketmanager;
-    private Exporter $exporter;
+    private Export_Service $exporter;
     protected $namespace;
     protected $rest_base;
 

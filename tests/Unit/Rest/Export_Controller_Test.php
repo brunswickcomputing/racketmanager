@@ -12,7 +12,7 @@ namespace Racketmanager\Tests\Unit\Rest {
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use Racketmanager\RacketManager;
     use Racketmanager\Rest\Export_Controller;
-    use Racketmanager\Services\Exporter;
+    use Racketmanager\Services\Export\Export_Service;
     use Racketmanager\Services\Export\DTO\Export_Criteria;
     use Racketmanager\Services\Container\Simple_Container;
     use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
@@ -25,7 +25,7 @@ namespace Racketmanager\Tests\Unit\Rest {
     final class Export_Controller_Test extends TestCase {
 
         private RacketManager|MockObject $racketmanager;
-        private MockObject|Exporter $exporter;
+        private MockObject|Export_Service $exporter;
         private mixed $original_racketmanager;
 
         protected function setUp(): void {
@@ -33,7 +33,7 @@ namespace Racketmanager\Tests\Unit\Rest {
             $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
             $this->racketmanager = $this->createMock( RacketManager::class );
             $container = $this->createMock( Simple_Container::class );
-            $this->exporter = $this->createMock( Exporter::class );
+            $this->exporter = $this->createMock( Export_Service::class );
 
             $this->racketmanager->container = $container;
         

@@ -61,7 +61,7 @@ use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Exporter;
+use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Result_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Result\Result_Reporting_Service;
@@ -94,7 +94,7 @@ final class Container_Bootstrap {
         self::register_repositories( $c );
         self::register_external_clients( $c );
         self::register_services( $c, $app );
-        self::register_exporter_services( $c );
+        self::register_export_services( $c );
         self::register_admin_controllers( $c );
         self::register_admin_draw_controllers( $c );
         self::register_admin_tournament_controllers( $c );
@@ -291,9 +291,9 @@ final class Container_Bootstrap {
         } );
     }
 
-    private static function register_exporter_services( Simple_Container $c ): void {
+    private static function register_export_services( Simple_Container $c ): void {
         $c->set( 'exporter', function ( Simple_Container $c ) {
-            return new Exporter(
+            return new Export_Service(
                 $c->get( 'fixture_repository' ),
                 $c->get( 'result_reporting_service' ),
                 $c->get( 'fixture_detail_service' ),

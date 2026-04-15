@@ -4,7 +4,7 @@ namespace Racketmanager\Cli;
 
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
-use Racketmanager\Services\Exporter;
+use Racketmanager\Services\Export\Export_Service;
 use WP_CLI;
 
 /**
@@ -14,7 +14,7 @@ use WP_CLI;
  */
 class Export_Command {
 
-    private Exporter $exporter;
+    private Export_Service $exporter;
 
     /**
      * Export_Command constructor.

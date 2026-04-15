@@ -26,8 +26,6 @@ use Racketmanager\Domain\User;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
 use Racketmanager\Repositories\Player_Repository;
-use Racketmanager\Services\Exporter;
-use Racketmanager\Services\Export\DTO\Export_Criteria;
 
 /**
  * Send debug code to the JavaScript console
@@ -442,34 +440,9 @@ function get_league_team( object|int|null $league_team = null ): League_Team|nul
 
     return $_league_team;
 }
+
 /**
- * Get a results report object
- *
- * @param object|int|null $results_report results_report ID or results_report object. Defaults to global $results_report.
- *
- * @return object|null results_report|null
- */
-function get_results_report( object|int|null $results_report = null ): Results_Report|null {
-    if ( empty( $results_report ) && isset( $GLOBALS['results_report'] ) ) {
-        $results_report = $GLOBALS['results_report'];
-    }
-
-    if ( $results_report instanceof Results_Report ) {
-        $_results_report = $results_report;
-    } elseif ( is_object( $results_report ) ) {
-        $_results_report = new Results_Report( $results_report );
-    } else {
-        $_results_report = Results_Report::get_instance( $results_report );
-    }
-
-    if ( ! $_results_report ) {
-        return null;
-    }
-
-    return $_results_report;
-}
-/**
- * Get a results check object
+ * Get a result check object
  *
  * @param int|null|object $results_check results_check ID or results_check object. Defaults to global $results_check.
  * @return object|null results_check|null

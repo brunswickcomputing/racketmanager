@@ -1,6 +1,6 @@
 <?php
 
-namespace Racketmanager\Tests\Unit\Services;
+namespace Racketmanager\Tests\Unit\Services\Export;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\Stub;
@@ -15,17 +15,17 @@ use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
-use Racketmanager\Services\Exporter;
+use Racketmanager\Services\Export\Export_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Result\Result_Reporting_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 
-class Exporter_Test extends TestCase {
+class Export_Service_Test extends TestCase {
     private Fixture_Repository_Interface|Stub $fixture_repository;
     private Result_Reporting_Service|Stub $result_reporting_service;
     private Fixture_Detail_Service|Stub $fixture_detail_service;
     private Club_Repository_Interface $club_repository;
-    private Exporter $exporter;
+    private Export_Service $exporter;
 
     protected function setUp(): void {
         $this->fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
@@ -33,7 +33,7 @@ class Exporter_Test extends TestCase {
         $this->fixture_detail_service = $this->createStub( Fixture_Detail_Service::class );
         $this->club_repository = $this->createMock( Club_Repository_Interface::class );
 
-        $this->exporter = new Exporter(
+        $this->exporter = new Export_Service(
             $this->fixture_repository,
             $this->result_reporting_service,
             $this->fixture_detail_service,

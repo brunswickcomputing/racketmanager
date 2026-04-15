@@ -15,6 +15,7 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Util\Util;
 
 /**
  * Service for handling fixture-related notifications.
@@ -445,16 +446,17 @@ class Notification_Service {
             $message_args['tournament_search'] = 'shortcode';
         }
 
-        $round_name = '';
-        if ( $league->is_championship && $league->championship ) {
-            $round_name            = $league->championship->finals[ $fixture->get_final() ]['name'] ?? '';
+        if ( empty( $fixture->get_final() ) ) {
+            $round_name = '';
+        } else {
+            $round_name            = Util::get_final_name( $fixture->get_final() );
             $message_args['round'] = $round_name;
         }
 
         $vars          = $this->presenter->present_match_notification( $fixture, $message_args );
         $template      = $vars['template'] ? : 'match-notification';
         $email_message = $this->view_renderer->render_to_string( 'email/' . $template, $vars );
-        $subject       = __( 'Fixture Details', 'racketmanager' ) . ( $round_name ? ' - ' . $round_name : '' );
+        $subject       = __( 'Fixture Details', 'racketmanager' ) . ( empty( $round_name ) ? '' : ' - ' . $round_name );
 
         if ( $fixture->get_leg() ) {
             $subject .= ' - ' . __( 'Leg', 'racketmanager' ) . ' ' . $fixture->get_leg();
@@ -479,16 +481,17 @@ class Notification_Service {
             return null;
         }
 
-        $admin_email = $this->app->get_confirmation_email( $league->event->competition->type );
-        $headers     = array(
-            $this->app->get_from_user_email(),
-            RACKETMANAGER_CC_EMAIL . ucfirst( $league->event->competition->type ) . ' Secretary <' . $admin_email . '>',
+        $email_from      = $this->app->get_confirmation_email( $league->event->competition->type );
+        $secretary_email = ucfirst( $league->event->competition->type ) . ' ' . __( 'Secretary', 'racketmanager' ) . ' <' . $email_from . '>';
+        $headers         = array(
+            RACKETMANAGER_FROM_EMAIL . $secretary_email,
+            RACKETMANAGER_CC_EMAIL . $secretary_email,
         );
 
         return [
             'league'      => $league,
             'email_to'    => $email_to,
-            'admin_email' => $admin_email,
+            'admin_email' => $email_from,
             'headers'     => $headers,
         ];
     }
@@ -502,23 +505,59 @@ class Notification_Service {
      * @return array
      */
     public function get_fixture_emails( Fixture $fixture, string $target = 'both' ): array {
-        $emails = array();
+        $league        = $this->league_repository->find_by_id( (int) $fixture->get_league_id() );
+        $is_tournament = $league && 'tournament' === $league->get_competition_type();
+        $emails        = [];
 
         if ( 'home' === $target || 'both' === $target ) {
-            $email = $this->get_team_captain_email( (int) $fixture->get_home_team(), (int) $fixture->get_league_id(), (int) $fixture->get_season() );
-            if ( $email ) {
-                $emails[] = $email;
-            }
+            $emails = array_merge( $emails, $this->get_team_emails( (int) $fixture->get_home_team(), $fixture, $is_tournament ) );
         }
 
         if ( 'away' === $target || 'both' === $target ) {
-            $email = $this->get_team_captain_email( (int) $fixture->get_away_team(), (int) $fixture->get_league_id(), (int) $fixture->get_season() );
+            $emails = array_merge( $emails, $this->get_team_emails( (int) $fixture->get_away_team(), $fixture, $is_tournament ) );
+        }
+
+        return array_unique( $emails );
+    }
+
+    /**
+     * Get the email addresses for a team.
+     *
+     * @param int $team_id
+     * @param Fixture $fixture
+     * @param bool $is_tournament
+     *
+     * @return array
+     */
+    private function get_team_emails( int $team_id, Fixture $fixture, bool $is_tournament ): array {
+        if ( $is_tournament ) {
+            return $this->get_team_player_emails( $team_id );
+        }
+
+        $email = $this->get_team_captain_email( $team_id, (int) $fixture->get_league_id(), (int) $fixture->get_season() );
+
+        return $email ? [ $email ] : [];
+    }
+
+    /**
+     * Get the email addresses for all players in a team.
+     *
+     * @param int $team_id
+     *
+     * @return array
+     */
+    private function get_team_player_emails( int $team_id ): array {
+        $players = $this->player_repository->find_by_team( $team_id );
+        $emails  = [];
+
+        foreach ( $players as $player ) {
+            $email = $player->get_email();
             if ( $email ) {
                 $emails[] = $email;
             }
         }
 
-        return array_unique( $emails );
+        return $emails;
     }
 
     /**
@@ -542,6 +581,10 @@ class Notification_Service {
         $round_name = '';
         if ( $league->is_championship && $league->championship ) {
             $round_name = $league->championship->finals[ $fixture->get_final() ]['name'] ?? '';
+        }
+
+        if ( empty( $round_name ) && ! empty( $fixture->get_final() ) ) {
+            $round_name = Util::get_final_name( $fixture->get_final() ) ? : '';
         }
 
         $message_args = array(

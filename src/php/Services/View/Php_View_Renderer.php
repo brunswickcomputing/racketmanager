@@ -29,6 +29,7 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
     public function render( string $template_path, object|array $view_model, array $additional_vars = [] ): void {
         // Templates expect variables named $vm and $renderer
         $vm       = $view_model;
+        $renderer = $this;
 
         // Extract variables for templates that use them (legacy/BC support).
         if ( is_array( $view_model ) ) {

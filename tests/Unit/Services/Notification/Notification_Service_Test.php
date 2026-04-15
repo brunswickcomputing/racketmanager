@@ -651,6 +651,49 @@ class Notification_Service_Test extends TestCase {
         $this->assertStringContainsString('Leg 1', $mail['subject']);
     }
 
+    public function test_send_next_fixture_notification_tournament_round(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->host = 'home';
+        $fixture_data->final = 'semi'; // Should be translated to Semi Final
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Tournament 1';
+        $league->is_championship = false;
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name'];
+        $event->competition_id = 123;
+        $league->event = $event;
+        $league->method('get_competition_type')->willReturn('tournament');
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        // Mock players for tournament
+        $player1 = $this->createMock(Player::class);
+        $player1->method('get_email')->willReturn('player1@example.com');
+        $player2 = $this->createMock(Player::class);
+        $player2->method('get_email')->willReturn('player2@example.com');
+        $this->player_repository->method('find_by_team')->willReturnMap([
+            [100, [$player1]],
+            [200, [$player2]]
+        ]);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_next_fixture_notification($fixture);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertStringContainsString('Semi Final', $mail['subject']);
+    }
+
     public function test_send_date_change_notification_success(): void {
         $fixture_data = new stdClass();
         $fixture_data->id = 123;
@@ -725,6 +768,46 @@ class Notification_Service_Test extends TestCase {
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertStringContainsString('DELAY', $mail['subject']);
+    }
+
+    public function test_send_date_change_notification_tournament_round(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->date = '2026-05-01';
+        $fixture_data->date_original = '2026-04-01';
+        $fixture_data->final = 'quarter'; // Should be translated to Quarter Final
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Tournament 1';
+        $league->is_championship = false;
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name', 'is_tournament' => true];
+        $event->competition_id = 789;
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('From: Admin <admin@example.com>');
+
+        $home_captain = $this->createStub(Player::class);
+        $home_captain->method('get_email')->willReturn('home@example.com');
+        $this->player_repository->method('find')->willReturn($home_captain);
+        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home->method('get_captain')->willReturn(1);
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_date_change_notification($fixture);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertStringContainsString('Quarter Final', $mail['subject']);
     }
 
     public function test_notify_team_withdrawal_enhanced(): void {
@@ -926,6 +1009,102 @@ class Notification_Service_Test extends TestCase {
         
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $this->assertStringContainsString('Fixture result approval', $GLOBALS['wp_mail_calls'][0]['subject']);
+    }
+
+    public function test_get_fixture_emails_non_tournament(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->createMock(League::class);
+        $league->method('get_competition_type')->willReturn('league');
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $league_team_home = $this->createMock(League_Team::class);
+        $league_team_home->method('get_captain')->willReturn(1);
+        $league_team_away = $this->createMock(League_Team::class);
+        $league_team_away->method('get_captain')->willReturn(2);
+
+        $this->league_team_repository->method('find_by_team_league_and_season')
+            ->willReturnMap([
+                [100, 456, 2026, $league_team_home],
+                [200, 456, 2026, $league_team_away],
+            ]);
+
+        $captain1 = $this->createMock(Player::class);
+        $captain1->method('get_email')->willReturn('captain1@example.com');
+        $captain2 = $this->createMock(Player::class);
+        $captain2->method('get_email')->willReturn('captain2@example.com');
+
+        $this->player_repository->method('find')
+            ->willReturnMap([
+                [1, 'id', $captain1],
+                [2, 'id', $captain2],
+            ]);
+
+        $emails = $this->service->get_fixture_emails($fixture);
+        $this->assertEquals(['captain1@example.com', 'captain2@example.com'], $emails);
+    }
+
+    public function test_get_fixture_emails_tournament(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->createMock(League::class);
+        $league->method('get_competition_type')->willReturn('tournament');
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $player1 = $this->createMock(Player::class);
+        $player1->method('get_email')->willReturn('player1@example.com');
+        $player2 = $this->createMock(Player::class);
+        $player2->method('get_email')->willReturn('player2@example.com');
+        $player3 = $this->createMock(Player::class);
+        $player3->method('get_email')->willReturn('player3@example.com');
+
+        $this->player_repository->method('find_by_team')
+            ->willReturnMap([
+                [100, [$player1, $player2]],
+                [200, [$player3]],
+            ]);
+
+        $emails = $this->service->get_fixture_emails($fixture);
+        $this->assertEquals(['player1@example.com', 'player2@example.com', 'player3@example.com'], $emails);
+    }
+
+    public function test_get_fixture_emails_tournament_home_only(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->createMock(League::class);
+        $league->method('get_competition_type')->willReturn('tournament');
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $player1 = $this->createMock(Player::class);
+        $player1->method('get_email')->willReturn('player1@example.com');
+        $player2 = $this->createMock(Player::class);
+        $player2->method('get_email')->willReturn('player2@example.com');
+
+        $this->player_repository->method('find_by_team')
+            ->willReturnMap([
+                [100, [$player1, $player2]],
+            ]);
+
+        $emails = $this->service->get_fixture_emails($fixture, 'home');
+        $this->assertEquals(['player1@example.com', 'player2@example.com'], $emails);
     }
 }
 }

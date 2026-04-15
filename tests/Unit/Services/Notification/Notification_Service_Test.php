@@ -27,7 +27,7 @@ namespace Racketmanager\Services\Notification {
         define( 'RACKETMANAGER_CC_EMAIL', 'cc@example.com' );
     }
     if ( ! function_exists( 'Racketmanager\Services\Notification\wp_mail' ) ) {
-        function wp_mail( $to, $subject, $message, $headers ) {
+        function wp_mail( $to, $subject, $message, $headers ): true {
             $GLOBALS['wp_mail_calls'][] = [
                 'to'      => $to,
                 'subject' => $subject,
@@ -41,27 +41,27 @@ namespace Racketmanager\Services\Notification {
 
 namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\result_notification' ) ) {
-        function result_notification( $match_id, $args ) {
+        function result_notification( $match_id, $args ): string {
             return 'Result Notification';
         }
     }
     if ( ! function_exists( 'Racketmanager\captain_result_notification' ) ) {
-        function captain_result_notification( $match_id, $args ) {
+        function captain_result_notification( $match_id, $args ): string {
             return 'Captain Result Notification';
         }
     }
     if ( ! function_exists( 'Racketmanager\match_notification' ) ) {
-        function match_notification( $match_id, $args ) {
+        function match_notification( $match_id, $args ): string {
             return 'Match Notification';
         }
     }
     if ( ! function_exists( 'Racketmanager\match_date_change_notification' ) ) {
-        function match_date_change_notification( $match_id, $args ) {
+        function match_date_change_notification( $match_id, $args ): string {
             return 'Date Change Notification';
         }
     }
     if ( ! function_exists( 'Racketmanager\match_team_withdrawn_notification' ) ) {
-        function match_team_withdrawn_notification( $match_id, $args ) {
+        function match_team_withdrawn_notification( $match_id, $args ): string {
             return 'Withdrawn Notification';
         }
     }
@@ -69,9 +69,13 @@ namespace Racketmanager {
 
 namespace Racketmanager\Tests\Unit\Services\Notification {
 
-use PHPUnit\Framework\TestCase;
+    use PHPUnit\Framework\MockObject\MockObject;
+    use PHPUnit\Framework\MockObject\Stub;
+    use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
-use Racketmanager\Domain\Results_Checker;
+    use Racketmanager\Domain\Club;
+    use Racketmanager\Domain\Competition\Event;
+    use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
@@ -82,21 +86,25 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Presenters\Notification_Presenter;
 use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\RacketManager;
-use stdClass;
+    use Racketmanager\Services\View\View_Renderer_Interface;
+    use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
 class Notification_Service_Test extends TestCase {
-    private $league_repository;
-    private $league_team_repository;
-    private $team_repository;
-    private $player_repository;
-    private $club_repository;
-    private $settings_service;
-    private $app;
-    private $service;
+    private MockObject|League_Repository_Interface $league_repository;
+    private MockObject|League_Team_Repository_Interface $league_team_repository;
+    private Team_Repository_Interface|MockObject $team_repository;
+    private Player_Repository_Interface|MockObject $player_repository;
+    private Club_Repository_Interface|MockObject $club_repository;
+    private Settings_Service|Stub $settings_service;
+    private Notification_Presenter|MockObject $presenter;
+    private RacketManager|MockObject $app;
+    private Notification_Service $service;
 
     protected function setUp(): void {
         parent::setUp();
@@ -106,19 +114,33 @@ class Notification_Service_Test extends TestCase {
         $this->player_repository = $this->createMock(Player_Repository_Interface::class);
         $this->club_repository = $this->createMock(Club_Repository_Interface::class);
         $this->settings_service = $this->createStub(Settings_Service::class);
+        $this->presenter = $this->createMock(Notification_Presenter::class);
+        $view_renderer = $this->createMock( View_Renderer_Interface::class);
         $this->app = $this->createMock(RacketManager::class);
 
+        $repository_provider = $this->createStub(Repository_Provider::class);
+        $repository_provider->method('get_league_repository')->willReturn($this->league_repository);
+        $repository_provider->method('get_league_team_repository')->willReturn($this->league_team_repository);
+        $repository_provider->method('get_team_repository')->willReturn($this->team_repository);
+        $repository_provider->method('get_player_repository')->willReturn($this->player_repository);
+        $repository_provider->method('get_club_repository')->willReturn($this->club_repository);
+
         $this->service = new Notification_Service(
-            $this->league_repository,
-            $this->league_team_repository,
-            $this->team_repository,
-            $this->player_repository,
-            $this->club_repository,
+            $repository_provider,
             $this->settings_service,
+            $this->presenter,
+            $view_renderer,
             $this->app
         );
 
         $this->app->site_name = 'Test Site';
+
+        $view_renderer->method('render_to_string')->willReturn('Rendered notification');
+
+        $this->presenter->method('present_match_notification')->willReturn(['template' => 'match-notification']);
+        $this->presenter->method('present_result_notification')->willReturn([]);
+        $this->presenter->method('present_date_change_notification')->willReturn([]);
+        $this->presenter->method('present_team_withdrawn_notification')->willReturn([]);
 
         // Keep global mock for any remaining legacy calls or functions that use it
         $GLOBALS['racketmanager'] = $this->app;
@@ -149,7 +171,7 @@ class Notification_Service_Test extends TestCase {
         $league->id = 456;
         $league->title = 'Championship League';
         $league->is_championship = true;
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
+        $event = $this->getMockBuilder( Event::class)
             ->disableOriginalConstructor()
             ->getMock();
         $event->competition = (object)['type' => 'tournament'];
@@ -203,7 +225,7 @@ class Notification_Service_Test extends TestCase {
         $league->id = 456;
         $league->title = 'Division 1';
         $league->is_championship = false;
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
+        $event = $this->getMockBuilder( Event::class)
             ->disableOriginalConstructor()
             ->getMock();
         $event->competition = (object)['type' => 'league'];
@@ -271,7 +293,7 @@ class Notification_Service_Test extends TestCase {
             ->getMock();
         $league->id = 456;
         $league->title = 'Division 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)
+        $event = $this->getMockBuilder( Event::class)
             ->disableOriginalConstructor()
             ->getMock();
         $event->competition = (object)['type' => 'league'];
@@ -325,7 +347,7 @@ class Notification_Service_Test extends TestCase {
         $fixture = $this->createStub(Fixture::class);
         $fixture->method('get_league_id')->willReturn(1);
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -349,7 +371,7 @@ class Notification_Service_Test extends TestCase {
         $league->id = 456;
         $league->title = 'League 1';
         $league->is_championship = false;
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -376,7 +398,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -403,7 +425,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -413,14 +435,12 @@ class Notification_Service_Test extends TestCase {
 
         $this->team_repository->method('find_by_id')->willReturn($this->createStub(Team::class));
 
-        $league_team_data = new stdClass();
-        $league_team_data->club_id = 10;
         // Mock League_Team to avoid call to get_club() in constructor/initialization
         $league_team = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
         $league_team->club_id = 10;
         $this->league_team_repository->method('find_by_id')->with(200)->willReturn($league_team);
 
-        $club = $this->createStub(\Racketmanager\Domain\Club::class);
+        $club = $this->createStub( Club::class);
         $club->match_secretary = (object)['email' => 'secretary@example.com'];
         $this->club_repository->method( 'find_by_id' )->with(10)->willReturn($club);
 
@@ -441,7 +461,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -470,7 +490,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -515,7 +535,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'League 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -541,7 +561,7 @@ class Notification_Service_Test extends TestCase {
         $this->assertEquals('admin@example.com', $GLOBALS['wp_mail_calls'][0]['to']);
 
         // Case 3: Club has no match secretary email
-        $club = $this->createStub(\Racketmanager\Domain\Club::class);
+        $club = $this->createStub( Club::class);
         $club->match_secretary = null;
         $this->club_repository->method( 'find_by_id' )->willReturn($club);
         $GLOBALS['wp_mail_calls'] = [];
@@ -559,9 +579,9 @@ class Notification_Service_Test extends TestCase {
         $this->service->notify_team_withdrawal($fixture, 100);
         $this->assertEmpty($GLOBALS['wp_mail_calls']);
 
-        // Case 2: Admin email empty
+        // Case 2: Admin email is empty
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -585,13 +605,15 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
         $fixture_data->leg = 1;
+        $fixture_data->host = 'home';
         $fixture = new Fixture($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'Division 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'cup', 'name' => 'Cup Name'];
+        $event->competition_id = 123;
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
@@ -643,8 +665,9 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'Division 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league', 'name' => 'League Name', 'is_tournament' => false];
+        $event->competition_id = 456;
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
@@ -680,8 +703,9 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'Division 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name', 'is_tournament' => true];
+        $event->competition_id = 789;
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
 
@@ -715,7 +739,7 @@ class Notification_Service_Test extends TestCase {
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
         $league->title = 'Division 1';
-        $event = $this->getMockBuilder(\Racketmanager\Domain\Competition\Event::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         $this->league_repository->method('find_by_id')->willReturn($league);
@@ -766,7 +790,7 @@ class Notification_Service_Test extends TestCase {
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
         $league->id = 456;
-        $event = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
         $event->competition = (object) [ 'type' => 'league' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->with( 456 )->willReturn( $league );
@@ -791,7 +815,7 @@ class Notification_Service_Test extends TestCase {
         $this->player_repository->method( 'find' )->with( 5, 'id' )->willReturn( $captain );
 
         // Mock Match Secretary
-        $club = $this->getMockBuilder( \Racketmanager\Domain\Club::class )->disableOriginalConstructor()->getMock();
+        $club = $this->getMockBuilder( Club::class )->disableOriginalConstructor()->getMock();
         $club->match_secretary = (object)[
             'display_name' => 'Match Sec',
             'email' => 'secretary@example.com'
@@ -831,7 +855,7 @@ class Notification_Service_Test extends TestCase {
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
         $league->id = 456;
-        $event = $this->getMockBuilder( \Racketmanager\Domain\Competition\Event::class )->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
         $event->competition = (object) [ 'type' => 'league' ];
         $league->event = $event;
         $this->league_repository->method( 'find_by_id' )->with( 456 )->willReturn( $league );
@@ -860,6 +884,48 @@ class Notification_Service_Test extends TestCase {
         $this->assertStringContainsString( 'Test error description', $mail['message'] );
         $this->assertStringContainsString( '2 points', $mail['message'] );
         $this->assertStringContainsString( 'From: Test Site <admin@example.com>', $mail['headers'][0] );
+    }
+
+    public function test_send_chase_approval_notification(): void {
+        $fixture = $this->getMockBuilder(Fixture::class)->disableOriginalConstructor()->getMock();
+        $fixture->method('get_id')->willReturn(123);
+        $fixture->method('get_league_id')->willReturn(456);
+        $fixture->method('get_home_team')->willReturn('100');
+        $fixture->method('get_away_team')->willReturn('200');
+        $fixture->method('get_updated_by')->willReturn('home');
+        $fixture->method('get_season')->willReturn('2024');
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'League 1';
+        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'league'];
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $team = $this->getMockBuilder(Team::class)->disableOriginalConstructor()->getMock();
+        $team->method('get_id')->willReturn(200);
+        $team->method('get_club_id')->willReturn(10);
+        $this->team_repository->method('find_by_id')->willReturn($team);
+
+        $league_team = $this->getMockBuilder( League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team->method('get_captain')->willReturn(999);
+        $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team);
+
+        $player = $this->getMockBuilder( Player::class)->disableOriginalConstructor()->getMock();
+        $player->method('get_email')->willReturn('captain@example.com');
+        $this->player_repository->method('find')->willReturn($player);
+
+        $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
+        $this->app->method('get_from_user_email')->willReturn('from@example.com');
+        
+        $this->presenter->method('present_captain_result_approval_notification')->willReturn(['match' => new stdClass()]);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->service->send_chase_approval_notification($fixture, ['from_email' => 'admin@example.com']);
+        
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $this->assertStringContainsString('Fixture result approval', $GLOBALS['wp_mail_calls'][0]['subject']);
     }
 }
 }

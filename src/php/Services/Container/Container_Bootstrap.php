@@ -56,6 +56,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\External\Wtn_Api_Client;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Presenters\Notification_Presenter;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Player_Service;
@@ -189,14 +190,22 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'notify_service', fn() => new Notify_Service( $app ) );
+        $c->set( 'notification_presenter', function ( Simple_Container $c ) use ( $app ) {
+            return new Notification_Presenter(
+                $c->get( 'team_repository' ),
+                $c->get( 'club_repository' ),
+                $c->get( 'tournament_repository' ),
+                $app->site_url,
+                $app->site_name
+            );
+        } );
+
         $c->set( 'notification_service', function ( Simple_Container $c ) {
             return new Notification_Service(
-                $c->get( 'league_repository' ),
-                $c->get( 'league_team_repository' ),
-                $c->get( 'team_repository' ),
-                $c->get( 'player_repository' ),
-                $c->get( 'club_repository' ),
+                self::get_repository_provider( $c ),
                 $c->get( 'settings_service' ),
+                $c->get( 'notification_presenter' ),
+                $c->get( 'view_renderer' ),
                 $c->get( 'racketmanager_app' )
             );
         } );

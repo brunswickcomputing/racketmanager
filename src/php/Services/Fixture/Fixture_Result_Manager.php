@@ -14,6 +14,7 @@ use Racketmanager\Domain\DTO\Fixture\Team_Result_Response;
 use Racketmanager\Domain\DTO\Player\Player_Warnings_Response;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Result\Rubber_Result_Manager;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -33,13 +34,10 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Settings_Service;
 
-use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
@@ -104,11 +102,6 @@ class Fixture_Result_Manager {
     private ?Team_Repository_Interface $team_repository;
 
     /**
-     * @var Player_Repository_Interface|null
-     */
-    private ?Player_Repository_Interface $player_repository;
-
-    /**
      * @var League_Team_Repository_Interface|null
      */
     private ?League_Team_Repository_Interface $league_team_repository;
@@ -122,11 +115,6 @@ class Fixture_Result_Manager {
      * @var League_Repository_Interface|null
      */
     private ?League_Repository_Interface $league_repository;
-
-    /**
-     * @var Club_Repository_Interface|null
-     */
-    private ?Club_Repository_Interface $club_repository;
 
     /**
      * @var Results_Checker_Repository_Interface|null
@@ -145,7 +133,6 @@ class Fixture_Result_Manager {
 
     /** @var Result_Reporting_Service */
     private Result_Reporting_Service $result_reporting_service;
-    private Results_Report_Repository_Interface $results_report_repository;
     private Fixture_Maintenance_Service $fixture_maintenance_service;
 
     /**
@@ -156,7 +143,6 @@ class Fixture_Result_Manager {
         Service_Provider $service_provider,
         Repository_Provider $repository_provider
     ) {
-        $this->results_report_repository = $repository_provider->get_results_report_repository();
         $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
         $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service() ?? new Fixture_Maintenance_Service( $service_provider, $repository_provider, $this );
         $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
@@ -170,25 +156,23 @@ class Fixture_Result_Manager {
         $this->rubber_manager       = $service_provider->get_rubber_manager() ?? new Rubber_Result_Manager( $this->score_validator, $this->league_service, $repository_provider->get_rubber_repository(), $this->player_validator );
 
         $this->team_repository            = $repository_provider->get_team_repository();
-        $this->player_repository          = $repository_provider->get_player_repository();
         $this->league_team_repository     = $repository_provider->get_league_team_repository();
         $this->league_repository          = $repository_provider->get_league_repository();
         $this->rubber_repository          = $repository_provider->get_rubber_repository();
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
-        $this->club_repository            = $repository_provider->get_club_repository();
         $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
         $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $this->registration_service );
 
         $this->notification_service = $service_provider->get_notification_service();
         if ( ! $this->notification_service ) {
+            /** @var Simple_Container $container */
+            $container = $GLOBALS['racketmanager']->container;
             $this->notification_service = new Notification_Service(
-                $repository_provider->get_league_repository(),
-                $this->league_team_repository,
-                $this->team_repository,
-                $this->player_repository,
-                $this->club_repository,
+                $repository_provider,
                 $this->settings_service,
+                $container->get( 'notification_presenter' ),
+                $container->get( 'view_renderer' ),
                 $GLOBALS['racketmanager']
             );
         }

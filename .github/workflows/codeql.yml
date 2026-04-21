@@ -9,6 +9,8 @@ on:
 jobs:
   noop:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Notice
         run: |

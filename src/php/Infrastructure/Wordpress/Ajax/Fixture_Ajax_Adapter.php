@@ -6,6 +6,8 @@ use Exception;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Status_Read_Model;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Options_Request;
+use Racketmanager\Domain\DTO\Fixture\Rubber_Status_Options_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request;
 use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
@@ -27,19 +29,22 @@ final class Fixture_Ajax_Adapter {
     private Json_Response_Factory_Interface $response_factory;
     private Fixture_Detail_Service $fixture_detail_service;
     private View_Renderer_Interface $view_renderer;
+    private Fixture_Presenter $presenter;
 
     public function __construct(
         $container,
         Security_Service_Interface $security_service,
         Json_Response_Factory_Interface $response_factory,
         Fixture_Detail_Service $fixture_detail_service,
-        View_Renderer_Interface $view_renderer
+        View_Renderer_Interface $view_renderer,
+        Fixture_Presenter $presenter
     ) {
         $this->container              = $container;
         $this->security_service       = $security_service;
         $this->response_factory       = $response_factory;
         $this->fixture_detail_service = $fixture_detail_service;
         $this->view_renderer          = $view_renderer;
+        $this->presenter              = $presenter;
     }
 
     /**
@@ -107,8 +112,7 @@ final class Fixture_Ajax_Adapter {
             $result_manager = $this->get_fixture_result_manager();
             $response       = $result_manager->handle_fixture_result_update( $fixture, $request );
 
-            $presenter  = new Fixture_Presenter();
-            $read_model = $presenter->map_to_result_read_model( $fixture, $response, $request );
+            $read_model = $this->presenter->map_to_result_read_model( $fixture, $response, $request );
 
             $this->response_factory->send_success( $read_model->to_array() );
             return;
@@ -126,6 +130,84 @@ final class Fixture_Ajax_Adapter {
         } catch ( Exception $e ) {
             $this->response_factory->send_error( array( 'msg' => $e->getMessage() ), 400 );
             return;
+        }
+    }
+
+    /**
+     * Build screen to allow match status to be captured
+     */
+    public function match_status_options(): void {
+        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+            $this->response_factory->send_error( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
+            return;
+        }
+
+        try {
+            $request = Fixture_Status_Options_Request::from_post( $_POST );
+            $request->validate();
+
+            $dto = $this->fixture_detail_service->get_fixture_with_details( $request->fixture_id );
+            if ( ! $dto ) {
+                $this->response_factory->send_error( array( 'msg' => __( 'Match not found', 'racketmanager' ) ), 404 );
+                return;
+            }
+
+            $vars = $this->presenter->map_to_status_options( $dto, $request->match_status, $request->modal );
+            $html = $this->view_renderer->render_to_string( 'match/match-status-modal', $vars );
+
+            $this->response_factory->send_raw( $html );
+
+        } catch ( Fixture_Validation_Exception $e ) {
+            $this->response_factory->send_error( array( 'msg' => $e->get_error_msgs()[0] ), 400 );
+        } catch ( Exception $e ) {
+            $this->response_factory->send_error( array( 'msg' => $e->getMessage() ), 500 );
+        }
+    }
+
+    /**
+     * Build screen to allow rubber status to be captured
+     */
+    public function match_rubber_status_options(): void {
+        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+            $html = show_alert( __( 'Security check failed', 'racketmanager' ), 'danger', 'modal' );
+            $this->response_factory->send_raw( $html, 403 );
+            return;
+        }
+
+        try {
+            $request = Rubber_Status_Options_Request::from_post( $_POST );
+            $request->validate();
+
+            $rubber = \Racketmanager\get_rubber( $request->rubber_id );
+            if ( ! $rubber ) {
+                $html = show_alert( __( 'Rubber not found', 'racketmanager' ), 'danger', 'modal' );
+                $this->response_factory->send_raw( $html, 404 );
+                return;
+            }
+
+            $dto = $this->fixture_detail_service->get_fixture_with_details( (int) $rubber->match_id );
+            if ( ! $dto ) {
+                $html = show_alert( __( 'Match not found', 'racketmanager' ), 'danger', 'modal' );
+                $this->response_factory->send_raw( $html, 404 );
+                return;
+            }
+
+            $vars = $this->presenter->map_to_rubber_status_options(
+                $dto,
+                $rubber,
+                $request->score_status,
+                $request->modal
+            );
+
+            $html = $this->view_renderer->render_to_string( 'match/rubber-status-modal', $vars );
+            $this->response_factory->send_raw( $html );
+
+        } catch ( Fixture_Validation_Exception $e ) {
+            $html = show_alert( $e->getMessage() ?: '', 'danger', 'modal' );
+            $this->response_factory->send_raw( $html ?: '', 400 );
+        } catch ( Exception $e ) {
+            $html = show_alert( __( 'An unexpected error occurred', 'racketmanager' ) ?: '', 'danger', 'modal' );
+            $this->response_factory->send_raw( $html ?: '', 500 );
         }
     }
 
@@ -166,8 +248,7 @@ final class Fixture_Ajax_Adapter {
             $fixture_result_manager = $this->get_fixture_result_manager();
             $response               = $fixture_result_manager->reset_result( $fixture );
 
-            $presenter = new Fixture_Presenter();
-            $message   = $presenter->get_reset_message( $response->status );
+            $message = $this->presenter->get_reset_message( $response->status );
 
             $this->response_factory->send_success( [
                 'msg'      => $message,
@@ -209,8 +290,7 @@ final class Fixture_Ajax_Adapter {
             $league            = $league_repository->find_by_id( (int) $fixture->get_league_id() );
             $num_rubbers       = $league ? (int) $league->num_rubbers : 0;
 
-            $presenter  = new Fixture_Presenter();
-            $read_model = $presenter->map_to_status_read_model( $fixture, $request, $num_rubbers );
+            $read_model = $this->presenter->map_to_status_read_model( $fixture, $request, $num_rubbers );
 
             $this->response_factory->send_success( $read_model->to_array() );
             return;

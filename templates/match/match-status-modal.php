@@ -81,7 +81,7 @@ use Racketmanager\Domain\Fixture\Fixture;
                                     </li>
                                     <li class="list__item">
                                         <dl>
-                                            <dt class=""><?php echo esc_html( $this->not_played ); ?></dt>
+                                            <dt class=""><?php esc_html_e( 'Not played', 'racketmanager' ); ?></dt>
                                             <dd class=""><?php esc_html_e( 'Not played (and will not be played)', 'racketmanager' ); ?></dd>
                                         </dl>
                                     </li>

@@ -11,6 +11,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Status_Read_Model;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Result_Read_Model;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use stdClass;
 
 class Fixture_Presenter {
@@ -126,6 +127,117 @@ class Fixture_Presenter {
         $status_dtls->status  = $status;
 
         return $status_dtls;
+    }
+
+    public function map_to_status_options( Fixture_Details_DTO $dto, ?string $status, ?string $modal ): array {
+        $match = $dto->fixture;
+        if ( empty( $status ) ) {
+            $status = $this->resolve_match_status( $match );
+        }
+
+        $select = $this->build_status_options( $dto );
+
+        return [
+            'dto'    => $dto,
+            'match'  => $match,
+            'status' => $status,
+            'modal'  => $modal,
+            'select' => $select,
+        ];
+    }
+
+    private function resolve_match_status( Fixture $match ): ?string {
+        if ( $match->is_walkover() ) {
+            return 'home' === $match->get_walkover() ? 'walkover_player1' : 'walkover_player2';
+        }
+
+        if ( $match->is_retired() ) {
+            return 'home' === $match->get_retired() ? 'retired_player1' : 'retired_player2';
+        }
+
+        if ( $match->is_shared() ) {
+            return 'share';
+        }
+
+        return null;
+    }
+
+    private function build_status_options( Fixture_Details_DTO $dto ): array {
+        $select    = [];
+        $home_name = $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' );
+        $away_name = $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' );
+
+        // Walkover options
+        $select[] = $this->create_option( 'walkover_player2', sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name ) );
+        $select[] = $this->create_option( 'walkover_player1', sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name ) );
+
+        // Retired options
+        if ( $dto->competition->is_player_entry ) {
+            $select[] = $this->create_option( 'retired_player1', sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name ) );
+            $select[] = $this->create_option( 'retired_player2', sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name ) );
+        }
+
+        // Standard options
+        $select[] = $this->create_option( 'cancelled', __( 'Cancelled', 'racketmanager' ) );
+        $select[] = $this->create_option( 'share', __( 'Not played', 'racketmanager' ) );
+
+        if ( $dto->competition->is_team_entry ) {
+            $select[] = $this->create_option( 'abandoned', __( 'Abandoned', 'racketmanager' ) );
+        }
+
+        // Reset option
+        $select[] = $this->create_option( 'none', __( 'Reset', 'racketmanager' ) );
+
+        return $select;
+    }
+
+    private function create_option( string $value, string $desc ): stdClass {
+        $option         = new stdClass();
+        $option->value  = $value;
+        $option->select = $value;
+        $option->desc   = $desc;
+        return $option;
+    }
+
+    public function map_to_rubber_status_options(
+        Fixture_Details_DTO $dto,
+        object $rubber,
+        ?string $status,
+        ?string $modal
+    ): array {
+        $select    = [];
+        $home_name = $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' );
+        $away_name = $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' );
+
+        // Walkover options
+        $select[] = $this->create_option( 'walkover_player2', sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $home_name ) );
+        $select[] = $this->create_option( 'walkover_player1', sprintf( __( 'Match not played - %s did not show', 'racketmanager' ), $away_name ) );
+
+        // Retired options
+        $select[] = $this->create_option( 'retired_player1', sprintf( __( 'Retired - %s', 'racketmanager' ), $home_name ) );
+        $select[] = $this->create_option( 'retired_player2', sprintf( __( 'Retired - %s', 'racketmanager' ), $away_name ) );
+
+        // Standard options
+        $select[] = $this->create_option( 'abandoned', __( 'Abandoned', 'racketmanager' ) );
+        $select[] = $this->create_option( 'share', __( 'Not played', 'racketmanager' ) );
+
+        // Reset option
+        $select[] = $this->create_option( 'none', __( 'Reset', 'racketmanager' ) );
+
+        // Invalid player options
+        $select[] = $this->create_option( 'invalid_player1', sprintf( __( 'Invalid player - %s', 'racketmanager' ), $home_name ) );
+        $select[] = $this->create_option( 'invalid_player2', sprintf( __( 'Invalid player - %s', 'racketmanager' ), $away_name ) );
+        $select[] = $this->create_option( 'invalid_players', __( 'Invalid player on both teams', 'racketmanager' ) );
+
+        return [
+            'dto'        => $dto,
+            'match'      => $dto->fixture,
+            'status'     => $status,
+            'modal'      => $modal,
+            'select'     => $select,
+            'rubber'     => $rubber,
+            'not_played' => __( 'Not played', 'racketmanager' ),
+        ];
     }
 
     public function map_to_result_read_model(

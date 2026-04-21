@@ -12,7 +12,7 @@ const HEADER_RESPONSE_TEXT_ID = '#headerResponseResponse';
 
 /**
  * Open the match status modal.
- * Mirrors legacy behavior while using modular utilities.
+ * Mirrors legacy behaviour while using modular utilities.
  *
  * @param {Event} event
  * @param {number|string} matchId
@@ -54,7 +54,7 @@ export function openMatchStatusModal(event, matchId) {
             if (status === 'error') {
                 // Try to parse response for message consistency
                 try {
-                    const parsed = JSON.parse(response);
+                    const parsed = JSON.parse(response.data);
                     jQuery(HEADER_RESPONSE_TEXT_ID).html(parsed.message || 'An error occurred');
                 } catch (_) {
                     jQuery(HEADER_RESPONSE_TEXT_ID).html('An error occurred');

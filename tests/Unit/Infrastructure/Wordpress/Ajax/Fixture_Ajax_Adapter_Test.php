@@ -8,9 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
+use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
-use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -35,12 +36,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->response_factory       = $this->createMock( Json_Response_Factory_Interface::class );
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );
+        $presenter = new Fixture_Presenter();
         $this->adapter                = new Fixture_Ajax_Adapter(
             $this->container,
             $this->security_service,
             $this->response_factory,
             $this->fixture_detail_service,
-            $this->view_renderer
+            $this->view_renderer,
+            $presenter
         );
         $_POST = [];
     }
@@ -113,8 +116,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $dto = new Fixture_Details_DTO(
             $fixture,
             $league,
-            $this->createStub(\Racketmanager\Domain\Competition\Event::class),
-            $this->createStub(\Racketmanager\Domain\Competition\Competition::class)
+            $this->createStub( Event::class),
+            $this->createStub( Competition::class)
         );
 
         $this->fixture_detail_service->expects($this->once())
@@ -150,8 +153,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $dto = new Fixture_Details_DTO(
             $fixture,
             $league,
-            $this->createStub(\Racketmanager\Domain\Competition\Event::class),
-            $this->createStub(\Racketmanager\Domain\Competition\Competition::class)
+            $this->createStub( Event::class),
+            $this->createStub( Competition::class)
         );
 
         $this->fixture_detail_service->expects($this->once())
@@ -239,10 +242,84 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->response_factory->expects($this->once())
             ->method('send_error')
             ->with($this->callback(function($data) {
-                return isset($data['err_msgs']) && !empty($data['err_msgs']);
+                return !empty($data['err_msgs']);
             }), 400);
 
         $this->adapter->set_match_status();
+    }
+
+    /**
+     * @return void
+     */
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_match_status_options_success(): void {
+        $this->security_service->method('verify_nonce')->willReturn(true);
+        $_POST['security'] = 'valid';
+        $_POST['match_id'] = 123;
+        $_POST['modal'] = 'test-modal';
+
+        $fixture = $this->createStub(Fixture::class);
+        $league = $this->createStub(League::class);
+        $event = $this->createStub( Event::class);
+        $competition = $this->createStub( Competition::class);
+        $dto = new Fixture_Details_DTO($fixture, $league, $event, $competition);
+
+        $this->fixture_detail_service->expects($this->once())
+            ->method('get_fixture_with_details')
+            ->with(123)
+            ->willReturn($dto);
+
+        $this->view_renderer->expects($this->once())
+            ->method('render_to_string')
+            ->with('match/match-status-modal', $this->callback(function($vars) use ($dto) {
+                return $vars['dto'] === $dto && $vars['modal'] === 'test-modal';
+            }))
+            ->willReturn('<html lang="">modal content</html>');
+
+        $this->response_factory->expects($this->once())
+            ->method('send_raw')
+            ->with('<html lang="">modal content</html>');
+
+        $this->adapter->match_status_options();
+    }
+
+    /**
+     * @return void
+     */
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_match_status_options_fails_validation(): void {
+        $this->security_service->method('verify_nonce')->willReturn(true);
+        $_POST['security'] = 'valid';
+        // Missing match_id and modal
+
+        $this->response_factory->expects($this->once())
+            ->method('send_error')
+            ->with($this->callback(function($data) {
+                return isset($data['msg']) && str_contains($data['msg'], 'Match id not found');
+            }), 400);
+
+        $this->adapter->match_status_options();
+    }
+
+    /**
+     * @return void
+     */
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_match_status_options_match_not_found(): void {
+        $this->security_service->method('verify_nonce')->willReturn(true);
+        $_POST['security'] = 'valid';
+        $_POST['match_id'] = 999;
+        $_POST['modal'] = 'test-modal';
+
+        $this->fixture_detail_service->method('get_fixture_with_details')->willReturn(null);
+
+        $this->response_factory->expects($this->once())
+            ->method('send_error')
+            ->with($this->callback(function($data) {
+                return isset($data['msg']) && str_contains($data['msg'], 'Match not found');
+            }), 404);
+
+        $this->adapter->match_status_options();
     }
 
     /**
@@ -325,5 +402,71 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             }));
 
         $this->adapter->set_match_rubber_status();
+    }
+    public function test_match_rubber_status_options_success(): void {
+        $this->security_service->method('verify_nonce')->willReturn(true);
+        $_POST['security'] = 'valid';
+        $_POST['rubber_id'] = 456;
+        $_POST['modal'] = 'rubberStatusModal';
+
+        $rubber = new stdClass();
+        $rubber->match_id = 123;
+
+        // Eval-based stub for get_rubber since it is a global function
+        $GLOBALS['wp_stubs_rubbers'] = [456 => $rubber];
+        if (!function_exists('Racketmanager\get_rubber')) {
+            eval('namespace Racketmanager { function get_rubber($id) { return $GLOBALS["wp_stubs_rubbers"][$id] ?? null; } }');
+        }
+
+        $league = $this->createStub(League::class);
+        $fixture = $this->createStub(Fixture::class);
+        $event = $this->createStub(Event::class);
+        $competition = $this->createStub(Competition::class);
+        $dto = new Fixture_Details_DTO($fixture, $league, $event, $competition);
+
+        // Stub for show_alert
+        if (!function_exists('show_alert')) {
+            eval('function show_alert($msg, $type, $template = null) { return "ALERT: " . $msg; }');
+        }
+
+        $this->fixture_detail_service->expects($this->once())
+            ->method('get_fixture_with_details')
+            ->with(123)
+            ->willReturn($dto);
+
+        $this->view_renderer->expects($this->once())
+            ->method('render_to_string')
+            ->with('match/rubber-status-modal', $this->callback(function($vars) use ($dto, $rubber) {
+                return $vars['dto'] === $dto &&
+                    $vars['rubber'] === $rubber &&
+                    $vars['not_played'] === 'Not played';
+            }))
+            ->willReturn('<html lang="">Modal Content</html>');
+
+        $this->response_factory->expects($this->once())
+            ->method('send_raw')
+            ->with('<html lang="">Modal Content</html>');
+
+        $this->adapter->match_rubber_status_options();
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_match_rubber_status_options_fails_validation(): void {
+        $this->security_service->method('verify_nonce')->willReturn(true);
+        $_POST['security'] = 'valid';
+        // Missing rubber_id
+
+        // Ensure show_alert is defined in a way guaranteed to be available
+        if (!function_exists('show_alert')) {
+            eval('function show_alert($msg, $type, $template = null) { return "ALERT: " . $msg; }');
+        }
+
+        $this->response_factory->expects($this->once())
+            ->method('send_raw')
+            ->with($this->callback(function() {
+                return true; 
+            }), 400);
+
+        $this->adapter->match_rubber_status_options();
     }
 }

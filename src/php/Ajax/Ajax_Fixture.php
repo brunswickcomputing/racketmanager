@@ -15,6 +15,8 @@ use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
+use Racketmanager\Infrastructure\Wordpress\Response\Logging_Json_Response_Factory;
+use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Repository_Provider;
@@ -25,10 +27,7 @@ use stdClass;
 use function Racketmanager\get_match;
 use function Racketmanager\match_header;
 use function Racketmanager\match_option_modal;
-use function Racketmanager\match_status_modal;
-use function Racketmanager\rubber_status_modal;
 use function Racketmanager\show_alert;
-use function Racketmanager\show_match_card;
 
 /**
  * Implement AJAX front end match responses.
@@ -88,28 +87,9 @@ class Ajax_Fixture extends Ajax {
     /**
      * Build screen to allow match status to be captured
      */
-    #[NoReturn]
     public function match_status_options(): void {
-        $output    = null;
-        $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
-        if ( empty( $validator->error ) ) {
-            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : 0;
-            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $status    = isset( $_POST['match_status'] ) ? sanitize_text_field( wp_unslash( $_POST['match_status'] ) ) : null;
-            $validator = $validator->modal( $modal );
-            $validator = $validator->match( $match_id );
-            if ( empty( $validator->error ) ) {
-                $output = match_status_modal( array( 'status' => $status, 'modal' => $modal, 'match_id' => $match_id ) );
-            }
-        }
-        if ( ! empty( $validator->error ) ) {
-            $return = $validator->get_details();
-            $output = show_alert( $return->err_msgs[0], 'danger', 'modal' );
-            status_header( $return->status );
-        }
-        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        wp_die();
+        $adapter = $this->get_fixture_ajax_adapter();
+        $adapter->match_status_options();
     }
 
     /**
@@ -203,10 +183,12 @@ class Ajax_Fixture extends Ajax {
         return new Fixture_Ajax_Adapter(
             $c,
             new Security_Service(),
-            new Json_Response_Factory(),
+            new Logging_Json_Response_Factory( new Json_Response_Factory() ),
             $c->get( 'fixture_detail_service' ),
-            $c->get( 'view_renderer' )
+            $c->get( 'view_renderer' ),
+            new Fixture_Presenter()
         );
+
     }
 
     /**
@@ -258,7 +240,7 @@ class Ajax_Fixture extends Ajax {
             if ( $match_date ) {
                 $maintenance_service = $this->get_fixture_maintenance_service();
                 $maintenance_service->update_fixture_date( $match_id, $match_date );
-                $maintenance_service->update_fixture_teams( $match_id, (string) $old_away, (string) $old_home );
+                $maintenance_service->update_fixture_teams( $match_id, $old_away, $old_home );
 
                 $return           = new stdClass();
                 $return->msg      = __( 'Home and away teams switched', 'racketmanager' );
@@ -290,31 +272,9 @@ class Ajax_Fixture extends Ajax {
     /**
      * Show rubber status options
      */
-    #[NoReturn]
     public function match_rubber_status_options(): void {
-        $output    = null;
-        $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
-        if ( empty( $validator->error ) ) {
-            $rubber_id = isset( $_POST['rubber_id'] ) ? intval( $_POST['rubber_id'] ) : null;
-            $modal     = isset( $_POST['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null;
-            $status    = isset( $_POST['score_status'] ) ? sanitize_text_field( wp_unslash( $_POST['score_status'] ) ) : null;
-            $validator = $validator->modal( $modal );
-            $validator = $validator->rubber( $rubber_id );
-            if ( empty( $validator->error ) ) {
-                $output = rubber_status_modal( $rubber_id, array( 'status' => $status, 'modal' => $modal ) );
-            }
-        }
-        if ( ! empty( $validator->error ) ) {
-            $return = $validator->get_details();
-            if ( empty( $return->msg ) ) {
-                $return->msg = implode( '<br> ', $return->err_msgs );
-            }
-            $output = show_alert( $return->msg, 'danger', 'modal' );
-            status_header( $return->status );
-        }
-        echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-        wp_die();
+        $adapter = $this->get_fixture_ajax_adapter();
+        $adapter->match_rubber_status_options();
     }
 
     /**

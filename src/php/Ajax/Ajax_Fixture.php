@@ -10,19 +10,16 @@ namespace Racketmanager\Ajax;
 
 use Exception;
 use JetBrains\PhpStorm\NoReturn;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Confirmation_Request;
 use Racketmanager\Domain\DTO\Fixture\Team_Result_Update_Request;
-use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
-use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Validator\Validator_Fixture;
 use stdClass;
 use function Racketmanager\get_match;
@@ -84,15 +81,8 @@ class Ajax_Fixture extends Ajax {
      * Build screen to allow printing of match cards
      */
     public function print_match_card(): void {
-        $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
-        if ( empty( $validator->error ) ) {
-            $match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
-            $output   = show_match_card( $match_id );
-            wp_send_json_success( $output );
-        }
-        $return = $validator->get_details();
-        wp_send_json_error( $return->msg, $return->status );
+        $adapter = $this->get_fixture_ajax_adapter();
+        $adapter->print_match_card();
     }
 
     /**
@@ -126,11 +116,7 @@ class Ajax_Fixture extends Ajax {
      * Set match status
      */
     public function set_match_status(): void {
-        $adapter = new Fixture_Ajax_Adapter(
-            $this->racketmanager->container,
-            new Security_Service(),
-            new Json_Response_Factory()
-        );
+        $adapter = $this->get_fixture_ajax_adapter();
         $adapter->set_match_status();
     }
 
@@ -207,6 +193,46 @@ class Ajax_Fixture extends Ajax {
     }
 
     /**
+     * Get the Fixture AJAX Adapter with its dependencies.
+     *
+     * @return Fixture_Ajax_Adapter
+     */
+    private function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
+        $c = $this->racketmanager->container;
+
+        return new Fixture_Ajax_Adapter(
+            $c,
+            new Security_Service(),
+            new Json_Response_Factory(),
+            $c->get( 'fixture_detail_service' ),
+            $c->get( 'view_renderer' )
+        );
+    }
+
+    /**
+     * Get the Fixture Maintenance Service with its dependencies.
+     *
+     * @return Fixture_Maintenance_Service
+     */
+    private function get_fixture_maintenance_service(): Fixture_Maintenance_Service {
+        $c = $this->racketmanager->container;
+
+        $repository_provider = new Repository_Provider( $c->get( 'league_repository' ), $c->get( 'event_repository' ), $c->get( 'competition_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), $c->get( 'player_repository' ), $c->get( 'rubber_repository' ), $c->get( 'results_checker_repository' ), $c->get( 'results_report_repository' ), $c->get( 'fixture_repository' ), $c->get( 'club_repository' ) );
+
+        $service_provider = new Fixture_Service_Provider( $c->get( 'result_service' ), $c->get( 'knockout_progression_service' ), $c->get( 'league_service' ), $c->get( 'score_validation_service' ), $c->get( 'player_validation_service' ), $c->get( 'notification_service' ), $c->get( 'registration_service' ) );
+        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+        $service_provider->set_team_service( $c->get( 'team_service' ) );
+        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+        $fixture_result_manager = new Fixture_Result_Manager( $service_provider, $repository_provider );
+        $service_provider->set_fixture_maintenance_service( new Fixture_Maintenance_Service( $service_provider, $repository_provider, $fixture_result_manager ) );
+
+        return $service_provider->get_fixture_maintenance_service();
+    }
+
+    /**
      * Switch home and away teams function
      *
      * @return void
@@ -257,75 +283,8 @@ class Ajax_Fixture extends Ajax {
      * Reset result and draw for fixture
      */
     public function reset_match_result(): void {
-        $adapter = new Fixture_Ajax_Adapter(
-            $this->racketmanager->container,
-            new Security_Service(),
-            new Json_Response_Factory()
-        );
+        $adapter = $this->get_fixture_ajax_adapter();
         $adapter->reset_match_result();
-    }
-
-    /**
-     * Get the Fixture Maintenance Service with its dependencies.
-     *
-     * @return Fixture_Maintenance_Service
-     */
-    private function get_fixture_maintenance_service(): Fixture_Maintenance_Service {
-        $c = $this->racketmanager->container;
-
-        $repository_provider = new Repository_Provider(
-            $c->get( 'league_repository' ),
-            $c->get( 'event_repository' ),
-            $c->get( 'competition_repository' ),
-            $c->get( 'league_team_repository' ),
-            $c->get( 'team_repository' ),
-            $c->get( 'player_repository' ),
-            $c->get( 'rubber_repository' ),
-            $c->get( 'results_checker_repository' ),
-            $c->get( 'results_report_repository' ),
-            $c->get( 'fixture_repository' ),
-            $c->get( 'club_repository' )
-        );
-
-        $service_provider = new Fixture_Service_Provider(
-            $c->get( 'result_service' ),
-            $c->get( 'knockout_progression_service' ),
-            $c->get( 'league_service' ),
-            $c->get( 'score_validation_service' ),
-            $c->get( 'player_validation_service' ),
-            $c->get( 'notification_service' ),
-            $c->get( 'registration_service' )
-        );
-        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
-        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-        $service_provider->set_team_service( $c->get( 'team_service' ) );
-        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
-
-        $fixture_result_manager = new Fixture_Result_Manager( $service_provider, $repository_provider );
-        $service_provider->set_fixture_maintenance_service( new Fixture_Maintenance_Service( $service_provider, $repository_provider, $fixture_result_manager ) );
-
-        return $service_provider->get_fixture_maintenance_service();
-    }
-
-    /**
-     * Get the Fixture Result Manager with its dependencies.
-     *
-     * @return Fixture_Result_Manager
-     */
-    private function get_fixture_result_manager(): Fixture_Result_Manager {
-        $c = $this->racketmanager->container;
-
-        $repository_provider = new Repository_Provider( $c->get( 'league_repository' ), $c->get( 'event_repository' ), $c->get( 'competition_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), $c->get( 'player_repository' ), $c->get( 'rubber_repository' ), $c->get( 'results_checker_repository' ), $c->get( 'results_report_repository' ), $c->get( 'fixture_repository' ), $c->get( 'club_repository' ) );
-
-        $service_provider = new Fixture_Service_Provider( $c->get( 'result_service' ), $c->get( 'knockout_progression_service' ), $c->get( 'league_service' ), $c->get( 'score_validation_service' ), $c->get( 'player_validation_service' ), $c->get( 'notification_service' ), $c->get( 'registration_service' ) );
-        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
-        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
-        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
-        $service_provider->set_team_service( $c->get( 'team_service' ) );
-        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
-
-        return new Fixture_Result_Manager( $service_provider, $repository_provider );
     }
 
     /**
@@ -362,11 +321,7 @@ class Ajax_Fixture extends Ajax {
      * Set match rubber status
      */
     public function set_match_rubber_status(): void {
-        $adapter = new Fixture_Ajax_Adapter(
-            $this->racketmanager->container,
-            new Security_Service(),
-            new Json_Response_Factory()
-        );
+        $adapter = $this->get_fixture_ajax_adapter();
         $adapter->set_match_rubber_status();
     }
 
@@ -394,11 +349,7 @@ class Ajax_Fixture extends Ajax {
      * Update match details
      */
     public function update_fixture_result(): void {
-        $adapter = new Fixture_Ajax_Adapter(
-            $this->racketmanager->container,
-            new Security_Service(),
-            new Json_Response_Factory()
-        );
+        $adapter = $this->get_fixture_ajax_adapter();
         $adapter->update_fixture_result();
     }
 
@@ -456,5 +407,25 @@ class Ajax_Fixture extends Ajax {
         $return->status   = $validator->status ?? 200;
         $return->warnings = $validator->warnings ?? array();
         wp_send_json_success( $return );
+    }
+
+    /**
+     * Get the Fixture Result Manager with its dependencies.
+     *
+     * @return Fixture_Result_Manager
+     */
+    private function get_fixture_result_manager(): Fixture_Result_Manager {
+        $c = $this->racketmanager->container;
+
+        $repository_provider = new Repository_Provider( $c->get( 'league_repository' ), $c->get( 'event_repository' ), $c->get( 'competition_repository' ), $c->get( 'league_team_repository' ), $c->get( 'team_repository' ), $c->get( 'player_repository' ), $c->get( 'rubber_repository' ), $c->get( 'results_checker_repository' ), $c->get( 'results_report_repository' ), $c->get( 'fixture_repository' ), $c->get( 'club_repository' ) );
+
+        $service_provider = new Fixture_Service_Provider( $c->get( 'result_service' ), $c->get( 'knockout_progression_service' ), $c->get( 'league_service' ), $c->get( 'score_validation_service' ), $c->get( 'player_validation_service' ), $c->get( 'notification_service' ), $c->get( 'registration_service' ) );
+        $service_provider->set_settings_service( $c->get( 'settings_service' ) );
+        $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
+        $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+        $service_provider->set_team_service( $c->get( 'team_service' ) );
+        $service_provider->set_competition_service( $c->get( 'competition_service' ) );
+
+        return new Fixture_Result_Manager( $service_provider, $repository_provider );
     }
 }

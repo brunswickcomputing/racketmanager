@@ -13,8 +13,10 @@ use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interf
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
+use Racketmanager\Services\View\View_Renderer_Interface;
 
 /**
  * Adapter for Fixture AJAX requests
@@ -23,11 +25,62 @@ final class Fixture_Ajax_Adapter {
     private Simple_Container $container;
     private Security_Service_Interface $security_service;
     private Json_Response_Factory_Interface $response_factory;
+    private Fixture_Detail_Service $fixture_detail_service;
+    private View_Renderer_Interface $view_renderer;
 
-    public function __construct( $container, Security_Service_Interface $security_service, Json_Response_Factory_Interface $response_factory ) {
-        $this->container        = $container;
-        $this->security_service = $security_service;
-        $this->response_factory = $response_factory;
+    public function __construct(
+        $container,
+        Security_Service_Interface $security_service,
+        Json_Response_Factory_Interface $response_factory,
+        Fixture_Detail_Service $fixture_detail_service,
+        View_Renderer_Interface $view_renderer
+    ) {
+        $this->container              = $container;
+        $this->security_service       = $security_service;
+        $this->response_factory       = $response_factory;
+        $this->fixture_detail_service = $fixture_detail_service;
+        $this->view_renderer          = $view_renderer;
+    }
+
+    /**
+     * Build screen to allow printing of match cards
+     */
+    public function print_match_card(): void {
+        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+            $this->response_factory->send_error( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
+            return;
+        }
+
+        $match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
+
+        if ( ! $match_id ) {
+            $this->response_factory->send_error( array( 'msg' => __( 'Match id not supplied', 'racketmanager' ) ), 400 );
+            return;
+        }
+
+        $dto = $this->fixture_detail_service->get_fixture_with_details( $match_id );
+        if ( ! $dto ) {
+            $this->response_factory->send_error( array( 'msg' => __( 'Match not found', 'racketmanager' ) ), 404 );
+            return;
+        }
+
+        $match = $dto->fixture;
+        $template = 'match/match-card';
+        if ( ! empty( $dto->league->num_rubbers ) ) {
+            $match->rubbers = $match->get_rubbers();
+            $template = 'match/match-card-rubbers';
+        }
+
+        $output = $this->view_renderer->render_to_string(
+            $template,
+            [
+                'dto'          => $dto,
+                'match'        => $match,
+                'sponsor_html' => '',
+            ]
+        );
+
+        $this->response_factory->send_success( $output );
     }
 
     /**

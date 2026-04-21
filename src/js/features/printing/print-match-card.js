@@ -14,11 +14,5 @@ export function initializeMatchCardPrint() {
         .on('click.racketmanager.print', '[data-print-match-card]', function(e) {
             const matchId = jQuery(this).data('print-match-card');
             return printScoreCard(e, matchId);
-        })
-        // Backward-compatible hook: element with id #printMatchCard and data-match-id
-        .off('click.racketmanager.print', '#printMatchCard')
-        .on('click.racketmanager.print', '#printMatchCard', function(e) {
-            const matchId = jQuery(this).data('match-id');
-            return printScoreCard(e, matchId);
         });
 }

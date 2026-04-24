@@ -37,6 +37,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
     use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
     use Racketmanager\Domain\Team;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+    use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 
@@ -47,6 +48,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
         private Competition_Service|MockObject $competition_service;
         private Fixture_Permission_Service|MockObject $permission_service;
         private League_Repository_Interface|MockObject $league_repository;
+        private Fixture_Repository_Interface|MockObject $fixture_repository;
         private Notification_Presenter $presenter;
 
         private function create_mock_fixture_details( $fixture_id = 1 ): Fixture_Details_DTO {
@@ -302,6 +304,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $this->competition_service = $this->createStub( Competition_Service::class );
             $this->permission_service = $this->createStub( Fixture_Permission_Service::class );
             $this->league_repository = $this->createStub( League_Repository_Interface::class );
+            $this->fixture_repository = $this->createStub( Fixture_Repository_Interface::class );
 
             $this->competition_service->method( 'get_league_repository' )->willReturn( $this->league_repository );
 
@@ -312,6 +315,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
                 $team_repository,
                 $club_repository,
                 $this->tournament_repository,
+                $this->fixture_repository,
                 $this->fixture_link_service,
                 $this->team_service,
                 $this->competition_service,

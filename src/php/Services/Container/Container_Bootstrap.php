@@ -199,6 +199,7 @@ final class Container_Bootstrap {
                 $c->get( 'team_repository' ),
                 $c->get( 'club_repository' ),
                 $c->get( 'tournament_repository' ),
+                $c->get( 'fixture_repository' ),
                 $c->get( 'fixture_link_service' ),
                 $c->get( 'team_service' ),
                 $c->get( 'competition_service' ),

@@ -48,16 +48,16 @@ export function switchHomeAway(link) {
       jQuery(ALERT_MATCH_OPTIONS).show();
 
       // Hide modal
-      try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(modal).modal('hide'); } catch (e) { console.error(e); }
 
       // Refresh header if possible
-      try { matchHeader(matchId); } catch (_) { /* no-op */ }
+      try { matchHeader(matchId); } catch (e) { console.error(e); }
 
       // Update URL if provided
       if (data.link && history.replaceState) {
         try {
           history.replaceState('', document.title, data.link);
-        } catch (_) { /* no-op */ }
+        } catch (e) { console.error(e); }
       }
     },
     error: function (response) {

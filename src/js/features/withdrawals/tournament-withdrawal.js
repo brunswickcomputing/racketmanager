@@ -53,7 +53,7 @@ export function openWithdrawalModal(event) {
         return;
       }
       jQuery(WITHDRAW_MODAL).show();
-      try { jQuery(WITHDRAW_MODAL).modal('show'); } catch (_) { /* no-op */ }
+      try { jQuery(WITHDRAW_MODAL).modal('show'); } catch (e) { console.error(e); }
     }
   );
 }
@@ -89,7 +89,7 @@ export function confirmTournamentWithdraw() {
       for (let i = 0; i < eventsEntered.length; i++) {
         const ev = eventsEntered[i];
         ev.checked = false;
-        try { checkToggle(ev, null); } catch (_) { /* no-op */ }
+        try { checkToggle(ev, null); } catch (e) { console.error(e); }
       }
 
       // Success alert
@@ -97,10 +97,10 @@ export function confirmTournamentWithdraw() {
       jQuery(ENTRY_ALERT_TEXT).html(response?.data);
 
       // Update totals via modular pricing
-      try { updateTotalPrice(); } catch (_) { /* no-op */ }
+      try { updateTotalPrice(); } catch (e) { console.error(e); }
 
       // Hide modal and show success
-      try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(modal).modal('hide'); } catch (e) { console.error(e); }
       jQuery(ENTRY_ALERT).show();
     },
     error: function (response) {

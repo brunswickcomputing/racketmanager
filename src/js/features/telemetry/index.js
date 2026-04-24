@@ -14,7 +14,7 @@ export function initializeTelemetry() {
     .off('.rmTelemetry')
     .on('ajaxSend.rmTelemetry', function (_e, _jqXHR, settings) {
       if (perfMarksEnabled()) {
-        try { performance.mark('rm:ajax:start'); } catch (_) { /* no-op */ }
+        try { performance.mark('rm:ajax:start'); } catch (e) { console.error(e); }
       }
       recordEvent('ajax_send', { url: settings && settings.url });
     })
@@ -23,7 +23,7 @@ export function initializeTelemetry() {
         try {
           performance.mark('rm:ajax:end');
           performance.measure('rm:ajax:duration', 'rm:ajax:start', 'rm:ajax:end');
-        } catch (_) { /* no-op */ }
+        } catch (e) { console.error(e); }
       }
       recordEvent('ajax_complete', { url: settings && settings.url });
     });

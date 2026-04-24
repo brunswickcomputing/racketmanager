@@ -46,7 +46,7 @@ export function clubPlayerRemove(formSelector, gender) {
           const rowSel = `#club_player-${rosterId}`;
           jQuery(rowSel).remove();
         });
-      } catch (_) { /* no-op */ }
+      } catch (e) { console.error(e); }
     },
     error: function (response) {
       handleAjaxError(response, alertText, alertField);

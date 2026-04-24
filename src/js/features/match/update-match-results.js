@@ -134,7 +134,7 @@ export function updateMatchResults(link) {
       jQuery(splash).css('opacity', 0).hide();
       jQuery('.match__body').show();
       // Re-enable button
-      try { $btn.prop('disabled', false).removeClass('disabled').data('busy', false).removeAttr('aria-busy'); } catch (_) { /* no-op */ }
+      try { $btn.prop('disabled', false).removeClass('disabled').data('busy', false).removeAttr('aria-busy'); } catch (e) { console.error(e); }
     }
   });
 }

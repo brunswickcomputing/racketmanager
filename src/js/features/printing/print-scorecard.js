@@ -59,7 +59,7 @@ export function printScoreCard(e, matchId) {
                         matchCardWindow.document.open();
                         matchCardWindow.document.write(head + (response && response.data ? response.data : '') + foot);
                         matchCardWindow.document.close();
-                    } catch (_) { /* no-op */ }
+                    } catch (e) { console.error(e); }
                 }
             } else {
                 jQuery(notifyField).text('Match Card not available - turn off pop blocker and retry');

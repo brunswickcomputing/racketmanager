@@ -21,7 +21,7 @@ const ALERT_RESET_TEXT = '#alertMatchResetResponse';
  * @param {boolean} isTournament - indicates tournament page variant
  */
 export function resetMatchResult(link, isTournament = false) {
-  if (!link || !link.form || !link.form.id) return;
+  if (!link?.form?.id) return;
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
@@ -50,7 +50,7 @@ export function resetMatchResult(link, isTournament = false) {
 
       jQuery(alert1).show().addClass('alert--success');
       jQuery(alert1Text).html(message);
-      try { jQuery(modalId).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(modalId).modal('hide'); } catch (e) { console.error(e); }
 
       // Refresh header
       matchHeader(matchId);
@@ -67,7 +67,7 @@ export function resetMatchResult(link, isTournament = false) {
       if (data.link && history.replaceState) {
         try {
           history.replaceState('', document.title, data.link);
-        } catch (_) { /* no-op */ }
+        } catch (e) { console.error(e); }
       }
     },
     error: function (response) {
@@ -82,7 +82,7 @@ export function initializeResetMatchResult() {
     .off('click.racketmanager.resetMatchResult', '[data-action="reset-match-result"]')
     .on('click.racketmanager.resetMatchResult', '[data-action="reset-match-result"]', function (e) {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
-      const isTournament = this.getAttribute('data-is-tournament') === 'true' || jQuery(this).data('isTournament') === true;
+      const isTournament = this.dataset.isTournament === 'true' || jQuery(this).data('isTournament') === true;
       return resetMatchResult(this, isTournament);
     });
 }

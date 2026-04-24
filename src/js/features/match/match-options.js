@@ -25,7 +25,7 @@ export function openMatchOptions(event, matchId, optionKey) {
   if (!matchId || !optionKey) return;
 
   // Show loading modal
-  try { jQuery(LOADING_MODAL).modal('show'); } catch (_) { /* no-op */ }
+  try { jQuery(LOADING_MODAL).modal('show'); } catch (e) { console.error(e); }
 
   // Reset header error area
   jQuery(HEADER_ALERT).hide();
@@ -43,7 +43,7 @@ export function openMatchOptions(event, matchId, optionKey) {
       security: getAjaxNonce(),
     },
     function (response, status, xhr) {
-      try { jQuery(LOADING_MODAL).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(LOADING_MODAL).modal('hide'); } catch (e) { console.error(e); }
       if (status === 'error') {
         // Prefer parsing JSON; fallback to centralized handler
         try {
@@ -55,7 +55,7 @@ export function openMatchOptions(event, matchId, optionKey) {
         jQuery(HEADER_ALERT).show();
       } else {
         jQuery(MATCH_MODAL).show();
-        try { jQuery(MATCH_MODAL).modal('show'); } catch (_) { /* no-op */ }
+        try { jQuery(MATCH_MODAL).modal('show'); } catch (e) { console.error(e); }
       }
     }
   );

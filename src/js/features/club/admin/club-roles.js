@@ -25,7 +25,7 @@ export function openClubRoleModal(event, clubRoleId) {
   if (event && typeof event.preventDefault === 'function') event.preventDefault();
   if (!clubRoleId) return;
 
-  try { jQuery(LOADING_MODAL).modal('show'); } catch (_) { /* no-op */ }
+  try { jQuery(LOADING_MODAL).modal('show'); } catch (e) { console.error(e); }
 
   // Reset page-level error field
   jQuery(ROLES_ERROR_FIELD).hide();
@@ -40,7 +40,7 @@ export function openClubRoleModal(event, clubRoleId) {
       security: getAjaxNonce(),
     },
     function (response, status, xhr) {
-      try { jQuery(LOADING_MODAL).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(LOADING_MODAL).modal('hide'); } catch (e) { console.error(e); }
       if (status === 'error') {
         // Prefer parsing JSON; fall back to centralized handler
         try {
@@ -52,9 +52,9 @@ export function openClubRoleModal(event, clubRoleId) {
         jQuery(ROLES_ERROR_FIELD).show();
       } else {
         jQuery(CLUB_ROLE_MODAL).show();
-        try { jQuery(CLUB_ROLE_MODAL).modal('show'); } catch (_) { /* no-op */ }
+        try { jQuery(CLUB_ROLE_MODAL).modal('show'); } catch (e) { console.error(e); }
         // Initialize username autocomplete inside the loaded modal
-        try { initUserAutocomplete(CLUB_ROLE_MODAL); } catch (_) { /* no-op */ }
+        try { initUserAutocomplete(CLUB_ROLE_MODAL); } catch (e) { console.error(e); }
       }
     }
   );
@@ -100,7 +100,7 @@ export function setClubRole(link) {
 function initUserAutocomplete(context = document) {
   const selector = `${context} #userName`;
   // Avoid duplicate init by destroying existing instance if any
-  try { jQuery(selector).filter('.ui-autocomplete-input').each(function(){ jQuery(this).autocomplete('destroy'); }); } catch (_) { /* no-op */ }
+  try { jQuery(selector).filter('.ui-autocomplete-input').each(function(){ jQuery(this).autocomplete('destroy'); }); } catch (e) { console.error(e); }
 
   safeAutocomplete(selector, {
     minLength: 2,

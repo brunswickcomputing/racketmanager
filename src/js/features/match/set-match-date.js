@@ -46,7 +46,7 @@ export function setMatchDate(link, isTournament = false) {
 
       jQuery(alert1).show().addClass('alert--success');
       jQuery(alert1Text).html(message);
-      try { jQuery(modalId).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(modalId).modal('hide'); } catch (e) { console.error(e); }
 
       if (matchDate) {
         if (isTournament) {

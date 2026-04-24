@@ -18,7 +18,7 @@ export function submitLogin(eventOrButton) {
     const alertTextField = '#loginAlertResponse';
     const alertField = '#loginAlert';
 
-    try { jQuery(notifyField).css('opacity', 0.25); } catch (_) { /* no-op */ }
+    try { jQuery(notifyField).css('opacity', 0.25); } catch (e) { console.error(e); }
     jQuery(alertField).hide();
     jQuery(alertTextField).html('');
     jQuery('.is-invalid').removeClass('is-invalid');
@@ -47,7 +47,7 @@ export function submitLogin(eventOrButton) {
             jQuery(alertField).show();
         },
         complete: function () {
-            try { jQuery(notifyField).css('opacity', 1); } catch (_) { /* no-op */ }
+            try { jQuery(notifyField).css('opacity', 1); } catch (e) { console.error(e); }
         }
     });
 }

@@ -33,7 +33,7 @@ export function openPartnerModal(event, eventId) {
 
   // Ensure the corresponding event checkbox is checked
   const eventRef = `#event-${eventId}`;
-  try { jQuery(eventRef).prop('checked', true); } catch (_) { /* no-op */ }
+  try { jQuery(eventRef).prop('checked', true); } catch (e) { console.error(e); }
 
   // Read ancillary fields (playerId/gender/season/dateEnd) if present on page
   const playerId = jQuery('#playerId').val();
@@ -71,7 +71,7 @@ export function openPartnerModal(event, eventId) {
         // Attach event id to modal for convenience
         jQuery(PARTNER_MODAL).attr('data-event', eventId);
         jQuery(PARTNER_MODAL).show();
-        try { jQuery(PARTNER_MODAL).modal('show'); } catch (_) { /* no-op */ }
+        try { jQuery(PARTNER_MODAL).modal('show'); } catch (e) { console.error(e); }
       }
     }
   );
@@ -113,14 +113,14 @@ export function savePartner(link) {
       jQuery(partnerNameLink).html(partnerName);
 
       // Hide modal
-      try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(modal).modal('hide'); } catch (e) { console.error(e); }
 
       // Update pricing for the event using modular pricing
-      try { setEventPrice(eventId); } catch (_) { /* no-op */ }
+      try { setEventPrice(eventId); } catch (e) { console.error(e); }
 
       // Ensure the corresponding event checkbox is checked
       const eventRef = `#event-${eventId}`;
-      try { jQuery(eventRef).prop('checked', true); } catch (_) { /* no-op */ }
+      try { jQuery(eventRef).prop('checked', true); } catch (e) { console.error(e); }
     },
     error: function (response) {
       handleAjaxError(response, ALERT_TEXT, ALERT_ID);

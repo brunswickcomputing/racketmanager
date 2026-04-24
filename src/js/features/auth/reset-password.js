@@ -46,7 +46,7 @@ export function submitResetPassword(btnOrEvent) {
             const message = response?.data?.[0] ?? '';
             jQuery(LOGIN_ALERT).show().addClass('alert--success');
             jQuery(LOGIN_ALERT_TEXT).html(message);
-            try { jQuery(RESET_MODAL).modal('hide'); } catch (_) { /* no-op */ }
+            try { jQuery(RESET_MODAL).modal('hide'); } catch (e) { console.error(e); }
         },
         error: function (response) {
             handleAjaxError(response, RESET_ALERT_TEXT, RESET_ALERT);

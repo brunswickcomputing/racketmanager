@@ -25,7 +25,7 @@ export function openRubberStatusModal(event) {
     const rubberId = trigger?.getAttribute('data-rubber-id');
     const rubberNumber = trigger?.getAttribute('data-rubber-number');
 
-    try { jQuery(LOADING_MODAL).modal('show'); } catch (_) { /* no-op */ }
+    try { jQuery(LOADING_MODAL).modal('show'); } catch (e) { console.error(e); }
 
     const errorField = '#matchAlert';
     const errorResponseField = errorField + 'Response';
@@ -44,7 +44,7 @@ export function openRubberStatusModal(event) {
             security: getAjaxNonce(),
         },
         function (response, status) {
-            try { jQuery(LOADING_MODAL).modal('hide'); } catch (_) { /* no-op */ }
+            try { jQuery(LOADING_MODAL).modal('hide'); } catch (e) { console.error(e); }
             if (status === 'error') {
                 try {
                     const data = JSON.parse(response);
@@ -55,7 +55,7 @@ export function openRubberStatusModal(event) {
                 jQuery(errorField).show();
             } else {
                 jQuery(SCORE_STATUS_MODAL).show();
-                try { jQuery(SCORE_STATUS_MODAL).modal('show'); } catch (_) { /* no-op */ }
+                try { jQuery(SCORE_STATUS_MODAL).modal('show'); } catch (e) { console.error(e); }
             }
         }
     );
@@ -94,7 +94,7 @@ export function setRubberStatus(link) {
             const modal = `#${data.modal}`;
             const matchStatusRef = `#match_status_${rubberNumber}`;
             jQuery(matchStatusRef).val(scoreStatus);
-            try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
+            try { jQuery(modal).modal('hide'); } catch (e) { console.error(e); }
         },
         error: function (response) {
             handleAjaxError(response, ERROR_TEXT, ERROR_ALERT);

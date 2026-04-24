@@ -11,7 +11,7 @@ function meterPasswordStrength($pwd, $confirmPwd, $strengthStatus, $submitBtn, b
     if (globalThis.wp && wp.passwordStrength && typeof wp.passwordStrength.userInputDisallowedList === 'function') {
       blacklistedWords = blacklistedWords.concat(wp.passwordStrength.userInputDisallowedList());
     }
-  } catch (_) { /* no-op */ }
+  } catch (e) { console.error(e); }
 
   // every time a letter is typed, reset the submit button and the strength meter status
   $submitBtn.attr('disabled', 'disabled');

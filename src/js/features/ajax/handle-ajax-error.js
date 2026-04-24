@@ -74,7 +74,7 @@ export function handleAjaxError(response, alertTextField, alertField) {
         recordEvent('ajax_error', {
             status: response?.status,
         });
-    } catch (_e) { /* no-op */ }
+    } catch (e) { console.error(e); }
 
     jQuery(alertTextField).html(message);
     jQuery(alertField).addClass('alert--danger');

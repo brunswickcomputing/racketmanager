@@ -34,7 +34,7 @@ export function openPurchaseOrderModal(e, invoiceId, options = {}) {
 
     // Show loading modal if present
     if (loadingSelector) {
-        try { showModal(loadingSelector); } catch (_) { /* no-op */ }
+        try { showModal(loadingSelector); } catch (e) { console.error(e); }
     }
 
     // Use jQuery.load similar to legacy for minimal behavior change
@@ -50,7 +50,7 @@ export function openPurchaseOrderModal(e, invoiceId, options = {}) {
         function (response, status) {
             // Hide loading modal
             if (loadingSelector) {
-                try { hideModal(loadingSelector); } catch (_) { /* no-op */ }
+                try { hideModal(loadingSelector); } catch (e) { console.error(e); }
             }
 
             if (status === 'error') {

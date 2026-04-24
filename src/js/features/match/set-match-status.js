@@ -76,7 +76,7 @@ export function setMatchStatus(link) {
             // Hide modal provided in response
             if (data.modal) {
                 const modal = `#${data.modal}`;
-                try { jQuery(modal).modal('hide'); } catch (_) { /* no-op */ }
+                try { jQuery(modal).modal('hide'); } catch (e) { console.error(e); }
             }
         },
         error: function (response) {

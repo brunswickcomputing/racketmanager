@@ -105,7 +105,7 @@ export function updateTeamResult(link) {
       }
 
       // Refresh header
-      try { matchHeader(matchId, match_edit); } catch (_) { /* no-op */ }
+      try { matchHeader(matchId, match_edit); } catch (e) { console.error(e); }
     },
     error: function (response) {
       handleAjaxError(response, ALERT_TEXT, ALERT_FIELD);
@@ -115,7 +115,7 @@ export function updateTeamResult(link) {
       jQuery(SPLASH).css('opacity', 0).hide();
       jQuery(RUBBERS_CONTAINER).show();
       // Re-enable the clicked button and clear busy flag
-      try { $btn.prop('disabled', false).removeClass('disabled').data('busy', false); } catch (_) { /* no-op */ }
+      try { $btn.prop('disabled', false).removeClass('disabled').data('busy', false); } catch (e) { console.error(e); }
     }
   });
 }

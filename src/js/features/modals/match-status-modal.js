@@ -25,7 +25,7 @@ export function openMatchStatusModal(event, matchId) {
     // Show loading modal
     try {
         jQuery(LOADING_MODAL).modal('show');
-    } catch (_) { /* no-op */ }
+    } catch (e) { console.error(e); }
 
     // Reset header error
     jQuery(HEADER_ALERT_ID).hide();
@@ -49,7 +49,7 @@ export function openMatchStatusModal(event, matchId) {
             // Hide loading modal
             try {
                 jQuery(LOADING_MODAL).modal('hide');
-            } catch (_) { /* no-op */ }
+            } catch (e) { console.error(e); }
 
             if (status === 'error') {
                 // Try to parse response for message consistency
@@ -64,7 +64,7 @@ export function openMatchStatusModal(event, matchId) {
                 jQuery(SCORE_STATUS_MODAL).show();
                 try {
                     jQuery(SCORE_STATUS_MODAL).modal('show');
-                } catch (_) { /* no-op */ }
+                } catch (e) { console.error(e); }
             }
         }
     );

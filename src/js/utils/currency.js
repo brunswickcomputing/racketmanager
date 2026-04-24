@@ -18,7 +18,7 @@ export function currencyFormat(amount) {
     if (typeof globalThis.currencyFormat === 'function') {
       return globalThis.currencyFormat(num);
     }
-  } catch (_) { /* no-op */ }
+  } catch (e) { console.error(e); }
 
   try {
     return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(num);

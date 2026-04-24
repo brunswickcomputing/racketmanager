@@ -75,5 +75,5 @@ export function updateTotalPrice() {
  */
 export function initializePricing() {
   // Recompute total once on startup to reflect any pre-populated values
-  try { updateTotalPrice(); } catch (_) { /* no-op */ }
+  try { updateTotalPrice(); } catch (e) { console.error(e); }
 }

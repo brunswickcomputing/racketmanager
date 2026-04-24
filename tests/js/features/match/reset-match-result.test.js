@@ -41,6 +41,8 @@ describe('resetMatchResult', () => {
 
     expect(jQuery.ajax).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.stringContaining('action=racketmanager_reset_match_result'),
+    }));
+    expect(jQuery.ajax).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.stringContaining('match_id=456')
     }));
   });

@@ -44,7 +44,7 @@ export function teamEditModal(event, teamId, eventId) {
   const errorField = '#rolesResponse';
   const errorResponseField = errorField + 'Text';
 
-  try { jQuery(LOADING_MODAL).modal('show'); } catch (_) { /* no-op */ }
+  try { jQuery(LOADING_MODAL).modal('show'); } catch (e) { console.error(e); }
   jQuery(errorField).hide();
   jQuery(modal).val('');
 
@@ -58,7 +58,7 @@ export function teamEditModal(event, teamId, eventId) {
       security: getAjaxNonce(),
     },
     function (response, status, xhr) {
-      try { jQuery(LOADING_MODAL).modal('hide'); } catch (_) { /* no-op */ }
+      try { jQuery(LOADING_MODAL).modal('hide'); } catch (e) { console.error(e); }
       if (status === 'error') {
         try {
           const data = JSON.parse(response);
@@ -69,7 +69,7 @@ export function teamEditModal(event, teamId, eventId) {
         jQuery(errorField).show();
       } else {
         jQuery(modal).show();
-        try { jQuery(modal).modal('show'); } catch (_) { /* no-op */ }
+        try { jQuery(modal).modal('show'); } catch (e) { console.error(e); }
       }
     }
   );

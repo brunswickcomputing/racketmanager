@@ -57,7 +57,7 @@ export function setPurchaseOrder(e, link) {
                 try {
                     // Bootstrap 5 hide
                     jQuery(modal).modal('hide');
-                } catch (_) { /* no-op */ }
+                } catch (e) { console.error(e); }
             }
             if (invoice) {
                 jQuery('#invoiceDetails').html(invoice);

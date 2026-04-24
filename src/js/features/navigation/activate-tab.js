@@ -33,7 +33,7 @@ export function activateTab(tabId) {
         pane.classList.remove('fade');
         pane.classList.add('active', 'show');
       }
-    } catch(__) { /* no-op */ }
+    } catch(e) { console.error(e); }
   }
 }
 
@@ -48,5 +48,5 @@ export function initializeActivateTab() {
         activateTab(tabId);
       }
     });
-  } catch (_) { /* no-op */ }
+  } catch (e) { console.error(e); }
 }

@@ -52,7 +52,7 @@ export function entryRequest(event, type) {
         if (response.data[2]) {
           const link = response.data[3];
           if (link) {
-            try { globalThis.location = link; } catch (_) { /* no-op */ }
+            try { globalThis.location = link; } catch (e) { console.error(e); }
           }
         }
       } else {
@@ -68,7 +68,7 @@ export function entryRequest(event, type) {
     },
     complete: function () {
       jQuery(ALERT_FIELD).show();
-      try { jQuery(ACCEPTANCE).prop('checked', false); } catch (_) { /* no-op */ }
+      try { jQuery(ACCEPTANCE).prop('checked', false); } catch (e) { console.error(e); }
       jQuery(ENTRY_DETAILS).removeClass('is-loading');
       // Keep submit hidden on completion per legacy; UX can revisit later
     }

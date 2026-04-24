@@ -85,6 +85,8 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
+use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
+use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller;
 
 /**
  * Registers core services in the Simple_Container.
@@ -100,8 +102,14 @@ final class Container_Bootstrap {
         self::register_admin_controllers( $c );
         self::register_admin_draw_controllers( $c );
         self::register_admin_tournament_controllers( $c );
+        self::register_ajax_components( $c, $app );
 
         return $c;
+    }
+
+    private static function register_ajax_components( Simple_Container $c, RacketManager $app ): void {
+        $c->set( 'ajax_registry', fn() => new Ajax_Registry() );
+        $c->set( 'fixture_ajax_controller', fn() => new Fixture_Ajax_Controller( $app ) );
     }
 
     private static function register_repositories( Simple_Container $c ): void {

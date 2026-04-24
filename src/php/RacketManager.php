@@ -13,7 +13,7 @@ use Racketmanager\Ajax\Ajax_Account;
 use Racketmanager\Ajax\Ajax_Club;
 use Racketmanager\Ajax\Ajax_Finance;
 use Racketmanager\Ajax\Ajax_Frontend;
-use Racketmanager\Ajax\Ajax_Fixture;
+use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller;
 use Racketmanager\Ajax\Ajax_Tournament;
 use Racketmanager\Domain\Message;
 use Racketmanager\Rest\Rest_Routes;
@@ -713,7 +713,7 @@ class RacketManager {
         $this->ajax_club                = new Ajax_Club( $this );
         $this->ajax_finance             = new Ajax_Finance( $this );
         $this->ajax_frontend            = new Ajax_Frontend( $this );
-        $this->ajax_fixture               = new Ajax_Fixture( $this );
+        $this->ajax_fixture             = $this->container->get( 'fixture_ajax_controller' );
         $this->ajax_tournament          = new Ajax_Tournament( $this );
         $this->shortcodes               = new Shortcodes( $this );
         $this->shortcodes_club          = new Shortcodes_Club( $this );
@@ -728,7 +728,29 @@ class RacketManager {
         $this->rewrites                 = new Rewrites();
         $this->login                    = new Login();
         Rest_Routes::single( $this );
+        $this->register_ajax_actions();
         $this->handle_exports();
+    }
+
+    /**
+     * Register AJAX actions using the centralized registry.
+     */
+    private function register_ajax_actions(): void {
+        $registry   = $this->container->get( 'ajax_registry' );
+        $controller = $this->ajax_fixture;
+
+        $registry->register( 'match_card', [ $controller, 'print_match_card' ], true );
+        $registry->register_with_unauthenticated( 'match_rubber_status', [ $controller, 'match_rubber_status_options' ], [ $controller, 'logged_out_modal' ] );
+        $registry->register_with_unauthenticated( 'set_match_rubber_status', [ $controller, 'set_match_rubber_status' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'match_status', [ $controller, 'match_status_options' ], [ $controller, 'logged_out_modal' ] );
+        $registry->register_with_unauthenticated( 'set_match_status', [ $controller, 'set_match_status' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'match_option', [ $controller, 'show_match_option' ], [ $controller, 'logged_out_modal' ] );
+        $registry->register_with_unauthenticated( 'set_match_date', [ $controller, 'set_match_date' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'switch_home_away', [ $controller, 'switch_home_away' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'reset_match_result', [ $controller, 'reset_match_result' ], [ $controller, 'logged_out' ] );
+        $registry->register( 'update_match_header', [ $controller, 'update_match_header' ] );
+        $registry->register_with_unauthenticated( 'update_match', [ $controller, 'update_fixture_result' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'update_rubbers', [ $controller, 'update_team_match' ], [ $controller, 'logged_out' ] );
     }
     /**
      * Handle export requests.

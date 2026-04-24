@@ -1,59 +1,33 @@
 <?php
 /**
- * AJAX Front end match response methods (PSR-4 relocated)
+ * AJAX Front end fixture controller
  *
  * @package    RacketManager
- * @subpackage RacketManager_Ajax_Frontend_Match
+ * @subpackage Infrastructure/Wordpress/Ajax
  */
 
-namespace Racketmanager\Ajax;
+namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
 use Racketmanager\Infrastructure\Security\Security_Service;
-use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\Infrastructure\Wordpress\Response\Logging_Json_Response_Factory;
 use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\RacketManager;
 
 /**
- * Implement AJAX front end match responses.
+ * Implement AJAX front end fixture responses.
  *
  * @author Paul Moffat
  */
-class Ajax_Fixture {
+class Fixture_Ajax_Controller {
     private RacketManager $racketmanager;
 
     /**
-     * Register ajax actions.
-     *
-     * @param $plugin_instance
+     * @param RacketManager $plugin_instance
      */
-    public function __construct( $plugin_instance ) {
+    public function __construct( RacketManager $plugin_instance ) {
         $this->racketmanager = $plugin_instance;
-        add_action( 'wp_ajax_racketmanager_match_card', array( &$this, 'print_match_card' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_match_card', array( &$this, 'print_match_card' ) );
-        add_action( 'wp_ajax_racketmanager_match_rubber_status', array( &$this, 'match_rubber_status_options' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_match_rubber_status', array( &$this, 'logged_out_modal' ) );
-        add_action( 'wp_ajax_racketmanager_set_match_rubber_status', array( &$this, 'set_match_rubber_status' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_set_match_rubber_status', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_match_status', array( &$this, 'match_status_options' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_match_status', array( &$this, 'logged_out_modal' ) );
-        add_action( 'wp_ajax_racketmanager_set_match_status', array( &$this, 'set_match_status' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_set_match_status', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_match_option', array( &$this, 'show_match_option' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_match_option', array( &$this, 'logged_out_modal' ) );
-        add_action( 'wp_ajax_racketmanager_set_match_date', array( &$this, 'set_match_date' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_set_match_date', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_switch_home_away', array( &$this, 'switch_home_away' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_switch_home_away', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_reset_match_result', array( &$this, 'reset_match_result' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_reset_match_result', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_update_match_header', array( &$this, 'update_match_header' ) );
-        add_action( 'wp_ajax_racketmanager_update_match', array( &$this, 'update_fixture_result' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_update_match', array( &$this, 'logged_out' ) );
-        add_action( 'wp_ajax_racketmanager_update_rubbers', array( &$this, 'update_team_match' ) );
-        add_action( 'wp_ajax_nopriv_racketmanager_update_rubbers', array( &$this, 'logged_out' ) );
     }
 
     /**
@@ -65,6 +39,18 @@ class Ajax_Fixture {
         $response = $adapter->logged_out();
         $response->send();
         wp_die();
+    }
+
+    /**
+     * Get the Fixture AJAX Adapter with its dependencies.
+     *
+     * @return Fixture_Ajax_Adapter
+     */
+    private function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
+        $c = $this->racketmanager->container;
+
+        return new Fixture_Ajax_Adapter( $c, new Security_Service(), new Logging_Json_Response_Factory( new Json_Response_Factory() ), $c->get( 'fixture_detail_service' ), $c->get( 'view_renderer' ), new Fixture_Presenter( $c->get( 'fixture_link_service' ) ) );
+
     }
 
     /**
@@ -87,25 +73,6 @@ class Ajax_Fixture {
         $response = $adapter->print_match_card();
         $response->send();
         wp_die();
-    }
-
-    /**
-     * Get the Fixture AJAX Adapter with its dependencies.
-     *
-     * @return Fixture_Ajax_Adapter
-     */
-    private function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
-        $c = $this->racketmanager->container;
-
-        return new Fixture_Ajax_Adapter(
-            $c,
-            new Security_Service(),
-            new Logging_Json_Response_Factory( new Json_Response_Factory() ),
-            $c->get( 'fixture_detail_service' ),
-            $c->get( 'view_renderer' ),
-            new Fixture_Presenter( $c->get( 'fixture_link_service' ) )
-        );
-
     }
 
     /**

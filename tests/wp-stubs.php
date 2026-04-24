@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Racketmanager {
     if ( ! function_exists( 'Racketmanager\show_alert' ) ) {
-        function show_alert( string $message, string $type = 'info' ): string {
+        function show_alert( string $message, string $type = 'info', ?string $template = null ): string {
             return sprintf( "<div class='alert alert-%s'>%s</div>", $type, $message );
         }
     }
@@ -315,7 +315,7 @@ namespace {
     }
 
     if ( ! function_exists( 'show_alert' ) ) {
-        function show_alert( string $message, string $type = 'info' ): void {
+        function show_alert( string $message, string $type = 'info', ?string $template = null ): void {
         }
     }
 
@@ -796,6 +796,50 @@ namespace Racketmanager {
             } catch ( \ReflectionException $e ) {
                 return (object) [ 'id' => $league_id ];
             }
+        }
+    }
+}
+
+namespace Racketmanager {
+    function debug_to_console( $data ): void {
+        // Stub
+    }
+
+    function match_option_modal( array $args = array() ): string {
+        return "modal content";
+    }
+
+    function match_header( int $match_id, array $args = array() ): string {
+        return "match header content";
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_match' ) ) {
+        function get_match( $match_id ): object {
+            if ( isset( $GLOBALS['wp_stubs_matches'][ $match_id ] ) ) {
+                return $GLOBALS['wp_stubs_matches'][ $match_id ];
+            }
+            $match        = new \stdClass();
+            $match->id    = $match_id;
+            $match->date  = '2023-01-01';
+            $match->link  = 'http://example.com';
+            $match->home_team = 'Home';
+            $match->away_team = 'Away';
+            $match->season = '2023';
+            $match->match_day = 1;
+            $match->league = new \stdClass();
+            $match->league->event = new \stdClass();
+            $match->league->event->get_season_by_name = function($season) {
+                return ['match_dates' => ['2023-01-01']];
+            };
+            // Mocking method call on object
+            return new class($match) {
+                private $match;
+                public function __construct($match) {
+                    foreach($match as $k => $v) $this->$k = $v;
+                }
+                public function __get($name) { return $this->$name; }
+                public function get_season_by_name($name) { return ['match_dates' => ['2023-01-01']]; }
+            };
         }
     }
 }

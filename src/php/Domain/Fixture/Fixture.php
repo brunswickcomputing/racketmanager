@@ -1040,6 +1040,10 @@ class Fixture {
 
         $this->set_status_flags();
     }
+    public function get_link(): ?string {
+        return $this->link;
+    }
+
     /**
      * Get rubbers for this fixture.
      *

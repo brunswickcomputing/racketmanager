@@ -44,7 +44,7 @@ use Racketmanager\Domain\Fixture\Fixture;
                         }
                         ?>
                         <div class="strike mb-3">
-                            <span><?php esc_html_e( '(Re)schedule match', 'racketmanager' ); ?></span>
+                            <span><?php esc_html_e( '(Re)schedule fixture', 'racketmanager' ); ?></span>
                         </div>
                         <div class="mb-3">
                             <label for="schedule-date" class="visually-hidden"><?php esc_html_e( 'New date', 'racketmanager' ); ?></label>
@@ -60,8 +60,14 @@ use Racketmanager\Domain\Fixture\Fixture;
                         <?php
                     } elseif ( 'switch_home' === $option ) {
                         ?>
-                        <div class="mb-3">
+                        <div class="text-center">
                             <span><?php esc_html_e( 'Switch home and away?', 'racketmanager' ); ?></span>
+                        </div>
+                        <div class="alert_rm" id="switchFixtureAlert" style="display:none;">
+                            <div class="alert__body">
+                                <div class="alert__body-inner" id="alertSwitchFixtureResponse">
+                                </div>
+                            </div>
                         </div>
                         <?php
                     } elseif ( 'reset_match_result' === $option ) {

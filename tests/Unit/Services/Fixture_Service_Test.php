@@ -21,8 +21,7 @@ use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
-
-use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Services\Fixture\Fixture_Link_Service;
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Service_Test extends TestCase {
@@ -57,7 +56,8 @@ class Fixture_Service_Test extends TestCase {
             $this->repository_provider,
             $this->competition_service,
             $this->team_service,
-            $permission_service
+            $permission_service,
+            $this->createMock( Fixture_Link_Service::class )
         );
 
         $this->service = new Fixture_Service(

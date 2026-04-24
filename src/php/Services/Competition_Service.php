@@ -66,6 +66,10 @@ class Competition_Service {
         $this->team_repository        = $team_repository;
     }
 
+    public function get_league_repository(): League_Repository_Interface {
+        return $this->league_repository;
+    }
+
     public function get_event_by_id( null|string|int $event_id ): Event {
         $event = $this->event_repository->find_by_id( $event_id );
         if ( ! $event ) {

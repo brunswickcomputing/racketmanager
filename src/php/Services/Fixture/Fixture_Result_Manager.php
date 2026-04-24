@@ -135,18 +135,25 @@ class Fixture_Result_Manager {
     private Result_Reporting_Service $result_reporting_service;
     private Fixture_Maintenance_Service $fixture_maintenance_service;
 
+    private Service_Provider $service_provider;
+
     /**
      * @param Service_Provider $service_provider
      * @param Repository_Provider $repository_provider
+     * @param Simple_Container|null $container
      */
     public function __construct(
         Service_Provider $service_provider,
-        Repository_Provider $repository_provider
+        Repository_Provider $repository_provider,
+        ?Simple_Container $container = null
     ) {
+        $this->service_provider = $service_provider;
         $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
         $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service() ?? new Fixture_Maintenance_Service( $service_provider, $repository_provider, $this );
         $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
-        $this->progression_service = $service_provider->get_progression_service() ?? new Knockout_Progression_Service();
+        
+        $container = $container ?? $GLOBALS['racketmanager']->container ?? null;
+        $this->progression_service = $service_provider->get_progression_service( $container ) ?? new Knockout_Progression_Service();
         $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );
         $this->score_validator     = $service_provider->get_score_validator() ?? new Score_Validation_Service();
         $this->settings_service    = $service_provider->get_settings_service() ?? new Settings_Service();
@@ -165,9 +172,7 @@ class Fixture_Result_Manager {
         $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $this->registration_service );
 
         $this->notification_service = $service_provider->get_notification_service();
-        if ( ! $this->notification_service ) {
-            /** @var Simple_Container $container */
-            $container = $GLOBALS['racketmanager']->container;
+        if ( ! $this->notification_service && $container ) {
             $this->notification_service = new Notification_Service(
                 $repository_provider,
                 $this->settings_service,
@@ -181,13 +186,12 @@ class Fixture_Result_Manager {
     /**
      * Handle result update for a single fixture (player/tournament match).
      *
-     * @param Fixture $fixture
-     * @param Fixture_Result_Update_Request $request
-     *
-     * @return Fixture_Update_Response
-     * @throws Fixture_Validation_Exception If validation fails.
-     * @throws League_Not_Found_Exception
+     * @return Service_Provider
      */
+    public function get_service_provider(): Service_Provider {
+        return $this->service_provider;
+    }
+
     public function handle_fixture_result_update( Fixture $fixture, Fixture_Result_Update_Request $request ): Fixture_Update_Response {
         $league_id = $fixture->get_league_id();
         $league = $league_id ? $this->league_service->get_league( $league_id ) : null;

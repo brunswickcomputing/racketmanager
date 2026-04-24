@@ -16,21 +16,30 @@ use Racketmanager\Services\Notification\Notification_Service;
 /**
  * Manager for Result Checker workflows
  */
-readonly class Results_Checker_Manager {
+class Results_Checker_Manager {
+    private ?Notification_Service $notification_service = null;
+
     /**
      * @param Results_Checker_Repository_Interface $repository        Repository.
      * @param Fixture_Result_Manager              $result_manager    Result manager.
      * @param League_Repository_Interface         $league_repository League repository.
      * @param Fixture_Repository_Interface        $fixture_repository Fixture repository.
-     * @param Notification_Service                $notification_service Notification service.
      */
     public function __construct(
-        private Results_Checker_Repository_Interface $repository,
-        private Fixture_Result_Manager $result_manager,
-        private League_Repository_Interface $league_repository,
-        private Fixture_Repository_Interface $fixture_repository,
-        private Notification_Service $notification_service
+        private readonly Results_Checker_Repository_Interface $repository,
+        private readonly Fixture_Result_Manager $result_manager,
+        private readonly League_Repository_Interface $league_repository,
+        private readonly Fixture_Repository_Interface $fixture_repository
     ) {}
+
+    /**
+     * Set the notification service.
+     *
+     * @param Notification_Service $notification_service Notification service.
+     */
+    public function set_notification_service( Notification_Service $notification_service ): void {
+        $this->notification_service = $notification_service;
+    }
 
     /**
      * Approve a result checker entry
@@ -86,7 +95,7 @@ readonly class Results_Checker_Manager {
             );
             $this->result_manager->update_result( $match, $result, $match->get_confirmed() );
 
-            $this->notification_service->send_result_error_notification( $checker, $match, $penalty );
+            $this->notification_service?->send_result_error_notification( $checker, $match, $penalty );
         }
 
         $checker->status       = Results_Checker_Status::HANDLED->value;
@@ -144,7 +153,7 @@ readonly class Results_Checker_Manager {
             );
             $this->result_manager->update_result( $match, $result, $match->get_confirmed() );
 
-            $this->notification_service->send_result_error_notification( $checker, $match, $penalty );
+            $this->notification_service?->send_result_error_notification( $checker, $match, $penalty );
         }
 
         $checker->status       = Results_Checker_Status::HANDLED->value;

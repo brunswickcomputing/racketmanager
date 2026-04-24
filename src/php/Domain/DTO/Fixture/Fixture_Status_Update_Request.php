@@ -61,7 +61,7 @@ readonly class Fixture_Status_Update_Request {
      */
     private function validate_fixture_id( array &$error_msgs, array &$error_flds, string $suffix ): void {
         if ( empty( $this->fixture_id ) ) {
-            $error_msgs[] = __( 'Match id not supplied', 'racketmanager' );
+            $error_msgs[] = __( 'Fixture id not supplied', 'racketmanager' );
             $error_flds[] = 'match_id' . $suffix;
         }
     }

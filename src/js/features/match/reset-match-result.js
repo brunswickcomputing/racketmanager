@@ -64,14 +64,9 @@ export function resetMatchResult(link, isTournament = false) {
       });
 
       // Optional URL update
-      const newPath = data.link || '';
-      if (newPath) {
+      if (data.link && history.replaceState) {
         try {
-          const url = new URL(globalThis.location.href);
-          const newURL = url.protocol + '//' + url.hostname + newPath;
-          if (history.replaceState) {
-            history.replaceState('', document.title, newURL.toString());
-          }
+          history.replaceState('', document.title, data.link);
         } catch (_) { /* no-op */ }
       }
     },

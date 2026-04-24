@@ -37,6 +37,7 @@ final class Fixture_Status_Read_Model {
         $array = array(
             'match_id'       => $this->match_id,
             'match_status'   => $this->match_status,
+            'score_status'   => $this->match_status,
             'status_message' => $this->status_message,
             'status_class'   => $this->status_class,
             'modal'          => $this->modal,

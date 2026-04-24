@@ -74,6 +74,7 @@ use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Result\Results_Checker_Manager;
 use Racketmanager\Presentation\Presenters\Results_Checker_Presenter;
@@ -172,7 +173,9 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'tournament_service', function ( Simple_Container $c ) use ( $app ) {
-            return new Tournament_Service( $app, $c->get( 'tournament_repository' ), $c->get( 'charge_repository' ), $c->get( 'event_repository' ), $c->get( 'fixture_service' ), $c->get( 'league_team_repository' ), $c->get( 'tournament_entry_repository' ), $c->get( 'competition_service' ), $c->get( 'player_service' ), $c->get( 'club_service' ), $c->get( 'finance_service' ), $c->get( 'league_service' ) );
+            $service = new Tournament_Service( $app, $c->get( 'tournament_repository' ), $c->get( 'charge_repository' ), $c->get( 'event_repository' ), $c->get( 'fixture_service' ), $c->get( 'league_team_repository' ), $c->get( 'tournament_entry_repository' ), $c->get( 'competition_service' ), $c->get( 'player_service' ), $c->get( 'club_service' ), $c->get( 'finance_service' ), $c->get( 'league_service' ) );
+            $c->get( 'fixture_link_service' )->set_tournament_service( $service );
+            return $service;
         } );
 
         $c->set( 'season_service', function ( Simple_Container $c ) use ( $app ) {
@@ -190,11 +193,16 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'notify_service', fn() => new Notify_Service( $app ) );
+        $c->set( 'fixture_link_service', fn() => new Fixture_Link_Service() );
         $c->set( 'notification_presenter', function ( Simple_Container $c ) use ( $app ) {
             return new Notification_Presenter(
                 $c->get( 'team_repository' ),
                 $c->get( 'club_repository' ),
                 $c->get( 'tournament_repository' ),
+                $c->get( 'fixture_link_service' ),
+                $c->get( 'team_service' ),
+                $c->get( 'competition_service' ),
+                $c->get( 'fixture_permission_service' ),
                 $app->site_url,
                 $app->site_name
             );
@@ -221,7 +229,8 @@ final class Container_Bootstrap {
                 self::get_repository_provider( $c ),
                 $c->get( 'competition_service' ),
                 $c->get( 'team_service' ),
-                $c->get( 'fixture_permission_service' )
+                $c->get( 'fixture_permission_service' ),
+                $c->get( 'fixture_link_service' )
             );
         } );
 
@@ -256,7 +265,7 @@ final class Container_Bootstrap {
             $service_provider = $c->get( 'fixture_service_provider' );
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
 
-            return new Fixture_Result_Manager( $service_provider, self::get_repository_provider( $c ) );
+            return new Fixture_Result_Manager( $service_provider, self::get_repository_provider( $c ), $c );
         } );
 
         $c->set( 'fixture_maintenance_service', function ( Simple_Container $c ) {
@@ -283,16 +292,16 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'knockout_progression_service', function ( Simple_Container $c ) {
-            $service = new Knockout_Progression_Service( $c->get( 'fixture_repository' ) );
-            $service->set_notification_service( $c->get( 'notification_service' ) );
-
-            return $service;
+            return new Knockout_Progression_Service( $c->get( 'fixture_repository' ) );
         } );
 
         $c->set( 'standings_service', fn() => new Standings_Service() );
 
         $c->set( 'results_checker_manager', function ( Simple_Container $c ) {
-            return new Results_Checker_Manager( $c->get( 'results_checker_repository' ), $c->get( 'fixture_result_manager' ), $c->get( 'league_repository' ), $c->get( 'fixture_repository' ), $c->get( 'notification_service' ) );
+            $manager = new Results_Checker_Manager( $c->get( 'results_checker_repository' ), $c->get( 'fixture_result_manager' ), $c->get( 'league_repository' ), $c->get( 'fixture_repository' ) );
+            $manager->set_notification_service( $c->get( 'notification_service' ) );
+
+            return $manager;
         } );
 
         $c->set( 'results_checker_presenter', function ( Simple_Container $c ) {

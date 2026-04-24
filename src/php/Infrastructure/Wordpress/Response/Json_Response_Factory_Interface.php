@@ -7,6 +7,33 @@ namespace Racketmanager\Infrastructure\Wordpress\Response;
  */
 interface Json_Response_Factory_Interface {
     /**
+     * Create a success response
+     *
+     * @param mixed|null $data
+     * @param int|null $status_code
+     * @return Response
+     */
+    public function create_success_response( mixed $data = null, ?int $status_code = 200 ): Response;
+
+    /**
+     * Create an error response
+     *
+     * @param mixed|null $data
+     * @param int|null $status_code
+     * @return Response
+     */
+    public function create_error_response( mixed $data = null, ?int $status_code = null ): Response;
+
+    /**
+     * Create a raw response
+     *
+     * @param string $content
+     * @param int|null $status_code
+     * @return Response
+     */
+    public function create_raw_response( string $content, ?int $status_code = 200 ): Response;
+
+    /**
      * Send a success response and die
      *
      * @param mixed|null $data
@@ -22,13 +49,6 @@ interface Json_Response_Factory_Interface {
      */
     public function send_error( mixed $data = null, ?int $status_code = null ): void;
 
-    /**
-     * Send raw content and die
-     *
-     * @param string $content
-     * @param int|null $status_code
-     */
-    public function send_raw( string $content, ?int $status_code = null ): void;
 
     /**
      * Log an error and send a response

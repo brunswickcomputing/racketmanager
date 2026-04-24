@@ -35,6 +35,7 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
     use Racketmanager\Repositories\Repository_Provider;
     use Racketmanager\Services\Competition_Service;
     use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+    use Racketmanager\Services\Fixture\Fixture_Link_Service;
     use Racketmanager\Services\Fixture\Fixture_Permission_Service;
     use Racketmanager\Services\Team_Service;
 
@@ -50,6 +51,7 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
         private $permission_service;
         private $repository_provider;
         private $service_provider;
+        private Fixture_Link_Service|MockObject $link_service;
         private Fixture_Detail_Service $service;
 
         public function test_get_fixture_with_details_populates_new_fields(): void {
@@ -80,6 +82,8 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
             $this->league_repository->method( 'find_by_id' )->willReturn( $league );
             $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
             $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
+
+            $this->link_service->method( 'get_fixture_link' )->willReturn( 'https://example.com/league/10/premier-league/2026/' );
 
             $default_team = $this->createStub( Team::class );
             $default_team->method( 'get_name' )->willReturn( 'Unknown' );
@@ -262,6 +266,7 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
             $this->competition_service = $this->createStub( Competition_Service::class );
             $this->team_service        = $this->createStub( Team_Service::class );
             $this->permission_service  = $this->createStub( Fixture_Permission_Service::class );
+            $this->link_service        = $this->createStub( Fixture_Link_Service::class );
 
             $this->repository_provider = $this->createStub( Repository_Provider::class );
             $this->repository_provider->method( 'get_fixture_repository' )->willReturn( $this->fixture_repository );
@@ -272,7 +277,8 @@ namespace Racketmanager\Tests\Unit\Services\Fixture {
                 $this->repository_provider,
                 $this->competition_service,
                 $this->team_service,
-                $this->permission_service
+                $this->permission_service,
+                $this->link_service
             );
         }
     }

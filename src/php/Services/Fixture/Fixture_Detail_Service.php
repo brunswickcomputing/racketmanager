@@ -30,12 +30,14 @@ class Fixture_Detail_Service {
     private Competition_Service $competition_service;
     private Team_Service $team_service;
     private Fixture_Permission_Service $permission_service;
+    private Fixture_Link_Service $link_service;
 
     public function __construct(
         Repository_Provider $repository_provider,
         Competition_Service $competition_service,
         Team_Service $team_service,
-        Fixture_Permission_Service $permission_service
+        Fixture_Permission_Service $permission_service,
+        Fixture_Link_Service $link_service
     ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
         $this->league_repository    = $repository_provider->get_league_repository();
@@ -43,6 +45,7 @@ class Fixture_Detail_Service {
         $this->competition_service  = $competition_service;
         $this->team_service         = $team_service;
         $this->permission_service   = $permission_service;
+        $this->link_service         = $link_service;
     }
 
     /**
@@ -75,7 +78,7 @@ class Fixture_Detail_Service {
 
             $is_update_allowed = $this->permission_service->is_update_allowed( $fixture );
 
-            $link          = $this->get_fixture_link( $fixture, $league, $home_team, $away_team );
+            $link          = $this->link_service->get_fixture_link( $fixture, $league, $home_team, $away_team );
             $score_display = $this->generate_score_display( $fixture, $event );
             $status_flags  = $this->generate_status_flags( $fixture );
             $fixture_title = $this->generate_fixture_title( $home_team, $away_team, $prev_home_fixture_title, $prev_away_fixture_title );
@@ -234,66 +237,6 @@ class Fixture_Detail_Service {
         }
 
         return $this->resolve_placeholder_title( $team_id, $season, $league, $final ) ?? __( 'Unknown', 'racketmanager' );
-    }
-
-    /**
-     * Get the fixture link for a fixture.
-     */
-    private function get_fixture_link( Fixture $fixture, object $league, ?object $home_team, ?object $away_team ): string {
-        $type = $league->get_competition_type();
-
-        if ( 'tournament' === $type ) {
-            return $this->get_tournament_link( $fixture, $league );
-        }
-
-        return $this->resolve_fixture_link( $fixture, $league, $home_team, $away_team );
-    }
-
-    /**
-     * Resolve fixture link for a fixture.
-     */
-    private function resolve_fixture_link( Fixture $fixture, object $league, ?object $home_team, ?object $away_team ): string {
-        $type = $league->get_competition_type();
-
-        if ( 'box' === $type ) {
-            $url  = home_url( '/league/' );
-            $url .= Util::seo_url( $league->get_name() ) . '/fixture/' . $fixture->get_id() . '/';
-            return $url;
-        }
-
-        return $this->generate_standard_fixture_link( $fixture, $league, $home_team, $away_team );
-    }
-
-    /**
-     * Get the tournament link for a fixture.
-     */
-    private function get_tournament_link( Fixture $fixture, object $league ): string {
-        $url  = home_url( '/tournament/' );
-        $url .= Util::seo_url( (string) $league->get_id() ) . '/';
-        $url .= Util::seo_url( $league->get_name() ) . '/';
-        $url .= 'fixture-' . $fixture->get_id() . '/';
-
-        return $url;
-    }
-
-    /**
-     * Generate a standard fixture link for a fixture.
-     */
-    private function generate_standard_fixture_link( Fixture $fixture, object $league, ?object $home_team, ?object $away_team ): string {
-        $url  = home_url( '/league/' );
-        $url .= Util::seo_url( (string) $league->get_id() ) . '/';
-        $url .= Util::seo_url( $league->get_name() ) . '/';
-        $url .= Util::seo_url( $fixture->get_season() ) . '/';
-
-        if ( $home_team && $away_team ) {
-            $url .= Util::seo_url( $home_team->team->get_name() ) . '-v-' . Util::seo_url( $away_team->team->get_name() ) . '/';
-        }
-
-        if ( $fixture->get_leg() ) {
-            $url .= 'leg-' . $fixture->get_leg() . '/';
-        }
-
-        return $url;
     }
 
     /**

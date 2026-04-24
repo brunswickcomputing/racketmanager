@@ -42,6 +42,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Services\Container\Simple_Container;
     use Racketmanager\Services\Finance_Service;
     use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+    use Racketmanager\Services\Fixture\Fixture_Link_Service;
     use Racketmanager\Services\Fixture\Fixture_Permission_Service;
     use Racketmanager\Services\Fixture_Service;
     use Racketmanager\Services\Player_Service;
@@ -94,8 +95,9 @@ namespace Racketmanager\Tests\Integration\Public {
 
             $registration_service = $this->createStub( Registration_Service::class );
             $permission_service   = new Fixture_Permission_Service( $repo_provider, $registration_service );
+            $link_service         = new Fixture_Link_Service( $this->createMock( Tournament_Service::class ) );
 
-            $detail_service = new Fixture_Detail_Service( $repo_provider, $competition_service, $team_service, $permission_service );
+            $detail_service = new Fixture_Detail_Service( $repo_provider, $competition_service, $team_service, $permission_service, $link_service );
 
             $this->container->set( 'fixture_detail_service', $detail_service );
             $this->container->set( 'competition_service', $competition_service );

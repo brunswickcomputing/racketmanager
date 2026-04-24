@@ -2,6 +2,7 @@
 
 namespace Racketmanager\Services\Competition;
 
+use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
@@ -19,11 +20,9 @@ class Knockout_Progression_Service
     private ?Notification_Service $notification_service = null;
 
     public function __construct(
-        ?Fixture_Repository $fixture_repository = null,
-        ?Notification_Service $notification_service = null
+        ?Fixture_Repository $fixture_repository = null
     ) {
         $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
-        $this->notification_service = $notification_service;
     }
 
     /**
@@ -157,7 +156,7 @@ class Knockout_Progression_Service
         }
 
         $found_index = $this->find_fixture_index($this->fixture_repository, $league, $fixture, $fixture->get_final());
-        $is_home = ($found_index === 0); 
+        $is_home = ($found_index === 0);
 
 
         $third_place_fixtures = $this->fixture_repository->find_by_league_and_final(

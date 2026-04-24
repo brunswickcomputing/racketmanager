@@ -21,6 +21,7 @@ use Racketmanager\Domain\Fixture\Fixture;
     <div class="modal-content">
         <form id="match-rubber-status" class="" action="#" method="post">
             <?php wp_nonce_field( 'match-rubber-status', 'racketmanager_nonce' ); ?>
+            <input type="hidden" name="match_id" value="<?php echo esc_attr( $match->get_id() ); ?>" />
             <input type="hidden" name="rubber_id" value="<?php echo esc_attr( $rubber->id ); ?>" />
             <input type="hidden" name="rubber_number" value="<?php echo esc_attr( $rubber->rubber_number ); ?>" />
             <input type="hidden" name="home_team" value="<?php echo esc_attr( $match->get_home_team() ); ?>" />

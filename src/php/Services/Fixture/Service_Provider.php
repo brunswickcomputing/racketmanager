@@ -35,7 +35,6 @@ class Service_Provider {
     private ?Fixture_Permission_Service $fixture_permission_service = null;
     private ?Fixture_Detail_Service $fixture_detail_service = null;
     private ?Fixture_Maintenance_Service $fixture_maintenance_service = null;
-    private ?Fixture_Lifecycle_Service $fixture_lifecycle_service = null;
 
     public function __construct(
         ?Result_Service $result_service = null, ?Knockout_Progression_Service $progression_service = null, ?League_Service $league_service = null, ?Score_Validation_Service $score_validator = null, ?Player_Validation_Service $player_validator = null, ?Notification_Service $notification_service = null, ?Registration_Service $registration_service = null
@@ -61,7 +60,10 @@ class Service_Provider {
         return $this->result_service;
     }
 
-    public function get_progression_service(): ?Knockout_Progression_Service {
+    public function get_progression_service( ?object $c = null ): ?Knockout_Progression_Service {
+        if ( $c && $this->progression_service && method_exists( $c, 'has' ) && $c->has( 'notification_service' ) ) {
+            $this->progression_service->set_notification_service( $c->get( 'notification_service' ) );
+        }
         return $this->progression_service;
     }
 
@@ -145,11 +147,4 @@ class Service_Provider {
         $this->fixture_maintenance_service = $fixture_maintenance_service;
     }
 
-    public function get_fixture_lifecycle_service(): ?Fixture_Lifecycle_Service {
-        return $this->fixture_lifecycle_service;
-    }
-
-    public function set_fixture_lifecycle_service( ?Fixture_Lifecycle_Service $fixture_lifecycle_service ): void {
-        $this->fixture_lifecycle_service = $fixture_lifecycle_service;
-    }
 }

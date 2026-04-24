@@ -9,8 +9,8 @@ import { matchHeader } from './match-header.js';
 
 const ALERT_MATCH_OPTIONS = '#matchOptionsAlert';
 const ALERT_MATCH_OPTIONS_TEXT = '#alertMatchOptionsResponse';
-const ALERT_MATCH_DATE = '#matchDateAlert';
-const ALERT_MATCH_DATE_TEXT = '#alertMatchDateResponse';
+const ALERT_FIXTURE_SWITCH = '#switchFixtureAlert';
+const ALERT_FIXTURE_SWITCH_TEXT = '#alertSwitchFixtureResponse';
 
 /**
  * Perform switch home/away request
@@ -27,8 +27,8 @@ export function switchHomeAway(link) {
   jQuery(ALERT_MATCH_OPTIONS).hide();
   jQuery(ALERT_MATCH_OPTIONS).removeClass('alert--success alert--warning alert--danger');
 
-  jQuery(ALERT_MATCH_DATE).hide();
-  jQuery(ALERT_MATCH_DATE).removeClass('alert--success alert--warning alert--danger');
+  jQuery(ALERT_FIXTURE_SWITCH).hide();
+  jQuery(ALERT_FIXTURE_SWITCH).removeClass('alert--success alert--warning alert--danger');
 
   jQuery('.is-invalid').removeClass('is-invalid');
 
@@ -54,20 +54,15 @@ export function switchHomeAway(link) {
       try { matchHeader(matchId); } catch (_) { /* no-op */ }
 
       // Update URL if provided
-      try {
-        const newPath = data.link;
-        if (newPath) {
-          const url = new URL(globalThis.location.href);
-          const newURL = url.protocol + '//' + url.hostname + newPath;
-          if (history.replaceState) {
-            history.replaceState('', document.title, newURL.toString());
-          }
-        }
-      } catch (_) { /* no-op */ }
+      if (data.link && history.replaceState) {
+        try {
+          history.replaceState('', document.title, data.link);
+        } catch (_) { /* no-op */ }
+      }
     },
     error: function (response) {
-      handleAjaxError(response, ALERT_MATCH_DATE_TEXT, ALERT_MATCH_DATE);
-      jQuery(ALERT_MATCH_DATE).show();
+      handleAjaxError(response, ALERT_FIXTURE_SWITCH_TEXT, ALERT_FIXTURE_SWITCH);
+      jQuery(ALERT_FIXTURE_SWITCH).show();
     },
   });
 }

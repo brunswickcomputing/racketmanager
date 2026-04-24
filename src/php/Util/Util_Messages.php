@@ -238,11 +238,11 @@ class Util_Messages {
         return __( 'Date is missing', 'racketmanager' );
     }
 
-    public static function fixture_not_found( ?int $fixture_id ): string {
+    public static function fixture_not_found( ?int $fixture_id = null ): string {
         return sprintf( __( 'Fixture %s not found', 'racketmanager' ), $fixture_id );
     }
 
-    public static function league_not_found_for_fixture( ?int $fixture_id ): string {
+    public static function league_not_found_for_fixture( ?int $fixture_id = null ): string {
         return sprintf( __( 'League not found for fixture: %d', 'racketmanager' ), $fixture_id );
     }
 

@@ -13,7 +13,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
-use Racketmanager\Domain\DTO\Fixture\Match_Option_Request;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Presenters\Fixture_Presenter;
 use ReflectionClass;
@@ -93,13 +93,13 @@ class Fixture_Presenter_Test extends TestCase {
             competition: $competition
         );
 
-        $request = new Match_Option_Request(
+        $request = new Fixture_Option_Request(
             match_id: 123,
             modal: 'test-modal',
             option: 'test-option'
         );
 
-        $vars = $this->presenter->map_to_match_option_vars(
+        $vars = $this->presenter->map_to_fixture_option_vars(
             $dto,
             $request,
             'Test Title',

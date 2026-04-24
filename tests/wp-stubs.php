@@ -221,6 +221,9 @@ namespace {
 
     if ( ! function_exists( 'add_action' ) ) {
         function add_action( $tag, $function_to_add, $priority = 10, $accepted_args = 1 ) {
+            if ( isset( $GLOBALS['wp_action_hooks'] ) ) {
+                $GLOBALS['wp_action_hooks'][$tag][] = $function_to_add;
+            }
             return true;
         }
     }

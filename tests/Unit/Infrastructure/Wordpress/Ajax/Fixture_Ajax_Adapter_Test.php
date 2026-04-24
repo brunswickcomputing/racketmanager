@@ -151,7 +151,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_set_match_status_fails_security_check(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( false );
 
-        $response = $this->adapter->set_match_status();
+        $response = $this->adapter->set_fixture_status();
         $data     = $response->get_content();
         $this->assertSame( 403, $response->get_status_code() );
         $this->assertStringContainsString( 'Security', $data['msg'] );
@@ -163,7 +163,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['racketmanager_nonce'] = 'valid';
         $_POST['match_id']            = 0;
 
-        $response = $this->adapter->set_match_status();
+        $response = $this->adapter->set_fixture_status();
         $data     = $response->get_content();
         $this->assertSame( 400, $response->get_status_code() );
         $this->assertNotEmpty( $data['err_msgs'] );
@@ -188,7 +188,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['dto'] === $dto && $vars['modal'] === 'test-modal';
             } ) )->willReturn( '<html lang="">modal content</html>' );
 
-        $response = $this->adapter->match_status_options();
+        $response = $this->adapter->fixture_status_options();
         $this->assertSame( '<html lang="">modal content</html>', $response->get_content() );
     }
 
@@ -198,7 +198,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['security'] = 'valid';
         // Missing match_id and modal
 
-        $response = $this->adapter->match_status_options();
+        $response = $this->adapter->fixture_status_options();
         $data     = $response->get_content();
         $this->assertSame( 400, $response->get_status_code() );
         $this->assertStringContainsString( 'Match id not found', $data['msg'] );
@@ -213,7 +213,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( null );
 
-        $response = $this->adapter->match_status_options();
+        $response = $this->adapter->fixture_status_options();
         $data     = $response->get_content();
         $this->assertSame( 404, $response->get_status_code() );
         $this->assertStringContainsString( 'not found', $data['msg'] );
@@ -243,7 +243,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 
-        $response = $this->adapter->set_match_status();
+        $response = $this->adapter->set_fixture_status();
         $data     = $response->get_content();
         $this->assertSame( 123, $data['match_id'] );
         $this->assertSame( 'walkover_player1', $data['match_status'] );
@@ -274,7 +274,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 
-        $response = $this->adapter->set_match_rubber_status();
+        $response = $this->adapter->set_rubber_status();
         $data     = $response->get_content();
         $this->assertSame( 123, $data['match_id'] );
         $this->assertSame( 1, $data['rubber_number'] );
@@ -433,7 +433,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['dto'] === $dto && $vars['title'] === '(Re)schedule fixture' && $vars['action'] === 'setMatchDate';
             } ) )->willReturn( 'rendered content' );
 
-        $response = $this->adapter->show_match_option();
+        $response = $this->adapter->show_fixture_option();
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'rendered content', $response->get_content() );
     }
@@ -446,7 +446,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['match_id']                          = 123;
         $_REQUEST['security']                       = 'valid';
 
-        $response = $this->adapter->update_match_header();
+        $response = $this->adapter->update_fixture_header();
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'match header content', $response->get_content() );
     }
@@ -473,7 +473,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $maintenance_service->expects( $this->once() )->method( 'update_fixture_status' )->with( 123, 5 );
         $this->container->set( 'fixture_maintenance_service', $maintenance_service );
 
-        $response = $this->adapter->set_match_date();
+        $response = $this->adapter->set_fixture_date();
         $this->assertSame( 200, $response->get_status_code(), 'Response should be 200, content: ' . json_encode( $response->get_content() ) );
         $data = $response->get_content();
         $this->assertSame( 'Match schedule updated', $data['msg'] );
@@ -567,7 +567,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $result_manager->method( 'reset_result' )->with( $fixture )->willReturn( $result_response );
         $this->container->set( 'fixture_result_manager', $result_manager );
 
-        $response = $this->adapter->reset_match_result();
+        $response = $this->adapter->reset_fixture_result();
         $this->assertSame( 200, $response->get_status_code(), 'Response should be 200, content: ' . json_encode( $response->get_content() ) );
         $data = $response->get_content();
         $this->assertSame( 123, $data['match_id'] );

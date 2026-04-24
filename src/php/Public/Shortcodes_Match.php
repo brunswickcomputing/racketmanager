@@ -62,7 +62,7 @@ class Shortcodes_Match extends Shortcodes {
                     $button = __( 'Switch', 'racketmanager' );
                     $action = 'switchHomeAway';
                     break;
-                case 'reset_match_result':
+                case 'reset_fixture_result':
                     $title  = __( 'Reset match result', 'racketmanager' );
                     $button = __( 'Save', 'racketmanager' );
                     $action = 'resetMatchResult';

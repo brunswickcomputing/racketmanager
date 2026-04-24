@@ -46,7 +46,7 @@ class Fixture_Ajax_Controller {
      *
      * @return Fixture_Ajax_Adapter
      */
-    private function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
+    protected function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
         $c = $this->racketmanager->container;
 
         return new Fixture_Ajax_Adapter( $c, new Security_Service(), new Logging_Json_Response_Factory( new Json_Response_Factory() ), $c->get( 'fixture_detail_service' ), $c->get( 'view_renderer' ), new Fixture_Presenter( $c->get( 'fixture_link_service' ) ) );
@@ -76,47 +76,47 @@ class Fixture_Ajax_Controller {
     }
 
     /**
-     * Build screen to allow match status to be captured
+     * Build screen to allow fixture status to be captured
      */
     #[NoReturn]
-    public function match_status_options(): void {
+    public function fixture_status_options(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->match_status_options();
+        $response = $adapter->fixture_status_options();
         $response->send();
         wp_die();
     }
 
     /**
-     * Set match status
+     * Set fixture status
      */
     #[NoReturn]
-    public function set_match_status(): void {
+    public function set_fixture_status(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->set_match_status();
+        $response = $adapter->set_fixture_status();
         $response->send();
         wp_die();
     }
 
     /**
-     * Build screen to show the selected match option
+     * Build screen to show the selected fixture option
      */
     #[NoReturn]
-    public function show_match_option(): void {
+    public function show_fixture_option(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->show_match_option();
+        $response = $adapter->show_fixture_option();
         $response->send();
         wp_die();
     }
 
     /**
-     * Set the match date function
+     * Set the fixture date function
      *
      * @return void
      */
     #[NoReturn]
-    public function set_match_date(): void {
+    public function set_fixture_date(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->set_match_date();
+        $response = $adapter->set_fixture_date();
         $response->send();
         wp_die();
     }
@@ -138,9 +138,9 @@ class Fixture_Ajax_Controller {
      * Reset result and draw for fixture
      */
     #[NoReturn]
-    public function reset_match_result(): void {
+    public function reset_fixture_result(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->reset_match_result();
+        $response = $adapter->reset_fixture_result();
         $response->send();
         wp_die();
     }
@@ -149,7 +149,7 @@ class Fixture_Ajax_Controller {
      * Show rubber status options
      */
     #[NoReturn]
-    public function match_rubber_status_options(): void {
+    public function rubber_status_options(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
         $response = $adapter->match_rubber_status_options();
         $response->send();
@@ -157,23 +157,23 @@ class Fixture_Ajax_Controller {
     }
 
     /**
-     * Set match rubber status
+     * Set rubber status
      */
     #[NoReturn]
-    public function set_match_rubber_status(): void {
+    public function set_rubber_status(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->set_match_rubber_status();
+        $response = $adapter->set_rubber_status();
         $response->send();
         wp_die();
     }
 
     /**
-     * Update match header
+     * Update fixture header
      */
     #[NoReturn]
-    public function update_match_header(): void {
+    public function update_fixture_header(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->update_match_header();
+        $response = $adapter->update_fixture_header();
         $response->send();
         wp_die();
     }

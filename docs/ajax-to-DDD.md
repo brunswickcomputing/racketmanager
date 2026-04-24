@@ -10,7 +10,7 @@ Before moving the methods, replace the "magic" provided by the `Ajax` base class
 #### 2. Phase 2: Application Layer Extraction
 Identify the business logic currently trapped inside `Ajax_Fixture` and move it to the Application Layer.
 *   **Expand `Fixture_Result_Manager`:** Move the orchestration logic from `update_fixture_result` and `update_team_match` into this service.
-*   **Introduce `Fixture_Maintenance_Service`:** Move operations like `set_match_status`, `set_match_date`, `switch_home_away`, and `reset_match_result` here.
+*   **Introduce `Fixture_Maintenance_Service`:** Move operations like `set_fixture_status`, `set_fixture_date`, `switch_home_away`, and `reset_fixture_result` here.
 *   **The Goal:** The AJAX method should contain no `if/else` logic regarding business rules; it should only call a service method.
 
 #### 3. Phase 3: Contract Definition (DTOs)
@@ -38,7 +38,7 @@ Instead of refactoring `Ajax_Fixture.php` in place, create a new `Fixture_Ajax_A
 #### Summary of Mapping for `Ajax_Fixture`
 | Old Method | New Application Service | Input DTO | Output DTO / Presenter |
 | :--- | :--- | :--- | :--- |
-| `set_match_status` | `Fixture_Maintenance_Service` | `Update_Status_Command` | `Status_Read_Model` |
-| `set_match_date` | `Fixture_Maintenance_Service` | `Reschedule_Command` | `Date_Read_Model` |
-| `update_match_header` | `Fixture_Query_Service` | `Get_Header_Query` | `Fixture_Header_Presenter` |
-| `reset_match_result` | `Fixture_Result_Manager` | `Reset_Result_Command` | `Fixture_Presenter` |
+| `set_fixture_status` | `Fixture_Maintenance_Service` | `Update_Status_Command` | `Status_Read_Model` |
+| `set_fixture_date` | `Fixture_Maintenance_Service` | `Reschedule_Command` | `Date_Read_Model` |
+| `update_fixture_header` | `Fixture_Query_Service` | `Get_Header_Query` | `Fixture_Header_Presenter` |
+| `reset_fixture_result` | `Fixture_Result_Manager` | `Reset_Result_Command` | `Fixture_Presenter` |

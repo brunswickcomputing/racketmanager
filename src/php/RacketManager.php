@@ -740,15 +740,15 @@ class RacketManager {
         $controller = $this->ajax_fixture;
 
         $registry->register( 'match_card', [ $controller, 'print_match_card' ], true );
-        $registry->register_with_unauthenticated( 'match_rubber_status', [ $controller, 'match_rubber_status_options' ], [ $controller, 'logged_out_modal' ] );
-        $registry->register_with_unauthenticated( 'set_match_rubber_status', [ $controller, 'set_match_rubber_status' ], [ $controller, 'logged_out' ] );
-        $registry->register_with_unauthenticated( 'match_status', [ $controller, 'match_status_options' ], [ $controller, 'logged_out_modal' ] );
-        $registry->register_with_unauthenticated( 'set_match_status', [ $controller, 'set_match_status' ], [ $controller, 'logged_out' ] );
-        $registry->register_with_unauthenticated( 'match_option', [ $controller, 'show_match_option' ], [ $controller, 'logged_out_modal' ] );
-        $registry->register_with_unauthenticated( 'set_match_date', [ $controller, 'set_match_date' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'match_rubber_status', [ $controller, 'rubber_status_options' ], [ $controller, 'logged_out_modal' ] );
+        $registry->register_with_unauthenticated( 'set_rubber_status', [ $controller, 'set_rubber_status' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'match_status', [ $controller, 'fixture_status_options' ], [ $controller, 'logged_out_modal' ] );
+        $registry->register_with_unauthenticated( 'set_fixture_status', [ $controller, 'set_fixture_status' ], [ $controller, 'logged_out' ] );
+        $registry->register_with_unauthenticated( 'match_option', [ $controller, 'show_fixture_option' ], [ $controller, 'logged_out_modal' ] );
+        $registry->register_with_unauthenticated( 'set_fixture_date', [ $controller, 'set_fixture_date' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'switch_home_away', [ $controller, 'switch_home_away' ], [ $controller, 'logged_out' ] );
-        $registry->register_with_unauthenticated( 'reset_match_result', [ $controller, 'reset_match_result' ], [ $controller, 'logged_out' ] );
-        $registry->register( 'update_match_header', [ $controller, 'update_match_header' ] );
+        $registry->register_with_unauthenticated( 'reset_fixture_result', [ $controller, 'reset_fixture_result' ], [ $controller, 'logged_out' ] );
+        $registry->register( 'update_fixture_header', [ $controller, 'update_fixture_header' ] );
         $registry->register_with_unauthenticated( 'update_match', [ $controller, 'update_fixture_result' ], [ $controller, 'logged_out' ] );
         $registry->register_with_unauthenticated( 'update_rubbers', [ $controller, 'update_team_match' ], [ $controller, 'logged_out' ] );
     }

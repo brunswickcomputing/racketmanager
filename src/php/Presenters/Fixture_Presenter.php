@@ -12,7 +12,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Status_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
-use Racketmanager\Domain\DTO\Fixture\Match_Option_Request;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -241,8 +241,8 @@ readonly class Fixture_Presenter {
         ];
     }
 
-    public function map_to_match_option_vars(
-        Fixture_Details_DTO $dto, Match_Option_Request $request, string $title, string $button, string $action
+    public function map_to_fixture_option_vars(
+        Fixture_Details_DTO $dto, Fixture_Option_Request $request, string $title, string $button, string $action
     ): array {
         return array(
             'dto'    => $dto,

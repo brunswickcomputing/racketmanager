@@ -1075,7 +1075,7 @@ function withdrawn_team_email( array $args = array() ): string {
      * Display match option modal
      *
      * @param array $args array of arguments.
-     * @deprecated Use Fixture_Ajax_Adapter::show_match_option() instead.
+     * @deprecated Use Fixture_Ajax_Adapter::show_fixture_option() instead.
      */
     function match_option_modal( array $args = array() ): string {
         $shortcode = '[match-option';

@@ -8,7 +8,7 @@ use Racketmanager\Exceptions\Fixture_Validation_Exception;
 /**
  * Data Transfer Object for match option requests.
  */
-readonly class Match_Option_Request {
+readonly class Fixture_Option_Request {
     public function __construct(
         public int $match_id,
         public ?string $modal = null,

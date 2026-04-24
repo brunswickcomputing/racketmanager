@@ -70,7 +70,7 @@ use Racketmanager\Domain\Fixture\Fixture;
                             </div>
                         </div>
                         <?php
-                    } elseif ( 'reset_match_result' === $option ) {
+                    } elseif ( 'reset_fixture_result' === $option ) {
                         ?>
                         <div class="strike mb-3">
                             <span><?php esc_html_e( 'Reset match result', 'racketmanager' ); ?></span>

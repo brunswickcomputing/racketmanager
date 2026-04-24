@@ -492,4 +492,85 @@ class Fixture_Repository implements Fixture_Repository_Interface {
 
         return $fixtures;
     }
+
+    /**
+     * @param array $criteria
+     * @return Fixture|null
+     */
+    public function find_one_by_slug_criteria( array $criteria ): ?Fixture {
+        $league_id      = $criteria['league_id'] ?? null;
+        $home_team_name = $criteria['home_team_name'] ?? null;
+        $away_team_name = $criteria['away_team_name'] ?? null;
+        $season         = $criteria['season'] ?? null;
+        $match_day      = $criteria['match_day'] ?? null;
+        $round          = $criteria['round'] ?? null;
+        $leg            = $criteria['leg'] ?? null;
+
+        if ( ! $league_id ) {
+            return null;
+        }
+
+        $match_args = [
+            'league_id' => $league_id,
+            'season'    => $season,
+        ];
+
+        if ( $home_team_name ) {
+            $home_team_id = $this->get_team_id_by_title( $home_team_name );
+            if ( $home_team_id ) {
+                $match_args['home_team'] = $home_team_id;
+            }
+        }
+
+        if ( $away_team_name ) {
+            $away_team_id = $this->get_team_id_by_title( $away_team_name );
+            if ( $away_team_id ) {
+                $match_args['away_team'] = $away_team_id;
+            }
+        }
+
+        if ( $match_day ) {
+            $match_args['match_day'] = $match_day;
+        }
+
+        if ( $round ) {
+            $match_args['final'] = $round;
+        }
+
+        if ( $leg ) {
+            $match_args['leg'] = $leg;
+        }
+
+        $league = \Racketmanager\get_league( $league_id );
+        if ( ! $league ) {
+            return null;
+        }
+
+        $matches = $league->get_matches( $match_args );
+        if ( is_array( $matches ) && count( $matches ) === 1 ) {
+            $row = $matches[0];
+            return $this->find_by_id( (int) $row->id );
+        }
+
+        return null;
+    }
+
+    /**
+     * Helper to get team ID by title.
+     *
+     * @param string $title
+     * @return int
+     */
+    private function get_team_id_by_title( string $title ): int {
+        global $racketmanager;
+        if ( isset( $racketmanager ) && method_exists( $racketmanager, 'get_team_id' ) ) {
+            return $racketmanager->get_team_id( $title );
+        }
+
+        $teams_table = $this->wpdb->prefix . 'racketmanager_teams';
+        return (int) $this->wpdb->get_var( $this->wpdb->prepare(
+            "SELECT id FROM $teams_table WHERE title = %s",
+            $title
+        ) );
+    }
 }

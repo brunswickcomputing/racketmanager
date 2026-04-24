@@ -30,4 +30,5 @@ interface Fixture_Repository_Interface extends Repository_Interface {
     public function update_teams( int $id, string $home_team, string $away_team ): bool;
     public function update_date( int $id, string $date, ?string $original_date = null ): bool;
     public function find_by_criteria( Export_Criteria $criteria ): array;
+    public function find_one_by_slug_criteria( array $criteria ): ?Fixture;
 }

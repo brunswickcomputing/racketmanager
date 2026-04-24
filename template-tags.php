@@ -504,24 +504,6 @@ function result_outstanding_notification( int $match_id, array $args = array() )
     return do_shortcode( $shortcode );
 }
     /**
-     * Display match card
-     *
-     * @param int $match_id match id match.
-     * @param array $args associative array of parameters, see default values (optional).
-     *
-     * @category template-tags
-     */
-    function show_match_card( int $match_id, array $args = array() ): string {
-        $args['id'] = $match_id;
-
-        $shortcode = '[match-card';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
-    }
-    /**
      * Show score
      *
      * @param int $match_id match id match.
@@ -1037,48 +1019,6 @@ function withdrawn_team_email( array $args = array() ): string {
     function match_team_withdrawn_notification( int $match_id, array $args = array() ): string {
         $shortcode  = '[withdrawn-team-match';
         $args['id'] = $match_id;
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
-    }
-    /**
-     * Display match status modal
-     *
-     * @param array $args array of arguments.
-     */
-    function match_status_modal( array $args = array() ): string {
-        $shortcode = '[match-status';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
-    }
-    /**
-     * Display rubber status modal
-     *
-     * @param int $rubber_id rubber id.
-     * @param array $args array of arguments.
-     */
-    function rubber_status_modal( int $rubber_id, array $args = array() ): string {
-        $args['id'] = $rubber_id;
-        $shortcode  = '[rubber-status';
-        foreach ( $args as $key => $value ) {
-            $shortcode .= ' ' . $key . "='" . $value . "'";
-        }
-        $shortcode .= ']';
-        return do_shortcode( $shortcode );
-    }
-    /**
-     * Display match option modal
-     *
-     * @param array $args array of arguments.
-     * @deprecated Use Fixture_Ajax_Adapter::show_fixture_option() instead.
-     */
-    function match_option_modal( array $args = array() ): string {
-        $shortcode = '[match-option';
         foreach ( $args as $key => $value ) {
             $shortcode .= ' ' . $key . "='" . $value . "'";
         }

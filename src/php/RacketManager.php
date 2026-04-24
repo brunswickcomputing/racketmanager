@@ -842,10 +842,6 @@ class RacketManager {
         add_shortcode( 'account-info', array( $this->shortcodes_login, 'generate_member_account_form' ) );
         add_action( 'init', array( $this->shortcodes_login, 'load_translations' ) );
 
-        add_shortcode( 'match-option', array( $this->shortcodes_match, 'show_match_option_modal' ) );
-        add_shortcode( 'match-status', array( $this->shortcodes_match, 'show_match_status_modal' ) );
-        add_shortcode( 'rubber-status', array( $this->shortcodes_match, 'show_rubber_status_modal' ) );
-        add_shortcode( 'match-card', array( $this->shortcodes_match, 'show_match_card' ) );
         add_shortcode( 'score', array( $this->shortcodes_match, 'show_score' ) );
         add_shortcode( 'match-header', array( $this->shortcodes_match, 'show_match_header' ) );
         add_shortcode( 'match-detail', array( $this->shortcodes_match, 'show_match_detail' ) );

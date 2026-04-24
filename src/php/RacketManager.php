@@ -9,11 +9,11 @@
 namespace Racketmanager;
 
 use NumberFormatter;
+use Racketmanager\Admin\Controllers\Export_Admin_Controller;
 use Racketmanager\Ajax\Ajax_Account;
 use Racketmanager\Ajax\Ajax_Club;
 use Racketmanager\Ajax\Ajax_Finance;
 use Racketmanager\Ajax\Ajax_Frontend;
-use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller;
 use Racketmanager\Ajax\Ajax_Tournament;
 use Racketmanager\Domain\Message;
 use Racketmanager\Rest\Rest_Routes;
@@ -214,7 +214,7 @@ class RacketManager {
         return self::$instance;
     }
     /**
-     * Set page title function
+     * Set the page title function
      *
      * @param string $title title.
      *
@@ -564,7 +564,7 @@ class RacketManager {
         // Add a filter to the save post to inject our template into the page cache.
         add_filter( 'wp_insert_post_data', array( $this, 'register_racketmanager_templates' ) );
 
-        // Add a filter to the template include to determine if the page has our.
+        // Add a filter to the template include to determine if the page has our
         // template assigned and return its path.
         add_filter( 'template_include', array( $this, 'racketmanager_load_template' ) );
 
@@ -581,24 +581,24 @@ class RacketManager {
     }
 
     /**
-     * Adds our templates to the pages cache in order to trick WordPress
+     * Adds our templates to the page cache to trick WordPress
      * into thinking the template file exists where it doesn't really exist.
      *
      * @param array $atts array of attributes.
      */
     public function register_racketmanager_templates( array $atts ): array {
 
-        // Create the key used for the themes cache.
+        // Create the key used for the theme cache.
         $cache_key = 'page_templates-' . md5( get_theme_root() . '/' . get_stylesheet() );
 
         // Retrieve the cache list.
-        // If it doesn't exist, or it's empty prepare an array.
+        // If it doesn't exist, or it is empty, prepare an array.
         $page_templates = wp_get_theme()->get_page_templates();
         if ( empty( $page_templates ) ) {
             $page_templates = array();
         }
 
-        // New cache, therefore remove the old one.
+        // New cache, therefore, removes the old one.
         wp_cache_delete( $cache_key, 'themes' );
 
         // Now add our template to the list of templates by merging our templates.
@@ -628,7 +628,7 @@ class RacketManager {
 
         $file = RACKETMANAGER_PATH . get_post_meta( $post->ID, '_wp_page_template', true );
 
-        // Just to be safe, we check if the file exist first.
+        // Just to be safe, we check if the file exists first.
         if ( file_exists( $file ) ) {
             return $file;
         } else {
@@ -678,7 +678,7 @@ class RacketManager {
      */
     private function load_libraries(): void {
         // PSR-4 autoloading is required from the main plugin bootstrap.
-        // Load only sports registrar scripts (non-class files) so filters (e.g., racketmanager_sports) are registered.
+        // Load only sports registrar scripts (non-class files), so filters (e.g. racketmanager_sports) are registered.
         $plugin_sports = array_filter(
             $this->read_directory( RACKETMANAGER_PATH . 'src/php/sports' ),
             static function ( $file ): bool {
@@ -757,7 +757,7 @@ class RacketManager {
      */
     public function handle_exports(): void {
         if ( isset( $_GET['racketmanager_export'] ) ) {
-            $controller = new \Racketmanager\Admin\Controllers\Export_Admin_Controller( $this );
+            $controller = new Export_Admin_Controller( $this );
             $controller->handle_export();
         }
     }
@@ -866,7 +866,7 @@ class RacketManager {
         add_shortcode( 'tournament-withdrawal', array( $this->shortcodes_tournament, 'show_tournament_withdrawal_modal' ) );
     }
     /**
-     * Read files in directory
+     * Read files in the directory
      *
      * @param string $dir directory name.
      *
@@ -961,7 +961,7 @@ class RacketManager {
         return $base_url;
     }
     /**
-     * Load Javascript
+     * Load JavaScript
      */
     public function load_scripts(): void {
         $javascript_locale = str_replace( '_', '-', get_locale() );
@@ -1058,7 +1058,7 @@ class RacketManager {
         wp_enqueue_style( 'jquery-ui-theme' );
     }
     /**
-     * Set locale info function
+     * Set the locale info function
      *
      * @return void
      */
@@ -1069,7 +1069,7 @@ class RacketManager {
         $this->currency_code = isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
     }
     /**
-     * Add html content type to mail header
+     * Add html content type to the mail header
      *
      * @param array $args arguments for mail message.
      *
@@ -1175,7 +1175,7 @@ class RacketManager {
         return $email_change;
     }
     /**
-     * Redirect users on certain pages to login function
+     * Redirect users on certain pages to the login function
      */
     public function redirect_to_login(): void {
         if ( ! is_user_logged_in() ) {
@@ -1272,7 +1272,7 @@ class RacketManager {
     }
 
     /**
-     * Get clubs from database
+     * Get clubs from the database
      *
      * @param array $args query arguments.
      *
@@ -1374,7 +1374,7 @@ class RacketManager {
     }
 
     /**
-     * Get events from database
+     * Get events from the database
      *
      * @param array $args query arguments.
      *
@@ -1467,7 +1467,7 @@ class RacketManager {
         return $events;
     }
     /**
-     * Get leagues from database
+     * Get leagues from the database
      *
      * @param array $args query arguments.
      *
@@ -1530,7 +1530,7 @@ class RacketManager {
         return $leagues;
     }
     /**
-     * Get Team ID for given string
+     * Get Team ID for a given string
      *
      * @param string $title title.
      *
@@ -1553,11 +1553,11 @@ class RacketManager {
     }
 
     /**
-     * Check to see if a player is in a club (based on team)
+     * Check to see if a player is in a club (based on a team)
      *
      * @param array $args query arguments.
      *
-     * @return array|int
+     * @return bool
      */
     public function is_player_in_club( array $args ): bool {
         global $wpdb;
@@ -1599,7 +1599,7 @@ class RacketManager {
         return $count > 0;
     }
     /**
-     * Get list of players
+     * Get a list of players
      *
      * @param array $args query arguments.
      *
@@ -1727,7 +1727,7 @@ class RacketManager {
     );
 
     /**
-     * Get matches without using league object
+     * Get matches without using a league object
      *
      * @param array $match_args query arguments.
      *
@@ -2012,7 +2012,7 @@ class RacketManager {
         return false;
     }
     /**
-     * Gets results checker from database
+     * Gets a result checker from the database
      *
      * @param array $args query arguments.
      *
@@ -2088,7 +2088,7 @@ class RacketManager {
             $results_checkers = $wpdb->get_results(
             //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                     $sql
-            ); // db call ok.
+            ); // db call OK.
             wp_cache_set(
                     md5( $sql ),
                     $results_checkers,
@@ -2105,7 +2105,7 @@ class RacketManager {
     }
 
     /**
-     * Get teams from database
+     * Get teams from the database
      *
      * @param array $args search arguments.
      * @return array|int
@@ -2152,7 +2152,7 @@ class RacketManager {
                 $teams = $wpdb->get_var(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                         $sql
-                ); // db call ok.
+                ); // db call OK.
                 wp_cache_set( md5( $sql ), $teams, 'teams' );
 
             }
@@ -2170,7 +2170,7 @@ class RacketManager {
             $teams = $wpdb->get_results(
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
                     $sql
-            ); // db call ok.
+            ); // db call OK.
             wp_cache_set( md5( $sql ), $teams, 'teams' );
         }
         foreach ( $teams as $i => $team ) {

@@ -75,6 +75,9 @@ namespace Racketmanager {
 }
 
 namespace {
+
+    use JetBrains\PhpStorm\NoReturn;
+
     function maybe_unserialize( $data ) {
         if ( is_string( $data ) && preg_match( '/^([adObis]):/', $data ) ) {
             return unserialize( $data );
@@ -209,7 +212,7 @@ namespace {
     }
 
     if ( ! isset( $GLOBALS['wpdb'] ) ) {
-        $GLOBALS['wpdb'] = new wpdb();
+        $GLOBALS['wpdb'] = new wpdb( 'user', 'password', 'dbname', 'localhost');
     }
 
     if ( ! defined( 'ABSPATH' ) ) {
@@ -281,7 +284,7 @@ namespace {
                 if ( null === $v || '' === $v ) {
                     continue;
                 }
-                $pairs[] = rawurlencode( (string) $k ) . '=' . rawurlencode( (string) $v );
+                $pairs[] = rawurlencode( $k ) . '=' . rawurlencode( (string) $v );
             }
             $qs = implode( '&', $pairs );
 
@@ -359,6 +362,7 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_die' ) ) {
+        #[NoReturn]
         function wp_die( $message = '', $title = '', $args = array() ) {
             die( $message );
         }
@@ -369,6 +373,7 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_send_json_success' ) ) {
+        #[NoReturn]
         function wp_send_json_success( $data = null, $status_code = null, $options = 0 ) {
             header( 'Content-Type: application/json; charset=utf-8' );
             echo json_encode( array( 'success' => true, 'data' => $data ) );
@@ -377,6 +382,7 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_send_json_error' ) ) {
+        #[NoReturn]
         function wp_send_json_error( $data = null, $status_code = null, $options = 0 ) {
             header( 'Content-Type: application/json; charset=utf-8' );
             echo json_encode( array( 'success' => false, 'data' => $data ) );
@@ -486,27 +492,27 @@ namespace {
                         try {
                             switch ( $id ) {
                                 case 'competition_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Competition_Service' );
+                                    $reflection = new ReflectionClass( 'Racketmanager\Services\Competition_Service' );
                                     break;
                                 case 'club_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Club_Service' );
+                                    $reflection = new ReflectionClass( 'Racketmanager\Services\Club_Service' );
                                     break;
                                 case 'player_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Player_Service' );
+                                    $reflection = new ReflectionClass( 'Racketmanager\Services\Player_Service' );
                                     break;
                                 case 'registration_service':
-                                    $reflection = new \ReflectionClass( 'Racketmanager\Services\Registration_Service' );
+                                    $reflection = new ReflectionClass( 'Racketmanager\Services\Registration_Service' );
                                     break;
                             }
-                        } catch ( \ReflectionException ) {
-                            return new \stdClass();
+                        } catch ( Exception ) {
+                            return new stdClass();
                         }
 
                         if ( $reflection ) {
                             return $reflection->newInstanceWithoutConstructor();
                         }
 
-                        return new \stdClass();
+                        return new stdClass();
                     }
                 };
             }
@@ -697,6 +703,12 @@ namespace {
 }
 
 namespace Racketmanager {
+
+    use Racketmanager\Domain\Competition\Event;
+    use ReflectionClass;
+    use ReflectionException;
+    use stdClass;
+
     if ( ! function_exists( 'Racketmanager\seo_url' ) ) {
         function seo_url( string $string_field ): string {
             $string_field = strtolower( $string_field );
@@ -763,11 +775,11 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_event' ) ) {
-        function get_event( $event_id ) {
-            return new class((object)['id'=>$event_id]) extends \Racketmanager\Domain\Competition\Event {
+        function get_event( $event_id ): Event {
+            return new class((object)['id'=>$event_id]) extends Event {
                 public function __construct($obj) {
                     $this->id = $obj->id;
-                    $comp = new \stdClass();
+                    $comp = new stdClass();
                     $comp->settings = ['point_rule' => 'three', 'mode' => 'league'];
                     $comp->type = 'league';
                     $comp->is_player_entry = false;
@@ -782,18 +794,18 @@ namespace Racketmanager {
                 public function get_season_event($season = false, bool $index = false): array|false|string { return '2024-25'; }
                 public function get_seasons(): array { return [['name' => '2024-25']]; }
                 public function set_num_leagues(bool $total = false): void {}
-                public function set_season(?string $season = null, bool $force = false): void {}
+                public function set_season(?string $season = null, bool $force_overwrite = false): void {}
             };
         }
     }
 
     if ( ! function_exists( 'Racketmanager\get_league' ) ) {
-        function get_league( $league_id ) {
+        function get_league( $league_id ): object|string {
             try {
-                $league = (new \ReflectionClass( 'Racketmanager\Domain\Competition\League' ))->newInstanceWithoutConstructor();
+                $league = (new ReflectionClass( 'Racketmanager\Domain\Competition\League' ))->newInstanceWithoutConstructor();
                 $league->id = $league_id;
                 return $league;
-            } catch ( \ReflectionException $e ) {
+            } catch ( ReflectionException $e ) {
                 return (object) [ 'id' => $league_id ];
             }
         }
@@ -801,12 +813,9 @@ namespace Racketmanager {
 }
 
 namespace Racketmanager {
+
     function debug_to_console( $data ): void {
         // Stub
-    }
-
-    function match_option_modal( array $args = array() ): string {
-        return "modal content";
     }
 
     function match_header( int $match_id, array $args = array() ): string {
@@ -818,27 +827,34 @@ namespace Racketmanager {
             if ( isset( $GLOBALS['wp_stubs_matches'][ $match_id ] ) ) {
                 return $GLOBALS['wp_stubs_matches'][ $match_id ];
             }
-            $match        = new \stdClass();
+            $match        = new stdClass();
             $match->id    = $match_id;
             $match->date  = '2023-01-01';
-            $match->link  = 'http://example.com';
+            $match->link  = 'https://example.com';
             $match->home_team = 'Home';
             $match->away_team = 'Away';
             $match->season = '2023';
             $match->match_day = 1;
-            $match->league = new \stdClass();
-            $match->league->event = new \stdClass();
+            $match->league = new stdClass();
+            $match->league->event = new stdClass();
             $match->league->event->get_season_by_name = function($season) {
                 return ['match_dates' => ['2023-01-01']];
             };
             // Mocking method call on object
             return new class($match) {
-                private $match;
+                private array $properties = [];
                 public function __construct($match) {
-                    foreach($match as $k => $v) $this->$k = $v;
+                    foreach(get_object_vars($match) as $k => $v) {
+                        $this->properties[$k] = $v;
+                    }
                 }
-                public function __get($name) { return $this->$name; }
-                public function get_season_by_name($name) { return ['match_dates' => ['2023-01-01']]; }
+                public function __get($name) {
+                    return $this->properties[$name] ?? null;
+                }
+                public function __isset($name) {
+                    return isset($this->properties[$name]);
+                }
+                public function get_season_by_name($name): array { return [ 'match_dates' => ['2023-01-01']]; }
             };
         }
     }

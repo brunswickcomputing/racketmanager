@@ -25,6 +25,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\View\View_Renderer_Interface;
@@ -553,7 +554,6 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['match_id']                          = 123;
         $_POST['modal']                             = 'test-modal';
 
-        $league  = (object) [ 'id' => 1 ];
         $fixture = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->onlyMethods( [ 'get_id' ] )->getMock();
         $fixture->method( 'get_id' )->willReturn( 123 );
         $fixture->league_id = 1;
@@ -646,7 +646,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );
-        $link_service                 = $this->createStub( \Racketmanager\Services\Fixture\Fixture_Link_Service::class );
+        $link_service                 = $this->createStub( Fixture_Link_Service::class );
         $presenter                    = new Fixture_Presenter( $link_service );
         $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter );
         $_POST                        = [];

@@ -954,9 +954,9 @@ final class Club {
             $team_info = $event->get_team_info( $team_id );
             $match_day = Util::get_match_day( $event_entry->match_day );
             if ( ! $team_info ) {
-                $team->add_event( $event->id, $event_entry->captain_id, $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
+                $team->add_event( $event->id, intval( $event_entry->captain_id ), $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
             } else {
-                $team->update_event( $event->id, $event_entry->captain_id, $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
+                $team->update_event( $event->id, intval( $event_entry->captain_id ), $event_entry->telephone, $event_entry->email, $event_entry->match_day, $event_entry->match_time );
             }
             $league->add_team( $team_id, $club_entry->season );
             $cup_entry['event']        = $event->name;

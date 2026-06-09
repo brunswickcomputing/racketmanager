@@ -796,6 +796,7 @@ final class Tournament {
             'count'   => false,
             'player'  => false,
             'active'  => false,
+            'pending' => false,
             'round'   => false,
         );
         $args     = array_merge( $defaults, $args );
@@ -803,6 +804,7 @@ final class Tournament {
         $count    = $args['count'];
         $player   = $args['player'];
         $active   = $args['active'];
+        $pending  = $args['pending'];
         $round    = $args['round'];
 
         if ( $count ) {
@@ -821,6 +823,10 @@ final class Tournament {
         }
         if ( $active ) {
             $search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.winner_id = 0) )";
+        }
+        if ( $pending ) {
+            $search_terms[] = "`player_id` in (SELECT `player_id` FROM $wpdb->racketmanager_tournament_entries WHERE `tournament_id` = %d AND `status` = 0) ";
+            $search_args[]  = $this->id;
         }
         if ( $round ) {
             $search_terms[] = "( t.team_id in (SELECT `home_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.final = %s) or t.team_id in (SELECT `away_team` FROM $wpdb->racketmanager_matches m WHERE t.league_id = m.league_id AND t.season = m.season AND m.final = %s) )";
@@ -1716,11 +1722,12 @@ final class Tournament {
      * Contact Competition Teams
      *
      * @param string $email_message message.
-     * @param bool   $active active only indicator.
+     * @param bool   $active active indicator.
+     * @param bool   $pending pending indicator.
      *
      * @return boolean
      */
-    public function contact_teams( string $email_message, bool $active = false ): bool {
+    public function contact_teams( string $email_message, bool $active = false, bool $pending = false ): bool {
         global $racketmanager;
         $email_message = str_replace( '\"', '"', $email_message );
         $headers       = array();
@@ -1729,7 +1736,7 @@ final class Tournament {
         $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->competition->type ) . ' Secretary <' . $email_from . '>';
         $email_subject = $racketmanager->site_name . ' - ' . $this->name . ' - Important Message';
         $email_to      = array();
-        $players       = $this->get_players( array( 'active' => $active ) );
+        $players       = $this->get_players( array( 'active' => $active, 'pending' => $pending ) );
         foreach ( $players as $player_name ) {
             $player = get_player( $player_name, 'name' );
             if ( $player && ! empty( $player->email ) ) {

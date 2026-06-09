@@ -128,7 +128,7 @@ final class Admin_Tournament extends Admin_Championship {
      */
     public function display_tournament_overview_page(): void {
         if ( isset( $_GET['tournament'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-            if ( isset( $_POST['contactTeam'] ) || isset( $_POST['contactTeamActive'] ) ) {
+            if ( isset( $_POST['contactTeam'] ) || isset( $_POST['contactTeamActive'] ) || isset( $_POST['contactTeamPending'] ) ) {
                 $this->contact_teams();
                 $this->show_message();
             }
@@ -839,15 +839,19 @@ final class Admin_Tournament extends Admin_Championship {
         if ( isset( $_POST['tournament_id'] ) && isset( $_POST['emailMessage'] ) ) {
             $tournament = get_tournament( $_POST['tournament_id'] );
             if ( $tournament ) {
+                $active  = false;
+                $pending = false;
                 if ( isset( $_POST['contactTeamActive'] ) ) {
                     $active = true;
-                } else {
-                    $active = false;
+                } elseif ( isset( $_POST['contactTeamPending'] ) ) {
+                    $pending = true;
                 }
                 $message = htmlspecialchars_decode( $_POST['emailMessage'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $sent    = $tournament->contact_teams( $message, $active );
+                $sent    = $tournament->contact_teams( $message, $active, $pending );
                 if ( $sent ) {
                     $this->set_message( __( 'Email sent to players', 'racketmanager' ) );
+                } else {
+                    $this->set_message( __( 'Failed to send email to players', 'racketmanager' ), true );
                 }
             } else {
                 $this->set_message( __( 'Tournament not found', 'racketmanager' ), true );

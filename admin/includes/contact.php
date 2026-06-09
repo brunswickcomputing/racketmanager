@@ -149,6 +149,7 @@ jQuery(document).ready(function(){
                     if ( ! empty( $tournament ) ) {
                         ?>
                         <button class="btn btn-primary" name="contactTeamActive"><?php esc_html_e( 'Send active', 'racketmanager' ); ?></button>
+                        <button class="btn btn-secondary" name="contactTeamPending"><?php esc_html_e( 'Send pending', 'racketmanager' ); ?></button>
                         <?php
                     }
                     ?>

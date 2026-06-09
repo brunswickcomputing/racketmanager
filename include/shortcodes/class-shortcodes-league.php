@@ -313,7 +313,7 @@ class Shortcodes_League extends Shortcodes {
         $league->set_season( $season );
         $league->set_group( $group );
 
-        $teams = $league->get_league_teams( array( 'orderby' => array( 'rank' => 'ASC' ) ) );
+        $teams = $league->get_league_teams( array( 'status' => 1, 'orderby' => array( 'rank' => 'ASC' ) ) );
 
         if ( empty( $template ) && $this->check_template( 'crosstable-' . $league->sport ) ) {
             $filename = 'crosstable-' . $league->sport;
@@ -416,6 +416,7 @@ class Shortcodes_League extends Shortcodes {
         }
         $teams = $league->get_league_teams(
             array(
+                'status'  => 1,
                 'season'  => $season,
                 'orderby' => array( 'title' => 'ASC' ),
             )
@@ -665,7 +666,7 @@ class Shortcodes_League extends Shortcodes {
                 $league->team  = $team;
             }
         } else {
-            $team_args = array( 'orderby' => array( 'title' => 'ASC' ) );
+            $team_args = array( 'status' => 1, 'orderby' => array( 'title' => 'ASC' ) );
             if ( $group ) {
                 $team_args['group'] = $group;
             }

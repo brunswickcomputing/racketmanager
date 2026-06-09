@@ -546,7 +546,7 @@ class Validator {
             $this->err_msgs[] = __( 'Match time not selected', 'racketmanager' );
         } elseif ( $match_day >= 0 ) {
             $match_time = substr( $match_time, 0, 5 );
-            if ( $match_day <= 5 ) {
+            if ( $match_day < 5 ) {
                 $index = 'weekday';
             } else {
                 $index = 'weekend';

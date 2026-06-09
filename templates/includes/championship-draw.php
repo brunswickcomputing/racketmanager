@@ -78,19 +78,23 @@ if ( $league->event->competition->is_player_entry && isset( $league->event->type
                 <?php
                 $f     = 1;
                 $today = gmdate( 'Y-m-d' );
+                $carousel_set = false;
                 foreach ( $finals as $final ) {
+                    $carousel_active = false;
                     if ( count( $finals ) === $f ) {
                         $last_round = true;
                     } else {
                         $last_round = false;
                     }
-                    $round_date = $league->seasons[ $league->current_season['name'] ]['rounds'][ $final->key ]->date ?? null;
-                    if ( $round_date >= $today ) {
-                        $carousel_active = true;
-                    } elseif ( $last_round ) {
-                        $carousel_active = true;
-                    } else {
-                        $carousel_active = false;
+                    if ( ! $carousel_set ) {
+                        $round_date = $league->seasons[ $league->current_season['name'] ]['rounds'][ $final->key ]->date ?? null;
+                        if ( $round_date >= $today ) {
+                            $carousel_active = true;
+                            $carousel_set    = true;
+                        } elseif ( $last_round ) {
+                            $carousel_active = true;
+                            $carousel_set    = true;
+                        }
                     }
                     ?>
                     <div class="carousel-item <?php echo $carousel_active ? 'active' : ''; ?>">

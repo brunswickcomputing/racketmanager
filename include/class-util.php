@@ -214,6 +214,7 @@ class Util {
         $scoring_types['TP']  = __( 'Tie break with tie break playoff', 'racketmanager' );
         $scoring_types['MP']  = __( 'Tie break with match tie break playoff', 'racketmanager' );
         $scoring_types['MPL'] = __( 'Tie break with match tie break playoff in 2nd Leg', 'racketmanager' );
+        $scoring_types['MTB'] = __( 'Match tie break', 'racketmanager' );
         return $scoring_types;
     }
     /**

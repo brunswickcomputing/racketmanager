@@ -350,7 +350,7 @@ class Admin_Display {
             return;
         }
         if ( isset( $_POST['action'] ) && 'withdraw' === $_POST['action'] ) {
-            if ( current_user_can( 'del_teams' ) ) {
+            if ( ! current_user_can( 'del_teams' ) ) {
                 $this->set_message( $this->no_permission, true );
                 return;
             }

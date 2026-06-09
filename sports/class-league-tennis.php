@@ -240,7 +240,11 @@ class League_Tennis extends League {
                                         $data['sets_won'] += 1;
                                     } elseif ( ( $set[ $player_ref ] < $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref_alt === $set_winner ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( 'S' === strtoupper( $set[ $player_ref ] ) || $rubber->is_abandoned ) {
+                                    } elseif ( 'S' === strtoupper( $set[ $player_ref ] ) || $rubber->is_abandoned || $rubber->is_retired ) {
+                                        $data['sets_shared'] += 1;
+                                    }
+                                } else {
+                                    if ( $rubber->is_abandoned || $rubber->is_retired ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -260,19 +264,19 @@ class League_Tennis extends League {
                                 $data['games_won']           += $walkover_games;
                                 $data['straight_set']['win'] += 1;
                             } elseif ( $match->home_team === strval( $team_id ) ) {   // home team.
-                                if ( $data['sets_won'] > '0' ) {
-                                    if ( $rubber->away_points > '0' ) {
+                                if ( strval( $rubber->home_points ) > '0' ) {
+                                    if ( strval( $rubber->away_points ) > '0' ) {
                                         $data['split_set']['win'] += 1;
                                     } else {
                                         $data['straight_set']['win'] += 1;
                                     }
                                 }
-                            } elseif ( $rubber->home_points > '0' ) { // away team split set win.
-                                if ( $data['sets_won'] > '0' ) {
-                                    $data['split_set']['win'] += 1;       // home team got a set.
+                            } elseif ( strval( $rubber->away_points ) > '0' ) { // away team.
+                                if ( strval( $rubber->home_points ) > '0' ) {
+                                    $data['split_set']['win'] += 1;
+                                } else {
+                                    $data['straight_set']['win'] += 1;
                                 }
-                            } elseif ( $data['sets_won'] > '0' ) {                                  // home team straight set win.
-                                $data['straight_set']['win'] += 1;
                             }
                         } elseif ( $rubber->loser_id === strval( $team_id ) ) { // losing team.
                             ++$rubbers_lost;
@@ -283,12 +287,12 @@ class League_Tennis extends League {
                                 $data['straight_set']['lost'] += 1;
                                 ++$walkovers;
                             } elseif ( $match->home_team === strval( $team_id ) ) {   // team loss.
-                                if ( $rubber->home_points > '0' ) {
+                                if ( strval( $rubber->home_points ) > '0' ) {
                                     $data['split_set']['lost'] += 1;
                                 } else {
                                     $data['straight_set']['lost'] += 1;
                                 }
-                            } elseif ( $rubber->away_points > '0' ) { // team split set loss.
+                            } elseif ( strval( $rubber->away_points ) > '0' ) { // team split set loss.
                                 $data['split_set']['lost'] += 1;
                             } else {                                 // team straight set loss.
                                 $data['straight_set']['lost'] += 1;

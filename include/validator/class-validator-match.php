@@ -254,10 +254,10 @@ final class Validator_Match extends Validator {
                 $set_prefix = $set_prefix_start . $s . '_';
                 $set_type   = Util::get_set_type( $scoring, $match->final_round, $match->league->num_sets, $s, $rubber_number, $match->num_rubbers, $match->leg );
                 $set_info   = Util::get_set_info( $set_type );
-                if ( 1 === $s ) {
+                if ( 1 === floatval( $s ) ) {
                     $num_games_to_win = $set_info->min_win;
                 }
-                if ( ( $s > $num_sets_to_win ) && ( $home_score === $num_sets_to_win || $away_score === $num_sets_to_win ) ) {
+                if ( ( floatval( $s ) > floatval( $num_sets_to_win ) ) && ( floatval( $home_score ) === floatval( $num_sets_to_win ) || floatval( $away_score ) === floatval( $num_sets_to_win ) ) ) {
                     $set_info->set_type = 'null';
                 }
                 $set_status = null;
@@ -392,13 +392,27 @@ final class Validator_Match extends Validator {
         } elseif ( 'cancelled' === $match_status ) {
             $points['cancelled'] = 1;
         } elseif ( 'abandoned' === $match_status ) {
-            if ( $home_score !== $num_sets_to_win && $away_score !== $num_sets_to_win ) {
-                $shared_sets              = $match->league->num_sets - $home_score - $away_score;
-                $points['shared']['sets'] = $shared_sets;
-                $home_score              += $shared_sets;
-                $away_score              += $shared_sets;
+            if ( floatval( $home_score ) < floatval( $num_sets_to_win ) && floatval( $away_score ) < floatval( $num_sets_to_win ) ) {
+                $shared_sets              = $match->league->num_sets - $points['home']['sets'] - $points['away']['sets'] - $points['shared']['sets'];
+                $points['shared']['sets'] += $shared_sets;
+                $home_score              += $shared_sets * 0.5;
+                $away_score              += $shared_sets * 0.5;
+            }
+        } elseif ( 'retired_player1' === $match_status || 'retired_player2' === $match_status ) {
+            if ( floatval( $home_score ) < floatval( $num_sets_to_win ) && floatval( $away_score ) < floatval( $num_sets_to_win ) ) {
+                $shared_sets              = $match->league->num_sets - $points['home']['sets'] - $points['away']['sets'] - $points['shared']['sets'];
+                $points['shared']['sets'] += $shared_sets;
+                if ( 'retired_player1' === $match_status ) {
+                    $away_score += $shared_sets;
+                    $points['away']['sets'] += $shared_sets;
+                } else {
+                    $home_score += $shared_sets;
+                    $points['home']['sets'] += $shared_sets;
+                }
             }
         }
+        $home_score = floatval($home_score);
+        $away_score = floatval($away_score);
         $this->home_points = $home_score;
         $this->away_points = $away_score;
         $this->sets        = $sets_updated;
@@ -531,7 +545,7 @@ final class Validator_Match extends Validator {
         $min_win           = $set_info->min_win;
         $max_loss          = $set_info->max_loss;
         $min_loss          = $set_info->min_loss;
-        $retired           = ! empty( $match_status ) && substr( $match_status, 0, 8 ) === 'retired';
+        $retired           = ! empty( $match_status ) && ( substr( $match_status, 0, 7 ) === 'retired' || $match_status === 'abandoned' );
         $completed_set     = true;
         if ( $set[ $team_1 ] < $min_win && $retired ) {
             if ( 'abandoned' === $match_status ) {

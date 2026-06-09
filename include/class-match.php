@@ -1229,9 +1229,9 @@ final class Racketmanager_Match {
             foreach ( $rubbers as $rubber ) {
                 switch ( $rubber->status ) {
                     case 1:
-                        if ( $this->home_team === $rubber->winner_id ) {
+                        if ( strval( $this->home_team ) === strval( $rubber->winner_id ) ) {
                             ++$away_walkover;
-                        } elseif ( $this->away_team === $rubber->winner_id ) {
+                        } elseif ( strval( $this->away_team ) === strval( $rubber->winner_id ) ) {
                             ++$home_walkover;
                         }
                         break;
@@ -1241,11 +1241,11 @@ final class Racketmanager_Match {
                     default:
                         break;
                 }
-                if ( $this->home_team === $rubber->winner_id ) {
+                if ( strval( $this->home_team ) === strval( $rubber->winner_id ) ) {
                     ++$home_win;
                     ++$stats['rubbers']['home'];
                 }
-                if ( $this->away_team === $rubber->winner_id ) {
+                if ( strval( $this->away_team ) === strval( $rubber->winner_id ) ) {
                     ++$away_win;
                     ++$stats['rubbers']['away'];
                 }
@@ -1323,9 +1323,9 @@ final class Racketmanager_Match {
                             $away_points = $away_win * $rubber_win + $draw * $rubber_draw - $forwalkover_rubber * $away_walkover;
                         }
                     } else {
-                        if ( $home_win > $away_win ) {
+                        if ( floatval( $home_win ) > floatval( $away_win ) ) {
                             $home_points += $matches_win;
-                        } elseif ( $home_win < $away_win ) {
+                        } elseif ( floatval( $home_win ) < floatval( $away_win ) ) {
                             $away_points += $matches_win;
                         } else {
                             $home_points += $matches_draw;
@@ -3132,9 +3132,9 @@ final class Racketmanager_Match {
                     $match_stats['sets']['away']  += $stats['sets']['away'];
                     $match_stats['games']['home'] += $stats['games']['home'];
                     $match_stats['games']['away'] += $stats['games']['away'];
-                    if ( $winner === $this->home_team ) {
+                    if ( $winner === strval( $this->home_team ) ) {
                         ++$match_stats['rubbers']['home'];
-                    } elseif ( $winner === $this->away_team ) {
+                    } elseif ( $winner === strval( $this->away_team ) ) {
                         ++$match_stats['rubbers']['away'];
                     } else {
                         $match_stats['rubbers']['home'] += 0.5;

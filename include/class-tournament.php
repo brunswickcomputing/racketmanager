@@ -1704,7 +1704,7 @@ final class Tournament {
         $events      = $this->get_events();
         foreach( $events as $event ) {
             $type  = substr( $event->type, 1, 1 );
-            $teams = $event->get_teams();
+            $teams = $event->get_teams( array( 'season' => $this->season ) );
             foreach( $teams as $team ) {
                 $team_rating = 0;
                 if ( ! empty( $team->players ) ) {

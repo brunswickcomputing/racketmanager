@@ -33,6 +33,11 @@ if ( ! empty( $home_club_player['f'] ) ) {
 } else {
     $club_players['home']['f'] = array();
 }
+if ( ! empty( $home_club_player['x'] ) ) {
+    $club_players['home']['x'] = $home_club_player['x'];
+} else {
+    $club_players['home']['x'] = array();
+}
 if ( ! empty( $away_club_player['m'] ) ) {
     $club_players['away']['m'] = $away_club_player['m'];
 } else {
@@ -42,6 +47,11 @@ if ( ! empty( $away_club_player['f'] ) ) {
     $club_players['away']['f'] = $away_club_player['f'];
 } else {
     $club_players['away']['f'] = array();
+}
+if ( ! empty( $away_club_player['x'] ) ) {
+    $club_players['away']['x'] = $away_club_player['x'];
+} else {
+    $club_players['away']['x'] = array();
 }
 $rubbers      = $match->get_rubbers();
 $team         = null;
@@ -304,6 +314,11 @@ if ( $match->is_walkover ) {
                                                 } elseif (str_starts_with($rubber->type, 'X')) {
                                                     $rubber_players['1']['gender'] = 'm';
                                                     $rubber_players['2']['gender'] = 'f';
+                                                } elseif (str_starts_with($rubber->type, 'O')) {
+                                                    $rubber_players['1']['gender'] = 'x';
+                                                    if ( $doubles ) {
+                                                        $rubber_players['2']['gender'] = 'x';
+                                                    }
                                                 }
                                                 ?>
                                                 <input type="hidden" name="id[<?php echo esc_attr( $rubber->rubber_number ); ?>]" value="<?php echo esc_html( $rubber->id ); ?>" />

@@ -89,6 +89,7 @@ class Util {
         $event_types['MD'] = __( 'Mens Doubles', 'racketmanager' );
         $event_types['XD'] = __( 'Mixed Doubles', 'racketmanager' );
         $event_types['LD'] = __( 'The League', 'racketmanager' );
+        $event_types['SD'] = __( 'Singles and Doubles', 'racketmanager' );
         return $event_types;
     }
 

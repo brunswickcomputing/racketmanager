@@ -21,7 +21,6 @@ use function Racketmanager\get_tournament;
 use function Racketmanager\get_user;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
-use function Racketmanager\sort;
 use function Racketmanager\un_seo_url;
 
 /**
@@ -721,6 +720,15 @@ class Shortcodes {
                         'age_limit'  => $age_limit,
                         'age_offset' => $age_offset,
                     )
+                );
+                break;
+            case 'SD':
+                $club_players['x'] = $club->get_players(
+                    array(
+                        'age_limit'  => $age_limit,
+                        'age_offset' => $age_offset,
+                    )
+
                 );
                 break;
             default:

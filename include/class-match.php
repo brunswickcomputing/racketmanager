@@ -854,6 +854,10 @@ final class Racketmanager_Match {
         );
         $this->id = $wpdb->insert_id;
         if ( $this->league->num_rubbers ) {
+            $num_singles = 0;
+            if ( 'SD' === $this->league->type ) {
+                $num_singles = ( $this->league->num_rubbers / 3 ) * 2;
+            }
             for ( $ix = 1; $ix <= $max_rubbers; $ix++ ) {
                 $rubber = new stdClass();
                 $type   = $this->league->type;
@@ -864,6 +868,12 @@ final class Racketmanager_Match {
                         $type = 'MD';
                     } elseif ( 3 === $ix ) {
                         $type = 'XD';
+                    }
+                } elseif( 'SD' === $this->league->type ) {
+                    if ( $ix <= $num_singles ) {
+                        $type = 'OS';
+                    } else {
+                        $type = 'OD';
                     }
                 }
                 $rubber->type          = $type;

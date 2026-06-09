@@ -36,6 +36,7 @@ global $racketmanager;
             <?php wp_nonce_field( 'racketmanager_schedule-matches', 'racketmanager_nonce' ); ?>
 
             <input type="hidden" name="competition_id" value="<?php echo esc_html( $competition_id ); ?>" />
+            <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
             <div class="row gx-3 mb-2 align-items-center">
                 <!-- Bulk Actions -->
                 <div class="col-auto">

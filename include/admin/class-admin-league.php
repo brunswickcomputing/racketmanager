@@ -9,9 +9,11 @@
 
 namespace Racketmanager\admin;
 
+use Racketmanager\Racketmanager_Match;
 use Racketmanager\Util;
 use Racketmanager\validator\Validator;
 use stdClass;
+use function Racketmanager\debug_to_console;
 use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
@@ -619,9 +621,10 @@ final class Admin_League extends Admin_Display {
             $action = isset( $_POST['actionSchedule'] ) ? sanitize_text_field( wp_unslash( $_POST['actionSchedule'] ) ) : null;
             switch ( $action ) {
                 case 'schedule':
-                    $events = wp_unslash( $_POST['event'] ) ?? array();
-                    if ( $events ) {
-                        $this->schedule_league_matches( $events );
+                    $events = wp_unslash( $_POST['event'] ?? array() );
+					$season = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+                    if ( $events && $season ) {
+                        $this->schedule_league_matches( $events, $season );
                     }
                     break;
                 case 'delete':
@@ -766,36 +769,153 @@ final class Admin_League extends Admin_Display {
      * Schedule league matches
      *
      * @param array $events array of events to schedule matches for.
+     * @param int $season season to schedule matches for.
      *
      * @return void
      */
-    protected function schedule_league_matches( array $events ): void {
+    protected function schedule_league_matches( array $events, int $season ): void {
         $validation = $this->validate_schedule( $events );
-        if ( $validation->success ) {
-            $max_teams    = $validation->num_rounds + 1;
-            $default_refs = array();
-            for ( $i = 1; $i <= $max_teams; $i++ ) {
-                $default_refs[] = $i;
-            }
-
-            $i = 1;
-            do {
-                $result = $this->setup_teams_in_schedule( $events, $max_teams, $default_refs );
-                ++$i;
-            } while ( ! $result && $i < 20 );
-
-            if ( $result ) {
-                foreach ( $events as $event_id ) {
-                    $event = get_event( $event_id );
-                    foreach ( $event->get_leagues() as $league ) {
-                        $league = get_league( $league );
-                        $league->schedule_matches();
-                    }
-                }
-                $this->set_message( __( 'Matches scheduled', 'racketmanager' ) );
-            }
+        if ( ! $validation->success ) {
+			return;
         }
+	    $max_teams             = $validation->num_rounds + 1;
+	    $home_away             = $validation->home_away;
+	    $match_dates           = $validation->match_dates ?? array();
+	    $competition_scheduler = new Admin_Competition_Scheduler( $max_teams, $home_away, $match_dates );
+	    $divisions = array();
+	    foreach ( $events as $event_id ) {
+		    $event = get_event( $event_id );
+		    foreach ( $event->get_leagues() as $league ) {
+			    $league         = get_league( $league );
+			    $division_teams = array();
+
+			    $teams = $league->get_league_teams(
+				    array(
+					    'season'  => $season,
+					    'status'  => 'active',
+					    'get_details' => true,
+					    'orderby' => array(
+						    'group' => 'ASC',
+						    'title' => 'ASC',
+					    ),
+				    )
+			    );
+			    foreach ( $teams as $team ) {
+				    $preferred_slot = $team->match_day . ' ' . $team->match_time;
+				    $division_teams[] = array(
+					    'id' => $team->id,
+					    'name' => $team->title,
+					    'club_id' => $team->club_id,
+						'match_day' => $team->match_day,
+						'match_time' => $team->match_time,
+						'location' => $team->club->shortcode,
+					    'preferred_slot' => $preferred_slot,
+						'event_id' => $event_id,
+				    );
+			    }
+			    $divisions[ $league->id ] = array(
+				    'league_id'   => $league->id,
+				    'league_name' => $league->title,
+				    'teams'       => $division_teams,
+			    );
+		    }
+	    }
+	    $result = $competition_scheduler->build_competition_schedule( $divisions );
+		if ( $result['is_valid'] ) {
+			$schedule_data = $result['schedule'];
+			$total_weeks   = $result['total_weeks'];
+			$retry         = $result['retry'];
+			$this->generate_matches_from_schedule( $schedule_data, $total_weeks, $season );
+			$this->display_scheduling_summary( $result );
+			$this->set_message( sprintf(__( 'Matches scheduled after %d attempts', 'racketmanager' ), $retry ) );
+			return;
+		}
+	    echo "<style>
+		    .schedule-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: sans-serif; }
+		    .schedule-table th, .schedule-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+		    .schedule-table th { background-color: #f4f4f4; }
+		    .week-header { background-color: #333; color: #fff; padding: 10px; margin-top: 20px; }
+		    .bye-row { font-style: italic; color: #888; background-color: #fafafa; }
+		    .conflict-alert { color: red; font-weight: bold; border: 2px solid red; padding: 10px; margin: 10px 0; }
+		</style>";
+	    echo "<div class='conflict-alert'>
+        <h3>⚠️ Scheduling Conflicts Detected</h3>
+        <ul>";
+	    foreach ($result['conflicts'] as $error) {
+		    echo "<li>Week {$error['week']}: {$error['home']} vs {$error['with']} (Shared Court: {$error['court']})</li>";
+	    }
+	    echo "</ul><p>Please manually adjust the times for these matches.</p></div>";
+	    $retry = $result['retry'];
+	    $this->set_message( sprintf( __( 'Scheduling failed after %d attempts', 'racketmanager' ), $retry ), true );
+		$this->display_scheduling_summary( $result );
+
     }
+
+	private function display_scheduling_summary( array $result ): void {
+		return;
+		if ( empty( $result['resource_pairings'] ) && empty( $result['alerts'] ) ) {
+			return;
+		}
+
+		echo "<style>
+            .scheduling-summary { margin-top: 30px; font-family: sans-serif; background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; }
+            .scheduling-summary h3 { margin-top: 0; color: #1d2327; }
+            .pairing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; margin-top: 15px; }
+            .pairing-card { border: 1px solid #ddd; padding: 12px; border-radius: 4px; background: #f9f9f9; box-shadow: 0 1px 1px rgba(0,0,0,0.04); }
+            .pairing-card h4 { margin: 0 0 8px 0; color: #2271b1; border-bottom: 1px solid #eee; padding-bottom: 6px; font-size: 14px; }
+            .pairing-card ul { margin: 0; padding-left: 20px; font-size: 13px; color: #50575e; }
+            .pairing-card li { margin-bottom: 4px; }
+            .equity-alerts { margin-top: 25px; padding: 15px; background: #fcf9e8; border-left: 4px solid #dba617; }
+            .equity-alerts h4 { margin-top: 0; color: #856404; }
+        </style>";
+
+		echo "<div class='scheduling-summary'>";
+		echo "<h3>📅 Scheduling Report</h3>";
+
+		// Display Pairings (Sharing)
+		if ( ! empty( $result['resource_pairings'] ) ) {
+			echo "<h4>Court Sharing & Team Pairings</h4>";
+			echo "<p>The following teams have been paired to share the same physical court (resource) for their home matches:</p>";
+			echo "<div class='pairing-grid'>";
+			foreach ( $result['resource_pairings'] as $res_id => $teams ) {
+				if ( count( $teams ) < 2 ) {
+					continue;
+				}
+
+				// Parse resource ID for readable title
+				$parts = explode( '_', $res_id );
+				$court = array_pop( $parts ); // C0, C1
+				$slot  = array_pop( $parts ); // e.g., Monday 19:00
+
+				echo "<div class='pairing-card'>";
+				echo "<h4>{$slot} ({$court})</h4>";
+				echo "<ul>";
+				foreach ( $teams as $team ) {
+					echo "<li><strong>" . esc_html( $team['name'] ) . "</strong> (" . esc_html( $team['division'] ) . ")</li>";
+				}
+				echo "</ul>";
+				echo "</div>";
+			}
+			echo "</div>";
+		}
+
+		// Display Equity Alerts
+		if ( ! empty( $result['alerts'] ) ) {
+			$equity = array_filter( $result['alerts'], fn( $a ) => $a['type'] === 'equity_compromise' );
+			if ( $equity ) {
+				echo "<div class='equity-alerts'>";
+				echo "<h4>Home/Away Equity Compromises</h4>";
+				echo "<ul>";
+				foreach ( $equity as $alert ) {
+					echo "<li><strong>" . esc_html( $alert['team_name'] ) . "</strong>: " . esc_html( $alert['count'] ) . " Home games (Ideal: " . esc_html( $alert['ideal'] ) . ")</li>";
+				}
+				echo "</ul>";
+				echo "</div>";
+			}
+		}
+
+		echo "</div>";
+	}
 
     /**
      * Validate schedule by team
@@ -838,8 +958,9 @@ final class Admin_League extends Admin_Display {
                 } else {
                     $match_dates = $event->current_season['match_dates'];
                 }
-                $home_away = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
-                if ( $home_away ) {
+                $validation->match_dates = $match_dates;
+                $validation->home_away = ! empty( $event->current_season['home_away'] );
+                if ( $validation->home_away ) {
                     $validation->num_rounds = $num_match_days / 2;
                 } else {
                     $validation->num_rounds = $num_match_days;
@@ -858,7 +979,7 @@ final class Admin_League extends Admin_Display {
                     $messages[]          = __( 'Events have different match dates', 'racketmanager' );
                 }
                 $home_away_new = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
-                if ( $home_away_new !== $home_away ) {
+                if ( $home_away_new !== $validation->home_away ) {
                     $validation->success = false;
                     $messages[]          = __( 'Events have different home / away setting', 'racketmanager' );
                 }
@@ -891,7 +1012,37 @@ final class Admin_League extends Admin_Display {
         $this->set_message( $message, true );
         return $validation;
     }
-    /**
+
+	private function generate_matches_from_schedule( array $schedule_data, int $total_weeks, $season ) {
+		foreach ($schedule_data as $league_id => $data) {
+			if ( empty( $data['weeks'] ) ) {
+				debug_to_console( 'No weeks found for league ' . $league_id );
+				continue;
+			}
+			$weeks = $data['weeks'];
+			for ($week = 1; $week <= $total_weeks; $week++) {
+				if (!isset($weeks[$week])) {
+					continue;
+				}
+				foreach ($weeks[$week] as $match) {
+					if ($match['is_bye']) {
+						continue;
+					}
+					$fixture            = new stdClass();
+					$fixture->season    = $season;
+					$fixture->league_id = $league_id;
+					$fixture->home_team = $match['home_id'];
+					$fixture->away_team = $match['away_id'];
+					$fixture->date      = $match['date'] . ' ' . $match['time'];
+					$fixture->match_day = $week;
+					$fixture->location  = $match['location'];
+					new Racketmanager_Match( $fixture );
+				}
+			}
+		}
+	}
+
+	/**
      * Get latest season
      *
      * @return int
@@ -1871,4 +2022,5 @@ final class Admin_League extends Admin_Display {
             $this->set_message( __( 'No event set', 'racketmanager' ), true );
         }
     }
+
 }

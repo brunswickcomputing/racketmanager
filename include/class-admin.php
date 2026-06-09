@@ -69,6 +69,7 @@ class Admin extends RacketManager {
         require_once RACKETMANAGER_PATH . 'include/admin/class-admin-player.php';
         require_once RACKETMANAGER_PATH . 'include/admin/class-admin-result.php';
         require_once RACKETMANAGER_PATH . 'include/admin/class-admin-season.php';
+        require_once RACKETMANAGER_PATH . 'include/admin/class-admin-competition-scheduler.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-config.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-finance.php';
         require_once RACKETMANAGER_PATH . 'include/validator/class-validator-tournament.php';

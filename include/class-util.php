@@ -356,6 +356,8 @@ class Util {
                     $set_type = 'null';
                 }
             }
+        } elseif ( 'MTB' === $scoring ) {
+            $set_type = 'MTB';
         } else {
             $set_type = 'null';
         }

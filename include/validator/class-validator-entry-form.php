@@ -250,9 +250,11 @@ final class Validator_Entry_Form extends Validator {
             $this->err_msgs[] = __( 'Tournament close date not set', 'racketmanager' );
         } else {
             if ( !$tournament->is_open && !$tournament->is_closed ) {
-                $this->error      = true;
-                $this->err_flds[] = 'event';
-                $this->err_msgs[] = __( 'Tournament not open for entries', 'racketmanager' );
+                if ( ! current_user_can( 'manage_racketmanager' ) || ! $tournament->is_started ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'event';
+                    $this->err_msgs[] = __( 'Tournament not open for entries', 'racketmanager' );
+                }
             }
         }
         return $this;

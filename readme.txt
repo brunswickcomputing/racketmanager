@@ -47,6 +47,22 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.1 =
+* BUGFIX: match day less than 5 means weekday
+* BUGFIX: set correct permission for withdrawing teams
+* BUGFIX: ensure captain_id is numeric
+* BUGFIX: remove unnecessary prepare statement
+* BUGFIX: fix scoring for abandoned matches
+* UPDATE: add match tie break as scoring type
+* UPDATE: allow tournament entry to be changed by admin user
+* UPDATE: set default carousel view to current date period
+* UPDATE: allow empty telephone number when admin user completes entry
+* UPDATE: only show active teams
+* UPDATE: allow messages to players pending entry
+* UPDATE: improve match scheduling
+* UPDATE: add open gender support
+* UPDATE: pass season to event team retrieval
+
 = 9.7.0 =
 * UPDATE: show timeout period on result notification
 * UPDATE: only chase match confirmation when needed

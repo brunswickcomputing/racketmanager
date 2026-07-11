@@ -854,37 +854,56 @@ final class Racketmanager_Match {
         );
         $this->id = $wpdb->insert_id;
         if ( $this->league->num_rubbers ) {
-            $num_singles = 0;
-            if ( 'SD' === $this->league->type ) {
-                $num_singles = ( $this->league->num_rubbers / 3 ) * 2;
-            }
-            for ( $ix = 1; $ix <= $max_rubbers; $ix++ ) {
-                $rubber = new stdClass();
-                $type   = $this->league->type;
-                if ( 'LD' === $this->league->type ) {
-                    if ( 1 === $ix ) {
-                        $type = 'WD';
-                    } elseif ( 2 === $ix ) {
-                        $type = 'MD';
-                    } elseif ( 3 === $ix ) {
-                        $type = 'XD';
-                    }
-                } elseif( 'SD' === $this->league->type ) {
-                    if ( $ix <= $num_singles ) {
-                        $type = 'OS';
-                    } else {
-                        $type = 'OD';
-                    }
-                }
-                $rubber->type          = $type;
-                $rubber->rubber_number = $ix;
-                $rubber->date          = $this->date;
-                $rubber->match_id      = $this->id;
-                new Rubber( $rubber );
-            }
+            $this->add_rubbers( $max_rubbers );
         }
         return $this->id;
     }
+    
+    private function add_rubbers( int $max_rubbers ): void {
+        $num_singles     = 0;
+        $singles_doubles = false;
+        if ( 'T' === substr( $this->league->type, 1, 1 ) ) {
+            $num_singles     = ( $this->league->num_rubbers / 3 ) * 2;
+            $singles_doubles = true;
+        }
+        for ( $ix = 1; $ix <= $max_rubbers; $ix++ ) {
+            $rubber = new stdClass();
+            $type   = $this->league->type;
+            if ( 'LD' === $this->league->type ) {
+                if ( 1 === $ix ) {
+                    $type = 'WD';
+                } elseif ( 2 === $ix ) {
+                    $type = 'MD';
+                } elseif ( 3 === $ix ) {
+                    $type = 'XD';
+                }
+            } elseif( $singles_doubles ) {
+                $base_gender = substr( $this->league->type, 0, 1 );
+                if ( 'S' === $base_gender ) {
+                    $base_gender = 'O';
+                }
+                if ( $ix <= $num_singles ) {
+                    $gender = $base_gender;
+                    if ( 'X' === $gender ) {
+                        if ( $ix <= ( $num_singles / 2 ) ) {
+                            $gender = 'M';
+                        } else {
+                            $gender = 'F';
+                        }
+                    }
+                    $type = $gender . 'S';
+                } else {
+                    $type = $base_gender . 'D';
+                }
+            }
+            $rubber->type          = $type;
+            $rubber->rubber_number = $ix;
+            $rubber->date          = $this->date;
+            $rubber->match_id      = $this->id;
+            new Rubber( $rubber );
+        }
+    }
+
     /**
      * Set maximum rubbers
      *
@@ -3082,7 +3101,7 @@ final class Racketmanager_Match {
             }
             if ( $validate_rubber ) {
                 if ( empty( $share ) && empty( $is_withdrawn ) && empty( $is_cancelled ) ) {
-                    $validator = $validator->players_involved( $players, $player_numbers, $ix, $playoff, $rubber->reverse_rubber );
+                    $validator = $validator->players_involved( $players, $player_numbers, $ix, $playoff, $rubber->reverse_rubber, $rubber_type, $this->league->type );
                 }
                 $validator = $validator->match_score( $this, $sets, $rubber_status, $set_prefix, $ix ); //$match, $sets, $set_prefix, $errors, $rubber_number, $match_status
                 if ( empty( $validator->error ) ) {

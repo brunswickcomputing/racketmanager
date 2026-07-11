@@ -10,6 +10,7 @@
 namespace Racketmanager\validator;
 
 use Racketmanager\Util;
+use function Racketmanager\debug_to_console;
 use function Racketmanager\get_club_player;
 use function Racketmanager\get_match;
 use function Racketmanager\get_player;
@@ -33,6 +34,8 @@ final class Validator_Match extends Validator {
     public array $points;
     public array $rubbers = array();
     private array $players_involved = array();
+    private array $players_involved_singles = array();
+    private array $players_involved_doubles = array();
 
     /**
      * Validate match
@@ -723,11 +726,15 @@ final class Validator_Match extends Validator {
      * @param int $rubber
      * @param bool $playoff
      * @param bool $reverse_rubber
+     * @param string|null $type
+     * @param string|null $event_type
      *
      * @return object
      */
-    public function players_involved( array $players, array $player_numbers, int $rubber, bool $playoff, bool $reverse_rubber ): object {
-        $opponents        = array( 'home', 'away' );
+    public function players_involved( array $players, array $player_numbers, int $rubber, bool $playoff, bool $reverse_rubber, ?string $type = null, ?string $event_type = null ): object {
+        $is_singles_doubles_setup = ( ! empty( $event_type ) && 'T' === substr( $event_type, 1, 1 ) );
+
+        $opponents = array( 'home', 'away' );
         foreach ( $opponents as $opponent ) {
             $team_players = $players[ $opponent ] ?? array();
             foreach ( $player_numbers as $player_number ) {
@@ -739,7 +746,18 @@ final class Validator_Match extends Validator {
                     $player_ref  = $team_players[ $player_number ];
                     $club_player = get_club_player( $player_ref );
                     if ( ! $club_player->system_record ) {
-                        $player_found = in_array( $player_ref, $this->players_involved, true );
+                        if ( $is_singles_doubles_setup && ! empty( $type ) ) {
+                            if ( str_ends_with( $type, 'S' ) ) {
+                                $player_found = in_array( $player_ref, $this->players_involved_singles, true );
+                            } elseif ( str_ends_with( $type, 'D' ) ) {
+                                $player_found = in_array( $player_ref, $this->players_involved_doubles, true );
+                            } else {
+                                $player_found = in_array( $player_ref, $this->players_involved, true );
+                            }
+                        } else {
+                            $player_found = in_array( $player_ref, $this->players_involved, true );
+                        }
+
                         if ( ! $player_found ) {
                             if ( $playoff ) {
                                 $this->error      = true;
@@ -751,6 +769,13 @@ final class Validator_Match extends Validator {
                                 $this->err_msgs[] = __( 'Player for reverse rubber must have played', 'racketmanager' );
                             } else {
                                 $this->players_involved[] = $player_ref;
+                                if ( $is_singles_doubles_setup && ! empty( $type ) ) {
+                                    if ( str_ends_with( $type, 'S' ) ) {
+                                        $this->players_involved_singles[] = $player_ref;
+                                    } elseif ( str_ends_with( $type, 'D' ) ) {
+                                        $this->players_involved_doubles[] = $player_ref;
+                                    }
+                                }
                             }
                         } elseif ( ! $playoff && ! $reverse_rubber ) {
                             $this->error      = true;

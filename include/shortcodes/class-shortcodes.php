@@ -684,9 +684,9 @@ class Shortcodes {
     protected function get_club_players( object $event, object $club ): array {
         $age_limit  = isset( $event->age_limit ) ? sanitize_text_field( wp_unslash( $event->age_limit ) ) : null;
         $age_offset = isset( $event->age_offset ) ? intval( $event->age_offset ) : null;
-        switch ( $event->type ) {
-            case 'BD':
-            case 'MD':
+        switch ( substr( $event->type, 0, 1 ) ) {
+            case 'B':
+            case 'M':
                 $club_players['m'] = $club->get_players(
                     array(
                         'gender'     => 'M',
@@ -695,8 +695,8 @@ class Shortcodes {
                     )
                 );
                 break;
-            case 'GD':
-            case 'WD':
+            case 'G':
+            case 'W':
                 $club_players['f'] = $club->get_players(
                     array(
                         'gender'     => 'F',
@@ -705,8 +705,8 @@ class Shortcodes {
                     )
                 );
                 break;
-            case 'XD':
-            case 'LD':
+            case 'X':
+            case 'L':
                 $club_players['m'] = $club->get_players(
                     array(
                         'gender'     => 'M',
@@ -722,7 +722,8 @@ class Shortcodes {
                     )
                 );
                 break;
-            case 'SD':
+            case 'S':
+            case 'O':
                 $club_players['x'] = $club->get_players(
                     array(
                         'age_limit'  => $age_limit,

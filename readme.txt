@@ -62,6 +62,7 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * UPDATE: improve match scheduling
 * UPDATE: add open gender support
 * UPDATE: pass season to event team retrieval
+* UPDATE: handle mixed gender teams and team style events (singles and doubles)
 
 = 9.7.0 =
 * UPDATE: show timeout period on result notification

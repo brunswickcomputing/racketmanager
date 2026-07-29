@@ -585,7 +585,7 @@ final class Championship {
                 } else {
                     $first_match = $matches[0];
                 }
-                if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) {
+                if ( ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) && ( ! $first_match->is_walkover ) ) { // first match not a bye or walkover.
                     $team_switch = '-1';
                 }
             }
@@ -624,9 +624,9 @@ final class Championship {
                         );
                         if ( $consolation_matches ) {
                             foreach ( $consolation_matches as $consolation_match ) {
-                                if ( $consolation_match->home_team === $consolation_team->id ) {
+                                if ( intval( $consolation_match->home_team ) === $consolation_team->id ) {
                                     $this->set_teams( $consolation_match, $team_switch, null );
-                                } elseif ( $consolation_match->away_team === $consolation_team->id ) {
+                                } elseif ( intval( $consolation_match->away_team ) === $consolation_team->id ) {
                                     $this->set_teams( $consolation_match, null, $team_switch );
                                 }
                             }

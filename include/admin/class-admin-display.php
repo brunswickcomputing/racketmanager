@@ -470,7 +470,7 @@ class Admin_Display {
                     $matches              = $primary_league->get_matches( $match_array );
                     if ( $matches ) {
                         $first_match = $matches[0];
-                        if ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) { // first match not a bye.
+                        if ( ( '-1' !== $first_match->home_team && '-1' !== $first_match->away_team ) && ( ! $first_match->is_walkover ) ) { // first match not a bye or walkover.
                             unset( $teams[ $t ] );
                         } else {
                             $last_match = $matches[1];

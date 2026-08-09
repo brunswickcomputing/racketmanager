@@ -32,7 +32,7 @@ jobs:
         run: composer install --no-dev -o
 
       - name: Install NPM dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
 
       - name: Build assets (production)
         run: npm run build:prod

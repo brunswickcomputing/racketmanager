@@ -56,9 +56,9 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             'final'               => $entity->get_final(),
             'custom'              => maybe_serialize( $entity->get_custom() ),
             'confirmed'           => $entity->get_confirmed(),
-            'home_captain'        => $entity->get_home_captain(),
-            'away_captain'        => $entity->get_away_captain(),
-            'comments'            => $entity->get_comments(),
+            'home_captain'        => $entity->get_home_approver(),
+            'away_captain'        => $entity->get_away_approver(),
+            'comments'            => maybe_serialize( $entity->get_comments() ),
             'updated'             => current_time( 'mysql' ),
             'updated_user'        => get_current_user_id(),
         );
@@ -498,9 +498,9 @@ class Fixture_Repository implements Fixture_Repository_Interface {
      * @return Fixture|null
      */
     public function find_one_by_slug_criteria( array $criteria ): ?Fixture {
-        $league_id      = $criteria['league_id'] ?? null;
-        $home_team_name = $criteria['home_team_name'] ?? null;
-        $away_team_name = $criteria['away_team_name'] ?? null;
+        $league_id      = $criteria['league_slug'] ?? null;
+        $home_team_name = $criteria['home_team_slug'] ?? null;
+        $away_team_name = $criteria['away_team_slug'] ?? null;
         $season         = $criteria['season'] ?? null;
         $match_day      = $criteria['match_day'] ?? null;
         $round          = $criteria['round'] ?? null;
@@ -511,8 +511,8 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         }
 
         $match_args = [
-            'league_id' => $league_id,
-            'season'    => $season,
+//            'id'     => $league_id, //TODO: not needed for league->get_matches but will be for refactor
+            'season' => $season,
         ];
 
         if ( $home_team_name ) {

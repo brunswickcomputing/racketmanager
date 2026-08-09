@@ -2,7 +2,10 @@
 
 namespace Racketmanager\Services\Container;
 
+use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Exceptions\Interface_Exception;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Fixture_Shortcode_Adapter;
+use Racketmanager\Presenters\Fixture_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
@@ -74,6 +77,8 @@ use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service as Domain_Fixture_Detail_Service;
+use Racketmanager\Services\Fixture\Fixture_Finalization_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Result\Results_Checker_Manager;
@@ -87,6 +92,7 @@ use Racketmanager\Services\Competition\Knockout_Progression_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Ajax_Registry;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Fixture_Shortcode_Controller;
 
 /**
  * Registers core services in the Simple_Container.
@@ -110,6 +116,7 @@ final class Container_Bootstrap {
     private static function register_ajax_components( Simple_Container $c, RacketManager $app ): void {
         $c->set( 'ajax_registry', fn() => new Ajax_Registry() );
         $c->set( 'fixture_ajax_controller', fn() => new Fixture_Ajax_Controller( $app ) );
+        $c->set( 'fixture_shortcode_controller', fn() => new Fixture_Shortcode_Controller( $app ) );
     }
 
     private static function register_repositories( Simple_Container $c ): void {
@@ -140,7 +147,7 @@ final class Container_Bootstrap {
 
     private static function register_services( Simple_Container $c, RacketManager $app ): void {
         self::register_core_services( $c, $app );
-        self::register_fixture_services( $c );
+        self::register_fixture_services( $c, $app );
         self::register_result_services( $c );
     }
 
@@ -228,9 +235,9 @@ final class Container_Bootstrap {
         } );
     }
 
-    private static function register_fixture_services( Simple_Container $c ): void {
-        $c->set( 'fixture_permission_service', function ( Simple_Container $c ) {
-            return new Fixture_Permission_Service( self::get_repository_provider( $c ), $c->get( 'registration_service' ) );
+    private static function register_fixture_services( Simple_Container $c, RacketManager $app ): void {
+        $c->set( 'fixture_permission_service', function ( Simple_Container $c ) use ( $app ) {
+            return new Fixture_Permission_Service( self::get_repository_provider( $c ), $c->get( 'registration_service' ), $app->get_options() );
         } );
 
         $c->set( 'fixture_detail_service', function ( Simple_Container $c ) {
@@ -240,6 +247,14 @@ final class Container_Bootstrap {
                 $c->get( 'team_service' ),
                 $c->get( 'fixture_permission_service' ),
                 $c->get( 'fixture_link_service' )
+            );
+        } );
+
+        $c->set( 'fixture_finalization_service', function ( Simple_Container $c ) {
+            return new Fixture_Finalization_Service(
+                $c->get( 'standings_service' ),
+                $c->get( 'knockout_progression_service' ),
+                $c->get( 'result_reporting_service' )
             );
         } );
 
@@ -257,6 +272,7 @@ final class Container_Bootstrap {
             $service_provider->set_competition_service( $c->get( 'competition_service' ) );
             $service_provider->set_fixture_permission_service( $c->get( 'fixture_permission_service' ) );
             $service_provider->set_fixture_detail_service( $c->get( 'fixture_detail_service' ) );
+            $service_provider->set_fixture_finalization_service( $c->get( 'fixture_finalization_service' ) );
 
             return $service_provider;
         } );
@@ -282,6 +298,43 @@ final class Container_Bootstrap {
             $service_provider->set_settings_service( $c->get( 'settings_service' ) );
 
             return new Fixture_Maintenance_Service( $service_provider, self::get_repository_provider( $c ), $c->get( 'fixture_result_manager' ) );
+        } );
+
+        $c->set( 'domain_fixture_detail_service', function ( Simple_Container $c ) {
+            return new Domain_Fixture_Detail_Service(
+                $c->get( 'league_repository' ),
+                $c->get( 'event_repository' ),
+                $c->get( 'competition_repository' ),
+                $c->get( 'team_repository' ),
+                $c->get( 'club_repository' ),
+                $c->get( 'rubber_repository' ),
+                $c->get( 'league_team_repository' ),
+                $c->get( 'player_repository' ),
+                $c->get( 'fixture_link_service' ),
+                $c->get( 'fixture_permission_service' ),
+                $c->get( 'club_role_repository' )
+            );
+        } );
+
+        // Application Layer Handler
+        $c->set( 'get_fixture_details_handler', function ( Simple_Container $c ) {
+            return new Get_Fixture_Details_Handler(
+                $c->get( 'fixture_repository' ),
+                $c->get( 'domain_fixture_detail_service' )
+            );
+        } );
+
+        // Presentation Layer Presenter
+        $c->set( 'fixture_presenter', function ( Simple_Container $c ) {
+            return new Fixture_Presenter( $c->get( 'fixture_link_service' ) );
+        } );
+
+        // Infrastructure Layer Shortcode Adapter
+        $c->set( 'fixture_shortcode_adapter', function ( Simple_Container $c ) {
+            return new Fixture_Shortcode_Adapter(
+                $c->get( 'get_fixture_details_handler' ),
+                $c->get( 'fixture_presenter' )
+            );
         } );
     }
 

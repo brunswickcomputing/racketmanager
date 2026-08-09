@@ -94,7 +94,7 @@ namespace Racketmanager\Tests\Integration\Public {
             ] );
 
             $registration_service = $this->createStub( Registration_Service::class );
-            $permission_service   = new Fixture_Permission_Service( $repo_provider, $registration_service );
+            $permission_service   = new Fixture_Permission_Service( $repo_provider, $registration_service, [] );
             $link_service         = new Fixture_Link_Service( $this->createMock( Tournament_Service::class ) );
 
             $detail_service = new Fixture_Detail_Service( $repo_provider, $competition_service, $team_service, $permission_service, $link_service );

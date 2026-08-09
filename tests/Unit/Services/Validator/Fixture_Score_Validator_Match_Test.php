@@ -191,5 +191,67 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             $this->assertContains('set_3_player1', $this->validator->get_err_flds());
             $this->assertContains('Set score should be empty', $this->validator->get_err_msgs());
         }
+
+        public function test_validate_tiebreak_required(): void
+        {
+            $context = $this->create_scoring_context();
+            $sets = [
+                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
+                3 => ['player1' => '7', 'player2' => '6', 'tiebreak' => ''], // Missing tiebreak
+            ];
+
+            // prefix used in the issue: set_1_3_tiebreak
+            // In Score_Validation_Service::validate:
+            // $set_prefix = $set_prefix_start . $s . '_';
+            // If $set_prefix_start is 'set_1_', and $s is 3, then $set_prefix is 'set_1_3_'
+            // Then in Set_Score_Validator: $this->err_flds[] = $set_prefix . 'tiebreak'; -> 'set_1_3_tiebreak'
+            
+            $this->validator->validate($context, $sets, null, 'set_1_');
+
+            $this->assertTrue($this->validator->get_error());
+            $this->assertContains('set_1_3_tiebreak', $this->validator->get_err_flds());
+            $this->assertContains('Tie break score required', $this->validator->get_err_msgs());
+        }
+
+        public function test_validate_mtb_set_score_no_tiebreak_required(): void
+        {
+            // Simulating MTB set with 9-11 score. 
+            // According to Util::get_set_info('MTB'):
+            // min_win = 10, tiebreak_allowed = false, tiebreak_set = null
+            
+            // We use standard context but we need to ensure the set_type is MTB for the 3rd set.
+            // Score_Validation_Service::validate calls Util::get_set_type
+            // and Util::get_set_info.
+            // Since we can't easily mock Util (it's static), and Score_Validation_Service uses it directly,
+            // we should try to set up the context so Util::get_set_type returns 'MTB'.
+            
+            // Looking at Util::get_set_type:
+            /*
+            public static function get_set_type( string $scoring, ?string $round, int $num_sets, int $set, ?int $rubber_number, ?int $num_rubbers, ?int $leg ): string {
+                // ...
+                if ( 'MTB' === $scoring && $set === $num_sets ) {
+                    return 'MTB';
+                }
+                // ...
+            }
+            */
+            
+            $context = $this->create_scoring_context([
+                'scoring_type' => 'MTB',
+                'num_sets' => 3
+            ]);
+
+            $sets = [
+                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
+                3 => ['player1' => '9', 'player2' => '11', 'tiebreak' => ''],
+            ];
+            
+            $this->validator->validate($context, $sets, null, 'set_1_');
+
+            // MTB should not require a tiebreak score
+            $this->assertNotContains('set_1_3_tiebreak', $this->validator->get_err_flds(), 'MTB should not require a tiebreak score');
+        }
     }
 }

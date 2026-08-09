@@ -619,7 +619,7 @@ if ( $match ) {
                         if ( $match_editable ) {
                             ?>
                             <div class="match__footer-aside text-uppercase">
-                                <a href="" class="scoreResetLink" data-form-id="<?php echo esc_attr( $form_id ); ?>" data-action="reset-match-scores">
+                                <a role="button" data-action="reset-match-scores" data-form-id="<?php echo esc_attr( $form_id ); ?>">
                                     <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
                                 </a>
                             </div>

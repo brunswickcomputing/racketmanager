@@ -629,7 +629,7 @@ if ( $match->is_walkover ) {
                                                                 <ul class="match__footer-title">
                                                                 </ul>
                                                                 <div class="match__footer-aside text-uppercase">
-                                                                    <a href="" class="scoreResetLink" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
+                                                                    <a role="button" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
                                                                         <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
                                                                     </a>
                                                                 </div>

@@ -193,8 +193,19 @@ class RacketManager {
             add_action( 'rm_notify_tournament_entry_reminder', array( $this->competition_entry_service, 'notify_tournament_entry_open_reminder' ) );
             add_action( 'rm_notify_tournament_finalists', array( $this->tournament_service, 'notify_finalists_for_tournament' ) );
             add_action( 'rm_send_invoices', array( $this->finance_service, 'send_invoices' ) );
+            add_action( 'racketmanager_report_fixture_result', array( &$this, 'report_fixture_result' ), 10, 2 );
         }
         self::$instance = $this;
+    }
+
+    public function report_fixture_result( int $fixture_id, string $competition_type ): void {
+        $fixture_repository = $this->container->get( 'fixture_repository' );
+        $fixture            = $fixture_repository->find_by_id( $fixture_id );
+        $reporting_service  = $this->container->get( 'result_reporting_service' );
+
+        if ( $fixture && $reporting_service ) {
+            $reporting_service->report_result( $fixture, $competition_type );
+        }
     }
 
     /**
@@ -828,7 +839,12 @@ class RacketManager {
         add_shortcode( 'standings', array( $this->shortcodes_league, 'show_standings' ) );
         add_shortcode( 'crosstable', array( $this->shortcodes_league, 'show_crosstable' ) );
         add_shortcode( 'matches', array( $this->shortcodes_league, 'show_matches' ) );
-        add_shortcode( 'match', array( $this->shortcodes_league, 'show_match' ) );
+//        add_shortcode( 'match', array( $this->shortcodes_league, 'show_match' ) );
+        // New controller-based registration
+        $controller = $this->container->get( 'fixture_shortcode_controller' );
+        add_shortcode( 'fixture', [ $controller, 'handle' ] );
+        add_shortcode( 'match', [ $controller, 'handle' ] );
+
         add_shortcode( 'teams', array( $this->shortcodes_league, 'show_teams' ) );
         add_shortcode( 'league-players', array( $this->shortcodes_league, 'show_league_players' ) );
         add_shortcode( 'season-dropdown', array( $this->shortcodes_league, 'show_season_dropdown' ) );

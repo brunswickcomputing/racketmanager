@@ -476,7 +476,10 @@ class Player_Repository implements Player_Repository_Interface {
         $results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $params ) );
 
         return array_map( function ( $row ) {
-            return $row->registration_id;
+            return (object) [
+                'registration_id' => (int) $row->registration_id,
+                'user_id'         => (int) $row->user_id,
+            ];
         }, $results );
     }
 

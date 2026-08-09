@@ -23,7 +23,7 @@ export function matchHeader(matchId, editMode = false) {
     data: {
       match_id: matchId,
       edit_mode: editMode,
-      action: 'racketmanager_update_match_header',
+      action: 'racketmanager_update_fixture_header',
       security: getAjaxNonce(),
     },
     success: function (response) {

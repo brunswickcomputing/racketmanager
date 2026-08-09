@@ -63,7 +63,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         };
 
         $this->service = $this->getMockBuilder( Fixture_Permission_Service::class )
-            ->setConstructorArgs( [ $this->repository_provider, $this->registration_service ] )
+            ->setConstructorArgs( [ $this->repository_provider, $this->registration_service, [] ] )
             ->onlyMethods( [ 'current_user_can', 'get_current_user_id', 'get_options' ] )
             ->getMock();
 
@@ -115,15 +115,13 @@ class Fixture_Permission_Service_Test extends TestCase {
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_confirmed' )->willReturn( 'P' );
         $fixture->method( 'get_league_id' )->willReturn( 100 );
-        $fixture->method( 'get_home_captain' )->willReturn( 10 );
+        $fixture->method( 'get_home_approver' )->willReturn( 10 );
         $fixture->method( 'get_home_team' )->willReturn( '200' );
         $fixture->method( 'get_away_team' )->willReturn( '300' );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'standard'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'standard' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
@@ -150,15 +148,13 @@ class Fixture_Permission_Service_Test extends TestCase {
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_confirmed' )->willReturn( 'P' );
         $fixture->method( 'get_league_id' )->willReturn( 100 );
-        $fixture->method( 'get_away_captain' )->willReturn( 20 );
+        $fixture->method( 'get_away_approver' )->willReturn( 20 );
         $fixture->method( 'get_home_team' )->willReturn( '200' );
         $fixture->method( 'get_away_team' )->willReturn( '300' );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'standard'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'standard' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
@@ -187,15 +183,13 @@ class Fixture_Permission_Service_Test extends TestCase {
         $fixture->method( 'get_confirmed' )->willReturn( 'P' );
         $fixture->method( 'get_winner_id' )->willReturn( 1000 ); // Result already entered
         $fixture->method( 'get_league_id' )->willReturn( 100 );
-        $fixture->method( 'get_away_captain' )->willReturn( 20 );
+        $fixture->method( 'get_away_approver' )->willReturn( 20 );
         $fixture->method( 'get_home_team' )->willReturn( '200' );
         $fixture->method( 'get_away_team' )->willReturn( '300' );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'standard'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'standard' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
@@ -226,9 +220,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'standard'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'standard' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
@@ -264,15 +256,13 @@ class Fixture_Permission_Service_Test extends TestCase {
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_confirmed' )->willReturn( 'Y' ); // Confirmed
         $fixture->method( 'get_league_id' )->willReturn( 100 );
-        $fixture->method( 'get_home_captain' )->willReturn( 10 );
+        $fixture->method( 'get_home_approver' )->willReturn( 10 );
         $fixture->method( 'get_home_team' )->willReturn( '200' );
         $fixture->method( 'get_away_team' )->willReturn( '300' );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'standard'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'standard' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
@@ -305,9 +295,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'player_comp'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'player_comp' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
@@ -344,9 +332,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $event->competition = (object)['type' => 'player_comp'];
-        $league->event = $event;
+        $league->method( 'get_competition_type' )->willReturn( 'player_comp' );
         $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );

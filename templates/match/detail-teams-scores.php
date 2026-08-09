@@ -405,7 +405,7 @@ if ( ! empty( $match->get_winner_id() ) ) {
         ?>
     </ul>
     <?php
-    if ( empty( $match_player ) && ( ! empty( $match->get_home_captain() ) || ! empty( $match->get_away_captain() ) ) ) {
+    if ( empty( $match_player ) && ( ! empty( $match->get_home_approver() ) || ! empty( $match->get_away_approver() ) ) ) {
         ?>
         <div class="mt-3" id="approvals">
             <div class="match">

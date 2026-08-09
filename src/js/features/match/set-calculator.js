@@ -165,8 +165,8 @@ export function initializeSetCalculator() {
   // Attach globals so inline onblur handlers keep working
   try {
     // eslint-disable-next-line no-undef
-    globalThis.SetCalculator = SetCalculator;
     // eslint-disable-next-line no-undef
+    globalThis.SetCalculator = SetCalculator;
     globalThis.SetCalculatorTieBreak = SetCalculatorTieBreak;
     globalsAttached = true;
   } catch (_) {

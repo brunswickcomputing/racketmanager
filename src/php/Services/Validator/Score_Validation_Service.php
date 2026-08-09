@@ -50,13 +50,14 @@ class Score_Validation_Service {
         $scoring      = $context->scoring_type;
         $sets_updated = array();
         $s            = 1;
+        $s_idx        = 0;
         $stats        = $this->initialize_stats_array();
         $points       = $this->initialize_points_array();
 
         if ( ! empty( $sets ) ) {
             $set_retired = $this->find_retired_set_index( $sets, $match_status );
 
-            foreach ( $sets as $set ) {
+            foreach ( $sets as $s => $set ) {
                 $set_prefix = $set_prefix_start . $s . '_';
                 $set_type   = Util::get_set_type( $scoring, $context->final_round, $context->num_sets, $s, $rubber_number, $context->num_rubbers, $context->leg );
                 $set_info   = Util::get_set_info( $set_type );
@@ -70,14 +71,13 @@ class Score_Validation_Service {
 
                 if ( $this->set_validator->get_error() ) {
                     $this->error    = true;
-                    $this->err_flds = array_unique( array_merge( $this->err_flds, $this->set_validator->get_err_flds() ) );
-                    $this->err_msgs = array_unique( array_merge( $this->err_msgs, $this->set_validator->get_err_msgs() ) );
+                    $this->err_flds = array_merge( $this->err_flds, $this->set_validator->get_err_flds() );
+                    $this->err_msgs = array_merge( $this->err_msgs, $this->set_validator->get_err_msgs() );
                 }
 
                 $this->match_validator->update_match_points_and_stats( $set, $set_status, $points_format, $points, $stats, $home_score, $away_score );
 
                 $sets_updated[ $s ] = $set;
-                ++ $s;
             }
             if ( $home_score > 0 && $away_score > 0 ) {
                 ++ $points['split']['sets'];

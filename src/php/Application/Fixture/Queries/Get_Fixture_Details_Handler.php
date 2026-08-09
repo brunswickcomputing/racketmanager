@@ -19,6 +19,7 @@ class Get_Fixture_Details_Handler {
     }
 
     public function handle( Get_Fixture_Details_Query $query ): ?Fixture_Details_DTO {
+
         $fixture = null;
 
         if ( $query->fixture_id ) {

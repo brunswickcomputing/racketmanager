@@ -61,7 +61,7 @@ class Fixture_Service_Integration_Test extends TestCase {
         $this->service_provider->set_competition_service( $this->competition_service );
         $this->service_provider->set_team_service( $this->team_service );
 
-        $permission_service = new Fixture_Permission_Service( $this->repository_provider, $this->registration_service );
+        $permission_service = new Fixture_Permission_Service( $this->repository_provider, $this->registration_service, [] );
         $this->service_provider->set_fixture_permission_service( $permission_service );
         
         $link_service = new Fixture_Link_Service( $this->createMock( Tournament_Service::class ) );

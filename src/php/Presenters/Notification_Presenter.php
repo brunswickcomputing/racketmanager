@@ -279,12 +279,21 @@ readonly class Notification_Presenter {
      * Prepare variables for the result-notification template.
      */
     public function present_result_notification( Fixture $fixture, array $args ): array {
-        $match = get_match( $fixture->get_id() );
+        $match      = get_match( $fixture->get_id() );
+        $action_url = $this->site_url;
+
+        if ( $match->league->event->competition->is_championship ) {
+            $action_url .= $this->build_championship_action_url( $match );
+        } else {
+            $action_url .= $this->build_standard_action_url( $match );
+        }
+        $action_url .= 'result/';
 
         return array_merge( $args, array(
             'match'        => $match,
             'organisation' => $this->site_name,
             'site_url'     => $this->site_url,
+            'action_url'   => $action_url,
         ) );
     }
 
@@ -358,12 +367,22 @@ readonly class Notification_Presenter {
      * Prepare variables for the result-outstanding-notification template.
      */
     public function present_result_outstanding_notification( Fixture $fixture, array $args ): array {
-        $match = get_match( $fixture->get_id() );
+        $match      = get_match( $fixture->get_id() );
+        $action_url = $args['action_url'] ?? $this->site_url;
+
+        if ( $this->site_url === $action_url ) {
+            if ( $match->league->event->competition->is_championship ) {
+                $action_url .= $this->build_championship_action_url( $match );
+            } else {
+                $action_url .= $this->build_standard_action_url( $match );
+            }
+            $action_url .= 'result/';
+        }
 
         return array_merge( $args, array(
             'match'        => $match,
             'organisation' => $this->site_name,
-            'action_url'   => $args['action_url'] ?? $this->site_url,
+            'action_url'   => $action_url,
         ) );
     }
 }

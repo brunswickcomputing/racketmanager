@@ -47,7 +47,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
         <?php wp_nonce_field( 'racketmanager_league-entry', 'racketmanager_nonce' ); ?>
         <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
         <input type="hidden" name="competitionId" value="<?php echo esc_html( $competition->id ); ?>" />
-        <input type="hidden" name="competitionType" value="<?php echo esc_html( $competition->type ); ?>" />
+        <input type="hidden" name="competitionType" value="<?php echo esc_html( $competition->get_type() ); ?>" />
         <div class="module module--card">
             <div class="module__content">
                 <div class="module-container">

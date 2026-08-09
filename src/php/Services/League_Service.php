@@ -15,7 +15,6 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use stdClass;
-use function Racketmanager\debug_to_console;
 
 class League_Service {
 

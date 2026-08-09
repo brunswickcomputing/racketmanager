@@ -73,7 +73,7 @@ export function setRubberStatus(link) {
     const splashBlock = '#splashBlockRubber';
 
     jQuery(splashBlock).addClass('is-loading');
-    $form += '&action=racketmanager_set_match_rubber_status';
+    $form += '&action=racketmanager_set_rubber_status';
 
     jQuery(ERROR_ALERT).hide();
     jQuery(ERROR_TEXT).html('');

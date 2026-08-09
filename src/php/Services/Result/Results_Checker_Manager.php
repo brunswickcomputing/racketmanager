@@ -131,9 +131,6 @@ class Results_Checker_Manager {
 
             $comments = $match->get_comments();
             if ( ! is_array( $comments ) ) {
-                $comments = maybe_unserialize( $comments );
-            }
-            if ( ! is_array( $comments ) ) {
                 $comments = array( 'result' => $comment );
             } elseif ( empty( $comments['result'] ) ) {
                 $comments['result'] = $comment;
@@ -141,7 +138,7 @@ class Results_Checker_Manager {
                 $comments['result'] .= "\n" . $comment;
             }
 
-            $match->set_comments( maybe_serialize( $comments ) );
+            $match->set_comments( $comments );
 
             $result = new Result(
                 home_points: (float) $match->get_home_points(),

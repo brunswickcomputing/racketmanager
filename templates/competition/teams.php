@@ -57,12 +57,12 @@ namespace Racketmanager;
                     </div>
                     <?php
                     foreach ( $teams as $team ) {
-                        $league_link = $competition->type . '/' . seo_url( $team->league_name ) . '/' . $competition->current_season['name'] . '/';
+                        $league_link = $competition->get_type() . '/' . seo_url( $team->league_name ) . '/' . $competition->current_season['name'] . '/';
                         $club_link   = '/' . seo_url( $competition->name ) . '/' . $competition->current_season['name'] . '/club/' . seo_url( $team->club_shortcode ) . '/';
                         ?>
                         <div class="row mb-2 row-list">
                             <div class="col-4" name="<?php esc_html_e( 'Team', 'racketmanager' ); ?>">
-                                <a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->team_name ) ); ?>/">
+                                <a href="/<?php echo esc_attr( $competition->get_type() ); ?>/<?php echo esc_html( seo_url( $team->league_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->team_name ) ); ?>/">
                                     <?php echo esc_html( $team->team_name ); ?>
                                 </a>
                             </div>

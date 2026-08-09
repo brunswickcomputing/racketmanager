@@ -45,7 +45,7 @@ namespace Racketmanager;
                         ?>
                         </div>
                         <div class="col-5" name="<?php esc_html_e( 'Event', 'racketmanager' ); ?>">
-                            <a href="/<?php echo esc_html( $competition->type ); ?>s/<?php echo esc_html( seo_url( $event->event_name ) ); ?>/<?php echo esc_html( $competition->current_season['name'] ); ?>/">
+                            <a href="/<?php echo esc_html( $competition->get_type() ); ?>s/<?php echo esc_html( seo_url( $event->event_name ) ); ?>/<?php echo esc_html( $competition->current_season['name'] ); ?>/">
                                 <?php echo esc_html( $event->event_name ); ?>
                             </a>
                         </div>

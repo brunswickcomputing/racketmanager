@@ -25,11 +25,11 @@ export function resetMatchResult(link, isTournament = false) {
 
   const formId = `#${link.form.id}`;
   let $form = jQuery(formId).serialize();
-  $form += '&action=racketmanager_reset_match_result';
+  $form += '&action=racketmanager_reset_fixture_result';
 
   // Primary alert container varies by page
-  const alert1 = isTournament ? ALERT_MATCH : ALERT_OPTIONS;
-  const alert1Text = isTournament ? ALERT_MATCH_TEXT : ALERT_OPTIONS_TEXT;
+  const alert1 = ALERT_MATCH;
+  const alert1Text = ALERT_MATCH_TEXT;
   // Secondary alert container in modal
   const alert2 = ALERT_RESET;
   const alert2Text = ALERT_RESET_TEXT;

@@ -69,7 +69,7 @@ $page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_
             <tbody>
                 <?php
                 foreach ( $competitions as $competition ) {
-                    if ( 'tournament' === $competition->type ) {
+                    if ( 'tournament' === $competition->get_type() ) {
                         $page_link = 'config';
                     } else {
                         $page_link = 'seasons';
@@ -83,7 +83,7 @@ $page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_
                             <?php echo esc_html( $competition->id ); ?>
                         </td>
                         <td class="">
-                            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
+                            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=<?php echo esc_attr( $page_link ); ?>&amp;competition_id=<?php echo esc_html( $competition->id ); ?>">
                                 <?php echo esc_html( $competition->name ); ?>
                             </a>
                         </td>
@@ -91,7 +91,7 @@ $page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_
                             <?php echo esc_html( ucfirst( $competition->age_group ) ); ?>
                         </td>
                         <td class="centered">
-                            <?php echo esc_html( ucfirst( $competition->type ) ); ?>
+                            <?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>
                         </td>
                         <td class="d-none d-md-table-cell text-center">
                             <?php echo esc_html( $competition->season_count ); ?>

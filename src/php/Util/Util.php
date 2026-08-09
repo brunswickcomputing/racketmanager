@@ -199,12 +199,11 @@ class Util {
             $min_loss         = $min_win - 2;
             $tiebreak_allowed = true;
         } elseif ( 'MTB' === $set_type ) {
-            $max_win  = 99;
-            $min_win  = 10;
-            $max_loss = $max_win - 2;
-            $min_loss = $min_win - 2;
-            $tiebreak_allowed = true;
-            $tiebreak_required = true;
+            $max_win      = 99;
+            $min_win      = 10;
+            $max_loss     = $max_win - 2;
+            $min_loss     = $min_win - 2;
+            $tiebreak_set = null;
         } elseif ( 'fast4' === $set_type ) {
             $max_win          = 4;
             $min_win          = 4;

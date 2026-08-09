@@ -104,6 +104,20 @@ export function updateTeamResult(link) {
         }
       }
 
+      // Field-level errors (from structured error mapping)
+      const errFields = data.err_flds || [];
+      const errMsgs = data.err_msgs || [];
+      if (errFields.length > 0) {
+        errFields.forEach((field, index) => {
+          const $field = jQuery(`#${field}`);
+          $field.addClass('is-invalid');
+          const $feedback = jQuery(`#${field}Feedback`);
+          if ($feedback.length && errMsgs[index]) {
+            $feedback.html(errMsgs[index]);
+          }
+        });
+      }
+
       // Refresh header
       try { matchHeader(matchId, match_edit); } catch (e) { console.error(e); }
     },

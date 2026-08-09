@@ -22,6 +22,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\TestCase;
     use Racketmanager\Domain\Competition\Competition;
+    use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -94,7 +95,7 @@ namespace Racketmanager\Tests\Integration\Public {
             ] );
 
             $registration_service = $this->createStub( Registration_Service::class );
-            $permission_service   = new Fixture_Permission_Service( $repo_provider, $registration_service );
+            $permission_service   = new Fixture_Permission_Service( $repo_provider, $registration_service, [] );
             $link_service         = new Fixture_Link_Service( $this->createMock( Tournament_Service::class ) );
 
             $detail_service = new Fixture_Detail_Service( $repo_provider, $competition_service, $team_service, $permission_service, $link_service );
@@ -134,7 +135,7 @@ namespace Racketmanager\Tests\Integration\Public {
 
             $competition = $this->createMock( Competition::class );
             $competition->method( 'get_id' )->willReturn( 30 );
-            $competition->type          = 'league';
+            $competition->type          = Competition_Type::LEAGUE;
             $competition->is_tournament = false;
             $competition_service->method( 'get_by_id' )->willReturn( $competition );
 

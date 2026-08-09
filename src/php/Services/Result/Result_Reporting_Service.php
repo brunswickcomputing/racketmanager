@@ -241,7 +241,7 @@ class Result_Reporting_Service {
      */
     private function populate_draw_details( object $result, object $league, object $event, object $competition, Fixture $fixture ): void {
         $result->draw_name = $league->title;
-        if ( 'league' === $competition->type ) {
+        if ( 'league' === $competition->get_type() ) {
             $result->draw_type  = 'Round Robin';
             $result->draw_stage = 'MD - Main draw';
             $result->draw_size  = $league->num_teams_total;
@@ -249,7 +249,7 @@ class Result_Reporting_Service {
         } else {
             $result->draw_type  = 'Elimination';
             $result->draw_stage = $fixture->get_league_id() === $event->primary_league ? 'MD - Main draw' : 'CD - Consolation draw';
-            $result->draw_size  = $league->championship->num_teams_first_round;
+            $result->draw_size  = $league->championship->num_teams_first_round ?? 0;
             $result->round      = match ( $fixture->get_final() ) {
                 'final' => 'F',
                 'semi' => 'SF',

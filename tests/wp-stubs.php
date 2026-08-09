@@ -440,6 +440,10 @@ namespace {
     }
 
     if ( ! function_exists( 'esc_url' ) ) {
+        function sanitize_title( $title ) {
+            return strtolower( str_replace( ' ', '-', $title ) );
+        }
+
         function esc_url( $url ) {
             return $url;
         }
@@ -457,9 +461,21 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'wp_schedule_single_event' ) ) {
+        function wp_schedule_single_event( $timestamp, $hook, $args = [], $wp_error = false ) {
+            return true;
+        }
+    }
+
     if ( ! function_exists( '__' ) ) {
         function __( string $text, string $domain = '' ): string {
             return $text;
+        }
+    }
+
+    if ( ! function_exists( '_e' ) ) {
+        function _e( string $text, string $domain = '' ): void {
+            echo $text;
         }
     }
 
@@ -816,10 +832,6 @@ namespace Racketmanager {
 }
 
 namespace Racketmanager {
-
-    function debug_to_console( $data ): void {
-        // Stub
-    }
 
     function match_header( int $match_id, array $args = array() ): string {
         return "match header content";

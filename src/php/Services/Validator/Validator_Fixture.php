@@ -11,13 +11,14 @@ namespace Racketmanager\Services\Validator;
 
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use Racketmanager\Exceptions\Registration_Not_Found_Exception;
 use function Racketmanager\get_match;
 use function Racketmanager\get_rubber;
 
 /**
  * Class to implement the Match Validator object
  */
-final class Validator_Fixture extends Validator {
+class Validator_Fixture extends Validator {
     /**
      * @var float|int|mixed|string
      */
@@ -366,16 +367,25 @@ final class Validator_Fixture extends Validator {
      *
      * @param array $players
      * @param array $player_numbers
-     * @param int $rubber
+     * @param int|string $rubber
      * @param bool $playoff
      * @param bool $reverse_rubber
      *
      * @return object
      */
-    public function players_involved( array $players, array $player_numbers, int $rubber, bool $playoff, bool $reverse_rubber ): object {
+    public function players_involved( array $players, array $player_numbers, int|string $rubber, bool $playoff, bool $reverse_rubber ): object {
         $opponents = array( 'home', 'away' );
         foreach ( $opponents as $opponent ) {
-            $team_players = $players[ $opponent ] ?? array();
+            $team_players = array();
+            if ( isset( $players[ $rubber ][ $opponent ] ) && is_array( $players[ $rubber ][ $opponent ] ) ) {
+                $team_players = $players[ $rubber ][ $opponent ];
+            } elseif ( isset( $players[ $opponent ] ) && is_array( $players[ $opponent ] ) ) {
+                // Heuristic to avoid picking up the whole $players array if it happens to have 'home' or 'away' keys
+                // but $players[opponent] is actually what we want.
+                // In legacy tests, $players = ['home' => [...], 'away' => [...]].
+                // So $players['home'] is the array of players for that team.
+                $team_players = $players[ $opponent ];
+            }
             $this->validate_team_players( $team_players, $player_numbers, $rubber, $opponent, $playoff, $reverse_rubber );
         }
         return $this;
@@ -391,17 +401,21 @@ final class Validator_Fixture extends Validator {
      * @param bool   $playoff
      * @param bool   $reverse_rubber
      */
-    private function validate_team_players( array $team_players, array $player_numbers, int $rubber, string $opponent, bool $playoff, bool $reverse_rubber ): void {
+    private function validate_team_players( array $team_players, array $player_numbers, int|string $rubber, string $opponent, bool $playoff, bool $reverse_rubber ): void {
         foreach ( $player_numbers as $player_number ) {
-            if ( empty( $team_players[ $player_number ] ) ) {
+            $player_ref = $team_players[ $player_number ] ?? '';
+            if ( empty( $player_ref ) || 'NaN' === $player_ref ) {
                 $this->add_player_error( 'Player not selected', $rubber, $opponent, $player_number );
                 continue;
             }
 
-            $player_ref  = $team_players[ $player_number ];
-            $club_player = $this->registration_service->get_registration( $player_ref );
-            if ( ! $club_player->system_record ) {
-                $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber );
+            try {
+                $club_player = $this->registration_service->get_registration( $player_ref );
+                if ( ! ( $club_player->system_record ?? false ) ) {
+                    $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber );
+                }
+            } catch ( Registration_Not_Found_Exception ) {
+                $this->add_player_error( 'Player not selected', $rubber, $opponent, $player_number );
             }
         }
     }

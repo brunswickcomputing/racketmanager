@@ -36,13 +36,13 @@ jQuery(document).ready(function(){
             <?php
             if ( ! empty( $league ) ) {
                 $entry_type   = $league->event->competition->entry_type;
-                $action_link  = $admin_page . $league->event->competition->type . 's&amp;view=league&' . $object_name . '=' . $object_id . $and_season . $season;
-                $preview_link = $admin_page . $league->event->competition->type . $and_view . $object_name . '=' . $object_id . $and_season . $season;
+                $action_link  = $admin_page . $league->event->competition->get_type() . 's&amp;view=league&' . $object_name . '=' . $object_id . $and_season . $season;
+                $preview_link = $admin_page . $league->event->competition->get_type() . $and_view . $object_name . '=' . $object_id . $and_season . $season;
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a>
-                &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a>
-                &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a>
-                &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a>
+                &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a>
+                &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->get_type() ); ?>s&amp;view=event&amp;event_id=<?php echo esc_html( $league->event->id ); ?>&amp;season=<?php echo esc_attr( $league->current_season['name'] ); ?>"><?php echo esc_html( $league->event->name ); ?></a>
+                &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->get_type() ); ?>s&amp;view=league&league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
                 &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
                 <?php
             } elseif ( ! empty( $vm->tournament ) ) {
@@ -54,10 +54,10 @@ jQuery(document).ready(function(){
                 <?php
             } else {
                 $entry_type   = $competition->entry_type;
-                $action_link  = $admin_page . $competition->type . 's&amp;view=overview&' . $object_name . '=' . $object_id . $and_season . $season;
-                $preview_link = $admin_page . $competition->type . $and_view . $object_name . '=' . $object_id . $and_season . $season;
+                $action_link  = $admin_page . $competition->get_type() . 's&amp;view=overview&' . $object_name . '=' . $object_id . $and_season . $season;
+                $preview_link = $admin_page . $competition->get_type() . $and_view . $object_name . '=' . $object_id . $and_season . $season;
                 ?>
-                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
+                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $competition->id ); ?>"><?php echo esc_html( $competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <?php esc_html_e( 'Contact', 'racketmanager' ); ?>
                 <?php
             }
             ?>

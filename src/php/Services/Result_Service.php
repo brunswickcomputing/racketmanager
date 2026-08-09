@@ -45,7 +45,11 @@ class Result_Service {
             $confirmed = $fixture->get_confirmed() ?: 'P';
         }
 
-        if ( ! $result->is_reset() && ( 'auto' === $result_confirmation || current_user_can( 'manage_racketmanager' ) ) ) {
+        // Only auto-confirm if it's an admin OR if we are updating an already actioned match
+        $is_already_actioned = 'Y' === $fixture->get_confirmed();
+        $is_admin            = current_user_can( 'manage_racketmanager' );
+
+        if ( ! $result->is_reset() && ( $is_admin || ( 'auto' === $result_confirmation && $is_already_actioned ) ) ) {
             $confirmed = 'Y';
         }
 

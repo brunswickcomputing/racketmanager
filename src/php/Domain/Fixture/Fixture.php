@@ -254,9 +254,9 @@ class Fixture {
     /**
      * Comments
      *
-     * @var string|null
+     * @var array|null
      */
-    public ?string $comments = null;
+    public ?array $comments = null;
 
     /**
      * Updated by
@@ -368,7 +368,8 @@ class Fixture {
         $this->confirmed           = $fixture->confirmed ?? null;
         $this->home_captain        = $fixture->home_captain ?? null;
         $this->away_captain        = $fixture->away_captain ?? null;
-        $this->comments            = $fixture->comments ?? null;
+        $comments            = maybe_unserialize( $fixture->comments ?? null );
+        $this->comments      = is_array( $comments ) ? $comments : ( $comments ? [ 'legacy' => $comments ] : null );
         $this->updated_by          = $fixture->updated_by ?? null;
         $this->start_time          = $fixture->start_time ?? null;
         $this->set_status_flags();
@@ -784,42 +785,42 @@ class Fixture {
     /**
      * @return int|null
      */
-    public function get_home_captain(): ?int {
+    public function get_home_approver(): ?int {
         return $this->home_captain;
     }
 
     /**
      * @param int|null $home_captain
      */
-    public function set_home_captain( ?int $home_captain ): void {
+    public function set_home_approver( ?int $home_captain ): void {
         $this->home_captain = $home_captain;
     }
 
     /**
      * @return int|null
      */
-    public function get_away_captain(): ?int {
+    public function get_away_approver(): ?int {
         return $this->away_captain;
     }
 
     /**
      * @param int|null $away_captain
      */
-    public function set_away_captain( ?int $away_captain ): void {
+    public function set_away_approver( ?int $away_captain ): void {
         $this->away_captain = $away_captain;
     }
 
     /**
-     * @return string|null
+     * @return array|null
      */
-    public function get_comments(): ?string {
+    public function get_comments(): ?array {
         return $this->comments;
     }
 
     /**
-     * @param string|null $comments
+     * @param array|null $comments
      */
-    public function set_comments( ?string $comments ): void {
+    public function set_comments( ?array $comments ): void {
         $this->comments = $comments;
     }
 

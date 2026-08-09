@@ -14,7 +14,7 @@ global $racketmanager;
 /** @var string $pagename */
 /** @var array $competition_season */
 /** @var string $seasons */
-$image = match ($competition->type) {
+$image = match ($competition->get_type()) {
     'league' => 'assets/icons/bootstrap-icons.svg#table',
     'cup' => 'assets/icons/bootstrap-icons.svg#trophy-fill',
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',

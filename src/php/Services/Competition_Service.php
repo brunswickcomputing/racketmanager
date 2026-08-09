@@ -207,7 +207,7 @@ class Competition_Service {
             }
             $winner->league           = $winner->title;
             $winner->competition_name = $competition->name;
-            $winner->competition_type = $competition->type;
+            $winner->competition_type = $competition->get_type();
             $winner->season           = $competition->current_season['name'];
             $winner->is_team_entry    = $competition->is_team_entry;
             $key = strtoupper( $winner->type );

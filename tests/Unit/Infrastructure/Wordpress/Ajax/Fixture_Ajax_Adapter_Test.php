@@ -7,6 +7,9 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO as App_Fixture_Details_DTO;
+use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
+use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
@@ -443,12 +446,36 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_update_match_header_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $GLOBALS['wp_stubs_matches'][123]           = (object) [ 'id' => 123 ];
         $_POST['match_id']                          = 123;
         $_REQUEST['security']                       = 'valid';
+        
+        // Ensure get_match(123) returns something so Validator_Fixture doesn't fail
+        $GLOBALS['wp_stubs_matches'][123] = (object) [ 'id' => 123 ];
+
+        $fixture = $this->createStub( Fixture::class );
+        $dto = new App_Fixture_Details_DTO( $fixture );
+        
+        $fixture_details_handler = $this->createStub( Get_Fixture_Details_Handler::class );
+        $fixture_details_handler->method( 'handle' )->willReturn( $dto );
+
+        $presenter = $this->createMock( Fixture_Presenter::class );
+        $header_model = $this->createStub( Fixture_Header_Read_Model::class );
+        $presenter->method( 'map_to_header_read_model' )->willReturn( $header_model );
+        $presenter->method( 'render_header' )->willReturn( 'match header content' );
+
+        // Inject modified presenter and handler for this test
+        $this->adapter = new Fixture_Ajax_Adapter( 
+            $this->container, 
+            $this->security_service, 
+            $this->container->get('fixture_ajax_adapter_response_factory'), // I should probably have stored this
+            $this->fixture_detail_service, 
+            $this->view_renderer, 
+            $presenter, 
+            $fixture_details_handler 
+        );
 
         $response = $this->adapter->update_fixture_header();
-        $this->assertSame( 200, $response->get_status_code() );
+        $this->assertSame( 200, $response->get_status_code(), 'Response status should be 200. Content: ' . json_encode($response->get_content()) );
         $this->assertSame( 'match header content', $response->get_content() );
     }
 
@@ -643,12 +670,40 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $response_factory->method( 'create_raw_response' )->willReturnCallback( function ( $content, $status = null ) {
             return new Response( $content, $status );
         } );
+        $this->container->set( 'fixture_ajax_adapter_response_factory', $response_factory );
 
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );
         $link_service                 = $this->createStub( Fixture_Link_Service::class );
         $presenter                    = new Fixture_Presenter( $link_service );
-        $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter );
+        $fixture_details_handler      = $this->createStub( Get_Fixture_Details_Handler::class );
+        $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter, $fixture_details_handler );
         $_POST                        = [];
+    }
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_update_team_match_routes_to_confirmation(): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $_POST['racketmanager_nonce'] = 'valid';
+        $_POST['updateRubber'] = 'confirm';
+        $_POST['current_match_id'] = 123;
+        $_POST['resultConfirm'] = ''; // Missing
+
+        $fixture = $this->createMock( Fixture::class );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->method( 'find_by_id' )->willReturn( $fixture );
+        $this->container->set( 'fixture_repository', $fixture_repo );
+
+        $result_manager = $this->createMock( Fixture_Result_Manager::class );
+        $this->container->set( 'fixture_result_manager', $result_manager );
+
+        // We expect handle_team_result_confirmation to be called
+        $result_manager->expects( $this->once() )
+            ->method( 'handle_team_result_confirmation' )
+            ->willReturn( new Team_Result_Response( [ 'error' => true, 'err_msgs' => [ 'Either confirm or challenge result' ], 'status' => 400 ] ) );
+
+        $response = $this->adapter->update_team_match();
+        $this->assertSame( 400, $response->get_status_code() );
+        $data = $response->get_content();
+        $this->assertContains( 'Either confirm or challenge result', $data->err_msgs );
     }
 }

@@ -140,7 +140,7 @@ if ( $match->is_walkover ) {
                                             }
                                             $page_referrer = wp_get_referer();
                                             if ( ! $page_referrer ) {
-                                                $page_referrer = $match->league->event->competition->type . '/' . seo_url( $match->league->title ) . '/' . $match->season . '/';
+                                                $page_referrer = $match->league->event->competition->get_type() . '/' . seo_url( $match->league->title ) . '/' . $match->season . '/';
                                                 if ( ! empty( $tournament ) ) {
                                                     $page_referrer = $tournament->link . 'matches/';
                                                 }
@@ -399,7 +399,7 @@ if ( $match->is_walkover ) {
                                                                                                 $player_detail = $rubber->players[ $opponent ][ $player_number ];
                                                                                                 if ( empty( $player_detail->system_record ) ) {
                                                                                                     ?>
-                                                                                                    <a href="/<?php echo esc_attr( $match->league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
+                                                                                                    <a href="/<?php echo esc_attr( $match->league->event->competition->get_type() ); ?>s/<?php echo esc_attr( seo_url( $match->league->event->name ) ); ?>/<?php echo esc_attr( $match->season ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
                                                                                                     <?php
                                                                                                 }
                                                                                                 ?>
@@ -629,7 +629,7 @@ if ( $match->is_walkover ) {
                                                                 <ul class="match__footer-title">
                                                                 </ul>
                                                                 <div class="match__footer-aside text-uppercase">
-                                                                    <a href="" class="scoreResetLink" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
+                                                                    <a role="button" data-action="reset-match-scores" data-rubber-id="<?php echo esc_attr( $rubber->id ); ?>">
                                                                         <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
                                                                     </a>
                                                                 </div>

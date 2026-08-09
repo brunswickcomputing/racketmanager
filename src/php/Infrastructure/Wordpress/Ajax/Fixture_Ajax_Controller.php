@@ -9,6 +9,7 @@
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use JetBrains\PhpStorm\NoReturn;
+use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\Infrastructure\Wordpress\Response\Logging_Json_Response_Factory;
@@ -49,8 +50,15 @@ class Fixture_Ajax_Controller {
     protected function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
         $c = $this->racketmanager->container;
 
-        return new Fixture_Ajax_Adapter( $c, new Security_Service(), new Logging_Json_Response_Factory( new Json_Response_Factory() ), $c->get( 'fixture_detail_service' ), $c->get( 'view_renderer' ), new Fixture_Presenter( $c->get( 'fixture_link_service' ) ) );
-
+        return new Fixture_Ajax_Adapter(
+            $c,
+            new Security_Service(),
+            new Logging_Json_Response_Factory( new Json_Response_Factory() ),
+            $c->get( 'fixture_detail_service' ),
+            $c->get( 'view_renderer' ),
+            $c->get( 'fixture_presenter' ),
+            $c->get( 'get_fixture_details_handler' )
+        );
     }
 
     /**

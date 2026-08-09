@@ -60,6 +60,9 @@ class Team_Result_Response {
     public function __construct( array $data = [] ) {
         foreach ( $data as $key => $value ) {
             if ( property_exists( $this, $key ) ) {
+                if ( 'msg' === $key && null === $value ) {
+                    $value = '';
+                }
                 $this->$key = $value;
             }
         }

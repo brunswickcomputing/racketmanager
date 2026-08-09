@@ -20,7 +20,7 @@ namespace Racketmanager;
     <div class="container">
         <div class="row justify-content-end">
             <div class="col-auto racketmanager_breadcrumb">
-                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <?php echo esc_html( $competition->name ); ?>
+                <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <?php echo esc_html( $competition->name ); ?>
             </div>
         </div>
         <div class="row justify-content-between">
@@ -35,7 +35,7 @@ namespace Racketmanager;
                         <div class="nav-link active" href="#" role="tab"><?php esc_html_e( 'Seasons', 'racketmanager' ); ?></div>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->type ); ?>s&view=config&competition_id=<?php echo esc_attr( $competition->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></a>
+                        <a class="nav-link" href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $competition->get_type() ); ?>s&view=config&competition_id=<?php echo esc_attr( $competition->id ); ?>" type="button" role="tab"><?php esc_html_e( 'Configuration', 'racketmanager' ); ?></a>
                     </li>
                 </ul>
             </nav>
@@ -76,7 +76,7 @@ namespace Racketmanager;
                     ?>
                     <tr>
                         <td class="check-column"><label for="del_season-<?php echo esc_html( $key ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $key ); ?>" name="del_season[<?php echo esc_html( $key ); ?>]" id="del_season-<?php echo esc_html( $key ); ?>" /></td>
-                        <td><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></td>
+                        <td><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_html( $competition->id ); ?>&amp;season=<?php echo esc_html( $key ); ?>"><?php echo esc_html( $season['name'] ); ?></a></td>
                         <td><?php echo empty( $season['date_start'] ) ? null : esc_html( $season['date_start'] ); ?></td>
                         <td><?php echo empty( $season['date_end'] ) ? null : esc_html( $season['date_end'] ); ?></td>
                         <td>
@@ -115,7 +115,7 @@ namespace Racketmanager;
     </form>
     <div class="mb-3">
         <!-- Add New Season -->
-        <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></a>
+        <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s&amp;view=modify&amp;competition_id=<?php echo esc_attr( $competition->id ); ?>" class="btn btn-primary submit"><?php esc_html_e( 'Add Season', 'racketmanager' ); ?></a>
     </div>
 </div>
 <script type="text/javascript">

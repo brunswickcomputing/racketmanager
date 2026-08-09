@@ -5,10 +5,13 @@ namespace Racketmanager\Tests\Integration\Services\Result;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Settings;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -56,6 +59,10 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		$league->title = 'Int League';
 		$league->num_teams_total = 10;
 		$league->num_rubbers = 0;
+		$league->championship = $this->getMockBuilder( Championship::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$league->championship->method( 'num_teams_first_round' )->willReturn( 10 );
 
 		$event = $this->getMockBuilder( Event::class )
 			->disableOriginalConstructor()
@@ -77,11 +84,11 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 			'date_end'         => '2024-12-31',
 		] );
 		$competition->name = 'Int Competition';
-		$competition->type = 'league';
+		$competition->type = Competition_Type::LEAGUE;
 		$competition->competition_code = 'COMP-CODE';
 		$competition->date_start = '2024-01-01';
 		$competition->date_end = '2024-12-31';
-		$competition->settings = [ 'grade' => 3 ];
+		$competition->settings = new Competition_Settings( [ 'grade' => 3 ] );
 
 		$home_team = $this->getMockBuilder( Team::class )
 			->disableOriginalConstructor()

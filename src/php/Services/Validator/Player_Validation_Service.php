@@ -482,7 +482,8 @@ class Player_Validation_Service {
      * Get the result timeout value from options.
      */
     private function get_result_timeout( League $league, array $options ): ?int {
-        $competition_options = $options[ $league->event->competition->type ] ?? [];
+        $type_key            = $league->event->competition->get_type();
+        $competition_options = $options[ $type_key ] ?? [];
         $timeout             = $competition_options['resultTimeout'] ?? null;
 
         return $timeout !== null ? (int) $timeout : null;

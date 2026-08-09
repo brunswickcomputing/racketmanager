@@ -32,6 +32,8 @@ use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Services\Validator\Score_Validation_Service;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
@@ -887,7 +889,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                             ->onlyMethods(['get_season_by_name'])
                             ->disableOriginalConstructor()
                             ->getMock();
-        $competition->type = 'league';
+        $competition->type = Competition_Type::LEAGUE;
         $competition->is_player_entry = false;
         $event->competition = $competition;
         $event->method('competition_obj')->willReturn($competition);

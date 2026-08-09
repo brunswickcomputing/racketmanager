@@ -11,10 +11,10 @@ use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Mode
 
 /** @var Tournament_Competition_Config_Page_View_Model $vm */
 if ( empty( $tournament ) ) {
-    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->type . 's&amp;view=seasons&amp;competition_id=' . $vm->competition->id . '">' . $vm->competition->name . '</a>';
+    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $vm->competition->id . '">' . $vm->competition->name . '</a>';
     $add_link        = '';
 } else {
-    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->type . 's&amp;view=tournament&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
+    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->get_type() . 's&amp;view=tournament&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
     $add_link        = '&amp;tournament=' . $tournament->id;
 }
 $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : $vm->competition->config->mode;
@@ -29,7 +29,7 @@ $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $vm->competition->type ); ?>s"><?php echo esc_html( ucfirst( $vm->competition->type ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $vm->competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $vm->competition->get_type() ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row justify-content-between">
@@ -43,7 +43,7 @@ $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'
                 <input type="hidden" class="mode" name="mode" value="<?php echo esc_attr( $mode ); ?>" />
                 <div class="mb-3">
                     <nav class="navbar navbar-expand-lg bg-body-tertiary">
-                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar<?php echo esc_attr( $vm->competition->id ); ?>" aria-controls="navbar<?php echo esc_attr( $vm->competition->type ); ?>" aria-expanded="false" aria-label="Toggle navigation">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar<?php echo esc_attr( $vm->competition->id ); ?>" aria-controls="navbar<?php echo esc_attr( $vm->competition->get_type() ); ?>" aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
                         </button>
                         <div class="collapse navbar-collapse" id="navbar<?php echo esc_attr( $vm->competition->id ); ?>">
@@ -70,7 +70,7 @@ $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'
                                     <button class="nav-link" id="rules-tab" data-bs-toggle="tab" data-bs-target="#rules" type="button" role="tab" aria-controls="rules" aria-selected="false"><?php esc_html_e( 'Rules', 'racketmanager' ); ?></button>
                                 </li>
                                 <?php
-                                if ( 'league' === $vm->competition->type ) {
+                                if ( 'league' === $vm->competition->get_type() ) {
                                     ?>
                                     <li class="nav-item">
                                         <button class="nav-link" id="availability-tab" data-bs-toggle="tab" data-bs-target="#availability" type="button" role="tab" aria-controls="availability" aria-selected="true"><?php esc_html_e( 'Availability', 'racketmanager' ); ?></button>
@@ -116,7 +116,7 @@ $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'
                         <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/rules.php'; ?>
                     </div>
                     <?php
-                    if ( 'league' === $vm->competition->type ) {
+                    if ( 'league' === $vm->competition->get_type() ) {
                         ?>
                         <div class="tab-pane fade" id="availability" role="tabpanel" aria-labelledby="availability-tab">
                             <h2><?php esc_html_e( 'Availability', 'racketmanager' ); ?></h2>

@@ -389,12 +389,21 @@ readonly class Fixture_Presenter {
         $home_name = $home_team_dto ? $home_team_dto->team->get_name() : ( $dto->prev_home_fixture_title ?? $dto->enriched_data['prev_home_fixture_title'] ?? '' );
         $away_name = $away_team_dto ? $away_team_dto->team->get_name() : ( $dto->prev_away_fixture_title ?? $dto->enriched_data['prev_away_fixture_title'] ?? '' );
 
+        $comp_type = 'league';
+        if ( $competition instanceof Competition ) {
+            $comp_type = $competition->get_type();
+        } elseif ( is_object( $competition ) && method_exists( $competition, 'get_type' ) ) {
+            $comp_type = $competition->get_type();
+        } elseif ( is_object( $competition ) && isset( $competition->type ) ) {
+            $comp_type = is_string( $competition->type ) ? $competition->type : ( method_exists( $competition->type, 'value' ) ? $competition->type->value : (string) $competition->type );
+        }
+
         return new Fixture_Header_Read_Model(
             id: (int) $fixture->get_id(),
             event_name: $event->name,
-            event_url: '/' . $competition->type . 's/' . seo_url( $event->name ) . '/' . $fixture->get_season() . '/',
+            event_url: '/' . $comp_type . 's/' . seo_url( $event->name ) . '/' . $fixture->get_season() . '/',
             league_title: $league->title,
-            league_url: '/' . $competition->type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/',
+            league_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/',
             season: $fixture->get_season(),
             round_name: $fixture->get_final() ? Util::get_final_name( $fixture->get_final() ) : null,
             match_day: $fixture->get_match_day() ? (int) $fixture->get_match_day() : null,
@@ -403,10 +412,10 @@ readonly class Fixture_Presenter {
             formatted_date: (string) mysql2date( get_option( 'date_format' ), $fixture->get_date() ),
             original_date_formatted: $fixture->get_date_original() ? (string) mysql2date( 'j F Y H:i', $fixture->get_date_original() ) : null,
             home_team_name: $home_name,
-            home_team_url: '/' . $competition->type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $home_name ) . '/',
+            home_team_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $home_name ) . '/',
             home_team_withdrawn: $home_team_dto->is_withdrawn ?? false,
             away_team_name: $away_name,
-            away_team_url: '/' . $competition->type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $away_name ) . '/',
+            away_team_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $away_name ) . '/',
             away_team_withdrawn: $away_team_dto->is_withdrawn ?? false,
             is_pending: $fixture->is_pending(),
             score_class: $fixture->is_pending() ? 'is-not-played' : '',
@@ -585,7 +594,7 @@ readonly class Fixture_Presenter {
                     'id' => $p_id,
                     'gender' => $player_detail->gender ?? 'm',
                     'name' => $player_detail->display_name ?? '',
-                    'url' => empty( $player_detail->system_record ) ? '/' . $competition->type . 's/' . seo_url( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . seo_url( $player_detail->display_name ?? '' ) . '/' : null,
+                    'url' => empty( $player_detail->system_record ) ? '/' . $competition->get_type() . 's/' . seo_url( $event->name ) . '/' . $dto->fixture->get_season() . '/player/' . seo_url( $player_detail->display_name ?? '' ) . '/' : null,
                     'class' => $player_detail->class ?? '',
                     'description' => $player_detail->description ?? '',
                     'is_system_record' => ! empty( $player_detail->system_record ),

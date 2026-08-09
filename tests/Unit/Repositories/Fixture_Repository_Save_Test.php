@@ -14,9 +14,9 @@ class Fixture_Repository_Save_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Create a stub that behaves like wpdb
         $this->wpdb = $this->createMock( wpdb::class );
         $this->wpdb->prefix = 'wp_';
-        $this->wpdb->matches = 'wp_racketmanager_matches';
 
         global $wpdb;
         $this->original_wpdb = $wpdb;
@@ -39,10 +39,13 @@ class Fixture_Repository_Save_Test extends TestCase {
         $fixture = new Fixture($fixture_data);
 
         // Expect update to be called with serialized comments
+        // The table name is constructed in constructor: wp_ + racketmanager_matches
+        $expected_table = 'wp_racketmanager_matches';
+
         $this->wpdb->expects($this->once())
             ->method('update')
             ->with(
-                $this->wpdb->matches,
+                $expected_table,
                 $this->callback(function($data) {
                     return isset($data['comments']) && is_string($data['comments']) && str_contains($data['comments'], 'test comment');
                 }),

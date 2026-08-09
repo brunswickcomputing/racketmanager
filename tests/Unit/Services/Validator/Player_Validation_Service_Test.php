@@ -9,6 +9,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Services\Registration_Service;
@@ -378,7 +379,8 @@ class Player_Validation_Service_Test extends TestCase {
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
         $competition = $this->createMock( Competition::class );
-        $competition->type = 'league';
+        $competition->method('get_type')->willReturn('league');
+        $competition->type = Competition_Type::LEAGUE;
         $competition->rules = [ 'resultTimeout' => true ];
         $event->competition = $competition;
         $league->event = $event;

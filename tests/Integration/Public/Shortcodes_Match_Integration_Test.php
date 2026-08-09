@@ -22,6 +22,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\TestCase;
     use Racketmanager\Domain\Competition\Competition;
+    use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -134,7 +135,7 @@ namespace Racketmanager\Tests\Integration\Public {
 
             $competition = $this->createMock( Competition::class );
             $competition->method( 'get_id' )->willReturn( 30 );
-            $competition->type          = 'league';
+            $competition->type          = Competition_Type::LEAGUE;
             $competition->is_tournament = false;
             $competition_service->method( 'get_by_id' )->willReturn( $competition );
 

@@ -43,7 +43,7 @@ if ( $user_can_update ) {
 $allow_schedule_match     = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
-$image = match ( $competition->type ) {
+$image = match ( $competition->get_type() ) {
     'league'     => 'assets/icons/bootstrap-icons.svg#table',
     'cup'        => 'assets/icons/bootstrap-icons.svg#trophy-fill',
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',

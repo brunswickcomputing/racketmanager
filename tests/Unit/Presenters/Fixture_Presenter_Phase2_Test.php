@@ -10,6 +10,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Team;
 use Racketmanager\Presenters\Fixture_Presenter;
@@ -56,7 +57,8 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->name = 'Summer League';
         
         $competition = $this->createStub(Competition::class);
-        $competition->type = 'league';
+        $competition->method('get_type')->willReturn('league');
+        $competition->type = Competition_Type::LEAGUE;
 
         $is_update_allowed = (object)[
             'user_can_update' => true,
@@ -130,7 +132,8 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->method('get_name')->willReturn('Summer League');
         $event->name = 'Summer League';
         $competition = $this->createStub(Competition::class);
-        $competition->type = 'league';
+        $competition->method('get_type')->willReturn('league');
+        $competition->type = Competition_Type::LEAGUE;
 
         $club = $this->createStub(\Racketmanager\Domain\Club::class);
         $club->method('get_name')->willReturn('Home Club');
@@ -236,7 +239,8 @@ class Fixture_Presenter_Phase2_Test extends TestCase {
         $event->name = 'Event';
         $dto->event = $event;
         $competition = $this->createStub(Competition::class);
-        $competition->type = 'league';
+        $competition->method('get_type')->willReturn('league');
+        $competition->type = Competition_Type::LEAGUE;
         $dto->competition = $competition;
 
         // Accessing private map_rubber via reflection

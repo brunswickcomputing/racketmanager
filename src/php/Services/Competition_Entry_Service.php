@@ -134,10 +134,10 @@ class Competition_Entry_Service {
             $competition_name = $competition->name . ' ' . $season;
             $clubs            = $this->racketmanager->get_clubs();
             $headers          = array();
-            $from_email       = $this->racketmanager->get_confirmation_email( $competition->type );
+            $from_email       = $this->racketmanager->get_confirmation_email( $competition->get_type() );
             if ( $from_email ) {
-                $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
-                $headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $competition->type ) . 'Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_FROM_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
+                $headers[]         = RACKETMANAGER_CC_EMAIL . ucfirst( $competition->get_type() ) . 'Secretary <' . $from_email . '>';
                 $organisation_name = $this->racketmanager->site_name;
                 $messages_sent     = 0;
                 foreach ( $clubs as $club ) {

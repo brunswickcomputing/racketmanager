@@ -170,7 +170,7 @@ if ( empty( $competition_club ) ) {
                                 }
                                 ?>
                                 <?php
-                                if ( 'league' === $competition->type ) {
+                                if ( 'league' === $competition->get_type() ) {
                                     ?>
                                     <div class="col-3 text-end">
                                         <?php esc_html_e( 'Standing', 'racketmanager' ); ?>
@@ -187,13 +187,13 @@ if ( empty( $competition_club ) ) {
                                         <?php
                                         if ( $competition->is_championship ) {
                                             ?>
-                                            <a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->event_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+                                            <a href="/<?php echo esc_attr( $competition->get_type() ); ?>/<?php echo esc_html( seo_url( $team->event_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
                                                 <?php echo esc_html( $team->name ); ?>
                                             </a>
                                             <?php
                                         } else {
                                             ?>
-                                            <a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+                                            <a href="/<?php echo esc_attr( $competition->get_type() ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
                                                 <?php echo esc_html( $team->name ); ?>
                                             </a>
                                             <?php
@@ -204,13 +204,13 @@ if ( empty( $competition_club ) ) {
                                         <?php
                                         if ( $competition->is_championship ) {
                                             ?>
-                                            <a href="/<?php echo esc_attr( $competition->type ); ?>s/<?php echo esc_html( seo_url( $team->event_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
+                                            <a href="/<?php echo esc_attr( $competition->get_type() ); ?>s/<?php echo esc_html( seo_url( $team->event_name ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
                                                 <?php echo esc_html( $team->event_name ); ?>
                                             </a>
                                             <?php
                                         } else {
                                             ?>
-                                            <a href="/<?php echo esc_attr( $competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
+                                            <a href="/<?php echo esc_attr( $competition->get_type() ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $competition->current_season['name'] ); ?>/">
                                                 <?php echo esc_html( $team->league_title ); ?>
                                             </a>
                                             <?php
@@ -218,7 +218,7 @@ if ( empty( $competition_club ) ) {
                                         ?>
                                     </div>
                                     <?php
-                                    if ( 'league' === $competition->type ) {
+                                    if ( 'league' === $competition->get_type() ) {
                                         ?>
                                         <div class="col-1 text-end">
                                             <?php echo esc_html( $team->rank ); ?>

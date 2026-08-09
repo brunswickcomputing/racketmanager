@@ -78,9 +78,9 @@ use Racketmanager\Domain\Fixture\Fixture;
                         <div class="mb-3">
                             <p class="text-center"><?php esc_html_e( 'This will remove scores and winner/loser', 'racketmanager' ); ?>.</p>
                         </div>
-                        <div class="alert_rm" id="resetMatchAlert" style="display:none;">
+                        <div class="alert_rm" id="matchResetAlert" style="display:none;">
                             <div class="alert__body">
-                                <div class="alert__body-inner" id="alertResetMatchResponse">
+                                <div class="alert__body-inner" id="alertMatchResetResponse">
                                 </div>
                             </div>
                         </div>

@@ -2120,7 +2120,7 @@ class Racketmanager_Match {
         $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "UPDATE $wpdb->racketmanager_matches SET `comments` = %s WHERE `id` = %d",
-                maybe_serialize( $comments ),
+                ( ! empty( $comments ) ? maybe_serialize( $comments ) : null ),
                 $this->id
             )
         );

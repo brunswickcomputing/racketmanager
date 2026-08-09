@@ -13,7 +13,6 @@ use Racketmanager\Services\Player_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\debug_to_console;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
 use function Racketmanager\get_match;
@@ -291,7 +290,6 @@ class Team {
                 $this->team_ref = $this->title;
                 $this->title    = $team_name;
             }
-            debug_to_console( $team_name);
         }
     }
 

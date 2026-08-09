@@ -32,7 +32,6 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             $info = new stdClass();
             $info->set_type = 'standard';
             $info->tiebreak_allowed = true;
-            $info->tiebreak_required = false;
             $info->max_win = 6;
             $info->min_win = 6;
             $info->max_loss = 4;
@@ -141,9 +140,9 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
                     null,
                     'set_1_player1'
                 ],
-                '7-6 missing tiebreak (explicitly required)' => [
+                '7-6 missing tiebreak (should trigger because games reach threshold)' => [
                     ['player1' => 7, 'player2' => 6, 'tiebreak' => ''],
-                    self::get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6, 'tiebreak_required' => true]),
+                    self::get_set_info(['max_win' => 7, 'min_win' => 6, 'max_loss' => 6, 'tiebreak_set' => 6]),
                     null,
                     'set_1_tiebreak'
                 ],
@@ -239,13 +238,13 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
                     ['player1' => '', 'player2' => 4, 'tiebreak' => ''],
                     self::get_set_info(),
                     null,
-                    null
+                    'set_1_player1'
                 ],
                 'empty score player 2' => [
                     ['player1' => 6, 'player2' => '', 'tiebreak' => ''],
                     self::get_set_info(),
                     null,
-                    null
+                    'set_1_player2'
                 ],
                 'both scores empty' => [
                     ['player1' => '', 'player2' => '', 'tiebreak' => ''],

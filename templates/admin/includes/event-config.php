@@ -19,13 +19,13 @@ if ( $new_event ) {
 }
 if ( empty( $tournament ) ) {
     if ( $new_event ) {
-        $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ' . __( 'New event', 'racketmanager' );
+        $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ' . __( 'New event', 'racketmanager' );
     } else {
-        $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $season . '">' . $event->name . '</a>';
+        $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=event&amp;competition_id=' . $competition->id . '&amp;event_id=' . $event->id . '&amp;season=' . $season . '">' . $event->name . '</a>';
     }
     $add_link        = '';
 } else {
-    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->type . 's&amp;view=config&amp;competition_id=' . $competition->id . '&amp;tab=events&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
+    $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=config&amp;competition_id=' . $competition->id . '&amp;tab=events&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
     $add_link        = '&amp;tournament=' . $tournament->id;
 }
 ?>
@@ -39,7 +39,7 @@ if ( empty( $tournament ) ) {
 <div class="container">
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
-            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->type ); ?>s"><?php echo esc_html( ucfirst( $competition->type ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
+            <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition->get_type() ); ?>s"><?php echo esc_html( ucfirst( $competition->get_type() ) ); ?>s</a> &raquo; <?php echo $breadcrumb_link; ?> &raquo; <?php esc_html_e( 'Configuration', 'racketmanager' ); ?>
         </div>
     </div>
     <div class="row justify-content-between">

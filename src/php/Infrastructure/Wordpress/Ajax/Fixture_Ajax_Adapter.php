@@ -3,6 +3,8 @@
 namespace Racketmanager\Infrastructure\Wordpress\Ajax;
 
 use Exception;
+use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
+use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Date_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Reset_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
@@ -36,28 +38,15 @@ use function Racketmanager\show_alert;
  * Adapter for Fixture AJAX requests
  */
 class Fixture_Ajax_Adapter {
-    private Simple_Container $container;
-    private Security_Service_Interface $security_service;
-    private Json_Response_Factory_Interface $response_factory;
-    private Fixture_Detail_Service $fixture_detail_service;
-    private View_Renderer_Interface $view_renderer;
-    private Fixture_Presenter $presenter;
-
     public function __construct(
-        $container,
-        Security_Service_Interface $security_service,
-        Json_Response_Factory_Interface $response_factory,
-        Fixture_Detail_Service $fixture_detail_service,
-        View_Renderer_Interface $view_renderer,
-        Fixture_Presenter $presenter
-    ) {
-        $this->container              = $container;
-        $this->security_service       = $security_service;
-        $this->response_factory       = $response_factory;
-        $this->fixture_detail_service = $fixture_detail_service;
-        $this->view_renderer          = $view_renderer;
-        $this->presenter              = $presenter;
-    }
+        private $container,
+        private Security_Service_Interface $security_service,
+        private Json_Response_Factory_Interface $response_factory,
+        private Fixture_Detail_Service $fixture_detail_service,
+        private View_Renderer_Interface $view_renderer,
+        private Fixture_Presenter $presenter,
+        private Get_Fixture_Details_Handler $fixture_details_handler
+    ) {}
 
     /**
      * Build screen to allow printing of match cards
@@ -446,8 +435,17 @@ class Fixture_Ajax_Adapter {
                 throw new Exception();
             }
 
-            $edit_mode = isset( $_POST['edit_mode'] ) ? sanitize_text_field( wp_unslash( $_POST['edit_mode'] ) ) : false;
-            $output    = match_header( $match_id, array( 'edit' => $edit_mode ) );
+            $edit_mode = isset( $_POST['edit_mode'] ) ? (bool) $_POST['edit_mode'] : false;
+            
+            $query = new Get_Fixture_Details_Query( fixture_id: $match_id );
+            $dto   = $this->fixture_details_handler->handle( $query );
+            
+            if ( ! $dto ) {
+                throw new Fixture_Not_Found_Exception( Util_Messages::fixture_not_found(), 400 );
+            }
+
+            $model  = $this->presenter->map_to_header_read_model( $dto, $edit_mode );
+            $output = $this->presenter->render_header( $model );
 
             $response = $this->response_factory->create_success_response( $output );
         } catch ( Exception $e ) {

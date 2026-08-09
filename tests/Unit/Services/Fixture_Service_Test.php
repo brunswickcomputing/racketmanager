@@ -51,7 +51,7 @@ class Fixture_Service_Test extends TestCase {
         $this->repository_provider->method( 'get_team_repository' )->willReturn( $this->createMock( Team_Repository_Interface::class ) );
         $this->repository_provider->method( 'get_club_repository' )->willReturn( $this->createMock( Club_Repository_Interface::class ) );
 
-        $permission_service = new Fixture_Permission_Service( $this->repository_provider, $this->registration_service );
+        $permission_service = new Fixture_Permission_Service( $this->repository_provider, $this->registration_service, [] );
         $detail_service = new Fixture_Detail_Service(
             $this->repository_provider,
             $this->competition_service,

@@ -372,7 +372,7 @@ class Event {
      *
      * @var int
      */
-    public int $primary_league;
+    public int $primary_league = 0;
     /**
      * Team count
      *

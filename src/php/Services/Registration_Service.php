@@ -183,8 +183,8 @@ class Registration_Service {
     public function get_registered_players_list( ?string $active = null, ?string $status = null, ?int $club_id = null, ?string $gender = null, bool $system = false, ?int $max_age = null, ?int $min_age = null ): array {
         $players = $this->player_repository->find_club_players_with_details( $club_id, $status, $gender, $active, $system, $max_age, $min_age );
 
-        return array_map( function ( $registration_id ) {
-            return $this->create_club_player_dto( $registration_id );
+        return array_map( function ( $p ) {
+            return $this->create_club_player_dto( $p->registration_id );
         }, $players );
     }
 

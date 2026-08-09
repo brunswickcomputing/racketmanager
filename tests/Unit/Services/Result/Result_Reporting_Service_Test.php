@@ -12,11 +12,15 @@ namespace {
 namespace Racketmanager\Tests\Unit\Services\Result {
 
 	use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Championship;
+use Racketmanager\Domain\Championship_Settings;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Settings;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -94,8 +98,8 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->name = 'Test Competition';
 		$competition->date_start = '2024-01-01';
 		$competition->date_end = '2024-12-31';
-		$competition->type = 'league';
-		$competition->settings = ['grade' => 4];
+		$competition->type = Competition_Type::LEAGUE;
+		$competition->settings = new Competition_Settings( ['grade' => 4] );
 
 		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
@@ -110,6 +114,8 @@ class Result_Reporting_Service_Test extends TestCase {
 		$league->title = 'Test League';
 		$league->num_teams_total = 8;
 		$league->num_rubbers = 0;
+		$league->championship = $this->createStub( Championship::class );
+		$league->championship->method('num_teams_first_round')->willReturn(8);
 
 		$player1 = new stdClass();
 		$player1->display_name = 'Player One';
@@ -176,8 +182,8 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->name = 'Test Competition';
 		$competition->date_start = '2024-01-01';
 		$competition->date_end = '2024-12-31';
-		$competition->type = 'league';
-		$competition->settings = ['grade' => 4];
+		$competition->type = Competition_Type::LEAGUE;
+		$competition->settings = new Competition_Settings( ['grade' => 4] );
 
 		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
@@ -191,6 +197,8 @@ class Result_Reporting_Service_Test extends TestCase {
 		$league->title = 'Test League';
 		$league->num_teams_total = 8;
 		$league->num_rubbers = 1;
+		$league->championship = $this->createStub( Championship::class );
+		$league->championship->method('num_teams_first_round')->willReturn(8);
 
 		$player1 = new stdClass();
 		$player1->display_name = 'Rubber Winner';
@@ -264,8 +272,8 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition->name = 'Test Competition';
 		$competition->date_start = '2024-01-01';
 		$competition->date_end = '2024-12-31';
-		$competition->type = 'league';
-		$competition->settings = ['grade' => 4];
+		$competition->type = Competition_Type::LEAGUE;
+		$competition->settings = new Competition_Settings( ['grade' => 4] );
 
 		$event = $this->createStub( Event::class );
 		$event->method('get_competition_id')->willReturn(30);
@@ -342,7 +350,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31']);
 		$competition->name = 'Test Competition';
-		$competition->type = 'league';
+		$competition->type = Competition_Type::LEAGUE;
 
 		$event = $this->createStub( Event::class );
 		$event->name = 'Test Event';
@@ -382,7 +390,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
 		$competition->name = 'Comp';
-		$competition->type = 'league';
+		$competition->type = Competition_Type::LEAGUE;
 
 		$event = $this->createStub( Event::class );
 		$event->name = 'Event';
@@ -413,7 +421,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
 		$competition->name = 'Comp';
-		$competition->type = 'league';
+		$competition->type = Competition_Type::LEAGUE;
 
 		$event = $this->createStub( Event::class );
 		$event->name = 'Event';
@@ -445,7 +453,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
 		$competition->name = 'Comp';
-		$competition->type = 'league';
+		$competition->type = Competition_Type::LEAGUE;
 
 		$event = $this->createStub( Event::class );
 		$event->name = 'Event';
@@ -493,7 +501,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$competition = $this->createStub( Competition::class );
 		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
 		$competition->name = 'Comp';
-		$competition->type = 'league';
+		$competition->type = Competition_Type::LEAGUE;
 
 		$event = $this->createStub( Event::class );
 		$event->name = 'Event';

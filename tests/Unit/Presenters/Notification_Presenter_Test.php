@@ -296,6 +296,64 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $this->assertEquals( 'match-notification-cup', $vars['template'] );
         }
 
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_result_notification_includes_action_url(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 1 );
+
+            $match = (object) [
+                'id' => 1,
+                'league' => (object) [
+                    'title' => 'Test League',
+                    'current_season' => ['name' => '2024'],
+                    'event' => (object) [
+                        'competition' => (object) [ 'is_championship' => false ]
+                    ]
+                ],
+                'match_day' => 1,
+                'teams' => [
+                    'home' => (object) [ 'title' => 'Home' ],
+                    'away' => (object) [ 'title' => 'Away' ],
+                ]
+            ];
+            $GLOBALS['wp_stubs_matches'][1] = $match;
+
+            $vars = $this->presenter->present_result_notification( $fixture, [] );
+
+            $this->assertArrayHasKey( 'action_url', $vars );
+            $this->assertStringContainsString( 'https://example.com', $vars['action_url'] );
+            $this->assertStringContainsString( 'result/', $vars['action_url'] );
+        }
+
+        #[AllowMockObjectsWithoutExpectations]
+        public function test_present_result_outstanding_notification_includes_action_url(): void {
+            $fixture = $this->createStub( Fixture::class );
+            $fixture->method( 'get_id' )->willReturn( 1 );
+
+            $match = (object) [
+                'id' => 1,
+                'league' => (object) [
+                    'title' => 'Test League',
+                    'current_season' => ['name' => '2024'],
+                    'event' => (object) [
+                        'competition' => (object) [ 'is_championship' => false ]
+                    ]
+                ],
+                'match_day' => 1,
+                'teams' => [
+                    'home' => (object) [ 'title' => 'Home' ],
+                    'away' => (object) [ 'title' => 'Away' ],
+                ]
+            ];
+            $GLOBALS['wp_stubs_matches'][1] = $match;
+
+            $vars = $this->presenter->present_result_outstanding_notification( $fixture, [] );
+
+            $this->assertArrayHasKey( 'action_url', $vars );
+            $this->assertStringContainsString( 'https://example.com', $vars['action_url'] );
+            $this->assertStringContainsString( 'result/', $vars['action_url'] );
+        }
+
         protected function setUp(): void {
             parent::setUp();
             $this->tournament_repository = $this->createMock( Tournament_Repository_Interface::class );

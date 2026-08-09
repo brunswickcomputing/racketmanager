@@ -79,4 +79,27 @@ final class Fixture_Test extends TestCase {
         $fixture->set_start_time('11:30');
         $this->assertEquals('11:30', $fixture->get_start_time());
     }
+
+    public function test_constructor_handles_string_comments_gracefully(): void {
+        $fixture_data = (object)[
+            'id' => 123,
+            'comments' => 'This is a plain string comment'
+        ];
+
+        // This should NOT throw a TypeError
+        $fixture = new Fixture($fixture_data);
+
+        $this->assertIsArray($fixture->get_comments(), 'Comments should be converted to an array');
+        $this->assertSame('This is a plain string comment', $fixture->get_comments()['legacy']);
+    }
+
+    public function test_constructor_handles_null_comments_gracefully(): void {
+        $fixture_data = (object)[
+            'id' => 123,
+            'comments' => null
+        ];
+
+        $fixture = new Fixture($fixture_data);
+        $this->assertNull($fixture->get_comments());
+    }
 }

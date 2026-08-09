@@ -15,11 +15,11 @@ use Racketmanager\Util\Util_Lookup;
 /** @var object $current_season */
 /** @var array $seasons */
 $is_invalid = false;
-$breadcrumb = '<a href="admin.php?page=racketmanager-' . $competition->type . 's">' . ucfirst( $competition->type ) . 's</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ';
+$breadcrumb = '<a href="admin.php?page=racketmanager-' . $competition->get_type() . 's">' . ucfirst( $competition->get_type() ) . 's</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ';
 if ( empty( $edit_mode ) ) {
     $add_season    = true;
     $modify_season = false;
-    $action_form   = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=modify&amp;competition_id=' . $competition->id;
+    $action_form   = 'admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=modify&amp;competition_id=' . $competition->id;
     $action_text   = __( 'Add season', 'racketmanager' );
     /* translators: %s: competition name */
     $form_title  = sprintf( __( 'Add season to %s', 'racketmanager' ), $competition->name );
@@ -27,9 +27,9 @@ if ( empty( $edit_mode ) ) {
 } else {
     $add_season    = false;
     $modify_season = true;
-    $action_form   = 'admin.php?page=racketmanager-' . $competition->type . 's&amp;view=modify&amp;competition_id=' . $competition->id . '&amp;season=' . $current_season->name;
+    $action_form   = 'admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=modify&amp;competition_id=' . $competition->id . '&amp;season=' . $current_season->name;
     $action_text   = __( 'Modify season', 'racketmanager' );
-    $breadcrumb .= '<a href="admin.php?page=racketmanager-' . $competition->type . 's&amp;view=overview&amp;competition_id=' . $competition->id . '&amp;season=' . $season . '">' . $season . '</a> &raquo; ';
+    $breadcrumb .= '<a href="admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=overview&amp;competition_id=' . $competition->id . '&amp;season=' . $season . '">' . $season . '</a> &raquo; ';
     /* translators: %s: competition name */
     $form_title  = sprintf( __( 'Modify season for %s', 'racketmanager' ), $competition->name );
     $form_action = __( 'Update', 'racketmanager' );
@@ -617,7 +617,7 @@ $msg         = null;
                             $msg        = $validator->err_msgs[$msg_id] ?? null;
                         }
                         ?>
-                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateEnd" id="dateEnd" value="<?php echo isset( $current_season->date_end ) ? esc_html( $current_season->date_end ) : null; ?>" <?php echo 'league' === $competition->type ? 'readonly' : null; ?> />
+                        <input type="date" class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="dateEnd" id="dateEnd" value="<?php echo isset( $current_season->date_end ) ? esc_html( $current_season->date_end ) : null; ?>" <?php echo 'league' === $competition->get_type() ? 'readonly' : null; ?> />
                         <label for="dateEnd" class="form-label"><?php esc_html_e( 'End Date', 'racketmanager' ); ?></label>
                         <?php
                         if ( $is_invalid ) {
@@ -632,16 +632,16 @@ $msg         = null;
         </fieldset>
 
         <input type="hidden" name="competition_id" id="competition_id" value="<?php echo esc_html( $competition->id ); ?>" />
-        <input type="hidden" name="update<?php echo esc_attr( ucfirst( $competition->type ) ); ?>" value="<?php echo esc_attr( $competition->type ); ?>" />
+        <input type="hidden" name="update<?php echo esc_attr( ucfirst( $competition->get_type() ) ); ?>" value="<?php echo esc_attr( $competition->get_type() ); ?>" />
 
         <?php
         if ( $add_season ) {
             ?>
-            <input type="hidden" name="addSeason" id="competitionType" value="<?php echo esc_attr( $competition->type ); ?>" />
+            <input type="hidden" name="addSeason" id="competitionType" value="<?php echo esc_attr( $competition->get_type() ); ?>" />
             <?php
         } else {
             ?>
-            <input type="hidden" name="editSeason" id="competitionType" value="<?php echo esc_attr( $competition->type ); ?>" />
+            <input type="hidden" name="editSeason" id="competitionType" value="<?php echo esc_attr( $competition->get_type() ); ?>" />
             <?php
         }
         ?>

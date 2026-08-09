@@ -28,8 +28,12 @@ class Set_Score_Validator {
                 $set['tiebreak'] = '';
             } elseif ( 'S' === $set['player1'] || 'S' === $set['player2'] ) {
                 $this->validate_shared_scores( $set, $set_prefix );
-            } elseif ( empty( $set['player1'] ) && empty( $set['player2'] ) ) {
-                $this->validate_empty_scores( $set_prefix, $match_status );
+            } elseif ( '' === $set['player1'] || '' === $set['player2'] ) {
+                if ( empty( $match_status ) || ! str_starts_with( $match_status, 'retired' ) ) {
+                    $this->validate_partially_empty_scores( $set, $set_prefix, $match_status );
+                } elseif ( '' !== $set['player1'] || '' !== $set['player2'] ) {
+                    $completed_set = true;
+                }
             } elseif ( $set['player1'] === $set['player2'] ) {
                 $this->validate_identical_scores( $set_prefix, $match_status );
             } elseif ( $set['player1'] > $set['player2'] ) {
@@ -38,8 +42,6 @@ class Set_Score_Validator {
             } elseif ( $set['player1'] < $set['player2'] ) {
                 $this->validate_set_score( $set, $set_prefix, (object) [ 'team_1' => 'player2', 'team_2' => 'player1' ], $set_info, $match_status );
                 $completed_set = $this->completed_set;
-            } elseif ( '' === $set['player1'] || '' === $set['player2'] ) {
-                $this->validate_partially_empty_scores( $set, $set_prefix, $match_status );
             }
         }
 
@@ -102,7 +104,7 @@ class Set_Score_Validator {
             $this->err_flds[] = $set_prefix . 'player2';
             $this->err_msgs[] = __( 'Set score should be empty', 'racketmanager' );
         }
-        if ( '' !== $set['tiebreak'] ) {
+        if ( '' !== ( $set['tiebreak'] ?? '' ) ) {
             $this->error      = true;
             $this->err_flds[] = $set_prefix . 'tiebreak';
             $this->err_msgs[] = __( 'Tie break should be empty', 'racketmanager' );
@@ -125,20 +127,6 @@ class Set_Score_Validator {
         }
     }
 
-    /**
-     * Validate when both scores are empty
-     */
-    private function validate_empty_scores( string $set_prefix, ?string $match_status ): void {
-        $retired  = ! empty( $match_status ) && str_starts_with( $match_status, 'retired' );
-        $walkover = ! empty( $match_status ) && str_starts_with( $match_status, 'walkover' );
-
-        if ( ! $retired && ! $walkover && 'abandoned' !== $match_status ) {
-            $this->error      = true;
-            $this->err_flds[] = $set_prefix . 'player1';
-            $this->err_flds[] = $set_prefix . 'player2';
-            $this->err_msgs[] = __( 'Set scores must be entered', 'racketmanager' );
-        }
-    }
 
     /**
      * Validate when scores are identical
@@ -160,7 +148,6 @@ class Set_Score_Validator {
         $team_1            = $teams->team_1;
         $team_2            = $teams->team_2;
         $tiebreak_allowed  = $set_info->tiebreak_allowed;
-        $tiebreak_required = $set_info->tiebreak_required;
         $tiebreak_set      = $set_info->tiebreak_set;
         $max_win           = $set_info->max_win;
         $min_win           = $set_info->min_win;
@@ -193,7 +180,7 @@ class Set_Score_Validator {
                     'match_status' => $match_status,
                 ];
                 $this->check_game_difference( $set, $set_prefix, $teams, $rules );
-                $this->validate_tiebreak_score( $set, $set_prefix, $tiebreak_allowed, $tiebreak_required, $tiebreak_set );
+                $this->validate_tiebreak_score( $set, $set_prefix, $tiebreak_allowed, $tiebreak_set );
             }
         }
     }
@@ -247,7 +234,7 @@ class Set_Score_Validator {
         }
     }
 
-    private function validate_tiebreak_score( array $set, string $set_prefix, bool $tiebreak_allowed, bool $tiebreak_required, ?int $tiebreak_set ): void {
+    private function validate_tiebreak_score( array $set, string $set_prefix, bool $tiebreak_allowed, ?int $tiebreak_set ): void {
         if ( null === $tiebreak_set ) {
             return;
         }
@@ -256,8 +243,8 @@ class Set_Score_Validator {
 
         $is_tiebreak_score_needed = ( intval( $set['player1'] ) > $tiebreak_set && intval( $set['player2'] ) === $tiebreak_set ) || ( intval( $set['player1'] ) === $tiebreak_set && intval( $set['player2'] ) > $tiebreak_set );
 
-        if ( $set['tiebreak'] > '' ) {
-            if ( ! $tiebreak_allowed && ! $tiebreak_required ) {
+        if ( ( $set['tiebreak'] ?? '' ) > '' ) {
+            if ( ! $tiebreak_allowed ) {
                 $this->error      = true;
                 $this->err_msgs[] = __( 'Tie break score should be empty', 'racketmanager' );
                 $this->err_flds[] = $set_prefix . 'tiebreak';
@@ -266,7 +253,7 @@ class Set_Score_Validator {
                 $this->err_msgs[] = $tie_break_whole_number;
                 $this->err_flds[] = $set_prefix . 'tiebreak';
             }
-        } elseif ( $tiebreak_required || ( $is_tiebreak_score_needed && $tiebreak_allowed ) ) {
+        } elseif ( $is_tiebreak_score_needed && $tiebreak_allowed ) {
             $this->error      = true;
             $this->err_msgs[] = $tie_break_score_required;
             $this->err_flds[] = $set_prefix . 'tiebreak';
@@ -284,11 +271,12 @@ class Set_Score_Validator {
             $this->error = true;
             if ( '' === $set['player1'] ) {
                 $this->err_flds[] = $set_prefix . 'player1';
+                $this->err_msgs[] = __( 'Set score not entered', 'racketmanager' );
             }
             if ( '' === $set['player2'] ) {
                 $this->err_flds[] = $set_prefix . 'player2';
+                $this->err_msgs[] = __( 'Set score not entered', 'racketmanager' );
             }
-            $this->err_msgs[] = __( 'Set score not entered', 'racketmanager' );
         }
     }
 

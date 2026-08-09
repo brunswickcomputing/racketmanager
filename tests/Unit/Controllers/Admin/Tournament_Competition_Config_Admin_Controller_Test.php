@@ -12,6 +12,7 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use stdClass;
 
@@ -78,7 +79,7 @@ class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
 
         $competition = $this->createMock( Competition::class );
         $competition->id = 123;
-        $competition->type = 'type';
+        $competition->type = Competition_Type::LEAGUE;
         $competition->age_group = 'age';
         $competition->method( 'get_settings' )->willReturn( [] );
 

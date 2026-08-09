@@ -18,6 +18,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
+use Racketmanager\Services\Fixture\Fixture_Finalization_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
@@ -31,6 +32,8 @@ use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Services\Validator\Score_Validation_Service;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
@@ -75,6 +78,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     private $results_checker_repository;
     private $results_report_repository;
     private $fixture_maintenance_service;
+    private $fixture_finalization_service;
     private $fixture_repository;
     private $result_reporting_service;
 
@@ -147,6 +151,12 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $service_provider->set_rubber_manager( $this->rubber_manager );
         $service_provider->set_settings_service( $this->settings_service );
         $service_provider->set_result_reporting_service( $this->result_reporting_service );
+        $this->fixture_finalization_service = new Fixture_Finalization_Service(
+            null,
+            $this->progression_service,
+            $this->result_reporting_service
+        );
+        $service_provider->set_fixture_finalization_service( $this->fixture_finalization_service );
         $this->fixture_maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
         $service_provider->set_fixture_maintenance_service( $this->fixture_maintenance_service );
 
@@ -297,6 +307,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                              ->method('apply_to_fixture')
                              ->with($fixture, $this->isInstanceOf(\Racketmanager\Domain\Result\Result::class), null);
 
+        $this->rubber_repository->expects($this->once())
+                                ->method('find_by_fixture_id')
+                                ->with(123)
+                                ->willReturn([]);
+
         $this->manager->reset_result($fixture);
 
         $this->assertNull($fixture->get_home_points());
@@ -335,6 +350,11 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->result_service->expects($this->once())
                              ->method('apply_to_fixture')
                              ->with($fixture, $this->isInstanceOf(\Racketmanager\Domain\Result\Result::class), null);
+
+        $this->rubber_repository->expects($this->once())
+                                ->method('find_by_fixture_id')
+                                ->with(123)
+                                ->willReturn([]);
 
         $this->manager->reset_result($fixture);
 
@@ -498,7 +518,10 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             match_comments: ['comments'],
             rubber_ids: [1 => 10],
             rubber_types: [1 => 'S'],
-            players: [1 => []],
+            players: [1 => [
+                'home' => [1 => 1001],
+                'away' => [1 => 2001]
+            ]],
             sets: [1 => []]
         );
 
@@ -583,7 +606,10 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
             match_comments: ['comments'],
             rubber_ids: [1 => 10],
             rubber_types: [1 => 'S'],
-            players: [1 => []],
+            players: [1 => [
+                'home' => [1 => 1001],
+                'away' => [1 => 2001]
+            ]],
             sets: [1 => []]
         );
 
@@ -863,7 +889,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
                             ->onlyMethods(['get_season_by_name'])
                             ->disableOriginalConstructor()
                             ->getMock();
-        $competition->type = 'league';
+        $competition->type = Competition_Type::LEAGUE;
         $competition->is_player_entry = false;
         $event->competition = $competition;
         $event->method('competition_obj')->willReturn($competition);
@@ -1045,7 +1071,76 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
         $this->manager->handle_fixture_result_update( $fixture, $request );
 
-        $this->assertEquals( 123, $fixture->get_home_captain() );
+        $this->assertEquals( 123, $fixture->get_home_approver() );
+        
+        unset( $GLOBALS['wp_stubs_get_current_user_id'] );
+    }
+
+    public function test_handle_team_result_confirmation_fails_when_no_option_selected(): void {
+        $fixture = new Fixture((object)[
+            'id' => 1,
+            'league_id' => 10,
+            'home_team' => 101,
+            'away_team' => 102,
+            'season' => '2024'
+        ]);
+
+        $request = new Team_Result_Confirmation_Request(
+            match_id: 1,
+            result_confirm: null, // Simulate missing selection
+            result_home: true
+        );
+
+        $response = $this->manager->handle_team_result_confirmation($fixture, $request);
+
+        $this->assertTrue($response->error);
+        $this->assertContains('Either confirm or challenge result', $response->err_msgs);
+    }
+
+    public function test_handle_team_result_confirmation_fails_when_challenge_no_comments(): void {
+        $fixture = new Fixture((object)[
+            'id' => 1,
+            'league_id' => 10,
+            'home_team' => 101,
+            'away_team' => 102,
+            'season' => '2024'
+        ]);
+
+        $request = new Team_Result_Confirmation_Request(
+            match_id: 1,
+            result_confirm: 'C', // Challenge
+            confirm_comments: '', // Empty comments
+            result_home: true
+        );
+
+        $response = $this->manager->handle_team_result_confirmation($fixture, $request);
+
+        $this->assertTrue($response->error);
+        $this->assertContains('You must enter a reason for challenging the result', $response->err_msgs);
+    }
+
+    public function test_handle_team_result_confirmation_assigns_away_approver(): void {
+        $GLOBALS['wp_stubs_get_current_user_id'] = 456;
+
+        $fixture_data = new stdClass();
+        $fixture_data->id = 1;
+        $fixture_data->league_id = 10;
+        $fixture_data->away_captain = null;
+        $fixture = new Fixture( $fixture_data );
+
+        $league = $this->createStub( League::class );
+        $league->method( 'get_competition_type' )->willReturn( 'standard' );
+        $this->league_service->method( 'get_league' )->willReturn( $league );
+
+        $request = new Team_Result_Confirmation_Request(
+            match_id: 1,
+            result_confirm: 'A',
+            result_away: true // Away team confirming
+        );
+
+        $this->manager->handle_team_result_confirmation( $fixture, $request );
+
+        $this->assertEquals( 456, $fixture->get_away_approver(), 'Away approver should be set to current user ID' );
         
         unset( $GLOBALS['wp_stubs_get_current_user_id'] );
     }

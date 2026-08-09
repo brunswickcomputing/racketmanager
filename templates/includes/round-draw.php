@@ -95,7 +95,7 @@ foreach ( $final->fixtures as $fixture_details ) {
                                         if ( is_numeric( $team_id ) ) {
                                             if ( -1 !== $team_id && ! $competition->is_tournament ) {
                                                 ?>
-                                                <a class="" href="/<?php echo esc_attr( seo_url( $competition->type ) ); ?>s/<?php echo esc_attr( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_attr( seo_url( $team->title ) ); ?>">
+                                                <a class="" href="/<?php echo esc_attr( seo_url( $competition->get_type() ) ); ?>s/<?php echo esc_attr( seo_url( $competition->name ) ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_attr( seo_url( $team->title ) ); ?>">
                                                 <?php
                                             }
                                             ?>

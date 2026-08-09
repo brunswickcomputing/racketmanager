@@ -23,20 +23,13 @@ class Fixture_Permission_Service {
     private Club_Repository_Interface $club_repository;
     private array $options = [];
 
-    public function __construct( Repository_Provider $repository_provider, Registration_Service $registration_service ) {
+    public function __construct( Repository_Provider $repository_provider, Registration_Service $registration_service, array $options = [] ) {
         $this->fixture_repository   = $repository_provider->get_fixture_repository();
         $this->registration_service = $registration_service;
         $this->league_repository    = $repository_provider->get_league_repository();
         $this->team_repository      = $repository_provider->get_team_repository();
         $this->club_repository      = $repository_provider->get_club_repository();
-        
-        global $racketmanager;
-        if ( $racketmanager && method_exists( $racketmanager, 'get_options' ) ) {
-            $options = $racketmanager->get_options();
-            if ( is_array( $options ) ) {
-                $this->options = $options;
-            }
-        }
+        $this->options              = $options;
     }
 
     /**
@@ -53,6 +46,7 @@ class Fixture_Permission_Service {
         }
 
         $context = $this->prepare_permission_context( $fixture );
+
         return $this->validate_and_evaluate_permissions( $fixture, $context );
     }
 
@@ -147,7 +141,7 @@ class Fixture_Permission_Service {
     private function evaluate_non_admin_permissions( Fixture $fixture, object $context ): object {
         $user_role = $this->identify_user_role( $fixture, $context );
         if ( ! $user_role->type ) {
-            $comp_type = $context->league->event->competition->type;
+            $comp_type = $context->league->get_competition_type();
             $options = $this->get_options();
             $capability = $options[ $comp_type ]['matchCapability'] ?? 'none';
             $entry     = $options[ $comp_type ]['resultEntry'] ?? 'home';
@@ -196,11 +190,22 @@ class Fixture_Permission_Service {
      * Identify if the user is a captain for either team.
      */
     private function identify_captain_role( Fixture $fixture, object $context ): object {
-        if ( $fixture->get_home_captain() && intval( $fixture->get_home_captain() ) === $context->userid ) {
+        $current_user_id = $this->get_current_user_id();
+
+        if ( $fixture->get_home_approver() && intval( $fixture->get_home_approver() ) === $current_user_id ) {
             return (object) [ 'type' => 'captain', 'team' => 'home' ];
         }
 
-        if ( $fixture->get_away_captain() && intval( $fixture->get_away_captain() ) === $context->userid ) {
+        if ( $fixture->get_away_approver() && intval( $fixture->get_away_approver() ) === $current_user_id ) {
+            return (object) [ 'type' => 'captain', 'team' => 'away' ];
+        }
+
+        // Check if the user is a captain of either team in the team repository
+        if ( ! empty( $context->home_team ) && $this->team_repository->find_captain( (int) $context->home_team->get_club_id(), $current_user_id ) ) {
+            return (object) [ 'type' => 'captain', 'team' => 'home' ];
+        }
+
+        if ( ! empty( $context->away_team ) && $this->team_repository->find_captain( (int) $context->away_team->get_club_id(), $current_user_id ) ) {
             return (object) [ 'type' => 'captain', 'team' => 'away' ];
         }
 
@@ -211,7 +216,7 @@ class Fixture_Permission_Service {
      * Evaluate permissions based on identified role and competition settings.
      */
     private function evaluate_role_permissions( Fixture $fixture, object $context, object $user_role ): object {
-        $comp_type = $context->league->event->competition->type;
+        $comp_type = $context->league->get_competition_type();
         $options = $this->get_options();
         $capability = $options[ $comp_type ]['matchCapability'] ?? 'none';
         $entry     = $options[ $comp_type ]['resultEntry'] ?? 'home';
@@ -329,20 +334,20 @@ class Fixture_Permission_Service {
      * Evaluate update mode for home team player.
      */
     private function evaluate_home_player_cap_update_mode( Fixture $fixture ): string {
-        if ( empty( $fixture->get_away_captain() ) ) {
-            return 'update';
+        if ( ! empty( $fixture->get_away_approver() ) ) {
+            return empty( $fixture->get_home_approver() ) ? 'approval' : '';
         }
-        return empty( $fixture->get_home_captain() ) ? 'approval' : '';
+        return '';
     }
 
     /**
      * Evaluate update mode for away team player.
      */
     private function evaluate_away_player_cap_update_mode( Fixture $fixture ): string {
-        if ( empty( $fixture->get_home_captain() ) ) {
-            return 'update';
+        if ( ! empty( $fixture->get_home_approver() ) ) {
+            return empty( $fixture->get_away_approver() ) ? 'approval' : '';
         }
-        return empty( $fixture->get_away_captain() ) ? 'approval' : '';
+        return '';
     }
 
     /**
@@ -454,11 +459,11 @@ class Fixture_Permission_Service {
      * Evaluate player permissions for 'either' entry rule when a result is pending for the home side.
      */
     private function evaluate_player_either_home_pending_permissions( Fixture $fixture, int $userid, string $player_team ): object {
-        if ( empty( $fixture->get_home_captain() ) ) {
+        if ( empty( $fixture->get_home_approver() ) ) {
             return $this->build_permission_response( true, 'player', $player_team, '', true );
         }
 
-        if ( (int) $fixture->get_home_captain() === $userid ) {
+        if ( (int) $fixture->get_home_approver() === $userid ) {
             return $this->build_permission_response( true, 'player', $player_team );
         }
 
@@ -469,11 +474,11 @@ class Fixture_Permission_Service {
      * Evaluate player permissions for 'either' entry rule when a result is pending for the away side.
      */
     private function evaluate_player_either_away_pending_permissions( Fixture $fixture, int $userid, string $player_team ): object {
-        if ( empty( $fixture->get_away_captain() ) ) {
+        if ( empty( $fixture->get_away_approver() ) ) {
             return $this->build_permission_response( true, 'player', $player_team, '', true );
         }
 
-        if ( (int) $fixture->get_away_captain() === $userid ) {
+        if ( (int) $fixture->get_away_approver() === $userid ) {
             return $this->build_permission_response( true, 'player', $player_team );
         }
 

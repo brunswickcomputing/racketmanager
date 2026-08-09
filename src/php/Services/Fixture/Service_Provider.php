@@ -35,6 +35,7 @@ class Service_Provider {
     private ?Fixture_Permission_Service $fixture_permission_service = null;
     private ?Fixture_Detail_Service $fixture_detail_service = null;
     private ?Fixture_Maintenance_Service $fixture_maintenance_service = null;
+    private ?Fixture_Finalization_Service $fixture_finalization_service = null;
 
     public function __construct(
         ?Result_Service $result_service = null, ?Knockout_Progression_Service $progression_service = null, ?League_Service $league_service = null, ?Score_Validation_Service $score_validator = null, ?Player_Validation_Service $player_validator = null, ?Notification_Service $notification_service = null, ?Registration_Service $registration_service = null
@@ -145,6 +146,14 @@ class Service_Provider {
 
     public function set_fixture_maintenance_service( ?Fixture_Maintenance_Service $fixture_maintenance_service ): void {
         $this->fixture_maintenance_service = $fixture_maintenance_service;
+    }
+
+    public function get_fixture_finalization_service(): ?Fixture_Finalization_Service {
+        return $this->fixture_finalization_service;
+    }
+
+    public function set_fixture_finalization_service( ?Fixture_Finalization_Service $fixture_finalization_service ): void {
+        $this->fixture_finalization_service = $fixture_finalization_service;
     }
 
 }

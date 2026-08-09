@@ -43,7 +43,7 @@ if ( $user_can_update ) {
 $allow_schedule_match     = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
-$image = match ( $competition->type ) {
+$image = match ( $competition->get_type() ) {
     'league'     => 'assets/icons/bootstrap-icons.svg#table',
     'cup'        => 'assets/icons/bootstrap-icons.svg#trophy-fill',
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
@@ -619,7 +619,7 @@ if ( $match ) {
                         if ( $match_editable ) {
                             ?>
                             <div class="match__footer-aside text-uppercase">
-                                <a href="" class="scoreResetLink" data-form-id="<?php echo esc_attr( $form_id ); ?>" data-action="reset-match-scores">
+                                <a role="button" data-action="reset-match-scores" data-form-id="<?php echo esc_attr( $form_id ); ?>">
                                     <?php esc_html_e( 'Reset scores', 'racketmanager' ); ?>
                                 </a>
                             </div>

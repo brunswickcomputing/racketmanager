@@ -666,7 +666,7 @@ class Shortcodes_Competition extends Shortcodes {
             if ( ! empty( $club_choice ) ) {
                 $output = $club_choice;
             } else {
-                $output = match ( $competition->type ) {
+                $output = match ( $competition->get_type() ) {
                     'league'     => $this->show_league_entry( $competition, $season, $competition_season, $club, $template ),
                     'cup'        => $this->show_cup_entry( $competition, $season, $competition_season, $club, $template ),
                     'tournament' => $this->show_tournament_entry( $tournament, $player, $template ),
@@ -698,7 +698,7 @@ class Shortcodes_Competition extends Shortcodes {
         if ( current_user_can( 'manage_racketmanager' ) ) {
             $clubs = $this->club_service->get_clubs( $args );
         } else {
-            $competition_options = $racketmanager->get_options( $competition->type );
+            $competition_options = $racketmanager->get_options( $competition->get_type() );
             if ( $competition_options ) {
                 $entry_option = $competition_options['entry_level'] ?? null;
                 if ( $entry_option ) {

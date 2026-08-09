@@ -13,6 +13,7 @@ use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
+use Racketmanager\Services\Validator\Validator_Fixture;
 use function Racketmanager\get_rubber;
 
 /**
@@ -23,17 +24,24 @@ class Rubber_Result_Manager {
     private League_Service $league_service;
     private Rubber_Repository_Interface $rubber_repository;
     private Player_Validation_Service $player_validator;
+    private ?Validator_Fixture $validator;
 
     public function __construct(
         Score_Validation_Service $score_validator,
         League_Service $league_service,
         ?Rubber_Repository_Interface $rubber_repository = null,
-        ?Player_Validation_Service $player_validator = null
+        ?Player_Validation_Service $player_validator = null,
+        ?Validator_Fixture $validator = null
     ) {
         $this->score_validator   = $score_validator;
         $this->league_service    = $league_service;
         $this->rubber_repository = $rubber_repository ?? new Rubber_Repository();
         $this->player_validator  = $player_validator;
+        $this->validator         = $validator;
+    }
+
+    public function set_validator( ?Validator_Fixture $validator ): void {
+        $this->validator = $validator;
     }
 
     /**
@@ -56,15 +64,14 @@ class Rubber_Result_Manager {
         // 1. Handle Dummy Players
         $players = $this->player_validator->apply_dummy_players( $league->type ?? '', $request->rubber_status ?? 'none', $request->players, $dummy_players );
 
-        $player_numbers = [ 1 ];
-        if ( $request->rubber_type && str_contains( $request->rubber_type, 'D' ) ) {
-            $player_numbers[] = 2;
-        }
-
         // 2. Validate Players Involved
-        // For now, we rely on the legacy validator being passed or available.
-        // But since we want to move away from it, we might need a new way.
-        // For this step, we assume the players are already partially validated by the caller, or we add minimal checks.
+        if ( ! $request->is_cancelled && $this->validator ) {
+            $player_numbers = [ 1 ];
+            if ( $request->rubber_type && ( str_contains( $request->rubber_type, 'D' ) || str_contains( $request->rubber_type, 'X' ) ) ) {
+                $player_numbers[] = 2;
+            }
+            $this->validator->players_involved( [ $request->rubber_number => $request->players ], $player_numbers, $request->rubber_number, false, false );
+        }
 
         // 3. Validate Score
         $scoring_context = new Scoring_Context(
@@ -81,10 +88,24 @@ class Rubber_Result_Manager {
         $set_prefix = 'set_' . $request->rubber_number . '_';
         $this->score_validator->validate( $scoring_context, $request->sets, $request->rubber_status, $set_prefix, $request->rubber_number );
 
-        if ( $this->score_validator->get_error() ) {
+        $errors   = $this->score_validator->get_err_msgs();
+        $err_flds = $this->score_validator->get_err_flds();
+
+        if ( $this->validator && $this->validator->error ) {
+            $errors   = array_merge( $errors, $this->validator->err_msgs );
+            $err_flds = array_merge( $err_flds, $this->validator->err_flds );
+            
+            // Clear errors from the validator so they don't repeat for the next rubber
+            // Fixture_Result_Manager will aggregate them.
+            $this->validator->error    = false;
+            $this->validator->err_msgs = [];
+            $this->validator->err_flds = [];
+        }
+
+        if ( ! empty( $errors ) ) {
             throw new Fixture_Validation_Exception(
-                $this->score_validator->get_err_msgs(),
-                $this->score_validator->get_err_flds()
+                $errors,
+                $err_flds
             );
         }
 

@@ -134,6 +134,7 @@ class Fixture_Result_Manager {
     /** @var Result_Reporting_Service */
     private Result_Reporting_Service $result_reporting_service;
     private Fixture_Maintenance_Service $fixture_maintenance_service;
+    private Fixture_Finalization_Service $finalization_service;
 
     private Service_Provider $service_provider;
 
@@ -150,10 +151,10 @@ class Fixture_Result_Manager {
         $this->service_provider = $service_provider;
         $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
         $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service() ?? new Fixture_Maintenance_Service( $service_provider, $repository_provider, $this );
-        $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
-        
         $container = $container ?? $GLOBALS['racketmanager']->container ?? null;
         $this->progression_service = $service_provider->get_progression_service( $container ) ?? new Knockout_Progression_Service();
+        $this->finalization_service = $service_provider->get_fixture_finalization_service() ?? new Fixture_Finalization_Service( null, $this->progression_service, $this->result_reporting_service );
+        $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
         $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );
         $this->score_validator     = $service_provider->get_score_validator() ?? new Score_Validation_Service();
         $this->settings_service    = $service_provider->get_settings_service() ?? new Settings_Service();
@@ -169,7 +170,7 @@ class Fixture_Result_Manager {
         $this->results_checker_repository = $repository_provider->get_results_checker_repository();
         $this->fixture_repository         = $repository_provider->get_fixture_repository();
 
-        $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $this->registration_service );
+        $this->permission_service = $service_provider->get_fixture_permission_service() ?? new Fixture_Permission_Service( $repository_provider, $this->registration_service, $this->settings_service->get_options() );
 
         $this->notification_service = $service_provider->get_notification_service();
         if ( ! $this->notification_service && $container ) {
@@ -280,7 +281,7 @@ class Fixture_Result_Manager {
             $fixture->set_date_result_entered( date( 'Y-m-d H:i:s' ) );
         }
 
-        $this->assign_captain_to_fixture( $fixture, $is_update_allowed->user_team );
+        $this->assign_approver_to_fixture( $fixture, $is_update_allowed->user_team );
 
         if ( 'Y' === $request->confirmed ) {
             return $this->confirm_result( $fixture, '', null, $result );
@@ -305,9 +306,6 @@ class Fixture_Result_Manager {
 
         $is_update_allowed = $this->is_update_allowed( $fixture );
         $validator         = ( new Validator_Fixture() )->can_player_enter_result( $is_update_allowed, $request->players );
-        if ( ! empty( $validator->error ) ) {
-            return new Team_Result_Response( (array) $validator->get_details() );
-        }
 
         $rubber_info       = $this->process_rubbers( $fixture, $request, $validator );
         if ( ! empty( $validator->error ) ) {
@@ -328,7 +326,7 @@ class Fixture_Result_Manager {
             $fixture->set_date_result_entered( date( 'Y-m-d H:i:s' ) );
         }
 
-        $this->assign_captain_to_fixture( $fixture, $is_update_allowed->user_team );
+        $this->assign_approver_to_fixture( $fixture, $is_update_allowed->user_team );
 
         $this->update_result( $fixture, $result, $confirmed, $league_repository );
 
@@ -354,6 +352,9 @@ class Fixture_Result_Manager {
         $processed_rubbers = [];
         $updated_rubbers   = [];
 
+        // Set the validator on the rubber manager to allow unified validation
+        $this->rubber_manager->set_validator( $validator );
+
         foreach ( $request->rubber_ids as $ix => $rubber_id ) {
             try {
                 $rubber_result = $this->process_rubber_update( $fixture, $request, (int) $ix, $is_withdrawn, $is_cancelled, $dummy_players );
@@ -378,7 +379,7 @@ class Fixture_Result_Manager {
             } catch ( Fixture_Validation_Exception $e ) {
                 $validator->error    = true;
                 $validator->err_msgs = array_merge( $validator->err_msgs, $e->get_error_msgs() );
-                $validator->err_flds = array_merge( $validator->err_flds, $e->get_error_flds() );
+                $validator->err_flds = array_unique( array_merge( $validator->err_flds, $e->get_error_flds() ) );
             }
         }
 
@@ -552,6 +553,11 @@ class Fixture_Result_Manager {
         
         $final_confirmed_status = $request->result_confirm;
         $update_standings       = false;
+
+        $team = $request->result_home ? 'home' : ( $request->result_away ? 'away' : '' );
+        if ( $team ) {
+            $this->assign_approver_to_fixture( $fixture, $team );
+        }
 
         if ( 'A' === $request->result_confirm ) {
             $result_confirmation = $this->settings_service->get_option( $league->get_competition_type(), 'resultConfirmation', 'manual' );
@@ -763,15 +769,9 @@ class Fixture_Result_Manager {
             return new Fixture_Update_Response( $outcomes );
         }
 
-        $stage = Stage::from_league( $league );
-
-        if ( $league->is_championship ) {
-            $this->progression_service->progress_winner( $stage, $fixture, $league );
-            $this->progression_service->handle_consolation( $stage, $fixture, $league );
-            $outcomes[] = Fixture_Update_Status::PROGRESSED;
-        } else {
-            $league->update_standings( (string) $fixture->get_season() );
-            $outcomes[] = Fixture_Update_Status::TABLE_UPDATED;
+        if ( 'Y' === $confirmed ) {
+            $finalization_outcomes = $this->finalization_service->finalize( $fixture, $league, $result, true, $league_repository );
+            $outcomes = array_merge( $outcomes, $finalization_outcomes );
         }
 
         return new Fixture_Update_Response( $outcomes );
@@ -787,6 +787,12 @@ class Fixture_Result_Manager {
      */
     public function reset_result( Fixture $fixture ): Fixture_Reset_Response {
         $fixture->reset_result();
+
+        // Reset associated rubbers instead of deleting them.
+        $rubbers = $this->rubber_repository->find_by_fixture_id( (int) $fixture->get_id() );
+        foreach ( $rubbers as $rubber ) {
+            $rubber->reset_result();
+        }
 
         // Persist the reset state.
         $empty_result = new Result(
@@ -812,6 +818,9 @@ class Fixture_Result_Manager {
             $league->update_standings( (string) $fixture->get_season() );
         }
 
+        // Trigger reporting even on reset? Usually no, but we might need to notify external systems.
+        // For now we follow existing logic.
+
         $status = ( $league && $league->is_championship )
             ? Fixture_Reset_Status::SUCCESS_KNOCKOUT_RESET
             : Fixture_Reset_Status::SUCCESS_DIVISION_RESET;
@@ -831,7 +840,7 @@ class Fixture_Result_Manager {
     private function apply_confirmation_to_fixture( Fixture $fixture, Fixture_Confirmation_Context $context ): Fixture_Update_Response {
         $fixture->set_confirmed( $context->status );
 
-        $comments = $fixture->get_comments() ? maybe_unserialize( $fixture->get_comments() ) : [];
+        $comments = $fixture->get_comments();
         if ( ! is_array( $comments ) ) {
             $comments = [];
         }
@@ -841,7 +850,7 @@ class Fixture_Result_Manager {
         } else {
             $comments['confirm'] = $context->confirm_comments;
         }
-        $fixture->set_comments( maybe_serialize( $comments ) );
+        $fixture->set_comments( $comments );
 
         if ( $context->update_standings ) {
             $response = $this->update_result( $fixture, $context->result, $context->status, $context->league_repository );
@@ -908,12 +917,12 @@ class Fixture_Result_Manager {
     }
 
     /**
-     * Assign the current user as the captain for the fixture if not already set.
+     * Assign the current user as the approver for the fixture if not already set.
      *
      * @param Fixture $fixture
      * @param string $team 'home' or 'away'
      */
-    private function assign_captain_to_fixture( Fixture $fixture, string $team ): void {
+    private function assign_approver_to_fixture( Fixture $fixture, string $team ): void {
         if ( 'home' !== $team && 'away' !== $team ) {
             return;
         }
@@ -923,10 +932,10 @@ class Fixture_Result_Manager {
             return;
         }
 
-        if ( 'home' === $team && ! $fixture->get_home_captain() ) {
-            $fixture->set_home_captain( (string) $current_user_id );
-        } elseif ( 'away' === $team && ! $fixture->get_away_captain() ) {
-            $fixture->set_away_captain( (string) $current_user_id );
+        if ( 'home' === $team && ! $fixture->get_home_approver() ) {
+            $fixture->set_home_approver( (string) $current_user_id );
+        } elseif ( 'away' === $team && ! $fixture->get_away_approver() ) {
+            $fixture->set_away_approver( (string) $current_user_id );
         }
     }
 

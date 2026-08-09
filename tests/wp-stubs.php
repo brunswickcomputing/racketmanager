@@ -623,6 +623,10 @@ namespace {
                 $messages = $this->get_error_messages( $code );
                 return $messages[0] ?? "";
             }
+
+            public function get_error_data( $code = "" ) {
+                return $this->error_data[ $code ] ?? null;
+            }
         }
         ');
     }
@@ -633,9 +637,21 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'esc_html' ) ) {
+        function esc_html( $text ) {
+            return $text;
+        }
+    }
+
+    if ( ! function_exists( '__' ) ) {
+        function __( $text, $domain = 'default' ) {
+            return $text;
+        }
+    }
+
     if ( ! class_exists( 'WP_REST_Request' ) ) {
         eval('
-        class WP_REST_Request {
+        class WP_REST_Request implements ArrayAccess {
             private $method;
             private $route;
             private $params = [];
@@ -664,6 +680,26 @@ namespace {
 
             public function set_route( $route ) {
                 $this->route = $route;
+            }
+
+            public function offsetExists( $offset ): bool {
+                return isset( $this->params[ $offset ] );
+            }
+
+            public function offsetGet( $offset ): mixed {
+                return $this->params[ $offset ] ?? null;
+            }
+
+            public function offsetSet( $offset, $value ): void {
+                $this->params[ $offset ] = $value;
+            }
+
+            public function offsetUnset( $offset ): void {
+                unset( $this->params[ $offset ] );
+            }
+
+            public function get_attributes() {
+                return [];
             }
         }
         ');
@@ -735,6 +771,14 @@ namespace Racketmanager {
             $string_field = preg_replace( '/\s+/', ' ', $string_field );
             $string_field = str_replace( '-', '_', $string_field );
             return preg_replace( '/\s/', '-', $string_field );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\un_seo_url' ) ) {
+        function un_seo_url( string $string_field ): string {
+            $string_field = str_replace( '-', ' ', $string_field );
+            $string_field = str_replace( '_', '-', $string_field );
+            return $string_field;
         }
     }
 

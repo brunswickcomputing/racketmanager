@@ -29,7 +29,6 @@ use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\seo_url;
@@ -309,7 +308,7 @@ class Rest_Resources extends WP_REST_Controller {
             $competition_name = un_seo_url( $competition_name );
             $validator        = $validator->competition( $competition_name );
             if ( empty( $validator->error ) ) {
-                $competition = get_competition( $competition_name, 'name' );
+                $competition = $this->competition_service->get_competition( $competition_name, 'name' );
                 if ( $competition ) {
                     $validator = $validator->season_set( $season, $competition->get_seasons() );
                     if ( empty( $validator->error ) ) {

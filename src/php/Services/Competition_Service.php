@@ -96,6 +96,46 @@ class Competition_Service {
         return $this->league_team_repository->find_by_event_id( $event->get_id(), $season, null, $club_id );
     }
 
+    /**
+     * Get Competition object, mirroring legacy get_competition() behavior
+     * but following DDD principles and using the modern Factory.
+     *
+     * @param object|int|string|null $competition_id Competition ID, object, or name. Defaults to global $competition.
+     * @param string|null           $search_term    Type of search ('id' or 'name').
+     *
+     * @return Competition
+     * @throws Competition_Not_Found_Exception If competition not found.
+     */
+    public function get_competition( object|int|string|null $competition_id = null, ?string $search_term = 'id' ): Competition {
+        if ( empty( $competition_id ) && isset( $GLOBALS['competition'] ) ) {
+            $competition_id = $GLOBALS['competition'];
+        }
+
+        if ( $competition_id instanceof Competition ) {
+            return $competition_id;
+        }
+
+        if ( is_object( $competition_id ) ) {
+            // Support for stdClass objects, ensuring minimum requirements for the Factory.
+            if ( ! isset( $competition_id->sport ) ) {
+                $competition_id->sport = 'tennis';
+            }
+            return Competition::from_object( $competition_id );
+        }
+
+        if ( 'name' === $search_term ) {
+            $competition = $this->competition_repository->find_by_name( (string) $competition_id );
+        } else {
+            $competition = $this->competition_repository->find_by_id( (int) $competition_id );
+        }
+
+        if ( ! $competition ) {
+            throw new Competition_Not_Found_Exception( Util_Messages::competition_not_found( $competition_id ) );
+        }
+
+        return $competition;
+    }
+
     public function get_by_id( null|string|int $competition_id ): Competition {
         $competition = $this->competition_repository->find_by_id( $competition_id );
         if ( ! $competition ) {

@@ -19,7 +19,6 @@ use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
@@ -133,7 +132,7 @@ final class Admin_League extends Admin_Display {
             $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
             $validator      = $validator->competition( $competition_id );
             if ( empty( $validator->error ) ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_competition( $competition_id );
                 $season      = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
                 $seasons     = $competition->get_seasons();
                 $validator   = $validator->season_set( $season, $seasons );
@@ -190,7 +189,7 @@ final class Admin_League extends Admin_Display {
             $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
             if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_competition( $competition_id );
                 if ( $competition ) {
                     $current_season = $competition->get_season_by_name( $season );
                     if ( isset( $_POST['rounds'] ) ) {
@@ -268,7 +267,7 @@ final class Admin_League extends Admin_Display {
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $validator      = $validator->competition( $competition_id );
         if ( empty( $validator->error ) ) {
-            $competition = get_competition( $competition_id );
+            $competition = $this->competition_service->get_competition( $competition_id );
             $current_season = $competition->get_season_by_name( $season );
             require_once RACKETMANAGER_PATH . 'templates/admin/includes/setup.php';
         } else {
@@ -625,7 +624,7 @@ final class Admin_League extends Admin_Display {
             $this->show_message();
         }
         $competition_id = intval( $_GET['competition_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $competition    = get_competition( $competition_id );
+        $competition    = $this->competition_service->get_competition( $competition_id );
         $league_id      = false;
         $league_title   = '';
         $season_id      = false;

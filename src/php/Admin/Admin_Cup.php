@@ -17,7 +17,6 @@ use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_league;
 use function Racketmanager\get_match;
 use function Racketmanager\get_team;
@@ -210,7 +209,7 @@ final class Admin_Cup extends Admin_Championship {
                 $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
                 $season         = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
                 if ( $competition_id ) {
-                    $competition = get_competition( $competition_id );
+                    $competition = $this->competition_service->get_competition( $competition_id );
                     if ( $competition ) {
                         $cup_season = $competition->get_season_by_name( $season );
                         if ( isset( $_POST['rounds'] ) ) {
@@ -560,7 +559,7 @@ final class Admin_Cup extends Admin_Championship {
             $final_key       = isset( $_GET['final'] ) ? sanitize_text_field( wp_unslash( $_GET['final'] ) ) : null;
             //phpcs:enable WordPress.Security.NonceVerification.Recommended
             if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_competition( $competition_id );
                 if ( $competition && $league_id ) {
                     $league = get_league( $league_id );
                     if ( $league ) {
@@ -617,7 +616,7 @@ final class Admin_Cup extends Admin_Championship {
             $match_id       = isset( $_GET['edit'] ) ? intval( $_GET['edit'] ) : null;
             //phpcs:enable WordPress.Security.NonceVerification.Recommended
             if ( $competition_id ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_competition( $competition_id );
                 if ( $competition ) {
                     $is_finals = true;
                     if ( $league_id ) {

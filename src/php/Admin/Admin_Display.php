@@ -27,7 +27,6 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\Validator\Validator;
 use stdClass;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_match;
@@ -207,7 +206,7 @@ class Admin_Display {
                 $object_name = 'league_id';
                 $object_id   = $league->id;
             } elseif ( isset( $_GET['competition_id'] ) ) {
-                $competition = get_competition( intval( $_GET['competition_id'] ) );
+                $competition = $this->competition_service->get_competition( intval( $_GET['competition_id'] ) );
                 $object_type = 'competition';
                 $object_name = 'competition_id';
                 $object_id   = $competition->id;
@@ -256,7 +255,7 @@ class Admin_Display {
             $object_name = 'league_id';
             $object_id   = $league->id;
         } elseif ( isset( $_POST['competition_id'] ) ) {
-            $competition = get_competition( intval( $_POST['competition_id'] ) );
+            $competition = $this->competition_service->get_competition( intval( $_POST['competition_id'] ) );
             $title       = $competition->name;
             $object_type = 'competition';
             $object      = $competition;
@@ -325,7 +324,7 @@ class Admin_Display {
                     $sent = $league->contact_teams( $season, $message );
                 }
             } elseif ( $competition_id ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_competition( $competition_id );
                 if ( $competition ) {
                     $sent = $competition->contact_teams( $season, $message );
                 }

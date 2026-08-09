@@ -18,7 +18,6 @@ use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Services\Validator\Validator_Config;
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 
 /**
@@ -217,7 +216,7 @@ final class Admin_Competition extends Admin_Display {
             $season         = isset( $_GET['season'] ) ? intval( $_GET['season'] ) : null;
             $validator      = $validator->competition( $competition_id );
             if ( empty( $validator->error ) ) {
-                $competition = get_competition( $competition_id );
+                $competition = $this->competition_service->get_competition( $competition_id );
                 if ( $season ) {
                     $validator = $validator->season_set( $season, $competition->get_seasons() );
                     if ( ! empty( $validator->error ) ) {
@@ -594,7 +593,7 @@ final class Admin_Competition extends Admin_Display {
      * @return void
      */
     private function schedule_open_activities( int $competition_id, object $season ): void {
-        $competition = get_competition( $competition_id );
+        $competition = $this->competition_service->get_competition( $competition_id );
         if ( $competition ) {
             $this->schedule_team_competition_emails( $competition_id, $season );
             if ( $competition->is_team_entry ) {

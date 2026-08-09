@@ -12,7 +12,7 @@
     "@babel/core": "^7.29.6",
     "@babel/preset-env": "^7.29.2",
     "babel-jest": "^30.3.0",
-    "esbuild": "^0.25.12",
+    "esbuild": "^0.28.1",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
     "jquery": "^4.0.0"

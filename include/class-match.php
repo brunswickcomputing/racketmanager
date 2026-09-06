@@ -1973,7 +1973,7 @@ final class Racketmanager_Match {
     public function notify_next_match_teams(): bool {
         global $racketmanager;
 
-        if ( ( ( -1 === $this->teams['home']->id || -1 === $this->teams['away']->id ) || ( ! isset( $this->host ) ) ) || ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) ) {
+        if ( ( ( '-1' === $this->home_team || '-1' === $this->away_team ) || ( ! isset( $this->host ) ) ) || ( 'S' === $this->teams['home']->team_type || 'S' === $this->teams['away']->team_type ) ) {
             return false;
         }
         $email_to = $this->get_email_to();

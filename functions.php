@@ -180,12 +180,15 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
 /**
  * Get Competition object
  *
+ * @deprecated 2.0.0 Use \Racketmanager\Services\Competition_Service::get_competition() instead.
+ *
  * @param Competition|int|string|null $competition Competition ID or competition object. Defaults to global $competition.
- * @param string|null $search_term type of search.
+ * @param string|null                 $search_term type of search.
  *
  * @return Competition|null competition|null
  */
 function get_competition( Competition|int|string|null $competition = null, ?string $search_term = 'id' ): ?Competition {
+    trigger_error( 'get_competition() is deprecated since version 2.0.0! Use \Racketmanager\Services\Competition_Service::get_competition() instead.', E_USER_DEPRECATED ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error
     if ( empty( $competition ) && isset( $GLOBALS['competition'] ) ) {
         $competition = $GLOBALS['competition'];
     }

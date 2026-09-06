@@ -757,7 +757,7 @@ class Player {
                 )
             );
         } elseif ( 'competition' === $match_source ) {
-            $competition = get_competition( $grouping );
+            $competition = $grouping instanceof \Racketmanager\Domain\Competition\Competition ? $grouping : get_competition( $grouping );
             $matches     = $competition->get_matches(
                 array(
                     'season'  => $season,
@@ -970,7 +970,7 @@ class Player {
      * @param array|string $args search parameters.
      * @return array
      */
-    public function get_competitions( array|string $args = array() ): array {
+    public function get_competitions( array|string $args = array(), ?\Racketmanager\Services\Competition_Service $competition_service = null ): array {
         global $wpdb;
         $defaults     = array(
             'type'   => false,
@@ -986,7 +986,7 @@ class Player {
         if ( $season ) {
             $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
         }
-        $sql          = "SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE `player_id` = $this->ID AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
+        $sql          = "SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE `player_id` = $this->id AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
         $sql         .= Util::search_string( $search_terms );
         $sql         .= " GROUP BY c.id, c.name, m.season";
         $sql         .= " ORDER BY m.season DESC, c.name ASC";
@@ -1000,7 +1000,11 @@ class Player {
         }
         $i = 0;
         foreach ( $competitions as $competition ) {
-            $competition_dtl = get_competition( $competition->id );
+            if ( $competition_service ) {
+                $competition_dtl = $competition_service->get_competition( $competition->id );
+            } else {
+                $competition_dtl = get_competition( $competition->id );
+            }
             if ( $competition_dtl ) {
                 $competition_dtl->season = $competition->season;
                 if ( isset( $competition_dtl->seasons[ $competition->season ] ) ) {

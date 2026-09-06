@@ -1778,13 +1778,13 @@ final class Racketmanager_Match {
      */
     public function set_teams( ?string $home, ?string $away ): object {
         global $wpdb;
-        if ( empty( $home ) ) {
+        if ( is_null( $home ) ) {
             $home = $this->home_team;
         } else {
             $this->home_team = $home;
             $this->set_teams_details( 'home' );
         }
-        if ( empty( $away ) ) {
+        if ( is_null( $away ) ) {
             $away = $this->away_team;
         } else {
             $this->away_team = $away;

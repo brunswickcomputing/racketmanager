@@ -354,6 +354,7 @@ final class Charges {
                         'club'   => $club->id,
                         'season' => $this->season,
                         'count'  => true,
+                        'status' => 1,
                     )
                 );
                 if ( $num_teams > 0 ) {

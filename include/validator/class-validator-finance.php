@@ -89,10 +89,10 @@ final class Validator_Finance extends Validator_Config {
      * Validate purchase order
      *
      * @param ?string $purchase_order new purchase order.
-     * @param string $original_purchase_order original match date.
+     * @param ?string $original_purchase_order original match date.
      * @return object $validation updated validation object.
      */
-    public function purchase_order( ?string $purchase_order, string $original_purchase_order ): object {
+    public function purchase_order( ?string $purchase_order, ?string $original_purchase_order ): object {
         if ( $purchase_order === $original_purchase_order ) {
             $this->error      = true;
             $this->err_flds[] = 'purchaseOrder';

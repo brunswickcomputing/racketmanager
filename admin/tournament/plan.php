@@ -248,8 +248,9 @@ jQuery(document).ready(function(){
                     </div>
                     <div class="mb-3">
                         <?php
-                        $start_time  = strtotime( $tournament->start_time );
-                        $time_offset = 0;
+                        $start_time   = strtotime( $tournament->start_time );
+                        $time_offset  = 0;
+                        $prev_players = array();
                         for ( $i = 0; $i < $max_schedules; $i++ ) {
                             $scheduled_players = array();
                             $player_warnings   = array();
@@ -285,7 +286,14 @@ jQuery(document).ready(function(){
                                                         if ( false !== $player_found ) {
                                                             $player = get_player( $player_id );
                                                             if ( $player ) {
-                                                                $player_warnings[] = $player->fullname;
+                                                                $player_warnings['clash'][] = $player->fullname;
+                                                            }
+                                                        }
+                                                        $prev_player_found = in_array( intval( $player_id ), $prev_players, true );
+                                                        if ( false !== $prev_player_found ) {
+                                                            $player = get_player( $player_id );
+                                                            if ( $player ) {
+                                                                $player_warnings['prev_round'][] = $player->fullname;
                                                             }
                                                         }
                                                         $scheduled_players[] = $player_id;
@@ -301,6 +309,7 @@ jQuery(document).ready(function(){
                                             </div>
                                             <?php
                                         }
+                                        $prev_players = $scheduled_players;
                                         ?>
                                     </div>
                                 </div>
@@ -308,14 +317,21 @@ jQuery(document).ready(function(){
                                 if ( $player_warnings ) {
                                     ?>
                                     <div class="mb-3 mt-3">
-                                        <span class="fw-bold"><?php esc_html_e( 'Potential clashes', 'racketmanager' ); ?></span>
+                                        <span class="fw-bold"><?php esc_html_e( 'Potential problems', 'racketmanager' ); ?></span>
                                         <?php
-                                        foreach ( $player_warnings as $player_warning ) {
-                                            ?>
-                                            <div class="">
-                                                <span><?php echo esc_html( $player_warning ); ?></span>
-                                            </div>
-                                            <?php
+                                        foreach ( $player_warnings as $warning_type => $player_warning ) {
+                                            $warning_msg = match ( $warning_type ) {
+                                                'clash'      => __( 'Clash', 'racketmanager' ),
+                                                'prev_round' => __( 'Playing in previous round', 'racketmanager' ),
+                                                default      => __( 'Unknown', 'racketmanager' )
+                                            };
+                                            foreach ( $player_warning as $player ) {
+                                                ?>
+                                                <div class="">
+                                                    <span><?php echo esc_html( $player ) . ' - ' . esc_html( $warning_msg ); ?></span>
+                                                </div>
+                                                <?php
+                                            }
                                         }
                                         ?>
                                     </div>

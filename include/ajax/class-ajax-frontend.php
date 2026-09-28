@@ -426,6 +426,7 @@ class Ajax_Frontend extends Ajax {
         $start_times = array();
         $club_id     = null;
         $club_entry  = null;
+		$competition = null;
 		$validator   = new Validator_Entry_Form();
 		//phpcs:disable WordPress.Security.NonceVerification.Missing
 		$validator = $validator->nonce( 'cup-entry' );
@@ -437,7 +438,7 @@ class Ajax_Frontend extends Ajax {
 				$competition_id = isset( $_POST['competitionId'] ) ? sanitize_text_field( wp_unslash( $_POST['competitionId'] ) ) : '';
 				$club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
 				//phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				$events         = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
+				$events         = isset( $_POST['event'] ) && is_array( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
 				$teams          = isset( $_POST['team'] ) ? wp_unslash( $_POST['team'] ) : array();
 				$captains       = isset( $_POST['captain'] ) ? wp_unslash( $_POST['captain'] ) : array();
 				$captain_ids    = isset( $_POST['captainId'] ) ? wp_unslash( $_POST['captainId'] ) : array();
@@ -451,9 +452,14 @@ class Ajax_Frontend extends Ajax {
 				$club_entry->club     = $club_id;
 				$club_entry->season   = $season;
 				$club_entry->comments = $comments;
+				$allowed_event_ids = array();
 				if ( $competition_id ) {
 					$competition = get_competition( $competition_id );
 					if ( $competition ) {
+						$validator = $validator->season_set( $season, $competition->seasons );
+						if ( isset( $competition->seasons[ $season ] ) ) {
+							$allowed_event_ids = array_map( 'intval', array_column( $competition->get_entry_events( $season ), 'id' ) );
+						}
 						if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
 							$start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
 							$start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
@@ -466,10 +472,13 @@ class Ajax_Frontend extends Ajax {
 						$validator = $validator->competition( $competition );
 					}
 					$club_entry->competition = $competition;
+				} else {
+					$validator = $validator->competition( $competition );
 				}
 
 				$validator = $validator->club( $club_id );
-				$validator = $validator->events_entry( $events );
+				$validator = $validator->events_entry( $events, null, $allowed_event_ids );
+				$events    = $validator->validated_events;
 				foreach ( $events as $event_id ) {
 					$event      = get_event( $event_id );
 					$team       = $teams[$event->id] ?? null;
@@ -528,6 +537,8 @@ class Ajax_Frontend extends Ajax {
 		$validator             = new Validator_Entry_Form();
 		$club_id               = null;
 		$club_entry            = null;
+		$competition           = null;
+		$allowed_event_ids     = array();
 		$courts_needed         = array();
 		$match_day_restriction = null;
 		$weekend_allowed       = null;
@@ -542,12 +553,11 @@ class Ajax_Frontend extends Ajax {
 			$validator      = $validator->competition( $competition_id );
 			$club_id        = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
 			$validator      = $validator->club( $club_id );
-			$events         = isset( $_POST['event'] ) ? array_map( 'intval', $_POST['event'] ) : array();
-			$validator      = $validator->events_entry( $events );
+			$events         = isset( $_POST['event'] ) && is_array( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
 			// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$team_event           = isset( $_POST['teamEvent'] ) ? wp_unslash( $_POST['teamEvent'] ) : array();
 			$team_event_league    = isset( $_POST['teamEventLeague'] ) ? wp_unslash( $_POST['teamEventLeague'] ) : array();
-			$competition_events   = explode( ',', isset( $_POST['competition_events'] ) ? sanitize_text_field( wp_unslash( $_POST['competition_events'] ) ) : '' );
+			$competition_events   = array();
 			$captains             = isset( $_POST['captain'] ) ? wp_unslash( $_POST['captain'] ) : array();
 			$captain_ids          = isset( $_POST['captainId'] ) ? wp_unslash( $_POST['captainId'] ) : array();
 			$contact_nos          = isset( $_POST['contactno'] ) ? wp_unslash( $_POST['contactno'] ) : array();
@@ -565,32 +575,39 @@ class Ajax_Frontend extends Ajax {
 			if ( $competition_id ) {
 				$competition = get_competition( $competition_id );
 				if ( $competition ) {
-                    $competition->set_season( $season );
-					$validator = $validator->competition_open( $competition );
+					$validator = $validator->season_set( $season, $competition->seasons );
+					if ( isset( $competition->seasons[ $season ] ) ) {
+						$competition->set_season( $season );
+						$validator         = $validator->competition_open( $competition );
+						$allowed_event_ids = array_map( 'intval', array_column( $competition->get_entry_events( $season ), 'id' ) );
+					}
 				} else {
 					$validator = $validator->competition( $competition );
-                }
-				if ( empty( $competition->match_day_restriction ) ) {
-					$match_day_restriction  = false;
-				} else {
-					$match_day_restriction = true;
 				}
-				$weekend_allowed = isset( $competition->match_day_weekends );
-				if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
-					$start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
-					$start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
+				if ( $competition ) {
+					$match_day_restriction = ! empty( $competition->match_day_restriction );
+					$weekend_allowed       = isset( $competition->match_day_weekends );
+					if ( ! empty( $competition->start_time['weekday']['min'] ) && ! empty( $competition->start_time['weekday']['max'] ) ) {
+						$start_times['weekday']['min'] = $competition->start_time['weekday']['min'];
+						$start_times['weekday']['max'] = $competition->start_time['weekday']['max'];
+					}
+					if ( ! empty( $competition->start_time['weekend']['min'] ) && ! empty( $competition->start_time['weekend']['max'] ) ) {
+						$start_times['weekend']['min'] = $competition->start_time['weekend']['min'];
+						$start_times['weekend']['max'] = $competition->start_time['weekend']['max'];
+					}
+					$club_entry->competition = $competition;
+					for ( $i = 0; $i < 7; ++$i ) {
+						$competition_days['teams'][ $i ]     = array();
+						$competition_days['available'][ $i ] = array();
+					}
+					$weekend_matches = array();
 				}
-				if ( ! empty( $competition->start_time['weekend']['min'] ) && ! empty( $competition->start_time['weekend']['max'] ) ) {
-					$start_times['weekend']['min'] = $competition->start_time['weekend']['min'];
-					$start_times['weekend']['max'] = $competition->start_time['weekend']['max'];
-				}
-				$club_entry->competition = $competition;
-				for ( $i = 0; $i < 7; ++$i ) {
-					$competition_days['teams'][ $i ]     = array();
-					$competition_days['available'][ $i ] = array();
-				}
-				$weekend_matches = array();
+			} else {
+				$validator = $validator->competition( $competition_id );
 			}
+			$validator          = $validator->events_entry( $events, null, $allowed_event_ids );
+			$events             = $validator->validated_events;
+			$competition_events = array_map( 'strval', $allowed_event_ids );
 
 			// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			foreach ( $events as $event_id ) {

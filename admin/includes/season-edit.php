@@ -650,6 +650,24 @@ $msg         = null;
             </div>
         </fieldset>
 
+        <fieldset class="form-control mb-3">
+            <legend><?php esc_html_e( 'Events available for entry', 'racketmanager' ); ?></legend>
+            <?php if ( empty( $available_events ) ) { ?>
+                <p><?php esc_html_e( 'No events are associated with this season.', 'racketmanager' ); ?></p>
+            <?php } else { ?>
+                <div class="row g-3">
+                    <?php foreach ( $available_events as $event ) { ?>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="entry_events[]" id="entry-event-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $event->id ); ?>" <?php checked( in_array( (int) $event->id, $current_season->entry_events, true ) ); ?> />
+                                <label class="form-check-label" for="entry-event-<?php echo esc_attr( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></label>
+                            </div>
+                        </div>
+                    <?php } ?>
+                </div>
+            <?php } ?>
+        </fieldset>
+
         <input type="hidden" name="competition_id" id="competition_id" value="<?php echo esc_html( $competition->id ); ?>" />
         <input type="hidden" name="update<?php echo esc_attr( ucfirst( $competition->type ) ); ?>" value="<?php echo esc_attr( $competition->type ); ?>" />
 

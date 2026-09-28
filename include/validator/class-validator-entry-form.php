@@ -19,6 +19,13 @@ use function Racketmanager\get_player;
  */
 final class Validator_Entry_Form extends Validator {
     /**
+     * Event IDs that passed entry availability validation.
+     *
+     * @var array
+     */
+    public array $validated_events = array();
+
+    /**
      * Validate nonce
      *
      * @param string $nonce_key nonce key.
@@ -68,17 +75,38 @@ final class Validator_Entry_Form extends Validator {
      * @param int|null $max_entries maximum number of entries.
      * @return object $validation updated validation object.
      */
-    public function events_entry( array $events, ?int $max_entries = null ): object {
+    public function events_entry( array $events, ?int $max_entries = null, ?array $allowed_event_ids = null ): object {
+        $this->validated_events = array();
         if ( empty( $events ) ) {
             $this->error      = true;
             $this->err_flds[] = 'event';
             $this->err_msgs[] = __( 'You must select a event to enter', 'racketmanager' );
-        } elseif ( ! empty( $max_entries ) ) {
-            if ( count( $events ) > $max_entries ) {
+        } elseif ( null === $allowed_event_ids ) {
+            $this->validated_events = $events;
+        } else {
+            $allowed_event_ids = array_map( 'intval', $allowed_event_ids );
+            foreach ( $events as $event_key => $event_id ) {
+                if ( ( ! is_int( $event_id ) && ( ! is_string( $event_id ) || ! ctype_digit( $event_id ) ) ) || (string) $event_key !== (string) $event_id ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'event';
+                    $this->err_msgs[] = __( 'One or more selected events are not available for this season', 'racketmanager' );
+                    continue;
+                }
+                $event_id = (int) $event_id;
+                if ( $event_id < 1 || ! in_array( $event_id, $allowed_event_ids, true ) ) {
+                    $this->error      = true;
+                    $this->err_flds[] = 'event';
+                    $this->err_msgs[] = __( 'One or more selected events are not available for this season', 'racketmanager' );
+                    continue;
+                }
+                $this->validated_events[ $event_key ] = $event_id;
+            }
+            $this->validated_events = array_unique( $this->validated_events );
+        }
+        if ( ! empty( $max_entries ) && count( $this->validated_events ) > $max_entries ) {
                 $this->error      = true;
                 $this->err_flds[] = 'event';
                 $this->err_msgs[] = __( 'You have entered too many events', 'racketmanager' );
-            }
         }
         return $this;
     }

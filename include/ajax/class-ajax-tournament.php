@@ -72,6 +72,7 @@ class Ajax_Tournament extends Ajax {
         $payment_required  = false;
         $return_link       = null;
         $validator         = new Validator_Entry_Form();
+        $allowed_event_ids = array();
         //phpcs:disable WordPress.Security.NonceVerification.Missing
         $validator = $validator->nonce( 'tournament-entry' );
         if ( ! $validator->error ) {
@@ -94,18 +95,66 @@ class Ajax_Tournament extends Ajax {
                 $club_id       = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
                 $validator     = $validator->club( $club_id );
                 // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $events            = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
+                $events            = isset( $_POST['event'] ) && is_array( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : array();
                 $partners          = isset( $_POST['partnerId'] ) ? wp_unslash( $_POST['partnerId'] ) : array();
-                $tournament_events = isset( $_POST['tournamentEvents'] ) ? explode( ',', wp_unslash( $_POST['tournamentEvents'] ) ) : null;
+                $tournament_events = array();
                 $entry_fee         = isset( $_POST['priceCostTotal'] ) ? floatval( $_POST['priceCostTotal'] ) : null;
                 $paid_fee          = isset( $_POST['pricePaidTotal'] ) ? floatval( $_POST['pricePaidTotal'] ) : null;
                 // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                 $validator  = $validator->tournament( $tournament_id );
                 if ( $tournament_id ) {
                     $tournament = get_tournament( $tournament_id );
-                    $validator  = $validator->tournament_open( $tournament );
+                    if ( $tournament ) {
+                        $validator = $validator->tournament_open( $tournament );
+                        if ( (string) $season !== (string) $tournament->season ) {
+                            $validator->error      = true;
+                            $validator->err_flds[] = 'season';
+                            $validator->err_msgs[] = __( 'Season does not match this tournament', 'racketmanager' );
+                        }
+                        $competition = get_competition( $tournament->competition_id );
+                        if ( $competition ) {
+                            $validator         = $validator->season_set( $season, $competition->seasons );
+                            $entry_player = get_player( $player_id );
+                            if ( $entry_player ) {
+                                $entry_gender = get_user_meta( $entry_player->ID, 'gender', true );
+                                $player_age = empty( $entry_player->year_of_birth ) ? 0 : substr( $tournament->date, 0, 4 ) - intval( $entry_player->year_of_birth );
+                                foreach ( $competition->get_entry_events( $tournament->season ) as $entry_event ) {
+                                    $gender_allowed = false;
+                                    if ( 'M' === $entry_gender ) {
+                                        $gender_allowed = ! str_starts_with( $entry_event->type, 'W' ) && ! str_starts_with( $entry_event->type, 'G' );
+                                    } elseif ( 'F' === $entry_gender ) {
+                                        $gender_allowed = ! str_starts_with( $entry_event->type, 'M' ) && ! str_starts_with( $entry_event->type, 'B' );
+                                    }
+                                    if ( ! $gender_allowed ) {
+                                        continue;
+                                    }
+                                    if ( ! empty( $entry_event->age_limit ) && 'open' !== $entry_event->age_limit ) {
+                                        if ( empty( $player_age ) ) {
+                                            continue;
+                                        }
+                                        if ( $entry_event->age_limit >= 30 ) {
+                                            $age_limit = $entry_event->age_limit;
+                                            if ( 'F' === $entry_gender && ! empty( $entry_event->age_offset ) ) {
+                                                $age_limit -= $entry_event->age_offset;
+                                            }
+                                            if ( $player_age < $age_limit ) {
+                                                continue;
+                                            }
+                                        } elseif ( $player_age > $entry_event->age_limit ) {
+                                            continue;
+                                        }
+                                    }
+                                    $allowed_event_ids[] = (int) $entry_event->id;
+                                }
+                            }
+                        } else {
+                            $validator = $validator->competition( $tournament->competition_id );
+                        }
+                    }
                 }
-                $validator = $validator->events_entry( $events, $tournament->num_entries );
+                $validator         = $validator->events_entry( $events, $tournament ? $tournament->num_entries : null, $allowed_event_ids );
+                $events            = $validator->validated_events;
+                $tournament_events = array_map( 'strval', $allowed_event_ids );
                 foreach ( $events as $event ) {
                     $event = get_event( $event );
                     if ( substr( $event->type, 1, 1 ) === 'D' ) {

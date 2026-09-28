@@ -899,7 +899,7 @@ class Shortcodes_Competition extends Shortcodes {
             $msg   = $this->season_not_found;
         }
         if ( $valid ) {
-            $events = $competition->get_events();
+            $events = $competition->get_entry_events( $season );
             foreach ( $events as $i => $event ) {
                 $event->status = '';
                 $events[ $i ]  = $event;
@@ -969,7 +969,7 @@ class Shortcodes_Competition extends Shortcodes {
             $msg   = $this->season_not_found;
         }
         if ( $valid ) {
-            $events = $competition->get_events();
+            $events = $competition->get_entry_events( $season );
             foreach ( $events as $i => $event ) {
                 $event         = get_event( $event );
                 $event->status = '';
@@ -1064,7 +1064,8 @@ class Shortcodes_Competition extends Shortcodes {
         $args['status']       = 'paid';
         $tournament->payments = $tournament->get_payments( $args );
 
-        $events = $tournament->get_events();
+        $competition = get_competition( $tournament->competition_id );
+        $events      = $competition ? $competition->get_entry_events( $tournament->season ) : array();
         $c      = 0;
         foreach ( $events as $event ) {
             $event       = get_event( $event );

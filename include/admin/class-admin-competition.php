@@ -252,6 +252,7 @@ final class Admin_Competition extends Admin_Display {
             $this->show_message();
             return;
         }
+        $available_events = $season ? $competition->get_events( array( 'season' => (string) $season ) ) : $competition->get_events();
         if ( isset( $_POST['addSeason'] ) ) {
             $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_add-season' );
             if ( ! empty( $validator->error ) ) {
@@ -268,7 +269,10 @@ final class Admin_Competition extends Admin_Display {
                     $this->set_message( $validator->err_msgs[0], true );
                 } else {
                     $current_season = $this->get_season_input( $season );
-                    $validator      = $this->set_competition_dates( $current_season, $competition );
+                    $validator      = $this->validate_entry_events( $current_season, $available_events );
+                    if ( empty( $validator->error ) ) {
+                        $validator = $this->set_competition_dates( $current_season, $competition );
+                    }
                     if ( empty( $validator->error ) ) {
                         $this->schedule_open_activities( $competition->id, $current_season );
                         $this->set_message( __( 'Season added to competition', 'racketmanager' ) );
@@ -291,7 +295,10 @@ final class Admin_Competition extends Admin_Display {
                     $this->set_message( $validator->err_msgs[0], true );
                 } else {
                     $current_season = $this->get_season_input( $season );
-                    $validator      = $this->set_competition_dates( $current_season, $competition );
+                    $validator      = $this->validate_entry_events( $current_season, $available_events );
+                    if ( empty( $validator->error ) ) {
+                        $validator = $this->set_competition_dates( $current_season, $competition );
+                    }
                     if ( empty( $validator->error ) ) {
                         if ( $validator->updates ) {
                             $this->set_message( __( 'Season updated', 'racketmanager' ) );
@@ -350,6 +357,15 @@ final class Admin_Competition extends Admin_Display {
                 'type' => 'affiliated',
             )
         );
+        $available_events = $season ? $competition->get_events( array( 'season' => (string) $season ) ) : $competition->get_events();
+        if ( ! isset( $current_season ) ) {
+            $current_season = new stdClass();
+        }
+        if ( ! isset( $current_season->entry_events ) ) {
+            $current_season->entry_events = array_map( 'intval', array_column( $available_events, 'id' ) );
+        } else {
+            $current_season->entry_events = array_map( 'intval', $current_season->entry_events );
+        }
         require_once RACKETMANAGER_PATH . 'admin/includes/season-edit.php';
     }
 
@@ -384,7 +400,30 @@ final class Admin_Competition extends Admin_Display {
         $current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
         $current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
         $current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
+        $entry_events                      = isset( $_POST['entry_events'] ) && is_array( $_POST['entry_events'] ) ? wp_unslash( $_POST['entry_events'] ) : array();
+        $entry_events                      = array_filter( $entry_events, 'is_scalar' );
+        $current_season->entry_events      = array_values( array_unique( array_map( 'absint', $entry_events ) ) );
         return $current_season;
+    }
+
+    /**
+     * Validate entry event selections.
+     *
+     * @param object $current_season season input.
+     * @param array  $available_events events available in the season.
+     * @return object
+     */
+    private function validate_entry_events( object $current_season, array $available_events ): object {
+        $available_event_ids = array_map( 'intval', array_column( $available_events, 'id' ) );
+        if ( array_diff( $current_season->entry_events, $available_event_ids ) ) {
+            $validator           = new Validator_Config();
+            $validator->error    = true;
+            $validator->err_flds = array( 'entry_events' );
+            $validator->err_msgs = array( __( 'One or more selected events are not available for this season', 'racketmanager' ) );
+            $this->set_message( $validator->err_msgs[0], true );
+            return $validator;
+        }
+        return new Validator_Config();
     }
     /**
      * Set season dates for competition season function
@@ -469,6 +508,14 @@ final class Admin_Competition extends Admin_Display {
         }
         $season = $competition->seasons[$current_season->name] ?? null;
         if ( $season ) {
+            $entry_event_ids = array_map( 'intval', $season['entry_events'] ?? array() );
+            sort( $entry_event_ids );
+            $current_entry_event_ids = $current_season->entry_events;
+            sort( $current_entry_event_ids );
+            if ( ! array_key_exists( 'entry_events', $season ) || $entry_event_ids !== $current_entry_event_ids ) {
+                $updates               = true;
+                $season['entry_events'] = $current_entry_event_ids;
+            }
             if ( empty( $season['date_open'] ) || $season['date_open'] !== $current_season->date_open ) {
                 $updates             = true;
                 $season['date_open'] = $current_season->date_open;

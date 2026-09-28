@@ -991,6 +991,34 @@ class Competition {
         return $events;
     }
     /**
+     * Get events available for entry in a season.
+     *
+     * @param string $season season name.
+     * @return array
+     */
+    public function get_entry_events( string $season ): array {
+        $events        = $this->get_events( array( 'season' => $season ) );
+        $season_config = $this->seasons[ $season ] ?? array();
+        if ( ! is_array( $season_config ) || ! array_key_exists( 'entry_events', $season_config ) ) {
+            return $events;
+        }
+
+        $entry_event_ids = is_array( $season_config['entry_events'] ) ? array_map( 'intval', $season_config['entry_events'] ) : array();
+        foreach ( $events as $index => $event ) {
+            if ( ! in_array( (int) $event->id, $entry_event_ids, true ) ) {
+                unset( $events[ $index ] );
+            }
+        }
+
+        $events           = array_values( $events );
+        $this->events     = $events;
+        $this->event_index = array();
+        foreach ( $events as $index => $event ) {
+            $this->event_index[ $event->id ] = $index;
+        }
+        return $events;
+    }
+    /**
      * Reload settings from database
      */
     public function reload_settings(): void {

@@ -213,6 +213,40 @@ namespace Racketmanager;
                 </div>
             </div>
         </fieldset>
+        <?php 
+        if ( $edit ) {
+            ?>
+            <fieldset class="form-control mb-3">
+                <legend><?php esc_html_e( 'Events available for entry', 'racketmanager' ); ?></legend>
+                <input type="hidden" name="tournament_entry_events_set" value="1" />
+                <?php
+                if ( empty( $available_events ) ) {
+                    ?>
+                    <p><?php esc_html_e( 'No events are associated with this tournament season.', 'racketmanager' ); ?></p>
+                    <?php
+                } else {
+                    ?>
+                    <div class="row g-3">
+                        <?php
+                        foreach ( $available_events as $event ) {
+                            ?>
+                            <div class="col-md-6 col-lg-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="tournament_entry_events[]" id="tournament-entry-event-<?php echo esc_attr( $event->id ); ?>" value="<?php echo esc_attr( $event->id ); ?>" <?php checked( in_array( (int) $event->id, $tournament->entry_events, true ) ); ?> />
+                                    <label class="form-check-label" for="tournament-entry-event-<?php echo esc_attr( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></label>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    ?>
+                    </div>
+                    <?php
+                }
+                ?>
+            </fieldset>
+            <?php
+            }
+        ?>
         <fieldset class="form-control mb-3">
             <legend><?php esc_html_e( 'Fees', 'racketmanager' ); ?></legend>
             <input type="hidden" name="feeId" value="<?php echo empty( $tournament->fees->id ) ? null : esc_attr( $tournament->fees->id ); ?>" />

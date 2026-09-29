@@ -411,6 +411,9 @@ final class Admin_Tournament extends Admin_Championship {
                 $validator  = $this->validate_tournament( $tournament );
                 if ( empty( $validator->error ) ) {
                     $tournament = new Tournament( $tournament );
+                    if ( null !== $tournament->entry_events ) {
+                        $tournament->set_entry_events( $tournament->entry_events );
+                    }
                     $this->set_competition_dates( $tournament );
                     $tournament->schedule_activities();
                     $edit = true;
@@ -473,6 +476,20 @@ final class Admin_Tournament extends Admin_Championship {
         $competition_query = array( 'type' => 'tournament' );
         $competitions      = $racketmanager->get_competitions( $competition_query );
         $seasons           = $racketmanager->get_seasons( 'DESC' );
+        $available_events  = array();
+        if ( ! empty( $tournament->competition_id ) && ! empty( $tournament->season ) ) {
+            $competition = get_competition( $tournament->competition_id );
+            if ( $competition ) {
+                $available_events = $competition->get_events( array( 'season' => $tournament->season ) );
+                if ( null === $tournament->entry_events ) {
+                    if ( is_object( $tournament->information ) && property_exists( $tournament->information, 'entry_events' ) ) {
+                        $tournament->entry_events = is_array( $tournament->information->entry_events ) ? array_map( 'intval', $tournament->information->entry_events ) : array();
+                    } else {
+                        $tournament->entry_events = array_map( 'intval', array_column( $available_events, 'id' ) );
+                    }
+                }
+            }
+        }
         require_once RACKETMANAGER_PATH . '/admin/tournament-edit.php';
     }
     private function get_input( ?object $tournament = null): object {
@@ -499,6 +516,11 @@ final class Admin_Tournament extends Admin_Championship {
         $fees->id                     = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
         $tournament->fees             = $fees;
         $tournament->num_entries      = isset( $_POST['num_entries'] ) ? intval( $_POST['num_entries'] ) : null;
+        if ( isset( $_POST['tournament_entry_events_set'] ) ) {
+            $entry_events                = isset( $_POST['tournament_entry_events'] ) && is_array( $_POST['tournament_entry_events'] ) ? wp_unslash( $_POST['tournament_entry_events'] ) : array();
+            $entry_events                = array_filter( $entry_events, 'is_scalar' );
+            $tournament->entry_events    = array_values( array_unique( array_map( 'absint', $entry_events ) ) );
+        }
         return $tournament;
     }
     private function validate_tournament( ?object $tournament = null ): stdClass {
@@ -514,6 +536,15 @@ final class Admin_Tournament extends Admin_Championship {
         $validator = $validator->date( $tournament->date_withdrawal, 'withdrawal', $tournament->date_closing, 'closing' );
         $validator = $validator->date( $tournament->date_start, 'start', $tournament->date_withdrawal, 'withdrawal' );
         $validator = $validator->date( $tournament->date, 'end', $tournament->date_start, 'start' );
+        if ( null !== $tournament->entry_events ) {
+            $competition = get_competition( $tournament->competition_id );
+            $event_ids   = $competition ? array_map( 'intval', array_column( $competition->get_events( array( 'season' => $tournament->season ) ), 'id' ) ) : array();
+            if ( array_diff( $tournament->entry_events, $event_ids ) ) {
+                $validator->error      = true;
+                $validator->err_flds[] = 'tournament_entry_events';
+                $validator->err_msgs[] = __( 'One or more selected events are not available for this tournament season', 'racketmanager' );
+            }
+        }
         return $validator->get_details();
     }
     /**

@@ -111,14 +111,14 @@ class Ajax_Tournament extends Ajax {
                             $validator->err_flds[] = 'season';
                             $validator->err_msgs[] = __( 'Season does not match this tournament', 'racketmanager' );
                         }
-                        $competition = get_competition( $tournament->competition_id );
+                        $competition = $tournament->competition;
                         if ( $competition ) {
                             $validator         = $validator->season_set( $season, $competition->seasons );
                             $entry_player = get_player( $player_id );
                             if ( $entry_player ) {
                                 $entry_gender = get_user_meta( $entry_player->ID, 'gender', true );
                                 $player_age = empty( $entry_player->year_of_birth ) ? 0 : substr( $tournament->date, 0, 4 ) - intval( $entry_player->year_of_birth );
-                                foreach ( $competition->get_entry_events( $tournament->season ) as $entry_event ) {
+                                foreach ( $tournament->get_entry_events() as $entry_event ) {
                                     $gender_allowed = false;
                                     if ( 'M' === $entry_gender ) {
                                         $gender_allowed = ! str_starts_with( $entry_event->type, 'W' ) && ! str_starts_with( $entry_event->type, 'G' );

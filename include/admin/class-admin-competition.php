@@ -269,7 +269,9 @@ final class Admin_Competition extends Admin_Display {
                     $this->set_message( $validator->err_msgs[0], true );
                 } else {
                     $current_season = $this->get_season_input( $season );
-                    $validator      = $this->validate_entry_events( $current_season, $available_events );
+                    if ( 'tournament' !== $competition->type ) {
+                        $validator = $this->validate_entry_events( $current_season, $available_events );
+                    }
                     if ( empty( $validator->error ) ) {
                         $validator = $this->set_competition_dates( $current_season, $competition );
                     }
@@ -295,7 +297,9 @@ final class Admin_Competition extends Admin_Display {
                     $this->set_message( $validator->err_msgs[0], true );
                 } else {
                     $current_season = $this->get_season_input( $season );
-                    $validator      = $this->validate_entry_events( $current_season, $available_events );
+                    if ( 'tournament' !== $competition->type ) {
+                        $validator = $this->validate_entry_events( $current_season, $available_events );
+                    }
                     if ( empty( $validator->error ) ) {
                         $validator = $this->set_competition_dates( $current_season, $competition );
                     }
@@ -400,9 +404,11 @@ final class Admin_Competition extends Admin_Display {
         $current_season->fee_event         = isset( $_POST['feeTeam'] ) ? floatval( $_POST['feeTeam'] ) : null;
         $current_season->fee_lead_time     = isset( $_POST['feeLeadTime'] ) ? intval( $_POST['feeLeadTime'] ) : null;
         $current_season->fee_id            = isset( $_POST['feeId'] ) ? intval( $_POST['feeId'] ) : null;
-        $entry_events                      = isset( $_POST['entry_events'] ) && is_array( $_POST['entry_events'] ) ? wp_unslash( $_POST['entry_events'] ) : array();
-        $entry_events                      = array_filter( $entry_events, 'is_scalar' );
-        $current_season->entry_events      = array_values( array_unique( array_map( 'absint', $entry_events ) ) );
+        if ( isset( $_POST['entry_events_set'] ) ) {
+            $entry_events                 = isset( $_POST['entry_events'] ) && is_array( $_POST['entry_events'] ) ? wp_unslash( $_POST['entry_events'] ) : array();
+            $entry_events                 = array_filter( $entry_events, 'is_scalar' );
+            $current_season->entry_events = array_values( array_unique( array_map( 'absint', $entry_events ) ) );
+        }
         return $current_season;
     }
 
@@ -508,13 +514,15 @@ final class Admin_Competition extends Admin_Display {
         }
         $season = $competition->seasons[$current_season->name] ?? null;
         if ( $season ) {
-            $entry_event_ids = array_map( 'intval', $season['entry_events'] ?? array() );
-            sort( $entry_event_ids );
-            $current_entry_event_ids = $current_season->entry_events;
-            sort( $current_entry_event_ids );
-            if ( ! array_key_exists( 'entry_events', $season ) || $entry_event_ids !== $current_entry_event_ids ) {
-                $updates               = true;
-                $season['entry_events'] = $current_entry_event_ids;
+            if ( 'tournament' !== $competition->type ) {
+                $entry_event_ids = array_map( 'intval', $season['entry_events'] ?? array() );
+                sort( $entry_event_ids );
+                $current_entry_event_ids = $current_season->entry_events;
+                sort( $current_entry_event_ids );
+                if ( ! array_key_exists( 'entry_events', $season ) || $entry_event_ids !== $current_entry_event_ids ) {
+                    $updates               = true;
+                    $season['entry_events'] = $current_entry_event_ids;
+                }
             }
             if ( empty( $season['date_open'] ) || $season['date_open'] !== $current_season->date_open ) {
                 $updates             = true;

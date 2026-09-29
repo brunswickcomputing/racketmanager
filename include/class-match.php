@@ -912,23 +912,25 @@ final class Racketmanager_Match {
     private function set_max_rubbers(): float|int|string|null {
         $max_rubbers = 0;
         if ( ! empty( $this->league->num_rubbers ) ) {
-        // Extra rubber for championship finals when the normal rubber count is even
-        if (
-            $this->league->is_championship
-            && 'final' === $this->final_round
-            && 0 === ( $this->league->num_rubbers % 2 )
-        ) {
-            ++$max_rubbers;
-        } elseif (
-            $this->league->is_championship
-            && ! empty( $this->league->current_season['home_away'] )
-            && ! empty( $this->leg )
-            && 2 === $this->leg
-            && 'MPL' === $this->league->event->scoring
-        ) {
-            ++$max_rubbers;
-        } elseif ( '1' === $this->league->event->reverse_rubbers ) {
-            $max_rubbers = $max_rubbers * 2;
+            $max_rubbers = $this->league->num_rubbers;
+            // Extra rubber for championship finals when the normal rubber count is even
+            if (
+                $this->league->is_championship
+                && 'final' === $this->final_round
+                && 0 === ( $this->league->num_rubbers % 2 )
+            ) {
+                ++$max_rubbers;
+            } elseif (
+                $this->league->is_championship
+                && ! empty( $this->league->current_season['home_away'] )
+                && ! empty( $this->leg )
+                && 2 === $this->leg
+                && 'MPL' === $this->league->event->scoring
+            ) {
+                ++$max_rubbers;
+            } elseif ( '1' === $this->league->event->reverse_rubbers ) {
+                $max_rubbers = $max_rubbers * 2;
+            }
         }
         return $max_rubbers;
     }

@@ -291,7 +291,13 @@ final class Tournament {
      *
      * @var string|object|null
      */
-    public string|null|object $information;
+    public string|null|object $information = null;
+    /**
+     * Tournament-specific event selection from the admin form.
+     *
+     * @var array|null
+     */
+    public ?array $entry_events = null;
     /**
      * Retrieve tournament instance
      *
@@ -473,6 +479,11 @@ final class Tournament {
     public function update( object $updated ): bool {
         global $wpdb;
         $updates = false;
+        if ( isset( $updated->entry_events ) ) {
+            if ( $this->set_entry_events( $updated->entry_events ) ) {
+                $updates = true;
+            }
+        }
         if ( $this->name !== $updated->name ) {
             $updates    = true;
             $this->name = $updated->name;
@@ -547,6 +558,45 @@ final class Tournament {
             $updates = true;
         }
         return $updates;
+    }
+
+    /**
+     * Get events available for entry in this tournament.
+     *
+     * @return array
+     */
+    public function get_entry_events(): array {
+        if ( ! $this->competition ) {
+            return array();
+        }
+        $events = $this->competition->get_events( array( 'season' => $this->season ) );
+        if ( ! is_object( $this->information ) || ! property_exists( $this->information, 'entry_events' ) ) {
+            return $events;
+        }
+
+        $entry_event_ids = is_array( $this->information->entry_events ) ? array_map( 'intval', $this->information->entry_events ) : array();
+        foreach ( $events as $index => $event ) {
+            if ( ! in_array( (int) $event->id, $entry_event_ids, true ) ) {
+                unset( $events[ $index ] );
+            }
+        }
+        return array_values( $events );
+    }
+
+    /**
+     * Save the tournament-specific entry event selection.
+     *
+     * @param array $event_ids selected event IDs.
+     * @return bool
+     */
+    public function set_entry_events( array $event_ids ): bool {
+        $information = $this->information;
+        if ( is_string( $information ) ) {
+            $information = json_decode( $information );
+        }
+        $information = is_object( $information ) ? clone $information : new stdClass();
+        $information->entry_events = array_values( array_unique( array_map( 'intval', $event_ids ) ) );
+        return $this->set_information( $information );
     }
 
     /**

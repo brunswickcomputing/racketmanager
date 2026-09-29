@@ -1064,8 +1064,7 @@ class Shortcodes_Competition extends Shortcodes {
         $args['status']       = 'paid';
         $tournament->payments = $tournament->get_payments( $args );
 
-        $competition = get_competition( $tournament->competition_id );
-        $events      = $competition ? $competition->get_entry_events( $tournament->season ) : array();
+        $events = $tournament->get_entry_events();
         $c      = 0;
         foreach ( $events as $event ) {
             $event       = get_event( $event );

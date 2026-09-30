@@ -47,19 +47,21 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
-= 9.7.2 =
+= 9.7.3 =
 * BUGFIX: handle empty currency code in locale
+* BUGFIX: use the correct link for event config
+* BUGFIX: include extra rubber for playoff
+* UPDATE: add a per-season event list for competitions and tournaments TODO: restrict frontends
+* UPDATE: tidy php formatting
+
+= 9.7.2 =
 * BUGFIX: set teams to existing when no team passed
 * BUGFIX: do not notify teams if one side is a bye
 * BUGFIX: check for player in previous round
 * BUGFIX: handle null original PO
-* BUGFIX: use the correct link for event config
-* BUGFIX: include extra rubber for playoff
 * UPDATE: allow teams with walkovers in first round to enter plate
 * UPDATE: default to Singles WTN display
 * UPDATE: only use confirmed status for teams
-* UPDATE: add a per-season event list for competitions and tournaments TODO: restrict frontends
-* UPDATE: tidy php formatting
 
 = 9.7.1 =
 * BUGFIX: match day less than 5 means weekday

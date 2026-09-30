@@ -233,7 +233,9 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                                     </div>
                                                 </div>
                                             </div>
-                                        <?php } ?>
+                                            <?php
+                                        }
+                                        ?>
                                     </div>
                                 </div>
                             </li>

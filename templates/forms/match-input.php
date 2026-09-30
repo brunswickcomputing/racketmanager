@@ -31,9 +31,13 @@ $tab_base        = 0;
                 <div class="col-auto matchDate"><?php echo esc_html( substr( $match->date, 0, 10 ) ); ?></div>
             </div>
             <div class="row justify-content-center" id="match-header-2">
-                <?php if ( ! $match->league->is_championship ) { ?>
-                <div class="col-auto matchTitle"><?php echo esc_html( $match->match_title ); ?></div>
-                <?php } ?>
+                <?php
+                if ( ! $match->league->is_championship ) {
+                    ?>
+                    <div class="col-auto matchTitle"><?php echo esc_html( $match->match_title ); ?></div>
+                    <?php
+                }
+                ?>
             </div>
         </div>
         <form id="match-view" method="post">

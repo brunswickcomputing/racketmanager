@@ -73,7 +73,9 @@ $msg         = null;
                                 foreach ( $seasons as $season_option ) {
                                     ?>
                                     <option value="<?php echo esc_html( $season_option->name ); ?>" <?php selected( $season_option->name, $current_season->name ?? ''); ?> <?php disabled( isset( $competition->seasons[ $season_option->name ] ) ); ?>><?php echo esc_html( $season_option->name ); ?></option>
-                                <?php } ?>
+                                    <?php
+                                }
+                                ?>
                             </select>
                             <?php
                         }

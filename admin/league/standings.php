@@ -42,7 +42,10 @@ namespace Racketmanager;
                 <?php
                 if ( ! $league->event->competition->is_championship ) {
                     ?>
-                    <th class="column-num" scope="col">&#160;</th><?php } ?>
+                    <th class="column-num" scope="col">&#160;</th>
+                    <?php
+                }
+                ?>
                 <th scope="col"><?php esc_html_e( 'Team', 'racketmanager' ); ?></th>
                 <?php
                 if ( $league->event->competition->is_championship ) {

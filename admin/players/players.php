@@ -67,9 +67,13 @@ namespace Racketmanager;
                     ?>
                     <div class="row table-row <?php echo esc_html( $class ); ?>">
                         <div class="col-2 col-md-1 check-column">
-                            <?php if ( empty( $player->removed_date ) ) { ?>
+                            <?php
+                            if ( empty( $player->removed_date ) ) {
+                                ?>
                                 <label for="player-<?php echo esc_html( $player->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $player->id ); ?>" name="player[<?php echo esc_html( $player->id ); ?>]" id="player-<?php echo esc_html( $player->id ); ?>" />
-                            <?php } ?>
+                                <?php
+                            }
+                            ?>
                         </div>
                         <div class="col-2 col-md-1 column-num"><?php echo esc_html( $player->id ); ?></div>
                         <div class="col-4 col-md-2"><a href="/wp-admin/admin.php?page=racketmanager-players&amp;view=player&amp;player_id=<?php echo esc_html( $player->id ); ?>"><?php echo esc_html( $player->fullname ); ?></a></div>
@@ -91,8 +95,10 @@ namespace Racketmanager;
                         ?>
                         </div>
                     </div>
-                <?php } ?>
-            <?php } ?>
+                    <?php
+                }
+            }
+            ?>
         </div>
     </form>
 </div>

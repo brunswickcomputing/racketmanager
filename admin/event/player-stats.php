@@ -68,7 +68,9 @@ if ( ! empty( $event->seasons ) ) { ?>
             </div>
         </div>
     </div>
-<?php } ?>
+    <?php
+}
+?>
 
 <!-- View Player Stats -->
 <div>
@@ -92,7 +94,9 @@ if ( ! empty( $event->seasons ) ) { ?>
                         }
                         ?>
                     </th>
-                <?php } ?>
+                    <?php
+                }
+                ?>
             </tr>
             </thead>
             <tbody>

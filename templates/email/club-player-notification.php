@@ -37,7 +37,9 @@ require 'email-header.php';
                                                                     <p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
                                                                         A new player has been added for <?php echo esc_html( $club ); ?>.
                                                                     </p>
-                                                                    <?php if ( $player ) { ?>
+                                                                    <?php
+                                                                    if ( $player ) {
+                                                                        ?>
                                                                         <p style="line-height: 1.25; mso-line-height-rule: at-least; margin: 0 0 20px; padding: 0;">
                                                                             <?php echo esc_html( $player ); ?>
                                                                             <?php
@@ -46,7 +48,9 @@ require 'email-header.php';
                                                                             }
                                                                             ?>
                                                                         </p>
-                                                                    <?php } ?>
+                                                                        <?php
+                                                                    }
+                                                                    ?>
                                                                 </div>
                                                             </td>
                                                         </tr>

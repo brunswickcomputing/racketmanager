@@ -76,7 +76,9 @@ $alphabet_key = array();
                                             ?>
                                         </div>
                                     </li>
-                                <?php } ?>
+                                    <?php
+                                }
+                                ?>
                             </ul>
                         </li>
                         <?php

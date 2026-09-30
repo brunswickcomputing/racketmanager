@@ -108,7 +108,9 @@ namespace Racketmanager;
                 </select>
             </div>
         </div>
-        <?php if ( $league ) { ?>
+        <?php
+        if ( $league ) {
+            ?>
             <div class="form-group">
                 <label for="captain"><?php esc_html_e( 'Captain', 'racketmanager' ); ?></label>
                 <div class="input">
@@ -147,7 +149,9 @@ namespace Racketmanager;
                 </select>
                 </div>
             </div>
-        <?php } ?>
+            <?php
+        }
+        ?>
         <?php do_action( 'racketmanager_team_edit_form', $team ); ?>
         <?php
         if ( $league ) {

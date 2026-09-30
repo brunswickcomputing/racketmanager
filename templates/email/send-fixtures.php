@@ -52,33 +52,37 @@ require 'email-header.php';
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            <?php foreach ( $matches as $match ) { ?>
-                                                                            <tr class="align-center">
-                                                                                <td><?php echo esc_html( $match->match_day ); ?></td>
-                                                                                <td><?php echo esc_html( mysql2date( 'd M y', $match->date ) ); ?></td>
-                                                                                <td><?php echo esc_html( mysql2date( 'D', $match->date ) ); ?></td>
-                                                                                <td><?php the_match_time( $match->start_time ); ?></td>
-                                                                                <td class="align-right
-                                                                                <?php
-                                                                                if ( $match->home_team === $team->id ) {
-                                                                                    echo ' bold';
-                                                                                }
+                                                                            <?php
+                                                                            foreach ( $matches as $match ) {
                                                                                 ?>
-                                                                                ">
-                                                                                    <?php echo esc_html( $match->teams['home']->title ); ?>
-                                                                                </td>
-                                                                                <td>-</td>
-                                                                                <td class="align-left
+                                                                                <tr class="align-center">
+                                                                                    <td><?php echo esc_html( $match->match_day ); ?></td>
+                                                                                    <td><?php echo esc_html( mysql2date( 'd M y', $match->date ) ); ?></td>
+                                                                                    <td><?php echo esc_html( mysql2date( 'D', $match->date ) ); ?></td>
+                                                                                    <td><?php the_match_time( $match->start_time ); ?></td>
+                                                                                    <td class="align-right
+                                                                                    <?php
+                                                                                    if ( $match->home_team === $team->id ) {
+                                                                                        echo ' bold';
+                                                                                    }
+                                                                                    ?>
+                                                                                    ">
+                                                                                        <?php echo esc_html( $match->teams['home']->title ); ?>
+                                                                                    </td>
+                                                                                    <td>-</td>
+                                                                                    <td class="align-left
+                                                                                    <?php
+                                                                                    if ( $match->away_team === $team->id ) {
+                                                                                        echo ' bold';
+                                                                                    }
+                                                                                    ?>
+                                                                                    ">
+                                                                                        <?php echo esc_html( $match->teams['away']->title ); ?>
+                                                                                    </td>
+                                                                                </tr>
                                                                                 <?php
-                                                                                if ( $match->away_team === $team->id ) {
-                                                                                    echo ' bold';
-                                                                                }
-                                                                                ?>
-                                                                                ">
-                                                                                    <?php echo esc_html( $match->teams['away']->title ); ?>
-                                                                                </td>
-                                                                            </tr>
-                                                                            <?php } ?>
+                                                                            }
+                                                                            ?>
                                                                         </tbody>
                                                                     </table>
                                                                 </div>

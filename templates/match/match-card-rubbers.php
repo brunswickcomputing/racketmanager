@@ -54,13 +54,17 @@ $points_span = 2 + intval( $match->league->num_sets );
                                     <label for="home_player_1_<?php echo esc_html( $r ); ?>" class="visually-hidden"><?php esc_html_e( 'Home player 1', 'racketmanager' ); ?></label><input class="player" name="home_player_1[<?php echo esc_html( $r ); ?>]" id="home_player_1_<?php echo esc_html( $r ); ?>" />
                                 </td>
 
-                                <?php for ( $i = 1; $i <= $match->league->num_sets; $i++ ) { ?>
+                                <?php
+                                for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
+                                    ?>
                                     <td rowspan="2" class="rtd">
                                         <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Home sets', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_player1" name="custom[<?php echo esc_html( $r ); ?>][sets][<?php echo esc_html( $i ); ?>][player1]" />
                                         :
                                         <label for="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_player2" class="visually-hidden"><?php esc_html_e( 'Away se', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $r ); ?>_<?php echo esc_html( $i ); ?>_player2" name="custom[<?php echo esc_html( $r ); ?>][sets][<?php echo esc_html( $i ); ?>][player2]" />
                                     </td>
-                                <?php } ?>
+                                    <?php
+                                }
+                                ?>
 
                                 <td class="rtd">
                                     <label for="away_player_1_<?php echo esc_html( $r ); ?>" class="visually-hidden"><?php esc_html_e( 'Away player 1', 'racketmanager' ); ?></label><input class="player" name="away_player_1[<?php echo esc_html( $r ); ?>]" id="away_player_1_<?php echo esc_html( $r ); ?>" />

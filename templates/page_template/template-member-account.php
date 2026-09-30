@@ -53,7 +53,10 @@ get_header();
             }
             ?>
 
-        <?php } // end of the loop. ?>
+            <?php
+        }
+        // end of the loop.
+        ?>
 
 
     </main><!-- #main -->

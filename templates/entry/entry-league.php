@@ -192,7 +192,9 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                                         if ( isset( $event_team->league_id ) ) {
                                                             ?>
                                                             <input type="hidden" value="<?php echo esc_html( $event_team->league_id ); ?>" name="teamEventLeague[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" />
-                                                        <?php } ?>
+                                                            <?php
+                                                        }
+                                                        ?>
                                                     </div>
                                                     <div class="form-checkboxes__conditional <?php echo $event_team->status ? '' : 'form-checkboxes__conditional--hidden'; ?>" id="conditional-team-event-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>" <?php echo $event_team->status ? 'aria-expanded="true"' : ''; ?>>
                                                         <div class="row">
@@ -259,10 +261,14 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                                             </fieldset>
                                                         </div>
                                                     </div>
-                                                <?php } ?>
+                                                    <?php
+                                                }
+                                                ?>
                                                 <input type="hidden" name="event_teams[<?php echo esc_html( $event->id ); ?>]" id="event_teams-<?php echo esc_html( $event->id ); ?>" value="<?php echo esc_html( implode( ',', $event_teams ) ); ?>" />
                                             </div>
-                                        <?php } ?>
+                                            <?php
+                                        }
+                                        ?>
                                     </div>
 
                                 </div>

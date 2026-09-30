@@ -50,13 +50,17 @@ namespace Racketmanager;
                         <?php echo esc_html( $match->teams['home']->title ); ?>
                     </td>
 
-                    <?php for ( $i = 1; $i <= $match->league->num_sets; $i++ ) { ?>
+                    <?php
+                    for ( $i = 1; $i <= $match->league->num_sets; $i++ ) {
+                        ?>
                         <td class="rtd">
                             <label for="set_<?php echo esc_html( $i ); ?>_player1" class="visually-hidden"><?php esc_html_e( 'Player 1 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player1" name="custom[sets][<?php echo esc_html( $i ); ?>][player1]" />
                             :
                             <label for="set_<?php echo esc_html( $i ); ?>_player2" class="visually-hidden"><?php esc_html_e( 'Player 2 games', 'racketmanager' ); ?></label><input class="points" type="text" size="2" id="set_<?php echo esc_html( $i ); ?>_player2" name="custom[sets][<?php echo esc_html( $i ); ?>][player2]" />
                         </td>
-                    <?php } ?>
+                        <?php
+                    }
+                    ?>
 
                     <td class="rtd">
                         <?php echo esc_html( $match->teams['away']->title ); ?>

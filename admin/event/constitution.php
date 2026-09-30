@@ -146,9 +146,13 @@ if ( empty( $event->is_box ) && empty( $seasons ) ) {
                             <td>
                                 <label>
                                     <select size=1 name="league_id[<?php echo esc_html( $team->table_id ); ?>]">
-                                        <?php foreach ( $leagues as $league ) { ?>
+                                        <?php
+                                        foreach ( $leagues as $league ) {
+                                            ?>
                                             <option value="<?php echo esc_html( $league->id ); ?>" <?php selected( $league->id, $team->league_id ); ?>><?php echo esc_html( $league->title ); ?></option>
-                                        <?php } ?>
+                                            <?php
+                                        }
+                                        ?>
                                     </select>
                                 </label>
                             </td>

@@ -30,7 +30,9 @@ $post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariable
             <input type="hidden" name="competitionType" id="competitionType" value="<?php echo esc_html( $competitiontype ); ?>" />
             <label for="selection" class="visually-hidden"><?php esc_html_e( 'Season', 'racketmanager' ); ?></label><select size="1" name="selection" id="selection">
                 <option value=""><?php esc_html_e( 'Season', 'racketmanager' ); ?></option>
-                <?php foreach ( $selections as $selection ) { ?>
+                <?php
+                foreach ( $selections as $selection ) {
+                    ?>
                     <option value="<?php echo esc_html( $selection->name ); ?>"
                         <?php
                         if ( $selection->name === $curr_entry ) {
@@ -38,7 +40,9 @@ $post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariable
                         }
                         ?>
                     ><?php echo esc_html( $selection->name ); ?></option>
-                <?php } ?>
+                    <?php
+                }
+                ?>
             </select>
         </form>
     </div>

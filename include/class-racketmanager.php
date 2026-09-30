@@ -1132,7 +1132,7 @@ class RacketManager {
         setlocale( LC_ALL, get_locale() );
         $this->currency_fmt  = numfmt_create( get_locale(), NumberFormatter::CURRENCY );
         $locale_info         = localeconv();
-        $this->currency_code = isset( $locale_info['int_curr_symbol'] ) ? trim( $locale_info['int_curr_symbol'] ) : 'GBP';
+        $this->currency_code = empty( $locale_info['int_curr_symbol'] ) ? 'GBP' : trim( $locale_info['int_curr_symbol'] );
     }
     /**
      * Add html content type to mail header

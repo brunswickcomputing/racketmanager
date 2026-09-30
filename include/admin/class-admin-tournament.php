@@ -959,7 +959,7 @@ final class Admin_Tournament extends Admin_Championship {
      *
      * @return array|boolean
      */
-    public function add_season_to_competition( string $season, int $competition_id, int $num_match_days = null ): bool|array {
+    public function add_season_to_competition( string $season, int $competition_id, ?int $num_match_days = null ): bool|array {
         $competition = get_competition( $competition_id );
         if ( ! $num_match_days ) {
             $num_match_days = Util::get_default_match_days( $competition->type );

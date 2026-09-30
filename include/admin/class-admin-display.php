@@ -677,7 +677,7 @@ class Admin_Display {
      * @param object $league league object.
      * @param string|null $group group details.
      */
-    protected function add_matches_to_league( object $league, string $group = null ): void {
+    protected function add_matches_to_league( object $league, ?string $group = null ): void {
         if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_manage-matches' ) ) {
             $this->set_message( $this->invalid_security_token, true );
         } elseif ( isset( $_POST['match'] ) ) {

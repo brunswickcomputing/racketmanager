@@ -530,7 +530,7 @@ final class Team {
      * @param string|null $matchtime optional match time.
      * @return int $team_event_id
      */
-    public function add_event( int $event_id, ?string $captain = null, ?string $contactno = null, ?string $contactemail = null, int|null $matchday = null, string $matchtime = null ): int {
+    public function add_event( int $event_id, ?string $captain = null, ?string $contactno = null, ?string $contactemail = null, int|null $matchday = null, ?string $matchtime = null ): int {
         global $wpdb;
         if ( is_null( $matchday) ) {
             $match_day = '';

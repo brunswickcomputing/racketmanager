@@ -233,7 +233,7 @@ class Login {
      *
      * @param string|null $redirect_to   An optional redirect_to URL for admin users.
      */
-    public function redirect_logged_in_user( string $redirect_to = null ): void {
+    public function redirect_logged_in_user( ?string $redirect_to = null ): void {
         $user = wp_get_current_user();
         if ( user_can( $user, 'manage_options' ) ) {
             if ( $redirect_to ) {

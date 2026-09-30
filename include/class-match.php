@@ -2765,7 +2765,7 @@ final class Racketmanager_Match {
      *
      * @return boolean $message_sent Indicator to show if message was sent.
      */
-    public function chase_match_result( false|string $time_period = false, ?string $timeout = null, string $penalty = null ): bool {
+    public function chase_match_result( false|string $time_period = false, ?string $timeout = null, ?string $penalty = null ): bool {
         global $racketmanager;
         $message_sent                = false;
         $headers                     = array();

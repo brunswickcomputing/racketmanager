@@ -295,7 +295,7 @@ final class Admin_Player extends Admin_Display {
      * @param string|null $message message (optional).
      * @return array
      */
-    private function get_player_errors( string $message = null ): array {
+    private function get_player_errors( ?string $message = null ): array {
         global $wpdb;
         $search = null;
         $code = match ($message) {

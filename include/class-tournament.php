@@ -360,7 +360,7 @@ final class Tournament {
      *
      * @param object|null $tournament Tournament object.
      */
-    public function __construct( object $tournament = null ) {
+    public function __construct( ?object $tournament = null ) {
         global $racketmanager, $wp;
         if ( ! is_null( $tournament ) ) {
             if ( isset( $tournament->information ) ) {

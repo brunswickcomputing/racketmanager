@@ -53,7 +53,7 @@ class Season {
      *
      * @param object|null $season invoice object.
      */
-    public function __construct( object $season = null ) {
+    public function __construct( ?object $season = null ) {
         if ( ! is_null( $season ) ) {
             foreach ( get_object_vars( $season ) as $key => $value ) {
                 $this->$key = $value;

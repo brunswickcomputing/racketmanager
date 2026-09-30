@@ -153,7 +153,7 @@ class Admin_Championship extends Admin_Display {
      *
      * @param object|null $league league object.
      */
-    public function handle_championship_admin_page( object $league = null ): string {
+    public function handle_championship_admin_page( ?object $league = null ): string {
         $validator = new Validator();
         $league = get_league( $league );
         $tab    = 'finalResults'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited

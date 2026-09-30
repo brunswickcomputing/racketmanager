@@ -53,6 +53,7 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 * BUGFIX: include extra rubber for playoff
 * UPDATE: add a per-season event list for competitions and tournaments TODO: restrict frontends
 * UPDATE: tidy php formatting
+* UPDATE: support for PHP 8.4
 
 = 9.7.2 =
 * BUGFIX: set teams to existing when no team passed

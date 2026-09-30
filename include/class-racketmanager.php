@@ -434,7 +434,7 @@ class RacketManager {
      *
      * @return void
      */
-    public function calculate_player_ratings( int $club_id = null ): void {
+    public function calculate_player_ratings( ?int $club_id = null ): void {
         $wtn_list = array();
         if ( $club_id ) {
             $club = get_club( $club_id );

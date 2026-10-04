@@ -600,7 +600,8 @@ class Ajax_Frontend extends Ajax {
 						$competition_days['teams'][ $i ]     = array();
 						$competition_days['available'][ $i ] = array();
 					}
-					$weekend_matches = array();
+					$weekend_matches          = array();
+					$event_type_allowed_days  = array();
 				}
 			} else {
 				$validator = $validator->competition( $competition_id );
@@ -620,10 +621,22 @@ class Ajax_Frontend extends Ajax {
 				if ( ! isset( $courts_needed[ $week ] ) ) {
 					$courts_needed[ $week ] = array();
 				}
-				$weekend_matches[ $event->type ] = 0;
+				if ( ! isset( $weekend_matches[ $event->type ] ) ) {
+					$weekend_matches[ $event->type ] = 0;
+				}
 				$event_days                      = $event->match_days_allowed ?? array();
-				if ( $match_day_restriction && ! empty( $event_days ) ) {
-					foreach ( $event_days as $event_day => $value ) {
+				if ( empty( $event_days ) ) {
+					$allowed_days = ! empty( $competition->match_days_allowed ) ? array_keys( array_filter( $competition->match_days_allowed ) ) : range( 0, 4 );
+				} else {
+					$allowed_days = array_keys( array_filter( $event_days ) );
+				}
+				$allowed_weekdays = array_map( 'intval', array_filter( $allowed_days, fn( $d ) => intval( $d ) < 5 ) );
+				if ( ! isset( $event_type_allowed_days[ $event->type ] ) ) {
+					$event_type_allowed_days[ $event->type ] = array();
+				}
+				$event_type_allowed_days[ $event->type ] = array_unique( array_merge( $event_type_allowed_days[ $event->type ], $allowed_weekdays ) );
+				if ( $match_day_restriction ) {
+					foreach ( $allowed_weekdays as $event_day ) {
 						if ( ! isset( $competition_days['teams'][ $event_day ][ $event->type ] ) ) {
 							$competition_days['teams'][ $event_day ][ $event->type ] = 0;
 						}
@@ -666,8 +679,11 @@ class Ajax_Frontend extends Ajax {
 						}
 						if ( ! $validator->error ) {
 							if ( $match_day_restriction ) {
+								if ( ! isset( $competition_days['teams'][ $match_day ][ $event->type ] ) ) {
+									$competition_days['teams'][ $match_day ][ $event->type ] = 0;
+								}
 								++$competition_days['teams'][ $match_day ][ $event->type ];
-								$competition_days['available'][ $match_day ] = $num_courts_available / $event->num_rubbers;
+								$competition_days['available'][ $match_day ] = $num_courts_available / ( $event->num_rubbers ?: 2 );
 							}
 							if ( strlen( $match_time ) === 5 ) {
 								$match_time = $match_time . ':00';
@@ -720,16 +736,29 @@ class Ajax_Frontend extends Ajax {
 				if ( ! $validator->error && $match_day_restriction && $weekend_allowed && ! empty( $weekend_matches ) ) {
 					foreach ( $weekend_matches as $event_type => $team_count ) {
 						if ( $team_count ) {
-							$i = 0;
-							foreach ( $competition_days['teams'] as $match_day => $value ) {
-								if ( isset( $value[ $event_type ] ) && $i < 5 ) {
-									$num_teams[ $match_day ] = array_sum( $value );
-									if ( $num_teams[ $match_day ] ) {
-										$free_slots = $num_teams[ $match_day ] / 2 / $competition_days['available'][ $i ];
-										$validator  = $validator->free_slots( $free_slots );
+							$allowed_days_for_event = 0;
+							$underfilled_days       = 0;
+							$max_allowed_free       = 1;
+							$permitted_days         = $event_type_allowed_days[ $event_type ] ?? range( 0, 4 );
+							foreach ( $permitted_days as $match_day ) {
+								$i = intval( $match_day );
+								if ( $i < 5 ) {
+									++$allowed_days_for_event;
+									$day_teams          = $competition_days['teams'][ $i ] ?? array();
+									$total_teams_on_day = array_sum( $day_teams );
+									$available_slots    = ! empty( $competition_days['available'][ $i ] ) ? $competition_days['available'][ $i ] : ( $num_courts_available / 2 );
+									if ( $total_teams_on_day > 0 && $available_slots > 0 ) {
+										$free_slots = ( $total_teams_on_day / 2 ) / $available_slots;
+										if ( $free_slots < 1 ) {
+											++$underfilled_days;
+										}
+									} else {
+										++$underfilled_days;
 									}
 								}
-								++$i;
+							}
+							if ( $allowed_days_for_event > 0 && $underfilled_days > $max_allowed_free ) {
+								$validator = $validator->free_slots( '0' );
 							}
 						}
 					}

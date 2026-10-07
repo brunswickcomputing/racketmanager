@@ -602,6 +602,7 @@ class Ajax_Frontend extends Ajax {
 					}
 					$weekend_matches          = array();
 					$event_type_allowed_days  = array();
+					$event_type_teams         = array();
 				}
 			} else {
 				$validator = $validator->competition( $competition_id );
@@ -654,11 +655,28 @@ class Ajax_Frontend extends Ajax {
 					// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$event_teams = explode( ',', isset( $_POST['event_teams'][ $event->id ] ) ? wp_unslash( $_POST['event_teams'][ $event->id ] ) : '' );
 					// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					foreach ( $teams as $team_id ) {
-						$pos = array_search( $team_id, $event_teams, true );
-						if ( false !== $pos ) {
-							array_splice( $event_teams, $pos, 1 );
+					$event_teams_all        = array_filter( array_map( 'intval', $event_teams ) );
+					$teams_int              = array_filter( array_map( 'intval', $teams ) );
+					$withdrawn_teams        = array_values( array_diff( $event_teams_all, $teams_int ) );
+					$withdrawn_team_numbers = array();
+					if ( ! empty( $withdrawn_teams ) ) {
+						$event_entry->withdrawn_teams = $withdrawn_teams;
+						foreach ( $withdrawn_teams as $withdrawn_team_id ) {
+							$withdrawn_team_obj        = get_team( $withdrawn_team_id );
+							$withdrawn_team_title      = $withdrawn_team_obj ? $withdrawn_team_obj->title : ( $_POST['teamEventTitle'][ $event->id ][ $withdrawn_team_id ] ?? '' );
+							$withdrawn_team_name_array = explode( ' ', trim( $withdrawn_team_title ) );
+							$withdrawn_team_num        = intval( end( $withdrawn_team_name_array ) );
+							if ( ! $withdrawn_team_num && preg_match( '/(\d+)$/', trim( $withdrawn_team_title ), $matches ) ) {
+								$withdrawn_team_num = intval( $matches[1] );
+							}
+							if ( ! $withdrawn_team_num ) {
+								$withdrawn_team_num = 1;
+							}
+							$withdrawn_team_numbers[] = $withdrawn_team_num;
 						}
+					}
+					$min_withdrawn_num = ! empty( $withdrawn_team_numbers ) ? min( $withdrawn_team_numbers ) : null;
+					foreach ( $teams as $team_id ) {
 						$captain          = $captains[ $event->id ][ $team_id] ?? '';
 						$captain_id       = $captain_ids[ $event->id ][ $team_id ] ?? 0;
 						$contactno        = $contact_nos[ $event->id ][ $team_id ] ?? '';
@@ -671,11 +689,26 @@ class Ajax_Frontend extends Ajax {
 						$validator        = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
 						$validator        = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
 						if ( $match_day_restriction && $weekend_allowed && ( '5' === $match_day || '6' === $match_day ) ) {
-							if ( empty( $weekend_matches[ $event->type ] ) ) {
-								++$weekend_matches[ $event->type ];
-							} else {
-								$validator = $validator->weekend_match( $field_ref );
-							}
+							++$weekend_matches[ $event->type ];
+						}
+						$team_obj        = get_team( $team_id );
+						$team_title      = $team_obj ? $team_obj->title : ( $_POST['teamEventTitle'][ $event->id ][ $team_id ] ?? '' );
+						$team_name_array = explode( ' ', trim( $team_title ) );
+						$team_num        = intval( end( $team_name_array ) );
+						if ( ! $team_num && preg_match( '/(\d+)$/', trim( $team_title ), $matches ) ) {
+							$team_num = intval( $matches[1] );
+						}
+						if ( ! $team_num ) {
+							$team_num = 1;
+						}
+						$event_type_teams[ $event->type ][] = array(
+							'team_id'     => $team_id,
+							'team_number' => $team_num,
+							'match_day'   => $match_day,
+							'field_ref'   => $field_ref,
+						);
+						if ( null !== $min_withdrawn_num && $team_num > $min_withdrawn_num ) {
+							$validator = $validator->withdrawn_team( $field_ref );
 						}
 						if ( ! $validator->error ) {
 							if ( $match_day_restriction ) {
@@ -715,9 +748,6 @@ class Ajax_Frontend extends Ajax {
 							$event_entry->team[] = $team_entry;
 						}
 					}
-					if ( ! empty( $event_teams ) ) {
-						$event_entry->withdrawn_teams = $event_teams;
-					}
 					$club_entry->event[] = $event_entry;
 				}
 			}
@@ -730,6 +760,29 @@ class Ajax_Frontend extends Ajax {
 					foreach ( $week as $match_day => $match_day_value ) {
 						foreach ( $match_day_value as $match_time => $court_data ) {
 							$validator = $validator->court_needs( $num_courts_available, $court_data, $match_day, $match_time );
+						}
+					}
+				}
+				if ( $match_day_restriction && $weekend_allowed && ! empty( $event_type_teams ) ) {
+					foreach ( $event_type_teams as $event_type => $teams_data ) {
+						$weekday_team_nums = array();
+						$weekend_teams     = array();
+
+						foreach ( $teams_data as $team_info ) {
+							if ( in_array( strval( $team_info['match_day'] ), array( '5', '6' ), true ) ) {
+								$weekend_teams[] = $team_info;
+							} else {
+								$weekday_team_nums[] = $team_info['team_number'];
+							}
+						}
+
+						if ( ! empty( $weekend_teams ) && ! empty( $weekday_team_nums ) ) {
+							$max_weekday_num = max( $weekday_team_nums );
+							foreach ( $weekend_teams as $wknd_team ) {
+								if ( $wknd_team['team_number'] < $max_weekday_num ) {
+									$validator = $validator->weekend_match( $wknd_team['field_ref'] );
+								}
+							}
 						}
 					}
 				}

@@ -187,6 +187,7 @@ $additional_information = __( 'Additional information', 'racketmanager' );
                                                         <label class="form-check-label" for="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>">
                                                             <?php echo esc_html( $event_team->name ); ?>
                                                         </label>
+                                                        <div id="teamEvent-<?php echo esc_html( $event->id ); ?>-<?php echo esc_html( $event_team->team_id ); ?>Feedback" class="invalid-feedback"></div>
                                                         <input type="hidden" value="<?php echo esc_html( $event_team->name ); ?>" name="teamEventTitle[<?php echo esc_html( $event->id ); ?>][<?php echo esc_html( $event_team->team_id ); ?>]" />
                                                         <?php
                                                         if ( isset( $event_team->league_id ) ) {

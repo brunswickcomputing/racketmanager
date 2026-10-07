@@ -310,7 +310,20 @@ final class Validator_Entry_Form extends Validator {
     public function weekend_match( string $field_ref ): object {
         $this->error      = true;
         $this->err_flds[] = 'matchday-' . $field_ref;
-        $this->err_msgs[] = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
+        $this->err_msgs[] = __( 'Only the highest numbered team(s) can play at the weekend', 'racketmanager' );
+        return $this;
+    }
+
+    /**
+     * Validate withdrawn team
+     *
+     * @param string $field_ref field reference.
+     * @return object $validation updated validation object.
+     */
+    public function withdrawn_team( string $field_ref ): object {
+        $this->error      = true;
+        $this->err_flds[] = 'teamEvent-' . $field_ref;
+        $this->err_msgs[] = __( 'A higher ranked team cannot be withdrawn if there are still active lower ranked teams', 'racketmanager' );
         return $this;
     }
 

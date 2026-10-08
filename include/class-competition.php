@@ -933,6 +933,121 @@ class Competition {
     }
 
     /**
+     * Resolve season name safely, falling back to current/active season if null.
+     *
+     * @param string|null $season Season name.
+     * @return string|null
+     */
+    public function resolve_season_name( ?string $season = null ): ?string {
+        if ( ! empty( $season ) ) {
+            return (string) $season;
+        }
+        if ( isset( $this->season ) && ! empty( $this->season ) ) {
+            return (string) $this->season;
+        }
+        if ( isset( $this->current_season['name'] ) && ! empty( $this->current_season['name'] ) ) {
+            return (string) $this->current_season['name'];
+        }
+        return null;
+    }
+
+    /**
+     * Get season configuration array for a given season.
+     *
+     * @param string|null $season Season name.
+     * @return array|null
+     */
+    public function get_season_config( ?string $season = null ): ?array {
+        $season_name = $this->resolve_season_name( $season );
+        if ( empty( $season_name ) || ! is_array( $this->seasons ) ) {
+            return null;
+        }
+
+        $season_config = $this->seasons[ $season_name ] ?? null;
+        if ( null === $season_config ) {
+            foreach ( $this->seasons as $conf ) {
+                if ( is_array( $conf ) && isset( $conf['name'] ) && (string) $conf['name'] === (string) $season_name ) {
+                    $season_config = $conf;
+                    break;
+                } elseif ( is_object( $conf ) && isset( $conf->name ) && (string) $conf->name === (string) $season_name ) {
+                    $season_config = $conf;
+                    break;
+                }
+            }
+        }
+
+        if ( is_object( $season_config ) ) {
+            $season_config = (array) $season_config;
+        }
+
+        return is_array( $season_config ) ? $season_config : null;
+    }
+
+    /**
+     * Resolve an event identifier (ID, object, name, or slug) to an Event object
+     * belonging to this competition and season without mutating class state.
+     *
+     * @param int|string|object $event Event ID, name/slug, or Event object.
+     * @param string|null       $season Season name.
+     * @return object|null
+     */
+    public function resolve_event( int|string|object $event, ?string $season = null ): ?object {
+        $season_name = $this->resolve_season_name( $season );
+        $event_obj   = null;
+
+        if ( is_object( $event ) && isset( $event->id ) ) {
+            $event_obj = $event;
+        } elseif ( is_numeric( $event ) ) {
+            $event_obj = get_event( (int) $event );
+        } elseif ( is_string( $event ) ) {
+            $clean_name = str_replace( '-', ' ', $event );
+            // Search events for this competition
+            global $wpdb;
+            $search_terms   = array();
+            $search_terms[] = $wpdb->prepare( '`competition_id` = %d', $this->id );
+            $search         = Util::search_string( $search_terms, true );
+            $sql            = "SELECT `id` FROM $wpdb->racketmanager_events $search";
+            $raw_events     = wp_cache_get( md5( $sql ), 'events' );
+            if ( ! $raw_events ) {
+                $raw_events = $wpdb->get_results( $sql ); //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+                wp_cache_set( md5( $sql ), $raw_events, 'events' );
+            }
+            if ( is_array( $raw_events ) ) {
+                foreach ( $raw_events as $raw ) {
+                    $candidate = get_event( $raw->id );
+                    if ( $candidate && (
+                        $candidate->name === ucwords( $event ) ||
+                        strcasecmp( $candidate->name, $event ) === 0 ||
+                        strcasecmp( $candidate->name, $clean_name ) === 0 ||
+                        sanitize_title( $candidate->name ) === sanitize_title( $event )
+                    ) ) {
+                        $event_obj = $candidate;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ( ! $event_obj || ! is_object( $event_obj ) || ! isset( $event_obj->id ) ) {
+            return null;
+        }
+
+        // Verify event belongs to this competition
+        if ( isset( $event_obj->competition_id ) && (int) $event_obj->competition_id !== (int) $this->id ) {
+            return null;
+        }
+
+        // Verify event belongs to the requested season (if season is specified or resolvable)
+        if ( ! empty( $season_name ) ) {
+            if ( empty( $event_obj->seasons ) || ! is_array( $event_obj->seasons ) || empty( $event_obj->seasons[ $season_name ] ) ) {
+                return null;
+            }
+        }
+
+        return $event_obj;
+    }
+
+    /**
      * Get events from database
      *
      * @param array $args search arguments.
@@ -943,16 +1058,33 @@ class Competition {
         global $wpdb;
 
         $defaults = array(
-            'offset'  => 0,
-            'limit'   => 99999999,
-            'season'  => null,
-            'orderby' => array( 'name' => 'ASC' ),
+            'offset'       => 0,
+            'limit'        => 99999999,
+            'season'       => null,
+            'orderby'      => array( 'name' => 'ASC' ),
+            'allowed_only' => false,
         );
         $args     = array_merge( $defaults, $args );
         $offset   = $args['offset'];
         $limit    = $args['limit'];
         $season   = $args['season'];
         $orderby  = $args['orderby'];
+        $allowed  = (bool) $args['allowed_only'];
+
+        $allowed_event_ids = null;
+        if ( $allowed ) {
+            $season = $this->resolve_season_name( $season );
+            if ( empty( $season ) ) {
+                // Fail closed when season cannot be resolved
+                return array();
+            }
+            $season_config = $this->get_season_config( $season );
+            $entry_events  = $season_config['entry_events'] ?? null;
+            // For frontend viewing (allowed_only): non-empty array restricts events; unset/null/empty [] shows all season events
+            if ( is_array( $entry_events ) && ! empty( $entry_events ) ) {
+                $allowed_event_ids = array_map( 'intval', $entry_events );
+            }
+        }
 
         $search_terms   = array();
         $search_terms[] = $wpdb->prepare( '`competition_id` = %d', $this->id );
@@ -979,6 +1111,8 @@ class Competition {
             $event = get_event( $event->id );
             if ( $season && empty( $event->seasons[ $season ] ) ) {
                 unset( $events[ $i ] );
+            } elseif ( $allowed && null !== $allowed_event_ids && ! in_array( (int) $event->id, $allowed_event_ids, true ) ) {
+                unset( $events[ $i ] );
             } else {
                 $event_index[ $event->id ] = $i;
                 $events[ $i ]              = $event;
@@ -990,17 +1124,44 @@ class Competition {
 
         return $events;
     }
+
     /**
-     * Get events available for entry in a season.
+     * Get frontend active/allowlisted events for a season.
+     * Unset or empty allowlist displays all season events.
      *
-     * @param string $season season name.
+     * @param string|null $season Season name.
      * @return array
      */
-    public function get_entry_events( string $season ): array {
+    public function get_frontend_events( ?string $season = null ): array {
+        return array_values(
+            $this->get_events(
+                array(
+                    'season'       => $this->resolve_season_name( $season ),
+                    'allowed_only' => true,
+                )
+            )
+        );
+    }
+
+    /**
+     * Get events available for entry in a season.
+     * Used for entry forms and entry submission validation.
+     * An explicitly empty entry_events list [] denies all entry.
+     *
+     * @param string|null $season season name.
+     * @return array
+     */
+    public function get_entry_events( ?string $season = null ): array {
+        $season = $this->resolve_season_name( $season );
+        if ( empty( $season ) ) {
+            return array();
+        }
+
         $events        = $this->get_events( array( 'season' => $season ) );
-        $season_config = $this->seasons[ $season ] ?? array();
-        if ( ! is_array( $season_config ) || ! array_key_exists( 'entry_events', $season_config ) ) {
-            return $events;
+        $season_config = $this->get_season_config( $season );
+
+        if ( ! is_array( $season_config ) || ! array_key_exists( 'entry_events', $season_config ) || is_null( $season_config['entry_events'] ) ) {
+            return array_values( $events );
         }
 
         $entry_event_ids = is_array( $season_config['entry_events'] ) ? array_map( 'intval', $season_config['entry_events'] ) : array();
@@ -1010,13 +1171,53 @@ class Competition {
             }
         }
 
-        $events           = array_values( $events );
-        $this->events     = $events;
+        $events            = array_values( $events );
+        $this->events      = $events;
         $this->event_index = array();
         foreach ( $events as $index => $event ) {
             $this->event_index[ $event->id ] = $index;
         }
         return $events;
+    }
+
+    /**
+     * Check if an event is allowed/active for a specific competition season.
+     *
+     * @param int|string|object $event Event ID, event name/slug, or Event object.
+     * @param string|null       $season Season name.
+     * @param bool              $for_entry Whether checking for entry submission (where [] denies all) vs frontend viewing (where [] allows all).
+     * @return bool
+     */
+    public function is_event_allowed( int|string|object $event, ?string $season = null, bool $for_entry = false ): bool {
+        $season_name = $this->resolve_season_name( $season );
+        if ( empty( $season_name ) ) {
+            return false;
+        }
+
+        $event_obj = $this->resolve_event( $event, $season_name );
+        if ( ! $event_obj ) {
+            return false;
+        }
+
+        $season_config = $this->get_season_config( $season_name );
+        $entry_events  = $season_config['entry_events'] ?? null;
+
+        if ( $for_entry ) {
+            // Entry validation: null/unset means all season events; explicit [] means closed/none
+            if ( ! is_array( $season_config ) || ! array_key_exists( 'entry_events', $season_config ) || is_null( $entry_events ) ) {
+                return true;
+            }
+            $entry_event_ids = is_array( $entry_events ) ? array_map( 'intval', $entry_events ) : array();
+            return in_array( (int) $event_obj->id, $entry_event_ids, true );
+        }
+
+        // Frontend viewing: null/unset or empty [] means all season events allowed
+        if ( empty( $entry_events ) || ! is_array( $entry_events ) ) {
+            return true;
+        }
+
+        $entry_event_ids = array_map( 'intval', $entry_events );
+        return in_array( (int) $event_obj->id, $entry_event_ids, true );
     }
     /**
      * Reload settings from database

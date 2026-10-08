@@ -363,7 +363,7 @@ final class Tournament {
     public function __construct( ?object $tournament = null ) {
         global $racketmanager, $wp;
         if ( ! is_null( $tournament ) ) {
-            if ( isset( $tournament->information ) ) {
+            if ( isset( $tournament->information ) && is_string( $tournament->information ) ) {
                 $tournament->information = json_decode( $tournament->information );
             }
             foreach ( $tournament as $key => $value ) {
@@ -561,26 +561,113 @@ final class Tournament {
     }
 
     /**
+     * Resolve and return tournament competition object safely.
+     *
+     * @return Competition|null
+     */
+    public function get_competition_object(): ?Competition {
+        if ( ! isset( $this->competition ) || ! $this->competition ) {
+            if ( isset( $this->competition_id ) && $this->competition_id ) {
+                $this->competition = get_competition( $this->competition_id );
+            }
+        }
+        return ( isset( $this->competition ) && $this->competition instanceof Competition ) ? $this->competition : null;
+    }
+
+    /**
+     * Get allowlisted event IDs for this tournament.
+     *
+     * @param bool $for_entry Whether resolving for entry validation (explicit [] denies all) vs frontend viewing (empty/unset allows all).
+     * @return array|null Null means unrestricted (all season events allowed), array of int IDs means restricted list.
+     */
+    public function get_allowlist_event_ids( bool $for_entry = false ): ?array {
+        if ( empty( $this->season ) ) {
+            return array();
+        }
+        $information = $this->information;
+        if ( is_string( $information ) ) {
+            $information = json_decode( $information );
+        }
+        $entry_events = ( is_object( $information ) && property_exists( $information, 'entry_events' ) )
+            ? $information->entry_events
+            : null;
+
+        if ( $for_entry ) {
+            // Entry validation: null/unset means all season events; explicit [] means closed/none
+            if ( ! is_object( $information ) || ! property_exists( $information, 'entry_events' ) || is_null( $entry_events ) ) {
+                return null;
+            }
+            return is_array( $entry_events ) ? array_map( 'intval', $entry_events ) : array();
+        }
+
+        // Frontend viewing: null/unset or empty [] means all season events allowed
+        if ( empty( $entry_events ) || ! is_array( $entry_events ) ) {
+            return null;
+        }
+
+        return array_map( 'intval', $entry_events );
+    }
+
+    /**
      * Get events available for entry in this tournament.
+     * Used for entry forms and entry submission validation.
+     * An explicitly empty entry_events list [] denies all entry.
      *
      * @return array
      */
     public function get_entry_events(): array {
-        if ( ! $this->competition ) {
+        $competition = $this->get_competition_object();
+        if ( ! $competition || empty( $this->season ) ) {
             return array();
         }
-        $events = $this->competition->get_events( array( 'season' => $this->season ) );
-        if ( ! is_object( $this->information ) || ! property_exists( $this->information, 'entry_events' ) ) {
-            return $events;
+        $allowed_ids = $this->get_allowlist_event_ids( true );
+        $events      = $competition->get_events( array( 'season' => $this->season ) );
+        if ( null === $allowed_ids ) {
+            return array_values( $events );
         }
 
-        $entry_event_ids = is_array( $this->information->entry_events ) ? array_map( 'intval', $this->information->entry_events ) : array();
         foreach ( $events as $index => $event ) {
-            if ( ! in_array( (int) $event->id, $entry_event_ids, true ) ) {
+            if ( ! in_array( (int) $event->id, $allowed_ids, true ) ) {
                 unset( $events[ $index ] );
             }
         }
         return array_values( $events );
+    }
+
+    /**
+     * Get frontend active/allowlisted events for this tournament.
+     * Unset or empty allowlist displays all competition season events.
+     *
+     * @return array
+     */
+    public function get_frontend_events(): array {
+        return $this->get_events( false, true );
+    }
+
+    /**
+     * Check if an event is allowed in this tournament.
+     *
+     * @param int|string|object $event Event ID, event name/slug, or Event object.
+     * @param bool              $for_entry Whether checking for entry submission (where [] denies all) vs frontend viewing (where [] allows all).
+     * @return bool
+     */
+    public function is_event_allowed( int|string|object $event, bool $for_entry = false ): bool {
+        $competition = $this->get_competition_object();
+        if ( ! $competition || empty( $this->season ) ) {
+            return false;
+        }
+
+        $event_obj = $competition->resolve_event( $event, $this->season );
+        if ( ! $event_obj ) {
+            return false;
+        }
+
+        $allowed_ids = $this->get_allowlist_event_ids( $for_entry );
+        if ( null === $allowed_ids ) {
+            return true;
+        }
+
+        return in_array( (int) $event_obj->id, $allowed_ids, true );
     }
 
     /**
@@ -797,37 +884,52 @@ final class Tournament {
     /**
      * Get events function
      *
-     * @param false|string $name name of event (optional).
+     * @param false|string $name         name of event (optional).
+     * @param bool         $allowed_only whether to restrict to tournament allowlisted events.
      * @return array|object
      */
-    public function get_events( false|string $name = false ): object|array {
-        $competition = get_competition( $this->competition_id );
-        if ( $competition ) {
-            $event_args           = array();
-            $event_args['season'] = $this->season;
-            $events               = $competition->get_events( $event_args );
-            $this->events = array();
-            foreach ( $events as $event ) {
-                $event = get_event( $event );
-                if ( $name ) {
-                    if ( $event->name === ucwords( $name ) ) {
-                        return $event;
-                    }
-                } else {
-                    $event->team_count   = $event->get_teams(
-                        array(
-                            'season' => $this->season,
-                            'count'  => true,
-                        )
-                    );
-                    $event->player_count = $event->get_players(
-                        array(
-                            'season' => $this->season,
-                            'count'  => true,
-                        )
-                    );
+    public function get_events( false|string $name = false, bool $allowed_only = false ): object|array {
+        $competition = $this->get_competition_object();
+        if ( ! $competition || empty( $this->season ) ) {
+            return array();
+        }
+
+        $event_args           = array();
+        $event_args['season'] = $this->season;
+        $events               = $competition->get_events( $event_args );
+        $this->events         = array();
+
+        $allowed_event_ids = $allowed_only ? $this->get_allowlist_event_ids( false ) : null;
+
+        foreach ( $events as $event ) {
+            $event = get_event( $event );
+            if ( $allowed_only && null !== $allowed_event_ids && ! in_array( (int) $event->id, $allowed_event_ids, true ) ) {
+                continue;
+            }
+            if ( $name ) {
+                $clean_name = str_replace( '-', ' ', $name );
+                if (
+                    $event->name === ucwords( $name ) ||
+                    strcasecmp( $event->name, $name ) === 0 ||
+                    strcasecmp( $event->name, $clean_name ) === 0 ||
+                    sanitize_title( $event->name ) === sanitize_title( $name )
+                ) {
+                    return $event;
                 }
-                $this->events[] = $event;
+            } else {
+                $event->team_count   = $event->get_teams(
+                    array(
+                        'season' => $this->season,
+                        'count'  => true,
+                    )
+                );
+                $event->player_count = $event->get_players(
+                    array(
+                        'season' => $this->season,
+                        'count'  => true,
+                    )
+                );
+                $this->events[]      = $event;
             }
         }
         return $this->events;

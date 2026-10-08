@@ -201,11 +201,11 @@ class Shortcodes_Competition extends Shortcodes {
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
-			$competition->set_season( $season );
+			$competition->set_season( $season, true );
 		} else {
-			$season = $competition->current_season['name'];
+			$season = $competition->current_season['name'] ?? null;
 		}
-		$competition->events  = $competition->get_events();
+		$competition->events  = $competition->get_frontend_events( $season );
 		$competition->entries = $competition->get_teams(
 			array(
 				'count'  => true,
@@ -251,11 +251,11 @@ class Shortcodes_Competition extends Shortcodes {
 			return $this->return_error( $msg );
 		}
 		if ( $season ) {
-			$competition->set_season( $season );
+			$competition->set_season( $season, true );
 		} else {
-			$season = $competition->current_season['name'];
+			$season = $competition->current_season['name'] ?? null;
 		}
-		$competition->events = $competition->get_events();
+		$competition->events = $competition->get_frontend_events( $season );
 		$i                   = 0;
 		foreach ( $competition->events as $event ) {
 			$event->num_entries        = $event->get_teams(
@@ -1157,7 +1157,7 @@ class Shortcodes_Competition extends Shortcodes {
     /**
      * Function to display event dropdown
      *
-     * [dropdown id=ID team_id=X template=X]
+     * [dropdown id=ID season=X template=X]
      *
      * @param array $atts shortcode attributes.
      *
@@ -1167,16 +1167,23 @@ class Shortcodes_Competition extends Shortcodes {
         $args     = shortcode_atts(
             array(
                 'id'       => 0,
+                'season'   => null,
                 'template' => '',
             ),
             $atts
         );
         $competition_id = $args['id'];
+        $season         = $args['season'];
         $template       = $args['template'];
         if ( $competition_id ) {
             $competition = get_competition( $competition_id );
             if ( $competition ) {
-                $events   = $competition->get_events();
+                if ( $season ) {
+                    $competition->set_season( $season, true );
+                    $events = $competition->get_frontend_events( $season );
+                } else {
+                    $events = $competition->get_events();
+                }
                 $filename = ! empty( $template ) ? 'dropdown-' . $template : 'dropdown';
                 return $this->load_template(
                     $filename,

@@ -120,7 +120,7 @@ class Shortcodes_Tournament extends Shortcodes {
 			$msg = $this->tournament_not_found;
 			return $this->return_error( $msg );
 		}
-		$tournament->events      = $tournament->get_events();
+		$tournament->events      = $tournament->get_frontend_events();
 		$tournament->num_entries = $tournament->get_entries( array( 'count' => true ) );
 
 		$filename = ( ! empty( $template ) ) ? 'overview-' . $template : 'overview';
@@ -154,7 +154,11 @@ class Shortcodes_Tournament extends Shortcodes {
 		$template           = $args['template'];
 		$event              = null;
 		$tournament         = get_tournament( $tournament_id );
-		$tournament->events = $tournament->get_events();
+		if ( ! $tournament ) {
+			$msg = $this->tournament_not_found;
+			return $this->return_error( $msg );
+		}
+		$tournament->events = $tournament->get_frontend_events();
 		if ( ! $event_id ) {
 			if ( ! empty( $_GET['event'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$event_id = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['event'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -164,37 +168,31 @@ class Shortcodes_Tournament extends Shortcodes {
 			$event_id = str_replace( '-', ' ', $event_id );
 		}
 		if ( $event_id ) {
-			if ( is_numeric( $event_id ) ) {
-				$event = get_event( $event_id );
-			} else {
-				$event = $tournament->get_events( $event_id );
-				if ( is_array( $event ) ) {
-					$msg = __( 'Event not found for tournament', 'racketmanager' );
-					return $this->return_error( $msg );
+			$event = $this->resolve_tournament_event( $tournament, $event_id );
+			if ( ! $event ) {
+				$msg = __( 'Event not found for tournament', 'racketmanager' );
+				return $this->return_error( $msg );
+			}
+			$primary_league_id = $event->primary_league;
+			if ( $primary_league_id ) {
+				$league = get_league( (string) $primary_league_id );
+				if ( $league ) {
+					$event->num_seeds = $league->championship->num_seeds ?? 0;
 				}
 			}
-			if ( $event ) {
-				$primary_league_id = $event->primary_league;
-				if ( $primary_league_id ) {
-					$league = get_league( (string) $primary_league_id );
-					if ( $league ) {
-						$event->num_seeds = $league->championship->num_seeds ?? 0;
-					}
-				}
-				$teams = $event->get_teams(
-					array(
-						'season'  => $tournament->season,
-						'league'  => $event->primary_league,
-						'orderby' => array(
-							'rank' => 'ASC',
-						),
-					)
-				);
-				if ( $teams ) {
-					$event->teams = $teams;
-				} else {
-					$event->teams = array();
-				}
+			$teams = $event->get_teams(
+				array(
+					'season'  => $tournament->season,
+					'league'  => $event->primary_league,
+					'orderby' => array(
+						'rank' => 'ASC',
+					),
+				)
+			);
+			if ( $teams ) {
+				$event->teams = $teams;
+			} else {
+				$event->teams = array();
 			}
 		}
 		$tab      = 'events';
@@ -231,6 +229,10 @@ class Shortcodes_Tournament extends Shortcodes {
 		$template      = $args['template'];
 		$draw          = null;
 		$tournament    = get_tournament( $tournament_id );
+		if ( ! $tournament ) {
+			$msg = $this->tournament_not_found;
+			return $this->return_error( $msg );
+		}
 		if ( ! $draw_id ) {
 			if ( ! empty( $_GET['draw'] ) ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$draw_id = htmlspecialchars( wp_strip_all_tags( wp_unslash( $_GET['draw'] ) ) ); //phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -240,18 +242,12 @@ class Shortcodes_Tournament extends Shortcodes {
 			$draw_id = str_replace( '-', ' ', $draw_id );
 		}
 		if ( $draw_id ) {
-			if ( is_numeric( $draw_id ) ) {
-				$draw = get_event( $draw_id );
-			} else {
-				$draw = $tournament->get_events( $draw_id );
-				if ( is_array( $draw ) ) {
-					$msg = __( 'Draw not found for tournament', 'racketmanager' );
-					return $this->return_error( $msg );
-				}
+			$draw = $this->resolve_tournament_event( $tournament, $draw_id );
+			if ( ! $draw ) {
+				$msg = __( 'Event not found for tournament', 'racketmanager' );
+				return $this->return_error( $msg );
 			}
-			if ( $draw ) {
-				$draw->leagues = $this->get_draw( $draw, $tournament->season );
-			}
+			$draw->leagues = $this->get_draw( $draw, $tournament->season );
 			$matches = $racketmanager->get_matches(
 				array(
 					'season'   => $tournament->season,
@@ -264,16 +260,18 @@ class Shortcodes_Tournament extends Shortcodes {
 			);
 		} else {
 			$matches = array();
-			$events  = $tournament->get_events();
+			$events  = $tournament->get_frontend_events();
 			$e       = 0;
 			foreach ( $events as $event ) {
 				if ( ! empty( $event->primary_league ) ) {
 					$league = get_league( $event->primary_league );
 				} else {
 					$leagues = $event->get_leagues();
-					$league  = get_league( $leagues[0] );
+					$league  = ! empty( $leagues ) ? get_league( $leagues[0] ) : null;
 				}
-				$event->draw_size = $league->championship->num_teams_first_round;
+				if ( $league && isset( $league->championship->num_teams_first_round ) ) {
+					$event->draw_size = $league->championship->num_teams_first_round;
+				}
 				$events[ $e ]     = $event;
 				++$e;
 			}
@@ -365,7 +363,7 @@ class Shortcodes_Tournament extends Shortcodes {
 		if ( $tournament_entry && $tournament_entry->club ) {
             $player->club = $tournament_entry->club;
         }
-		$tournament->events = $tournament->get_events();
+		$tournament->events = $tournament->get_frontend_events();
 		foreach ( $tournament->events as $event ) {
 			$event = get_event( $event );
 			$teams = $event->get_teams(
@@ -766,4 +764,38 @@ class Shortcodes_Tournament extends Shortcodes {
 		}
 
     }
+
+	/**
+	 * Resolve a tournament event by ID, slug, or alias league ID, verifying allowlist membership.
+	 *
+	 * @param object            $tournament       Tournament object.
+	 * @param int|string|object $event_identifier Event ID, slug, or league alias.
+	 * @return object|null Resolved and allowed Event object, or null if invalid/not allowed.
+	 */
+	private function resolve_tournament_event( object $tournament, int|string|object $event_identifier ): ?object {
+		$event = null;
+		if ( is_numeric( $event_identifier ) ) {
+			$event = get_event( (int) $event_identifier );
+			if ( ! $event || ! isset( $event->id ) || ! $tournament->is_event_allowed( $event ) ) {
+				$alias_league = get_league( (int) $event_identifier );
+				if ( $alias_league && ! empty( $alias_league->event_id ) ) {
+					$candidate_event = get_event( (int) $alias_league->event_id );
+					if ( $candidate_event && $tournament->is_event_allowed( $candidate_event ) ) {
+						$event = $candidate_event;
+					}
+				}
+			}
+		} else {
+			$event = $tournament->get_events( (string) $event_identifier, true );
+			if ( is_array( $event ) ) {
+				return null;
+			}
+		}
+
+		if ( ! $event || ! $tournament->is_event_allowed( $event ) ) {
+			return null;
+		}
+
+		return $event;
+	}
 }

@@ -12,10 +12,12 @@ namespace Racketmanager;
 <select size='1' name='event_id' id='event_id' class="form-select" onChange='Racketmanager.getLeagueDropdown(this.value)'>
     <option value='0'><?php esc_html_e( 'Choose event', 'racketmanager' ); ?></option>
     <?php
-    foreach ( $events as $event ) {
-        ?>
-        <option value=<?php echo esc_html( $event->id ); ?>><?php echo esc_html( $event->name ); ?></option>
-        <?php
+    if ( ! empty( $events ) ) {
+        foreach ( $events as $event ) {
+            ?>
+            <option value="<?php echo esc_attr( $event->id ); ?>"><?php echo esc_html( $event->name ); ?></option>
+            <?php
+        }
     }
     ?>
 </select>

@@ -36,7 +36,7 @@ namespace Racketmanager;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( count( $tournament->events ) ); ?>
+                                        <?php echo esc_html( ! empty( $tournament->events ) && is_countable( $tournament->events ) ? count( $tournament->events ) : 0 ); ?>
                                     </span>
                                 </span>
                             </div>

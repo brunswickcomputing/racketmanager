@@ -247,6 +247,29 @@ class Shortcodes_Club extends Shortcodes {
                 $competition      = get_competition( $competition_name, 'name' );
                 if ( $competition ) {
                     $club->competition = $competition;
+                    $season            = $competition->current_season['name'] ?? null;
+                    $events            = $competition->get_frontend_events( $season );
+                    $e                 = 0;
+                    foreach ( $events as $event ) {
+                        if ( ! empty( $season ) && method_exists( $event, 'set_season' ) ) {
+                            $event->set_season( $season, true );
+                        }
+                        $teams = $event->get_teams_info(
+                            array(
+                                'club'    => $club->id,
+                                'orderby' => array( 'title' => 'ASC' ),
+                            )
+                        );
+                        if ( $teams ) {
+                            $event->teams = $teams;
+                            $events[ $e ] = $event;
+                        } else {
+                            unset( $events[ $e ] );
+                        }
+                        ++$e;
+                    }
+                    $competition->events = array_values( $events );
+                    $club->competitions  = array( $competition );
                 } else {
                     $msg = $this->competition_not_found;
                 }
@@ -289,9 +312,13 @@ class Shortcodes_Club extends Shortcodes {
         $competitions      = $racketmanager->get_competitions( array( 'type' => $type ) );
         foreach ( $competitions as $competition ) {
             $event_found = false;
-            $events      = $competition->get_events();
+            $season      = $competition->current_season['name'] ?? null;
+            $events      = $competition->get_frontend_events( $season );
             $e           = 0;
             foreach ( $events as $event ) {
+                if ( ! empty( $season ) && method_exists( $event, 'set_season' ) ) {
+                    $event->set_season( $season, true );
+                }
                 $teams        = $event->get_teams_info(
                     array(
                         'club'    => $club->id,
@@ -309,7 +336,7 @@ class Shortcodes_Club extends Shortcodes {
             }
             if ( $event_found ) {
                 $competition_found   = true;
-                $competition->events = $events;
+                $competition->events = array_values( $events );
                 $competitions[ $c ]  = $competition;
             } else {
                 unset( $competitions[ $c ] );
@@ -317,7 +344,7 @@ class Shortcodes_Club extends Shortcodes {
             ++$c;
         }
         if ( $competition_found ) {
-            $club_competitions = array_merge( $club_competitions, $competitions );
+            $club_competitions = array_merge( $club_competitions, array_values( $competitions ) );
         }
         return $club_competitions;
     }
@@ -369,7 +396,14 @@ class Shortcodes_Club extends Shortcodes {
 		} else {
 			$msg = $this->no_event_id;
 		}
+        $season = get_query_var( 'season' );
         if ( empty( $msg ) ) {
+            $competition = $event->competition ?? ( isset( $event->competition_id ) ? get_competition( $event->competition_id ) : null );
+            $season_name = ! empty( $season ) ? $season : ( $event->current_season['name'] ?? null );
+            if ( $competition && method_exists( $competition, 'is_event_allowed' ) && ! $competition->is_event_allowed( $event, $season_name ) ) {
+                $msg = __( 'Event not found for competition', 'racketmanager' );
+                return $this->return_error( $msg );
+            }
             $team_info   = $event->get_team_info( $team->id );
             $team        = (object) array_merge( (array) $team, (array) $team_info );
             $club->event = $event;
@@ -426,6 +460,12 @@ class Shortcodes_Club extends Shortcodes {
             $msg = __( 'No seasons for event', 'racketmanager' );
         }
         if ( empty( $msg ) ) {
+            $competition = $event->competition ?? ( isset( $event->competition_id ) ? get_competition( $event->competition_id ) : null );
+            $season_name = ! empty( $season ) ? $season : ( $event->current_season['name'] ?? null );
+            if ( $competition && method_exists( $competition, 'is_event_allowed' ) && ! $competition->is_event_allowed( $event, $season_name ) ) {
+                $msg = __( 'Event not found for competition', 'racketmanager' );
+                return $this->return_error( $msg );
+            }
             $season_dtls        = $event->current_season;
             $player_stats       = $event->get_player_stats(
                 array(

@@ -43,7 +43,7 @@ global $racketmanager;
                             <div class="tournament-meta__title">
                                 <span class="meta-link">
                                     <span class="meta-link__value">
-                                        <?php echo esc_html( count( $competition->events ) ); ?>
+                                        <?php echo esc_html( ! empty( $competition->events ) && is_countable( $competition->events ) ? count( $competition->events ) : 0 ); ?>
                                     </span>
                                 </span>
                             </div>

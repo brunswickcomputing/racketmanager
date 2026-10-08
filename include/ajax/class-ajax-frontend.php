@@ -917,16 +917,27 @@ class Ajax_Frontend extends Ajax {
                             }
 							$args    = array();
 							$link_id = isset( $_POST['link_id'] ) ? sanitize_text_field( wp_unslash( $_POST['link_id'] ) ) : null;
-							if ( ! is_null( $link_id ) ) {
-								$args[ $tab ] = $link_id;
+							if ( ! is_null( $link_id ) && '' !== $link_id ) {
+								if ( preg_match( '/^[A-Za-z0-9 _-]+$/', $link_id ) ) {
+									$args[ $tab ] = $link_id;
+								} else {
+									$return->error = true;
+									$return->msg   = __( 'Invalid link ID', 'racketmanager' );
+								}
 							}
-							$season = isset( $_POST['season'] ) ? intval( $_POST['season'] ) : null;
-							if ( $season ) {
-								$args['season'] = $season;
+							$season = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
+							if ( ! empty( $season ) && empty( $return->error ) ) {
+								$valid_season = $this->get_valid_target_season( $target, $target_name, $season );
+								if ( ! empty( $valid_season ) ) {
+									$args['season'] = $valid_season;
+								}
 							}
 							$function_name = 'Racketmanager\\' . $target_name . '_' . $tab_name;
 							if ( function_exists( $function_name ) ) {
-                                $output = $function_name( $target->id, $args );
+								ob_start();
+								$func_output     = $function_name( $target->id, $args );
+								$buffered_output = ob_get_clean();
+								$output          = ! empty( $func_output ) ? $func_output : $buffered_output;
 							} else {
 								$return->error = true;
 								$return->msg   = __( 'Tab not valid', 'racketmanager' );
@@ -950,6 +961,55 @@ class Ajax_Frontend extends Ajax {
 		}
         echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		wp_die();
+	}
+	/**
+	 * Validate and retrieve valid target season for AJAX tab data requests.
+	 *
+	 * @param object $target Target object (Competition, Event, League, Tournament).
+	 * @param string $target_name Target name.
+	 * @param string $season Season name.
+	 * @return string|null Validated season string, or null if invalid/not supported.
+	 */
+	private function get_valid_target_season( object $target, string $target_name, string $season ): ?string {
+		if ( ! preg_match( '/^[A-Za-z0-9 _-]+$/', $season ) ) {
+			return null;
+		}
+
+		if ( 'tournament' === $target_name ) {
+			if ( ! empty( $target->season ) && (string) $target->season !== $season ) {
+				return null;
+			}
+			return $season;
+		}
+
+		$seasons = null;
+		if ( 'league' === $target_name ) {
+			if ( isset( $target->event ) && is_object( $target->event ) && ! empty( $target->event->seasons ) && is_array( $target->event->seasons ) ) {
+				$seasons = $target->event->seasons;
+			} elseif ( isset( $target->event_id ) && $target->event_id ) {
+				$event = get_event( (int) $target->event_id );
+				if ( $event && ! empty( $event->seasons ) && is_array( $event->seasons ) ) {
+					$seasons = $event->seasons;
+				}
+			}
+		} elseif ( ! empty( $target->seasons ) && is_array( $target->seasons ) ) {
+			$seasons = $target->seasons;
+		}
+
+		if ( is_array( $seasons ) && ! empty( $seasons ) ) {
+			if ( isset( $seasons[ $season ] ) ) {
+				return $season;
+			}
+			foreach ( $seasons as $conf ) {
+				if ( ( is_array( $conf ) && isset( $conf['name'] ) && (string) $conf['name'] === $season ) ||
+					( is_object( $conf ) && isset( $conf->name ) && (string) $conf->name === $season ) ) {
+					return $season;
+				}
+			}
+			return null;
+		}
+
+		return $season;
 	}
 	/**
 	 * Show team order players function

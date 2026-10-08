@@ -55,6 +55,8 @@ class Shortcodes_Event extends Shortcodes {
             $event->set_season( $season );
             if ( empty( $event->current_season ) ) {
                 $msg = __( 'Season not found for event', 'racketmanager' );
+            } elseif ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+                $msg = __( 'Event not found for competition', 'racketmanager' );
             } else {
                 $season  = $event->current_season['name'];
                 $seasons = $event->seasons;
@@ -101,6 +103,14 @@ class Shortcodes_Event extends Shortcodes {
 		}
 		$event->leagues = $event->get_leagues();
 		$event->set_season( $season );
+		if ( empty( $event->current_season ) ) {
+			$msg = __( 'Season not found for event', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
+		if ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+			$msg = __( 'Event not found for competition', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
 		$filename = ( ! empty( $template ) ) ? 'standings-' . $template : 'standings';
 		return $this->load_template(
 			$filename,
@@ -135,6 +145,14 @@ class Shortcodes_Event extends Shortcodes {
 			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
+		if ( empty( $event->current_season ) ) {
+			$msg = __( 'Season not found for event', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
+		if ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+			$msg = __( 'Event not found for competition', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
 		if ( $event->competition->is_championship ) {
 			$event->leagues = $this->get_draw( $event, $season );
 		} else {
@@ -174,6 +192,14 @@ class Shortcodes_Event extends Shortcodes {
 			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
+		if ( empty( $event->current_season ) ) {
+			$msg = __( 'Season not found for event', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
+		if ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+			$msg = __( 'Event not found for competition', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
 		if ( $event->competition->is_championship ) {
 			$event->leagues = $this->get_draw( $event, $season );
 		} else {
@@ -217,6 +243,14 @@ class Shortcodes_Event extends Shortcodes {
 		}
 		$event_club = null;
 		$event->set_season( $season );
+		if ( empty( $event->current_season ) ) {
+			$msg = __( 'Season not found for event', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
+		if ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+			$msg = __( 'Event not found for competition', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
 		if ( ! $club_id && isset( $wp->query_vars['club_name'] ) ) {
             $club_id = get_query_var( 'club_name' );
             $club_id = str_replace( '-', ' ', $club_id );
@@ -271,6 +305,14 @@ class Shortcodes_Event extends Shortcodes {
 			return $this->return_error( $msg );
 		}
 		$event->set_season( $season );
+		if ( empty( $event->current_season ) ) {
+			$msg = __( 'Season not found for event', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
+		if ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+			$msg = __( 'Event not found for competition', 'racketmanager' );
+			return $this->return_error( $msg );
+		}
 		$event->teams = $event->get_teams(
 			array(
 				'season'  => $event->current_season['name'],
@@ -346,6 +388,14 @@ class Shortcodes_Event extends Shortcodes {
 		$event     = get_event( $event_id );
 		if ( $event ) {
 			$event->set_season( $season );
+			if ( empty( $event->current_season ) ) {
+				$msg = __( 'Season not found for event', 'racketmanager' );
+				return $this->return_error( $msg );
+			}
+			if ( $event->competition && ! $event->competition->is_event_allowed( $event, $event->current_season['name'] ) ) {
+				$msg = __( 'Event not found for competition', 'racketmanager' );
+				return $this->return_error( $msg );
+			}
 			$event->players = array();
 			if ( ! $player_id && isset( $wp->query_vars['player_id'] ) ) {
                 $player_id = un_seo_url( get_query_var( 'player_id' ) );

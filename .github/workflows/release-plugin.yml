@@ -1,4 +1,4 @@
-name: Build and Release WordPress Plugin
+name: Build and Release Racketmanger WordPress Plugin
 
 on:
   push:
@@ -25,6 +25,24 @@ jobs:
         run: |
           composer install --no-dev --prefer-dist --optimize-autoloader --no-progress
 
+      - name: Determine Version and Archive Name
+        id: vars
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+            VERSION="${TAG_NAME#v}"
+          else
+            VERSION=$(grep -i "Version:" racketmanager.php | head -n 1 | sed -E "s/.*Version:[[:space:]]*([0-9]+\.[0-9]+(\.[0-9]+)?).*/\1/")
+            if [ -z "$VERSION" ]; then
+              VERSION="${{ github.ref_name }}"
+            fi
+          fi
+          ZIP_NAME="racketmanager-${VERSION}.zip"
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_ENV"
+
       - name: Build Plugin Archive
         run: |
           # Create a clean packaging directory with the exact plugin slug
@@ -42,18 +60,18 @@ jobs:
 
           # Package into a zip archive with the root folder 'racketmanager/'
           cd build_dir
-          zip -r ../racketmanager.zip racketmanager/
+          zip -r "../${ZIP_NAME}" racketmanager/
           cd ..
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: racketmanager-plugin
-          path: racketmanager.zip
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: racketmanager.zip
+          files: ${{ env.ZIP_NAME }}
           generate_release_notes: true

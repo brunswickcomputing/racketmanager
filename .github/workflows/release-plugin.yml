@@ -1,0 +1,59 @@
+name: Build and Release WordPress Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Plugin ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: intl, mysqli
+
+      - name: Install Composer Dependencies
+        run: |
+          composer install --no-dev --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Build Plugin Archive
+        run: |
+          # Create a clean packaging directory with the exact plugin slug
+          mkdir -p build_dir/racketmanager
+
+          # Copy plugin files, excluding git/dev artifacts
+          rsync -rc --exclude='.git*' \
+                    --exclude='.github' \
+                    --exclude='tests' \
+                    --exclude='my-tests' \
+                    --exclude='build_dir' \
+                    --exclude='sonar-project.properties' \
+                    --exclude='*.log' \
+                    ./ build_dir/racketmanager/
+
+          # Package into a zip archive with the root folder 'racketmanager/'
+          cd build_dir
+          zip -r ../racketmanager.zip racketmanager/
+          cd ..
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: racketmanager-plugin
+          path: racketmanager.zip
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: racketmanager.zip
+          generate_release_notes: true

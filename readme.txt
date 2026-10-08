@@ -47,13 +47,21 @@ Based on the leaguemanager plugin by Kolja Schleich and LaMonte Forthun
 
 == Changelog ==
 
+= 9.7.4 =
+* UPDATE: restrict frontend event listings for competitions, tournaments, and clubs to active season allowlists
+* UPDATE: guard direct query parameters and URL access against unoffered competition and tournament events
+* UPDATE: filter AJAX tab navigation by season and tournament allowlists with shortcode injection protection
+* UPDATE: validate team withdrawal hierarchies on league entry forms with inline field error feedback
+* UPDATE: enforce event-specific match day court capacity without multi-division counter resets
+* UPDATE: upgrade Stripe to version 16.6.0
+* UPDATE: support for PHP 8.4
+
 = 9.7.3 =
 * BUGFIX: handle empty currency code in locale
 * BUGFIX: use the correct link for event config
 * BUGFIX: include extra rubber for playoff
-* UPDATE: add a per-season event list for competitions and tournaments TODO: restrict frontends
+* UPDATE: add a per-season event list for competitions and tournaments
 * UPDATE: tidy php formatting
-* UPDATE: support for PHP 8.4
 
 = 9.7.2 =
 * BUGFIX: set teams to existing when no team passed

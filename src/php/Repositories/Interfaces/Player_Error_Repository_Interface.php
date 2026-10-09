@@ -49,7 +49,7 @@ interface Player_Error_Repository_Interface extends Repository_Interface {
      *
      * @return array
      */
-    public function find_all_with_details( string $message = null ): array;
+    public function find_all_with_details( ?string $message = null ): array;
 
     /**
      * Delete a player error.

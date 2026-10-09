@@ -709,7 +709,7 @@ class Admin_Display {
      * @param object $league league object.
      * @param string|null $group group details.
      */
-    protected function add_matches_to_league( object $league, string $group = null ): void {
+    protected function add_matches_to_league( object $league, ?string $group = null ): void {
         $validator = new Validator();
         $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-matches' );
         if ( empty( $validator->error ) ) {

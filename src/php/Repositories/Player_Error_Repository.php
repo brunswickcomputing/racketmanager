@@ -114,7 +114,7 @@ class Player_Error_Repository implements Player_Error_Repository_Interface {
      *
      * @return array
      */
-    public function find_all_with_details( string $message = null ): array {
+    public function find_all_with_details( ?string $message = null ): array {
         $search = null;
         $code = match( $message ) {
             'no_player' => 'Player not found',

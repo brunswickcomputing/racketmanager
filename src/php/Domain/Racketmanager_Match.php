@@ -30,6 +30,8 @@ use function Racketmanager\seo_url;
 
 /**
  * Class to implement the Racketmanager_Match object
+ *
+ * @deprecated 2.0.0 Use \Racketmanager\Domain\Fixture\Fixture and \Racketmanager\Repositories\Fixture_Repository instead.
  */
 class Racketmanager_Match {
 

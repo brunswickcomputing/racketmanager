@@ -15,7 +15,6 @@ use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 
 /**

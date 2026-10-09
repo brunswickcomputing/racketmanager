@@ -9,6 +9,10 @@
 
 namespace Racketmanager\Domain\Competition;
 
+use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\League_Repository;
+use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -541,7 +545,7 @@ class Event {
         }
 
         // Championship.
-        if ( 'championship' === $this->competition->settings['mode'] ) {
+        if ( 'championship' === $this->competition->settings->get('mode') ) {
             $this->is_championship = true;
         }
         if ( 'league' === $this->competition->type && $this->competition->is_player_entry ) {
@@ -737,7 +741,7 @@ class Event {
      * @param array $settings settings array.
      */
     public function set_settings(array $settings ): void {
-        global $wpdb, $racketmanager, $match;
+        global $wpdb, $racketmanager;
         $num_rubbers = $this->num_rubbers ?? null;
         $num_sets    = $this->num_sets ?? null;
         $type        = $this->type;
@@ -746,19 +750,37 @@ class Event {
             $match_args['season']   = $this->current_season['name'];
             $match_args['event_id'] = $this->id;
             if ( ! isset( $this->settings['reverse_rubbers'] ) || $this->settings['reverse_rubbers'] !== $settings['reverse_rubbers'] ) {
-                $matches = $racketmanager->get_matches( $match_args );
-                foreach ( $matches as $match ) {
-                    $match         = get_match( $match->id );
-                    $rubber_count  = $match->get_rubbers( null, true );
+                $matches            = $racketmanager->get_matches( $match_args );
+                $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                    ? $racketmanager->container->get( 'fixture_repository' )
+                    : new Fixture_Repository();
+                $rubber_repository  = isset( $racketmanager->container ) && $racketmanager->container->has( 'rubber_repository' )
+                    ? $racketmanager->container->get( 'rubber_repository' )
+                    : new Rubber_Repository();
+                $league_repository  = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
+                    ? $racketmanager->container->get( 'league_repository' )
+                    : new League_Repository();
+
+                foreach ( $matches as $match_row ) {
+                    $match_id = is_object( $match_row ) ? (int) $match_row->id : (int) $match_row;
+                    $fixture  = $fixture_repository->find_by_id( $match_id );
+                    if ( ! $fixture ) {
+                        continue;
+                    }
+                    $rubber_count = $rubber_repository->count_by_fixture_id( $match_id );
+                    $league_id    = $fixture->get_league_id();
+                    $league       = $league_id ? $league_repository->find_by_id( $league_id ) : null;
+                    $num_rubbers_threshold = $league ? (int) ( $league->num_rubbers ?? 0 ) : 0;
                     $total_rubbers = $rubber_count * 2;
-                    if ( intval( $rubber_count ) === intval( $match->league->num_rubbers ) ) {
+                    if ( $num_rubbers_threshold > 0 && intval( $rubber_count ) === $num_rubbers_threshold ) {
                         for ( $ix = $rubber_count + 1; $ix <= $total_rubbers; $ix++ ) {
-                            $rubber                = new stdClass();
-                            $rubber->type          = $this->type;
-                            $rubber->rubber_number = $ix;
-                            $rubber->date          = $match->date;
-                            $rubber->match_id      = $match->id;
-                            new Rubber( $rubber );
+                            $rubber_data                = new stdClass();
+                            $rubber_data->type          = $this->type;
+                            $rubber_data->rubber_number = $ix;
+                            $rubber_data->date          = $fixture->get_date();
+                            $rubber_data->match_id      = $fixture->get_id();
+                            $rubber_entity              = new Rubber( $rubber_data );
+                            $rubber_repository->save( $rubber_entity );
                         }
                     }
                 }
@@ -904,7 +926,7 @@ class Event {
         global $wpdb;
 
         if ( true === $total ) {
-            $this->num_leagues = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+            $this->num_leagues = (int) $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "SELECT COUNT(ID) FROM $wpdb->racketmanager WHERE `event_id` = %d",
                     $this->id

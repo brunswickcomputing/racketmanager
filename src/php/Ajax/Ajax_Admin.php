@@ -20,7 +20,6 @@ use function Racketmanager\get_club;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 use function Racketmanager\league_dropdown;
 use function Racketmanager\match_dropdown;
@@ -302,8 +301,8 @@ class Ajax_Admin extends Ajax {
         if ( ! isset( $return->error ) ) {
             $message_sent = false;
             if ( isset( $_POST['matchId'] ) ) {
-                $match        = get_match( sanitize_text_field( wp_unslash( $_POST['matchId'] ) ) );
-                $message_sent = $match->notify_next_match_teams();
+                $match        = $this->fixture_repository->find_by_id( (int) sanitize_text_field( wp_unslash( $_POST['matchId'] ) ) );
+                $message_sent = $match ? $this->notification_service->send_next_fixture_notification( $match ) : false;
             }
             if ( $message_sent ) {
                 $return->msg = __( 'Teams notified', 'racketmanager' );
@@ -312,8 +311,8 @@ class Ajax_Admin extends Ajax {
                 $return->msg   = __( 'No notification', 'racketmanager' );
             }
         }
-        if ( isset( $return->error ) ) {
-            wp_send_json_error( $return->msg, '500' );
+        if ( ! empty( $return->error ) ) {
+            wp_send_json_error( $return->msg, 500 );
         } else {
             wp_send_json_success( array( 'message' => $return->msg ) );
         }

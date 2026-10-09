@@ -10,6 +10,7 @@
 namespace Racketmanager\Admin;
 
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Repositories\Repository_Provider;
@@ -237,7 +238,7 @@ class Admin_Import extends Admin_Display {
                 if ( ! empty( $match_data->home_team ) && ! empty( $match_data->away_team ) ) {
                     $match_data->location = $line[4] ?? '';
                     $match_data->group    = $line[5] ?? '';
-                    $fixture              = new Fixture( $match_data );
+                    $fixture              = Fixture_Factory::from_object( $match_data );
                     $fixture              = $fixture_service->create_fixture( $fixture, $league );
                     if ( ! empty( $fixture->get_id() ) ) {
                         ++$x;

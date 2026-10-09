@@ -14,7 +14,6 @@ use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Validator\Validator_Fixture;
-use function Racketmanager\get_rubber;
 
 /**
  * Service for managing individual rubber results and updates.
@@ -54,7 +53,7 @@ class Rubber_Result_Manager {
      * @throws Fixture_Validation_Exception
      */
     public function handle_rubber_update( Fixture $fixture, Rubber_Update_Request $request, array $dummy_players = [] ): Rubber_Update_Result {
-        $rubber = get_rubber( $request->rubber_id );
+        $rubber = $this->rubber_repository->find_by_id( $request->rubber_id );
         if ( ! $rubber ) {
             throw new Fixture_Validation_Exception( [ __( 'Rubber not found', 'racketmanager' ) ] );
         }

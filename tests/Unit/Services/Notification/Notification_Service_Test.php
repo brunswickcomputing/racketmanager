@@ -641,8 +641,9 @@ class Notification_Service_Test extends TestCase {
         ]);
 
         $GLOBALS['wp_mail_calls'] = [];
-        $this->service->send_next_fixture_notification($fixture);
+        $result = $this->service->send_next_fixture_notification($fixture);
 
+        $this->assertTrue($result);
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertContains('home@example.com', $mail['to']);
@@ -687,11 +688,36 @@ class Notification_Service_Test extends TestCase {
         ]);
 
         $GLOBALS['wp_mail_calls'] = [];
-        $this->service->send_next_fixture_notification($fixture);
+        $result = $this->service->send_next_fixture_notification($fixture);
 
+        $this->assertTrue($result);
         $this->assertCount(1, $GLOBALS['wp_mail_calls']);
         $mail = $GLOBALS['wp_mail_calls'][0];
         $this->assertStringContainsString('Semi Final', $mail['subject']);
+    }
+
+    public function test_send_next_fixture_notification_no_host_returns_false(): void {
+        $fixture_data = new stdClass();
+        $fixture_data->id = 123;
+        $fixture_data->league_id = 456;
+        $fixture_data->home_team = '100';
+        $fixture_data->away_team = '200';
+        $fixture_data->season = '2026';
+        $fixture_data->host = null;
+        $fixture = new Fixture($fixture_data);
+
+        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
+        $league->id = 456;
+        $league->title = 'Division 1';
+        $event = $this->getMockBuilder(Event::class)->disableOriginalConstructor()->getMock();
+        $event->competition = (object)['type' => 'cup', 'name' => 'Cup Name'];
+        $event->competition_id = 123;
+        $league->event = $event;
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $result = $this->service->send_next_fixture_notification($fixture);
+
+        $this->assertFalse($result);
     }
 
     public function test_send_date_change_notification_success(): void {

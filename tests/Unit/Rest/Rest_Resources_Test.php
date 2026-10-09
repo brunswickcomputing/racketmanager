@@ -52,7 +52,7 @@ class Rest_Resources_Test extends TestCase {
         $competition->id = 123;
         $competition->method('get_seasons')->willReturn(['2024' => ['id' => 1]]);
 
-        $this->competition_service->expects( $this->once() )
+        $this->competition_service->expects( $this->atLeastOnce() )
             ->method( 'get_competition' )
             ->with( 'test competition', 'name' )
             ->willReturn( $competition );

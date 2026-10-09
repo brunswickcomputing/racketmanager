@@ -11,7 +11,6 @@ namespace Racketmanager\Domain;
 
 use Racketmanager\Util\Util;
 use stdClass;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\seo_url;
@@ -329,27 +328,98 @@ class Player {
     /**
 0     * Constructor
      *
-     * @param object|null $player Player object.
+     * @param Player_Hydration_DTO|object|null $player Player object or hydration DTO.
      */
     public function __construct( ?object $player = null ) {
         if ( ! is_null( $player ) ) {
-            foreach ( $player as $key => $value ) {
-                $this->$key = $value;
+            $dto = $player instanceof \Racketmanager\Domain\DTO\Player\Player_Hydration_DTO ? $player : \Racketmanager\Domain\DTO\Player\Player_Hydration_DTO::from_object( $player );
+
+            $this->ID                  = $dto->id;
+            $this->id                  = &$this->ID;
+            $this->user_email          = $dto->email;
+            $this->email               = &$this->user_email;
+            $this->display_name        = $dto->display_name;
+            $this->fullname            = &$this->display_name;
+            $this->name                = $dto->display_name ?? '';
+            $this->user_registered     = $dto->user_registered;
+            $this->firstname           = $dto->firstname;
+            $this->surname             = $dto->surname;
+            $this->gender              = $dto->gender;
+            $this->type                = $dto->type;
+            $this->btm                 = $dto->btm;
+            $this->year_of_birth       = $dto->year_of_birth;
+            $this->age                 = $dto->age;
+            $this->contactno           = $dto->contactno;
+            $this->removed_date        = $dto->removed_date;
+            $this->removed_user        = $dto->removed_user;
+            $this->locked              = $dto->locked;
+            $this->locked_date         = $dto->locked_date;
+            $this->locked_user         = $dto->locked_user;
+            $this->locked_user_name    = $dto->locked_user_name;
+            $this->system_record       = $dto->system_record;
+            $this->matches             = $dto->matches;
+            $this->statistics          = $dto->statistics;
+            $this->link                = $dto->link ?? '';
+            $this->opt_ins             = $dto->opt_ins;
+            $this->wtn                 = $dto->wtn;
+            $this->user_pass           = $dto->user_pass ?? '';
+            $this->user_nicename       = $dto->user_nicename ?? '';
+            $this->user_url            = $dto->user_url ?? '';
+            $this->user_activation_key = $dto->user_activation_key ?? '';
+            $this->user_login          = $dto->user_login ?? '';
+            $this->index               = $dto->index ?? '';
+            $this->stats               = $dto->stats;
+            $this->matches_won         = $dto->matches_won;
+            $this->matches_lost        = $dto->matches_lost;
+            $this->win_pct             = $dto->win_pct;
+            $this->played              = $dto->played;
+            $this->competitions        = $dto->competitions;
+            $this->cup                 = $dto->cup;
+            $this->league              = $dto->league;
+            $this->tournament          = $dto->tournament;
+            $this->teams               = $dto->teams;
+            $this->club                = $dto->club;
+            if ( $dto->team ) {
+                $this->team = $dto->team;
             }
-            $this->id            = &$this->ID;
-            $this->email         = &$this->user_email;
-            $this->fullname      = &$this->display_name;
-            $this->calculate_age();
-            if ( ! empty( $this->locked_user ) ) {
-                $this->locked_user_name = get_userdata( $this->locked_user )->display_name;
-            } else {
+            if ( $dto->status ) {
+                $this->status = $dto->status;
+            }
+            if ( $dto->user_status ) {
+                $this->user_status = $dto->user_status;
+            }
+            if ( $dto->entry_id ) {
+                $this->entry_id = $dto->entry_id;
+            }
+            $this->entry               = $dto->entry;
+            $this->tournament_entry    = $dto->tournament_entry;
+
+            if ( null === $this->age ) {
+                $this->calculate_age();
+            }
+            if ( ! empty( $this->locked_user ) && empty( $this->locked_user_name ) ) {
+                $userData = function_exists( 'get_userdata' ) ? get_userdata( $this->locked_user ) : null;
+                $this->locked_user_name = $userData && isset( $userData->display_name ) ? $userData->display_name : '';
+            } elseif ( empty( $this->locked_user_name ) ) {
                 $this->locked_user_name = '';
             }
-            $this->link          = '/player/' . seo_url( $this->display_name ) . '/';
-            if ( ! empty( $this->btm ) ) {
-                $this->link .= $this->btm . '/';
+            if ( empty( $this->link ) && ! empty( $this->display_name ) ) {
+                $this->link = '/player/' . ( function_exists( 'Racketmanager\seo_url' ) ? seo_url( $this->display_name ) : $this->display_name ) . '/';
+                if ( ! empty( $this->btm ) ) {
+                    $this->link .= $this->btm . '/';
+                }
             }
         }
+    }
+
+    /**
+     * Create from a generic object.
+     *
+     * @param object $data
+     * @return self
+     */
+    public static function from_object( object $data ): self {
+        return Player_Factory::from_object( $data );
     }
 
     /**
@@ -757,8 +827,16 @@ class Player {
                 )
             );
         } elseif ( 'competition' === $match_source ) {
-            $competition = $grouping instanceof \Racketmanager\Domain\Competition\Competition ? $grouping : get_competition( $grouping );
-            $matches     = $competition->get_matches(
+            if ( $grouping instanceof \Racketmanager\Domain\Competition\Competition ) {
+                $competition = $grouping;
+            } else {
+                global $racketmanager;
+                $competition_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' )
+                    ? $racketmanager->container->get( 'competition_repository' )
+                    : new \Racketmanager\Repositories\Competition_Repository();
+                $competition = $competition_repository->find_by_id( (int) $grouping );
+            }
+            $matches     = $competition ? $competition->get_matches(
                 array(
                     'season'  => $season,
                     'player'  => $this->id,
@@ -767,7 +845,7 @@ class Player {
                         'league_id' => 'DESC',
                     ),
                 )
-            );
+            ) : array();
         } elseif ( 'all' === $match_source ) {
             $matches = $racketmanager->get_matches(
                 array(
@@ -971,7 +1049,10 @@ class Player {
      * @return array
      */
     public function get_competitions( array|string $args = array(), ?\Racketmanager\Services\Competition_Service $competition_service = null ): array {
-        global $wpdb;
+        global $wpdb, $racketmanager;
+        if ( null === $competition_service && isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
+            $competition_service = $racketmanager->container->get( 'competition_service' );
+        }
         $defaults     = array(
             'type'   => false,
             'season' => false,
@@ -1001,9 +1082,12 @@ class Player {
         $i = 0;
         foreach ( $competitions as $competition ) {
             if ( $competition_service ) {
-                $competition_dtl = $competition_service->get_competition( $competition->id );
+                $competition_dtl = $competition_service->get_competition( (int) $competition->id );
             } else {
-                $competition_dtl = get_competition( $competition->id );
+                $competition_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' )
+                    ? $racketmanager->container->get( 'competition_repository' )
+                    : new \Racketmanager\Repositories\Competition_Repository();
+                $competition_dtl = $competition_repository->find_by_id( (int) $competition->id );
             }
             if ( $competition_dtl ) {
                 $competition_dtl->season = $competition->season;

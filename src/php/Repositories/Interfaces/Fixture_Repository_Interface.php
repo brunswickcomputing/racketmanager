@@ -18,6 +18,7 @@ use Racketmanager\Services\Export\DTO\Export_Criteria;
 interface Fixture_Repository_Interface extends Repository_Interface {
     public function save( object $entity ): bool|int;
     public function delete( int $id ): bool;
+    public function delete_fixture( int $id ): bool;
     public function find_by_id( $id ): ?Fixture;
     public function find_raw_by_id( int $fixture_id, bool $legacy = false ): ?object;
     public function find_finals_fixtures_for_tournament( int $tournament_id ): array;

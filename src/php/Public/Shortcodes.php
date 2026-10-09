@@ -13,6 +13,8 @@ use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
@@ -26,9 +28,7 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_user;
 use function Racketmanager\player_search;
@@ -69,6 +69,8 @@ class Shortcodes {
     protected Competition_Entry_Service $competition_entry_service;
     protected Fixture_Service $fixture_service;
     protected Fixture_Detail_Service $fixture_detail_service;
+    protected Competition_Repository_Interface $competition_repository;
+    protected Fixture_Repository_Interface $fixture_repository;
 
     /**
      * Initialise shortcodes
@@ -106,6 +108,8 @@ class Shortcodes {
         $this->competition_entry_service = $c->get( 'competition_entry_service' );
         $this->fixture_service           = $c->get( 'fixture_service' );
         $this->fixture_detail_service    = $c->get( 'fixture_detail_service' );
+        $this->competition_repository    = $c->get( 'competition_repository' );
+        $this->fixture_repository        = $c->get( 'fixture_repository' );
     }
 
     /**
@@ -262,7 +266,7 @@ class Shortcodes {
         }
         if ( isset( $wp->query_vars['competition_name'] ) ) {
             $competition_name = un_seo_url( get_query_var( 'competition_name' ) );
-            $competition      = get_competition( $competition_name, 'name' );
+            $competition      = $this->competition_repository->find_by_name( $competition_name );
             if ( $competition ) {
                 $competition_id = $competition->id;
             }
@@ -716,7 +720,7 @@ class Shortcodes {
                 return $this->return_error( $e->getMessage() );
             }
         } elseif ( $competition_id ) {
-            $competition = get_competition( $competition_id );
+            $competition = $this->competition_repository->find_by_id( $competition_id );
             if ( $competition ) {
                 if ( $season ) {
                     $competition_season = $competition->get_season_by_name( $season );
@@ -745,15 +749,25 @@ class Shortcodes {
             $courts[ $court ] = array();
             foreach ( $final_courts['matches'] as $match_id ) {
                 if ( $match_id ) {
-                    $match = get_match( $match_id );
+                    $match = $this->fixture_repository->find_by_id( (int) $match_id );
                     if ( $match ) {
-                        $final_match           = new stdClass();
-                        $final_match->id       = $match_id;
-                        $final_match->time     = $match->hour . ':' . $match->minutes;
-                        $final_match->league   = $match->league->title;
-                        $final_match->location = $match->location;
-                        $final_match->winner   = $match->winner_id;
-                        $time                  = $final_match->time;
+                        $league    = $match->get_league_id() ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->get_league_id() ) : null;
+                        $home_val  = $match->get_home_team();
+                        $away_val  = $match->get_away_team();
+                        $home_dtls = is_numeric( $home_val ) ? $this->team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $this->team_service->derive_team_details( (string) $home_val ) : null );
+                        $away_dtls = is_numeric( $away_val ) ? $this->team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $this->team_service->derive_team_details( (string) $away_val ) : null );
+
+                        $final_match             = new stdClass();
+                        $final_match->id         = $match_id;
+                        $final_match->time       = $match->get_date() ? (string) mysql2date( get_option( 'time_format', 'H:i' ), $match->get_date() ) : '';
+                        $final_match->league     = $league ? $league->get_name() : '';
+                        $final_match->location   = $match->get_location() ?? '';
+                        $final_match->winner     = $match->get_winner_id();
+                        $final_match->home_team   = $home_val;
+                        $final_match->away_team   = $away_val;
+                        $final_match->home_title = $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : (string) $home_val;
+                        $final_match->away_title = $away_dtls && $away_dtls->team ? $away_dtls->team->get_name() : (string) $away_val;
+                        $time                    = $final_match->time;
                         if ( ! in_array( $time, $times, true ) ) {
                             $times[] = $time;
                         }

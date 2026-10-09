@@ -1915,9 +1915,10 @@ class RacketManager {
             wp_cache_set( md5( $sql ), $matches, 'matches' );
         }
         foreach ( $matches as $i => $match ) {
-            $match = get_match( $match );
+            $fixture_repo = isset( $this->container ) && $this->container->has( 'fixture_repository' ) ? $this->container->get( 'fixture_repository' ) : null;
+            $match        = $fixture_repo ? $fixture_repo->find_by_id( (int) ( is_object( $match ) ? $match->id : $match ) ) : null;
             if ( $player ) {
-                $match->rubbers = $match->get_rubbers( $player );
+                $match->rubbers = $match?->get_rubbers( $player );
             }
             $matches[ $i ] = $match;
         }
@@ -1952,7 +1953,8 @@ class RacketManager {
 
         $return = array();
         foreach ( $winners as $winner ) {
-            $match = get_match( $winner->id );
+            $fixture_repo = isset( $this->container ) && $this->container->has( 'fixture_repository' ) ? $this->container->get( 'fixture_repository' ) : null;
+            $match        = $fixture_repo ? $fixture_repo->find_by_id( (int) $winner->id ) : null;
             if ( $winner->winner_id === $winner->home_team ) {
                 $winner_club = isset( $match->teams['home']->club ) ? $match->teams['home']->club->shortcode : null;
             } else {

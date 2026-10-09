@@ -16,7 +16,6 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Team_Service;
 use stdClass;
-use function Racketmanager\get_match;
 use function Racketmanager\seo_url;
 
 readonly class Notification_Presenter {
@@ -63,9 +62,11 @@ readonly class Notification_Presenter {
 
         $competition_data = $this->prepare_competition_data( $fixture, $fixture_details, $args );
         $team_data        = $this->prepare_team_data( $fixture, $fixture_details );
+        $match_adapter    = new Fixture_Presentation_Adapter( $fixture, $league, $event, $competition_obj, $home_team_dtls, $away_team_dtls, $link, $is_update_allowed, $prev_home_fixture_title, $prev_away_fixture_title );
 
         return array_merge( array(
                 'fixture_details' => $fixture_details,
+                'match'           => $match_adapter,
                 'organisation'    => $this->site_name,
                 'email_from'      => $args['email_from'] ?? ( $args['emailfrom'] ?? '' ),
                 'round'           => $args['round'] ?? '',
@@ -235,8 +236,10 @@ readonly class Notification_Presenter {
         $team_1_key = 'home' === $host ? 'home' : 'away';
         $team_2_key = 'home' === $host ? 'away' : 'home';
 
-        $teams[ $team_1_key ]->name = $fixture_details->home_team->team->get_name();
-        $teams[ $team_2_key ]->name = $fixture_details->away_team->team->get_name();
+        $teams[ $team_1_key ]->name  = $fixture_details->home_team?->team?->get_name() ?? '';
+        $teams[ $team_1_key ]->title = $teams[ $team_1_key ]->name;
+        $teams[ $team_2_key ]->name  = $fixture_details->away_team?->team?->get_name() ?? '';
+        $teams[ $team_2_key ]->title = $teams[ $team_2_key ]->name;
 
         $teams['home']->club = $this->get_club_shortcode( (int) $fixture->get_home_team() );
         $teams['away']->club = $this->get_club_shortcode( (int) $fixture->get_away_team() );
@@ -279,18 +282,18 @@ readonly class Notification_Presenter {
      * Prepare variables for the result-notification template.
      */
     public function present_result_notification( Fixture $fixture, array $args ): array {
-        $match      = get_match( $fixture->get_id() );
-        $action_url = $this->site_url;
+        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $action_url    = $this->site_url;
 
-        if ( $match->league->event->competition->is_championship ) {
-            $action_url .= $this->build_championship_action_url( $match );
+        if ( $match_adapter->league->event->competition->is_championship ) {
+            $action_url .= $this->build_championship_action_url( $match_adapter );
         } else {
-            $action_url .= $this->build_standard_action_url( $match );
+            $action_url .= $this->build_standard_action_url( $match_adapter );
         }
         $action_url .= 'result/';
 
         return array_merge( $args, array(
-            'match'        => $match,
+            'match'        => $match_adapter,
             'organisation' => $this->site_name,
             'site_url'     => $this->site_url,
             'action_url'   => $action_url,
@@ -301,18 +304,18 @@ readonly class Notification_Presenter {
      * Prepare variables for captain result approval notification.
      */
     public function present_captain_result_approval_notification( Fixture $fixture, array $args ): array {
-        $match      = get_match( $fixture->get_id() );
-        $action_url = $this->site_url;
+        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $action_url    = $this->site_url;
 
-        if ( $match->league->event->competition->is_championship ) {
-            $action_url .= $this->build_championship_action_url( $match );
+        if ( $match_adapter->league->event->competition->is_championship ) {
+            $action_url .= $this->build_championship_action_url( $match_adapter );
         } else {
-            $action_url .= $this->build_standard_action_url( $match );
+            $action_url .= $this->build_standard_action_url( $match_adapter );
         }
         $action_url .= 'result/';
 
         return array_merge( $args, array(
-            'match'        => $match,
+            'match'        => $match_adapter,
             'organisation' => $this->site_name,
             'action_url'   => $action_url,
         ) );
@@ -321,7 +324,7 @@ readonly class Notification_Presenter {
     /**
      * Build championship action URL.
      */
-    private function build_championship_action_url( $match ): string {
+    private function build_championship_action_url( Fixture_Presentation_Adapter $match ): string {
         $url = '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
         if ( ! empty( $match->leg ) ) {
             $url .= 'leg-' . $match->leg . '/';
@@ -333,7 +336,7 @@ readonly class Notification_Presenter {
     /**
      * Build standard action URL.
      */
-    private function build_standard_action_url( $match ): string {
+    private function build_standard_action_url( Fixture_Presentation_Adapter $match ): string {
         return '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/day' . $match->match_day . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
     }
 
@@ -341,10 +344,10 @@ readonly class Notification_Presenter {
      * Prepare variables for the date-change-notification template.
      */
     public function present_date_change_notification( Fixture $fixture, array $args ): array {
-        $match = get_match( $fixture->get_id() );
+        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
 
         return array_merge( $args, array(
-            'match'        => $match,
+            'match'        => $match_adapter,
             'organisation' => $this->site_name,
             'site_url'     => $this->site_url,
         ) );
@@ -354,10 +357,10 @@ readonly class Notification_Presenter {
      * Prepare variables for the team-withdrawn-notification template.
      */
     public function present_team_withdrawn_notification( Fixture $fixture, array $args ): array {
-        $match = get_match( $fixture->get_id() );
+        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
 
         return array_merge( $args, array(
-            'match'        => $match,
+            'match'        => $match_adapter,
             'organisation' => $this->site_name,
             'site_url'     => $this->site_url,
         ) );
@@ -367,20 +370,20 @@ readonly class Notification_Presenter {
      * Prepare variables for the result-outstanding-notification template.
      */
     public function present_result_outstanding_notification( Fixture $fixture, array $args ): array {
-        $match      = get_match( $fixture->get_id() );
-        $action_url = $args['action_url'] ?? $this->site_url;
+        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $action_url    = $args['action_url'] ?? $this->site_url;
 
         if ( $this->site_url === $action_url ) {
-            if ( $match->league->event->competition->is_championship ) {
-                $action_url .= $this->build_championship_action_url( $match );
+            if ( $match_adapter->league->event->competition->is_championship ) {
+                $action_url .= $this->build_championship_action_url( $match_adapter );
             } else {
-                $action_url .= $this->build_standard_action_url( $match );
+                $action_url .= $this->build_standard_action_url( $match_adapter );
             }
             $action_url .= 'result/';
         }
 
         return array_merge( $args, array(
-            'match'        => $match,
+            'match'        => $match_adapter,
             'organisation' => $this->site_name,
             'action_url'   => $action_url,
         ) );

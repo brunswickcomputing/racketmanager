@@ -15,6 +15,7 @@ use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
@@ -29,7 +30,6 @@ use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 use function Racketmanager\show_alert;
 
@@ -81,6 +81,7 @@ class Admin_Display {
     protected Season_Service $season_service;
     protected Tournament_Service $tournament_service;
     protected Admin_Club $admin_club;
+    protected Fixture_Repository_Interface $fixture_repository;
 
     /**
      * Constructor
@@ -98,6 +99,7 @@ class Admin_Display {
         $this->finance_service      = $c->get( 'finance_service' );
         $this->season_service       = $c->get( 'season_service' );
         $this->tournament_service   = $c->get( 'tournament_service' );
+        $this->fixture_repository   = $c->get( 'fixture_repository' );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );
@@ -794,7 +796,7 @@ class Admin_Display {
             $num_matches = count( $_POST['match'] );
             $post_match  = wp_unslash( $_POST['match'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             foreach ( $post_match as $i => $match_id ) {
-                $match         = get_match( $match_id );
+                $match         = $this->fixture_repository->find_by_id( (int) $match_id );
                 $begin_hour    = isset( $_POST['begin_hour'][ $i ] ) ? intval( $_POST['begin_hour'][ $i ] ) : '00';
                 $begin_minutes = isset( $_POST['begin_minutes'][ $i ] ) ? intval( $_POST['begin_minutes'][ $i ] ) : '00';
                 if ( isset( $_POST['myDatePicker'][ $i ] ) ) {

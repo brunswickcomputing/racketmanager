@@ -3,9 +3,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Result;
 
-if ( ! function_exists( 'Racketmanager\get_rubber' ) ) {
-    eval( 'namespace Racketmanager { function get_rubber($id) { return isset($GLOBALS["wp_stubs_rubbers"][$id]) ? $GLOBALS["wp_stubs_rubbers"][$id] : null; } }' );
-}
 if ( ! function_exists( 'Racketmanager\Domain\maybe_unserialize' ) ) {
     eval( 'namespace Racketmanager\Domain { function maybe_unserialize($data) { return $data; } }' );
 }
@@ -68,6 +65,7 @@ class Rubber_Result_Manager_Test extends TestCase {
             'winner' => 1,
             'loser' => 2
         ]);
+        $this->rubber_repository->method('find_by_id')->with(10)->willReturn($rubber_mock);
 
         $request = new Rubber_Update_Request(
             rubber_id: 10,
@@ -85,8 +83,6 @@ class Rubber_Result_Manager_Test extends TestCase {
 
         $this->player_validator->method('apply_dummy_players')->willReturn($request->players);
 
-        $GLOBALS['wp_stubs_rubbers'][10] = $rubber_mock;
-
         $this->rubber_repository->expects($this->once())->method('save')->with($rubber_mock);
         $rubber_mock->expects($this->once())->method('set_players');
 
@@ -97,6 +93,5 @@ class Rubber_Result_Manager_Test extends TestCase {
         $this->assertEquals(0.0, $result->away_points);
         $this->assertEquals(1, $result->winner_id);
 
-        unset($GLOBALS['wp_stubs_rubbers'][10]);
     }
 }

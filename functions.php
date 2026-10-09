@@ -267,6 +267,8 @@ function get_league( object|int|string|null $league = null ): ?League {
 /**
  * Get Racketmanager_Match object
  *
+ * @deprecated 2.0.0 Use \Racketmanager\Repositories\Fixture_Repository::find_by_id() instead.
+ *
  * @param object|int|null $match Match ID or a match object. Defaults to global $match.
  *
  * @return Racketmanager_Match|null Racketmanager_Match|null
@@ -293,6 +295,8 @@ function get_match( object|int|null $match = null ): Racketmanager_Match|null {
 
 /**
  * Get Rubber object
+ *
+ * @deprecated 2.0.0 Use \Racketmanager\Repositories\Rubber_Repository::find_by_id() instead.
  *
  * @param object|int|null $rubber Rubber ID or rubber object. Defaults to global $rubber.
  *

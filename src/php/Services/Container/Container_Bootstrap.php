@@ -160,7 +160,7 @@ final class Container_Bootstrap {
         } );
 
         $c->set( 'competition_service', function ( Simple_Container $c ) use ( $app ) {
-            return new Competition_Service( $app, $c->get( 'competition_repository' ), $c->get( 'club_repository' ), $c->get( 'event_repository' ), $c->get( 'league_repository' ), $c->get( 'league_team_repository' ), $c->get( 'season_repository' ), $c->get( 'team_repository' ), );
+            return new Competition_Service( $app, $c->get( 'competition_repository' ), $c->get( 'club_repository' ), $c->get( 'event_repository' ), $c->get( 'league_repository' ), $c->get( 'league_team_repository' ), $c->get( 'season_repository' ), $c->get( 'team_repository' ), $c->get( 'fixture_repository' ) );
         } );
 
         $c->set( 'club_service', function ( Simple_Container $c ) {
@@ -566,6 +566,7 @@ final class Container_Bootstrap {
                 $c->get( 'tournament_service' ),
                 $c->get( 'league_team_repository' ),
                 $c->get( 'team_repository' ),
+                $c->get( 'fixture_repository' ),
             );
         } );
 

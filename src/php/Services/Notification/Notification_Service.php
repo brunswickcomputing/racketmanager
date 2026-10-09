@@ -418,16 +418,16 @@ class Notification_Service {
      *
      * @param Fixture $fixture
      *
-     * @return void
+     * @return bool
      */
-    public function send_next_fixture_notification( Fixture $fixture ): void {
+    public function send_next_fixture_notification( Fixture $fixture ): bool {
         $base_data = $this->prepare_notification_base_data( $fixture );
         if ( ! $base_data ) {
-            return;
+            return false;
         }
 
         if ( ! $fixture->get_host() ) {
-            return;
+            return false;
         }
 
         $league      = $base_data['league'];
@@ -464,6 +464,8 @@ class Notification_Service {
         $subject .= ' - ' . $league->title;
 
         wp_mail( $email_to, $subject, $email_message, $headers );
+
+        return true;
     }
 
     /**

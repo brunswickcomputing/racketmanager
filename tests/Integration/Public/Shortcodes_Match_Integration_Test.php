@@ -32,6 +32,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Public\Shortcodes_Match;
     use Racketmanager\RacketManager;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
+    use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -101,6 +102,8 @@ namespace Racketmanager\Tests\Integration\Public {
             $detail_service = new Fixture_Detail_Service( $repo_provider, $competition_service, $team_service, $permission_service, $link_service );
 
             $this->container->set( 'fixture_detail_service', $detail_service );
+            $this->container->set( 'competition_repository', $this->createMock( Competition_Repository_Interface::class ) );
+            $this->container->set( 'fixture_repository', $fixture_repo );
             $this->container->set( 'competition_service', $competition_service );
             $this->container->set( 'club_service', $this->createMock( Club_Service::class ) );
             $this->container->set( 'finance_service', $this->createMock( Finance_Service::class ) );

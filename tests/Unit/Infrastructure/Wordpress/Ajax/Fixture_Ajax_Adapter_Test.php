@@ -294,7 +294,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['rubber_id'] = 456;
         $_POST['modal']     = 'rubberStatusModal';
 
-        $rubber           = new stdClass();
+        $rubber           = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id = 123;
 
         // Eval-based stub for get_rubber since it is a global function
@@ -372,7 +372,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['rubber_id'] = 456;
         $_POST['modal']     = 'someModal';
 
-        $rubber                      = new stdClass();
+        $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id            = 123;
         $GLOBALS['wp_stubs_rubbers'] = [ 456 => $rubber ];
 
@@ -394,7 +394,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $_POST['rubber_id'] = 456;
         $_POST['modal']     = 'someModal';
 
-        $rubber                      = new stdClass();
+        $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id            = 123;
         $GLOBALS['wp_stubs_rubbers'] = [ 456 => $rubber ];
 
@@ -671,6 +671,12 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             return new Response( $content, $status );
         } );
         $this->container->set( 'fixture_ajax_adapter_response_factory', $response_factory );
+
+        $rubber_repo = $this->createStub( \Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface::class );
+        $rubber_repo->method( 'find_by_id' )->willReturnCallback( function( $id ) {
+            return $GLOBALS['wp_stubs_rubbers'][$id] ?? null;
+        } );
+        $this->container->set( 'rubber_repository', $rubber_repo );
 
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );

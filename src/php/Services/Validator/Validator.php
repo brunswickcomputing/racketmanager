@@ -58,10 +58,10 @@ class Validator {
      */
     public ?string $msg;
     public WP_Error $err;
-    protected Player_Service $player_service;
-    protected Registration_Service $registration_service;
-    protected Club_Service $club_service;
-    protected Competition_Service $competition_service;
+    protected ?Player_Service $player_service = null;
+    protected ?Registration_Service $registration_service = null;
+    protected ?Club_Service $club_service = null;
+    protected ?Competition_Service $competition_service = null;
 
     /**
      * Constructor
@@ -75,11 +75,33 @@ class Validator {
         $this->msg      = null;
         $this->err      = new WP_Error();
 
-        $c                          = $racketmanager->container;
-        $this->competition_service  = $c->get( 'competition_service' );
-        $this->club_service         = $c->get( 'club_service' );
-        $this->player_service       = $c->get( 'player_service' );
-        $this->registration_service = $c->get( 'registration_service' );
+        $c = $racketmanager->container ?? null;
+        if ( $c && method_exists( $c, 'get' ) ) {
+            try {
+                $comp = $c->get( 'competition_service' );
+                $this->competition_service = $comp instanceof Competition_Service ? $comp : null;
+            } catch ( \Throwable ) {
+                $this->competition_service = null;
+            }
+            try {
+                $club = $c->get( 'club_service' );
+                $this->club_service = $club instanceof Club_Service ? $club : null;
+            } catch ( \Throwable ) {
+                $this->club_service = null;
+            }
+            try {
+                $player = $c->get( 'player_service' );
+                $this->player_service = $player instanceof Player_Service ? $player : null;
+            } catch ( \Throwable ) {
+                $this->player_service = null;
+            }
+            try {
+                $reg = $c->get( 'registration_service' );
+                $this->registration_service = $reg instanceof Registration_Service ? $reg : null;
+            } catch ( \Throwable ) {
+                $this->registration_service = null;
+            }
+        }
     }
 
     /**
@@ -382,10 +404,18 @@ class Validator {
             $status        = 404;
             $this->set_errors( $error_field, $error_message, $status );
         } else {
-            if ( is_int( $competition ) ) {
-                $competition = $this->competition_service->get_by_id( $competition );
-            } elseif ( is_string( $competition ) ) {
-                $competition = $this->competition_service->get_by_id( $competition );
+            if ( $this->competition_service ) {
+                try {
+                    $competition = is_numeric( $competition )
+                        ? $this->competition_service->get_by_id( (int) $competition )
+                        : $this->competition_service->get_competition( str_replace( '-', ' ', (string) $competition ), 'name' );
+                } catch ( \Throwable ) {
+                    $competition = null;
+                }
+            } elseif ( function_exists( 'Racketmanager\get_competition' ) ) {
+                $competition = \Racketmanager\get_competition( $competition );
+            } else {
+                $competition = null;
             }
             if ( ! $competition ) {
                 if ( $exists ) {

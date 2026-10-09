@@ -15,7 +15,6 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
-use function Racketmanager\get_competition;
 use function Racketmanager\get_event;
 use function Racketmanager\get_team;
 use function Racketmanager\show_invoice;
@@ -184,7 +183,7 @@ class Shortcodes_Club extends Shortcodes {
             $competition_name = get_query_var( 'competition_name' );
             if ( $competition_name ) {
                 $competition_name = un_seo_url( $competition_name );
-                $competition      = get_competition( $competition_name, 'name' );
+                $competition      = $this->competition_repository->find_by_name( $competition_name );
                 if ( $competition ) {
                     $club->competition = $competition;
                 } else {

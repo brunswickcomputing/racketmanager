@@ -18,7 +18,6 @@ use Racketmanager\Services\Validator\Validator_Plan;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_club;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 
 /**
@@ -622,7 +621,7 @@ final class Admin_Cup extends Admin_Championship {
                     if ( $league_id ) {
                         $league = get_league( $league_id );
                         if ( $league && $match_id ) {
-                            $match = get_match( $match_id );
+                            $match = $this->fixture_repository->find_by_id( (int) $match_id );
                             if ( $match ) {
                                 $single_cup_game = true;
                                 $bulk            = false;

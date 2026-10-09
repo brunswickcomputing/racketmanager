@@ -10,6 +10,7 @@
 namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use wpdb;
@@ -157,6 +158,16 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         return (bool) $deleted;
     }
 
+    /**
+     * Delete fixture alias.
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function delete_fixture( int $id ): bool {
+        return $this->delete( $id );
+    }
+
     public function find_by_id( $id ): ?Fixture {
         $row = $this->find_raw_by_id( $id );
 
@@ -164,7 +175,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             return null;
         }
 
-        return new Fixture( $row );
+        return Fixture_Factory::from_object( $row );
     }
 
     /**
@@ -228,7 +239,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results           = $this->wpdb->get_results( $query );
 
         return array_map(
-            fn( $row ) => new Fixture( $row ),
+            fn( $row ) => Fixture_Factory::from_object( $row ),
             $results
         );
     }
@@ -259,7 +270,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         );
         $results = $this->wpdb->get_results( $query );
         foreach ( $results as &$row ) {
-            $row = new Fixture( $row );
+            $row = Fixture_Factory::from_object( $row );
         }
 
         return $results;
@@ -300,7 +311,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results = $this->wpdb->get_results( $sql );
 
         return array_map(
-            fn( $row ) => new Fixture( $row ),
+            fn( $row ) => Fixture_Factory::from_object( $row ),
             $results
         );
     }
@@ -323,7 +334,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results = $this->wpdb->get_results( $query );
 
         return array_map(
-            fn( $row ) => new Fixture( $row ),
+            fn( $row ) => Fixture_Factory::from_object( $row ),
             $results
         );
     }

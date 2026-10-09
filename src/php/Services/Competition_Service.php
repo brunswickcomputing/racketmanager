@@ -24,6 +24,7 @@ use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Season_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Validator\Validator;
@@ -36,7 +37,6 @@ use stdClass;
 use WP_Error;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 
 /**
  * Class to implement the Competition Management Service
@@ -50,12 +50,13 @@ class Competition_Service {
     private Team_Repository_Interface $team_repository;
     private Club_Repository_Interface $club_repository;
     private Season_Repository_Interface $season_repository;
+    private ?Fixture_Repository_Interface $fixture_repository = null;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository ) {
+    public function __construct( RacketManager $plugin_instance, Competition_Repository_Interface $competition_repository, Club_Repository_Interface $club_repository, Event_Repository_Interface $event_repository, League_Repository_Interface $league_repository , League_Team_Repository_Interface $league_team_repository, Season_Repository_Interface $season_repository , Team_Repository_Interface $team_repository, ?Fixture_Repository_Interface $fixture_repository = null ) {
         $this->racketmanager          = $plugin_instance;
         $this->competition_repository = $competition_repository;
         $this->club_repository        = $club_repository;
@@ -64,6 +65,7 @@ class Competition_Service {
         $this->league_repository      = $league_repository;
         $this->season_repository       = $season_repository;
         $this->team_repository        = $team_repository;
+        $this->fixture_repository     = $fixture_repository ?? ( isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'fixture_repository' ) ? $this->racketmanager->container->get( 'fixture_repository' ) : null );
     }
 
     public function get_league_repository(): League_Repository_Interface {
@@ -229,7 +231,7 @@ class Competition_Service {
         $return = array();
         foreach ( $winners as $winner ) {
             if ( ! $competition->is_league ) {
-                $match = get_match( $winner->id );
+                $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( (int) $winner->id ) : null;
             }
             if ( $competition->is_player_entry ) {
                 if ( $winner->winner_id === $winner->home_team ) {
@@ -386,7 +388,7 @@ class Competition_Service {
                 $match_id = trim( $matches[ $i ][ $m ] );
                 if ( ! empty( $match_id ) ) {
                     $time  = strtotime( $start_times[ $i ] ) + $match_times[ $i ][ $m ];
-                    $match = get_match( $match_id );
+                    $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( (int) $match_id ) : null;
                     if ( $match ) {
                         $month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
                         $day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );
@@ -428,7 +430,7 @@ class Competition_Service {
         $result    = false;
         if ( $matches ) {
             foreach ( $matches as $match_id ) {
-                $match = get_match( intval( $match_id ) );
+                $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( intval( $match_id ) ) : null;
                 if ( $match ) {
                     $month    = str_pad( $match->month, 2, '0', STR_PAD_LEFT );
                     $day      = str_pad( $match->day, 2, '0', STR_PAD_LEFT );

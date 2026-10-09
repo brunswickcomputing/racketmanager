@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Domain\Fixture;
 
+use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Repositories\Rubber_Repository;
 
@@ -331,48 +332,64 @@ class Fixture {
     /**
      * Fixture constructor.
      *
-     * @param object|null $fixture
+     * @param Fixture_Hydration_DTO|object|null $fixture
      */
     public function __construct( ?object $fixture = null ) {
         if ( is_null( $fixture ) ) {
             return;
         }
-        $this->id                  = $fixture->id ?? null;
-        $this->group               = $fixture->group ?? null;
-        $this->date                = $fixture->date ?? null;
-        $this->date_original       = $fixture->date_original ?? null;
-        $this->home_team           = $fixture->home_team ?? null;
-        $this->away_team           = $fixture->away_team ?? null;
-        $this->match_day           = $fixture->match_day ?? null;
-        $this->location            = $fixture->location ?? null;
-        $this->host                = $fixture->host ?? null;
-        $this->league_id           = $fixture->league_id ?? null;
-        $this->season              = $fixture->season ?? null;
-        $this->home_points         = $fixture->home_points ?? null;
-        $this->away_points         = $fixture->away_points ?? null;
-        $this->winner_id           = $fixture->winner_id ?? null;
-        $this->loser_id            = $fixture->loser_id ?? null;
-        $this->status              = $fixture->status ?? null;
-        $this->linked_fixture        = $fixture->linked_match ?? null;
-        $this->leg                 = $fixture->leg ?? null;
-        $this->winner_id_tie       = $fixture->winner_id_tie ?? null;
-        $this->loser_id_tie        = $fixture->loser_id_tie ?? null;
-        $this->home_points_tie     = $fixture->home_points_tie ?? null;
-        $this->away_points_tie     = $fixture->away_points_tie ?? null;
-        $this->post_id             = $fixture->post_id ?? null;
-        $this->final               = $fixture->final ?? null;
-        $this->custom              = maybe_unserialize( $fixture->custom ?? null );
-        $this->updated_user        = $fixture->updated_user ?? null;
-        $this->updated             = $fixture->updated ?? null;
-        $this->date_result_entered = $fixture->date_result_entered ?? null;
-        $this->confirmed           = $fixture->confirmed ?? null;
-        $this->home_captain        = $fixture->home_captain ?? null;
-        $this->away_captain        = $fixture->away_captain ?? null;
-        $comments            = maybe_unserialize( $fixture->comments ?? null );
-        $this->comments      = is_array( $comments ) ? $comments : ( $comments ? [ 'legacy' => $comments ] : null );
-        $this->updated_by          = $fixture->updated_by ?? null;
-        $this->start_time          = $fixture->start_time ?? null;
+
+        $dto = $fixture instanceof Fixture_Hydration_DTO ? $fixture : Fixture_Hydration_DTO::from_object( $fixture );
+
+        $this->id                  = $dto->id;
+        $this->fixture_title       = $dto->fixture_title;
+        $this->link                = $dto->link;
+        $this->group               = $dto->group;
+        $this->date                = $dto->date;
+        $this->date_original       = $dto->date_original;
+        $this->home_team           = $dto->home_team;
+        $this->away_team           = $dto->away_team;
+        $this->match_day           = $dto->match_day;
+        $this->location            = $dto->location;
+        $this->host                = $dto->host;
+        $this->league_id           = $dto->league_id;
+        $this->season              = $dto->season;
+        $this->home_points         = $dto->home_points;
+        $this->away_points         = $dto->away_points;
+        $this->winner_id           = $dto->winner_id;
+        $this->loser_id            = $dto->loser_id;
+        $this->status              = $dto->status;
+        $this->linked_fixture      = $dto->linked_fixture;
+        $this->leg                 = $dto->leg;
+        $this->winner_id_tie       = $dto->winner_id_tie;
+        $this->loser_id_tie        = $dto->loser_id_tie;
+        $this->home_points_tie     = $dto->home_points_tie;
+        $this->away_points_tie     = $dto->away_points_tie;
+        $this->post_id             = $dto->post_id;
+        $this->final               = $dto->final;
+        $this->custom              = $dto->custom;
+        $this->updated_user        = $dto->updated_user;
+        $this->updated             = $dto->updated;
+        $this->date_result_entered = $dto->date_result_entered;
+        $this->confirmed           = $dto->confirmed;
+        $this->home_captain        = $dto->home_captain;
+        $this->away_captain        = $dto->away_captain;
+        $this->comments            = $dto->comments;
+        $this->updated_by          = $dto->updated_by;
+        $this->start_time          = $dto->start_time;
+        $this->rubbers             = $dto->rubbers;
+
         $this->set_status_flags();
+    }
+
+    /**
+     * Create from a generic object.
+     *
+     * @param object $data
+     * @return self
+     */
+    public static function from_object( object $data ): self {
+        return Fixture_Factory::from_object( $data );
     }
 
     /**
@@ -927,39 +944,8 @@ class Fixture {
      *
      * @return void
      */
-    private function set_status_flags(): void {
-        $this->is_walkover  = false;
-        $this->is_shared    = false;
-        $this->is_retired   = false;
-        $this->is_abandoned = false;
-        $this->is_cancelled = false;
-        $this->is_withdrawn = false;
-        $this->is_pending   = empty( $this->winner_id );
-
-        if ( ! empty( $this->status ) ) {
-            switch ( $this->status ) {
-                case 1:
-                    $this->is_walkover = true;
-                    break;
-                case 2:
-                    $this->is_retired = true;
-                    break;
-                case 3:
-                    $this->is_shared = true;
-                    break;
-                case 6:
-                    $this->is_abandoned = true;
-                    break;
-                case 7:
-                    $this->is_withdrawn = true;
-                    break;
-                case 8:
-                    $this->is_cancelled = true;
-                    break;
-                default:
-                    break;
-            }
-        }
+    public function set_status_flags(): void {
+        Fixture_Status_Policy::apply_to_fixture( $this );
     }
 
     /**

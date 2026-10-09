@@ -176,7 +176,7 @@ class Fixture_Ajax_Adapter {
             $request = Rubber_Status_Options_Request::from_post( $_POST );
             $request->validate();
 
-            $rubber = \Racketmanager\get_rubber( $request->rubber_id );
+            $rubber = $this->container->get( 'rubber_repository' )->find_by_id( $request->rubber_id );
             if ( ! $rubber ) {
                 throw new Fixture_Not_Found_Exception( __( 'Rubber not found', 'racketmanager' ), 404 );
             }

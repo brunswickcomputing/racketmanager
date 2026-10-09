@@ -11,6 +11,7 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
@@ -301,7 +302,7 @@ class Player_Repository implements Player_Repository_Interface {
         $player->data->opt_ins = get_user_meta( $player->data->ID, 'racketmanager_opt_in' );
 
         // Create a new Player object from the retrieved user data.
-        $player = new Player( $player->data );
+        $player = Player_Factory::from_object( $player->data );
         wp_cache_set( $player_id, $player, 'players' );
 
         return $player;

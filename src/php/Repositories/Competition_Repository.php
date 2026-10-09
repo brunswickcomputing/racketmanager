@@ -580,9 +580,14 @@ class Competition_Repository implements Competition_Repository_Interface {
 
 		$rows = $this->wpdb->get_results( $sql );
 
+		global $racketmanager;
+		$fixture_repo = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+			? $racketmanager->container->get( 'fixture_repository' )
+			: new Fixture_Repository();
+
 		return array_map(
-			function ( $row ) {
-				return \Racketmanager\get_match( (int) $row->id );
+			function ( $row ) use ( $fixture_repo ) {
+				return $fixture_repo->find_by_id( (int) $row->id );
 			},
 			$rows
 		);

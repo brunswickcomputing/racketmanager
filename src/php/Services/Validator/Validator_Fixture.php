@@ -12,13 +12,15 @@ namespace Racketmanager\Services\Validator;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
-use function Racketmanager\get_match;
-use function Racketmanager\get_rubber;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 
 /**
  * Class to implement the Match Validator object
  */
 class Validator_Fixture extends Validator {
+    protected ?Fixture_Repository_Interface $fixture_repository = null;
+    protected ?Rubber_Repository_Interface $rubber_repository = null;
     /**
      * @var float|int|mixed|string
      */
@@ -32,6 +34,54 @@ class Validator_Fixture extends Validator {
     public array $points;
     public array $rubbers = array();
     private array $players_involved = array();
+
+    public function __construct(
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?Rubber_Repository_Interface $rubber_repository = null
+    ) {
+        parent::__construct();
+        global $racketmanager;
+        if ( null === $fixture_repository && isset( $racketmanager->container ) ) {
+            if ( method_exists( $racketmanager->container, 'has' ) ) {
+                if ( $racketmanager->container->has( 'fixture_repository' ) ) {
+                    $repo = $racketmanager->container->get( 'fixture_repository' );
+                    if ( $repo instanceof Fixture_Repository_Interface ) {
+                        $fixture_repository = $repo;
+                    }
+                }
+            } else {
+                try {
+                    $repo = $racketmanager->container->get( 'fixture_repository' );
+                    if ( $repo instanceof Fixture_Repository_Interface ) {
+                        $fixture_repository = $repo;
+                    }
+                } catch ( \Throwable ) {
+                    $fixture_repository = null;
+                }
+            }
+        }
+        if ( null === $rubber_repository && isset( $racketmanager->container ) ) {
+            if ( method_exists( $racketmanager->container, 'has' ) ) {
+                if ( $racketmanager->container->has( 'rubber_repository' ) ) {
+                    $repo = $racketmanager->container->get( 'rubber_repository' );
+                    if ( $repo instanceof Rubber_Repository_Interface ) {
+                        $rubber_repository = $repo;
+                    }
+                }
+            } else {
+                try {
+                    $repo = $racketmanager->container->get( 'rubber_repository' );
+                    if ( $repo instanceof Rubber_Repository_Interface ) {
+                        $rubber_repository = $repo;
+                    }
+                } catch ( \Throwable ) {
+                    $rubber_repository = null;
+                }
+            }
+        }
+        $this->fixture_repository = $fixture_repository;
+        $this->rubber_repository  = $rubber_repository;
+    }
 
     /**
      * Validate fixture
@@ -62,7 +112,7 @@ class Validator_Fixture extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Match id not supplied', 'racketmanager' );
         } else {
-            $match = get_match( $match_id );
+            $match = $this->fixture_repository ? $this->fixture_repository->find_by_id( (int) $match_id ) : ( function_exists( 'Racketmanager\get_match' ) ? \Racketmanager\get_match( (int) $match_id ) : ( $GLOBALS['wp_stubs_matches'][(int) $match_id] ?? null ) );
             if ( ! $match ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;
@@ -153,7 +203,7 @@ class Validator_Fixture extends Validator {
             $this->err_flds[] = $error_field;
             $this->err_msgs[] = __( 'Rubber id not supplied', 'racketmanager' );
         } else {
-            $rubber = get_rubber( $rubber_id );
+            $rubber = $this->rubber_repository ? $this->rubber_repository->find_by_id( (int) $rubber_id ) : null;
             if ( ! $rubber ) {
                 $this->error      = true;
                 $this->err_flds[] = $error_field;

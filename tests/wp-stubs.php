@@ -22,6 +22,18 @@ namespace Racketmanager {
                         }
                     };
                     self::$container  = new class {
+                        public function has( string $id ): bool {
+                            return in_array( $id, [
+                                "competition_service",
+                                "club_service",
+                                "player_service",
+                                "registration_service",
+                                "event_service",
+                                "league_service",
+                                "fixture_service",
+                                "team_service"
+                            ], true );
+                        }
                         public function get( string $id ): object {
                             try {
                                 switch ( $id ) {
@@ -85,6 +97,12 @@ namespace {
         return $data;
     }
 
+    if ( ! function_exists( 'stripslashes_deep' ) ) {
+        function stripslashes_deep( $value ) {
+            return $value;
+        }
+    }
+
     if ( ! function_exists( 'get_option' ) ) {
         function get_option( $option, $default = false ) {
             if ($option === 'racketmanager_options') {
@@ -107,15 +125,37 @@ namespace {
 
     if ( ! class_exists( 'wpdb' ) ) {
         eval('
+        #[\AllowDynamicProperties]
         class wpdb {
             public $prefix = "wp_";
-            public $racketmanager_teams = "wp_racketmanager_teams";
+            public $racketmanager = "wp_racketmanager_leagues";
+            public $racketmanager_leagues = "wp_racketmanager_leagues";
             public $racketmanager_league_teams = "wp_racketmanager_league_teams";
-            public $racketmanager_results_checker = "wp_racketmanager_results_checker";
+            public $racketmanager_teams = "wp_racketmanager_teams";
             public $racketmanager_matches = "wp_racketmanager_matches";
+            public $racketmanager_rubbers = "wp_racketmanager_rubbers";
+            public $racketmanager_club_players = "wp_racketmanager_club_players";
+            public $racketmanager_competitions = "wp_racketmanager_competitions";
+            public $racketmanager_team_events = "wp_racketmanager_team_events";
+            public $racketmanager_clubs = "wp_racketmanager_clubs";
+            public $racketmanager_seasons = "wp_racketmanager_seasons";
+            public $racketmanager_competitions_seasons = "wp_racketmanager_competitions_seasons";
+            public $racketmanager_results_checker = "wp_racketmanager_results_checker";
+            public $racketmanager_tournaments = "wp_racketmanager_tournaments";
+            public $racketmanager_charges = "wp_racketmanager_charges";
+            public $racketmanager_invoices = "wp_racketmanager_invoices";
+            public $racketmanager_events = "wp_racketmanager_events";
+            public $racketmanager_rubber_players = "wp_racketmanager_rubber_players";
+            public $racketmanager_results_report = "wp_racketmanager_results_report";
+            public $racketmanager_messages = "wp_racketmanager_messages";
+            public $racketmanager_team_players = "wp_racketmanager_team_players";
+            public $racketmanager_tournament_entries = "wp_racketmanager_tournament_entries";
+            public $racketmanager_player_errors = "wp_racketmanager_player_errors";
+            public $racketmanager_club_roles = "wp_racketmanager_club_roles";
             public $get_results_callback;
             public $get_row_callback;
             public $update_callback;
+            public $last_query;
             public $insert_id = 0;
             private $data = [];
             private $last_id = 0;
@@ -205,6 +245,7 @@ namespace {
                 }
                 return true; 
             }
+            public function query( $query ) { $this->last_query = $query; return true; }
             public function show_errors() {}
             public function hide_errors() {}
         }
@@ -506,6 +547,14 @@ namespace {
                     }
                 };
                 $this->container = new class {
+                    public function has( string $id ): bool {
+                        return in_array( $id, [
+                            'competition_service',
+                            'club_service',
+                            'player_service',
+                            'registration_service',
+                        ], true );
+                    }
                     public function get( string $id ): object {
                         $reflection = null;
                         try {

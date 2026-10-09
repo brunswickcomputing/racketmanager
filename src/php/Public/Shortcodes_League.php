@@ -9,10 +9,10 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Presenters\Fixture_Presentation_Adapter;
 use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_tab;
 use function Racketmanager\get_team;
@@ -75,8 +75,12 @@ class Shortcodes_League extends Shortcodes {
 
             $matches = array();
             $i       = 1;
-            foreach ( $matches_raw as $match ) {
-                $match             = get_match( $match );
+            foreach ( $matches_raw as $match_item ) {
+                $fixture = $this->fixture_repository->find_by_id( (int) ( is_object( $match_item ) ? $match_item->id : $match_item ) );
+                if ( ! $fixture ) {
+                    continue;
+                }
+                $match             = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
                 $home_title        = $match->teams['home']->title;
                 $away_title        = $match->teams['away']->title;
                 $match->title      = sprintf( '%s - %s', $home_title, $away_title );
@@ -528,8 +532,9 @@ class Shortcodes_League extends Shortcodes {
             }
         }
         if ( $match_id ) {
-            $match = get_match( $match_id );
-            if ( $match ) {
+            $fixture = $this->fixture_repository->find_by_id( (int) $match_id );
+            if ( $fixture ) {
+                $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
                 $event = get_event( $match->league->event_id );
                 if ( $event ) {
                     $seasons           = $event->get_seasons();

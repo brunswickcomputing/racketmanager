@@ -11,21 +11,37 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Team_Repository;
+use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Result_Service;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 
 final class Championship_Manager {
     /**
      * @var Result_Service
      */
     private Result_Service $result_service;
+    private Fixture_Repository_Interface $fixture_repository;
+    private ?Notification_Service $notification_service;
 
-    public function __construct( ?Result_Service $result_service = null ) {
-        $this->result_service = $result_service ?? new Result_Service( new Fixture_Repository(), new Team_Repository() );
+    public function __construct(
+        ?Result_Service $result_service = null,
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?Notification_Service $notification_service = null
+    ) {
+        $this->fixture_repository   = $fixture_repository ?? new Fixture_Repository();
+        $this->result_service       = $result_service ?? new Result_Service( $this->fixture_repository, new Team_Repository() );
+        if ( null === $notification_service ) {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'notification_service' ) ) {
+                $notification_service = $racketmanager->container->get( 'notification_service' );
+            }
+        }
+        $this->notification_service = $notification_service;
     }
 
     /**
@@ -213,26 +229,52 @@ final class Championship_Manager {
     /**
      * Set teams for a match and linked match.
      *
-     * @param object $match match object.
+     * @param object|int $match match object or fixture ID.
      * @param string|null $home_id home team id.
      * @param string|null $away_id away team id.
      *
      * @return void
      */
-    public function set_teams( object $match, ?string $home_id, ?string $away_id ): void {
-        $match = get_match( $match );
-        $match = $match->set_teams( $home_id, $away_id );
-
-        if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {
-            $match->notify_next_match_teams();
+    public function set_teams( object|int $match, ?string $home_id, ?string $away_id ): void {
+        $fixture_id = is_object( $match ) ? (int) $match->id : (int) $match;
+        $fixture    = $this->fixture_repository->find_by_id( $fixture_id );
+        if ( ! $fixture ) {
+            return;
         }
 
-        if ( ! empty( $match->linked_match ) ) {
-            $linked_match = get_match( $match->linked_match );
-            $linked_match = $linked_match->set_teams( $home_id, $away_id );
+        if ( null !== $home_id && '' !== $home_id ) {
+            $fixture->set_home_team( $home_id );
+        }
+        if ( null !== $away_id && '' !== $away_id ) {
+            $fixture->set_away_team( $away_id );
+        }
 
-            if ( is_numeric( $linked_match->home_team ) && is_numeric( $linked_match->away_team ) ) {
-                $linked_match->notify_next_match_teams();
+        $this->fixture_repository->save( $fixture );
+
+        if ( is_numeric( $fixture->get_home_team() ) && is_numeric( $fixture->get_away_team() ) ) {
+            if ( $this->notification_service ) {
+                $this->notification_service->send_next_fixture_notification( $fixture );
+            }
+        }
+
+        $linked_fixture_id = $fixture->get_linked_fixture();
+        if ( ! empty( $linked_fixture_id ) ) {
+            $linked_fixture = $this->fixture_repository->find_by_id( (int) $linked_fixture_id );
+            if ( $linked_fixture ) {
+                if ( null !== $home_id && '' !== $home_id ) {
+                    $linked_fixture->set_home_team( $home_id );
+                }
+                if ( null !== $away_id && '' !== $away_id ) {
+                    $linked_fixture->set_away_team( $away_id );
+                }
+
+                $this->fixture_repository->save( $linked_fixture );
+
+                if ( is_numeric( $linked_fixture->get_home_team() ) && is_numeric( $linked_fixture->get_away_team() ) ) {
+                    if ( $this->notification_service ) {
+                        $this->notification_service->send_next_fixture_notification( $linked_fixture );
+                    }
+                }
             }
         }
     }
@@ -307,7 +349,7 @@ final class Championship_Manager {
 
                     if ( $consolation_teams ) {
                         $consolation_team    = $consolation_teams[0];
-                        $consolation_matches = $fixture_repository->find_by_league_and_team(
+                        $consolation_matches = $this->fixture_repository->find_by_league_and_team(
                             $consolation_league->get_id(),
                             $league->get_season(),
                             (string)$consolation_team->id

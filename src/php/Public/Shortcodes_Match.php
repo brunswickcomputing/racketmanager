@@ -11,9 +11,7 @@ namespace Racketmanager\Public;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
 use stdClass;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
-use function Racketmanager\get_rubber;
 
 /**
  * Class to implement the Shortcodes_Match object

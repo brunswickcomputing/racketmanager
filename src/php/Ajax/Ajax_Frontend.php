@@ -26,7 +26,6 @@ use Racketmanager\Services\Validator\Validator_Entry_Form;
 use stdClass;
 use function Racketmanager\event_team_match_dropdown;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 use function Racketmanager\player_search;
 use function Racketmanager\show_alert;
 use function Racketmanager\show_team_edit_modal;
@@ -504,7 +503,7 @@ class Ajax_Frontend extends Ajax {
                 if ( $set_team ) {
                     $updates = false;
                     if ( $match_id ) {
-                        $match = get_match( $match_id );
+                        $match = $this->fixture_repository->find_by_id( (int) $match_id );
                         if ( $match && $team_id ) {
                             if ( $team_id === intval( $match->home_team ) ) {
                                 $opponent = 'home';

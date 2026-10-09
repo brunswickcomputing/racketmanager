@@ -15,7 +15,6 @@ use Racketmanager\Util\Util_Lookup;
 use stdClass;
 use function Racketmanager\get_club;
 use function Racketmanager\get_event;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 
 /**
@@ -484,10 +483,13 @@ class Team {
         global $wpdb, $racketmanager;
 
         // remove matches and rubbers.
+        $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+            ? $racketmanager->container->get( 'fixture_repository' )
+            : new \Racketmanager\Repositories\Fixture_Repository();
+
         $matches = $racketmanager->get_matches( array( 'team' => $this->id ) );
         foreach ( $matches as $match ) {
-            $match = get_match( $match->id );
-            $match->delete();
+            $fixture_repository->delete( (int) $match->id );
         }
         // remove tables.
         $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching

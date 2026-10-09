@@ -15,7 +15,7 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\get_event;
-use function Racketmanager\get_match;
+use function Racketmanager\get_league;
 use function Racketmanager\get_team;
 
 /**
@@ -293,8 +293,11 @@ class Rubber {
      */
     public function __construct( ?object $rubber = null ) {
         global $racketmanager;
-        $c                          = $racketmanager->container;
-        $this->registration_service = $c->get( 'registration_service' );
+        $c = $racketmanager->container ?? null;
+        if ( $c && method_exists( $c, 'get' ) ) {
+            $has_method = method_exists( $c, 'has' );
+            $this->registration_service = ( ! $has_method || $c->has( 'registration_service' ) ) ? $c->get( 'registration_service' ) : null;
+        }
 
         if ( ! is_null( $rubber ) ) {
             if ( ! empty( $rubber->custom ) ) {
@@ -353,11 +356,16 @@ class Rubber {
             $this->players = array();
             $this->get_players();
             $this->title          = $this->type . $this->rubber_number;
-            $match                = get_match( $rubber->match_id );
+            global $racketmanager;
+            $fixture_repository   = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                ? $racketmanager->container->get( 'fixture_repository' )
+                : new \Racketmanager\Repositories\Fixture_Repository();
+            $fixture              = $fixture_repository->find_by_id( (int) $rubber->match_id );
+            $league               = $fixture && $fixture->get_league_id() ? get_league( $fixture->get_league_id() ) : null;
             $this->reverse_rubber = false;
-            if ( $match->league->event->reverse_rubbers ) {
+            if ( $league && isset( $league->event ) && ! empty( $league->event->reverse_rubbers ) ) {
                 $this->reverse_rubbers = true;
-                if ( $this->rubber_number > $match->league->num_rubbers ) {
+                if ( $this->rubber_number > $league->num_rubbers ) {
                     $this->reverse_rubber = true;
                 }
             } else {
@@ -729,12 +737,16 @@ class Rubber {
         $away_invalid       = isset( $points['away']['invalid'] ) ? 1 : 0;
         $both_invalid       = isset( $points['both']['invalid'] ) ? 1 : 0;
         $shared_sets        = $points['shared']['sets'] ?? 0;
-        $match              = get_match( $this->match_id );
-        $league             = get_league( $match->league_id );
-        $point_rule         = $league->get_point_rule();
-        $forwin             = $point_rule['forwin'];
-        $forwin_split       = $point_rule['forwin_split'];
-        $forshare           = $point_rule['forshare'];
+        global $racketmanager;
+        $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+            ? $racketmanager->container->get( 'fixture_repository' )
+            : new \Racketmanager\Repositories\Fixture_Repository();
+        $fixture            = $fixture_repository->find_by_id( (int) $this->match_id );
+        $league             = $fixture && $fixture->get_league_id() ? get_league( $fixture->get_league_id() ) : null;
+        $point_rule         = $league ? $league->get_point_rule() : array( 'forwin' => 0, 'forwin_split' => 0, 'forshare' => 0, 'forwalkover_rubber' => 0 );
+        $forwin             = $point_rule['forwin'] ?? 0;
+        $forwin_split       = $point_rule['forwin_split'] ?? 0;
+        $forshare           = $point_rule['forshare'] ?? 0;
         $forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
         if ( $home_invalid ) {
             $invalid_points_home = $forwalkover_rubber;

@@ -11,7 +11,6 @@ namespace Racketmanager\Util;
 
 use NumberFormatter;
 use stdClass;
-use function Racketmanager\get_match;
 
 defined( 'ABSPATH' ) || die( 'Access denied !' );
 /**
@@ -625,7 +624,11 @@ class Util {
             $team_name = null;
         }
         if ( ! empty( $team_name ) && is_numeric( $name_array[2] ) ) {
-            $match = get_match( $name_array[2] );
+            global $racketmanager;
+            $fixture_repo = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                ? $racketmanager->container->get( 'fixture_repository' )
+                : null;
+            $match = $fixture_repo ? $fixture_repo->find_by_id( (int) $name_array[2] ) : null;
             if ( $match ) {
                 $team_name .= ' ' . $match->teams['home']->title . ' ' . __( 'vs', 'racketmanager' ) . ' ' . $match->teams['away']->title;
             }

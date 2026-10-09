@@ -22,7 +22,6 @@ use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 
 /**
@@ -1332,7 +1331,7 @@ final class Admin_League extends Admin_Display {
             $matches = array();
             if ( isset( $_GET['edit'] ) ) {
                 $match_id     = intval( $_GET['edit'] );
-                $match        = get_match( $match_id );
+                $match        = $this->fixture_repository->find_by_id( $match_id );
                 $mode         = 'edit';
                 $edit         = true;
                 $form_title   = __( 'Edit Match', 'racketmanager' );

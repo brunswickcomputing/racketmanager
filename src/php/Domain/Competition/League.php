@@ -869,7 +869,7 @@ class League {
      * @param string $season season.
      */
     public function delete_team( int $team, string $season ): void {
-        global $wpdb;
+        global $wpdb, $racketmanager;
         $matches = $this->get_matches(
             array(
                 'team_id' => $team,
@@ -878,11 +878,12 @@ class League {
             )
         );
         if ( $matches ) {
+            $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                ? $racketmanager->container->get( 'fixture_repository' )
+                : new Fixture_Repository();
             foreach ( $matches as $match ) {
-                $match = get_match( $match->id );
-                if ( $match ) {
-                    $match->delete();
-                }
+                $fixture_id = is_object( $match ) ? (int) $match->id : (int) $match;
+                $fixture_repository->delete( $fixture_id );
             }
         }
         // remove tables.
@@ -902,7 +903,7 @@ class League {
      * @param string $season season.
      */
     public function withdraw_team( int $team_id, string $season ): void {
-        global $wpdb;
+        global $wpdb, $racketmanager;
         $match_args                     = array();
         $match_args['team_id']          = $team_id;
         $match_args['season']           = $season;
@@ -912,43 +913,53 @@ class League {
         }
         // update matches.
         $matches = $this->get_matches( $match_args );
-        foreach ( $matches as $match ) {
-            $match = get_match( $match );
-            if ( $match ) {
-                $status = empty( $match->status ) ? null : Util_Lookup::get_match_status( $match->status );
+        if ( $matches ) {
+            $fixture_repository   = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                ? $racketmanager->container->get( 'fixture_repository' )
+                : new Fixture_Repository();
+            $notification_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'notification_service' )
+                ? $racketmanager->container->get( 'notification_service' )
+                : null;
+            $result_manager       = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_result_manager' )
+                ? $racketmanager->container->get( 'fixture_result_manager' )
+                : null;
+
+            foreach ( $matches as $match_item ) {
+                $fixture_id = is_object( $match_item ) ? (int) $match_item->id : (int) $match_item;
+                $fixture    = $fixture_repository->find_by_id( $fixture_id );
+                if ( ! $fixture ) {
+                    continue;
+                }
+
+                $status_code = $fixture->get_status();
+                $status      = empty( $status_code ) ? null : Util_Lookup::get_match_status( $status_code );
                 if ( 'Withdrawn' !== $status ) {
                     if ( $this->is_championship ) {
-                        if ( intval( $match->home_team ) === $team_id ) {
+                        if ( intval( $fixture->get_home_team() ) === $team_id ) {
                             $match_status = 'walkover_player2';
                         } else {
                             $match_status = 'walkover_player1';
                         }
-                        if ( empty( $match->leg ) || 2 === $match->leg ) {
-                            $match->notify_team_withdrawal( $team_id );
+                        if ( empty( $fixture->get_leg() ) || 2 === (int) $fixture->get_leg() ) {
+                            if ( $notification_service ) {
+                                $notification_service->notify_team_withdrawal( $fixture, $team_id );
+                            }
                         }
 
-                        $fixture_repository = new Fixture_Repository();
-                        $fixture            = $fixture_repository->find_by_id( $match->id );
-                        if ( $fixture ) {
-                            global $racketmanager;
-                            $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
-                            $request        = new Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $match->confirmed );
+                        if ( $result_manager ) {
+                            $request = new Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $fixture->get_confirmed() );
                             $result_manager->handle_fixture_result_update( $fixture, $request );
                         }
                     } else {
-                        $fixture_repository = new Fixture_Repository();
-                        $fixture            = $fixture_repository->find_by_id( $match->id );
-                        if ( $fixture ) {
-                            global $racketmanager;
-                            $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
-                            $result_data    = [
+                        if ( $result_manager ) {
+                            $result_data = [
                                 'home_points' => 0,
                                 'away_points' => 0,
                                 'status'      => Util_Lookup::get_match_status_code( 'cancelled' ),
-                                'custom'      => $match->custom,
+                                'custom'      => $fixture->get_custom() ?? [],
                                 'sets'        => [],
                             ];
-                            $result         = Result_Factory::from_array( $result_data, $match->home_team, $match->away_team );
+                            $result      = Result_Factory::from_array( $result_data, (string) $fixture->get_home_team(), (string) $fixture->get_away_team() );
                             $result_manager->confirm_result( $fixture, '', null, $result );
                         }
                     }
@@ -979,7 +990,7 @@ class League {
      *
      * @return void
      */
-    private function notify_league_team_withdrawn( int $team_id, string $season ): void {
+    protected function notify_league_team_withdrawn( int $team_id, string $season ): void {
         global $racketmanager;
         $team          = get_team( $team_id );
         $message_send  = false;
@@ -1999,9 +2010,12 @@ class League {
                 ); // db call ok.
                 wp_cache_set( md5( $sql ), $matches, 'matches' );
             }
+            $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                ? $racketmanager->container->get( 'fixture_repository' )
+                : new Fixture_Repository();
             $class = '';
             foreach ( $matches as $i => $match ) {
-                $match        = get_match( $match->id );
+                $match        = $fixture_repository->find_by_id( (int) $match->id );
                 $class        = ( 'alternate' === $class ) ? '' : 'alternate';
                 if ( $match ) {
                     $match->class = $class;
@@ -2607,26 +2621,30 @@ class League {
     public function update_match_results( array $matches, array $home_points, array $away_points, array $custom, string $season, false|string $final_round = false, string $confirmed = 'Y' ): int {
         $num_matches = 0;
         if ( ! empty( $matches ) ) {
+            global $racketmanager;
+            $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+                ? $racketmanager->container->get( 'fixture_repository' )
+                : new Fixture_Repository();
+            $result_manager = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_result_manager' )
+                ? $racketmanager->container->get( 'fixture_result_manager' )
+                : null;
+
             foreach ( $matches as $match_id ) {
-                $match         = get_match( $match_id );
-                $c             = $custom[$match_id] ?? array();
-                $points_home   = isset( $home_points[$match_id] ) ? floatval( $home_points[$match_id] ) : null;
-                $points_away   = isset( $away_points[$match_id] ) ? floatval( $away_points[$match_id] ) : null;
+                $c           = $custom[ $match_id ] ?? array();
+                $points_home = isset( $home_points[ $match_id ] ) ? floatval( $home_points[ $match_id ] ) : null;
+                $points_away = isset( $away_points[ $match_id ] ) ? floatval( $away_points[ $match_id ] ) : null;
 
-                $fixture_repository = new Fixture_Repository();
-                $fixture = $fixture_repository->find_by_id( $match_id );
-                if ( $fixture ) {
-                    global $racketmanager;
-                    $result_manager = $racketmanager->container->get( 'fixture_result_manager' );
-
-                    $result_data = [
+                $fixture = $fixture_repository->find_by_id( (int) $match_id );
+                if ( $fixture && $result_manager ) {
+                    $fixture_custom = $fixture->get_custom() ?? array();
+                    $result_data    = [
                         'home_points' => $points_home,
                         'away_points' => $points_away,
-                        'status'      => $match->status,
+                        'status'      => $fixture->get_status(),
                         'custom'      => $c,
-                        'sets'        => $c['sets'] ?? $match->sets,
+                        'sets'        => $c['sets'] ?? ( $fixture_custom['sets'] ?? array() ),
                     ];
-                    $result = Result_Factory::from_array( $result_data, $match->home_team, $match->away_team );
+                    $result = Result_Factory::from_array( $result_data, $fixture->get_home_team(), $fixture->get_away_team() );
 
                     if ( 'Y' === $confirmed ) {
                         $result_manager->confirm_result( $fixture, '', null, $result );
@@ -2849,54 +2867,6 @@ class League {
         return $res[0];
     }
 
-    /**
-     * Custom update results method
-     *
-     * @param object $match match.
-     *
-     * @return Racketmanager_Match
-     */
-    protected function update_results( object $match ): object {
-        $match = get_match( $match->id );
-
-        // exit if only one team is set.
-        if ( '-1' === $match->home_team || '-1' === $match->away_team ) {
-            return $match;
-        }
-
-        if ( empty( $match->home_points ) && empty( $match->away_points ) ) {
-            $score = array(
-                'home' => '0',
-                'away' => '0',
-            );
-            if ( isset( $match->league->num_rubbers ) && $match->league->num_rubbers > 0 ) {
-                $rubbers = $match->get_rubbers();
-
-                foreach ( $rubbers as $rubber ) {
-                    if ( is_numeric( $rubber->home_points ) ) {
-                        $score['home'] += intval( $rubber->home_points );
-                    }
-                    if ( is_numeric( $rubber->away_points ) ) {
-                        $score['away'] += intval( $rubber->away_points );
-                    }
-                }
-            } else {
-                foreach ( $match->sets as $set ) {
-                    if ( isset( $set['player1'] ) && isset( $set['player2'] ) ) {
-                        if ( $set['player1'] > $set['player2'] ) {
-                            $score['home'] += 1;
-                        } else {
-                            $score['away'] += 1;
-                        }
-                    }
-                }
-            }
-            $match->home_points = $score['home'];
-            $match->away_points = $score['away'];
-            $match->get_result( $match->home_points, $match->away_points, $match->custom );
-        }
-        return $match;
-    }
     /**
      * Get custom standings data
      *
@@ -3414,16 +3384,40 @@ class League {
      * @param object $match match object.
      */
     public function update_match( object $match ): void {
-        $match->update();
-        if ( ! empty( $match->linked_match ) ) {
-            $linked_match            = get_match( $match->linked_match );
-            $linked_match->home_team = $match->home_team;
-            $linked_match->away_team = $match->away_team;
-            $linked_match->date      = gmdate( 'Y-m-d H:i:s', strtotime( $match->date . ' +14 day' ) );
-            if ( ! empty( $match->host ) ) {
-                $linked_match->host = 'home' === $match->host ? 'away' : 'home';
+        global $racketmanager;
+        $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+            ? $racketmanager->container->get( 'fixture_repository' )
+            : new Fixture_Repository();
+
+        if ( method_exists( $match, 'update' ) ) {
+            $match->update();
+        } elseif ( $match instanceof Fixture ) {
+            $fixture_repository->save( $match );
+        }
+
+        $linked_match_id = $match instanceof Fixture ? $match->get_linked_fixture() : ( $match->linked_match ?? null );
+        if ( ! empty( $linked_match_id ) ) {
+            $linked_fixture = $fixture_repository->find_by_id( (int) $linked_match_id );
+            if ( $linked_fixture ) {
+                $home_team = $match instanceof Fixture ? $match->get_home_team() : ( $match->home_team ?? null );
+                $away_team = $match instanceof Fixture ? $match->get_away_team() : ( $match->away_team ?? null );
+                $date      = $match instanceof Fixture ? $match->get_date() : ( $match->date ?? null );
+                $host      = $match instanceof Fixture ? $match->get_host() : ( $match->host ?? null );
+
+                if ( null !== $home_team ) {
+                    $linked_fixture->set_home_team( (string) $home_team );
+                }
+                if ( null !== $away_team ) {
+                    $linked_fixture->set_away_team( (string) $away_team );
+                }
+                if ( ! empty( $date ) ) {
+                    $linked_fixture->set_date( gmdate( 'Y-m-d H:i:s', strtotime( $date . ' +14 day' ) ) );
+                }
+                if ( ! empty( $host ) ) {
+                    $linked_fixture->set_host( 'home' === $host ? 'away' : 'home' );
+                }
+                $fixture_repository->save( $linked_fixture );
             }
-            $linked_match->update();
         }
     }
     /**

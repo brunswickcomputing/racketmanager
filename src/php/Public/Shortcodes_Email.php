@@ -10,10 +10,10 @@
 namespace Racketmanager\Public;
 
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presenters\Fixture_Presentation_Adapter;
 use stdClass;
 use function Racketmanager\get_event;
 use function Racketmanager\get_league;
-use function Racketmanager\get_match;
 use function Racketmanager\get_team;
 use function Racketmanager\seo_url;
 
@@ -49,7 +49,11 @@ class Shortcodes_Email extends Shortcodes {
         $round            = $args['round'];
         $competition_type = $args['competition_type'];
         $organisation     = $racketmanager->site_name;
-        $match            = get_match( $match );
+        $fixture          = $this->fixture_repository->find_by_id( (int) ( is_object( $match ) ? $match->id : $match ) );
+        if ( ! $fixture ) {
+            return $this->return_error( $this->match_not_found );
+        }
+        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
 
         $teams = array(
             'home' => new stdClass(),
@@ -187,7 +191,11 @@ class Shortcodes_Email extends Shortcodes {
         $match_day  = $args['match_day'];
         $from_email = $args['from_email'];
         $challenge  = $args['challenge'];
-        $match      = get_match( $match );
+        $fixture    = $this->fixture_repository->find_by_id( (int) ( is_object( $match ) ? $match->id : $match ) );
+        if ( ! $fixture ) {
+            return $this->return_error( $this->match_not_found );
+        }
+        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
 
         $action_url = admin_url() . '?page=racketmanager&view=results';
         if ( $league ) {
@@ -247,7 +255,11 @@ class Shortcodes_Email extends Shortcodes {
         $confirmation_timeout  = $args['confirmation_timeout'];
         $timeout               = $args['timeout'];
         $penalty               = $args['penalty'];
-        $match                 = get_match( $match_id );
+        $fixture               = $this->fixture_repository->find_by_id( (int) $match_id );
+        if ( ! $fixture ) {
+            return $this->return_error( $this->match_not_found );
+        }
+        $match                 = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
         $action_url            = $racketmanager->site_url;
         if ( $match->league->event->competition->is_championship ) {
             $action_url .= '/' . __( 'match', 'racketmanager' ) . '/' . sanitize_title( $match->league->title ) . '/' . $match->league->current_season['name'] . '/' . $match->final_round . '/' . sanitize_title( $match->teams['home']->title ) . '-vs-' . sanitize_title( $match->teams['away']->title ) . '/';
@@ -301,7 +313,11 @@ class Shortcodes_Email extends Shortcodes {
         $timeout     = $args['timeout'];
         $penalty     = $args['penalty'];
         $from_email  = $args['from_email'];
-        $match       = get_match( $match );
+        $fixture     = $this->fixture_repository->find_by_id( (int) ( is_object( $match ) ? $match->id : $match ) );
+        if ( ! $fixture ) {
+            return $this->return_error( $this->match_not_found );
+        }
+        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
 
         $action_url = $racketmanager->site_url;
         if ( $match->league->event->competition->is_cup ) {
@@ -412,7 +428,11 @@ class Shortcodes_Email extends Shortcodes {
         $delay            = $args['delay'];
         $email_subject    = $args['email_subject'];
         $organisation     = $racketmanager->site_name;
-        $match            = get_match( $match );
+        $fixture          = $this->fixture_repository->find_by_id( (int) ( is_object( $match ) ? $match->id : $match ) );
+        if ( ! $fixture ) {
+            return $this->return_error( $this->match_not_found );
+        }
+        $match            = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
         $match_link       = '';
         $competition_link = '';
         $draw_link        = '';

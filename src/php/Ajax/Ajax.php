@@ -9,11 +9,13 @@
 namespace Racketmanager\Ajax;
 
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Settings_Service;
@@ -41,6 +43,8 @@ class Ajax {
     protected League_Service $league_service;
     protected Settings_Service $settings_service;
     protected RacketManager $racketmanager;
+    protected Fixture_Repository_Interface $fixture_repository;
+    protected Notification_Service $notification_service;
 
     /**
      * Register ajax actions.
@@ -59,6 +63,8 @@ class Ajax {
         $this->tournament_service        = $c->get( 'tournament_service' );
         $this->league_service            = $c->get( 'league_service' );
         $this->settings_service          = $c->get( 'settings_service' );
+        $this->fixture_repository        = $c->get( 'fixture_repository' );
+        $this->notification_service      = $c->get( 'notification_service' );
     }
 
     /**

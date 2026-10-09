@@ -5,7 +5,7 @@ This document provides project-specific information for advanced developers work
 ## 1. Build and Configuration
 
 ### Requirements
-- PHP 8.3 or higher.
+- PHP 8.4 or higher.
 - Node.js and npm for frontend asset compilation.
 - Composer for PHP dependency management.
 
@@ -52,7 +52,7 @@ final class Simple_Sanity_Test extends TestCase {
 
 ### Code Style
 -   **WordPress Coding Standards**: The project strictly follows WordPress Coding Standards as defined in `phpcs.xml.dist`.
--   **PHP Version**: Target PHP 8.3+. Use strict typing (`declare(strict_types=1);`).
+-   **PHP Version**: Target PHP 8.4+. Use strict typing (`declare(strict_types=1);`).
 -   **Autoloading**: PSR-4 compliant. `Racketmanager\` namespace maps to `src/php/`.
 -   **Asset Organization**:
     - Source: `src/js/` and `css/`

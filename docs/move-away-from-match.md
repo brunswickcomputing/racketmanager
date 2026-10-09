@@ -1,17 +1,17 @@
 ## Short answer
-**Use PHP 8.3** for the core domain and application layers, and model the system around a **competition domain with shared abstractions plus separate team-based and player-based branches**.
+**Use PHP 8.4** for the core domain and application layers, and model the system around a **competition domain with shared abstractions plus separate team-based and player-based branches**.
 
 The optimal setup is **not** one giant “match” model.  
 It’s a small set of focused domain concepts with a **common contest/fixture/result language**.
 # Recommended language
-## Primary language: **PHP 8.3**
+## Primary language: **PHP 8.4**
 That’s the right choice here because:
 - the plugin is WordPress-based
 - your existing domain already lives in PHP
 - the migration is from a legacy PHP class
 - your main complexity is **domain modeling**, not frontend computation
 
-## Use PHP 8.3 features, but keep them practical
+## Use PHP 8.4 features, but keep them practical
 Good fits:
 - typed properties
 - constructor property promotion where useful
@@ -527,7 +527,7 @@ Because your plugin is already broad enough that “match” no longer means one
 
 # Final recommendation
 ## Language
-- **PHP 8.3** for backend/domain/application code
+- **PHP 8.4** for backend/domain/application code
 - JavaScript only for UI/admin interactions
 ## Architecture
 - **shared competition domain**

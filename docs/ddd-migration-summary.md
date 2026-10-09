@@ -9,7 +9,7 @@ This summary synthesizes the findings, audits, and migration roadmaps documented
 
 ### Key Goals & Strategic Objectives
 1. **Domain Purity & Encapsulation:** Decouple core domain rules (fixtures, tournaments, scoring, eligibility) from WordPress database globals (`$wpdb`), options (`get_option`), and global helper functions.
-2. **Type Safety & Deterministic Hydration:** Enforce strict PHP 8.3 typing, immutable Value Objects, and typed Hydration DTOs across all entities.
+2. **Type Safety & Deterministic Hydration:** Enforce strict PHP 8.4 typing, immutable Value Objects, and typed Hydration DTOs across all entities.
 3. **Layered Separation of Concerns:** Establish distinct boundaries between Presentation (Shortcodes, Admin, AJAX), Application (Services, Commands, Queries), Domain (Aggregates, Policies, Value Objects), and Infrastructure (Repositories, WPDB, Mailers, Payment Gateways).
 4. **Idempotency & Maintainability:** Standardize mutations on the Action Dispatcher + Post-Redirect-Get (PRG) + Flash messaging pattern to eliminate duplicate submissions and state corruption.
 5. **Safe Deprecation:** Retire legacy God Objects (`Racketmanager_Match`) and procedural wrappers with zero runtime regression through backward-compatible shims and adapter facades.
@@ -169,7 +169,7 @@ The DDD migration strategy relies on maximizing automated test coverage through 
 ###   Step 1: Stage 1: Domain Entity & Hydration DTO Refactoring
 Complete the elimination of untyped generic object hydration across core entities and decouple state rules from data structures.
 
-- Define `Fixture_Hydration_DTO` and `Player_Hydration_DTO` enforcing strict PHP 8.3 type contracts for persistent fields.
+- Define `Fixture_Hydration_DTO` and `Player_Hydration_DTO` enforcing strict PHP 8.4 type contracts for persistent fields.
 - Implement `Fixture_Factory` and `Player_Factory` to encapsulate entity instantiation from database rows and metadata.
 - Refactor `Fixture` and `Player` constructors to consume hydration DTOs instead of `?object $data`.
 - Extract internal state-flag and scheduling calculations from `Fixture` into `Fixture_Status_Policy`.

@@ -4,6 +4,7 @@
  * Plugin URI: http://wordpress.org/extend/plugins/racketmanager/
  * Description: Manage and present racket sports league and tournament results.
  * Version: 10.0.0
+ * Requires PHP: 8.4
  * Author: Paul Moffat
  * Text Domain: racketmanager
  *

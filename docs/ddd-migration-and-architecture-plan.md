@@ -20,7 +20,7 @@ The objective of this plan is to maximize overall system utility, reliability, a
 - **As a System Maintainer / Developer**, I want decoupled, single-responsibility domain entities and services covered by unit tests so that new competition formats can be added with minimal cognitive friction and zero regression risk.
 
 ### Functional Requirements
-- **Strict Typing & Immutable DTOs:** All domain entities must be hydrated via explicit DTOs (`Fixture_Hydration_DTO`, `Player_Hydration_DTO`) using PHP 8.3 type safety.
+- **Strict Typing & Immutable DTOs:** All domain entities must be hydrated via explicit DTOs (`Fixture_Hydration_DTO`, `Player_Hydration_DTO`) using PHP 8.4 type safety.
 - **Repository-Driven Persistence:** No domain entity or controller may directly execute `$wpdb` SQL queries or `get_user_meta` calls; all data access must go through dedicated repositories (`Fixture_Repository`, `Player_Repository`, `Competition_Repository`).
 - **Idempotent Admin Mutations:** All admin POST actions must pass through an `Action_Guard_Interface`, delegate to dedicated application services via Action Dispatchers, and follow the Post-Redirect-Get (PRG) pattern with transient flash messaging.
 - **Backward-Compatible Public Interfaces:** Legacy helper functions (such as `get_match()`) and existing shortcode entry points must seamlessly route through modern repositories during the deprecation period.

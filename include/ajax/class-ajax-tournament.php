@@ -90,7 +90,7 @@ class Ajax_Tournament extends Ajax {
                 if ( ! current_user_can( 'manage_racketmanager' ) ) {
                     $validator     = $validator->telephone( $contactno );
                 }
-                $validator     = $validator->email( $contactemail, $player_id );
+                $validator     = $validator->email( $contactemail, $player_id, true, 'contactemail' );
                 $validator     = $validator->btm( $btm, $player_id );
                 $club_id       = isset( $_POST['clubId'] ) ? sanitize_text_field( wp_unslash( $_POST['clubId'] ) ) : '';
                 $validator     = $validator->club( $club_id );

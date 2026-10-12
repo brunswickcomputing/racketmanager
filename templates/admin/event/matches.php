@@ -29,7 +29,7 @@ namespace Racketmanager;
                 $match_day = $match->match_day;
                 ?>
                 <tr>
-                    <td colspan="4"><?php echo esc_html_e( 'Match Day', 'racketmanager' ) . ' matches.php' . esc_html( $match_day ); ?></td>
+                    <td colspan="4"><?php esc_html_e( 'Match Day', 'racketmanager' ) . ' matches.php' . esc_html( $match_day ); ?></td>
                 </tr>
                 <?php
             }

@@ -40,7 +40,7 @@ describe('resetMatchResult', () => {
     resetMatchResult(mockLink);
 
     expect(jQuery.ajax).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.stringContaining('action=racketmanager_reset_match_result'),
+      data: expect.stringContaining('action=racketmanager_reset_fixture_result'),
     }));
     expect(jQuery.ajax).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.stringContaining('match_id=456')

@@ -31,7 +31,7 @@ describe('matchHeader', () => {
       data: expect.objectContaining({
         match_id: 456,
         edit_mode: true,
-        action: 'racketmanager_update_match_header'
+        action: 'racketmanager_update_fixture_header'
       })
     }));
 
@@ -40,22 +40,28 @@ describe('matchHeader', () => {
   });
 
   test('handles error and shows alert', () => {
-    const errorResponse = {
-      responseJSON: {
-        data: {
-          msg: 'Header refresh failed'
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const errorResponse = {
+        responseJSON: {
+          data: {
+            msg: 'Header refresh failed'
+          }
         }
-      }
-    };
+      };
 
-    jQuery.ajax.mockImplementation((settings) => {
-      settings.error(errorResponse);
-      settings.complete();
-    });
+      jQuery.ajax.mockImplementation((settings) => {
+        settings.error(errorResponse);
+        settings.complete();
+      });
 
-    matchHeader(456);
+      matchHeader(456);
 
-    expect(jQuery('#headerResponse').css('display')).not.toBe('none');
-    expect(jQuery('#headerResponseText').html()).toBe('Header refresh failed');
+      expect(consoleSpy).toHaveBeenCalledWith('AJAX error', expect.any(Object));
+      expect(jQuery('#headerResponse').css('display')).not.toBe('none');
+      expect(jQuery('#headerResponseText').html()).toBe('Header refresh failed');
+    } finally {
+      consoleSpy.mockRestore();
+    }
   });
 });

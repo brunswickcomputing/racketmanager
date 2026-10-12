@@ -39,9 +39,9 @@ if ( empty( $match->get_winner_id() ) ) {
         </div>
         <?php
     }
-    if ( is_numeric( $match->get_home_team() ) && $match->get_home_team() >= 1 && is_numeric( $match->get_away_team() ) && $match->get_away_team() >= 1 && ! empty( $match_link ) ) {
+    if ( ! empty( $match_link ) ) {
         ?>
-        <a class="team-match__wrapper" href="<?php echo esc_html( $match_link ); ?>">
+        <a class="team-match__wrapper" href="<?php echo esc_url( $match_link ); ?>">
         <?php
     } else {
         ?>
@@ -99,12 +99,24 @@ if ( empty( $match->get_winner_id() ) ) {
                         <?php
                         $home_withdrawn = false;
                         $home_name = '';
-                        if ( isset( $dto ) && $dto->home_team ) {
+                        if ( isset( $dto ) && isset( $dto->home_team ) && is_object( $dto->home_team ) && isset( $dto->home_team->team ) && method_exists( $dto->home_team->team, 'get_name' ) ) {
                             $home_name = $dto->home_team->team->get_name();
                             // withdrawn logic here if needed
                         } elseif ( isset( $match->teams['home'] ) ) {
-                            $home_name = $match->teams['home']->title;
+                            $home_name = $match->teams['home']->title ?? $match->teams['home']->name ?? '';
                             $home_withdrawn = ! empty( $match->teams['home']->is_withdrawn );
+                        } elseif ( method_exists( $match, 'get_teams' ) ) {
+                            $teams = $match->get_teams();
+                            if ( isset( $teams['home'] ) ) {
+                                $home_name = $teams['home']->title ?? $teams['home']->name ?? '';
+                                $home_withdrawn = ! empty( $teams['home']->is_withdrawn );
+                            }
+                        }
+                        if ( empty( $home_name ) && method_exists( $match, 'get_home_team' ) ) {
+                            $home_val = $match->get_home_team();
+                            $home_name = is_numeric( $home_val ) && isset( $racketmanager->container ) && $racketmanager->container->has( 'team_service' )
+                                ? ( $racketmanager->container->get( 'team_service' )->get_team_details( (int) $home_val )->team?->get_name() ?? (string) $home_val )
+                                : (string) ( $home_val ?? '' );
                         }
 
                         if ( $home_withdrawn ) {
@@ -149,11 +161,23 @@ if ( empty( $match->get_winner_id() ) ) {
                         <?php
                         $away_withdrawn = false;
                         $away_name = '';
-                        if ( isset( $dto ) && $dto->away_team ) {
+                        if ( isset( $dto ) && isset( $dto->away_team ) && is_object( $dto->away_team ) && isset( $dto->away_team->team ) && method_exists( $dto->away_team->team, 'get_name' ) ) {
                             $away_name = $dto->away_team->team->get_name();
                         } elseif ( isset( $match->teams['away'] ) ) {
-                            $away_name = $match->teams['away']->title;
+                            $away_name = $match->teams['away']->title ?? $match->teams['away']->name ?? '';
                             $away_withdrawn = ! empty( $match->teams['away']->is_withdrawn );
+                        } elseif ( method_exists( $match, 'get_teams' ) ) {
+                            $teams = $match->get_teams();
+                            if ( isset( $teams['away'] ) ) {
+                                $away_name = $teams['away']->title ?? $teams['away']->name ?? '';
+                                $away_withdrawn = ! empty( $teams['away']->is_withdrawn );
+                            }
+                        }
+                        if ( empty( $away_name ) && method_exists( $match, 'get_away_team' ) ) {
+                            $away_val = $match->get_away_team();
+                            $away_name = is_numeric( $away_val ) && isset( $racketmanager->container ) && $racketmanager->container->has( 'team_service' )
+                                ? ( $racketmanager->container->get( 'team_service' )->get_team_details( (int) $away_val )->team?->get_name() ?? (string) $away_val )
+                                : (string) ( $away_val ?? '' );
                         }
 
                         if ( $away_withdrawn ) {
@@ -175,7 +199,7 @@ if ( empty( $match->get_winner_id() ) ) {
         </div>
     </div>
     <?php
-    if ( is_numeric( $match->get_home_team() ) && $match->get_home_team() >= 1 && is_numeric( $match->get_away_team() ) && $match->get_away_team() >= 1 && ! empty( $match_link ) ) {
+    if ( ! empty( $match_link ) ) {
         ?>
         </a>
         <?php
@@ -184,8 +208,8 @@ if ( empty( $match->get_winner_id() ) ) {
         </div>
         <?php
     }
-    if ( is_numeric( $match->get_home_team() ) && $match->get_home_team() >= 1 && is_numeric( $match->get_away_team() ) && $match->get_away_team() >= 1 && ! empty( $user_can_update ) ) {
-        $match_link_result = $match_link . 'result/';
+    if ( ! empty( $user_can_update ) && ! empty( $match_link ) ) {
+        $match_link_result = trailingslashit( $match_link ) . 'result/';
         ?>
         <div class="match__button">
             <a href="<?php echo esc_url( $match_link_result ); ?>" class="btn match__btn">

@@ -19,6 +19,7 @@ use Racketmanager\Util\Util_Lookup;
 /** @var string $form_action */
 /** @var string $edit */
 /** @var array  $match_days */
+$competition_type = $league && isset( $league->event->competition->type ) ? ( $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) $league->event->competition->type ) : '';
 ?>
 <div class="container league-block">
     <div class="row justify-content-end">
@@ -27,7 +28,7 @@ use Racketmanager\Util\Util_Lookup;
                 <?php
                 if ( $league ) {
                     ?>
-                    &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
+                    &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=league&amp;league_id=<?php echo esc_html( $league->id ); ?>"><?php echo esc_html( $league->title ); ?></a>
                     <?php
                 }
                 ?>
@@ -45,7 +46,7 @@ use Racketmanager\Util\Util_Lookup;
         <?php
     }
     if ( $league ) {
-        $action_form = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=league&amp;league_id=' . $league_id . '&amp;season=' . $season;
+        $action_form = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;view=league&amp;league_id=' . $league_id . '&amp;season=' . $season;
     } else {
         $action_form = 'admin.php?page=racketmanager-clubs&amp;view=teams';
         if ( $club_id ) {

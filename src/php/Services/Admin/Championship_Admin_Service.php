@@ -15,6 +15,7 @@ use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Overview\Tournament_Overview_Action_Request_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
@@ -279,7 +280,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
                 continue;
             }
 
-            $this->fixture_service->create_fixture( new Fixture( $fixture ), $league );
+            $this->fixture_service->create_fixture( Fixture_Factory::from_object( $fixture ), $league );
         }
 
         return new Action_Result_DTO(
@@ -366,7 +367,7 @@ readonly final class Championship_Admin_Service implements Draw_Action_Handler_I
 
             $this->apply_fixture_edit_from_post_row( $league, $fixture, $post, $i );
 
-            $this->fixture_service->update_fixture( new Fixture( $fixture ) );
+            $this->fixture_service->update_fixture( $fixture instanceof Fixture ? $fixture : Fixture_Factory::from_object( $fixture ) );
         }
 
         return new Action_Result_DTO(

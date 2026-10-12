@@ -16,7 +16,7 @@ class Players_List_DTO {
     public int $id;
     public string $firstname;
     public string $surname;
-    public string $display_name;
+    public ?string $display_name;
     public string $index;
     /**
      * @var mixed|string
@@ -24,11 +24,12 @@ class Players_List_DTO {
     public ?string $email;
 
     public function __construct( $data ) {
-        $this->id           = (int) $data->player_id;
-        $this->display_name = $data->display_name;
+        $this->id           = (int) ( $data->player_id ?? 0 );
+        $this->display_name = $data->display_name ?? null;
         $this->firstname    = $data->firstName ?? '';
         $this->surname      = $data->surname ?? '';
         $this->email        = $data->email ?? '';
+        $this->index        = $data->index ?? '';
     }
 
 }

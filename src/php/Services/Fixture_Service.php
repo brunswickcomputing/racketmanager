@@ -63,7 +63,7 @@ class Fixture_Service {
         }
 
         // Handle championship leg logic
-        if ( ! empty( $league->is_championship ) && ! empty( $league->event->current_season['home_away'] ) && 'final' !== $fixture->get_final() ) {
+        if ( ! empty( $league->is_championship ) && ! empty( $league->event->current_season['home_away'] ) && 'final' !== strtolower( (string) $fixture->get_final() ) ) {
             $this->handle_championship_legs( $fixture, $league );
         }
 

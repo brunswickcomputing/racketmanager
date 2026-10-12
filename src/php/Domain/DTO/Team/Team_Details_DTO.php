@@ -30,7 +30,7 @@ class Team_Details_DTO {
      * @param Player|null $match_secretary
      * @param bool $is_withdrawn
      */
-    public function __construct( Team $team, ?Club $club, ?Player $match_secretary, bool $is_withdrawn = false ) {
+    public function __construct( Team $team, ?Club $club = null, ?Player $match_secretary = null, bool $is_withdrawn = false ) {
         $this->team            = $team;
         $this->club            = $club;
         $this->match_secretary = $match_secretary;

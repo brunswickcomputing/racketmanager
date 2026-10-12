@@ -30,6 +30,7 @@ if ( $vm ) {
 /** @var object $tournament */
 /** @var array $teams */
 /** @var string $type */
+$competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
 if ( 'constitution' === $type ) {
     $page_title = __( 'Add Teams to Constitution', 'racketmanager' );
     $page_link  = $league->event->name;
@@ -39,8 +40,8 @@ if ( 'constitution' === $type ) {
     $page_title = __( 'Add Teams to League', 'racketmanager' );
     $page_link  = $league->title;
     $breadcrumb = 'show-league&amp;league_id=' . $league->id;
-    $link_ref   = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;season=' . $season;
-    $link_ref .= match ($league->event->competition->type) {
+    $link_ref   = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;season=' . $season;
+    $link_ref .= match ($competition_type) {
         'cup' => '&amp;competition_id=' . $league->event->competition->id . '&amp;view=draw&amp;league=' . $league->id,
         'tournament' => '&amp;tournament=' . $tournament_id . '&amp;view=draw&amp;league=' . $league->id,
         default => '&view=league&amp;league_id=' . $league->id,
@@ -52,7 +53,7 @@ $main_title = $page_link . ' - ' . $page_title;
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">
             <?php
-            switch ( $league->event->competition->type ) {
+            switch ( $competition_type ) {
                 case 'cup':
                     ?>
                     <a href="/wp-admin/admin.php?page=racketmanager-"><?php esc_html_e( 'RacketManager', 'racketmanager' ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager&amp;subpage=<?php echo esc_html( $breadcrumb ); ?>"><?php echo esc_html( $page_link ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
@@ -65,7 +66,7 @@ $main_title = $page_link . ' - ' . $page_title;
                     break;
                 default:
                     ?>
-                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s"><?php echo esc_html( ucfirst( $league->event->competition->type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_html( $league->event->competition->type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=constitution&amp;event_id=<?php echo esc_html( $league->event_id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
+                    <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s"><?php echo esc_html( ucfirst( $competition_type ) ); ?>s</a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=seasons&amp;competition_id=<?php echo esc_html( $league->event->competition->id ); ?>"><?php echo esc_html( $league->event->competition->name ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=overview&amp;competition_id=<?php echo esc_attr( $league->event->competition->id ); ?>&amp;season=<?php echo esc_attr( $season ); ?>"><?php echo esc_html( $season ); ?></a> &raquo; <a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $competition_type ); ?>s&amp;view=constitution&amp;event_id=<?php echo esc_html( $league->event_id ); ?>"><?php echo esc_html( $league->event->name ); ?></a> &raquo; <?php echo esc_html( $page_title ); ?>
                     <?php
                     break;
             }

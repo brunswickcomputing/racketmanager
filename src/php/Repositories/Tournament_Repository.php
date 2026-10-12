@@ -12,6 +12,7 @@ namespace Racketmanager\Repositories;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
 use Racketmanager\Util\Util;
@@ -567,7 +568,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             ", $tournament_id, $match_date );
         $results           = $this->wpdb->get_results( $query );
 
-        return array_map( fn( $row ) => new Fixture( $row ), $results );
+        return array_map( fn( $row ) => Fixture_Factory::from_object( $row ), $results );
     }
 
     /**
@@ -594,7 +595,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             ", $tournament_id, $event_id );
         $results           = $this->wpdb->get_results( $query );
 
-        return array_map( fn( $row ) => new Fixture( $row ), $results );
+        return array_map( fn( $row ) => Fixture_Factory::from_object( $row ), $results );
     }
 
     /**

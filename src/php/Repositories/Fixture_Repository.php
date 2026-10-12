@@ -153,6 +153,8 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         if ( $deleted ) {
             wp_cache_delete( $id, 'fixtures' );
             wp_cache_delete( $id . '_legacy', 'fixtures' );
+            wp_cache_delete( (string) $id, 'matches' );
+            wp_cache_delete( (string) $id, 'match' );
         }
 
         return (bool) $deleted;
@@ -558,9 +560,20 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         }
 
         $matches = $league->get_matches( $match_args );
+        if ( $matches instanceof Fixture ) {
+            return $matches;
+        }
+
         if ( is_array( $matches ) && count( $matches ) === 1 ) {
             $row = $matches[0];
+            if ( $row instanceof Fixture ) {
+                return $row;
+            }
             return $this->find_by_id( (int) $row->id );
+        }
+
+        if ( is_object( $matches ) && isset( $matches->id ) ) {
+            return $this->find_by_id( (int) $matches->id );
         }
 
         return null;

@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -80,7 +81,7 @@ class Result_Service_Test extends TestCase {
         $fixture_data->id = 123;
         $fixture_data->league_id = 456;
         $fixture_data->confirmed = 'Y';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $result = new Result(0, 0, null, null, null, false, [], []);
         $this->assertTrue($result->is_reset());
@@ -99,7 +100,7 @@ class Result_Service_Test extends TestCase {
         $fixture_data = new stdClass();
         $fixture_data->id = 123;
         $fixture_data->league_id = 456;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $result = new Result(0, 0, null, null, null, false, [], []);
         
@@ -114,7 +115,7 @@ class Result_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '1';
         $fixture_data->away_team = '2';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $result = new Result(3, 1, 1, 2, 0, false, [], []);
         $this->assertFalse($result->is_reset());
@@ -135,7 +136,7 @@ class Result_Service_Test extends TestCase {
         $fixture_data = new stdClass();
         $fixture_data->id = 123;
         $fixture_data->league_id = 456;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $result = new Result(0, 0, null, null, null, false, [], []);
         
@@ -157,7 +158,7 @@ class Result_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(\Racketmanager\Domain\Competition\League::class);
         $league->id = 456;

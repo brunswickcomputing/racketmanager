@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
@@ -63,12 +64,12 @@ class League_Mutation_Test extends TestCase {
         $primary_raw->date         = '2026-06-01 19:00:00';
         $primary_raw->host         = 'home';
         $primary_raw->linked_match = 20;
-        $primary_fixture           = new Fixture( $primary_raw );
+        $primary_fixture           = Fixture_Factory::from_object( $primary_raw );
 
         $linked_raw         = new stdClass();
         $linked_raw->id     = 20;
         $linked_raw->host   = 'away';
-        $linked_fixture     = new Fixture( $linked_raw );
+        $linked_fixture     = Fixture_Factory::from_object( $linked_raw );
 
         $this->fixture_repository->method( 'find_by_id' )
             ->with( 20 )
@@ -92,7 +93,7 @@ class League_Mutation_Test extends TestCase {
         $fixture_raw->away_team = '200';
         $fixture_raw->status    = 1;
         $fixture_raw->custom    = [ 'sets' => [ [ 'home' => 6, 'away' => 3 ] ] ];
-        $fixture                = new Fixture( $fixture_raw );
+        $fixture                = Fixture_Factory::from_object( $fixture_raw );
 
         $this->fixture_repository->method( 'find_by_id' )
             ->with( 15 )
@@ -156,7 +157,7 @@ class League_Mutation_Test extends TestCase {
         $fixture_raw->leg      = 2;
         $fixture_raw->confirmed = '1';
         $fixture_raw->status   = 0;
-        $fixture               = new Fixture( $fixture_raw );
+        $fixture               = Fixture_Factory::from_object( $fixture_raw );
 
         $this->league->method( 'get_matches' )
             ->willReturn( [ (object) [ 'id' => 101 ] ] );
@@ -192,7 +193,7 @@ class League_Mutation_Test extends TestCase {
         $fixture_raw->away_team = '60';
         $fixture_raw->status   = 0;
         $fixture_raw->custom   = [ 'some' => 'meta' ];
-        $fixture               = new Fixture( $fixture_raw );
+        $fixture               = Fixture_Factory::from_object( $fixture_raw );
 
         $this->league->method( 'get_matches' )
             ->willReturn( [ (object) [ 'id' => 102 ] ] );

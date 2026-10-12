@@ -9,9 +9,11 @@
 
 namespace Racketmanager\Public;
 
+use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -20,6 +22,8 @@ use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
+use Racketmanager\Services\Fixture\Fixture_Link_Service;
+use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
@@ -71,6 +75,8 @@ class Shortcodes {
     protected Fixture_Detail_Service $fixture_detail_service;
     protected Competition_Repository_Interface $competition_repository;
     protected Fixture_Repository_Interface $fixture_repository;
+    protected ?Fixture_Link_Service $fixture_link_service = null;
+    protected ?Fixture_Permission_Service $fixture_permission_service = null;
 
     /**
      * Initialise shortcodes
@@ -110,6 +116,8 @@ class Shortcodes {
         $this->fixture_detail_service    = $c->get( 'fixture_detail_service' );
         $this->competition_repository    = $c->get( 'competition_repository' );
         $this->fixture_repository        = $c->get( 'fixture_repository' );
+        $this->fixture_link_service       = $c->has( 'fixture_link_service' ) ? $c->get( 'fixture_link_service' ) : null;
+        $this->fixture_permission_service = $c->has( 'fixture_permission_service' ) ? $c->get( 'fixture_permission_service' ) : null;
     }
 
     /**
@@ -155,7 +163,32 @@ class Shortcodes {
             ) );
         $matches_list = array();
         foreach ( $matches as $match ) {
-            $key = $match->league->title;
+            if ( ! $match || ! is_object( $match ) ) {
+                continue;
+            }
+            if ( $match instanceof Fixture ) {
+                $match = Fixture_Presentation_Adapter::from_fixture(
+                    $match,
+                    $this->competition_service,
+                    $this->team_service,
+                    $this->fixture_link_service,
+                    $this->fixture_permission_service
+                );
+            }
+            $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
+            if ( ! $match_league && ! empty( $match->league_id ) ) {
+                $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : ( function_exists( '\Racketmanager\get_league' ) ? get_league( (int) $match->league_id ) : null );
+                if ( $match_league ) {
+                    $match->league = $match_league;
+                }
+            }
+            if ( is_object( $match_league ) ) {
+                $key = method_exists( $match_league, 'get_name' ) ? $match_league->get_name() : ( $match_league->title ?? $match_league->name ?? '' );
+            } elseif ( is_string( $match_league ) ) {
+                $key = $match_league;
+            } else {
+                $key = '';
+            }
             if ( false === array_key_exists( $key, $matches_list ) ) {
                 $matches_list[ $key ] = array();
             }
@@ -286,7 +319,32 @@ class Shortcodes {
             ) );
         $matches_list = array();
         foreach ( $matches as $match ) {
-            $key = $match->league->title;
+            if ( ! $match || ! is_object( $match ) ) {
+                continue;
+            }
+            if ( $match instanceof Fixture ) {
+                $match = Fixture_Presentation_Adapter::from_fixture(
+                    $match,
+                    $this->competition_service,
+                    $this->team_service,
+                    $this->fixture_link_service,
+                    $this->fixture_permission_service
+                );
+            }
+            $match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
+            if ( ! $match_league && ! empty( $match->league_id ) ) {
+                $match_league = isset( $this->competition_service ) ? $this->competition_service->get_league_repository()->find_by_id( (int) $match->league_id ) : ( function_exists( '\Racketmanager\get_league' ) ? get_league( (int) $match->league_id ) : null );
+                if ( $match_league ) {
+                    $match->league = $match_league;
+                }
+            }
+            if ( is_object( $match_league ) ) {
+                $key = method_exists( $match_league, 'get_name' ) ? $match_league->get_name() : ( $match_league->title ?? $match_league->name ?? '' );
+            } elseif ( is_string( $match_league ) ) {
+                $key = $match_league;
+            } else {
+                $key = '';
+            }
             if ( false === array_key_exists( $key, $matches_list ) ) {
                 $matches_list[ $key ] = array();
             }

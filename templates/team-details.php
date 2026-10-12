@@ -43,6 +43,7 @@ if ( isset( $object->competition ) ) {
     $object_event       = $object->event;
     $object_type        = 'league';
 }
+$competition_type = $object_competition->type instanceof \BackedEnum ? $object_competition->type->value : (string) ( $object_competition->type ?? '' );
 $display_opt = $racketmanager->get_options( 'display' );
 if ( ! empty( $display_opt['wtn'] ) ) {
     $help_text   = __( 'World Tennis Number', 'racketmanager');
@@ -96,7 +97,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
         <div class="page-content__main col-12 col-lg-7">
             <?php
             if ( ! $object->is_championship ) {
-                $standings_link = '/' . $object->event->competition->type . '/' . seo_url( $object->title ) . '/' . $object->current_season['name'] . '/';
+                $standings_link = '/' . $competition_type . '/' . seo_url( $object->title ) . '/' . $object->current_season['name'] . '/';
                 ?>
                 <div class="module module--card">
                     <div class="module__banner">
@@ -448,7 +449,7 @@ if ( ! empty( $display_opt['wtn'] ) ) {
                                         if ( intval( $player->get_id() ) === get_current_user_id() ) {
                                             $selected_player = true;
                                         }
-                                        $player_link = '/' . $object_competition->type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
+                                        $player_link = '/' . $competition_type . '/' . seo_url( $object->name ) . '/' . $object->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
                                         ?>
                                         <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                             <div class="media">

@@ -7,6 +7,7 @@
 
 namespace Racketmanager;
 
+$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -50,15 +51,15 @@ namespace Racketmanager;
                     <?php
                     foreach ( $event->teams as $team ) {
                         if ( $event->is_box ) {
-                            $league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . __( 'round', 'racketmanager' ) . '-' . $event->current_season['name'] . '/';
+                            $league_link = $competition_type . '/' . seo_url( $team->league_title ) . '/' . __( 'round', 'racketmanager' ) . '-' . $event->current_season['name'] . '/';
                         } else {
-                            $league_link = $event->competition->type . '/' . seo_url( $team->league_title ) . '/' . $event->current_season['name'] . '/';
+                            $league_link = $competition_type . '/' . seo_url( $team->league_title ) . '/' . $event->current_season['name'] . '/';
                         }
-                        $club_link = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/club/' . seo_url( $team->club->shortcode ) . '/';
+                        $club_link = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/club/' . seo_url( $team->club->shortcode ) . '/';
                         ?>
                         <div class="row mb-2 row-list">
                             <div class="col-4" name="<?php esc_html_e( 'Team', 'racketmanager' ); ?>">
-                                <a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+                                <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
                                     <?php echo esc_html( $team->name ); ?>
                                 </a>
                             </div>

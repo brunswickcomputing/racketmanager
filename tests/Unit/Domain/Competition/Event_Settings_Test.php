@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -92,7 +93,7 @@ class Event_Settings_Test extends TestCase {
         $fixture_raw->id        = 100;
         $fixture_raw->league_id = 50;
         $fixture_raw->date      = '2026-06-01 19:00:00';
-        $fixture                = new Fixture( $fixture_raw );
+        $fixture                = Fixture_Factory::from_object( $fixture_raw );
 
         $this->fixture_repository->method( 'find_by_id' )
             ->with( 100 )

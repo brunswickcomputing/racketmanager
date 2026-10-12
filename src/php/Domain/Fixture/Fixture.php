@@ -330,16 +330,35 @@ class Fixture {
     public ?array $rubbers = null;
 
     /**
+     * Teams
+     *
+     * @var array|null
+     */
+    public ?array $teams = null;
+
+    /**
+     * League
+     *
+     * @var mixed
+     */
+    public mixed $league = null;
+
+    /**
+     * Display CSS class
+     *
+     * @var string|null
+     */
+    public ?string $class = null;
+
+    /**
      * Fixture constructor.
      *
-     * @param Fixture_Hydration_DTO|object|null $fixture
+     * @param Fixture_Hydration_DTO|null $dto Typed hydration DTO. Use Fixture_Factory for raw rows.
      */
-    public function __construct( ?object $fixture = null ) {
-        if ( is_null( $fixture ) ) {
+    public function __construct( ?Fixture_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
             return;
         }
-
-        $dto = $fixture instanceof Fixture_Hydration_DTO ? $fixture : Fixture_Hydration_DTO::from_object( $fixture );
 
         $this->id                  = $dto->id;
         $this->fixture_title       = $dto->fixture_title;
@@ -390,6 +409,16 @@ class Fixture {
      */
     public static function from_object( object $data ): self {
         return Fixture_Factory::from_object( $data );
+    }
+
+    /**
+     * Create from an associative array.
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function from_array( array $data ): self {
+        return Fixture_Factory::from_array( $data );
     }
 
     /**
@@ -530,6 +559,106 @@ class Fixture {
      */
     public function set_league_id( ?int $league_id ): void {
         $this->league_id = $league_id;
+    }
+
+    /**
+     * Get league for this fixture.
+     *
+     * @return object|null
+     */
+    public function get_league(): ?object {
+        if ( is_object( $this->league ) ) {
+            return $this->league;
+        }
+        if ( $this->league_id ) {
+            global $racketmanager;
+            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
+                $league_repo = $racketmanager->container->get( 'competition_service' )->get_league_repository();
+                $league = $league_repo->find_by_id( (int) $this->league_id );
+                if ( $league ) {
+                    $this->league = $league;
+                    return $league;
+                }
+            }
+            if ( function_exists( '\Racketmanager\get_league' ) ) {
+                $league = get_league( $this->league_id );
+                if ( $league ) {
+                    $this->league = $league;
+                    return $league;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get teams for this fixture.
+     *
+     * @return array
+     */
+    public function get_teams(): array {
+        if ( is_array( $this->teams ) && ! empty( $this->teams ) ) {
+            return $this->teams;
+        }
+
+        global $racketmanager;
+        $team_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'team_service' )
+            ? $racketmanager->container->get( 'team_service' )
+            : null;
+
+        $home_val = $this->get_home_team();
+        $away_val = $this->get_away_team();
+
+        $home_dtls = null;
+        $away_dtls = null;
+        if ( $team_service ) {
+            $home_dtls = is_numeric( $home_val ) ? $team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $team_service->derive_team_details( (string) $home_val ) : null );
+            $away_dtls = is_numeric( $away_val ) ? $team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $team_service->derive_team_details( (string) $away_val ) : null );
+        }
+
+        $home_name = $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : (string) ( $home_val ?? '' );
+        $away_name = $away_dtls && $away_dtls->team ? $away_dtls->team->get_name() : (string) ( $away_val ?? '' );
+
+        $home_team_obj                  = new \stdClass();
+        $home_team_obj->id              = $home_val;
+        $home_team_obj->title           = $home_name;
+        $home_team_obj->name            = $home_name;
+        $home_team_obj->team_type       = $home_dtls && $home_dtls->team && method_exists( $home_dtls->team, 'get_team_type' ) ? $home_dtls->team->get_team_type() : ( is_numeric( $home_val ) ? 'T' : 'P' );
+        $home_team_obj->club            = new \stdClass();
+        $home_team_obj->club->id        = $home_dtls && $home_dtls->club ? $home_dtls->club->get_id() : null;
+        $home_team_obj->club->shortcode = $home_dtls && $home_dtls->club && method_exists( $home_dtls->club, 'get_shortcode' ) ? $home_dtls->club->get_shortcode() : '';
+        $home_team_obj->players         = $home_dtls->players ?? array();
+        $home_team_obj->player          = $home_team_obj->players;
+        $home_team_obj->captain         = $home_dtls->captain ?? '';
+        $home_team_obj->contactemail    = $home_dtls->captain_email ?? '';
+        $home_team_obj->contactno       = $home_dtls->captain_tel ?? '';
+        $home_team_obj->match_day       = $home_dtls->match_day ?? '';
+        $home_team_obj->match_time      = $home_dtls->match_time ?? '';
+        $home_team_obj->is_withdrawn    = $home_dtls->is_withdrawn ?? false;
+
+        $away_team_obj                  = new \stdClass();
+        $away_team_obj->id              = $away_val;
+        $away_team_obj->title           = $away_name;
+        $away_team_obj->name            = $away_name;
+        $away_team_obj->team_type       = $away_dtls && $away_dtls->team && method_exists( $away_dtls->team, 'get_team_type' ) ? $away_dtls->team->get_team_type() : ( is_numeric( $away_val ) ? 'T' : 'P' );
+        $away_team_obj->club            = new \stdClass();
+        $away_team_obj->club->id        = $away_dtls && $away_dtls->club ? $away_dtls->club->get_id() : null;
+        $away_team_obj->club->shortcode = $away_dtls && $away_dtls->club && method_exists( $away_dtls->club, 'get_shortcode' ) ? $away_dtls->club->get_shortcode() : '';
+        $away_team_obj->players         = $away_dtls->players ?? array();
+        $away_team_obj->player          = $away_team_obj->players;
+        $away_team_obj->captain         = $away_dtls->captain ?? '';
+        $away_team_obj->contactemail    = $away_dtls->captain_email ?? '';
+        $away_team_obj->contactno       = $away_dtls->captain_tel ?? '';
+        $away_team_obj->match_day       = $away_dtls->match_day ?? '';
+        $away_team_obj->match_time      = $away_dtls->match_time ?? '';
+        $away_team_obj->is_withdrawn    = $away_dtls->is_withdrawn ?? false;
+
+        $this->teams = array(
+            'home' => $home_team_obj,
+            'away' => $away_team_obj,
+        );
+
+        return $this->teams;
     }
 
     /**
@@ -1029,6 +1158,24 @@ class Fixture {
     }
     public function get_link(): ?string {
         return $this->link;
+    }
+
+    /**
+     * Check whether update is allowed for this fixture.
+     *
+     * @return object
+     */
+    public function is_update_allowed(): object {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) ) {
+            if ( $racketmanager->container->has( 'fixture_permission_service' ) ) {
+                return $racketmanager->container->get( 'fixture_permission_service' )->is_update_allowed( $this );
+            }
+            if ( $racketmanager->container->has( 'fixture_service' ) ) {
+                return $racketmanager->container->get( 'fixture_service' )->is_update_allowed( $this );
+            }
+        }
+        return (object) array( 'user_can_update' => false );
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Integration\Services;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -78,7 +79,7 @@ class Fixture_Service_Integration_Test extends TestCase {
     }
 
     public function test_update_fixture_location(): void {
-        $fixture = new Fixture( (object)[ 'id' => 1, 'location' => 'Old' ] );
+        $fixture = Fixture_Factory::from_object( (object)[ 'id' => 1, 'location' => 'Old' ] );
         
         $this->fixture_repository->expects( $this->once() )
             ->method( 'save' )
@@ -91,7 +92,7 @@ class Fixture_Service_Integration_Test extends TestCase {
     }
 
     public function test_set_fixture_date_and_sync_rubbers(): void {
-        $fixture = new Fixture( (object)[ 'id' => 10, 'date' => '2026-01-01 00:00:00' ] );
+        $fixture = Fixture_Factory::from_object( (object)[ 'id' => 10, 'date' => '2026-01-01 00:00:00' ] );
         
         $rubber1 = $this->createMock( Rubber::class );
         $rubber1->method( 'get_match_id' )->willReturn( 10 );
@@ -125,7 +126,7 @@ class Fixture_Service_Integration_Test extends TestCase {
     }
 
     public function test_update_fixture_date_with_original_date_triggers_notification(): void {
-        $fixture = new Fixture( (object)[ 'id' => 20, 'date' => '2026-01-01 00:00:00' ] );
+        $fixture = Fixture_Factory::from_object( (object)[ 'id' => 20, 'date' => '2026-01-01 00:00:00' ] );
         $new_date = '2026-02-01 10:00:00';
         $original_date = '2026-01-01 00:00:00';
 

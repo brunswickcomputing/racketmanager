@@ -11,6 +11,7 @@ namespace Racketmanager;
 /** @var object $club */
 /** @var array $current_season */
 $event          = $club->event;
+$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 $playerstats    = $club->player_stats;
 $rounds         = array();
 $primary_league = null;
@@ -73,7 +74,7 @@ if ( $event->is_championship ) {
                             <?php $class = ( 'alternate' === $class ) ? '' : 'alternate'; ?>
                             <tr class="<?php echo esc_html( $class ); ?>">
                                 <th class="player-name" scope="row">
-                                    <a href="/<?php echo esc_attr( $event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $playerstat->fullname ) ); ?>/">
+                                    <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $event->name ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/player/<?php echo esc_attr( seo_url( $playerstat->fullname ) ); ?>/">
                                         <span class="nav__link"><?php echo esc_html( $playerstat->fullname ); ?></span>
                                     </a>
                                 </th>

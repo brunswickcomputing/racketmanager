@@ -13,9 +13,14 @@ use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Championship_Settings;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Championship_Factory;
+use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Schedule_Round_Robin;
 use Racketmanager\Util\Util;
@@ -664,7 +669,7 @@ class League {
     /**
      * Constructor
      *
-     * @param object $league League object.
+     * @param object|null $league League object.
      */
     public function __construct( object $league ) {
         if ( isset( $league->settings ) ) {
@@ -696,21 +701,21 @@ class League {
         // set season to latest.
         $this->set_season();
         $this->groups          = trim( $this->groups ?? '' );
-        $this->mode            = $event->competition->settings['mode'];
-        $this->num_sets        = $event->num_sets;
+        $this->mode            = $event->competition->settings['mode'] ?? 'default';
+        $this->num_sets        = (int) ( $event->num_sets ?? 3 );
         $this->num_sets_to_win = floor( $this->num_sets / 2 ) + 1;
-        $this->num_rubbers     = $event->num_rubbers;
-        $this->type            = $event->type;
-        $this->competition_type = $event->competition->type;
-        $this->point_rule      = $event->competition->settings['point_rule'];
-        $this->sport           = $event->competition->settings['sport'];
+        $this->num_rubbers     = (int) ( $event->num_rubbers ?? 0 );
+        $this->type            = $event->type ?? '';
+        $this->competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+        $this->point_rule      = $event->competition->settings['point_rule'] ?? 'three';
+        $this->sport           = $event->competition->settings['sport'] ?? 'tennis';
         $this->scoring         = $event->scoring ?? null;
         $this->set_match_query_args();
         $this->set_num_matches(); // for pagination.
         $this->set_num_teams( true ); // get total number of teams.
-        $this->standings      = $event->standings;
-        $this->point_format   = $event->competition->settings['point_format'];
-        $this->point_2_format = $event->competition->settings['point_2_format'];
+        $this->standings      = $event->standings ?? [];
+        $this->point_format   = $event->competition->settings['point_format'] ?? '%d-%d';
+        $this->point_2_format = $event->competition->settings['point_2_format'] ?? '%d-%d';
         // set default standings display options for additional team fields.
         if ( count( $this->fields_team ) > 0 ) {
             foreach ( $this->fields_team as $key => $data ) {
@@ -869,7 +874,7 @@ class League {
      * @param string $season season.
      */
     public function delete_team( int $team, string $season ): void {
-        global $wpdb, $racketmanager;
+        global $wpdb;
         $matches = $this->get_matches(
             array(
                 'team_id' => $team,
@@ -878,9 +883,7 @@ class League {
             )
         );
         if ( $matches ) {
-            $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-                ? $racketmanager->container->get( 'fixture_repository' )
-                : new Fixture_Repository();
+            $fixture_repository = $this->get_fixture_repository();
             foreach ( $matches as $match ) {
                 $fixture_id = is_object( $match ) ? (int) $match->id : (int) $match;
                 $fixture_repository->delete( $fixture_id );
@@ -914,9 +917,7 @@ class League {
         // update matches.
         $matches = $this->get_matches( $match_args );
         if ( $matches ) {
-            $fixture_repository   = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-                ? $racketmanager->container->get( 'fixture_repository' )
-                : new Fixture_Repository();
+            $fixture_repository   = $this->get_fixture_repository();
             $notification_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'notification_service' )
                 ? $racketmanager->container->get( 'notification_service' )
                 : null;
@@ -1498,6 +1499,7 @@ class League {
                 ); // db call ok.
                 wp_cache_set( md5( $sql ), $teams, 'leaguetable' );
             }
+            $teams = is_numeric( $teams ) ? (int) $teams : 0;
         } else {
             $sql .= Util::order_by_string( $orderby );
             $sql  = $wpdb->prepare(
@@ -1513,6 +1515,7 @@ class League {
                 ); // db call ok.
                 wp_cache_set( $sql, $teams, 'leaguetable' );
             }
+            $teams      = is_array( $teams ) ? $teams : array();
             $class      = array();
             $team_index = array();
             foreach ( $teams as $i => $team ) {
@@ -1778,7 +1781,7 @@ class League {
      * @return array|int|object of matches
      */
     public function get_matches( array $query_args ): array|int|object {
-        global $wpdb;
+        global $wpdb, $racketmanager;
         $old_query_args = $this->match_query_args;
         // set query args.
         foreach ( $query_args as $key => $value ) {
@@ -3315,6 +3318,8 @@ class League {
      * @param boolean $is_box is this a box league.
      */
     public function create_match_schedule( array $rounds, array $teams, array $match_dates, string $season, bool $is_box ): void {
+        $fixture_service = $this->get_fixture_service();
+
         $num_rounds = count( $rounds );
         for ( $i = 0; $i < $num_rounds; $i++ ) {
             if ( ! $is_box ) {
@@ -3345,7 +3350,8 @@ class League {
                         $match->match_day = $round_number;
                         $match->location  = $home_team_dtls->club->shortcode;
                     }
-                    new Racketmanager_Match( $match );
+                    $fixture_entity = Fixture_Factory::from_object( $match );
+                    $fixture_service->create_fixture( $fixture_entity, $this );
                 }
             }
         }
@@ -3358,23 +3364,10 @@ class League {
      * @return void
      */
     public function add_match( object $match ): void {
-        $match = new Racketmanager_Match( $match );
-        if ( $this->is_championship && $this->event->current_season['home_away'] && 'final' !== $match->final_round ) {
-            $competition_season      = $this->event->competition->get_season_by_name( $match->season );
-            $match->leg              = 1;
-            $new_match               = clone $match;
-            $weeks_diff              = empty( $competition_season['home_away_diff'] ) ? 2 : $competition_season['home_away_diff'];
-            $new_match->date         = Util::amend_date( $match->date, $weeks_diff, '+', 'weeks' );
-            $new_match->linked_match = $match->id;
-            $new_match->leg          = $match->leg + 1;
-            if ( ! empty( $match->host ) ) {
-                $new_match->host = 'home' === $match->host ? 'away' : 'home';
-            }
-            unset( $new_match->id );
-            $new_match = new Racketmanager_Match( $new_match );
-            $new_match->update_legs( $new_match->leg, $match->id );
-            $match->update_legs( $match->leg, $new_match->id );
-        }
+        $fixture_service = $this->get_fixture_service();
+
+        $fixture = $match instanceof Fixture ? $match : Fixture_Factory::from_object( $match );
+        $fixture_service->create_fixture( $fixture, $this );
     }
 
 
@@ -3674,6 +3667,26 @@ class League {
             wp_mail( $email_to, $email_subject, $email_message, $headers );
         }
         return $message_sent;
+    }
+
+    /**
+     * Resolve Fixture_Service instance from container or provider.
+     */
+    private function get_fixture_service(): Fixture_Service {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_service' )
+            ? $racketmanager->container->get( 'fixture_service' )
+            : new Fixture_Service( new Repository_Provider(), new Service_Provider() );
+    }
+
+    /**
+     * Resolve Fixture_Repository instance from container or fallback.
+     */
+    private function get_fixture_repository(): Fixture_Repository_Interface {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+            ? $racketmanager->container->get( 'fixture_repository' )
+            : new Fixture_Repository();
     }
 }
 

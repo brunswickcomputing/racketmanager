@@ -17,6 +17,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Public\Shortcodes_Email;
 use Racketmanager\RacketManager;
@@ -67,7 +68,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $this->container->set( 'fixture_service', $this->createMock( \Racketmanager\Services\Fixture_Service::class ) );
         $this->container->set( 'fixture_detail_service', $this->createMock( \Racketmanager\Services\Fixture\Fixture_Detail_Service::class ) );
 
-        $fixture = new Fixture( (object) [
+        $fixture = Fixture_Factory::from_object( (object) [
             'id'        => 555,
             'league_id' => 10,
             'home_team' => '1',

@@ -9,11 +9,10 @@
 
 namespace Racketmanager\Domain;
 
-use Racketmanager\Util\Util;
-use stdClass;
-use function Racketmanager\get_event;
-use function Racketmanager\get_league;
-use function Racketmanager\seo_url;
+use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
+use Racketmanager\Services\Competition_Service;
+use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Services\Player_Stats_Service;
 
 /**
  * Class to implement the Player object
@@ -46,9 +45,9 @@ class Player {
     /**
      * Fullname - join of first name and surname.
      *
-     * @var string
+     * @var ?string
      */
-    public string $fullname;
+    public ?string $fullname = null;
     /**
      * Display name.
      *
@@ -60,7 +59,7 @@ class Player {
      *
      * @var string
      */
-    public string $name;
+    public string $name = '';
     /**
      * Email address.
      *
@@ -70,57 +69,57 @@ class Player {
     /**
      * First name.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $firstname;
+    public mixed $firstname = null;
     /**
      * Surname.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $surname;
+    public mixed $surname = null;
     /**
      * Gender.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $gender;
+    public mixed $gender = null;
     /**
      * Type.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $type;
+    public mixed $type = null;
     /**
      * LTA Membership Number.
      *
-     * @var int
+     * @var int|string|null
      */
-    public mixed $btm;
+    public mixed $btm = null;
     /**
      * Year of birth.
      *
      * @var int|null
      */
-    public int|null $year_of_birth;
+    public int|null $year_of_birth = null;
     /**
      * Age.
      *
      * @var int|null
      */
-    public ?int $age;
+    public ?int $age = null;
     /**
      * Contact Number.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $contactno;
+    public mixed $contactno = null;
     /**
      * Removed date.
      *
      * @var string|null
      */
-    public ?string $removed_date;
+    public ?string $removed_date = null;
     /**
      * Removed user.
      *
@@ -130,9 +129,9 @@ class Player {
     /**
      * Locked indicator.
      *
-     * @var boolean
+     * @var boolean|null
      */
-    public mixed $locked;
+    public mixed $locked = null;
     /**
      * Locked date.
      *
@@ -154,9 +153,9 @@ class Player {
     /**
      * System record.
      *
-     * @var string
+     * @var string|null
      */
-    public mixed $system_record;
+    public mixed $system_record = null;
     /**
      * Matches.
      *
@@ -174,241 +173,232 @@ class Player {
      *
      * @var string
      */
-    public string $link;
+    public string $link = '';
     /**
      * Opt in detail.
      *
-     * @var array
+     * @var array|null
      */
-    public mixed $opt_ins;
+    public mixed $opt_ins = null;
     /**
      * WTN.
      *
      * @var array
      */
-    public array $wtn;
+    public array $wtn = array();
     /**
      * User password.
      *
      * @var string
      */
-    public string $user_pass;
+    public string $user_pass = '';
     /**
      * User nicename.
      *
      * @var string
      */
-    public string $user_nicename;
+    public string $user_nicename = '';
     /**
      * User url.
      *
      * @var string
      */
-    public string $user_url;
+    public string $user_url = '';
     /**
      * User activation_key.
      *
      * @var string
      */
-    public string $user_activation_key;
+    public string $user_activation_key = '';
     /**
      * User login.
      *
      * @var string
      */
-    public string $user_login;
+    public string $user_login = '';
     /**
      * Index.
      *
      * @var string
      */
-    public string $index;
+    public string $index = '';
     /**
      * Stats
      *
      * @var array
      */
-    public array $stats;
+    public array $stats = array();
     /**
      * Matches won variable
      *
      * @var int
      */
-    public int $matches_won;
+    public int $matches_won = 0;
     /**
      * Matches lost variable
      *
      * @var int
      */
-    public int $matches_lost;
+    public int $matches_lost = 0;
     /**
      * Win pct variable
      *
      * @var float|null
      */
-    public ?float $win_pct;
+    public ?float $win_pct = null;
     /**
      * Played variable
      *
      * @var int
      */
-    public int $played;
+    public int $played = 0;
     /**
      * Competitions variable
      *
      * @var array
      */
-    public array $competitions;
+    public array $competitions = array();
     /**
      * Cup variable
      *
      * @var array
      */
-    public array $cup;
+    public array $cup = array();
     /**
      * League variable
      *
      * @var array
      */
-    public array $league;
+    public array $league = array();
     /**
      * Tournament variable
      *
      * @var array
      */
-    public array $tournament;
+    public array $tournament = array();
     /**
      * Teams variable
      *
      * @var array
      */
-    public array $teams;
+    public array $teams = array();
     /**
      * Club variable
      *
      * @var object|null
      */
-    public ?object $club;
+    public ?object $club = null;
     /**
      * Team
      *
-     * @var object
+     * @var object|null
      */
-    public object $team;
+    public ?object $team = null;
     /**
      * Status
      *
-     * @var string
+     * @var string|null
      */
-    public string $status;
+    public ?string $status = null;
     /**
      * User status
      *
-     * @var string
+     * @var string|null
      */
-    public string $user_status;
+    public ?string $user_status = null;
     /**
      * Entry id
      *
-     * @var int
+     * @var int|null
      */
-    public int $entry_id;
+    public ?int $entry_id = null;
     /**
      * Entry
      *
      * @var array
      */
-    public array $entry;
+    public array $entry = array();
     /**
      * Tournament Entry
      *
      * @var object|null
      */
-    public ?object $tournament_entry;
+    public ?object $tournament_entry = null;
     /**
-0     * Constructor
+     * Constructor
      *
-     * @param Player_Hydration_DTO|object|null $player Player object or hydration DTO.
+     * @param Player_Hydration_DTO|null $dto Typed hydration DTO. Use Player_Factory for raw rows.
      */
-    public function __construct( ?object $player = null ) {
-        if ( ! is_null( $player ) ) {
-            $dto = $player instanceof \Racketmanager\Domain\DTO\Player\Player_Hydration_DTO ? $player : \Racketmanager\Domain\DTO\Player\Player_Hydration_DTO::from_object( $player );
+    public function __construct( ?Player_Hydration_DTO $dto = null ) {
+        if ( is_null( $dto ) ) {
+            return;
+        }
 
-            $this->ID                  = $dto->id;
-            $this->id                  = &$this->ID;
-            $this->user_email          = $dto->email;
-            $this->email               = &$this->user_email;
-            $this->display_name        = $dto->display_name;
-            $this->fullname            = &$this->display_name;
-            $this->name                = $dto->display_name ?? '';
-            $this->user_registered     = $dto->user_registered;
-            $this->firstname           = $dto->firstname;
-            $this->surname             = $dto->surname;
-            $this->gender              = $dto->gender;
-            $this->type                = $dto->type;
-            $this->btm                 = $dto->btm;
-            $this->year_of_birth       = $dto->year_of_birth;
-            $this->age                 = $dto->age;
-            $this->contactno           = $dto->contactno;
-            $this->removed_date        = $dto->removed_date;
-            $this->removed_user        = $dto->removed_user;
-            $this->locked              = $dto->locked;
-            $this->locked_date         = $dto->locked_date;
-            $this->locked_user         = $dto->locked_user;
-            $this->locked_user_name    = $dto->locked_user_name;
-            $this->system_record       = $dto->system_record;
-            $this->matches             = $dto->matches;
-            $this->statistics          = $dto->statistics;
-            $this->link                = $dto->link ?? '';
-            $this->opt_ins             = $dto->opt_ins;
-            $this->wtn                 = $dto->wtn;
-            $this->user_pass           = $dto->user_pass ?? '';
-            $this->user_nicename       = $dto->user_nicename ?? '';
-            $this->user_url            = $dto->user_url ?? '';
-            $this->user_activation_key = $dto->user_activation_key ?? '';
-            $this->user_login          = $dto->user_login ?? '';
-            $this->index               = $dto->index ?? '';
-            $this->stats               = $dto->stats;
-            $this->matches_won         = $dto->matches_won;
-            $this->matches_lost        = $dto->matches_lost;
-            $this->win_pct             = $dto->win_pct;
-            $this->played              = $dto->played;
-            $this->competitions        = $dto->competitions;
-            $this->cup                 = $dto->cup;
-            $this->league              = $dto->league;
-            $this->tournament          = $dto->tournament;
-            $this->teams               = $dto->teams;
-            $this->club                = $dto->club;
-            if ( $dto->team ) {
-                $this->team = $dto->team;
-            }
-            if ( $dto->status ) {
-                $this->status = $dto->status;
-            }
-            if ( $dto->user_status ) {
-                $this->user_status = $dto->user_status;
-            }
-            if ( $dto->entry_id ) {
-                $this->entry_id = $dto->entry_id;
-            }
-            $this->entry               = $dto->entry;
-            $this->tournament_entry    = $dto->tournament_entry;
+        $this->ID                  = $dto->id;
+        $this->id                  = &$this->ID;
+        $this->user_email          = $dto->email;
+        $this->email               = &$this->user_email;
+        $this->display_name        = $dto->display_name;
+        $this->fullname            = &$this->display_name;
+        $this->name                = $dto->display_name ?? '';
+        $this->user_registered     = $dto->user_registered;
+        $this->firstname           = $dto->firstname;
+        $this->surname             = $dto->surname;
+        $this->gender              = $dto->gender;
+        $this->type                = $dto->type;
+        $this->btm                 = $dto->btm;
+        $this->year_of_birth       = $dto->year_of_birth;
+        $this->age                 = $dto->age;
+        $this->contactno           = $dto->contactno;
+        $this->removed_date        = $dto->removed_date;
+        $this->removed_user        = $dto->removed_user;
+        $this->locked              = $dto->locked;
+        $this->locked_date         = $dto->locked_date;
+        $this->locked_user         = $dto->locked_user;
+        $this->locked_user_name    = $dto->locked_user_name;
+        $this->system_record       = $dto->system_record;
+        $this->matches             = $dto->matches;
+        $this->statistics          = $dto->statistics;
+        $this->link                = $dto->link ?? '';
+        $this->opt_ins             = $dto->opt_ins;
+        $this->wtn                 = $dto->wtn;
+        $this->user_pass           = $dto->user_pass ?? '';
+        $this->user_nicename       = $dto->user_nicename ?? '';
+        $this->user_url            = $dto->user_url ?? '';
+        $this->user_activation_key = $dto->user_activation_key ?? '';
+        $this->user_login          = $dto->user_login ?? '';
+        $this->index               = $dto->index ?? '';
+        $this->stats               = $dto->stats;
+        $this->matches_won         = $dto->matches_won;
+        $this->matches_lost        = $dto->matches_lost;
+        $this->win_pct             = $dto->win_pct;
+        $this->played              = $dto->played;
+        $this->competitions        = $dto->competitions;
+        $this->cup                 = $dto->cup;
+        $this->league              = $dto->league;
+        $this->tournament          = $dto->tournament;
+        $this->teams               = $dto->teams;
+        $this->club                = $dto->club;
+        if ( $dto->team ) {
+            $this->team = $dto->team;
+        }
+        if ( $dto->status ) {
+            $this->status = $dto->status;
+        }
+        if ( $dto->user_status ) {
+            $this->user_status = $dto->user_status;
+        }
+        if ( $dto->entry_id ) {
+            $this->entry_id = $dto->entry_id;
+        }
+        $this->entry            = $dto->entry;
+        $this->tournament_entry = $dto->tournament_entry;
 
-            if ( null === $this->age ) {
-                $this->calculate_age();
-            }
-            if ( ! empty( $this->locked_user ) && empty( $this->locked_user_name ) ) {
-                $userData = function_exists( 'get_userdata' ) ? get_userdata( $this->locked_user ) : null;
-                $this->locked_user_name = $userData && isset( $userData->display_name ) ? $userData->display_name : '';
-            } elseif ( empty( $this->locked_user_name ) ) {
-                $this->locked_user_name = '';
-            }
-            if ( empty( $this->link ) && ! empty( $this->display_name ) ) {
-                $this->link = '/player/' . ( function_exists( 'Racketmanager\seo_url' ) ? seo_url( $this->display_name ) : $this->display_name ) . '/';
-                if ( ! empty( $this->btm ) ) {
-                    $this->link .= $this->btm . '/';
-                }
-            }
+        if ( null === $this->age ) {
+            $this->calculate_age();
+        }
+        if ( empty( $this->locked_user_name ) ) {
+            $this->locked_user_name = '';
         }
     }
 
@@ -420,6 +410,16 @@ class Player {
      */
     public static function from_object( object $data ): self {
         return Player_Factory::from_object( $data );
+    }
+
+    /**
+     * Create from an associative array.
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function from_array( array $data ): self {
+        return Player_Factory::from_array( $data );
     }
 
     /**
@@ -589,7 +589,7 @@ class Player {
      * @return string
      */
     public function get_firstname(): string {
-        return $this->firstname;
+        return (string) ( $this->firstname ?? '' );
     }
 
     /**
@@ -598,7 +598,7 @@ class Player {
      * @return string
      */
     public function get_surname(): string {
-        return $this->surname;
+        return (string) ( $this->surname ?? '' );
     }
 
     /**
@@ -607,7 +607,16 @@ class Player {
      * @return string
      */
     public function get_fullname(): string {
-        return $this->display_name;
+        return (string) ( $this->display_name ?? '' );
+    }
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function get_name(): string {
+        return (string) ( $this->name !== '' ? $this->name : ( $this->display_name ?? '' ) );
     }
 
     /**
@@ -625,7 +634,7 @@ class Player {
      * @return string
      */
     public function get_login(): string {
-        return $this->user_login;
+        return (string) ( $this->user_login ?? '' );
     }
 
     /**
@@ -634,7 +643,7 @@ class Player {
      * @return string
      */
     public function get_password(): string {
-        return $this->user_pass;
+        return (string) ( $this->user_pass ?? '' );
     }
 
     /**
@@ -643,7 +652,7 @@ class Player {
      * @return string
      */
     public function get_date_registered(): string {
-        return $this->user_registered;
+        return (string) ( $this->user_registered ?? '' );
     }
 
     /**
@@ -652,7 +661,7 @@ class Player {
      * @return string
      */
     public function get_gender(): string {
-        return $this->gender;
+        return (string) ( $this->gender ?? '' );
     }
 
     /**
@@ -788,6 +797,22 @@ class Player {
             }
         }
     }
+    private function get_player_query_service(): Player_Query_Service {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'player_query_service' ) ) {
+            return $racketmanager->container->get( 'player_query_service' );
+        }
+        return new Player_Query_Service();
+    }
+
+    private function get_player_stats_service(): Player_Stats_Service {
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'player_stats_service' ) ) {
+            return $racketmanager->container->get( 'player_stats_service' );
+        }
+        return new Player_Stats_Service( $this->get_player_query_service() );
+    }
+
     /**
      * Get matches for player
      *
@@ -799,310 +824,28 @@ class Player {
      * @return array of matches.
      */
     public function get_matches( ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array {
-        global $racketmanager;
-        $statistics = array();
-        if ( 'league' === $match_source ) {
-            $league  = get_league( $grouping );
-            $matches = $league->get_matches(
-                array(
-                    'season'    => $season,
-                    'player'    => $this->id,
-                    'match_day' => false,
-                    'final'     => 'all',
-                    'orderby'   => array(
-                        'date' => 'ASC',
-                    ),
-                )
-            );
-        } elseif ( 'event' === $match_source ) {
-            $event   = get_event( $grouping );
-            $matches = $event->get_matches(
-                array(
-                    'season'  => $season,
-                    'player'  => $this->id,
-                    'orderby' => array(
-                        'date'      => 'ASC',
-                        'league_id' => 'DESC',
-                    ),
-                )
-            );
-        } elseif ( 'competition' === $match_source ) {
-            if ( $grouping instanceof \Racketmanager\Domain\Competition\Competition ) {
-                $competition = $grouping;
-            } else {
-                global $racketmanager;
-                $competition_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' )
-                    ? $racketmanager->container->get( 'competition_repository' )
-                    : new \Racketmanager\Repositories\Competition_Repository();
-                $competition = $competition_repository->find_by_id( (int) $grouping );
-            }
-            $matches     = $competition ? $competition->get_matches(
-                array(
-                    'season'  => $season,
-                    'player'  => $this->id,
-                    'orderby' => array(
-                        'date'      => 'ASC',
-                        'league_id' => 'DESC',
-                    ),
-                )
-            ) : array();
-        } elseif ( 'all' === $match_source ) {
-            $matches = $racketmanager->get_matches(
-                array(
-                    'season'  => $season,
-                    'player'  => $this->id,
-                    'time'    => $period,
-                    'type'    => $type,
-                    'status'  => 'Y',
-                    'orderby' => array(
-                        'date' => 'ASC',
-                    ),
-                )
-            );
-        } else {
-            $matches = array();
-        }
-        $opponents_pt = array( 'player1', 'player2' );
-        $opponents    = array( 'home', 'away' );
-        $stats_ref    = $statistics;
-        $league_ref   = 0;
-        foreach ( $matches as $match ) {
-            if ( 'all' === $match_source ) {
-                if ( $match->league->is_championship ) {
-                    $league_no = 1;
-                } else {
-                    $league_title = explode( ' ', $match->league->title );
-                    $league_no    = end( $league_title );
-                }
-                $age_limit    = $match->league->event->age_limit ?? 'open';
-                $rubber_order = empty( $match->league->event->reverse_rubbers ) ? 'true' : 'false';
-                $league_ref   = $league_no . '-' . $match->league->num_rubbers . '-' . $age_limit . '-' . $rubber_order;
-            } else {
-                $league_ref = 0;
-            }
-            if ( 'competition' === $match_source || 'event' === $match_source ) {
-                $key = $match->league->title;
-                if ( false === array_key_exists( $key, $this->matches ) ) {
-                    $this->matches[ $key ]                   = array();
-                    $this->matches[ $key ]['league']         = $match->league;
-                    $this->matches[ $key ]['league']->season = $match->season;
-                }
-                $this->matches[ $key ]['matches'][] = $match;
-            } else {
-                $this->matches[] = $match;
-            }
-            foreach ( $match->rubbers as $rubber ) {
-                $player_team = null;
-                $player_ref  = null;
-                $winner       = null;
-                $loser        = null;
-                if ( ! empty( $rubber->winner_id ) ) {
-                    if ( $rubber->winner_id === $match->home_team ) {
-                        $winner = 'home';
-                        $loser  = 'away';
-                    } elseif ( $rubber->winner_id === $match->away_team ) {
-                        $winner = 'away';
-                        $loser  = 'home';
-                    }
-                }
-                $match_type          = strtolower( substr( $rubber->type, 1, 1 ) );
-                $rubber_players['1'] = array();
-                if ( 'd' === $match_type ) {
-                    $rubber_players['2'] = array();
-                }
-                foreach ( $opponents as $opponent ) {
-                    foreach ( $rubber_players as $p => $rubber_player ) {
-                        if ( $rubber->players[ $opponent ][ $p ]->display_name === $this->display_name ) {
-                            $player_team = $opponent;
-                            if ( 'home' === $player_team ) {
-                                $player_ref = 'player1';
-                            } else {
-                                $player_ref = 'player2';
-                            }
-                            break 2;
-                        }
-                    }
-                }
-                if ( $winner === $player_team ) {
-                    $player_team_status = 'winner';
-                } elseif ( $loser === $player_team ) {
-                    $player_team_status = 'loser';
-                } else {
-                    $player_team_status = 'draw';
-                }
-                if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['played'][ $player_team_status ] ) ) {
-                    $stats_ref[ $league_ref ][ $rubber->title ]['played'][ $player_team_status ] = 0;
-                }
-                ++$stats_ref[ $league_ref ][ $rubber->title ]['played'][ $player_team_status ];
-                $sets = ! empty( $rubber->custom['sets'] ) ? $rubber->custom['sets'] : array();
-                foreach ( $sets as $set ) {
-                    if ( isset( $set['player1'] ) && '' !== $set['player1'] && isset( $set['player2'] ) && '' !== $set['player2'] ) {
-                        if ( $set['player1'] > $set['player2'] ) {
-                            if ( 'player1' === $player_ref ) {
-                                $stat_ref = 'winner';
-                            } else {
-                                $stat_ref = 'loser';
-                            }
-                        } elseif ( 'player1' === $player_ref ) {
-                            $stat_ref = 'loser';
-                        } else {
-                            $stat_ref = 'winner';
-                        }
-                        if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['sets'][ $stat_ref ] ) ) {
-                            $stats_ref[ $league_ref ][ $rubber->title ]['sets'][ $stat_ref ] = 0;
-                        }
-                        ++$stats_ref[ $league_ref ][ $rubber->title ]['sets'][ $stat_ref ];
-                        foreach ( $opponents_pt as $opponent ) {
-                            if ( is_numeric( $set[ $opponent ] ) ) {
-                                if ( $player_ref === $opponent ) {
-                                    if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['games']['winner'] ) ) {
-                                        $stats_ref[ $league_ref ][ $rubber->title ]['games']['winner'] = 0;
-                                    }
-                                    $stats_ref[ $league_ref ][ $rubber->title ]['games']['winner'] += $set[ $opponent ];
-                                } else {
-                                    if ( ! isset( $stats_ref[ $league_ref ][ $rubber->title ]['games']['loser'] ) ) {
-                                        $stats_ref[ $league_ref ][ $rubber->title ]['games']['loser'] = 0;
-                                    }
-                                    $stats_ref[ $league_ref ][ $rubber->title ]['games']['loser'] += $set[ $opponent ];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if ( $league_ref ) {
-            $this->statistics = $stats_ref;
-        } else {
-            $this->statistics = $stats_ref[0] ?? array();
-        }
-        return $this->matches;
+        return $this->get_player_query_service()->get_matches( $this, $grouping, $season, $match_source, $period, $type );
     }
+
     /**
      * Get player statistics function
      *
      * @param false|array $stats optional array of statistics to use.
      * @return array of statistics
      */
-    public function get_stats(false|array $stats = false ): array {
-        if ( ! $stats ) {
-            $stats = $this->statistics;
-        }
-        ksort( $stats );
-        $this->statistics           = array();
-        $this->statistics['detail'] = $stats;
-        $total_stats                = array();
-        $total_stats_sets           = array();
-        $total_stats_games          = array();
-        $stat_types                 = array( 'winner', 'loser', 'draw' );
-        foreach ( $stat_types as $stat_type ) {
-            $total_stats[ $stat_type ]       = 0;
-            $total_stats_sets[ $stat_type ]  = 0;
-            $total_stats_games[ $stat_type ] = 0;
-        }
-        $total_stats_walkover = 0;
-        foreach ( $stats as $statistics ) {
-            if ( ! empty( $statistics['played'] ) ) {
-                foreach ( $stat_types as $stat_type ) {
-                    if ( ! empty( $statistics['played'][ $stat_type ] ) ) {
-                        $total_stats[ $stat_type ] += $statistics['played'][ $stat_type ];
-                    }
-                }
-            }
-            if ( ! empty( $statistics['sets'] ) ) {
-                foreach ( $stat_types as $stat_type ) {
-                    if ( ! empty( $statistics['sets'][ $stat_type ] ) ) {
-                        $total_stats_sets[ $stat_type ] += $statistics['sets'][ $stat_type ];
-                    }
-                }
-            }
-            if ( ! empty( $statistics['games'] ) ) {
-                foreach ( $stat_types as $stat_type ) {
-                    if ( ! empty( $statistics['games'][ $stat_type ] ) ) {
-                        $total_stats_games[ $stat_type ] += $statistics['games'][ $stat_type ];
-                    }
-                }
-            }
-            if ( ! empty( $statistics['walkover'] ) ) {
-                $total_stats_walkover += $statistics['walkover'];
-            }
-        }
-        $this->statistics['total']               = new stdClass();
-        $this->statistics['total']->matches_won  = $total_stats['winner'];
-        $this->statistics['total']->matches_lost = $total_stats['loser'];
-        $this->statistics['total']->matches_tie  = $total_stats['draw'];
-        $this->statistics['total']->played       = $this->statistics['total']->matches_won + $this->statistics['total']->matches_lost + $this->statistics['total']->matches_tie;
-        if ( $this->statistics['total']->played ) {
-            $this->statistics['total']->win_pct = ceil( ( $this->statistics['total']->matches_won / $this->statistics['total']->played ) * 100 );
-        }
-        $this->statistics['total']->sets_won   = $total_stats_sets['winner'];
-        $this->statistics['total']->sets_lost  = $total_stats_sets['loser'];
-        $this->statistics['total']->games_won  = $total_stats_games['winner'];
-        $this->statistics['total']->games_lost = $total_stats_games['loser'];
-        $this->statistics['total']->walkover   = empty( $total_stats_walkover ) ? '' : $total_stats_walkover;
-        return $this->statistics;
+    public function get_stats( false|array $stats = false ): array {
+        return $this->get_player_stats_service()->get_stats( $this, $stats );
     }
+
     /**
      * Get competitions for player function
      *
      * @param array|string $args search parameters.
+     * @param Competition_Service|null $competition_service
      * @return array
      */
-    public function get_competitions( array|string $args = array(), ?\Racketmanager\Services\Competition_Service $competition_service = null ): array {
-        global $wpdb, $racketmanager;
-        if ( null === $competition_service && isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
-            $competition_service = $racketmanager->container->get( 'competition_service' );
-        }
-        $defaults     = array(
-            'type'   => false,
-            'season' => false,
-        );
-        $args         = array_merge( $defaults, (array) $args );
-        $type         = $args['type'];
-        $season       = $args['season'];
-        $search_terms = array();
-        if ( $type ) {
-            $search_terms[] = $wpdb->prepare( 'c.`type` = %s', $type );
-        }
-        if ( $season ) {
-            $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-        }
-        $sql          = "SELECT c.id, c.name, m.season FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e, $wpdb->racketmanager_competitions c WHERE `player_id` = $this->id AND rp.rubber_id = r.id AND r.match_id = m.id AND m.league_id = l.id AND l.event_id = e.id AND e.competition_id = c.id";
-        $sql         .= Util::search_string( $search_terms );
-        $sql         .= " GROUP BY c.id, c.name, m.season";
-        $sql         .= " ORDER BY m.season DESC, c.name ASC";
-        $competitions = wp_cache_get( md5( $sql ), 'player_competitions' );
-        if ( ! $competitions ) {
-            $competitions = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
-            wp_cache_set( md5( $sql ), $competitions, 'player_competitions' );
-        }
-        $i = 0;
-        foreach ( $competitions as $competition ) {
-            if ( $competition_service ) {
-                $competition_dtl = $competition_service->get_competition( (int) $competition->id );
-            } else {
-                $competition_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_repository' )
-                    ? $racketmanager->container->get( 'competition_repository' )
-                    : new \Racketmanager\Repositories\Competition_Repository();
-                $competition_dtl = $competition_repository->find_by_id( (int) $competition->id );
-            }
-            if ( $competition_dtl ) {
-                $competition_dtl->season = $competition->season;
-                if ( isset( $competition_dtl->seasons[ $competition->season ] ) ) {
-                    $competition_season          = $competition_dtl->seasons[ $competition->season ];
-                    $competition_dtl->date_start = $competition_season['date_start'] ?? null;
-                    $competition_dtl->date_end   = $competition_season['date_end'] ?? null;
-                    $competitions[ $i ]          = $competition_dtl;
-                } else {
-                    unset( $competitions [ $i ] );
-                }
-            }
-            ++$i;
-        }
-        return $competitions;
+    public function get_competitions( array|string $args = array(), ?Competition_Service $competition_service = null ): array {
+        return $this->get_player_query_service()->get_competitions( $this, $args, $competition_service );
     }
 
     /**
@@ -1111,96 +854,9 @@ class Player {
      * @return array of statistics
      */
     public function get_career_stats(): array {
-        $result         = null;
-        $types          = array( 'S', 'D', 'X' );
-        $stat_types     = array( 'win', 'loss', 'tie' );
-        $team_matches   = $this->get_stats_teams();
-        $player_matches = $this->get_stats_players();
-        $matches        = array_merge( $team_matches, $player_matches );
-        $seasons        = array();
-        foreach ( $matches as $match ) {
-            if ( 'teams' === $match->stat_type ) {
-                if ( $match->winner_id ) {
-                    if ( 'home' === $match->player_team ) {
-                        if ( $match->winner_id === $match->home_team ) {
-                            $result = 'win';
-                        } elseif ( $match->winner_id === $match->away_team ) {
-                            $result = 'loss';
-                        } else {
-                            $result = 'tie';
-                        }
-                    } elseif ( 'away' === $match->player_team ) {
-                        if ( $match->winner_id === $match->away_team ) {
-                            $result = 'win';
-                        } elseif ( $match->winner_id === $match->home_team ) {
-                            $result = 'loss';
-                        } else {
-                            $result = 'tie';
-                        }
-                    }
-                }
-            } elseif ( 'players' === $match->stat_type ) {
-                if ( $match->winner_id ) {
-                    if ( $match->winner_id === $match->team_id ) {
-                        $result = 'win';
-                    } elseif ( $match->loser_id === $match->team_id ) {
-                        $result = 'loss';
-                    } else {
-                        $result = 'tie';
-                    }
-                }
-            }
-            if ( 'XD' === $match->type || 'LD' === $match->type ) {
-                $type = 'X';
-            } else {
-                $type = substr( $match->type, 1, 1 );
-            }
-            $season = $match->season;
-            if ( false === array_key_exists( $season, $seasons ) ) {
-                $seasons[ $season ] = array();
-                foreach ( $types as $match_type ) {
-                    $seasons [ $season ][ $match_type ] = array();
-                    foreach ( $stat_types as $stat_type ) {
-                        $seasons [ $season ][ $match_type ][ $stat_type ] = 0;
-                    }
-                }
-            }
-            if ( false === array_key_exists( $type, $seasons[ $season ] ) ) {
-                $seasons[ $season ][ $type ] = array();
-            }
-            if ( false === array_key_exists( $result, $seasons[ $season ][ $type ] ) ) {
-                $seasons[ $season ][ $type ][ $result ] = 0;
-            }
-            ++$seasons[ $season ][ $type ][ $result ];
-        }
-        krsort( $seasons );
-        $totals = array();
-        foreach ( $stat_types as $stat_type ) {
-            $totals['total'][ $stat_type ] = 0;
-        }
-        foreach ( $seasons as $season => $types ) {
-            unset( $seasons[ $season ] );
-            $seasons[ $season ]['breakdown'] = $types;
-            $seasons[ $season ]['total']     = array();
-            foreach ( $stat_types as $stat_type ) {
-                $seasons[ $season ]['total'][ $stat_type ] = 0;
-            }
-            foreach ( $types as $type => $results ) {
-                foreach ( $results as $result => $count ) {
-                    if ( ! isset( $totals['breakdown'][ $type ][ $result ] ) ) {
-                        $totals['breakdown'][ $type ][ $result ] = 0;
-                    }
-                    $totals['breakdown'][ $type ][ $result ] += $count;
-                    $totals['total'][ $result ]              += $count;
-                    $seasons[ $season ]['total'][ $result ]  += $count;
-                }
-            }
-        }
-        $statistics            = array();
-        $statistics['totals']  = $totals;
-        $statistics['seasons'] = $seasons;
-        return $statistics;
+        return $this->get_player_stats_service()->get_career_stats( $this );
     }
+
     /**
      * Get stats for teams for player function
      *
@@ -1208,29 +864,9 @@ class Player {
      * @return array
      */
     public function get_stats_teams( array|string $args = array() ): array {
-        global $wpdb;
-        $defaults     = array(
-            'season' => false,
-        );
-        $args         = array_merge( $defaults, (array) $args );
-        $season       = $args['season'];
-        $search_terms = array();
-        if ( $season ) {
-            $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-        }
-        $search  = Util::search_string( $search_terms );
-        $sql     = "SELECT 'teams' as `stat_type`, m.`season`, e.`type` ,rp.`player_team`, m.`home_team`, m.`away_team`, r.`winner_id`, r.`loser_id` FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE rp.`player_id` = $this->ID AND rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
-        $sql    .= $search . " ORDER BY m.`season`, e.`type`";
-        $matches = wp_cache_get( md5( $sql ), 'player_stats_teams' );
-        if ( ! $matches ) {
-            $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
-            wp_cache_set( md5( $sql ), $matches, 'player_stats_teams' );
-        }
-        return $matches;
+        return $this->get_player_query_service()->get_stats_teams( $this, $args );
     }
+
     /**
      * Get stats for players for player function
      *
@@ -1238,28 +874,7 @@ class Player {
      * @return array
      */
     public function get_stats_players( array|string $args = array() ): array {
-        global $wpdb;
-        $defaults     = array(
-            'season' => false,
-        );
-        $args         = array_merge( $defaults, (array) $args );
-        $season       = $args['season'];
-        $search_terms = array();
-        if ( $season ) {
-            $search_terms[] = $wpdb->prepare( 'm.`season` = %s', $season );
-        }
-        $search  = Util::search_string( $search_terms );
-        $sql     = "SELECT 'players' as `stat_type`,m.`season`, e.`type` ,tp.`team_id`, m.`home_team`, m.`away_team`, m.`winner_id`, m.`loser_id` FROM $wpdb->racketmanager_team_players tp, $wpdb->racketmanager_teams t,$wpdb->racketmanager_matches m, $wpdb->racketmanager l, $wpdb->racketmanager_events e WHERE tp.`player_id` = $this->ID AND tp.`team_id` = t.`id` AND (m.`home_team` = t.`id` OR m.`away_team` = t.`id`) AND m.`league_id` = l.`id` AND l.`event_id` = e.`id` ";
-        $sql    .= $search . " ORDER BY m.`season`, e.`type`";
-        $matches = wp_cache_get( md5( $sql ), 'player_stats_players' );
-        if ( ! $matches ) {
-            $matches = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            );
-            wp_cache_set( md5( $sql ), $matches, 'player_stats_players' );
-        }
-        return $matches;
+        return $this->get_player_query_service()->get_stats_players( $this, $args );
     }
     /**
      * Set player wtn function

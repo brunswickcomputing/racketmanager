@@ -8,6 +8,7 @@
 namespace Racketmanager;
 
 /** @var object $event */
+$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 if ( empty( $event_club ) ) {
     ?>
     <div class="module module--card">
@@ -33,7 +34,7 @@ if ( empty( $event_club ) ) {
                         </div>
                         <?php
                         foreach ( $event->clubs as $club ) {
-                            $club_link = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/club/' . seo_url( $club->shortcode ) . '/';
+                            $club_link = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/club/' . seo_url( $club->shortcode ) . '/';
                             ?>
                             <div class="row mb-2 row-list">
                                 <div class="col-6" name="<?php esc_html_e( 'Club', 'racketmanager' ); ?>">
@@ -162,12 +163,12 @@ if ( empty( $event_club ) ) {
                                 ?>
                                 <div class="row mb-2 row-list">
                                     <div class="col-6">
-                                        <a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
+                                        <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/team/<?php echo esc_attr( seo_url( $team->name ) ); ?>/">
                                             <?php echo esc_html( $team->name ); ?>
                                         </a>
                                     </div>
                                     <div class="col-5">
-                                        <a href="/<?php echo esc_attr( $event->competition->type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/">
+                                        <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $team->league_title ) ); ?>/<?php echo esc_attr( $event->current_season['name'] ); ?>/">
                                             <?php echo esc_html( $team->league_title ); ?>
                                         </a>
                                     </div>
@@ -195,7 +196,7 @@ if ( empty( $event_club ) ) {
                                 if ( intval( $player->id ) === get_current_user_id() ) {
                                     $selected_player = true;
                                 }
-                                $player_link = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
+                                $player_link = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/' . $event->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
                                 ?>
                                 <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                     <div class="media">

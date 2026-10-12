@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Championship;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
@@ -49,7 +50,7 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 			'final'               => '',
 		];
 
-		$fixture = new Fixture( $fixture_data );
+		$fixture = Fixture_Factory::from_object( $fixture_data );
 
 		$league = $this->getMockBuilder( League::class )
 			->disableOriginalConstructor()

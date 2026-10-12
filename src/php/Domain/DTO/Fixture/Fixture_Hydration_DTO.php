@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Domain\DTO\Fixture;
 
+use InvalidArgumentException;
+
 /**
  * Data Transfer Object for hydrating a Fixture entity from raw database row or array.
  */
@@ -94,34 +96,30 @@ readonly class Fixture_Hydration_DTO {
 	 * @return self
 	 */
 	public static function from_object( object $data ): self {
-		$custom = $data->custom ?? null;
-		if ( is_string( $custom ) && function_exists( 'maybe_unserialize' ) ) {
-			$custom = maybe_unserialize( $custom );
-		}
-		if ( ! is_array( $custom ) ) {
-			$custom = is_null( $custom ) ? null : (array) $custom;
+		$custom = self::unserialize_value( $data->custom ?? null, 'custom' );
+		if ( is_string( $custom ) && '' === trim( $custom ) ) {
+			$custom = array();
+		} elseif ( null !== $custom && ! is_array( $custom ) ) {
+			$custom = (array) $custom;
 		}
 
-		$comments = $data->comments ?? null;
-		if ( is_string( $comments ) && function_exists( 'maybe_unserialize' ) ) {
-			$comments = maybe_unserialize( $comments );
-		}
+		$comments = self::unserialize_value( $data->comments ?? null, 'comments' );
 		if ( ! is_array( $comments ) && ! is_null( $comments ) ) {
-			$comments = [ 'legacy' => $comments ];
+			$comments = array( 'legacy' => $comments );
 		}
 
 		return new self(
 			id: isset( $data->id ) ? (int) $data->id : null,
-			fixture_title: isset( $data->fixture_title ) ? (string) $data->fixture_title : ( $data->title ?? null ),
-			link: $data->link ?? null,
-			group: $data->group ?? null,
-			date: $data->date ?? null,
-			date_original: $data->date_original ?? null,
+			fixture_title: isset( $data->fixture_title ) ? (string) $data->fixture_title : ( isset( $data->title ) ? (string) $data->title : null ),
+			link: isset( $data->link ) ? (string) $data->link : null,
+			group: isset( $data->group ) ? (string) $data->group : null,
+			date: isset( $data->date ) ? (string) $data->date : null,
+			date_original: isset( $data->date_original ) ? (string) $data->date_original : null,
 			home_team: isset( $data->home_team ) ? (string) $data->home_team : null,
 			away_team: isset( $data->away_team ) ? (string) $data->away_team : null,
 			match_day: isset( $data->match_day ) ? (int) $data->match_day : null,
-			location: $data->location ?? null,
-			host: $data->host ?? null,
+			location: isset( $data->location ) ? (string) $data->location : null,
+			host: isset( $data->host ) ? (string) $data->host : null,
 			league_id: isset( $data->league_id ) ? (int) $data->league_id : null,
 			season: isset( $data->season ) ? (string) $data->season : null,
 			home_points: isset( $data->home_points ) ? (string) $data->home_points : null,
@@ -136,18 +134,71 @@ readonly class Fixture_Hydration_DTO {
 			home_points_tie: isset( $data->home_points_tie ) ? (float) $data->home_points_tie : null,
 			away_points_tie: isset( $data->away_points_tie ) ? (float) $data->away_points_tie : null,
 			post_id: isset( $data->post_id ) ? (int) $data->post_id : null,
-			final: $data->final ?? null,
+			final: isset( $data->final ) ? (string) $data->final : ( isset( $data->final_round ) ? (string) $data->final_round : null ),
 			custom: $custom,
 			updated_user: isset( $data->updated_user ) ? (int) $data->updated_user : null,
-			updated: $data->updated ?? null,
-			date_result_entered: $data->date_result_entered ?? null,
+			updated: isset( $data->updated ) ? (string) $data->updated : null,
+			date_result_entered: isset( $data->date_result_entered ) ? (string) $data->date_result_entered : null,
 			confirmed: isset( $data->confirmed ) ? (string) $data->confirmed : null,
 			home_captain: isset( $data->home_captain ) ? (int) $data->home_captain : null,
 			away_captain: isset( $data->away_captain ) ? (int) $data->away_captain : null,
 			comments: $comments,
-			updated_by: $data->updated_by ?? null,
-			start_time: $data->start_time ?? null,
+			updated_by: isset( $data->updated_by ) ? (string) $data->updated_by : null,
+			start_time: isset( $data->start_time ) ? (string) $data->start_time : null,
 			rubbers: isset( $data->rubbers ) && is_array( $data->rubbers ) ? $data->rubbers : null
 		);
+	}
+
+	/**
+	 * Unserialize a persisted field, using WordPress when available, otherwise PHP unserialize.
+	 *
+	 * @param mixed  $value
+	 * @param string $field
+	 * @return mixed
+	 */
+	private static function unserialize_value( mixed $value, string $field ): mixed {
+		if ( ! is_string( $value ) ) {
+			return $value;
+		}
+		if ( ! self::is_serialized( $value ) ) {
+			return $value;
+		}
+		$unserialized = @unserialize( $value, array( 'allowed_classes' => false ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.serialize_unserialize
+		if ( false === $unserialized && 'b:0;' !== $value ) {
+			throw new InvalidArgumentException( sprintf( 'Unable to unserialize Fixture hydration field "%s".', $field ) );
+		}
+		return $unserialized;
+	}
+
+	/**
+	 * Detect a PHP serialized payload without depending on WordPress.
+	 *
+	 * @param string $data
+	 * @return bool
+	 */
+	private static function is_serialized( string $data ): bool {
+		$data = trim( $data );
+		if ( 'N;' === $data ) {
+			return true;
+		}
+		if ( strlen( $data ) < 4 || ':' !== $data[1] ) {
+			return false;
+		}
+		$last = substr( $data, -1 );
+		if ( ';' !== $last && '}' !== $last ) {
+			return false;
+		}
+
+		return in_array( $data[0], array( 'a', 'O', 's', 'b', 'i', 'd' ), true );
+	}
+
+	/**
+	 * Create from an associative array.
+	 *
+	 * @param array $data
+	 * @return self
+	 */
+	public static function from_array( array $data ): self {
+		return self::from_object( (object) $data );
 	}
 }

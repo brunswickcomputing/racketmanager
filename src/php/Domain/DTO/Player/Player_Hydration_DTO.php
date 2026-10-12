@@ -133,16 +133,16 @@ readonly class Player_Hydration_DTO {
 			year_of_birth: $year_of_birth,
 			age: isset( $data->age ) ? (int) $data->age : null,
 			contactno: isset( $data->contactno ) ? (string) $data->contactno : null,
-			removed_date: $data->removed_date ?? null,
+			removed_date: isset( $data->removed_date ) ? (string) $data->removed_date : null,
 			removed_user: isset( $data->removed_user ) ? (int) $data->removed_user : null,
 			locked: $data->locked ?? null,
-			locked_date: $data->locked_date ?? null,
+			locked_date: isset( $data->locked_date ) ? (string) $data->locked_date : null,
 			locked_user: isset( $data->locked_user ) ? (string) $data->locked_user : null,
-			locked_user_name: $data->locked_user_name ?? null,
+			locked_user_name: isset( $data->locked_user_name ) ? (string) $data->locked_user_name : null,
 			system_record: isset( $data->system_record ) ? (string) $data->system_record : null,
 			matches: isset( $data->matches ) && is_array( $data->matches ) ? $data->matches : [],
 			statistics: isset( $data->statistics ) && is_array( $data->statistics ) ? $data->statistics : [],
-			link: $data->link ?? null,
+			link: isset( $data->link ) ? (string) $data->link : null,
 			opt_ins: $data->opt_ins ?? null,
 			wtn: isset( $data->wtn ) && is_array( $data->wtn ) ? $data->wtn : [],
 			user_pass: isset( $data->user_pass ) ? (string) $data->user_pass : null,
@@ -169,5 +169,15 @@ readonly class Player_Hydration_DTO {
 			entry: isset( $data->entry ) && is_array( $data->entry ) ? $data->entry : [],
 			tournament_entry: isset( $data->tournament_entry ) && is_object( $data->tournament_entry ) ? $data->tournament_entry : null
 		);
+	}
+
+	/**
+	 * Create from an associative array.
+	 *
+	 * @param array $data
+	 * @return self
+	 */
+	public static function from_array( array $data ): self {
+		return self::from_object( (object) $data );
 	}
 }

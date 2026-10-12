@@ -44,6 +44,8 @@ use Racketmanager\Repositories\Interfaces\Player_Error_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Repositories\Player_Error_Repository;
+use Racketmanager\Repositories\Result_Repository;
+use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Repositories\Results_Checker_Repository;
 use Racketmanager\Repositories\Results_Report_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
@@ -62,7 +64,9 @@ use Racketmanager\Services\League_Service;
 use Racketmanager\Presenters\Notification_Presenter;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Notify_Service;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Export\Export_Service;
@@ -74,6 +78,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Admin\Controllers\Tournament_Admin_Controller;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Fixture\Fixture_Lifecycle_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
@@ -139,6 +144,7 @@ final class Container_Bootstrap {
         $c->set( 'rubber_repository', fn() => new Rubber_Repository() );
         $c->set( 'results_checker_repository', fn() => new Results_Checker_Repository() );
         $c->set( 'results_report_repository', fn() => new Results_Report_Repository() );
+        $c->set( 'result_repository', fn(): Result_Repository_Interface => new Result_Repository() );
     }
 
     private static function register_external_clients( Simple_Container $c ): void {
@@ -154,6 +160,19 @@ final class Container_Bootstrap {
     private static function register_core_services( Simple_Container $c, RacketManager $app ): void {
         $c->set( 'racketmanager_app', fn() => $app );
         $c->set( 'settings_service', fn() => new Settings_Service( $app->get_options() ) );
+
+        $c->set( 'player_query_service', function ( Simple_Container $c ) {
+            global $wpdb;
+            if ( ! $wpdb instanceof \wpdb ) {
+                throw new \RuntimeException( 'Player_Query_Service requires a wpdb instance.' );
+            }
+
+            return new Player_Query_Service( $wpdb, $c->get( 'competition_repository' ) );
+        } );
+
+        $c->set( 'player_stats_service', function ( Simple_Container $c ) {
+            return new Player_Stats_Service( $c->get( 'player_query_service' ) );
+        } );
 
         $c->set( 'player_service', function ( Simple_Container $c ) use ( $app ) {
             return new Player_Service( $app, $c->get( 'player_repository' ), $c->get( 'player_error_repository' ), $c->get( 'club_role_repository' ), $c->get( 'wtn_api_client' ), $c->get( 'league_team_repository' ), $c->get( 'club_repository' ), $c->get( 'registration_repository' ), );
@@ -300,6 +319,14 @@ final class Container_Bootstrap {
             return new Fixture_Maintenance_Service( $service_provider, self::get_repository_provider( $c ), $c->get( 'fixture_result_manager' ) );
         } );
 
+        $c->set( 'fixture_lifecycle_service', function ( Simple_Container $c ) {
+            return new Fixture_Lifecycle_Service(
+                self::get_repository_provider( $c ),
+                $c->get( 'fixture_maintenance_service' ),
+                $c->get( 'notification_service' )
+            );
+        } );
+
         $c->set( 'domain_fixture_detail_service', function ( Simple_Container $c ) {
             return new Domain_Fixture_Detail_Service(
                 $c->get( 'league_repository' ),
@@ -393,6 +420,7 @@ final class Container_Bootstrap {
             $c->get( 'rubber_repository' ),
             $c->get( 'results_checker_repository' ),
             $c->get( 'results_report_repository' ),
+            $c->get( 'result_repository' ),
             $c->get( 'fixture_repository' ),
             $c->get( 'club_repository' )
         );

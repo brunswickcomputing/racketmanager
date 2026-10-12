@@ -32,7 +32,8 @@ if ( $vm ) {
         <div class="mb-3">
             <?php
             if ( $league->championship->is_consolation ) {
-                $link_ref = 'admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=teams&amp;league_id=' . $league->id . '&amp;season=' . $season;
+                $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+                $link_ref = 'admin.php?page=racketmanager-' . $competition_type . 's&amp;view=teams&amp;league_id=' . $league->id . '&amp;season=' . $season;
                 if ( empty( $tournament ) ) {
                     $link_ref .= '&amp;competition_id=' . $league->event->competition->id;
                 } else {

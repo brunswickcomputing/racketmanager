@@ -207,9 +207,10 @@ if ( ! empty( $match->get_winner_id() ) ) {
                                                         <?php
                                                         if ( ! empty( $rubber->players[ $opponent ][ $player_number ] ) ) {
                                                             $player_detail = $rubber->players[ $opponent ][ $player_number ];
+                                                            $competition_type = $dto->competition->type instanceof \BackedEnum ? $dto->competition->type->value : (string) ( $dto->competition->type ?? '' );
                                                             if ( empty( $player_detail->system_record ) ) {
                                                                 ?>
-                                                                <a href="/<?php echo esc_attr( $dto->competition->type ); ?>s/<?php echo esc_attr( seo_url( $dto->event->name ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
+                                                                <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $dto->event->name ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/player/<?php echo esc_attr( seo_url( $player_detail->display_name ) ); ?>/">
                                                                 <?php
                                                             }
                                                             ?>

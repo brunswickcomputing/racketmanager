@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Integration\Services\Fixture;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
@@ -205,7 +206,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $home_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $home_league_team->is_withdrawn = true;
@@ -231,7 +232,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $home_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $home_league_team->is_withdrawn = false;
@@ -257,7 +258,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $home_league_team = $this->createMock(\Racketmanager\Domain\Competition\League_Team::class);
         $home_league_team->is_withdrawn = false;
@@ -284,7 +285,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_points = '3';
         $fixture_data->away_points = '1';
         $fixture_data->winner_id = 10;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->id = 456;
@@ -327,7 +328,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture_data->final = 'R1';
         $fixture_data->confirmed = 'Y';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->id = 789;
@@ -368,7 +369,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->league_id = 789;
         $fixture_data->season = '2026';
         $fixture_data->final = 'R1';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->id = 789;
@@ -414,7 +415,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->id = 123;
         $fixture_data->league_id = 456;
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->id = 456;
@@ -458,7 +459,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->away_team = '200';
         $fixture_data->stage_id = 1;
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
@@ -547,7 +548,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->stage_id = 1;
         $fixture_data->season = '2026';
         $fixture_data->date_result_entered = null;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
@@ -632,7 +633,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
         $fixture_data->date_result_entered = null;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(Tournament_Mock::class)
                        ->disableOriginalConstructor()
@@ -669,7 +670,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->confirmed = null;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
@@ -719,7 +720,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
@@ -783,7 +784,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->status = 0;
         $fixture_data->confirmed = null;
         $fixture_data->custom = null;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
@@ -817,7 +818,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->league_id = 456;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);
@@ -874,7 +875,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->id = 123;
         $fixture_data->league_id = 456;
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League_Mock::class)
                        ->disableOriginalConstructor()
@@ -947,7 +948,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     public function test_update_legs(): void {
         $fixture_data = new stdClass();
         $fixture_data->id = 123;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $this->fixture_repository->expects( $this->once() )
                                  ->method( 'save' )
@@ -968,7 +969,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->home_points = '8.0';
         $fixture_data->away_points = '2.0';
         $fixture_data->leg         = 1;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $this->fixture_repository->expects( $this->once() )
                                  ->method( 'save' )
@@ -992,7 +993,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->away_points = '2.0';
         $fixture_data->leg         = 2;
         $fixture_data->linked_match = 456;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $linked_data = new stdClass();
         $linked_data->id          = 456;
@@ -1001,7 +1002,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $linked_data->home_points = '5.0';
         $linked_data->away_points = '1.0';
         $linked_data->winner_id   = 20;
-        $linked_fixture = new Fixture( $linked_data );
+        $linked_fixture = Fixture_Factory::from_object( $linked_data );
 
         $this->fixture_repository->expects( $this->exactly( 1 ) )
                                  ->method( 'find_by_id' )
@@ -1026,7 +1027,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $this->assertTrue( $response->has_outcome( Fixture_Update_Status::TIE_UPDATED ) );
     }
     public function test_confirm_result_manages_report(): void {
-        $fixture = new Fixture( (object) [ 'id' => 123, 'league_id' => 1, 'home_points' => 2, 'away_points' => 1, 'confirmed' => 'Y' ] );
+        $fixture = Fixture_Factory::from_object( (object) [ 'id' => 123, 'league_id' => 1, 'home_points' => 2, 'away_points' => 1, 'confirmed' => 'Y' ] );
         
         $this->fixture_maintenance_service->expects( $this->once() )
             ->method( 'delete_result_report' )
@@ -1051,7 +1052,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->id = 123;
         $fixture_data->league_id = 1;
         $fixture_data->home_captain = null;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createStub( League::class );
         $this->league_service->method( 'get_league' )->willReturn( $league );
@@ -1077,7 +1078,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     }
 
     public function test_handle_team_result_confirmation_fails_when_no_option_selected(): void {
-        $fixture = new Fixture((object)[
+        $fixture = Fixture_Factory::from_object((object)[
             'id' => 1,
             'league_id' => 10,
             'home_team' => 101,
@@ -1098,7 +1099,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     }
 
     public function test_handle_team_result_confirmation_fails_when_challenge_no_comments(): void {
-        $fixture = new Fixture((object)[
+        $fixture = Fixture_Factory::from_object((object)[
             'id' => 1,
             'league_id' => 10,
             'home_team' => 101,
@@ -1126,7 +1127,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $fixture_data->id = 1;
         $fixture_data->league_id = 10;
         $fixture_data->away_captain = null;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'standard' );

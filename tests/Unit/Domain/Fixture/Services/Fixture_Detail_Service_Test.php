@@ -7,6 +7,7 @@ use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Services\Fixture_Detail_Service;
+use Racketmanager\Domain\Player_Factory;
 
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -287,8 +288,8 @@ class Fixture_Detail_Service_Test extends TestCase {
             [ 20, $away_team ],
         ] );
 
-        $player_m = new \Racketmanager\Domain\Player( (object) [ 'display_name' => 'Male Player', 'ID' => 1001, 'year_of_birth' => null ] );
-        $player_f = new \Racketmanager\Domain\Player( (object) [ 'display_name' => 'Female Player', 'ID' => 2001, 'year_of_birth' => null ] );
+        $player_m = Player_Factory::from_object( (object) [ 'display_name' => 'Male Player', 'ID' => 1001, 'year_of_birth' => null ] );
+        $player_f = Player_Factory::from_object( (object) [ 'display_name' => 'Female Player', 'ID' => 2001, 'year_of_birth' => null ] );
 
         $this->player_repository->method( 'find_club_players_with_details' )->willReturnCallback( function( $club_id, $status, $gender ) {
             if ( $gender === 'm' ) {

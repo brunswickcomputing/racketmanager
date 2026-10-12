@@ -55,4 +55,51 @@ class Player_Factory_Test extends TestCase {
 		$this->assertSame( 'Smith', $player->get_surname() );
 		$this->assertSame( 'F', $player->get_gender() );
 	}
+
+	public function test_factory_derives_link_with_btm_and_locked_user_name(): void {
+		$player = Player_Factory::from_array(
+			array(
+				'ID'           => '100',
+				'display_name' => 'Jane Smith',
+				'btm'          => '87654321',
+				'locked_user'  => '17',
+			)
+		);
+
+		$this->assertSame( '/player/jane-smith/87654321/', $player->link );
+		$this->assertSame( 'User 17', $player->locked_user_name );
+	}
+
+	public function test_factory_sets_empty_locked_user_name_without_locked_user(): void {
+		$player = Player_Factory::from_array( array( 'ID' => '101', 'display_name' => 'No Lock' ) );
+
+		$this->assertSame( '', $player->locked_user_name );
+		$this->assertSame( '/player/no-lock/', $player->link );
+	}
+
+	public function test_create_player_with_null_display_name(): void {
+		$dto = new Player_Hydration_DTO(
+			id: 102,
+			display_name: null
+		);
+
+		$player = Player_Factory::create_from_dto( $dto );
+
+		$this->assertInstanceOf( Player::class, $player );
+		$this->assertNull( $player->fullname );
+		$this->assertNull( $player->display_name );
+		$this->assertSame( '', $player->get_fullname() );
+		$this->assertSame( '', $player->get_name() );
+		$this->assertNull( $player->team );
+		$this->assertNull( $player->status );
+	}
+
+	public function test_from_empty_array(): void {
+		$player = Player_Factory::from_array( array() );
+
+		$this->assertInstanceOf( Player::class, $player );
+		$this->assertNull( $player->get_id() );
+		$this->assertNull( $player->fullname );
+		$this->assertSame( '', $player->get_fullname() );
+	}
 }

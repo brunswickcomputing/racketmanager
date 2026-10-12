@@ -117,9 +117,10 @@ if ( $vm ) {
         </thead>
         <tbody id="the-list-standings" class="lm-form-table standings-table <?php echo ( 'manual' === $league->event->competition->settings['team_ranking'] ) ? 'sortable' : null ?>">
             <?php
+            $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
             foreach ( $teams as $i => $team ) {
                 $class = null;
-                $team_link = '/wp-admin/admin.php?page=racketmanager-' . $league->event->competition->type . 's&amp;view=team&amp;league_id=' . $league->id . '&amp;edit=' . $team->id;
+                $team_link = '/wp-admin/admin.php?page=racketmanager-' . $competition_type . 's&amp;view=team&amp;league_id=' . $league->id . '&amp;edit=' . $team->id;
                 if ( $league->is_championship ) {
                    if ( $i < $league->championship->num_seeds ) {
                        $class = 'seeded';

@@ -12,8 +12,8 @@ namespace Racketmanager\Admin;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
@@ -220,7 +220,7 @@ class Admin_Import extends Admin_Display {
      */
     private function import_fixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
         $league          = get_league( $league_id );
-        $fixture_service = new Fixture_Service( new Repository_Provider(), new Service_Provider() );
+        $fixture_service = $this->get_fixture_service();
         $i               = 0;
         $x               = 0;
         foreach ( $contents as $record ) {
@@ -351,5 +351,15 @@ class Admin_Import extends Admin_Display {
         $_POST['email']         = $line[4] ?? '';
         $_POST['contactno']     = $line[5] ?? '';
         $_POST['year_of_birth'] = $line[6] ?? '';
+    }
+
+    /**
+     * Resolve Fixture_Service instance from container or provider.
+     */
+    private function get_fixture_service(): Fixture_Service {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_service' )
+            ? $racketmanager->container->get( 'fixture_service' )
+            : new Fixture_Service( new Repository_Provider(), new Service_Provider() );
     }
 }

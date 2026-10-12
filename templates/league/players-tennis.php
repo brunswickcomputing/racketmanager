@@ -62,13 +62,14 @@ if ( ! empty( $league->player ) ) {
                     ?>
                     <ol class="list list--bordered list--count">
                         <?php
+                        $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
                         foreach ( $league->players as $player ) {
                             $selected_player = false;
                             if ( intval( $player->id ) === get_current_user_id() ) {
                                 $selected_player = true;
                             }
-                            $player_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
-                            $team_link   = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/team/' . seo_url( $player->team->title ) . '/';
+                            $player_link = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/player/' . seo_url( $player->get_fullname() ) . '/';
+                            $team_link   = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'] . '/team/' . seo_url( $player->team->title ) . '/';
                             ?>
                             <li class="list__item <?php echo empty( $selected_player ) ? null : 'is-selected'; ?>">
                                 <div class="media">

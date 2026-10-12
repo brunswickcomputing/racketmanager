@@ -22,7 +22,8 @@ use function set_query_var;
 
 $post_id = $wp_query->post->ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 /** @var object $league */
-$pagename  = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/';
+$competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+$pagename  = '/' . $competition_type . '/' . seo_url( $league->title ) . '/';
 $archive   = true;
 $match_day = get_query_var( 'match_day' );
 if ( '0' === $match_day ) {
@@ -84,7 +85,7 @@ if ( $league->event->is_box ) {
     $season_title     = __( 'Season', 'racketmanager' );
     $season_selection = __( 'Seasons', 'racketmanager' );
 }
-$image = match ($league->event->competition->type) {
+$image = match ($competition_type) {
     'league'     => 'assets/icons/bootstrap-icons.svg#table',
     'cup'        => 'assets/icons/bootstrap-icons.svg#trophy-fill',
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',
@@ -108,7 +109,7 @@ $image = match ($league->event->competition->type) {
                             ?>
                             <small class="media__subheading">
                                 <span class="nav--link">
-                                    <a href="/<?php echo esc_html( seo_url( $league->event->competition->type ) ); ?>s/<?php echo esc_html( seo_url( $league->event->name ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/">
+                                    <a href="/<?php echo esc_html( seo_url( $competition_type ) ); ?>s/<?php echo esc_html( seo_url( $league->event->name ) ); ?>/<?php echo esc_html( $league->current_season['name'] ); ?>/">
                                         <span class="nav-link__value">
                                             <?php echo esc_html( $league->event->name ); ?>
                                         </span>
@@ -207,7 +208,7 @@ $image = match ($league->event->competition->type) {
                                 if ( $option['available'] ) {
                                     ?>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-name="<?php echo esc_attr( seo_url( $league->title ) ); ?>" data-competition-type="<?php echo esc_attr( $league->event->competition->type ); ?>"><?php echo esc_attr( $option['description'] ); ?></button>
+                                        <button class="nav-link tabData <?php echo $option['selected'] ? 'active' : null; ?>" id="<?php echo esc_attr( $option['name'] ); ?>-tab" data-bs-toggle="pill" data-bs-target="#<?php echo esc_attr( $option['name'] ); ?>" type="button" role="tab" aria-controls="<?php echo esc_attr( $option['name'] ); ?>" aria-selected="<?php echo esc_attr( $option['selected'] ); ?>" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-name="<?php echo esc_attr( seo_url( $league->title ) ); ?>" data-competition-type="<?php echo esc_attr( $competition_type ); ?>"><?php echo esc_attr( $option['description'] ); ?></button>
                                     </li>
                                     <?php
                                 }

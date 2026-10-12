@@ -103,6 +103,55 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'home_url' ) ) {
+        function home_url( string $path = '', ?string $scheme = null ): string {
+            return 'https://example.test' . ( $path ? '/' . ltrim( $path, '/' ) : '' );
+        }
+    }
+
+    if ( ! function_exists( 'trailingslashit' ) ) {
+        function trailingslashit( string $value ): string {
+            return rtrim( $value, '/\\' ) . '/';
+        }
+    }
+
+    if ( ! function_exists( 'shortcode_atts' ) ) {
+        function shortcode_atts( array $pairs, $atts, string $shortcode = '' ): array {
+            $atts = (array) $atts;
+            $out  = array();
+            foreach ( $pairs as $name => $default ) {
+                if ( array_key_exists( $name, $atts ) ) {
+                    $out[ $name ] = $atts[ $name ];
+                } else {
+                    $out[ $name ] = $default;
+                }
+            }
+            return $out;
+        }
+    }
+
+    if ( ! function_exists( 'get_stylesheet_directory' ) ) {
+        function get_stylesheet_directory(): string {
+            return '';
+        }
+    }
+
+    if ( ! function_exists( 'get_template_directory' ) ) {
+        function get_template_directory(): string {
+            return '';
+        }
+    }
+
+    if ( ! function_exists( 'wp_nonce_field' ) ) {
+        function wp_nonce_field( $action = -1, $name = '_wpnonce', $referer = true, $echo = true ): string {
+            $html = '<input type="hidden" name="' . htmlspecialchars( (string) $name ) . '" value="test_nonce" />';
+            if ( $echo ) {
+                echo $html;
+            }
+            return $html;
+        }
+    }
+
     if ( ! function_exists( 'get_option' ) ) {
         function get_option( $option, $default = false ) {
             if ($option === 'racketmanager_options') {
@@ -470,7 +519,34 @@ namespace {
 
     if ( ! function_exists( 'wp_cache_delete' ) ) {
         function wp_cache_delete( $id, $group = '' ) {
+            $GLOBALS['wp_stubs_cache_deleted'][] = array( $id, $group );
             return true;
+        }
+    }
+
+    if ( ! function_exists( 'selected' ) ) {
+        function selected( $selected, $current = true, $echo = true ) {
+            $result = ( (string) $selected === (string) $current ) ? ' selected="selected"' : '';
+            if ( $echo ) {
+                echo $result;
+            }
+            return $result;
+        }
+    }
+
+    if ( ! function_exists( 'checked' ) ) {
+        function checked( $checked, $current = true, $echo = true ) {
+            $result = ( (string) $checked === (string) $current ) ? ' checked="checked"' : '';
+            if ( $echo ) {
+                echo $result;
+            }
+            return $result;
+        }
+    }
+
+    if ( ! function_exists( 'get_permalink' ) ) {
+        function get_permalink( $post = 0, $leavename = false ) {
+            return 'https://example.test/page/' . ( is_object( $post ) ? ( $post->ID ?? 0 ) : $post );
         }
     }
 
@@ -624,6 +700,10 @@ namespace {
         }
     }
 
+    if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
+        define( 'RACKETMANAGER_PATH', dirname( __DIR__ ) . '/' );
+    }
+
     if ( ! defined( 'RACKETMANAGER_FROM_EMAIL' ) ) {
         define( 'RACKETMANAGER_FROM_EMAIL', 'From: ' );
     }
@@ -689,6 +769,30 @@ namespace {
     if ( ! function_exists( 'esc_html' ) ) {
         function esc_html( $text ) {
             return $text;
+        }
+    }
+
+    if ( ! function_exists( 'esc_html_e' ) ) {
+        function esc_html_e( $text, $domain = 'default' ) {
+            echo esc_html( $text );
+        }
+    }
+
+    if ( ! function_exists( 'esc_html__' ) ) {
+        function esc_html__( $text, $domain = 'default' ) {
+            return esc_html( $text );
+        }
+    }
+
+    if ( ! function_exists( 'esc_attr_e' ) ) {
+        function esc_attr_e( $text, $domain = 'default' ) {
+            echo esc_attr( $text );
+        }
+    }
+
+    if ( ! function_exists( 'esc_attr__' ) ) {
+        function esc_attr__( $text, $domain = 'default' ) {
+            return esc_attr( $text );
         }
     }
 
@@ -892,14 +996,18 @@ namespace Racketmanager {
                 public function __construct($obj) {
                     $this->id = $obj->id;
                     $comp = new stdClass();
-                    $comp->settings = ['point_rule' => 'three', 'mode' => 'league'];
-                    $comp->type = 'league';
+                    $comp->settings = new \Racketmanager\Domain\Competition\Competition_Settings( ['point_rule' => 'three', 'mode' => 'league', 'sport' => 'tennis'] );
+                    $comp->type = \Racketmanager\Domain\Competition\Competition_Type::LEAGUE;
                     $comp->is_player_entry = false;
                     $comp->standings = [];
                     $comp->current_season = ['name' => '2024-25'];
                     $this->competition = $comp;
                     $this->seasons = json_encode([['name' => '2024-25']]);
                     $this->name = 'Test Event';
+                    $this->num_sets = 3;
+                    $this->num_rubbers = 6;
+                    $this->type = 'doubles';
+                    $this->standings = [];
                 }
                 public function get_num_sets(): int { return 3; }
                 public function get_num_rubbers(): ?int { return 6; }

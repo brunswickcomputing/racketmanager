@@ -50,4 +50,38 @@ class Competition_Settings_Test extends TestCase {
         $empty_settings = new Competition_Settings( [] );
         $this->assertEquals( [], $empty_settings->num_courts_available() );
     }
+
+    public function test_array_access() {
+        $settings = new Competition_Settings( $this->settings_data );
+        $this->assertTrue( isset( $settings['mode'] ) );
+        $this->assertEquals( 'advanced', $settings['mode'] );
+        $this->assertFalse( isset( $settings['non_existent'] ) );
+        $this->assertNull( $settings['non_existent'] );
+
+        $settings['new_key'] = 'new_val';
+        $this->assertTrue( isset( $settings['new_key'] ) );
+        $this->assertEquals( 'new_val', $settings['new_key'] );
+
+        unset( $settings['new_key'] );
+        $this->assertFalse( isset( $settings['new_key'] ) );
+    }
+
+    public function test_countable_and_iterable() {
+        $settings = new Competition_Settings( $this->settings_data );
+        $this->assertCount( 4, $settings );
+
+        $iterated = [];
+        foreach ( $settings as $key => $value ) {
+            $iterated[ $key ] = $value;
+        }
+        $this->assertEquals( $this->settings_data, $iterated );
+    }
+
+    public function test_json_serializable() {
+        $settings = new Competition_Settings( $this->settings_data );
+        $this->assertJsonStringEqualsJsonString(
+            json_encode( $this->settings_data ),
+            json_encode( $settings )
+        );
+    }
 }

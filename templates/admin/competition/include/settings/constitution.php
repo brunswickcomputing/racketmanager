@@ -11,13 +11,14 @@ use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Mode
 use Racketmanager\Util\Util_Lookup;
 
 /** @var Tournament_Competition_Config_Page_View_Model $vm */
+$competition_type = $vm->competition->type instanceof \BackedEnum ? $vm->competition->type->value : (string) ( $vm->competition->type ?? '' );
 $tab_name   = 'constitution';
 $is_invalid = false;
 $msg        = null;
 ?>
 <div class="form-control">
     <?php
-    if ( 'league' === $vm->competition->type ) {
+    if ( 'league' === $competition_type ) {
         ?>
         <fieldset class="row gx-3 mb-3">
             <legend class=""><?php esc_html_e( 'Size limits', 'racketmanager' ); ?></legend>
@@ -69,7 +70,7 @@ $msg        = null;
             </div>
         </fieldset>
         <?php
-    } elseif ( 'tournament' === $vm->competition->type ) {
+    } elseif ( 'tournament' === $competition_type ) {
         ?>
         <fieldset class="row gx-3 mb-3">
             <legend class=""><?php esc_html_e( 'Size limits', 'racketmanager' ); ?></legend>
@@ -100,7 +101,7 @@ $msg        = null;
     }
     ?>
     <?php
-    if ( 'league' === $vm->competition->type ) {
+    if ( 'league' === $competition_type ) {
         ?>
         <fieldset class="row gx-3 mb-3">
             <legend class=""><?php esc_html_e( 'Promotion/relegation', 'racketmanager' ); ?></legend>

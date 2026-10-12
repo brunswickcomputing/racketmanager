@@ -22,7 +22,8 @@ use Racketmanager\Util\Util;
         <div class="module__content">
             <div class="module-container">
                 <div class="text-center">
-                    <a href="/<?php echo esc_attr( $league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $league->event->name ) ); ?>/<?php echo esc_attr( $season ); ?>/">
+                    <?php $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' ); ?>
+                    <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $league->event->name ) ); ?>/<?php echo esc_attr( $season ); ?>/">
                         <span class="nav-link__value"><?php echo esc_html( $league->event->name ); ?></span>
                     </a>
                     <div class="text-center mb-3">

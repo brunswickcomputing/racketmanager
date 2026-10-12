@@ -48,6 +48,7 @@ use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use stdClass;
@@ -112,7 +113,7 @@ class Results_Checker_Presenter_Test extends TestCase {
         $player_obj->ID = 101;
         $player_obj->user_email = 'john@example.com';
         $player_obj->year_of_birth = '1990';
-        $player = new Player( $player_obj );
+        $player = Player_Factory::from_object( $player_obj );
 
         $league = $this->createStub(\Racketmanager\Domain\Competition\League::class);
         $league->title = 'League A';

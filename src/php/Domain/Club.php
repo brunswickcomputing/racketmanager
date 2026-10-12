@@ -32,7 +32,7 @@ class Club {
      *
      * @var string
      */
-    public string $name;
+    public string $name = '';
     /**
      * Short code
      *
@@ -42,135 +42,135 @@ class Club {
     /**
      * Type
      *
-     * @var string
+     * @var ?string
      */
-    public string $type;
+    public ?string $type = null;
     /**
      * Website
      *
-     * @var string
+     * @var ?string
      */
-    public string $website;
+    public ?string $website = null;
     /**
      * Contact number
      *
-     * @var string
+     * @var ?string
      */
-    public string $contactno;
+    public ?string $contactno = null;
     /**
      * Founded
      *
      * @var int|null
      */
-    public ?int $founded;
+    public ?int $founded = null;
     /**
      * Facilities
      *
-     * @var string
+     * @var ?string
      */
-    public string $facilities;
+    public ?string $facilities = null;
     /**
      * Address
      *
-     * @var string
+     * @var ?string
      */
-    public string $address;
+    public ?string $address = null;
     /**
      * Team count
      *
      * @var int
      */
-    public int $team_count;
+    public int $team_count = 0;
     /**
      * Player count
      *
      * @var int
      */
-    public int $player_count;
+    public int $player_count = 0;
     /**
      * Players variable
      *
      * @var array
      */
-    public array $players;
+    public array $players = array();
     /**
      * Teams variable
      *
      * @var array
      */
-    public array $teams;
+    public array $teams = array();
     /**
      * Matches variable
      *
      * @var array
      */
-    public array $matches;
+    public array $matches = array();
     /**
      * Results variable
      *
      * @var array
      */
-    public array $results;
+    public array $results = array();
     /**
      * Created date variable
      *
      * @var string|null
      */
-    public ?string $created_date;
+    public ?string $created_date = null;
     /**
      * Removed date variable
      *
      * @var string|null
      */
-    public ?string $removed_date;
+    public ?string $removed_date = null;
     /**
      * Player variable
      *
-     * @var object
+     * @var ?object
      */
-    public object $player;
+    public ?object $player = null;
     /**
      * Single instance variable
      *
      * @var boolean
      */
-    public bool $single;
+    public bool $single = false;
     /**
      * Entry
      *
      * @var array
      */
-    public array $entry;
+    public array $entry = array();
     /**
      * Competitions variable
      *
      * @var array
      */
-    public array $competitions;
+    public array $competitions = array();
     /**
      * Competition variable
      *
-     * @var object
+     * @var ?object
      */
-    public object $competition;
+    public ?object $competition = null;
     /**
      * Team variable
      *
-     * @var object
+     * @var ?object
      */
-    public object $team;
+    public ?object $team = null;
     /**
      * Event variable
      *
-     * @var object
+     * @var ?object
      */
-    public object $event;
+    public ?object $event = null;
     /**
      * Player stats variable
      *
      * @var array
      */
-    public array $player_stats;
+    public array $player_stats = array();
     /**
      * Constructor
      *
@@ -180,15 +180,15 @@ class Club {
         if ( is_null( $club ) ) {
             return;
         }
-        $this->id         = $club->id;
-        $this->name       = $club->name;
-        $this->website    = $club->website;
-        $this->type       = $club->type;
-        $this->address    = $club->address;
-        $this->contactno  = $club->contactno;
-        $this->founded    = $club->founded;
-        $this->facilities = $club->facilities;
-        $this->shortcode  = $club->shortcode;
+        $this->id         = isset( $club->id ) ? (int) $club->id : null;
+        $this->name       = (string) ( $club->name ?? '' );
+        $this->website    = $club->website ?? null;
+        $this->type       = $club->type ?? null;
+        $this->address    = $club->address ?? null;
+        $this->contactno  = $club->contactno ?? null;
+        $this->founded    = isset( $club->founded ) && is_numeric( $club->founded ) ? (int) $club->founded : null;
+        $this->facilities = $club->facilities ?? null;
+        $this->shortcode  = $club->shortcode ?? null;
     }
 
     /**

@@ -29,4 +29,15 @@ final class Fixture_Factory {
 		$dto = Fixture_Hydration_DTO::from_object( $row );
 		return self::create_from_dto( $dto );
 	}
+
+	/**
+	 * Create a Fixture entity from an array.
+	 *
+	 * @param array $data
+	 * @return Fixture
+	 */
+	public static function from_array( array $data ): Fixture {
+		$dto = Fixture_Hydration_DTO::from_array( $data );
+		return self::create_from_dto( $dto );
+	}
 }

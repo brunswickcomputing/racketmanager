@@ -29,15 +29,16 @@ if ( empty( $competition->player ) ) {
                             <?php
                             foreach ( $player->matches as $key => $player_matches ) {
                                 $league = $player_matches['league'];
+                                $league_competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
                                 ?>
                                 <h4 class="module-divider">
                                     <span class="module-divider__body">
-                                        <a href="/<?php echo esc_attr( $league->event->competition->type ); ?>s/<?php echo esc_attr( seo_url( $league->event->name ) ); ?>/<?php echo esc_attr( $league->season ); ?>/">
+                                        <a href="/<?php echo esc_attr( $league_competition_type ); ?>s/<?php echo esc_attr( seo_url( $league->event->name ) ); ?>/<?php echo esc_attr( $league->season ); ?>/">
                                             <span class="nav-link__value">
                                                 <?php echo esc_html( $league->event->name ); ?>
                                             </span>
                                         </a>&nbsp;&#8226;&nbsp;
-                                        <a href="/<?php echo esc_attr( $league->event->competition->type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->season ); ?>/">
+                                        <a href="/<?php echo esc_attr( $league_competition_type ); ?>/<?php echo esc_attr( seo_url( $league->title ) ); ?>/<?php echo esc_attr( $league->season ); ?>/">
                                             <span class="nav-link__value">
                                                 <?php echo esc_html( $league->title ); ?>
                                             </span>

@@ -704,10 +704,10 @@ class Competition {
     /**
      * Update settings
      *
-     * @param array $settings settings array.
+     * @param array|Competition_Settings $settings settings array or object.
      */
-    public function set_settings( array $settings ): void {
-        $this->settings = $settings;
+    public function set_settings( array|Competition_Settings $settings ): void {
+        $this->settings = $settings instanceof Competition_Settings ? $settings : new Competition_Settings( $settings );
     }
 
     /**

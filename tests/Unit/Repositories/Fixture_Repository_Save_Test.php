@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Repositories;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use wpdb;
 
 class Fixture_Repository_Save_Test extends TestCase {
@@ -36,7 +37,7 @@ class Fixture_Repository_Save_Test extends TestCase {
             'id' => 123,
             'comments' => ['note' => 'test comment']
         ];
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         // Expect update to be called with serialized comments
         // The table name is constructed in constructor: wp_ + racketmanager_matches

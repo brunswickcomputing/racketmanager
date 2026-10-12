@@ -37,6 +37,7 @@ $allow_amend_score        = false;
 $allow_reset_match_result = false;
 $show_menu                = false;
 $default_match_stat       = '0 - 0';
+$competition_type         = $dto->competition->type instanceof \BackedEnum ? $dto->competition->type->value : (string) ( $dto->competition->type ?? '' );
 if ( $match->is_pending() ) {
     if ( ! $edit_mode && $user_can_update ) {
         $allow_amend_score = true;
@@ -96,14 +97,14 @@ if ( $match->is_pending() ) {
         }
         ?>
         <div class="text-center">
-            <a href="/<?php echo esc_attr( $dto->competition->type ); ?>s/<?php echo esc_attr( seo_url( $dto->event->name ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/">
+            <a href="/<?php echo esc_attr( $competition_type ); ?>s/<?php echo esc_attr( seo_url( $dto->event->name ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/">
                 <span class="nav-link__value"><?php echo esc_html( $dto->event->name ); ?></span>
             </a>
             <?php
-            if ( 'cup' !== $dto->competition->type ) {
+            if ( 'cup' !== $competition_type ) {
                 ?>
                 &nbsp;&#8226;&nbsp;
-                <a href="/<?php echo esc_attr( $dto->competition->type ); ?>/<?php echo esc_attr( seo_url( $dto->league->title ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/">
+                <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_attr( seo_url( $dto->league->title ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/">
                     <span class="nav-link__value"><?php echo esc_html( $dto->league->title ); ?></span>
                 </a>
                 <?php
@@ -218,7 +219,7 @@ if ( $match->is_pending() ) {
                         }
                         ?>
                         <h2 class="team-match__name is-team-1" title="<?php echo esc_html( $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' ) ); ?>">
-                            <a href="/<?php echo esc_attr( $dto->competition->type ); ?>/<?php echo esc_html( seo_url( $dto->league->title ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/team/<?php echo esc_attr( seo_url( $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' ) ) ); ?>/" class="nav--link">
+                            <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $dto->league->title ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/team/<?php echo esc_attr( seo_url( $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' ) ) ); ?>/" class="nav--link">
                                 <span class="nav-link__value">
                                     <?php
                                     $home_name = $dto->home_team ? $dto->home_team->team->get_name() : ( $dto->prev_home_match_title ?? '' );
@@ -259,7 +260,7 @@ if ( $match->is_pending() ) {
                         }
                         ?>
                         <h2 class="team-match__name is-team-2" title="<?php echo esc_html( $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' ) ); ?>">
-                            <a href="/<?php echo esc_attr( $dto->competition->type ); ?>/<?php echo esc_html( seo_url( $dto->league->title ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/team/<?php echo esc_attr( seo_url( $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' ) ) ); ?>/" class="nav--link">
+                            <a href="/<?php echo esc_attr( $competition_type ); ?>/<?php echo esc_html( seo_url( $dto->league->title ) ); ?>/<?php echo esc_attr( $match->get_season() ); ?>/team/<?php echo esc_attr( seo_url( $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' ) ) ); ?>/" class="nav--link">
                                 <span class="nav-link__value">
                                     <?php
                                     $away_name = $dto->away_team ? $dto->away_team->team->get_name() : ( $dto->prev_away_match_title ?? '' );

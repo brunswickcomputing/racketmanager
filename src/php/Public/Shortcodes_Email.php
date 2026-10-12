@@ -53,7 +53,7 @@ class Shortcodes_Email extends Shortcodes {
         if ( ! $fixture ) {
             return $this->return_error( $this->match_not_found );
         }
-        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
+        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->fixture_permission_service );
 
         $teams = array(
             'home' => new stdClass(),
@@ -195,7 +195,7 @@ class Shortcodes_Email extends Shortcodes {
         if ( ! $fixture ) {
             return $this->return_error( $this->match_not_found );
         }
-        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
+        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->fixture_permission_service );
 
         $action_url = admin_url() . '?page=racketmanager&view=results';
         if ( $league ) {
@@ -317,7 +317,7 @@ class Shortcodes_Email extends Shortcodes {
         if ( ! $fixture ) {
             return $this->return_error( $this->match_not_found );
         }
-        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
+        $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->fixture_permission_service );
 
         $action_url = $racketmanager->site_url;
         if ( $match->league->event->competition->is_cup ) {

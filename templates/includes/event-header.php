@@ -13,20 +13,21 @@ namespace Racketmanager;
 /** @var string $curr_season */
 /** @var array  $seasons */
 global $wp_query, $racketmanager;
-$post_id = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$post_id          = $wp_query->post->ID ?? ''; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+$competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
 if ( isset( $wp_query->query['pagename'] ) && 'club/event' === $wp_query->query['pagename'] ) {
     $pagename = '/clubs/' . seo_url( $club->shortcode ) . '/event/' . seo_url( $event->name ) . '/';
-} elseif ( 'tournament' === $event->competition->type ) {
+} elseif ( 'tournament' === $competition_type ) {
     $pagename = $wp_query->query['pagename'] ?? '';
 } else {
-    $pagename = '/' . $event->competition->type . 's/' . seo_url( $event->name ) . '/';
+    $pagename = '/' . $competition_type . 's/' . seo_url( $event->name ) . '/';
 }
 if ( $event->is_box ) {
     $season_label = __( 'Round', 'racketmanager' );
 } else {
     $season_label = __( 'Season', 'racketmanager' );
 }
-$image = match ($event->competition->type) {
+$image = match ($competition_type) {
     'league' => 'assets/icons/bootstrap-icons.svg#table',
     'cup' => 'assets/icons/bootstrap-icons.svg#trophy-fill',
     'tournament' => 'assets/icons/lta-icons.svg#icon-bracket',

@@ -80,7 +80,7 @@ class Shortcodes_League extends Shortcodes {
                 if ( ! $fixture ) {
                     continue;
                 }
-                $match             = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
+                $match             = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->fixture_permission_service );
                 $home_title        = $match->teams['home']->title;
                 $away_title        = $match->teams['away']->title;
                 $match->title      = sprintf( '%s - %s', $home_title, $away_title );
@@ -534,7 +534,7 @@ class Shortcodes_League extends Shortcodes {
         if ( $match_id ) {
             $fixture = $this->fixture_repository->find_by_id( (int) $match_id );
             if ( $fixture ) {
-                $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service );
+                $match = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->fixture_permission_service );
                 $event = get_event( $match->league->event_id );
                 if ( $event ) {
                     $seasons           = $event->get_seasons();

@@ -28,6 +28,7 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
     use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
     use Racketmanager\Domain\Fixture\Fixture;
+    use Racketmanager\Domain\Fixture\Fixture_Factory;
     use Racketmanager\Domain\Team;
     use Racketmanager\Public\Shortcodes_Match;
     use Racketmanager\RacketManager;
@@ -114,7 +115,7 @@ namespace Racketmanager\Tests\Integration\Public {
             $this->container->set( 'competition_entry_service', $this->createMock( Competition_Entry_Service::class ) );
             $this->container->set( 'fixture_service', $this->createMock( Fixture_Service::class ) );
 
-            $fixture = new Fixture( (object) [
+            $fixture = Fixture_Factory::from_object( (object) [
                 'id'        => 123,
                 'league_id' => 10,
                 'home_team' => '1',

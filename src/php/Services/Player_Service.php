@@ -12,6 +12,7 @@ namespace Racketmanager\Services;
 use Exception;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Domain\Player_Error;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
@@ -148,7 +149,7 @@ class Player_Service {
         $player->user_registered = gmdate( 'Y-m-d H:i:s' );
         $player->user_login      = strtolower( $player->firstname ) . '.' . strtolower( $player->surname );
         $player->user_pass       = $player->user_login . '1';
-        $player                  = new Player( $player );
+        $player                  = Player_Factory::from_object( $player );
         $this->player_repository->add( $player );
 
         return $player;

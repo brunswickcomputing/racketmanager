@@ -15,7 +15,8 @@ namespace Racketmanager;
 /** @var object $team */
 /** @var array  $clubs */
 /** @var string $form_action */
-$action_url = '/wp-admin/admin.php?page=racketmanager-' . $league->event->competition->type .'s&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league=' . $league_id . '&amp;season=' . $season . '/';
+$competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+$action_url = '/wp-admin/admin.php?page=racketmanager-' . $competition_type .'s&amp;view=draw&amp;tournament=' . $tournament->id . '&amp;league=' . $league_id . '&amp;season=' . $season . '/';
 ?>
 <div class="container league-block">
     <div class="row justify-content-end">

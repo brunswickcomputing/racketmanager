@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\Validator;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\Competition;
@@ -227,7 +228,7 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture_data->home_team = 1000;
         $fixture_data->away_team = 2000;
         $fixture_data->season = '2026';
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
@@ -294,7 +295,7 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = 1000;
         $fixture_data->season = '2026';
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );
@@ -335,7 +336,7 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture_data->home_team = 1000;
         $fixture_data->season = '2026';
         $fixture_data->match_day = 5;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
         $league->method('get_id')->willReturn(456);
@@ -374,7 +375,7 @@ class Player_Validation_Service_Test extends TestCase {
         $fixture_data->home_team = 1000;
         $fixture_data->date = '2026-03-20 10:00:00';
         $fixture_data->date_result_entered = '2026-03-22 10:00:00'; // 48 hours later
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
 
         $league = $this->createMock( League::class );
         $event = $this->createMock( Event::class );

@@ -10,6 +10,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Checker_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Results_Report_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
@@ -28,6 +29,7 @@ class Repository_Provider {
     private ?Rubber_Repository_Interface $rubber_repository;
     private ?Results_Checker_Repository_Interface $results_checker_repository;
     private ?Results_Report_Repository_Interface $results_report_repository;
+    private ?Result_Repository_Interface $result_repository;
     private ?Fixture_Repository_Interface $fixture_repository;
     private ?Club_Repository_Interface $club_repository;
 
@@ -41,6 +43,7 @@ class Repository_Provider {
         ?Rubber_Repository_Interface $rubber_repository = null,
         ?Results_Checker_Repository_Interface $results_checker_repository = null,
         ?Results_Report_Repository_Interface $results_report_repository = null,
+        ?Result_Repository_Interface $result_repository = null,
         ?Fixture_Repository_Interface $fixture_repository = null,
         ?Club_Repository_Interface $club_repository = null
     ) {
@@ -53,6 +56,7 @@ class Repository_Provider {
         $this->rubber_repository = $rubber_repository;
         $this->results_checker_repository = $results_checker_repository;
         $this->results_report_repository = $results_report_repository;
+        $this->result_repository = $result_repository;
         $this->fixture_repository = $fixture_repository;
         $this->club_repository = $club_repository;
     }
@@ -91,6 +95,10 @@ class Repository_Provider {
 
     public function get_results_report_repository(): Results_Report_Repository_Interface {
         return $this->results_report_repository ??= new Results_Report_Repository();
+    }
+
+    public function get_result_repository(): Result_Repository_Interface {
+        return $this->result_repository ??= new Result_Repository();
     }
 
     public function get_fixture_repository(): Fixture_Repository_Interface {

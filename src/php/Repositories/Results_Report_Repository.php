@@ -20,9 +20,8 @@ class Results_Report_Repository implements Results_Report_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
 
-    public function __construct() {
-        global $wpdb;
-        $this->wpdb = $wpdb;
+    public function __construct( ?wpdb $wpdb = null ) {
+        $this->wpdb       = $wpdb ?? $GLOBALS['wpdb'];
         $this->table_name = $this->wpdb->prefix . 'racketmanager_results_report';
     }
 

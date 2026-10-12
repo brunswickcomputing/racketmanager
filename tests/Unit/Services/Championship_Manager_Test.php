@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -40,13 +41,13 @@ class Championship_Manager_Test extends TestCase {
         $primary_raw->home_team = '100';
         $primary_raw->away_team = null;
         $primary_raw->linked_match = 20;
-        $primary_fixture = new Fixture( $primary_raw );
+        $primary_fixture = Fixture_Factory::from_object( $primary_raw );
 
         $linked_raw = new stdClass();
         $linked_raw->id = 20;
         $linked_raw->home_team = '100';
         $linked_raw->away_team = null;
-        $linked_fixture = new Fixture( $linked_raw );
+        $linked_fixture = Fixture_Factory::from_object( $linked_raw );
 
         $this->fixture_repository->method( 'find_by_id' )
             ->willReturnMap( [
@@ -86,7 +87,7 @@ class Championship_Manager_Test extends TestCase {
         $primary_raw->id = 10;
         $primary_raw->home_team = null;
         $primary_raw->away_team = null;
-        $primary_fixture = new Fixture( $primary_raw );
+        $primary_fixture = Fixture_Factory::from_object( $primary_raw );
 
         $this->fixture_repository->method( 'find_by_id' )
             ->with( 10 )

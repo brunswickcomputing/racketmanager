@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
@@ -61,7 +62,7 @@ class Result_Service_AutoConfirm_Test extends TestCase {
             'confirmed' => 'P', // Already Pending
             'season' => '2024'
         ];
-        $fixture = new Fixture($fixture_obj);
+        $fixture = Fixture_Factory::from_object($fixture_obj);
 
         $result = new Result(
             home_points: 2.0,
@@ -94,7 +95,7 @@ class Result_Service_AutoConfirm_Test extends TestCase {
             'confirmed' => 'Y', // Already Confirmed
             'season' => '2024'
         ];
-        $fixture = new Fixture($fixture_obj);
+        $fixture = Fixture_Factory::from_object($fixture_obj);
 
         $result = new Result(
             home_points: 2.0,

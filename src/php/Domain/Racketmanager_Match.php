@@ -12,6 +12,8 @@ namespace Racketmanager\Domain;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Scoring\Set_Score;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
+use Racketmanager\Repositories\Result_Repository;
 use Racketmanager\Services\Championship_Manager;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Services\Registration_Service;
@@ -1144,7 +1146,6 @@ class Racketmanager_Match {
      * @return void
      */
     public function update_result_tie( ?int $home_points_tie = null, ?int $away_points_tie = null ): void {
-        global $wpdb;
         $update = false;
         if ( 2 === $this->leg && is_null( $home_points_tie ) ) {
             $home_points_tie = $this->home_points;
@@ -1175,16 +1176,10 @@ class Racketmanager_Match {
         $this->away_points_tie = $away_points_tie;
         $this->winner_id_tie   = $winner_id_tie;
         $this->loser_id_tie    = $loser_id_tie;
-        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_matches SET `home_points_tie` = %f, `away_points_tie` = %f, `winner_id_tie` = %d, `loser_id_tie` = %d WHERE `id` = %d",
-                $home_points_tie,
-                $away_points_tie,
-                $winner_id_tie,
-                $loser_id_tie,
-                $this->id
-            )
-        );
+
+        $result_repository = $this->get_result_repository();
+        $result_repository->update_result_tie( (int) $this->id, (float) $home_points_tie, (float) $away_points_tie, (int) $winner_id_tie, (int) $loser_id_tie );
+
         wp_cache_set( $this->id, $this, 'matches' );
     }
     /**
@@ -1409,40 +1404,25 @@ class Racketmanager_Match {
      * @return void
      */
     private function update_result_database( ?string $user_team = null ): void {
-        global $wpdb;
-        $wpdb->query(
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_matches SET `home_points` = %f, `away_points` = %f, `winner_id` = %d, `loser_id` = %d, `custom` = %s, `updated_user` = %d, `updated` = now(), `confirmed` = %s, `status` = %d WHERE `id` = %d",
-                $this->home_points,
-                $this->away_points,
-                $this->winner_id,
-                $this->loser_id,
-                maybe_serialize( $this->custom ),
-                get_current_user_id(),
-                $this->confirmed,
-                $this->status,
-                $this->id
-            )
+        $data = array(
+            'home_points' => $this->home_points,
+            'away_points' => $this->away_points,
+            'winner_id'   => $this->winner_id,
+            'loser_id'    => $this->loser_id,
+            'custom'      => $this->custom,
+            'confirmed'   => $this->confirmed,
+            'status'      => $this->status,
         );
         $userid = get_current_user_id();
+
+        $result_repository = $this->get_result_repository();
+
+        $result_repository->update_result( (int) $this->id, $data, $user_team, $userid );
+
         if ( $user_team ) {
             if ( 'both' === $user_team || 'home' === $user_team ) {
-                $wpdb->query(
-                    $wpdb->prepare(
-                        "UPDATE $wpdb->racketmanager_matches SET `home_captain` = %d WHERE `id` = %d",
-                        $userid,
-                        $this->id
-                    )
-                );
                 $this->home_captain = $userid;
             } elseif ( 'away' === $user_team ) {
-                $wpdb->query(
-                    $wpdb->prepare(
-                        "UPDATE $wpdb->racketmanager_matches SET `away_captain` = %d WHERE `id` = %d",
-                        $userid,
-                        $this->id
-                    )
-                );
                 $this->away_captain = $userid;
             }
         }
@@ -1451,11 +1431,8 @@ class Racketmanager_Match {
         if ( 'Y' === $this->confirmed ) {
             $report = $this->report_result();
             if ( $report ) {
-                $this->delete_results_report();
-                $results_report           = new stdClass();
-                $results_report->match_id = $this->id;
-                $results_report->data     = $report;
-                new Results_Report( $results_report );
+                // Intentional: save_results_report replaces any previous report and persists the new one.
+                $result_repository->save_results_report( (int) $this->id, $report );
             }
         }
     }
@@ -1465,13 +1442,8 @@ class Racketmanager_Match {
      * @return void
      */
     private function delete_results_report(): void {
-        global $wpdb;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_results_report WHERE `match_id` = %d",
-                $this->id,
-            )
-        );
+        $result_repository = $this->get_result_repository();
+        $result_repository->delete_results_report( (int) $this->id );
     }
 
     /**
@@ -2483,5 +2455,15 @@ class Racketmanager_Match {
     }
     public function get_host(): ?string {
         return $this->host ?? null;
+    }
+
+    /**
+     * Resolve Result_Repository instance from container or fallback.
+     */
+    private function get_result_repository(): Result_Repository_Interface {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'result_repository' )
+            ? $racketmanager->container->get( 'result_repository' )
+            : new Result_Repository();
     }
 }

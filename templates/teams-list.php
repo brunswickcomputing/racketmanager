@@ -16,11 +16,13 @@ namespace Racketmanager;
 /** @var string $curr_season */
 /** @var object $object */
 if ( ! empty( $event ) ) {
-    $object    = $event;
-    $item_link = '/' . $event->competition->type . '/' . seo_url( $event->name ) . '/' . $curr_season;
+    $object           = $event;
+    $competition_type = $event->competition->type instanceof \BackedEnum ? $event->competition->type->value : (string) ( $event->competition->type ?? '' );
+    $item_link        = '/' . $competition_type . '/' . seo_url( $event->name ) . '/' . $curr_season;
 } elseif ( ! empty( $league ) ) {
-    $object    = $league;
-    $item_link = '/' . $league->event->competition->type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'];
+    $object           = $league;
+    $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+    $item_link        = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $league->current_season['name'];
 }
 if ( empty( $object->team ) ) {
     ?>

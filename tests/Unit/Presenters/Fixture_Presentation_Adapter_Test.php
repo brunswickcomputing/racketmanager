@@ -11,6 +11,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
@@ -37,7 +38,7 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $data->host        = 'home';
         $data->location    = 'Court 1';
 
-        $fixture = new Fixture( $data );
+        $fixture = Fixture_Factory::from_object( $data );
 
         $league = $this->createMock( League::class );
         $league->method( 'get_id' )->willReturn( 10 );

@@ -35,7 +35,7 @@ class Fixture_Link_Service {
      * Get the fixture link for a fixture.
      */
     public function get_fixture_link( Fixture $fixture, object $league, ?object $home_team, ?object $away_team ): string {
-        $type = $league->get_competition_type();
+        $type = method_exists( $league, 'get_competition_type' ) ? $league->get_competition_type() : ( $league->competition_type ?? 'league' );
 
         if ( 'tournament' === $type ) {
             return $this->get_tournament_link( $fixture, $league );
@@ -48,11 +48,13 @@ class Fixture_Link_Service {
      * Get the tournament link for a fixture.
      */
     public function get_tournament_link( Fixture $fixture, object $league ): string {
-        $tournament_code = $league->get_event_id() . ',' . $fixture->get_season();
+        $event_id        = method_exists( $league, 'get_event_id' ) ? $league->get_event_id() : ( $league->event_id ?? 0 );
+        $tournament_code = $event_id . ',' . $fixture->get_season();
+        $league_name     = method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
 
         try {
             if ( ! isset( $this->tournament_service ) ) {
-                return home_url( self::LEAGUE_URL_PATH . Util::seo_url( $league->get_name() ) . self::MATCH_URL_PATH . $fixture->get_id() . '/' );
+                return home_url( self::LEAGUE_URL_PATH . Util::seo_url( $league_name ) . self::MATCH_URL_PATH . $fixture->get_id() . '/' );
             }
 
             $tournament     = $this->tournament_service->get_tournament( $tournament_code, 'shortcode' );
@@ -60,24 +62,25 @@ class Fixture_Link_Service {
             $away_team_name = $fixture->get_custom()['away_team_name'] ?? '';
 
             if ( ! empty( $home_team_name ) && ! empty( $away_team_name ) ) {
-                return home_url( self::TOURNAMENT_URL_PATH . Util::seo_url( $tournament->name ) . self::MATCH_URL_PATH . Util::seo_url( $league->get_name() ) . '/' . Util::seo_url( $home_team_name ) . '-vs-' . Util::seo_url( $away_team_name ) . '/' . $fixture->get_id() . '/' );
+                return home_url( self::TOURNAMENT_URL_PATH . Util::seo_url( $tournament->name ) . self::MATCH_URL_PATH . Util::seo_url( $league_name ) . '/' . Util::seo_url( $home_team_name ) . '-vs-' . Util::seo_url( $away_team_name ) . '/' . $fixture->get_id() . '/' );
             }
         } catch ( Tournament_Not_Found_Exception ) {
             // Fallback to league link if tournament not found
         }
 
-        return home_url( self::LEAGUE_URL_PATH . Util::seo_url( $league->get_name() ) . self::MATCH_URL_PATH . $fixture->get_id() . '/' );
+        return home_url( self::LEAGUE_URL_PATH . Util::seo_url( $league_name ) . self::MATCH_URL_PATH . $fixture->get_id() . '/' );
     }
 
     /**
      * Resolve fixture link for a fixture.
      */
     public function resolve_fixture_link( Fixture $fixture, object $league, ?object $home_team, ?object $away_team ): string {
-        $type = $league->get_competition_type();
+        $type = method_exists( $league, 'get_competition_type' ) ? $league->get_competition_type() : ( $league->competition_type ?? 'league' );
 
         if ( 'box' === $type ) {
+            $league_name = method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
             $url = home_url( self::LEAGUE_URL_PATH );
-            $url .= Util::seo_url( $league->get_name() ) . self::MATCH_URL_PATH . $fixture->get_id() . '/';
+            $url .= Util::seo_url( $league_name ) . self::MATCH_URL_PATH . $fixture->get_id() . '/';
 
             return $url;
         }
@@ -95,11 +98,17 @@ class Fixture_Link_Service {
             $match_ref = 'day' . $fixture->get_match_day();
         }
 
-        $home_team_name = $home_team->team->get_name() ?? '';
-        $away_team_name = $away_team->team->get_name() ?? '';
+        $home_team_name = $home_team && isset( $home_team->team ) && method_exists( $home_team->team, 'get_name' )
+            ? $home_team->team->get_name()
+            : ( $home_team->name ?? $home_team->title ?? '' );
+        $away_team_name = $away_team && isset( $away_team->team ) && method_exists( $away_team->team, 'get_name' )
+            ? $away_team->team->get_name()
+            : ( $away_team->name ?? $away_team->title ?? '' );
 
-        if ( ! empty( $home_team_name ) && ! empty( $away_team_name ) ) {
-            $url = home_url( self::MATCH_URL_PATH . Util::seo_url( $league->get_name() ) . '/' . $fixture->get_season() . '/' . $match_ref . '/' . Util::seo_url( $home_team_name ) . '-vs-' . Util::seo_url( $away_team_name ) . '/' );
+        $league_name = method_exists( $league, 'get_name' ) ? $league->get_name() : ( $league->name ?? $league->title ?? '' );
+
+        if ( ! empty( $home_team_name ) && ! empty( $away_team_name ) && ! empty( $league_name ) ) {
+            $url = home_url( self::MATCH_URL_PATH . Util::seo_url( $league_name ) . '/' . $fixture->get_season() . '/' . $match_ref . '/' . Util::seo_url( $home_team_name ) . '-vs-' . Util::seo_url( $away_team_name ) . '/' );
         } else {
             return '';
         }

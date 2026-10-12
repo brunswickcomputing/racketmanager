@@ -4,12 +4,14 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
 
 final class Fixture_Test extends TestCase {
     public function test_set_result_updates_fixture_properties(): void {
-        $fixture = new Fixture((object)[
+        $fixture = Fixture_Factory::from_object((object)[
             'id' => 1,
             'status' => 0
         ]);
@@ -39,7 +41,7 @@ final class Fixture_Test extends TestCase {
     }
 
     public function test_set_result_updates_status_flags(): void {
-        $fixture = new Fixture((object)['id' => 1]);
+        $fixture = Fixture_Factory::from_object((object)['id' => 1]);
         
         // Test Shared status
         $result = new Result(home_points: 2, away_points: 2, status: 3);
@@ -55,13 +57,13 @@ final class Fixture_Test extends TestCase {
     }
 
     public function test_is_pending_reflects_winner_id(): void {
-        $fixture = new Fixture((object)[ 'winner_id' => null ]);
+        $fixture = Fixture_Factory::from_object((object)[ 'winner_id' => null ]);
         $this->assertTrue($fixture->is_pending());
 
-        $fixture = new Fixture((object)[ 'winner_id' => 0 ]);
+        $fixture = Fixture_Factory::from_object((object)[ 'winner_id' => 0 ]);
         $this->assertTrue($fixture->is_pending());
 
-        $fixture = new Fixture((object)[ 'winner_id' => 123 ]);
+        $fixture = Fixture_Factory::from_object((object)[ 'winner_id' => 123 ]);
         $this->assertFalse($fixture->is_pending());
 
         $result = new Result(home_points: 3, away_points: 0, winner_id: 456);
@@ -73,7 +75,7 @@ final class Fixture_Test extends TestCase {
     }
 
     public function test_start_time_is_set_from_constructor(): void {
-        $fixture = new Fixture((object)[ 'start_time' => '10:00' ]);
+        $fixture = Fixture_Factory::from_object((object)[ 'start_time' => '10:00' ]);
         $this->assertEquals('10:00', $fixture->get_start_time());
 
         $fixture->set_start_time('11:30');
@@ -87,7 +89,7 @@ final class Fixture_Test extends TestCase {
         ];
 
         // This should NOT throw a TypeError
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $this->assertIsArray($fixture->get_comments(), 'Comments should be converted to an array');
         $this->assertSame('This is a plain string comment', $fixture->get_comments()['legacy']);
@@ -99,7 +101,45 @@ final class Fixture_Test extends TestCase {
             'comments' => null
         ];
 
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
         $this->assertNull($fixture->get_comments());
+    }
+
+    public function test_create_from_dto_directly(): void {
+        $dto = new Fixture_Hydration_DTO(
+            id: 99,
+            fixture_title: 'Title',
+            link: 'http://test',
+            date: '2026-05-01',
+            start_time: '14:00',
+            season: '2026',
+            league_id: 10,
+            home_team: 'Home Team',
+            away_team: 'Away Team',
+            home_points: '4',
+            away_points: '2',
+            winner_id: 1,
+            loser_id: 2,
+            status: 0,
+            confirmed: 'Y',
+            custom: array( 'note' => 'test' ),
+            comments: array( 'admin' => 'ok' ),
+            rubbers: array()
+        );
+
+        $fixture = new Fixture( $dto );
+        $this->assertSame( 99, $fixture->get_id() );
+        $this->assertSame( 'Title', $fixture->fixture_title );
+        $this->assertSame( '2026', $fixture->get_season() );
+        $this->assertSame( 10, $fixture->get_league_id() );
+        $this->assertSame( 'Home Team', $fixture->get_home_team() );
+        $this->assertSame( 'Away Team', $fixture->get_away_team() );
+        $this->assertSame( '4', $fixture->get_home_points() );
+        $this->assertSame( '2', $fixture->get_away_points() );
+        $this->assertSame( 1, $fixture->get_winner_id() );
+        $this->assertSame( 2, $fixture->get_loser_id() );
+        $this->assertSame( 'Y', $fixture->get_confirmed() );
+        $this->assertSame( array( 'note' => 'test' ), $fixture->get_custom() );
+        $this->assertSame( array( 'admin' => 'ok' ), $fixture->get_comments() );
     }
 }

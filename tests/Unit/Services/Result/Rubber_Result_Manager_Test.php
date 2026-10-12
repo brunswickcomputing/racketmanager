@@ -12,6 +12,7 @@ use Racketmanager\Services\Validator\Player_Validation_Service;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Request;
@@ -48,7 +49,7 @@ class Rubber_Result_Manager_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = 1;
         $fixture_data->away_team = 2;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_id')->willReturn(456);

@@ -77,6 +77,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Player;
@@ -163,7 +164,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->final = 'Final';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)
             ->disableOriginalConstructor()
@@ -217,7 +218,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)
             ->disableOriginalConstructor()
@@ -286,7 +287,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)
             ->disableOriginalConstructor()
@@ -365,7 +366,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->match_day = '5';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -393,7 +394,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -420,7 +421,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -456,7 +457,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -485,7 +486,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -530,7 +531,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->league_id = 456;
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -606,7 +607,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture_data->leg = 1;
         $fixture_data->host = 'home';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -661,7 +662,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture_data->host = 'home';
         $fixture_data->final = 'semi'; // Should be translated to Semi Final
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -704,7 +705,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
         $fixture_data->host = null;
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -729,7 +730,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture_data->date = '2026-05-01';
         $fixture_data->date_original = '2026-04-01';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -767,7 +768,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->season = '2026';
         $fixture_data->date = '2026-05-01';
         $fixture_data->date_original = '2026-04-01';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -806,7 +807,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->date = '2026-05-01';
         $fixture_data->date_original = '2026-04-01';
         $fixture_data->final = 'quarter'; // Should be translated to Quarter Final
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -843,7 +844,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
         $league->id = 456;
@@ -894,7 +895,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->match_title = 'Home v Away';
         $fixture_data->home_team   = '100';
         $fixture_data->season      = '2026';
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
         $fixture->fixture_title = 'Home v Away';
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
@@ -959,7 +960,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->league_id   = 456;
         $fixture_data->match_title = 'Home v Away';
         $fixture_data->home_captain = 5;
-        $fixture = new Fixture( $fixture_data );
+        $fixture = Fixture_Factory::from_object( $fixture_data );
         $fixture->fixture_title = 'Home v Away';
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
@@ -1044,7 +1045,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_competition_type')->willReturn('league');
@@ -1083,7 +1084,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_competition_type')->willReturn('tournament');
@@ -1113,7 +1114,7 @@ class Notification_Service_Test extends TestCase {
         $fixture_data->home_team = '100';
         $fixture_data->away_team = '200';
         $fixture_data->season = '2026';
-        $fixture = new Fixture($fixture_data);
+        $fixture = Fixture_Factory::from_object($fixture_data);
 
         $league = $this->createMock(League::class);
         $league->method('get_competition_type')->willReturn('tournament');

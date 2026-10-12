@@ -8,6 +8,7 @@ use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
@@ -77,7 +78,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_admin_can_update_fixture(): void {
-        $fixture = new Fixture( (object)[ 'id' => 1, 'confirmed' => 'P', 'league_id' => 100 ] );
+        $fixture = Fixture_Factory::from_object( (object)[ 'id' => 1, 'confirmed' => 'P', 'league_id' => 100 ] );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
@@ -92,7 +93,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_home_captain_can_update_pending_match(): void {
-        $fixture = new Fixture( (object)[ 
+        $fixture = Fixture_Factory::from_object( (object)[ 
             'id' => 1, 
             'confirmed' => 'P', 
             'league_id' => 100, 
@@ -129,7 +130,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_away_captain_can_update_pending_match_in_home_entry_mode_with_approval(): void {
-        $fixture = new Fixture( (object)[ 
+        $fixture = Fixture_Factory::from_object( (object)[ 
             'id' => 1, 
             'confirmed' => 'P', 
             'league_id' => 100, 
@@ -167,7 +168,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_player_can_update_if_capability_is_player(): void {
-        $fixture = new Fixture( (object)[ 
+        $fixture = Fixture_Factory::from_object( (object)[ 
             'id' => 1, 
             'confirmed' => 'P', 
             'league_id' => 100, 
@@ -209,7 +210,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_match_secretary_can_update(): void {
-        $fixture = new Fixture( (object)[ 
+        $fixture = Fixture_Factory::from_object( (object)[ 
             'id' => 1, 
             'confirmed' => 'P', 
             'league_id' => 100, 
@@ -254,7 +255,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_confirmed_match_cannot_be_updated_by_captain(): void {
-        $fixture = new Fixture( (object)[ 
+        $fixture = Fixture_Factory::from_object( (object)[ 
             'id' => 1, 
             'confirmed' => 'Y', 
             'league_id' => 100, 

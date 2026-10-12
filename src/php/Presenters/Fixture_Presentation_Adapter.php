@@ -57,9 +57,9 @@ class Fixture_Presentation_Adapter {
 
     public function __construct(
         public readonly Fixture $fixture,
-        ?League $league = null,
-        ?Event $event = null,
-        ?Competition $competition = null,
+        ?object $league = null,
+        ?object $event = null,
+        ?object $competition = null,
         ?Team_Details_DTO $home_team_dtls = null,
         ?Team_Details_DTO $away_team_dtls = null,
         string $link = '',
@@ -96,7 +96,8 @@ class Fixture_Presentation_Adapter {
         $this->rubbers           = $fixture->get_rubbers();
 
         $league_title = $league ? ( method_exists( $league, 'get_name' ) ? (string) $league->get_name() : (string) ( $league->title ?? '' ) ) : '';
-        $league_type  = $league ? ( method_exists( $league, 'get_type' ) ? (string) $league->get_type() : (string) ( $league->mode ?? $league->type ?? '' ) ) : '';
+        $raw_type     = $league ? ( method_exists( $league, 'get_type' ) ? $league->get_type() : ( $league->mode ?? $league->type ?? '' ) ) : '';
+        $league_type  = $raw_type instanceof \BackedEnum ? $raw_type->value : (string) ( $raw_type ?? '' );
         $league_sport = $league ? ( method_exists( $league, 'get_sport' ) ? (string) $league->get_sport() : (string) ( $league->sport ?? '' ) ) : '';
 
         // Build league graph for legacy template consumption.
@@ -115,7 +116,8 @@ class Fixture_Presentation_Adapter {
         $event_obj                 = new stdClass();
         $event_obj->id             = $event ? ( method_exists( $event, 'get_id' ) ? (int) $event->get_id() : (int) ( $event->id ?? 0 ) ) : 0;
         $event_obj->name           = $event ? ( method_exists( $event, 'get_name' ) ? (string) $event->get_name() : (string) ( $event->name ?? '' ) ) : '';
-        $event_type                = $event ? ( method_exists( $event, 'get_type' ) ? (string) $event->get_type() : (string) ( $event->type ?? '' ) ) : '';
+        $raw_event_type            = $event ? ( method_exists( $event, 'get_type' ) ? $event->get_type() : ( $event->type ?? '' ) ) : '';
+        $event_type                = $raw_event_type instanceof \BackedEnum ? $raw_event_type->value : (string) ( $raw_event_type ?? '' );
         $event_obj->type           = $event_type;
         $event_obj->competition_id = $event ? ( method_exists( $event, 'get_competition_id' ) ? (int) $event->get_competition_id() : (int) ( $event->competition_id ?? 0 ) ) : 0;
         $event_obj->is_box         = $event ? ( ! empty( $event->is_box ) || 'box' === $event_type ) : false;
@@ -123,7 +125,8 @@ class Fixture_Presentation_Adapter {
         $comp_obj                  = new stdClass();
         $comp_obj->id              = $competition ? ( method_exists( $competition, 'get_id' ) ? (int) $competition->get_id() : (int) ( $competition->id ?? 0 ) ) : 0;
         $comp_obj->name            = $competition ? ( method_exists( $competition, 'get_name' ) ? (string) $competition->get_name() : (string) ( $competition->name ?? '' ) ) : '';
-        $comp_type                 = $competition ? ( method_exists( $competition, 'get_type' ) ? (string) $competition->get_type() : (string) ( $competition->type ?? '' ) ) : '';
+        $raw_comp_type             = $competition ? ( method_exists( $competition, 'get_type' ) ? $competition->get_type() : ( $competition->type ?? '' ) ) : '';
+        $comp_type                 = $raw_comp_type instanceof \BackedEnum ? $raw_comp_type->value : (string) ( $raw_comp_type ?? '' );
         $comp_obj->type            = $comp_type;
         $comp_obj->is_championship = ( 'championship' === $comp_type || ( $competition && method_exists( $competition, 'is_championship' ) && $competition->is_championship() ) );
         $comp_obj->is_cup          = ( 'cup' === $comp_type || ( $competition && method_exists( $competition, 'is_cup' ) && $competition->is_cup() ) );
@@ -199,9 +202,9 @@ class Fixture_Presentation_Adapter {
         ?Fixture_Permission_Service $permission_service = null
     ): self {
         $league_id = (int) $fixture->get_league_id();
-        $league    = $league_id ? $competition_service->get_league_repository()->find_by_id( $league_id ) : null;
-        $event     = ( $league && $league->get_event_id() ) ? $competition_service->get_event_by_id( $league->get_event_id() ) : null;
-        $competition = ( $event && $event->get_competition_id() ) ? $competition_service->get_by_id( $event->get_competition_id() ) : null;
+        $league    = $league_id ? $competition_service->get_league_repository()->find_by_id( $league_id ) : ( method_exists( $fixture, 'get_league' ) ? $fixture->get_league() : ( $fixture->league ?? null ) );
+        $event     = ( $league && method_exists( $league, 'get_event_id' ) && $league->get_event_id() ) ? $competition_service->get_event_by_id( $league->get_event_id() ) : ( $league->event ?? null );
+        $competition = ( $event && method_exists( $event, 'get_competition_id' ) && $event->get_competition_id() ) ? $competition_service->get_by_id( $event->get_competition_id() ) : ( $event->competition ?? null );
 
         $home_val = $fixture->get_home_team();
         $away_val = $fixture->get_away_team();
@@ -209,8 +212,11 @@ class Fixture_Presentation_Adapter {
         $home_dtls = is_numeric( $home_val ) ? $team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $team_service->derive_team_details( (string) $home_val ) : null );
         $away_dtls = is_numeric( $away_val ) ? $team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $team_service->derive_team_details( (string) $away_val ) : null );
 
-        $link = ( $link_service && $league ) ? $link_service->get_fixture_link( $fixture, $league, $home_dtls, $away_dtls ) : '';
-        $is_update_allowed = $permission_service ? $permission_service->is_update_allowed( $fixture ) : (object) array( 'user_can_update' => false );
+        $link = ( $link_service && $league ) ? $link_service->get_fixture_link( $fixture, $league, $home_dtls, $away_dtls ) : ( $fixture->get_link() ?? '' );
+        if ( empty( $link ) && $fixture->get_link() ) {
+            $link = $fixture->get_link();
+        }
+        $is_update_allowed = $permission_service ? $permission_service->is_update_allowed( $fixture ) : ( method_exists( $fixture, 'is_update_allowed' ) ? $fixture->is_update_allowed() : (object) array( 'user_can_update' => false ) );
 
         return new self( $fixture, $league, $event, $competition, $home_dtls, $away_dtls, $link, $is_update_allowed );
     }

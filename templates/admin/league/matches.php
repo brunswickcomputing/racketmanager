@@ -15,11 +15,12 @@ global $racketmanager;
 /** @var string $group */
 /** @var string $match_day */
 /** @var array  $matches */
+$competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
 ?>
 <div class="row gx-3 justify-content-between mb-3">
     <div class="col-auto mb-3 mb-md-0">
         <form id="matches-filter" method="get" class="form-control">
-            <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s" />
+            <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $competition_type ); ?>s" />
             <input type="hidden" name="view" value="league" />
             <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
             <input type="hidden" name="season" value="<?php echo esc_html( $season ); ?>" />
@@ -75,7 +76,7 @@ global $racketmanager;
             ?>
             <!-- Bulk Editing of Matches -->
             <form action="/admin.php" method="get" class="form-control">
-                <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s" />
+                <input type="hidden" name="page" value="racketmanager-<?php echo esc_attr( $competition_type ); ?>s" />
                 <input type="hidden" name="view" value="match" />
                 <input type="hidden" name="league_id" value="<?php echo esc_attr( $league->id ); ?>" />
                 <input type="hidden" name="season" value="<?php echo esc_html( $league->current_season['name'] ); ?>" />

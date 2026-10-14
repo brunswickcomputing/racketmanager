@@ -591,7 +591,6 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_die' ) ) {
-        #[NoReturn]
         function wp_die( $message = '', $title = '', $args = array() ) {
             $GLOBALS['wp_stubs_last_wp_die'] = array(
                 'message' => $message,
@@ -1438,39 +1437,76 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_event' ) ) {
-        function get_event( $event_id ): ?Event {
-            if ( isset( $GLOBALS['wp_stubs_events'][ $event_id ] ) ) {
-                return $GLOBALS['wp_stubs_events'][ $event_id ];
+        /**
+         * Stub for get_event() in test environments.
+         *
+         * @param int|string|Event|null $event_id
+         * @param string                $search_term
+         * @return Event|null
+         */
+        function get_event( int|string|Event|null $event_id = null, string $search_term = 'id' ): ?Event {
+            if ( $event_id instanceof Event ) {
+                return $event_id;
             }
+
             if ( array_key_exists( $event_id, $GLOBALS['wp_stubs_events'] ?? [] ) ) {
                 return $GLOBALS['wp_stubs_events'][ $event_id ];
             }
+
             if ( empty( $event_id ) ) {
                 return null;
             }
-            return new class((object)['id'=>$event_id]) extends Event {
-                public function __construct($obj) {
-                    $this->id = $obj->id;
-                    $comp = new stdClass();
-                    $comp->settings = new \Racketmanager\Domain\Competition\Competition_Settings( ['point_rule' => 'three', 'mode' => 'league', 'sport' => 'tennis'] );
-                    $comp->type = \Racketmanager\Domain\Competition\Competition_Type::LEAGUE;
-                    $comp->is_player_entry = false;
-                    $comp->standings = [];
-                    $comp->current_season = ['name' => '2024-25'];
-                    $this->competition = $comp;
-                    $this->seasons = json_encode([['name' => '2024-25']]);
+
+            return new class( (int) $event_id ) extends Event {
+                private const DEFAULT_SEASON = '2024-25';
+
+                /**
+                 * @noinspection PhpMissingParentConstructorInspection
+                 */
+                public function __construct( int $id ) {
+                    $this->id   = $id;
                     $this->name = 'Test Event';
-                    $this->num_sets = 3;
-                    $this->num_rubbers = 6;
                     $this->type = 'doubles';
-                    $this->standings = [];
+
+                    $default_season = [ 'name' => self::DEFAULT_SEASON ];
+
+                    $this->competition = (object) [
+                        'settings'        => new \Racketmanager\Domain\Competition\Competition_Settings( [
+                            'point_rule' => 'three',
+                            'mode'       => 'league',
+                            'sport'      => 'tennis',
+                        ] ),
+                        'type'            => \Racketmanager\Domain\Competition\Competition_Type::LEAGUE,
+                        'is_player_entry' => false,
+                        'standings'       => [],
+                        'current_season'  => $default_season,
+                    ];
+
+                    $this->seasons     = json_encode( [ $default_season ] );
+                    $this->num_sets    = 3;
+                    $this->num_rubbers = 6;
+                    $this->standings   = [];
                 }
-                public function get_num_sets(): int { return 3; }
-                public function get_num_rubbers(): ?int { return 6; }
-                public function get_season_event($season = false, bool $index = false): array|false|string { return '2024-25'; }
-                public function get_seasons(): array { return [['name' => '2024-25']]; }
-                public function set_num_leagues(bool $total = false): void {}
-                public function set_season(?string $season = null, bool $force_overwrite = false): void {}
+
+                public function get_num_sets(): int {
+                    return $this->num_sets;
+                }
+
+                public function get_num_rubbers(): ?int {
+                    return $this->num_rubbers;
+                }
+
+                public function get_season_event( $season = false, bool $index = false ): array|false|string {
+                    return self::DEFAULT_SEASON;
+                }
+
+                public function get_seasons(): array {
+                    return [ [ 'name' => self::DEFAULT_SEASON ] ];
+                }
+
+                public function set_num_leagues( bool $total = false ): void {}
+
+                public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
             };
         }
     }

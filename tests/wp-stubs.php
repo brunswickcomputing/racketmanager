@@ -250,7 +250,7 @@ namespace {
     }
 
     if ( ! function_exists( 'retrieve_password' ) ) {
-        function retrieve_password( string $user_login ) {
+        function retrieve_password( string $user_login = '' ) {
             if ( isset( $GLOBALS['wp_stubs_retrieve_password_callback'] ) ) {
                 return ( $GLOBALS['wp_stubs_retrieve_password_callback'] )( $user_login );
             }
@@ -591,6 +591,7 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_die' ) ) {
+        #[NoReturn]
         function wp_die( $message = '', $title = '', $args = array() ) {
             $GLOBALS['wp_stubs_last_wp_die'] = array(
                 'message' => $message,

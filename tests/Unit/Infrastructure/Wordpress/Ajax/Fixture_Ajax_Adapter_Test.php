@@ -36,7 +36,7 @@ use stdClass;
 
 class Fixture_Ajax_Adapter_Test extends TestCase {
     private Simple_Container $container;
-    private Stub|Security_Service_Interface $security_service;
+    private MockObject|Security_Service_Interface $security_service;
     private MockObject|Fixture_Detail_Service $fixture_detail_service;
     private MockObject|View_Renderer_Interface $view_renderer;
     private Fixture_Ajax_Adapter $adapter;
@@ -44,13 +44,29 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     /**
      * @return void
      */
-    #[AllowMockObjectsWithoutExpectations]
     public function test_print_match_card_fails_security_check(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( false );
+        $post = [ 'security' => 'invalid_nonce' ];
 
-        $response = $this->adapter->print_match_card( $post ?? [] );
+        $this->security_service
+            ->expects( $this->once() )
+            ->method( 'verify_nonce' )
+            ->with( 'invalid_nonce', 'ajax-nonce' )
+            ->willReturn( false );
+
+        $this->fixture_detail_service
+            ->expects( $this->never() )
+            ->method( 'get_fixture_with_details' );
+
+        $this->view_renderer
+            ->expects( $this->never() )
+            ->method( 'render_to_string' );
+
+        $response = $this->adapter->print_match_card( $post );
         $data     = $response->get_content();
+
         $this->assertSame( 403, $response->get_status_code() );
+        $this->assertIsArray( $data );
+        $this->assertArrayHasKey( 'msg', $data );
         $this->assertStringContainsString( 'Security', $data['msg'] );
     }
 
@@ -685,7 +701,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->container        = new Simple_Container();
-        $this->security_service = $this->createStub( Security_Service_Interface::class );
+        $this->security_service = $this->createMock( Security_Service_Interface::class );
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
 
         $response_factory->method( 'create_success_response' )->willReturnCallback( function ( $data, $status = null ) {

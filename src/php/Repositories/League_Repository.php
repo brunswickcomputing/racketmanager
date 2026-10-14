@@ -96,6 +96,33 @@ class League_Repository implements League_Repository_Interface {
         return $league;
     }
 
+    public function find_by_name( string $name ): ?League {
+        if ( empty( $name ) ) {
+            return null;
+        }
+
+        $league = wp_cache_get( $name, 'leagues' );
+
+        if ( ! $league && $this->wpdb ) {
+            $league = $this->wpdb->get_row(
+                $this->wpdb->prepare(
+                    "SELECT * FROM $this->table_name WHERE `title` = %s LIMIT 1",
+                    $name
+                )
+            );
+
+            if ( ! $league ) {
+                return null;
+            }
+            $league = new League( $league );
+
+            wp_cache_set( $name, $league, 'leagues' );
+            wp_cache_set( $league->id, $league, 'leagues' );
+        }
+
+        return $league;
+    }
+
     public function find_next_sequence_number( string $event_name ): int {
         // We look for names starting with the shortcode followed by a space and digits
         $prefix_like = $this->wpdb->esc_like( $event_name ) . ' ' .  '%';

@@ -8,10 +8,22 @@
 namespace Racketmanager;
 
 /** @var array $players */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Players_Page_View_Model ) {
+    $players        = $vm->players;
+    $player         = $vm->player ?? ( $player ?? null );
+    $errors         = $vm->errors;
+    $form_valid     = $vm->form_valid;
+    $error_fields   = array();
+    $error_messages = array();
+    foreach ( $errors->all() as $err_fld => $err_msg ) {
+        $error_fields[]   = (string) $err_fld;
+        $error_messages[] = (string) $err_msg;
+    }
+}
 ?>
 <!-- Add Player -->
 <div class="mb-3">
-    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/player.php'; ?>
+    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/player.php'; ?>
 </div>
 <div class="mb-3">
     <form id="player-filter" method="get">

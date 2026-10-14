@@ -33,6 +33,8 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Repository;
@@ -66,12 +68,13 @@ class Competition_Entry_Service {
     private Finance_Service $finance_service;
     private Notify_Service $notify_service;
     private Tournament_Service $tournament_service;
+    private Mailer_Interface $mailer;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Tournament_Repository $tournament_repository, Tournament_Entry_Repository $tournament_entry_repository, Club_Service $club_service, Competition_Service $competition_service, Finance_Service $finance_service, Player_Service $player_service, Tournament_Service $tournament_service, Notify_Service $notify_service ) {
+    public function __construct( RacketManager $plugin_instance, Club_Repository $club_repository, League_Repository $league_repository, League_Team_Repository $league_team_repository, Team_Repository $team_repository, Tournament_Repository $tournament_repository, Tournament_Entry_Repository $tournament_entry_repository, Club_Service $club_service, Competition_Service $competition_service, Finance_Service $finance_service, Player_Service $player_service, Tournament_Service $tournament_service, Notify_Service $notify_service, ?Mailer_Interface $mailer = null ) {
         $this->racketmanager               = $plugin_instance;
         $this->club_repository             = $club_repository;
         $this->club_service                = $club_service;
@@ -85,6 +88,7 @@ class Competition_Entry_Service {
         $this->player_service              = $player_service;
         $this->tournament_service          = $tournament_service;
         $this->notify_service              = $notify_service;
+        $this->mailer                      = $mailer ?? new Wp_Mailer();
     }
 
     /**
@@ -155,7 +159,7 @@ class Competition_Entry_Service {
                         'addressee'       => $match_secretary->display_name,
                         'season_dtls'     => $season_dtls,
                     ), 'email' );
-                    wp_mail( $email_to, $email_subject, $email_message, $headers );
+                    $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
                     ++ $messages_sent;
                 }
                 if ( $messages_sent ) {
@@ -253,7 +257,7 @@ class Competition_Entry_Service {
                     'season_dtls'     => $season_dtls,
                     'days_remaining'  => $days_remaining,
                 ), 'email' );
-                wp_mail( $email_to, $email_subject, $email_message, $headers );
+                $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
                 ++ $messages_sent;
             }
             /* translation: %d number of messages sent */
@@ -843,7 +847,7 @@ class Competition_Entry_Service {
                     'type'           => $type,
                     'account_link'   => $account_link,
                 ), 'email' );
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
             ++ $messages_sent;
         }
         if ( $notify_clubs ) {
@@ -862,7 +866,7 @@ class Competition_Entry_Service {
                         'addressee'     => $club->match_secretary->display_name,
                         'type'          => 'club',
                     ), 'email' );
-                wp_mail( $email_to, $email_subject, $email_message, $headers );
+                $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
                 ++ $messages_sent;
             }
         }
@@ -1282,7 +1286,7 @@ class Competition_Entry_Service {
         $template_args['player']          = $player;
         $template_args['contact_email']   = $email_from;
         $email_message                    = $this->racketmanager->shortcodes->load_template( $template, $template_args, 'email' );
-        wp_mail( $email_to, $email_subject, $email_message, $headers );
+        $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
 
         return $amount_refund;
     }

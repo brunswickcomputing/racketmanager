@@ -2,10 +2,12 @@
 
 namespace Racketmanager\Rest;
 
+use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Contracts\Data_Exporter_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
-use Racketmanager\Services\Export\Export_Service;
+use WP_Error;
 use WP_REST_Controller;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -19,18 +21,26 @@ use WP_REST_Server;
 class Export_Controller extends WP_REST_Controller {
 
     private RacketManager $racketmanager;
-    private Export_Service $exporter;
+    private Data_Exporter_Interface $exporter;
+    private Rest_Controller_Adapter $adapter;
     protected $namespace;
     protected $rest_base;
 
     /**
      * Export_Controller constructor.
      *
-     * @param RacketManager $plugin_instance
+     * @param RacketManager                $plugin_instance
+     * @param Data_Exporter_Interface|null $exporter
+     * @param Rest_Controller_Adapter|null $adapter
      */
-    public function __construct( RacketManager $plugin_instance ) {
+    public function __construct(
+        RacketManager $plugin_instance,
+        ?Data_Exporter_Interface $exporter = null,
+        ?Rest_Controller_Adapter $adapter = null
+    ) {
         $this->racketmanager = $plugin_instance;
-        $this->exporter      = $this->racketmanager->container->get( 'exporter' );
+        $this->exporter      = $exporter ?? $this->racketmanager->container->get( 'exporter' );
+        $this->adapter       = $adapter ?? ( isset( $this->racketmanager->container ) && $this->racketmanager->container->has( 'rest_controller_adapter' ) ? $this->racketmanager->container->get( 'rest_controller_adapter' ) : new Rest_Controller_Adapter() );
         $this->namespace     = 'racketmanager/v1';
         $this->rest_base     = 'export';
     }
@@ -85,7 +95,7 @@ class Export_Controller extends WP_REST_Controller {
                 array(
                     'methods'             => WP_REST_Server::READABLE,
                     'callback'            => array( $this, 'get_report_results' ),
-                    'permission_callback' => array( $this, 'get_item_permissions_check' ),
+                    'permission_callback' => array( $this, 'get_report_results_permissions_check' ),
                     'args'                => $this->get_export_args(),
                 ),
             )
@@ -95,13 +105,23 @@ class Export_Controller extends WP_REST_Controller {
     }
 
     /**
-     * Check if a given request has access to export data.
+     * Check if a given request has access to public export data.
      *
      * @param WP_REST_Request $request Full data about the request.
-     * @return bool
+     * @return bool|WP_Error
      */
-    public function get_item_permissions_check( $request ): bool {
-        return true;
+    public function get_item_permissions_check( $request ): bool|WP_Error {
+        return $this->adapter->check_export_permissions( $request, 'public' );
+    }
+
+    /**
+     * Check if a given request has access to sensitive report results export data.
+     *
+     * @param WP_REST_Request $request Full data about the request.
+     * @return bool|WP_Error
+     */
+    public function get_report_results_permissions_check( $request ): bool|WP_Error {
+        return $this->adapter->check_export_permissions( $request, 'report_results' );
     }
 
     /**
@@ -168,18 +188,8 @@ class Export_Controller extends WP_REST_Controller {
      * @param WP_REST_Request $request
      * @return Export_Criteria
      */
-    private function prepare_criteria_from_request( WP_REST_Request $request ): Export_Criteria {
-        $criteria = new Export_Criteria();
-        $criteria->league_id      = $request->get_param( 'league_id' );
-        $criteria->season         = $request->get_param( 'season' );
-        $criteria->club_id        = $request->get_param( 'club_id' );
-        $criteria->competition_id = $request->get_param( 'competition_id' );
-        $criteria->team_id        = $request->get_param( 'team_id' );
-        $criteria->date_from      = $request->get_param( 'date_from' );
-        $criteria->date_to        = $request->get_param( 'date_to' );
-        $criteria->format         = $request->get_param( 'format' ) ?: 'json';
-
-        return $criteria;
+    public function prepare_criteria_from_request( WP_REST_Request $request ): Export_Criteria {
+        return $this->adapter->prepare_criteria_from_request( $request );
     }
 
     /**
@@ -190,36 +200,23 @@ class Export_Controller extends WP_REST_Controller {
      * @param string $mime_type
      * @return WP_REST_Response
      */
-    private function prepare_export_response( string $content, string $filename, string $mime_type ): WP_REST_Response {
-        $response = new WP_REST_Response( $content, 200 );
-        $response->header( 'Content-Type', $mime_type );
-        $response->header( 'Content-Disposition', 'attachment; filename="' . $filename . '"' );
-
-        return $response;
+    public function prepare_export_response( string $content, string $filename, string $mime_type ): WP_REST_Response {
+        return $this->adapter->prepare_export_response( $content, $filename, $mime_type );
     }
 
     /**
      * Serve raw export content for CSV and ICS formats to prevent JSON encoding.
      *
-     * @param bool $served  Whether the request has already been served.
+     * @param bool             $served  Whether the request has already been served.
      * @param WP_REST_Response $result  The response object.
-     * @param WP_REST_Request $request The request object.
-     * @param WP_REST_Server $server  The server object.
+     * @param WP_REST_Request  $request The request object.
+     * @param WP_REST_Server   $server  The server object.
      *
      * @return bool
      */
     public function serve_raw_export( bool $served, WP_REST_Response $result, WP_REST_Request $request, WP_REST_Server $server ): bool {
         if ( str_contains( $request->get_route(), $this->namespace . '/' . $this->rest_base ) ) {
-            $headers = $result->get_headers();
-            $content_type = $headers['Content-Type'] ?? '';
-
-            if ( $content_type === Export_Formatter_Interface::CONTENT_TYPE_CSV || $content_type === Export_Formatter_Interface::CONTENT_TYPE_ICS ) {
-                status_header( $result->get_status() );
-                $server->send_headers( $result->get_headers() );
-                
-                echo $result->get_data();
-                return true;
-            }
+            return $this->adapter->serve_raw_export( $served, $result, $request, $server );
         }
 
         return $served;

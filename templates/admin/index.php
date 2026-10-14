@@ -7,18 +7,32 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Admin\View_Models\Index_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var bool   $is_invalid */
-/** @var string $msg */
+/** @var ?Index_Page_View_Model $vm */
+if ( isset( $vm ) && $vm instanceof Index_Page_View_Model ) {
+    $errors           = $vm->errors;
+    $competition_name = $vm->competition_name;
+    $type             = $vm->type;
+    $age_group        = $vm->age_group;
+}
+
+if ( ! isset( $errors ) || ! ( $errors instanceof Error_Bag ) ) {
+    $errors = new Error_Bag();
+}
+
+$is_invalid_class = defined( 'RACKETMANAGER_IS_INVALID' ) ? RACKETMANAGER_IS_INVALID : 'is-invalid';
 ?>
 <div class="container">
     <h1><?php esc_html_e( 'Racketmanager Competitions', 'racketmanager' ); ?></h1>
     <div id="competitions-table" class="league-block-container mb-3">
-        <div class="">
-            <?php
-            $competition_type = null;
-            require_once 'includes/competitions.php';
+                <div class="">
+                    <?php
+                    $competition_type = null;
+                    $selected_competition_age_group = $age_group ?? null;
+                    include __DIR__ . '/includes/competitions.php';
             ?>
         </div>
     </div>
@@ -31,15 +45,10 @@ use Racketmanager\Util\Util_Lookup;
                 <div class="col-md-6">
                     <div class="form-floating">
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
-                        if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'competition', $validator->err_flds, true ) ) ) {
-                            $is_invalid = true;
-                            $msg_id     = array_search( 'competition', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
-                        }
+                        $is_invalid = $errors->has( 'competition' );
+                        $msg        = $errors->message( 'competition' );
                         ?>
-                        <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter name for new competition', 'racketmanager' ); ?>" type="text" name="competition_name" id="competition_name" value="" size="30" />
+                        <input class="form-control <?php echo $is_invalid ? esc_attr( $is_invalid_class ) : ''; ?>" placeholder="<?php esc_html_e( 'Enter name for new competition', 'racketmanager' ); ?>" type="text" name="competition_name" id="competition_name" value="<?php echo esc_attr( $competition_name ?? '' ); ?>" size="30" />
                         <label for="competition_name"><?php esc_html_e( 'Competition name', 'racketmanager' ); ?></label>
                         <?php
                         if ( ! empty( $is_invalid ) ) {
@@ -55,20 +64,15 @@ use Racketmanager\Util\Util_Lookup;
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="form-floating">
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
-                        if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'type', $validator->err_flds, true ) ) ) {
-                            $is_invalid = true;
-                            $msg_id     = array_search( 'type', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
-                        }
+                        $is_invalid = $errors->has( 'type' );
+                        $msg        = $errors->message( 'type' );
                         ?>
-                        <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="type" id="type">
-                            <option disabled selected><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
+                        <select class="form-select <?php echo $is_invalid ? esc_attr( $is_invalid_class ) : ''; ?>" name="type" id="type">
+                            <option disabled <?php selected( empty( $type ) ); ?>><?php esc_html_e( 'Select type', 'racketmanager' ); ?></option>
                             <?php
-                            foreach ( Util_Lookup::get_competition_types() as $competition_type => $competition_type_desc ) {
+                            foreach ( Util_Lookup::get_competition_types() as $competition_type_key => $competition_type_desc ) {
                                 ?>
-                                <option value="<?php echo esc_html( $competition_type ); ?>"><?php echo esc_html( ucfirst( $competition_type_desc ) ); ?></option>
+                                <option value="<?php echo esc_attr( $competition_type_key ); ?>" <?php selected( ( $type ?? '' ) === $competition_type_key ); ?>><?php echo esc_html( ucfirst( $competition_type_desc ) ); ?></option>
                                 <?php
                             }
                             ?>
@@ -86,20 +90,15 @@ use Racketmanager\Util\Util_Lookup;
                 <div class="col-md-6">
                     <div class="form-floating">
                         <?php
-                        $is_invalid = false;
-                        $msg        = null;
-                        if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'age_group', $validator->err_flds, true ) ) ) {
-                            $is_invalid = true;
-                            $msg_id     = array_search( 'age_group', $validator->err_flds, true );
-                            $msg        = $validator->err_msgs[$msg_id] ?? null;
-                        }
+                        $is_invalid = $errors->has( 'age_group' );
+                        $msg        = $errors->message( 'age_group' );
                         ?>
-                        <select class="form-select <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" name="age_group" id="age_group">
-                            <option disabled selected><?php esc_html_e( 'Select age group', 'racketmanager' ); ?></option>
+                        <select class="form-select <?php echo $is_invalid ? esc_attr( $is_invalid_class ) : ''; ?>" name="age_group" id="age_group">
+                            <option disabled <?php selected( empty( $selected_competition_age_group ) ); ?>><?php esc_html_e( 'Select age group', 'racketmanager' ); ?></option>
                             <?php
-                            foreach ( Util_Lookup::get_age_groups() as $age_group => $age_group_desc ) {
+                            foreach ( Util_Lookup::get_age_groups() as $age_group_key => $age_group_desc ) {
                                 ?>
-                                <option value="<?php echo esc_html( $age_group ); ?>"><?php echo esc_html( $age_group_desc ); ?></option>
+                                <option value="<?php echo esc_attr( $age_group_key ); ?>" <?php selected( ( $selected_competition_age_group ?? '' ) === $age_group_key ); ?>><?php echo esc_html( $age_group_desc ); ?></option>
                                 <?php
                             }
                             ?>

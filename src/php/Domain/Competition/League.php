@@ -54,13 +54,13 @@ class League {
      *
      * @var string
      */
-    public string $title;
+    public string $title = '';
     /**
      * League name
      *
      * @var string
      */
-    public string $name;
+    public string $name = '';
 
     /**
      * Seasons data
@@ -1102,7 +1102,9 @@ class League {
     public function set_season( false|string $season = false, bool $force_overwrite = false ): void {
         global $wp;
         // Build a safe seasons array from Event (JSON-backed) and an index by name
-        $seasons_list = $this->event->get_seasons();
+        $seasons_list = ( isset( $this->event ) && is_object( $this->event ) && method_exists( $this->event, 'get_seasons' ) )
+            ? $this->event->get_seasons()
+            : ( is_array( $this->seasons ) ? $this->seasons : array() );
         $by_name = array();
         if ( is_array( $seasons_list ) ) {
             foreach ( $seasons_list as $s ) {

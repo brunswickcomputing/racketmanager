@@ -17,6 +17,27 @@ use Racketmanager\Util\Util_Lookup;
 /** @var array  $club_charges */
 /** @var array  $competitions */
 /** @var Season[] $racketmanager_seasons */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charge_Page_View_Model ) {
+    $charge                = $vm->charge;
+    $form_title            = $vm->form_title;
+    $edit                  = $vm->edit;
+    $form_action           = $vm->form_action;
+    $club_charges          = $vm->club_charges;
+    $competitions          = $vm->competitions;
+    $racketmanager_seasons = $vm->seasons;
+    $errors                = $vm->errors;
+}
+if ( ! isset( $validator ) ) {
+    $validator           = new \stdClass();
+    $validator->err_flds = array();
+    $validator->err_msgs = array();
+}
+if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+    foreach ( $errors->all() as $err_fld => $err_msg ) {
+        $validator->err_flds[] = $err_fld;
+        $validator->err_msgs[] = $err_msg;
+    }
+}
 global $racketmanager;
 $is_invalid = false;
 $msg        = null;

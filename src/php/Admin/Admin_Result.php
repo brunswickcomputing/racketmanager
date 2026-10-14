@@ -7,10 +7,16 @@
  * @subpackage Admin/Result
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager\Admin;
 
+use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Results_Match_Presenter;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
-use function Racketmanager\get_result_check;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Services\Admin\Result\Results_Checker_Action_Dispatcher_Interface;
+use Racketmanager\Services\Container\Simple_Container;
 
 /**
  * RacketManager Season Admin functions
@@ -21,6 +27,24 @@ use function Racketmanager\get_result_check;
  * @subpackage Admin/Result
  */
 class Admin_Result extends Admin_Display {
+
+    private ?Results_Checker_Action_Dispatcher_Interface $results_checker_dispatcher = null;
+    private Admin_Results_Match_Presenter $results_match_presenter;
+
+    public function __construct(
+        $plugin_instance,
+        ?Admin_Action_Adapter $admin_action_adapter = null,
+        ?Results_Checker_Action_Dispatcher_Interface $results_checker_action_dispatcher = null,
+        ?Admin_Results_Match_Presenter $results_match_presenter = null,
+    ) {
+        parent::__construct( $plugin_instance );
+        if ( null !== $admin_action_adapter ) {
+            $this->admin_action_adapter = $admin_action_adapter;
+        }
+        $this->results_checker_dispatcher = $results_checker_action_dispatcher;
+        $this->results_match_presenter    = $results_match_presenter ?? $this->resolve_results_match_presenter();
+    }
+
     /**
      * Function to handle administration club displays
      *
@@ -35,78 +59,190 @@ class Admin_Result extends Admin_Display {
     /**
      * Show RacketManager results page
      */
-    private function display_results_page(): void {
+    public function display_results_page(): void {
         global $racketmanager;
         if ( ! current_user_can( 'view_leagues' ) ) {
             $this->set_message( $this->no_permission, true );
             $this->show_message();
-        } else {
-            $season_select        = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( $_GET['season'] ) ) : '';
-            $competition_select   = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : '';
-            $event_select         = isset( $_GET['event'] ) ? intval( $_GET['event'] ) : '';
-            $results_check_filter = isset( $_GET['filterResultsChecker'] ) ? sanitize_text_field( wp_unslash( $_GET['filterResultsChecker'] ) ) : 'outstanding';
-            $tab                  = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'resultschecker';
-            if ( isset( $_POST['doResultsChecker'] ) ) {
-                if ( current_user_can( 'update_results' ) ) {
-                    check_admin_referer( 'results-checker-bulk' );
-                    if ( isset( $_POST['resultsChecker'] ) && isset( $_POST['action'] ) ) {
-                        $manager    = $racketmanager->container->get( 'results_checker_manager' );
-                        $repository = $racketmanager->container->get( 'results_checker_repository' );
-                        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                        foreach ( $_POST['resultsChecker'] as $i => $results_checker_id ) {
-                            $result_check = get_result_check( $results_checker_id );
-                            if ( $result_check ) {
-                                if ( 'approve' === $_POST['action'] ) {
-                                    $manager->approve( $result_check );
-                                } elseif ( 'handle' === $_POST['action'] ) {
-                                    $manager->handle( $result_check );
-                                } elseif ( 'delete' === $_POST['action'] ) {
-                                    $repository->delete( $result_check->id );
-                                }
-                            } else {
-                                $this->set_message( __( 'Result check not found', 'racketmanager' ), true );
-                            }
-                        }
-                        if ( 'approve' === $_POST['action'] ) {
-                            $this->set_message( __( 'Result check(s) approved', 'racketmanager' ) );
-                        } elseif ( 'handle' === $_POST['action'] ) {
-                            $this->set_message( __( 'Result check(s) handled', 'racketmanager' ) );
-                        } elseif ( 'delete' === $_POST['action'] ) {
-                            $this->set_message( __( 'Result check(s) deleted', 'racketmanager' ) );
-                        }
-                    } else {
-                        $this->set_message( __( 'No actions flagged', 'racketmanager' ), true );
-                    }
-                } else {
-                    $this->set_message( $this->no_permission, true );
-                }
-                $this->show_message();
-                $tab = 'resultschecker';
-            }
-            $results_checkers = $racketmanager->get_result_warnings(
-                array(
-                    'season'      => $season_select,
-                    'competition' => $competition_select,
-                    'event'       => $event_select,
-                    'status'      => $results_check_filter,
-                )
-            );
-            $presenter        = $racketmanager->container->get( 'results_checker_presenter' );
-            $results_checkers = $presenter->present_collection( $results_checkers, $results_check_filter );
-            $competitions     = $this->competition_service->get_league_competitions();
-            $seasons          = $this->season_service->get_all_seasons();
-            $events           = array();
-            foreach ( $competitions as $competition ) {
-                try {
-                    $competition_events = $this->competition_service->get_events_for_competition( $competition->id );
-                } catch ( Competition_Not_Found_Exception ) {
-                    continue;
-                }
-                foreach ( $competition_events as $event ) {
-                    $events[] = $event;
-                }
-            }
-            include_once RACKETMANAGER_PATH . 'templates/admin/show-results.php';
+            return;
         }
+
+        if ( isset( $_POST['doResultsChecker'] ) ) {
+            $dispatcher = $this->results_checker_dispatcher ?? $racketmanager->container->get( 'results_checker_action_dispatcher' );
+            $result     = $dispatcher->handle( $_POST );
+            if ( $this->deliver_results_action_result( $result, $_GET, array( 'tab' => 'resultschecker' ) ) ) {
+                return;
+            }
+        }
+
+        $this->apply_flash_message();
+        $this->show_message();
+
+        $season_select        = isset( $_GET['season'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['season'] ) ) ) : '';
+        $competition_select   = isset( $_GET['competition'] ) ? intval( $_GET['competition'] ) : '';
+        $event_select         = isset( $_GET['event'] ) ? intval( $_GET['event'] ) : '';
+        $results_check_filter = isset( $_GET['filterResultsChecker'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['filterResultsChecker'] ) ) ) : 'outstanding';
+        $tab                  = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( strval( $_GET['tab'] ) ) ) : 'resultschecker';
+
+        $results_checkers = $racketmanager->get_result_warnings(
+            array(
+                'season'      => $season_select,
+                'competition' => $competition_select,
+                'event'       => $event_select,
+                'status'      => $results_check_filter,
+            )
+        );
+        $presenter        = $racketmanager->container->get( 'results_checker_presenter' );
+        $results_checkers = $presenter->present_collection( $results_checkers, $results_check_filter );
+
+        $league_result_pending      = $this->option_value( 'league', 'resultPending' );
+        $tournament_result_pending  = $this->option_value( 'tournament', 'resultPending' );
+        $pending_results_matches    = $this->present_results_matches(
+            array(
+                'time'             => 'outstanding',
+                'competition_type' => 'league',
+                'orderby'          => array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+                ),
+                'resultPending'    => $league_result_pending,
+            ),
+            'pending-results',
+            true,
+            __( 'Result pending', 'racketmanager' ),
+            $league_result_pending
+        );
+        $awaiting_confirmation_matches = $this->present_results_matches(
+            array(
+                'status'  => 'P',
+                'orderby' => array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+                ),
+            ),
+            'awaiting-confirmation'
+        );
+        $challenged_results_matches = $this->present_results_matches(
+            array(
+                'status'  => 'C',
+                'orderby' => array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+                ),
+            ),
+            'challenge-results'
+        );
+        $approved_results_matches = $this->present_results_matches(
+            array(
+                'status'  => 'A',
+                'orderby' => array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+                ),
+            ),
+            'results'
+        );
+        $postponed_matches = $this->present_results_matches(
+            array(
+                'status'        => 'D',
+                'orderby'       => array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+                ),
+                'resultPending' => $league_result_pending,
+            ),
+            'postponed',
+            true,
+            '',
+            $league_result_pending
+        );
+        $tournament_results_matches = $this->present_results_matches(
+            array(
+                'time'             => 'outstanding',
+                'competition_type' => 'tournament',
+                'orderby'          => array(
+                    'updated' => 'ASC',
+                    'id'      => 'ASC',
+                ),
+                'resultPending'    => $tournament_result_pending,
+            ),
+            'tournament',
+            false,
+            '',
+            $tournament_result_pending
+        );
+
+        $competitions = $this->competition_service->get_league_competitions();
+        $seasons      = $this->season_service->get_all_seasons();
+        $events       = array();
+        foreach ( $competitions as $competition ) {
+            try {
+                $competition_events = $this->competition_service->get_events_for_competition( (int) $competition->id );
+            } catch ( Competition_Not_Found_Exception ) {
+                continue;
+            }
+            foreach ( $competition_events as $event ) {
+                $events[] = $event;
+            }
+        }
+        include RACKETMANAGER_PATH . 'templates/admin/show-results.php';
+    }
+
+    /**
+     * @param array<string, mixed> $match_args
+     *
+     * @return \Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model[]
+     */
+    private function present_results_matches( array $match_args, string $referrer, bool $include_result_path = true, string $default_tooltip = '', mixed $result_pending = null ): array {
+        global $racketmanager;
+
+        if ( empty( $match_args['resultPending'] ) ) {
+            unset( $match_args['resultPending'] );
+        }
+
+        $matches = $racketmanager->get_matches( $match_args );
+        if ( ! is_array( $matches ) ) {
+            $matches = array();
+        }
+
+        $hydrated = array();
+        foreach ( $matches as $match ) {
+            $full = $this->hydrate_match( $match );
+            if ( is_object( $full ) ) {
+                $hydrated[] = $full;
+            }
+        }
+
+        return $this->results_match_presenter->present_collection( $hydrated, $referrer, $include_result_path, $default_tooltip, $result_pending );
+    }
+
+    private function hydrate_match( mixed $match ): ?object {
+        if ( is_object( $match ) && ( isset( $match->link ) || isset( $match->match_title ) || isset( $match->fixture_title ) ) ) {
+            return $match;
+        }
+        if ( function_exists( '\Racketmanager\get_match' ) ) {
+            $hydrated = \Racketmanager\get_match( $match );
+            if ( is_object( $hydrated ) ) {
+                return $hydrated;
+            }
+        }
+
+        return is_object( $match ) ? $match : null;
+    }
+
+    private function option_value( string $group, string $key ): mixed {
+        global $racketmanager;
+        $options = $racketmanager->get_options( $group );
+
+        return is_array( $options ) ? ( $options[ $key ] ?? '' ) : '';
+    }
+
+    private function resolve_results_match_presenter(): Admin_Results_Match_Presenter {
+        $container = $this->racketmanager->container ?? null;
+        if ( $container instanceof Simple_Container && $container->has( 'admin_results_match_presenter' ) ) {
+            return $container->get( 'admin_results_match_presenter' );
+        }
+
+        return new Admin_Results_Match_Presenter( new Admin_Date_Presenter() );
     }
 }

@@ -41,6 +41,9 @@ class Season_Service {
             }
         }
         if ( ! empty( $validator->error ) ) {
+            foreach ( $validator->err_flds as $index => $error_field ) {
+                $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid season', 'racketmanager' ) );
+            }
             return $validator->err;
         }
         $season = new Season();

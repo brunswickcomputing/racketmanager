@@ -17,4 +17,8 @@ readonly class Draw_Action_Response_DTO {
         public ?string $tab_override = null,
     ) {
     }
+
+    public function is_handled(): bool {
+        return null !== $this->message || null !== $this->message_type || null !== $this->tab_override;
+    }
 }

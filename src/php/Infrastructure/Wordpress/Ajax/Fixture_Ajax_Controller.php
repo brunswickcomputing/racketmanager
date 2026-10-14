@@ -22,13 +22,13 @@ use Racketmanager\RacketManager;
  * @author Paul Moffat
  */
 class Fixture_Ajax_Controller {
-    private RacketManager $racketmanager;
+    public function __construct(
+        private RacketManager $racketmanager,
+        private ?Fixture_Ajax_Adapter $adapter = null
+    ) {}
 
-    /**
-     * @param RacketManager $plugin_instance
-     */
-    public function __construct( RacketManager $plugin_instance ) {
-        $this->racketmanager = $plugin_instance;
+    public function get_request(): array {
+        return array_merge( $_GET, $_POST );
     }
 
     /**
@@ -48,12 +48,19 @@ class Fixture_Ajax_Controller {
      * @return Fixture_Ajax_Adapter
      */
     protected function get_fixture_ajax_adapter(): Fixture_Ajax_Adapter {
+        if ( $this->adapter !== null ) {
+            return $this->adapter;
+        }
+
         $c = $this->racketmanager->container;
+        if ( $c->has( 'fixture_ajax_adapter' ) ) {
+            return $c->get( 'fixture_ajax_adapter' );
+        }
 
         return new Fixture_Ajax_Adapter(
             $c,
-            new Security_Service(),
-            new Logging_Json_Response_Factory( new Json_Response_Factory() ),
+            $c->has( 'security_service' ) ? $c->get( 'security_service' ) : new Security_Service(),
+            new Logging_Json_Response_Factory( $c->has( 'json_response_factory' ) ? $c->get( 'json_response_factory' ) : new Json_Response_Factory() ),
             $c->get( 'fixture_detail_service' ),
             $c->get( 'view_renderer' ),
             $c->get( 'fixture_presenter' ),
@@ -78,7 +85,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function print_match_card(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->print_match_card();
+        $response = $adapter->print_match_card( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -89,7 +96,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function fixture_status_options(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->fixture_status_options();
+        $response = $adapter->fixture_status_options( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -100,7 +107,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function set_fixture_status(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->set_fixture_status();
+        $response = $adapter->set_fixture_status( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -111,7 +118,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function show_fixture_option(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->show_fixture_option();
+        $response = $adapter->show_fixture_option( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -124,7 +131,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function set_fixture_date(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->set_fixture_date();
+        $response = $adapter->set_fixture_date( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -137,7 +144,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function switch_home_away(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->switch_home_away();
+        $response = $adapter->switch_home_away( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -148,7 +155,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function reset_fixture_result(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->reset_fixture_result();
+        $response = $adapter->reset_fixture_result( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -159,7 +166,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function rubber_status_options(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->match_rubber_status_options();
+        $response = $adapter->match_rubber_status_options( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -170,7 +177,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function set_rubber_status(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->set_rubber_status();
+        $response = $adapter->set_rubber_status( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -181,7 +188,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function update_fixture_header(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->update_fixture_header();
+        $response = $adapter->update_fixture_header( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -192,7 +199,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function update_fixture_result(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->update_fixture_result();
+        $response = $adapter->update_fixture_result( $this->get_request() );
         $response->send();
         wp_die();
     }
@@ -203,7 +210,7 @@ class Fixture_Ajax_Controller {
     #[NoReturn]
     public function update_team_match(): void {
         $adapter  = $this->get_fixture_ajax_adapter();
-        $response = $adapter->update_team_match();
+        $response = $adapter->update_team_match( $this->get_request() );
         $response->send();
         wp_die();
     }

@@ -9,7 +9,7 @@
 
 namespace Racketmanager\Services;
 
-use Racketmanager\RacketManager;
+use Racketmanager\Services\Finance_Service;
 
 /**
  * Class to implement the Stripe_Settings object
@@ -21,7 +21,7 @@ final class Stripe_Settings {
      *
      * @var string|null
      */
-    public ?string $currency;
+    public ?string $currency = null;
     /**
      * Is live indicator
      *
@@ -33,31 +33,24 @@ final class Stripe_Settings {
      *
      * @var string|null
      */
-    public ?string $api_publishable_key;
+    public ?string $api_publishable_key = null;
     /**
      * Api_secret_key
      *
      * @var string|null
      */
-    public ?string $api_secret_key;
+    public ?string $api_secret_key = null;
     /**
      * Api endpoint secret
      *
      * @var string|null
      */
-    public ?string $api_endpoint_key;
-    private RacketManager $racketmanager;
-    private Finance_Service $finance_service;
+    public ?string $api_endpoint_key = null;
 
     /**
      * Constructor
      */
-    public function __construct( $plugin_instance ) {
-        $this->racketmanager   = $plugin_instance;
-        $c                     = $this->racketmanager->container;
-        $this->finance_service = $c->get( 'finance_service' );
-
-        $billing = $this->racketmanager->get_options( 'billing' );
+    public function __construct( ?array $billing ) {
         if ( $billing ) {
             $this->currency = $billing['billingCurrency'] ?? null;
             $this->is_live  = $billing['stripe_is_live'] ?? false;
@@ -75,12 +68,13 @@ final class Stripe_Settings {
     /**
      * Update payment status
      *
+     * @param Finance_Service $finance_service
      * @param string $payment_ref paymentIntent id.
      * @param string $status payment status defaults to paid.
      * @return void
      */
-    public function update_payment(string $payment_ref, string $status = 'paid' ): void {
-        $invoices = $this->finance_service->get_invoices_by_criteria( array( 'reference' => $payment_ref ) );
+    public function update_payment( Finance_Service $finance_service, string $payment_ref, string $status = 'paid' ): void {
+        $invoices = $finance_service->get_invoices_by_criteria( array( 'reference' => $payment_ref ) );
         if ( 1 === count( $invoices ) ) {
             $invoice = $invoices[0];
             if ( $status !== $invoice->status ) {

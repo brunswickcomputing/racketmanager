@@ -7,8 +7,16 @@
 
 namespace Racketmanager;
 
-/** @var array $clubs */
-/** @var array $competitions */
+use Racketmanager\Admin\View_Models\Import_Page_View_Model;
+
+/** @var ?Import_Page_View_Model $vm */
+if ( isset( $vm ) && $vm instanceof Import_Page_View_Model ) {
+	$clubs        = $vm->clubs;
+	$competitions = $vm->competitions;
+}
+
+$clubs        = $clubs ?? array();
+$competitions = $competitions ?? array();
 ?>
 <div class="container">
 	<h1><?php esc_html_e( 'RacketManager Import', 'racketmanager' ); ?></h1>

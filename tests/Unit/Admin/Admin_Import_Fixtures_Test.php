@@ -5,26 +5,36 @@ namespace Racketmanager\Tests\Unit\Admin;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Admin\Admin_Import;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher;
+use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Container\Simple_Container;
-use ReflectionMethod;
-use stdClass;
+
+require_once __DIR__ . '/../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 class Admin_Import_Fixtures_Test extends TestCase {
     private Simple_Container $container;
     private $fixture_service;
+    private $player_service;
+    private $registration_service;
+    private $action_guard;
     private $original_racketmanager;
 
     protected function setUp(): void {
         parent::setUp();
 
-        $this->fixture_service = $this->createMock( Fixture_Service::class );
+        $this->fixture_service      = $this->createMock( Fixture_Service::class );
+        $this->player_service       = $this->createMock( Player_Service::class );
+        $this->registration_service = $this->createMock( Registration_Service::class );
+        $this->action_guard         = $this->createMock( Action_Guard_Interface::class );
+
         $this->container = new Simple_Container();
         $this->container->set( 'fixture_service', fn() => $this->fixture_service );
 
@@ -47,13 +57,13 @@ class Admin_Import_Fixtures_Test extends TestCase {
     }
 
     public function test_import_fixtures_creates_fixtures(): void {
-        $admin_import = $this->getMockBuilder( Admin_Import::class )
-            ->disableOriginalConstructor()
-            ->onlyMethods( [ 'set_message' ] )
-            ->getMock();
-
-        $reflection = new \ReflectionProperty( \Racketmanager\Admin\Admin_Display::class, 'racketmanager' );
-        $reflection->setValue( $admin_import, $GLOBALS['racketmanager'] );
+        $dispatcher = new Import_Action_Dispatcher(
+            $this->action_guard,
+            $this->fixture_service,
+            $this->player_service,
+            $this->registration_service,
+            $GLOBALS['racketmanager']
+        );
 
         $mock_league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $mock_league->id = 99;
@@ -81,7 +91,9 @@ class Admin_Import_Fixtures_Test extends TestCase {
             } ), $mock_league )
             ->willReturn( $fixture_mock );
 
-        $method = new ReflectionMethod( Admin_Import::class, 'import_fixtures' );
-        $method->invoke( $admin_import, $contents, ',', 99, '2026' );
+        $result = $dispatcher->import_fixtures( $contents, ',', 99, '2026' );
+
+        $this->assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
+        $this->assertStringContainsString( '1 Fixtures imported', $result->message );
     }
 }

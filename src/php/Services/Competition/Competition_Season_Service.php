@@ -71,7 +71,7 @@ class Competition_Season_Service {
 		if ( ! empty( $data['venue'] ) && function_exists( 'Racketmanager\get_club' ) ) {
 			$venue_club = \Racketmanager\get_club( (int) $data['venue'] );
 			if ( $venue_club ) {
-				$data['venue_name'] = $venue_club->shortcode;
+				$data['venue_name'] = $venue_club->shortcode ?? ( method_exists( $venue_club, 'get_shortcode' ) ? $venue_club->get_shortcode() : null );
 			}
 		}
 

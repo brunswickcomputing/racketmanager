@@ -14,9 +14,12 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presenters\Club_Presenter;
+
 /** @var boolean $standalone */
 /** @var object $club */
 /** @var boolean $user_can_update_club */
+$club_presenter = $club_presenter ?? new Club_Presenter();
 require RACKETMANAGER_PATH . 'templates/includes/club-header.php';
 ?>
 <div class="module module--card">
@@ -234,7 +237,7 @@ if ( $standalone ) {
     <div class="module module--card">
         <div class="module__content">
             <div class="module-container">
-                <a href="/clubs/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/roles/">
+                <a href="<?php echo esc_url( $club_presenter->get_link( $club, 'roles' ) ); ?>">
                     <h3 class="module__title"><?php esc_html_e( 'Roles', 'racketmanager' ); ?></h3>
                 </a>
             </div>
@@ -243,7 +246,7 @@ if ( $standalone ) {
     <div class="module module--card">
         <div class="module__content">
             <div class="module-container">
-                <a href="/clubs/<?php echo esc_attr( seo_url( $club->shortcode ) ); ?>/competitions/">
+                <a href="<?php echo esc_url( $club_presenter->get_link( $club, 'competitions' ) ); ?>">
                     <h3 class="module__title"><?php esc_html_e( 'Competitions', 'racketmanager' ); ?></h3>
                 </a>
             </div>
@@ -253,7 +256,8 @@ if ( $standalone ) {
 }
 ?>
 <?php
-if ( $standalone && ! empty( $club->address ) && ! empty( $google_maps_key ) ) {
+$map_url = $club_presenter->get_map_url( $club, $google_maps_key ?? null );
+if ( $standalone && ! empty( $map_url ) ) {
     ?>
     <div class="module module--card">
         <div class="module__banner">
@@ -263,7 +267,7 @@ if ( $standalone && ! empty( $club->address ) && ! empty( $google_maps_key ) ) {
             <div class="module-container">
                 <fieldset class="club-address">
                     <legend class="d-none"><?php esc_html_e( 'Map', 'racketmanager' ); ?></legend>
-                    <iframe title="<?php esc_html_e( 'Club map', 'racketmanager' ); ?>" width="100%" height="320" id="clubMap" name="clubMap" src="https://www.google.com/maps/embed/v1/search?key=<?php echo esc_html( $google_maps_key ); ?>&amp;zoom=15&amp;maptype=roadmap&amp;q=<?php echo esc_html( $club->address ); ?>" allowfullscreen></iframe>
+                    <iframe title="<?php esc_html_e( 'Club map', 'racketmanager' ); ?>" width="100%" height="320" id="clubMap" name="clubMap" src="<?php echo esc_url( $map_url ); ?>" allowfullscreen></iframe>
                 </fieldset>
             </div>
         </div>

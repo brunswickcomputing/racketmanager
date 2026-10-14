@@ -11,6 +11,9 @@ namespace Racketmanager\Domain\Fixture;
 
 use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
 use Racketmanager\Domain\Result\Result;
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Invalid_Argument_Exception;
+use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Rubber_Repository;
 
 /**
@@ -202,6 +205,13 @@ class Fixture {
      * @var string|null
      */
     public ?string $final = null;
+
+    /**
+     * Final round
+     *
+     * @var string|null
+     */
+    public ?string $final_round = null;
 
     /**
      * Custom
@@ -612,8 +622,17 @@ class Fixture {
         $home_dtls = null;
         $away_dtls = null;
         if ( $team_service ) {
-            $home_dtls = is_numeric( $home_val ) ? $team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $team_service->derive_team_details( (string) $home_val ) : null );
-            $away_dtls = is_numeric( $away_val ) ? $team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $team_service->derive_team_details( (string) $away_val ) : null );
+            try {
+                $home_dtls = is_numeric( $home_val ) ? $team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $team_service->derive_team_details( (string) $home_val ) : null );
+            } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
+                $home_dtls = null;
+            }
+
+            try {
+                $away_dtls = is_numeric( $away_val ) ? $team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $team_service->derive_team_details( (string) $away_val ) : null );
+            } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
+                $away_dtls = null;
+            }
         }
 
         $home_name = $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : (string) ( $home_val ?? '' );

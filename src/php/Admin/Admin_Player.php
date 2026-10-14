@@ -7,28 +7,57 @@
  * @subpackage RacketManager-Admin-Player
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager\Admin;
 
 use Exception;
-use Racketmanager\Exceptions\Duplicate_BTM_Exception;
-use Racketmanager\Exceptions\Duplicate_Email_Exception;
-use Racketmanager\Exceptions\LTA_Tennis_Number_Not_Found_Exception;
-use Racketmanager\Exceptions\Player_Exists_Exception;
+use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
+use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
+use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
+use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model;
+use Racketmanager\Admin\View_Models\Player_Page_View_Model;
+use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
+use Racketmanager\Admin\View_Models\Players_Page_View_Model;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
-use Racketmanager\Exceptions\Player_Not_Updated_Exception;
-use Racketmanager\Exceptions\Registration_Not_Found_Exception;
-use Racketmanager\Exceptions\WTN_Error_Exception;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
+use Racketmanager\Services\Admin\Player\Player_Error_Action_Dispatcher;
+use Racketmanager\Services\Admin\Player\Player_Request_Action_Dispatcher;
 use Racketmanager\Services\Validator\Validator;
+use stdClass;
 
 /**
  * RacketManager player administration functions
  * Class to implement RacketManager Administration Players panel
- *
- * @author Paul Moffat
- * @package RacketManager
- * @subpackage RacketManagerAdmin
  */
 final class Admin_Player extends Admin_Display {
+
+    private Admin_Action_Adapter $actions;
+    private Admin_Screen_Presenter $screens;
+    private Player_Action_Dispatcher $player_action_dispatcher;
+    private Player_Error_Action_Dispatcher $player_error_action_dispatcher;
+    private Player_Request_Action_Dispatcher $player_request_action_dispatcher;
+
+    public function __construct(
+        $plugin_instance,
+        ?Admin_Action_Adapter $actions = null,
+        ?Admin_Screen_Presenter $screens = null,
+        ?Player_Action_Dispatcher $player_action_dispatcher = null,
+        ?Player_Error_Action_Dispatcher $player_error_action_dispatcher = null,
+        ?Player_Request_Action_Dispatcher $player_request_action_dispatcher = null,
+    ) {
+        parent::__construct( $plugin_instance );
+        $c                                      = $this->racketmanager->container;
+        $this->actions                          = $actions ?? $c->get( 'admin_action_adapter' );
+        $this->screens                          = $screens ?? $c->get( 'admin_screen_presenter' );
+        $this->player_action_dispatcher         = $player_action_dispatcher ?? $c->get( 'player_action_dispatcher' );
+        $this->player_error_action_dispatcher   = $player_error_action_dispatcher ?? $c->get( 'player_error_action_dispatcher' );
+        $this->player_request_action_dispatcher = $player_request_action_dispatcher ?? $c->get( 'player_request_action_dispatcher' );
+    }
+
     /**
      * Function to handle administration players displays
      *
@@ -67,73 +96,82 @@ final class Admin_Player extends Admin_Display {
             $this->show_message();
             return;
         }
-        $player_id     = null;
-        $form_valid    = true;
-        $page_referrer = null;
-        if ( ! empty( $_POST ) ) {
-            $validator = $validator->capability( 'edit_teams' );
-            if ( empty( $validator->error ) ) {
-                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-player' );
+
+        $player_id = isset( $_GET['player_id'] ) ? intval( $_GET['player_id'] ) : ( isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null );
+        $club_id   = isset( $_GET['club_id'] ) ? intval( $_GET['club_id'] ) : ( isset( $_POST['club_Id'] ) ? intval( $_POST['club_Id'] ) : null );
+
+        if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+            $result        = $this->player_action_dispatcher->handle( $_GET, $_POST );
+            $redirect_args = array(
+                'view' => 'player',
+            );
+            if ( $player_id ) {
+                $redirect_args['player_id'] = (string) $player_id;
             }
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->msg, true );
-            } else {
-                $page_referrer = $_POST['page_referrer'] ?? null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                if ( isset( $_POST['updatePlayer'] ) ) {
-                    $player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-                    try {
-                        $player = $this->player_service->amend_player_details( $player_id );
-                        if ( is_wp_error( $player ) ) {
-                            $form_valid     = false;
-                            $error_fields   = $player->get_error_codes();
-                            $error_messages = $player->get_error_messages();
-                            $player         = $player->get_error_data( 'player' );
-                            $this->set_message( __( 'Error with player details', 'racketmanager' ), true );
-                        } else {
-                            $this->set_message( __( 'Player updated', 'racketmanager' ) );
-                            $player = null;
-                        }
-                    } catch ( Player_Not_Updated_Exception $e ) {
-                        $this->set_message( $e->getMessage(), 'warning' );
-                    } catch ( Player_Not_Found_Exception|Duplicate_Email_Exception|Duplicate_BTM_Exception|Exception $e ) {
-                        $this->set_message( $e->getMessage(), true );
-                    }
-                } elseif ( isset( $_POST['setWTN'] ) ) {
-                    $player_id = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-                    try {
-                        $this->player_service->get_latest_wtn( $player_id );
-                        $this->set_message( __( 'WTN set', 'racketmanager' ) );
-                    } catch ( Player_Not_Found_Exception|LTA_Tennis_Number_Not_Found_Exception|WTN_Error_Exception|Exception $e ) {
-                        $this->set_message( $e->getMessage(), true );
-                    }
-                }
-            }
-        } else {
-            $page_referrer = wp_get_referer();
-        }
-        $this->show_message();
-        if ( isset( $_GET['club_id'] ) ) {
-            $club_id = intval( $_GET['club_id'] );
             if ( $club_id ) {
-                $club = $this->club_service->get_club( $club_id );
+                $redirect_args['club_id'] = (string) $club_id;
             }
+            $redirect_url = Admin_Redirect_Url_Builder::players_screen( $_GET, $redirect_args );
+            $this->deliver_player_result( $result, $redirect_url );
+            return;
         }
-        if ( isset( $_GET['player_id'] ) ) {
-            $player_id = intval( $_GET['player_id'] );
+
+        $flash      = $this->screens->apply_flash();
+        $flash_data = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
+        $errors     = new Error_Bag( $flash_data['errors'] ?? array() );
+
+        $club = null;
+        if ( $club_id ) {
+            $club = $this->club_service->get_club( $club_id );
         }
+
+        $page_referrer = $flash_data['form_data']['page_referrer'] ?? ( function_exists( 'wp_get_referer' ) ? wp_get_referer() : null );
         if ( ! $page_referrer ) {
-            if ( empty( $club_id ) ) {
-                $page_referrer = 'admin.php?page=racketmanager-players&amp;tab=players';
-            } else {
-                $page_referrer = 'admin.php?page=racketmanager-clubs&amp;view=players&amp;club_id=' . $club_id;
-            }
+            $page_referrer = empty( $club_id )
+                ? 'admin.php?page=racketmanager-players&tab=players'
+                : 'admin.php?page=racketmanager-clubs&view=players&club_id=' . $club_id;
         }
+
         try {
             $player = $this->player_service->get_player( $player_id );
-            require_once RACKETMANAGER_PATH . 'templates/admin/players/show-player.php';
-        } catch ( Player_Not_Found_Exception $e ) {
+
+            $form_data      = $flash_data['form_data'] ?? array();
+            $player_display = $player;
+            if ( ! empty( $form_data ) ) {
+                $player_display                = new stdClass();
+                $player_display->id            = $player_id;
+                $player_display->display_name  = $player->display_name ?? $player->get_fullname();
+                $player_display->firstname     = $form_data['firstname'] ?? $player->firstname;
+                $player_display->surname       = $form_data['surname'] ?? $player->surname;
+                $player_display->gender        = $form_data['gender'] ?? $player->gender;
+                $player_display->btm           = $form_data['btm'] ?? $player->btm;
+                $player_display->contactno     = $form_data['contactno'] ?? $player->contactno;
+                $player_display->email         = $form_data['email'] ?? $player->email;
+                $player_display->year_of_birth = $form_data['year_of_birth'] ?? $player->year_of_birth;
+                $player_display->locked        = array_key_exists( 'locked', $form_data ) ? ( ! empty( $form_data['locked'] ) ? 'Locked' : '' ) : '';
+                $player_display->wtn           = $player->wtn;
+                $player_display->created       = $player->created ?? null;
+            }
+
+            $vm = new Player_Page_View_Model(
+                player: $player_display,
+                player_id: $player_id,
+                club: $club,
+                club_id: $club_id,
+                page_referrer: $page_referrer,
+                errors: $errors,
+                form_valid: empty( $errors->all() ),
+            );
+
+            $this->screens->present(
+                array( 'view_model' => $vm ),
+                Player_Page_View_Model::class,
+                'admin/players/show-player'
+            );
+        } catch ( Player_Not_Found_Exception | Exception $e ) {
             $this->set_message( $e->getMessage(), true );
             $this->show_message();
+            return;
         }
     }
 
@@ -146,28 +184,35 @@ final class Admin_Player extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             $this->show_message();
-
             return;
         }
-        if ( isset( $_POST['doPlayerErrorBulk'] ) ) {
-            $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_player-error-bulk' );
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->msg, true );
-            } elseif ( 'delete' === $_POST['action'] ) {
-                $msg = array();
-                foreach ( $_POST['playerError'] as $player_error_id ) {
-                    $this->player_service->remove_player_error( $player_error_id );
-                    $msg[] = sprintf( __( '%s - Player error has been removed', 'racketmanager' ), $player_error_id );
-                }
-                $message = implode( '<br>', $msg );
-                $this->set_message( $message );
-            }
+
+        if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+            $result       = $this->player_error_action_dispatcher->handle( $_POST );
+            $redirect_url = Admin_Redirect_Url_Builder::players_screen( $_GET, array( 'view' => 'errors' ) );
+            $this->deliver_player_result( $result, $redirect_url );
+            return;
         }
-        $this->show_message();
-        $status            = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
-        $racketmanager_tab = 'errors';
-        $player_errors     = $this->player_service->get_player_errors( $status );
-        require_once RACKETMANAGER_PATH . 'templates/admin/players/show-errors.php';
+
+        $flash      = $this->screens->apply_flash();
+        $flash_data = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
+        $errors     = new Error_Bag( $flash_data['errors'] ?? array() );
+
+        $status        = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : null;
+        $player_errors = $this->player_service->get_player_errors( $status );
+
+        $vm = new Player_Errors_Page_View_Model(
+            player_errors: $player_errors,
+            status: $status,
+            racketmanager_tab: 'errors',
+            errors: $errors,
+        );
+
+        $this->screens->present(
+            array( 'view_model' => $vm ),
+            Player_Errors_Page_View_Model::class,
+            'admin/players/show-errors'
+        );
     }
 
     /**
@@ -179,50 +224,40 @@ final class Admin_Player extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             $this->show_message();
-
             return;
         }
-        $club_id = isset( $_GET['club'] ) ? intval( $_GET['club'] ) : null;
-        $status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'outstanding';
-        if ( isset( $_POST['doPlayerRequest'] ) ) {
-            $validator = $validator->capability( 'edit_leagues' );
-            if ( empty( $validator->error ) ) {
-                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_club-player-request-bulk' );
-            }
-            if ( empty( $validator->error ) ) {
-                if ( 'approve' === $_POST['action'] || 'delete' === $_POST['action'] ) {
-                    if ( isset( $_POST['playerRequest'] ) ) {
-                        $msg = array();
-                        foreach ( $_POST['playerRequest'] as $player_request_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            if ( 'approve' === $_POST['action'] ) {
-                                try {
-                                    $this->registration_service->approve_registration( $player_request_id, get_current_user_id() );
-                                    $msg [] = sprintf( __( '%s - Player has been approved', 'racketmanager' ), $player_request_id );
-                                } catch ( Registration_Not_Found_Exception $e ) {
-                                    $msg[] = $e->getMessage();
-                                }
-                            } elseif ( 'delete' === $_POST['action'] ) {
-                                $this->registration_service->remove_registration( $player_request_id, get_current_user_id() );
-                                $msg[] = sprintf( __( '%s - Player has been removed from club', 'racketmanager' ), $player_request_id );
-                            }
-                        }
-                        $message = implode( '<br>', $msg );
-                        $this->set_message( $message );
-                    } else {
-                        $this->set_message( __( 'No selection made', 'racketmanager' ), true );
-                    }
-                } else {
-                    $this->set_message( __( 'No action selected', 'racketmanager' ), true );
-                }
-            } else {
-                $this->set_message( $validator->msg, true );
-            }
+
+        if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+            $result       = $this->player_request_action_dispatcher->handle( $_POST );
+            $redirect_url = Admin_Redirect_Url_Builder::players_screen( $_GET, array( 'view' => 'requests' ) );
+            $this->deliver_player_result( $result, $redirect_url );
+            return;
         }
-        $this->show_message();
-        $racketmanager_tab = 'requests';
-        $clubs             = $this->club_service->get_clubs();
-        $player_requests   = $this->registration_service->get_registered_players_list( null, $status, $club_id );
-        require_once RACKETMANAGER_PATH . 'templates/admin/players/show-requests.php';
+
+        $flash      = $this->screens->apply_flash();
+        $flash_data = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
+        $errors     = new Error_Bag( $flash_data['errors'] ?? array() );
+
+        $club_id = isset( $_GET['club'] ) && 'all' !== $_GET['club'] ? intval( $_GET['club'] ) : null;
+        $status  = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : 'outstanding';
+
+        $clubs = $this->club_service->get_clubs();
+        $player_requests = $this->registration_service->get_registered_players_list( null, $status, $club_id );
+
+        $vm = new Player_Requests_Page_View_Model(
+            player_requests: $player_requests,
+            clubs: $clubs,
+            club_id: $club_id,
+            status: $status,
+            racketmanager_tab: 'requests',
+            errors: $errors,
+        );
+
+        $this->screens->present(
+            array( 'view_model' => $vm ),
+            Player_Requests_Page_View_Model::class,
+            'admin/players/show-requests'
+        );
     }
 
     /**
@@ -234,82 +269,62 @@ final class Admin_Player extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             $this->show_message();
-
             return;
         }
-        $players           = null;
-        $racketmanager_tab = 'players';
-        if ( isset( $_POST['addPlayer'] ) ) {
-            $validator = $validator->capability( 'edit_teams' );
-            if ( empty( $validator->error ) ) {
-                $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_manage-player' );
-            }
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->msg, true );
-            } else {
-                try {
-                    $player = $this->player_service->add_new_player();
-                    if ( is_wp_error( $player ) ) {
-                        $form_valid     = false;
-                        $error_fields   = $player->get_error_codes();
-                        $error_messages = $player->get_error_messages();
-                        $player         = $player->get_error_data( 'player' );
-                        $this->set_message( __( 'Error with player details', 'racketmanager' ), true );
-                    } else {
-                        $this->set_message( __( 'Player added', 'racketmanager' ) );
-                        $player = null;
-                    }
-                } catch ( Player_Exists_Exception|Duplicate_Email_Exception|Duplicate_BTM_Exception $e ) {
-                    $this->set_message( $e->getMessage(), true );
-                }
-            }
-            $tab = 'players';
-        } elseif ( isset( $_POST['doPlayerDel'] ) ) {
-            if ( isset( $_POST['action'] ) && 'delete' === $_POST['action'] ) {
-                $validator = $validator->capability( 'edit_teams' );
-                if ( empty( $validator->error ) ) {
-                    $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_player-bulk' );
-                }
-                if ( empty( $validator->error ) ) {
-                    $messages = array();
-                    if ( isset( $_POST['player'] ) ) {
-                        foreach ( $_POST['player'] as $player_id ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                            try {
-                                $deleted = $this->player_service->delete_player( $player_id );
-                                if ( $deleted ) {
-                                    $messages[] = $player_id . ' ' . __( 'deleted', 'racketmanager' );
-                                } else {
-                                    $messages[] = sprintf( __( 'Unable to delete %d', 'racketmanager' ), $player_id );
-                                }
-                            } catch ( Player_Not_Found_Exception|Exception $e ) {
-                                $messages[] = $e->getMessage();
-                            }
-                        }
-                        $message = implode( '<br>', $messages );
-                        $this->set_message( $message );
-                    }
-                } else {
-                    $this->set_message( $validator->msg, true );
-                }
-            }
-            $tab = 'players';
-        } elseif ( isset( $_GET['doPlayerSearch'] ) ) {
+
+        if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
+            $result       = $this->player_action_dispatcher->handle( $_GET, $_POST );
+            $redirect_url = Admin_Redirect_Url_Builder::players_screen( $_GET, array( 'view' => 'players' ) );
+            $this->deliver_player_result( $result, $redirect_url );
+            return;
+        }
+
+        $flash      = $this->screens->apply_flash();
+        $flash_data = is_array( $flash['flash_data'] ?? null ) ? $flash['flash_data'] : array();
+        $errors     = new Error_Bag( $flash_data['errors'] ?? array() );
+
+        $player = null;
+        if ( ! empty( $flash_data['form_data'] ) ) {
+            $player = (object) $flash_data['form_data'];
+        }
+
+        $players        = null;
+        $search_message = null;
+        if ( isset( $_GET['doPlayerSearch'] ) ) {
             if ( ! empty( $_GET['name'] ) ) {
                 $players = $this->player_service->get_all_players( array( 'name' => sanitize_text_field( wp_unslash( $_GET['name'] ) ) ) );
             } else {
-                $this->set_message( __( 'No search term specified', 'racketmanager' ), true );
+                $search_message = __( 'No search term specified', 'racketmanager' );
+                $this->set_message( $search_message, true );
             }
-            $tab = 'players';
         }
-        $this->show_message();
         if ( ! $players ) {
             $players = $this->player_service->get_all_players();
         }
-        require_once RACKETMANAGER_PATH . 'templates/admin/players/show-players.php';
+
+        $vm = new Players_Page_View_Model(
+            players: $players,
+            player: $player,
+            racketmanager_tab: 'players',
+            errors: $errors,
+            form_valid: empty( $errors->all() ),
+        );
+
+        $present_args = array( 'view_model' => $vm );
+        if ( null !== $search_message ) {
+            $present_args['message']      = $search_message;
+            $present_args['message_type'] = true;
+        }
+
+        $this->screens->present(
+            $present_args,
+            Players_Page_View_Model::class,
+            'admin/players/show-players'
+        );
     }
 
     /**
-     * Display players page
+     * Display players default section
      */
     public function display_players_section(): void {
         $validator = new Validator();
@@ -317,9 +332,28 @@ final class Admin_Player extends Admin_Display {
         if ( ! empty( $validator->error ) ) {
             $this->set_message( $validator->msg, true );
             $this->show_message();
-
             return;
         }
         $this->display_errors_page();
+    }
+
+    /**
+     * Deliver a dispatcher result as a PRG redirect with flash message.
+     *
+     * @param Action_Result_DTO $result Dispatcher result.
+     * @param string            $redirect_url Redirect target.
+     *
+     * @return bool True when a redirect was issued.
+     */
+    private function deliver_player_result( Action_Result_DTO $result, string $redirect_url ): bool {
+        return $this->actions->deliver_redirect(
+            array(
+                'redirect'     => $redirect_url,
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
     }
 }

@@ -141,9 +141,26 @@ namespace Racketmanager\Tests\Unit\Rest {
 
             $request_fixtures = new WP_REST_Request( 'GET', '/racketmanager/v1/export/fixtures' );
             self::assertTrue( $controller->get_item_permissions_check( $request_fixtures ) );
+        }
 
-            $request_report = new WP_REST_Request( 'GET', '/racketmanager/v1/export/report-results' );
-            self::assertTrue( $controller->get_item_permissions_check( $request_report ) );
+        public function test_get_report_results_permissions_check_requires_capability(): void {
+            $controller = new Export_Controller( $this->racketmanager );
+            $request = new WP_REST_Request( 'GET', '/racketmanager/v1/export/report-results' );
+
+            // Denied when unauthenticated / unauthorized
+            $GLOBALS['wp_stubs_current_user_can'] = false;
+            $GLOBALS['wp_stubs_is_user_logged_in'] = false;
+            $denied = $controller->get_report_results_permissions_check( $request );
+            self::assertInstanceOf( \WP_Error::class, $denied );
+            self::assertSame( 'rest_forbidden', $denied->get_error_code() );
+            self::assertSame( 401, $denied->get_error_data()['status'] ?? null );
+
+            // Allowed when user has manage_racketmanager capability
+            $GLOBALS['wp_stubs_current_user_can'] = true;
+            $allowed = $controller->get_report_results_permissions_check( $request );
+            self::assertTrue( $allowed );
+
+            unset( $GLOBALS['wp_stubs_current_user_can'], $GLOBALS['wp_stubs_is_user_logged_in'] );
         }
 
         public function test_serve_raw_export_sends_headers_and_echos_data_for_csv(): void {
@@ -180,6 +197,28 @@ namespace Racketmanager\Tests\Unit\Rest {
             $result = $controller->serve_raw_export( false, $response, $request, $server );
 
             self::assertFalse( $result );
+        }
+
+        public function test_register_routes_wires_expected_callbacks_and_permissions(): void {
+            $GLOBALS['wp_stubs_registered_rest_routes'] = [];
+
+            $controller = new Export_Controller( $this->racketmanager );
+            $controller->register_routes();
+
+            $routes = $GLOBALS['wp_stubs_registered_rest_routes']['racketmanager/v1'] ?? [];
+
+            self::assertArrayHasKey( '/export/calendar', $routes );
+            self::assertArrayHasKey( '/export/results', $routes );
+            self::assertArrayHasKey( '/export/fixtures', $routes );
+            self::assertArrayHasKey( '/export/report-results', $routes );
+
+            // Calendar, results, and fixtures use public permission check
+            self::assertSame( [ $controller, 'get_item_permissions_check' ], $routes['/export/calendar'][0]['permission_callback'] );
+            self::assertSame( [ $controller, 'get_item_permissions_check' ], $routes['/export/results'][0]['permission_callback'] );
+            self::assertSame( [ $controller, 'get_item_permissions_check' ], $routes['/export/fixtures'][0]['permission_callback'] );
+
+            // Report results uses dedicated guarded permission check
+            self::assertSame( [ $controller, 'get_report_results_permissions_check' ], $routes['/export/report-results'][0]['permission_callback'] );
         }
     }
 }

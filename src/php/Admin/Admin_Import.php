@@ -7,359 +7,97 @@
  * @subpackage Import
  */
 
+declare( strict_types=1 );
+
 namespace Racketmanager\Admin;
 
-use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Fixture\Fixture_Factory;
-use Racketmanager\Repositories\Fixture_Repository;
-use Racketmanager\Repositories\Repository_Provider;
-use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Fixture\Service_Provider;
-use Racketmanager\Exceptions\Club_Not_Found_Exception;
-use Racketmanager\Exceptions\Duplicate_BTM_Exception;
-use Racketmanager\Exceptions\Duplicate_Email_Exception;
-use Racketmanager\Exceptions\Player_Already_Registered_Exception;
-use Racketmanager\Exceptions\Player_Exists_Exception;
-use Racketmanager\Exceptions\Registration_Not_Found_Exception;
-use Racketmanager\Util\Util;
-use stdClass;
-use function Racketmanager\get_league;
-use function Racketmanager\get_league_team;
+use Racketmanager\Admin\View_Models\Error_Bag;
+use Racketmanager\Admin\View_Models\Import_Page_View_Model;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
+use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface;
+use Racketmanager\Services\Validator\Validator;
 
 /**
  * RacketManager Import functions
  * Class to implement RacketManager Import
- *
- * @author Paul Moffat
- * @package RacketManager
- * @subpackage Import
  */
 class Admin_Import extends Admin_Display {
-    /**
-     * Message.
-     *
-     * @var string $message
-     */
-    public string $message;
-    /**
-     * Error.
-     *
-     * @var string|bool $error
-     */
-    public bool|string $error = false;
+
+    private ?Admin_Action_Adapter $actions;
+    private ?Admin_Screen_Presenter $screens;
+    private ?Import_Action_Dispatcher_Interface $import_action_dispatcher;
+
+    public function __construct(
+        $plugin_instance,
+        ?Admin_Action_Adapter $actions = null,
+        ?Admin_Screen_Presenter $screens = null,
+        ?Import_Action_Dispatcher_Interface $dispatcher = null,
+    ) {
+        parent::__construct( $plugin_instance );
+        $c                             = $this->racketmanager->container ?? null;
+        $this->actions                 = $actions ?? ( ( $c && $c->has( 'admin_action_adapter' ) ) ? $c->get( 'admin_action_adapter' ) : null );
+        $this->screens                 = $screens ?? ( ( $c && $c->has( 'admin_screen_presenter' ) ) ? $c->get( 'admin_screen_presenter' ) : null );
+        $this->import_action_dispatcher = $dispatcher;
+        if ( $this->actions ) {
+            $this->admin_action_adapter = $this->actions;
+        }
+    }
+
     /**
      * Display import Page
      */
     public function display_import_page(): void {
-        if ( ! current_user_can( 'import_leagues' ) ) {
-            $this->set_message( $this->invalid_permissions, true );
+        $validator = new Validator();
+        $validator = $validator->capability( 'import_leagues' );
+        if ( ! empty( $validator->error ) ) {
+            $this->set_message( $validator->msg, true );
             $this->show_message();
-        } else {
-            if ( isset( $_POST['import'] ) ) {
-                if ( ! isset( $_POST['racketmanager_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['racketmanager_nonce'] ) ), 'racketmanager_import-datasets' ) ) {
-                    $this->set_message( $this->invalid_security_token, true );
-                } else {
-                    $league_id = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-                    $season    = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-                    $club      = isset( $_POST['club'] ) ? intval( $_POST['club'] ) : null;
-                    $files     = $_FILES['racketmanager_import'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    $delimiter = $_POST['delimiter'] ?? null; //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                    $mode      = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : null;
-                    $this->import( $files, $delimiter, $mode, $league_id, $season, $club );
+            return;
+        }
+
+        if ( isset( $_POST['import'] ) ) {
+            $dispatcher = $this->import_action_dispatcher ?? ( $this->racketmanager->container && $this->racketmanager->container->has( 'import_action_dispatcher' ) ? $this->racketmanager->container->get( 'import_action_dispatcher' ) : null );
+            if ( $dispatcher ) {
+                $result = $dispatcher->handle( $_GET, $_POST, $_FILES );
+                if ( $this->deliver_import_action_result( $result, $_GET ) ) {
+                    return;
                 }
-                $this->show_message();
             }
-            $clubs = $this->club_service->get_clubs(
-                array(
-                    'type' => 'affiliated',
-                )
+        }
+
+        $flash      = $this->screens ? $this->screens->apply_flash() : $this->apply_flash_message();
+        $flash_data = $flash['flash_data'] ?? array();
+        $errors     = is_array( $flash_data['errors'] ?? null ) ? new Error_Bag( $flash_data['errors'] ) : new Error_Bag();
+
+        $clubs = $this->club_service->get_clubs(
+            array(
+                'type' => 'affiliated',
+            )
+        );
+        $competitions = $this->competition_service->get_all();
+
+        $vm = new Import_Page_View_Model(
+            clubs: $clubs,
+            competitions: $competitions,
+            errors: $errors,
+        );
+
+        if ( $this->screens ) {
+            $this->screens->present(
+                array( 'view_model' => $vm ),
+                Import_Page_View_Model::class,
+                'admin/tools/import'
             );
-            $competitions = $this->competition_service->get_all();
-            require_once RACKETMANAGER_PATH . 'templates/admin/tools/import.php';
-        }
-    }
-    /**
-     * Import data from CSV file
-     *
-     * @param array $file CSV file.
-     * @param string $delimiter delimiter.
-     * @param string $mode 'teams' | 'matches' | 'fixtures' | 'players' | 'clubplayers'.
-     * @param int|null $league_id league.
-     * @param string|null $season season.
-     * @param false|int $club - optional.
-     */
-    private function import( array $file, string $delimiter, string $mode, ?int $league_id, ?string $season, false|int $club = false ): void {
-        if ( empty( $file['name'] ) ) {
-            $this->set_message( __( 'No file specified for upload', 'racketmanager' ), true );
-        } elseif ( 0 === $file['size'] ) {
-            $this->set_message( __( 'Upload file is empty', 'racketmanager' ), true );
         } else {
-            $access_type = get_filesystem_method();
-            if ( 'direct' === $access_type ) {
-                /* you can safely run request_filesystem_credentials() without any issues and don't need to worry about passing in a URL */
-                $credentials = request_filesystem_credentials( site_url() . '/wp-admin/', '', false, false, array() );
-                /* initialise the API */
-                if ( ! WP_Filesystem( $credentials ) ) {
-                    /* any problems and we exit */
-                    $this->set_message( __( 'Unable to access file system', 'racketmanager' ), true );
-                } else {
-                    global $wp_filesystem;
-                    $new_file = Util::get_file_path( $file['name'] );
-                    if ( $wp_filesystem->copy( $file['tmp_name'], $new_file, true ) ) {
-                        $contents = $wp_filesystem->get_contents_array( $new_file );
-                        if ( $contents ) {
-                            $club      = isset( $club ) ? intval( $club ) : 0;
-                            if ( 'TAB' === $delimiter ) {
-                                $delimiter = "\t"; // correct tabular delimiter.
-                            }
-                            if ( 'table' === $mode ) {
-                                $this->import_table( $contents, $delimiter, $league_id, $season );
-                            } elseif ( 'fixtures' === $mode ) {
-                                $this->import_fixtures( $contents, $delimiter, $league_id, $season );
-                            } elseif ( 'clubplayers' === $mode ) {
-                                $this->import_club_players( $contents, $delimiter, $club );
-                            } elseif ( 'players' === $mode ) {
-                                $this->import_players( $contents, $delimiter );
-                            } else {
-                                $this->set_message( __( 'Type of data to upload not selected', 'racketmanager' ), true );
-                            }
-                        } else {
-                            $this->set_message( __( 'Unable to read file contents', 'racketmanager' ), true );
-                        }
-                        if ( ! $wp_filesystem->delete( $new_file ) ) {
-                            $this->set_message( __( 'Unable to delete file', 'racketmanager' ), true );
-                        }
-                    } else {
-                        /* translators: %s: location of the file */
-                        $this->set_message( sprintf( __( 'The uploaded file could not be moved to %s.', 'racketmanager' ), ABSPATH . 'wp-content/uploads' ), true );
-                    }
-                }
+            $renderer = $this->racketmanager->container && $this->racketmanager->container->has( 'view_renderer' )
+                ? $this->racketmanager->container->get( 'view_renderer' )
+                : null;
+            if ( $renderer ) {
+                $renderer->render( 'admin/tools/import', $vm );
             } else {
-                $this->set_message( __( 'Unable to access file', 'racketmanager' ), true );
+                require_once RACKETMANAGER_PATH . 'templates/admin/tools/import.php';
             }
         }
-    }
-
-    /**
-     * Import table from a CSV file
-     *
-     * @param array $contents array of file contents.
-     * @param string $delimiter delimiter.
-     * @param int $league_id league.
-     * @param string $season season.
-     */
-    private function import_table( array $contents, string $delimiter, int $league_id, string $season ): void {
-        $league       = get_league( $league_id );
-        $i            = 0;
-        $x            = 0;
-        foreach ( $contents as $record ) {
-            $line = explode( $delimiter, $record );
-            // ignore header and empty lines.
-            if ( $i > 0 && count( $line ) > 1 ) {
-                $team    = $line[0];
-                $team_id = $this->racketmanager->get_team_id( $team );
-                if ( ! empty( $team_id ) ) {
-                    $table_id = $league->add_team( $team_id, $season );
-                    if ( $table_id ) {
-                        $league_team = get_league_team( $table_id );
-                        if ( $league_team ) {
-                            $league_team->done_matches = $line[1] ?? 0;
-                            $league_team->won_matches  = $line[2] ?? 0;
-                            $league_team->draw_matches = $line[3] ?? 0;
-                            $league_team->lost_matches = $line[4] ?? 0;
-                            if ( isset( $line[5] ) ) {
-                                if (str_contains($line[5], ':')) {
-                                    $points_2 = explode( ':', $line[5] );
-                                } else {
-                                    $points_2 = array( $line[5], 0 );
-                                }
-                            } else {
-                                $points_2 = array( 0, 0 );
-                            }
-                            $league_team->points_2_plus  = intval( $points_2[0] );
-                            $league_team->points_2_minus = intval( $points_2[1] );
-                            if ( isset( $line[6] ) ) {
-                                if (str_contains($line[6], ':')) {
-                                    $points = explode( ':', $line[6] );
-                                } else {
-                                    $points = array( $line[6], 0 );
-                                }
-                            } else {
-                                $points = array( 0, 0 );
-                            }
-                            $league_team->points_plus  = floatval( $points[0] );
-                            $league_team->points_minus = floatval( $points[1] );
-                            $league_team->add_points   = intval( $line[7] ?? 0 );
-                            $custom['sets_won']        = intval( $line[8] ?? 0 );
-                            $custom['sets_allowed']    = intval( $line[9] ?? 0 );
-                            $custom['games_won']       = intval( $line[10] ?? 0 );
-                            $custom['games_allowed']   = intval( $line[11] ?? 0 );
-                            $league_team->custom       = $custom;
-                            $league_team->update();
-                            ++$x;
-                        }
-                    }
-                }
-            }
-            ++$i;
-        }
-        if ( ! empty( $i ) ) {
-            $league->set_teams_rank( $season );
-        }
-        /* translators: %d: number of table entries imported */
-        $this->set_message( sprintf( __( '%d Table Entries imported', 'racketmanager' ), $x ) );
-    }
-
-    /**
-     * Import fixtures from a file
-     *
-     * @param array $contents array of file contents.
-     * @param string $delimiter delimiter.
-     * @param int $league_id league.
-     * @param string $season season.
-     */
-    private function import_fixtures( array $contents, string $delimiter, int $league_id, string $season ): void {
-        $league          = get_league( $league_id );
-        $fixture_service = $this->get_fixture_service();
-        $i               = 0;
-        $x               = 0;
-        foreach ( $contents as $record ) {
-            $line = explode( $delimiter, $record );
-            // ignore header and empty lines.
-            if ( $i > 0 && count( $line ) > 1 ) {
-                $match_data            = new stdClass();
-                $match_data->league_id = $league->id;
-                $date                  = ( ! empty( $line[6] ) ) ? $line[0] . ' ' . $line[6] : $line[0] . ' 00:00';
-                $match_data->match_day = $line[1] ?? '';
-                $match_data->date      = trim( $date );
-                $match_data->season    = $season;
-                $match_data->home_team = $this->racketmanager->get_team_id( $line[2] );
-                $match_data->away_team = $this->racketmanager->get_team_id( $line[3] );
-                if ( ! empty( $match_data->home_team ) && ! empty( $match_data->away_team ) ) {
-                    $match_data->location = $line[4] ?? '';
-                    $match_data->group    = $line[5] ?? '';
-                    $fixture              = Fixture_Factory::from_object( $match_data );
-                    $fixture              = $fixture_service->create_fixture( $fixture, $league );
-                    if ( ! empty( $fixture->get_id() ) ) {
-                        ++$x;
-                    }
-                }
-            }
-            ++$i;
-        }
-        /* translators: %d: number of fixtures imported */
-        $this->set_message( sprintf( __( '%d Fixtures imported', 'racketmanager' ), $x ) );
-    }
-
-    /**
-     * Import players from a file
-     *
-     * @param array $contents array of file contents.
-     * @param string $delimiter delimiter.
-     */
-    private function import_players( array $contents, string $delimiter ): void {
-        $error_messages = array();
-        $i              = 0;
-        $x              = 0;
-        foreach ( $contents as $record ) {
-            $line = explode( $delimiter, $record );
-            // ignore header and empty lines.
-            if ( $i > 0 && count( $line ) > 1 ) {
-                $this->get_player_details( $line );
-                try {
-                    $player = $this->player_service->add_new_player();
-                    if ( is_wp_error( $player ) ) {
-                        $player_errors = $player->get_error_messages();
-                        /* translators: %d: player line with error */
-                        $message = sprintf( __( 'Error with player %d details', 'racketmanager' ), $i );
-                        foreach ( $player_errors as $error_message ) {
-                            $message .= '<br>' . $error_message;
-                        }
-                        $error_messages[] = $message;
-                    } else {
-                        ++$x;
-                    }
-                } catch ( Player_Exists_Exception|Duplicate_Email_Exception|Duplicate_BTM_Exception $e ) {
-                    $this->set_message( $e->getMessage(), true );
-                }
-            }
-            ++$i;
-        }
-        /* translators: %d: number of players imported */
-        $message = sprintf( __( '%d Players imported', 'racketmanager' ), $x );
-        foreach ( $error_messages as $error_message ) {
-            $message .= '<br>' . $error_message;
-        }
-        $this->set_message( $message );
-    }
-
-    /**
-     * Import club players from a file
-     *
-     * @param array $contents array of file contents.
-     * @param string $delimiter delimiter.
-     * @param int $club_id club id.
-     */
-    private function import_club_players( array $contents, string $delimiter, int $club_id ): void {
-        $i              = 0;
-        $x              = 0;
-        $error_messages = array();
-        foreach ( $contents as $record ) {
-            $line = explode( $delimiter, $record );
-            // ignore header and empty lines.
-            if ( $i > 0 && count( $line ) > 1 ) {
-                $this->get_player_details( $line );
-                try {
-                    $response = $this->registration_service->register_player_to_club( $club_id, wp_get_current_user()->ID );
-                    if ( is_wp_error( $response ) ) {
-                        $player_messages = $response->get_error_messages();
-                        /* translators: %d: player id */
-                        $message = sprintf( __( 'Error with player %d details', 'racketmanager' ), $i );
-                        foreach ( $player_messages as $error_message ) {
-                            $message .= '<br>' . $error_message;
-                        }
-                        $error_messages[] = $message;
-                    } else {
-                        ++$x;
-                    }
-                } catch ( Club_Not_Found_Exception|Player_Already_Registered_Exception|Registration_Not_Found_Exception $e ) {
-                    $error_messages[] = $e->getMessage();
-                }
-            }
-            ++$i;
-        }
-        /* translators: %d: number of players imported */
-        $message = sprintf( __( '%d Club Players imported', 'racketmanager' ), $x );
-        foreach ( $error_messages as $error_message ) {
-            $message .= '<br>' . $error_message;
-        }
-        $this->set_message( $message );
-    }
-
-    /**
-     * Get player details from a line and store as $_POST variables.
-     *
-     * @param array $line
-     *
-     * @return void
-     */
-    private function get_player_details( array $line ): void {
-        $_POST['firstname']     = $line[0] ?? '';
-        $_POST['surname']       = $line[1] ?? '';
-        $_POST['gender']        = $line[2] ?? '';
-        $_POST['btm']           = $line[3] ?? '';
-        $_POST['email']         = $line[4] ?? '';
-        $_POST['contactno']     = $line[5] ?? '';
-        $_POST['year_of_birth'] = $line[6] ?? '';
-    }
-
-    /**
-     * Resolve Fixture_Service instance from container or provider.
-     */
-    private function get_fixture_service(): Fixture_Service {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_service' )
-            ? $racketmanager->container->get( 'fixture_service' )
-            : new Fixture_Service( new Repository_Provider(), new Service_Provider() );
     }
 }

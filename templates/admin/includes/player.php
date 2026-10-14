@@ -14,6 +14,18 @@ use Racketmanager\Util\Util_Lookup;
 /** @var array $error_fields */
 /** @var string $page_referrer */
 /** @var string $msg */
+if ( ! isset( $error_fields ) || ! is_array( $error_fields ) ) {
+    $error_fields = array();
+}
+if ( ! isset( $error_messages ) || ! is_array( $error_messages ) ) {
+    $error_messages = array();
+}
+if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+    foreach ( $errors->all() as $err_fld => $err_msg ) {
+        $error_fields[]   = (string) $err_fld;
+        $error_messages[] = (string) $err_msg;
+    }
+}
 $is_invalid = false;
 ?>
 <form action="" method="post">

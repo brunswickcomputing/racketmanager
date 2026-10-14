@@ -7,22 +7,11 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-$racketmanager_match_args                     = array();
-$racketmanager_match_args['time']             = 'outstanding';
-$racketmanager_match_args['competition_type'] = 'tournament';
-$racketmanager_match_args['orderby']          = array(
-    'updated' => 'ASC',
-    'id'      => 'ASC',
-);
-$racketmanager_options                        = $racketmanager->get_options( 'tournament' );
-$racketmanager_result_pending                 = '';
-if ( isset( $racketmanager_options['resultPending'] ) ) {
-    $racketmanager_result_pending              = $racketmanager_options['resultPending'];
-    $racketmanager_match_args['resultPending'] = $racketmanager_result_pending;
-}
-$racketmanager_matches     = $racketmanager->get_matches( $racketmanager_match_args );
-$racketmanager_prev_league = 0;
+use Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model;
+
+/** @var Admin_Results_Match_View_Model[] $tournament_results_matches */
+$tournament_results_matches = $tournament_results_matches ?? array();
+$prev_league                = 0;
 ?>
 <table class="table table-striped">
     <thead class="table-dark">
@@ -34,29 +23,20 @@ $racketmanager_prev_league = 0;
     </thead>
     <tbody>
     <?php
-    if ( $racketmanager_matches ) {
-        foreach ( $racketmanager_matches as $racketmanager_match ) {
-            $tooltip                     = '';
-            $racketmanager_match         = get_match( $racketmanager_match );
-            if ( $racketmanager_result_pending ) {
-                $racketmanager_now          = date_create();
-                $racketmanager_date_overdue = date_create( $racketmanager_match->result_overdue_date );
-                if ( $racketmanager_date_overdue < $racketmanager_now ) {
-                    /* translators: %d: days overdue  */
-                    $tooltip = sprintf( __( 'Result overdue by %d days', 'racketmanager' ), intval( ceil( $racketmanager_match->overdue_time ) ) );
-                }
-            }
-            if ( $racketmanager_prev_league !== $racketmanager_match->league_id ) {
-                $racketmanager_prev_league = $racketmanager_match->league_id;
+    if ( $tournament_results_matches ) {
+        foreach ( $tournament_results_matches as $row ) {
+            if ( $prev_league !== $row->league_id ) {
+                $prev_league = $row->league_id;
                 ?>
-                <tr><td colspan="3" class="fw-bold fst-italic"><?php echo esc_html( $racketmanager_match->league->title ); ?></td></tr>
+                <tr><td colspan="3" class="fw-bold fst-italic"><?php echo esc_html( $row->league_title ); ?></td></tr>
                 <?php
             }
             ?>
-            <tr data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="<?php echo esc_html( $tooltip ); ?>">
-                <td class=""><?php echo esc_html( mysql2date( 'Y-m-d', $racketmanager_match->date ) ); ?></td>
-                <td class="match-title"><a href="<?php echo esc_html( $racketmanager_match->link ); ?>?referrer=tournament; ?>"><?php echo esc_html( $racketmanager_match->match_title ); ?></a></td>
-                <td class=""><a href="<?php echo esc_html( $racketmanager_match->link ); ?>?referrer=tournament" class="btn btn-primary"><?php esc_html_e( 'Enter result', 'racketmanager' ); ?></a>                </tr>
+            <tr data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="<?php echo esc_attr( $row->tooltip ); ?>">
+                <td class=""><?php echo esc_html( $row->formatted_date ); ?></td>
+                <td class="match-title"><a href="<?php echo esc_url( $row->match_link ); ?>"><?php echo esc_html( $row->match_title ); ?></a></td>
+                <td class=""><a href="<?php echo esc_url( $row->result_link ); ?>" class="btn btn-primary"><?php esc_html_e( 'Enter result', 'racketmanager' ); ?></a></td>
+            </tr>
             <?php
         }
     } else {
@@ -67,4 +47,3 @@ $racketmanager_prev_league = 0;
     ?>
     </tbody>
 </table>
-

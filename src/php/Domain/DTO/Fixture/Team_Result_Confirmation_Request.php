@@ -17,7 +17,7 @@ readonly class Team_Result_Confirmation_Request {
     }
 
     /**
-     * Create from global $_POST.
+     * Create from request data.
      *
      * @param array $post
      *

@@ -7,7 +7,15 @@
 
 namespace Racketmanager;
 
-/** @var string $tab */
+use Racketmanager\Admin\View_Models\Options_Page_View_Model;
+
+if ( isset( $vm ) && $vm instanceof Options_Page_View_Model ) {
+    $tab     = $vm->tab;
+    $options = $vm->options;
+} else {
+    $tab     = $tab ?? 'club-players';
+    $options = $options ?? ( $GLOBALS['racketmanager']->options ?? array() );
+}
 $menu_page_url = admin_url( 'options-general.php?page=racketmanager-settings' );
 ?>
 <script type='text/javascript'>
@@ -66,31 +74,31 @@ jQuery(document).ready(function(){
             <!-- Tab panes -->
             <div class="tab-content">
                 <div class="tab-pane active show fade" id="club-players" role="tabpanel" aria-labelledby="club-players-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/rosters.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/rosters.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="display" role="tabpanel" aria-labelledby="display-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/display.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/display.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="players" role="tabpanel" aria-labelledby="players-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/players.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/players.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="match-results" role="tabpanel" aria-labelledby="match-results-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/results.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/results.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="entries" role="tabpanel" aria-labelledby="entries-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/entries.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/entries.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/championship.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/championship.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="billing" role="tabpanel" aria-labelledby="billing-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/billing.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/billing.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="keys" role="tabpanel" aria-labelledby="keys-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/keys.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/keys.php'; ?>
                 </div>
                 <div class="tab-pane fade" id="walkover" role="tabpanel" aria-labelledby="walkover-tab">
-                    <?php require_once RACKETMANAGER_PATH . 'templates/admin/includes/settings/walkover.php'; ?>
+                    <?php require RACKETMANAGER_PATH . 'templates/admin/includes/settings/walkover.php'; ?>
                 </div>
             </div>
         </div>

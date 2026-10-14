@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
@@ -92,6 +93,7 @@ class Racketmanager_Match_Result_Delegate_Test extends TestCase {
         ( new ReflectionMethod( Racketmanager_Match::class, 'delete_results_report' ) )->invoke( $this->make_match() );
     }
 
+    #[AllowMockObjectsWithoutExpectations]
     public function test_update_result_database_delegates_to_repository(): void {
         $match = $this->getMockBuilder( Racketmanager_Match::class )
             ->disableOriginalConstructor()

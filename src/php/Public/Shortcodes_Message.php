@@ -1,92 +1,48 @@
 <?php
+declare( strict_types=1 );
+
 /**
  * Shortcodes_Message API: Shortcodes_Message class
  *
  * @author Paul Moffat
  * @package RacketManager
- * @subpackage Shortcodes
+ * @subpackage Shortcodes/Message
  */
 
 namespace Racketmanager\Public;
 
-use function Racketmanager\get_message;
-use function Racketmanager\get_user;
+use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 
 /**
- * Class to implement the Shortcodes_Message object
+ * Backward-compatible facade for Message shortcodes.
+ *
+ * All shortcode logic is implemented in Message_Shortcode_Adapter and its Query Handlers.
+ * This class preserves legacy public signatures and delegates to the container adapter.
+ *
+ * @deprecated Use Message_Shortcode_Adapter.
  */
 class Shortcodes_Message extends Shortcodes {
     /**
-     * Function to show messages
-     *
-     *    [messages template=X]
+     * Show messages
      *
      * @param array $atts shortcode attributes.
-     * @return string content
+     * @return string
      */
-    public function show_messages( array $atts ): string {
-        $args = shortcode_atts(
-            array(
-                'template' => '',
-            ),
-            $atts
-        );
-        if ( ! is_user_logged_in() ) {
-            return $this->return_error( __( 'You must be logged in to view a message', 'racketmanager' ) );
-        }
-        $template       = $args['template'];
-        $user           = get_user( get_current_user_id() );
-        $messages       = array();
-        $messages_total = $user->get_messages( array( 'count' => true ) );
-        if ( $messages_total ) {
-            $messages['total']  = $messages_total;
-            $messages['detail'] = $user->get_messages( array() );
-            $messages['unread'] = $user->get_messages(
-                array(
-                    'count'  => true,
-                    'status' => 'unread',
-                )
-            );
-        }
-        $filename = ( ! empty( $template ) ) ? 'messages-' . $template : 'messages';
-
-        return $this->load_template( $filename, array( 'messages' => $messages ), 'account' );
+    public function show_messages( array $atts = [] ): string {
+        return $this->adapter()->show_messages( $atts );
     }
+
     /**
-     * Function to show message
-     *
-     *    [show-message template=X]
+     * Show message
      *
      * @param array $atts shortcode attributes.
-     * @return string content
+     * @return string
      */
-    public function show_message( array $atts ): string {
-        $args       = shortcode_atts(
-            array(
-                'id' => null,
-            ),
-            $atts
-        );
-        $message_id = $args['id'];
-        if ( ! is_user_logged_in() ) {
-            $msg = __( 'You must be logged in to view a message', 'racketmanager' );
-        } else {
-            if ( ! $message_id ) {
-                $msg = __( 'No message id found in request', 'racketmanager' );
-            } else {
-                $message = get_message( $message_id );
-                if ( $message ) {
-                    if ( '1' === $message->status ) {
-                        $status = '0';
-                        $message->set_status( $status );
-                    }
-                    $filename = 'message';
-                    return $this->load_template( $filename, array( 'message_dtl' => $message ), 'account' );
-                } else {
-                    $msg = __( 'Message not found', 'racketmanager' );
-                }
-            }
-        }
-        return $this->return_error( $msg );
+    public function show_message( array $atts = [] ): string {
+        return $this->adapter()->show_message( $atts );
+    }
+
+    private function adapter(): Message_Shortcode_Adapter {
+        return $this->racketmanager->container->get( 'message_shortcode_adapter' );
     }
 }

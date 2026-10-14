@@ -26,17 +26,6 @@ namespace Racketmanager\Services\Notification {
     if ( ! defined( 'RACKETMANAGER_CC_EMAIL' ) ) {
         define( 'RACKETMANAGER_CC_EMAIL', 'cc@example.com' );
     }
-    if ( ! function_exists( 'Racketmanager\Services\Notification\wp_mail' ) ) {
-        function wp_mail( $to, $subject, $message, $headers ): true {
-            $GLOBALS['wp_mail_calls'][] = [
-                'to'      => $to,
-                'subject' => $subject,
-                'message' => $message,
-                'headers' => $headers,
-            ];
-            return true;
-        }
-    }
 }
 
 namespace Racketmanager {
@@ -87,13 +76,33 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Presenters\Notification_Presenter;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\RacketManager;
-    use Racketmanager\Services\View\View_Renderer_Interface;
-    use stdClass;
+use Racketmanager\Services\View\View_Renderer_Interface;
+use stdClass;
+
+class Fake_Mailer implements Mailer_Interface {
+    public function send(
+        string|array|null $to,
+        ?string $subject,
+        ?string $message,
+        string|array|null $headers = '',
+        ?array $attachments = []
+    ): bool {
+        $GLOBALS['wp_mail_calls'][] = [
+            'to'          => $to,
+            'subject'     => $subject,
+            'message'     => $message,
+            'headers'     => $headers,
+            'attachments' => $attachments,
+        ];
+        return true;
+    }
+}
 
 #[AllowMockObjectsWithoutExpectations]
 class Notification_Service_Test extends TestCase {
@@ -105,6 +114,7 @@ class Notification_Service_Test extends TestCase {
     private Settings_Service|Stub $settings_service;
     private Notification_Presenter|MockObject $presenter;
     private RacketManager|MockObject $app;
+    private Fake_Mailer $mailer;
     private Notification_Service $service;
 
     protected function setUp(): void {
@@ -126,12 +136,14 @@ class Notification_Service_Test extends TestCase {
         $repository_provider->method('get_player_repository')->willReturn($this->player_repository);
         $repository_provider->method('get_club_repository')->willReturn($this->club_repository);
 
+        $this->mailer = new Fake_Mailer();
         $this->service = new Notification_Service(
             $repository_provider,
             $this->settings_service,
             $this->presenter,
             $view_renderer,
-            $this->app
+            $this->app,
+            $this->mailer
         );
 
         $this->app->site_name = 'Test Site';

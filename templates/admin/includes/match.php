@@ -34,6 +34,31 @@ if ( $vm instanceof Tournament_Fixtures_Page_View_Model ) {
     $home_title = $vm->home_title;
     $away_title = $vm->away_title;
     $match_day  = $vm->match_day;
+} else {
+    $fixtures_list  = $fixtures ?? ( $matches ?? array() );
+    $max_count      = $max_fixtures ?? ( $max_matches ?? count( $fixtures_list ) );
+    $resolved_comp  = $competition ?? ( isset( $league->event->competition ) ? $league->event->competition : null );
+    $resolved_tourn = $tournament ?? $resolved_comp;
+    $vm             = (object) array(
+        'league'          => $league ?? null,
+        'tournament'      => $resolved_tourn,
+        'competition'     => $resolved_comp,
+        'season'          => strval( $season ?? '' ),
+        'form_title'      => strval( $form_title ?? '' ),
+        'submit_title'    => strval( $submit_title ?? '' ),
+        'fixtures'        => $fixtures_list,
+        'edit'            => (bool) ( $edit ?? false ),
+        'bulk'            => (bool) ( $bulk ?? false ),
+        'is_finals'       => (bool) ( $is_finals ?? false ),
+        'mode'            => strval( $mode ?? '' ),
+        'teams'           => $teams ?? array(),
+        'single_cup_game' => (bool) ( $single_cup_game ?? false ),
+        'max_fixtures'    => (int) $max_count,
+        'final_key'       => $final_key ?? null,
+        'home_title'      => $home_title ?? null,
+        'away_title'      => $away_title ?? null,
+        'match_day'       => $match_day ?? null,
+    );
 }
 
 /** @var object $league */

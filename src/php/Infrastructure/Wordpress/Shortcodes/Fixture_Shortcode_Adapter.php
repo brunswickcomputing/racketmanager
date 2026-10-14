@@ -13,7 +13,7 @@ use function shortcode_atts;
 /**
  * Adapter for the [fixture] and [match] shortcodes.
  */
-readonly class Fixture_Shortcode_Adapter {
+readonly class Fixture_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     public function __construct(
         private Get_Fixture_Details_Handler $handler,
         private Fixture_Presenter $presenter

@@ -17,7 +17,7 @@ readonly class Rubber_Status_Options_Request {
     }
 
     /**
-     * Create from global $_POST.
+     * Create from request data.
      *
      * @param array $post
      *

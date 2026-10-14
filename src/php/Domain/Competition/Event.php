@@ -10,6 +10,7 @@
 namespace Racketmanager\Domain\Competition;
 
 use Racketmanager\Domain\Fixture\Rubber;
+use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
@@ -514,7 +515,7 @@ class Event {
         }
 
         $this->name        = stripslashes( $this->name );
-        $this->type        = empty( $this->type ) ? null : stripslashes( $this->type );
+        $this->type        = empty( $this->type ) ? '' : stripslashes( $this->type );
         global $racketmanager;
         $competition_service = $racketmanager->container->get( 'competition_service' );
         $this->competition = $competition_service->get_by_id( $this->competition_id );
@@ -2162,20 +2163,14 @@ class Event {
      * @return false|int
      */
     public function add_league( ? string $league_title = null ): false|int {
-        if ( empty( $league_title ) ) {
-            $league_count = $this->has_leagues();
-            ++$league_count;
-            $league           = new stdClass();
-            $league->title    = $this->name . ' ' . $league_count;
-            $league->event_id = $this->id;
-            $league->sequence = $league_count;
-        } else {
-            $league           = new stdClass();
-            $league->title    = $league_title;
-            $league->event_id = $this->id;
+        global $racketmanager;
+        try {
+            $league_service = $racketmanager->container->get( 'league_service' );
+            $league         = $league_service->add_league_to_event( (int) $this->id, $league_title );
+            return $league->id ?? false;
+        } catch ( Event_Not_Found_Exception ) {
+            return false;
         }
-        $league = new League( $league );
-        return $league->id;
     }
     /**
      * Does the event have leagues?

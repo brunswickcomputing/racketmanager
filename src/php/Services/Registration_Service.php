@@ -15,6 +15,8 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Already_Registered_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Registration_Not_Found_Exception;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\Club_Repository;
@@ -32,6 +34,7 @@ class Registration_Service {
     private Club_Repository $club_repository;
     private Player_Service $player_service;
     private ?RacketManager $racketmanager;
+    private Mailer_Interface $mailer;
 
     /**
      * Constructor
@@ -41,13 +44,15 @@ class Registration_Service {
      * @param Player_Repository $player_repository
      * @param Club_Repository $club_repository
      * @param Player_Service $player_service
+     * @param Mailer_Interface|null $mailer
      */
-    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service ) {
+    public function __construct( $plugin_instance, Registration_Repository_Interface $club_player_repository, Player_Repository $player_repository, Club_Repository $club_repository, Player_Service $player_service, ?Mailer_Interface $mailer = null ) {
         $this->racketmanager          = $plugin_instance;
         $this->club_player_repository = $club_player_repository;
         $this->player_repository      = $player_repository;
         $this->club_repository        = $club_repository;
         $this->player_service         = $player_service;
+        $this->mailer                 = $mailer ?? new Wp_Mailer();
     }
 
     /**
@@ -70,15 +75,16 @@ class Registration_Service {
      *
      * @param int|null $club_id
      * @param int|null $registered_by_userId
+     * @param array|null $request
      *
      * @return Club_Player|WP_Error
      */
-    public function register_player_to_club( ?int $club_id, ?int $registered_by_userId = null ): string|WP_Error {
+    public function register_player_to_club( ?int $club_id, ?int $registered_by_userId = null, ?array $request = null ): string|WP_Error {
         $club = $this->club_repository->find_by_id( $club_id );
         if ( ! $club ) {
             throw new Club_Not_Found_Exception( __( 'Club not found', 'racketmanager' ) );
         }
-        $player = $this->player_service->validate_player();
+        $player = $this->player_service->validate_player( $request );
         if ( is_wp_error( $player ) ) {
             return $player;
         }
@@ -129,7 +135,7 @@ class Registration_Service {
             $headers[]                 = RACKETMANAGER_CC_EMAIL . $this->racketmanager->site_name . ' <' . $options['rosterConfirmationEmail'] . '>';
             $subject                   = $this->racketmanager->site_name . ' - ' . $msg . ' - ' . $club->shortcode;
             $message                   = club_players_notification( $message_args );
-            wp_mail( $email_to, $subject, $message, $headers );
+            $this->mailer->send( $email_to, $subject, $message, $headers );
         }
 
         return $msg;

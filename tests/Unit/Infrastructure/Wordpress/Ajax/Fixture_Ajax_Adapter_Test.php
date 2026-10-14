@@ -48,7 +48,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_print_match_card_fails_security_check(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( false );
 
-        $response = $this->adapter->print_match_card();
+        $response = $this->adapter->print_match_card( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 403, $response->get_status_code() );
         $this->assertStringContainsString( 'Security', $data['msg'] );
@@ -57,9 +57,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_print_match_card_missing_id(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
+        $post['racketmanager_nonce'] = 'valid';
 
-        $response = $this->adapter->print_match_card();
+        $response = $this->adapter->print_match_card( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 400, $response->get_status_code() );
         $this->assertStringContainsString( 'not supplied', $data['msg'] );
@@ -68,12 +68,12 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_print_match_card_not_found(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['matchId']             = 123;
+        $post['racketmanager_nonce'] = 'valid';
+        $post['matchId']             = 123;
 
         $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( null );
 
-        $response = $this->adapter->print_match_card();
+        $response = $this->adapter->print_match_card( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 404, $response->get_status_code() );
         $this->assertStringContainsString( 'not found', $data['msg'] );
@@ -82,8 +82,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_print_match_card_success_no_rubbers(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['matchId']             = 123;
+        $post['racketmanager_nonce'] = 'valid';
+        $post['matchId']             = 123;
 
         $fixture             = $this->createStub( Fixture::class );
         $league              = $this->createStub( League::class );
@@ -97,15 +97,15 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $args['dto'] === $dto && $args['match'] === $fixture;
             } ) )->willReturn( 'Rendered Content' );
 
-        $response = $this->adapter->print_match_card();
+        $response = $this->adapter->print_match_card( $post ?? [] );
         $this->assertSame( 'Rendered Content', $response->get_content() );
     }
 
     #[AllowMockObjectsWithoutExpectations]
     public function test_print_match_card_success_with_rubbers(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['matchId']             = 123;
+        $post['racketmanager_nonce'] = 'valid';
+        $post['matchId']             = 123;
 
         $fixture = $this->createMock( Fixture::class );
         $fixture->expects( $this->once() )->method( 'get_rubbers' )->willReturn( [ 'rubber1' ] );
@@ -121,7 +121,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $args['dto'] === $dto && $args['match'] === $fixture && $fixture->rubbers === [ 'rubber1' ];
             } ) )->willReturn( 'Rendered Rubbers Content' );
 
-        $response = $this->adapter->print_match_card();
+        $response = $this->adapter->print_match_card( $post ?? [] );
         $this->assertSame( 'Rendered Rubbers Content', $response->get_content() );
     }
 
@@ -129,7 +129,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_update_fixture_result_fails_security_check(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( false );
 
-        $response = $this->adapter->update_fixture_result();
+        $response = $this->adapter->update_fixture_result( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 403, $response->get_status_code() );
         $this->assertStringContainsString( 'Security', $data['msg'] );
@@ -138,14 +138,14 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_update_fixture_result_fixture_not_found(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['current_match_id']    = 123;
+        $post['racketmanager_nonce'] = 'valid';
+        $post['current_match_id']    = 123;
 
         $fixture_repo = $this->createStub( Fixture_Repository_Interface::class );
         $fixture_repo->method( 'find_by_id' )->willReturn( null );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
-        $response = $this->adapter->update_fixture_result();
+        $response = $this->adapter->update_fixture_result( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 404, $response->get_status_code() );
         $this->assertStringContainsString( 'not found', $data['msg'] );
@@ -155,7 +155,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_set_match_status_fails_security_check(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( false );
 
-        $response = $this->adapter->set_fixture_status();
+        $response = $this->adapter->set_fixture_status( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 403, $response->get_status_code() );
         $this->assertStringContainsString( 'Security', $data['msg'] );
@@ -164,10 +164,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_set_match_status_invalid_data(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['match_id']            = 0;
+        $post['racketmanager_nonce'] = 'valid';
+        $post['match_id']            = 0;
 
-        $response = $this->adapter->set_fixture_status();
+        $response = $this->adapter->set_fixture_status( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 400, $response->get_status_code() );
         $this->assertNotEmpty( $data['err_msgs'] );
@@ -176,9 +176,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_status_options_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security'] = 'valid';
-        $_POST['match_id'] = 123;
-        $_POST['modal']    = 'test-modal';
+        $post['security'] = 'valid';
+        $post['match_id'] = 123;
+        $post['modal']    = 'test-modal';
 
         $fixture     = $this->createStub( Fixture::class );
         $league      = $this->createStub( League::class );
@@ -192,17 +192,17 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['dto'] === $dto && $vars['modal'] === 'test-modal';
             } ) )->willReturn( '<html lang="">modal content</html>' );
 
-        $response = $this->adapter->fixture_status_options();
+        $response = $this->adapter->fixture_status_options( $post ?? [] );
         $this->assertSame( '<html lang="">modal content</html>', $response->get_content() );
     }
 
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_status_options_fails_validation(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security'] = 'valid';
+        $post['security'] = 'valid';
         // Missing match_id and modal
 
-        $response = $this->adapter->fixture_status_options();
+        $response = $this->adapter->fixture_status_options( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 400, $response->get_status_code() );
         $this->assertStringContainsString( 'Match id not found', $data['msg'] );
@@ -211,13 +211,13 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_status_options_match_not_found(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security'] = 'valid';
-        $_POST['match_id'] = 999;
-        $_POST['modal']    = 'test-modal';
+        $post['security'] = 'valid';
+        $post['match_id'] = 999;
+        $post['modal']    = 'test-modal';
 
         $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( null );
 
-        $response = $this->adapter->fixture_status_options();
+        $response = $this->adapter->fixture_status_options( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 404, $response->get_status_code() );
         $this->assertStringContainsString( 'not found', $data['msg'] );
@@ -226,10 +226,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_set_match_status_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['match_id']            = 123;
-        $_POST['score_status']        = 'walkover_player1';
-        $_POST['modal']               = 'some_modal';
+        $post['racketmanager_nonce'] = 'valid';
+        $post['match_id']            = 123;
+        $post['score_status']        = 'walkover_player1';
+        $post['modal']               = 'some_modal';
 
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_id' )->willReturn( 123 );
@@ -247,20 +247,21 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 
-        $response = $this->adapter->set_fixture_status();
+        $response = $this->adapter->set_fixture_status( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 123, $data['match_id'] );
         $this->assertSame( 'walkover_player1', $data['match_status'] );
+        $this->assertSame( 'some_modal', $data['modal'] );
         $this->assertSame( 3, $data['num_rubbers'] );
     }
 
     #[AllowMockObjectsWithoutExpectations]
     public function test_set_match_rubber_status_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['match_id']            = 123;
-        $_POST['score_status']        = 'retired_player2';
-        $_POST['rubber_number']       = 1;
+        $post['racketmanager_nonce'] = 'valid';
+        $post['match_id']            = 123;
+        $post['score_status']        = 'retired_player2';
+        $post['rubber_number']       = 1;
 
         $fixture = $this->createStub( Fixture::class );
         $fixture->method( 'get_id' )->willReturn( 123 );
@@ -278,7 +279,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 
-        $response = $this->adapter->set_rubber_status();
+        $response = $this->adapter->set_rubber_status( $post ?? [] );
         $data     = $response->get_content();
         $this->assertSame( 123, $data['match_id'] );
         $this->assertSame( 1, $data['rubber_number'] );
@@ -290,9 +291,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_rubber_status_options_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security']  = 'valid';
-        $_POST['rubber_id'] = 456;
-        $_POST['modal']     = 'rubberStatusModal';
+        $post['security']  = 'valid';
+        $post['rubber_id'] = 456;
+        $post['modal']     = 'rubberStatusModal';
 
         $rubber           = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id = 123;
@@ -315,21 +316,21 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['dto'] === $dto && $vars['rubber'] === $rubber && $vars['not_played'] === 'Not played';
             } ) )->willReturn( '<html lang="">Modal Content</html>' );
 
-        $response = $this->adapter->match_rubber_status_options();
+        $response = $this->adapter->match_rubber_status_options( $post ?? [] );
         $this->assertSame( '<html lang="">Modal Content</html>', $response->get_content() );
     }
 
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_rubber_status_options_fails_validation(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security'] = 'valid';
+        $post['security'] = 'valid';
         // Missing rubber_id
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )->with( 'alert-modal', $this->callback( function ( $vars ) {
                 return isset( $vars['msg'] ) && $vars['class'] === 'danger';
             } ) )->willReturn( 'ALERT: rubber_id is required' );
 
-        $response = $this->adapter->match_rubber_status_options();
+        $response = $this->adapter->match_rubber_status_options( $post ?? [] );
         $this->assertSame( 400, $response->get_status_code() );
         $this->assertSame( 'ALERT: rubber_id is required', $response->get_content() );
     }
@@ -342,7 +343,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['msg'] === 'Security check failed' && $vars['class'] === 'danger';
             } ) )->willReturn( 'ALERT: Security check failed' );
 
-        $response = $this->adapter->match_rubber_status_options();
+        $response = $this->adapter->match_rubber_status_options( $post ?? [] );
         $this->assertSame( 403, $response->get_status_code() );
         $this->assertSame( 'ALERT: Security check failed', $response->get_content() );
     }
@@ -350,9 +351,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_rubber_status_options_rubber_not_found(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security']  = 'valid';
-        $_POST['rubber_id'] = 999;
-        $_POST['modal']     = 'someModal';
+        $post['security']  = 'valid';
+        $post['rubber_id'] = 999;
+        $post['modal']     = 'someModal';
 
         $GLOBALS['wp_stubs_rubbers'] = [];
 
@@ -360,7 +361,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['msg'] === 'Rubber not found' && $vars['class'] === 'danger';
             } ) )->willReturn( 'ALERT: Rubber not found' );
 
-        $response = $this->adapter->match_rubber_status_options();
+        $response = $this->adapter->match_rubber_status_options( $post ?? [] );
         $this->assertSame( 404, $response->get_status_code() );
         $this->assertSame( 'ALERT: Rubber not found', $response->get_content() );
     }
@@ -368,9 +369,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_rubber_status_options_match_not_found(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security']  = 'valid';
-        $_POST['rubber_id'] = 456;
-        $_POST['modal']     = 'someModal';
+        $post['security']  = 'valid';
+        $post['rubber_id'] = 456;
+        $post['modal']     = 'someModal';
 
         $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id            = 123;
@@ -382,7 +383,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['msg'] === 'Fixture not found' && $vars['class'] === 'danger';
             } ) )->willReturn( 'ALERT: Fixture not found' );
 
-        $response = $this->adapter->match_rubber_status_options();
+        $response = $this->adapter->match_rubber_status_options( $post ?? [] );
         $this->assertSame( 404, $response->get_status_code() );
         $this->assertSame( 'ALERT: Fixture not found', $response->get_content() );
     }
@@ -390,9 +391,9 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     #[AllowMockObjectsWithoutExpectations]
     public function test_match_rubber_status_options_unexpected_error(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['security']  = 'valid';
-        $_POST['rubber_id'] = 456;
-        $_POST['modal']     = 'someModal';
+        $post['security']  = 'valid';
+        $post['rubber_id'] = 456;
+        $post['modal']     = 'someModal';
 
         $rubber                      = new \Racketmanager\Domain\Fixture\Rubber();
         $rubber->match_id            = 123;
@@ -404,7 +405,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['msg'] === 'An unexpected error occurred' && $vars['class'] === 'danger';
             } ) )->willReturn( 'ALERT: Unexpected' );
 
-        $response = $this->adapter->match_rubber_status_options();
+        $response = $this->adapter->match_rubber_status_options( $post ?? [] );
         $this->assertSame( 500, $response->get_status_code() );
         $this->assertSame( 'ALERT: Unexpected', $response->get_content() );
     }
@@ -413,10 +414,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_show_match_option_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $_POST['match_id']                          = 123;
-        $_POST['modal']                             = 'test-modal';
-        $_POST['option']                            = 'schedule_match';
-        $_REQUEST['racketmanager_nonce']            = 'valid';
+        $post['match_id']                          = 123;
+        $post['modal']                             = 'test-modal';
+        $post['option']                            = 'schedule_match';
+        $post['racketmanager_nonce']            = 'valid';
 
         $fixture = $this->createMock( Fixture::class );
         $league = $this->createMock( League::class );
@@ -437,7 +438,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
                 return $vars['dto'] === $dto && $vars['title'] === '(Re)schedule fixture' && $vars['action'] === 'setMatchDate';
             } ) )->willReturn( 'rendered content' );
 
-        $response = $this->adapter->show_fixture_option();
+        $response = $this->adapter->show_fixture_option( $post ?? [] );
         $this->assertSame( 200, $response->get_status_code() );
         $this->assertSame( 'rendered content', $response->get_content() );
     }
@@ -446,8 +447,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_update_match_header_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $_POST['match_id']                          = 123;
-        $_REQUEST['security']                       = 'valid';
+        $post['match_id']                          = 123;
+        $post['security']                       = 'valid';
         
         // Ensure get_match(123) returns something so Validator_Fixture doesn't fail
         $GLOBALS['wp_stubs_matches'][123] = (object) [ 'id' => 123 ];
@@ -474,19 +475,45 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             $fixture_details_handler 
         );
 
-        $response = $this->adapter->update_fixture_header();
+        $response = $this->adapter->update_fixture_header( $post ?? [] );
         $this->assertSame( 200, $response->get_status_code(), 'Response status should be 200. Content: ' . json_encode($response->get_content()) );
         $this->assertSame( 'match header content', $response->get_content() );
+    }
+
+    #[AllowMockObjectsWithoutExpectations]
+    public function test_header_and_team_match_missing_nonce_ignore_request_global(): void {
+        $original_request = $_REQUEST;
+        $had_nonce_result = array_key_exists( 'wp_stubs_wp_verify_nonce_return', $GLOBALS );
+        $original_nonce_result = $GLOBALS['wp_stubs_wp_verify_nonce_return'] ?? null;
+        $_REQUEST = array( 'security' => 'global-valid', 'racketmanager_nonce' => 'global-valid' );
+        $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
+
+        try {
+            $header_response = $this->adapter->update_fixture_header( array() );
+            $team_response   = $this->adapter->update_team_match( array() );
+
+            foreach ( array( $header_response, $team_response ) as $response ) {
+                $this->assertSame( 403, $response->get_status_code() );
+                $this->assertStringContainsString( 'problem with your request', $response->get_content()->msg );
+            }
+        } finally {
+            $_REQUEST = $original_request;
+            if ( $had_nonce_result ) {
+                $GLOBALS['wp_stubs_wp_verify_nonce_return'] = $original_nonce_result;
+            } else {
+                unset( $GLOBALS['wp_stubs_wp_verify_nonce_return'] );
+            }
+        }
     }
 
     #[AllowMockObjectsWithoutExpectations]
     public function test_set_match_date_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $_POST['racketmanager_nonce']               = 'valid';
-        $_POST['match_id']                          = 123;
-        $_POST['modal']                             = 'test-modal';
-        $_POST['schedule-date']                     = '2023-10-10';
+        $post['racketmanager_nonce']               = 'valid';
+        $post['match_id']                          = 123;
+        $post['modal']                             = 'test-modal';
+        $post['schedule-date']                     = '2023-10-10';
 
         $match        = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->getMock();
         $match->id    = 123;
@@ -501,7 +528,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $maintenance_service->expects( $this->once() )->method( 'update_fixture_status' )->with( 123, 5 );
         $this->container->set( 'fixture_maintenance_service', $maintenance_service );
 
-        $response = $this->adapter->set_fixture_date();
+        $response = $this->adapter->set_fixture_date( $post ?? [] );
         $this->assertSame( 200, $response->get_status_code(), 'Response should be 200, content: ' . json_encode( $response->get_content() ) );
         $data = $response->get_content();
         $this->assertSame( 'Match schedule updated', $data['msg'] );
@@ -514,10 +541,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_switch_home_away_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $_POST['racketmanager_nonce']               = 'valid';
-        $_REQUEST['racketmanager_nonce']            = 'valid';
-        $_POST['match_id']                          = 123;
-        $_POST['modal']                             = 'test-modal';
+        $post['racketmanager_nonce']               = 'valid';
+        $post['racketmanager_nonce']            = 'valid';
+        $post['match_id']                          = 123;
+        $post['modal']                             = 'test-modal';
 
         $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
         $league->method( 'get_event_id' )->willReturn( 456 );
@@ -563,7 +590,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $maintenance_service->expects( $this->once() )->method( 'update_fixture_teams' )->with( 123, '2', '1' );
         $this->container->set( 'fixture_maintenance_service', $maintenance_service );
 
-        $response = $this->adapter->switch_home_away();
+        $response = $this->adapter->switch_home_away( $post ?? [] );
         $this->assertSame( 200, $response->get_status_code(), 'Response should be 200, content: ' . json_encode( $response->get_content() ) );
         $data = $response->get_content();
         $this->assertSame( 'Home and away teams switched', $data['msg'] );
@@ -576,10 +603,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_reset_match_result_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $_POST['racketmanager_nonce']               = 'valid';
-        $_REQUEST['racketmanager_nonce']            = 'valid';
-        $_POST['match_id']                          = 123;
-        $_POST['modal']                             = 'test-modal';
+        $post['racketmanager_nonce']               = 'valid';
+        $post['racketmanager_nonce']            = 'valid';
+        $post['match_id']                          = 123;
+        $post['modal']                             = 'test-modal';
 
         $fixture = $this->getMockBuilder( Fixture::class )->disableOriginalConstructor()->onlyMethods( [ 'get_id' ] )->getMock();
         $fixture->method( 'get_id' )->willReturn( 123 );
@@ -594,7 +621,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $result_manager->method( 'reset_result' )->with( $fixture )->willReturn( $result_response );
         $this->container->set( 'fixture_result_manager', $result_manager );
 
-        $response = $this->adapter->reset_fixture_result();
+        $response = $this->adapter->reset_fixture_result( $post ?? [] );
         $this->assertSame( 200, $response->get_status_code(), 'Response should be 200, content: ' . json_encode( $response->get_content() ) );
         $data = $response->get_content();
         $this->assertSame( 123, $data['match_id'] );
@@ -604,10 +631,10 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
     public function test_update_team_match_success(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
-        $_POST['racketmanager_nonce']               = 'valid';
-        $_REQUEST['racketmanager_nonce']            = 'valid';
-        $_POST['current_match_id']                  = 123;
-        $_POST['updateRubber']                      = 'results';
+        $post['racketmanager_nonce']               = 'valid';
+        $post['racketmanager_nonce']            = 'valid';
+        $post['current_match_id']                  = 123;
+        $post['updateRubber']                      = 'results';
 
         $league = (object) [ 'id' => 1 ];
 
@@ -630,7 +657,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $result_manager->method( 'handle_team_result_update' )->willReturn( $result_response );
         $this->container->set( 'fixture_result_manager', $result_manager );
 
-        $response = $this->adapter->update_team_match();
+        $response = $this->adapter->update_team_match( $post ?? [] );
         $this->assertSame( 200, $response->get_status_code(), 'Response should be 200, content: ' . json_encode( $response->get_content() ) );
         $data = (array) $response->get_content();
         $this->assertSame( 'Fixture details updated', $data['msg'] );
@@ -684,15 +711,15 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $presenter                    = new Fixture_Presenter( $link_service );
         $fixture_details_handler      = $this->createStub( Get_Fixture_Details_Handler::class );
         $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter, $fixture_details_handler );
-        $_POST                        = [];
+        $post                        = [];
     }
     #[AllowMockObjectsWithoutExpectations]
     public function test_update_team_match_routes_to_confirmation(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $_POST['racketmanager_nonce'] = 'valid';
-        $_POST['updateRubber'] = 'confirm';
-        $_POST['current_match_id'] = 123;
-        $_POST['resultConfirm'] = ''; // Missing
+        $post['racketmanager_nonce'] = 'valid';
+        $post['updateRubber'] = 'confirm';
+        $post['current_match_id'] = 123;
+        $post['resultConfirm'] = ''; // Missing
 
         $fixture = $this->createMock( Fixture::class );
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
@@ -707,7 +734,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             ->method( 'handle_team_result_confirmation' )
             ->willReturn( new Team_Result_Response( [ 'error' => true, 'err_msgs' => [ 'Either confirm or challenge result' ], 'status' => 400 ] ) );
 
-        $response = $this->adapter->update_team_match();
+        $response = $this->adapter->update_team_match( $post ?? [] );
         $this->assertSame( 400, $response->get_status_code() );
         $data = $response->get_content();
         $this->assertContains( 'Either confirm or challenge result', $data->err_msgs );

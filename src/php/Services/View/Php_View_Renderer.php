@@ -49,8 +49,31 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
      */
     public function render_to_string( string $template_path, object|array $view_model, array $additional_vars = [] ): string {
         ob_start();
-        $this->render( $template_path, $view_model, $additional_vars );
-        return ob_get_clean() ?: '';
+        try {
+            $this->render( $template_path, $view_model, $additional_vars );
+            return ob_get_clean() ?: '';
+        } catch ( \Throwable $e ) {
+            ob_end_clean();
+            throw $e;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function template_exists( string $template_path ): bool {
+        $template_file = ltrim( $template_path, '/' ) . '.php';
+
+        // Check for theme overrides
+        if ( function_exists( 'get_stylesheet_directory' ) && file_exists( get_stylesheet_directory() . "/racketmanager/$template_file" ) ) {
+            return true;
+        }
+
+        if ( function_exists( 'get_template_directory' ) && file_exists( get_template_directory() . "/racketmanager/$template_file" ) ) {
+            return true;
+        }
+
+        return file_exists( $this->base_path . $template_file );
     }
 
     /**

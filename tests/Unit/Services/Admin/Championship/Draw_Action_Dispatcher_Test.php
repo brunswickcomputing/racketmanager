@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
+use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
@@ -117,5 +118,30 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
         self::assertNull( $response->tab_override );
         self::assertCount( 0, $calls );
         self::assertSame( 0, $guard_calls );
+    }
+
+    public function test_guard_failure_returns_error_response(): void {
+        $handler = $this->createMock( Draw_Action_Handler_Interface::class );
+        $guard   = $this->createMock( Action_Guard_Interface::class );
+        $guard->expects( self::once() )
+            ->method( 'assert_allowed' )
+            ->willThrowException( new Invalid_Status_Exception( 'Permission denied' ) );
+
+        $dispatcher = new Draw_Action_Dispatcher( $handler, $guard );
+
+        $dto = new Draw_Action_Request_DTO(
+            tournament_id: 1,
+            league_id: 2,
+            season: '2024',
+            post: array(
+                'saveRanking' => 'Save',
+            )
+        );
+
+        $response = $dispatcher->handle( $dto );
+
+        self::assertSame( Admin_Message_Type::ERROR, $response->message_type );
+        self::assertSame( 'Permission denied', $response->message );
+        self::assertTrue( $response->is_handled() );
     }
 }

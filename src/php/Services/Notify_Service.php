@@ -9,14 +9,18 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 
 class Notify_Service {
 
     private RacketManager $racketmanager;
+    private Mailer_Interface $mailer;
 
-    public function __construct( RacketManager $plugin_instance ) {
+    public function __construct( RacketManager $plugin_instance, ?Mailer_Interface $mailer = null ) {
         $this->racketmanager = $plugin_instance;
+        $this->mailer        = $mailer ?? new Wp_Mailer();
     }
 
     /**
@@ -34,7 +38,7 @@ class Notify_Service {
             $template_args,
             'email'
         );
-        wp_mail( $email_to, $email_subject, $email_message, $headers );
+        $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
     }
 
 }

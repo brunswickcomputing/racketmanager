@@ -19,14 +19,12 @@ if ( $vm ) {
     $season     = $vm->season;
 }
 
+// Presented finals: from the draw view model, or supplied as $finals by the cup/league admin screens.
+$finals_list = $vm ? $vm->finals : ( isset( $finals ) && is_array( $finals ) ? $finals : array() );
+
 /** @var object $league */
 /** @var object $tournament */
 /** @var string|null $season */
-global $racketmanager;
-$and_edit   = '&amp;edit=';
-$and_season = '&amp;season=';
-$and_league = '&amp;league=';
-$and_final  = '&amp;final=';
 // phpcs:disable WordPress.Security.NonceVerification.Recommended
 $page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : null; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : null;
@@ -56,7 +54,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
 
                 <label for="final" class="visually-hidden"><?php esc_html_e( 'Round', 'racketmanager'); ?></label><select size="1" name="final" id="final">
                     <?php
-                    foreach ( $vm->finals as $final ) {
+                    foreach ( $finals_list as $final ) {
                         $final = (array) $final;
                         ?>
                         <option value="<?php echo esc_html( $final['key'] ); ?>" <?php selected( $league->championship->get_current_final_key(), $final['key'] ); ?>><?php echo esc_html( $final['name'] ); ?></option>
@@ -97,7 +95,7 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
 
                 <label for="final1" class="visually-hidden"><?php esc_html_e( 'Round', 'racketmanager' ); ?></label><select size="1" name="final" id="final1">
                     <?php
-                    foreach ( $vm->finals as $final ) {
+                    foreach ( $finals_list as $final ) {
                         $final = (array) $final;
                         ?>
                         <option value="<?php echo esc_html( $final['key'] ); ?>"><?php echo esc_html( $final['name'] ); ?></option>
@@ -113,9 +111,12 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
     <?php
     $final             = array();
     $current_final_key = $league->championship->get_current_final_key();
-    foreach ( $vm->finals as $f ) {
-        if ( $f->key === $current_final_key ) {
+    foreach ( $finals_list as $f ) {
+        if ( is_object( $f ) && $f->key === $current_final_key ) {
             $final = (array) $f;
+            break;
+        } elseif ( is_array( $f ) && ( $f['key'] ?? '' ) === $current_final_key ) {
+            $final = $f;
             break;
         }
     }
@@ -166,20 +167,17 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                     <?php
                     $m = 1; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
                     foreach ( $fixtures as $fixture_details ) {
-                        $match = $fixture_details->fixture;
-                        $league  = $fixture_details->league;
-                        $event   = $fixture_details->event;
-                        $competition = $fixture_details->competition;
-                        $home_team = $fixture_details->home_team->team ?? null;
-                        $away_team = $fixture_details->away_team->team ?? null;
-
-                        if ( $competition->is_tournament ) {
-                            $match_link = 'admin.php?page=racketmanager-tournaments&amp;view=fixture&amp;tournament=' . $tournament->id . $and_league . $league->id . $and_edit . $match->id . $and_season . $match->season . $and_final . $match->final;
-                        } elseif ( $competition->is_cup ) {
-                            $match_link = 'admin.php?page=racketmanager-cups&amp;view=match&amp;competition_id=' . $competition->id . $and_league . $league->id . $and_edit . $match->id . $and_season . $match->season . $and_final . $match->final;
-                        } else {
-                            $match_link = 'admin.php?page=racketmanager&amp;subpage=match' . $and_league . $league->id . $and_edit . $match->id . $and_season . $match->season;
-                        }
+                        $match              = $fixture_details->fixture;
+                        $league             = $fixture_details->league;
+                        $event              = $fixture_details->event;
+                        $competition        = $fixture_details->competition;
+                        $home_team          = $fixture_details->home_team;
+                        $away_team          = $fixture_details->away_team;
+                        $match_link         = $fixture_details->match_link ?? '#';
+                        $formatted_date     = $fixture_details->formatted_date ?? 'N/A';
+                        $formatted_time     = $fixture_details->formatted_time ?? 'N/A';
+                        $formatted_location = $fixture_details->formatted_location ?? 'N/A';
+                        $teams_label        = $fixture_details->teams_label ?? '';
                         ?>
                         <tr class="">
                             <td>
@@ -189,21 +187,21 @@ $view = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] 
                                 <?php echo esc_html( $match->id ); ?>
                             </td>
                             <td>
-                                <?php echo ( isset( $match->date ) ) ? esc_html( mysql2date( $racketmanager->date_format, $match->date ) ) : 'N/A'; ?>
+                                <?php echo esc_html( $formatted_date ); ?>
                             </td>
                             <td class="match-title">
                                 <a href="<?php echo esc_html( $match_link ); ?>">
-                                    <?php echo esc_html( $home_team->get_name() ) . ' - ' . esc_html( $away_team->get_name() ); ?>
+                                    <?php echo esc_html( $teams_label ); ?>
                                 </a>
                             </td>
                             <td class="match-location">
-                                <?php echo ( isset( $match->location ) ) ? esc_html( $match->location ) : 'N/A'; ?>
+                                <?php echo esc_html( $formatted_location ); ?>
                             </td>
                             <?php
                             if ( $league->event->competition->is_team_entry ) {
                                 ?>
                                 <td>
-                                    <?php echo ( isset( $match->hour ) ) ? esc_html( mysql2date( $racketmanager->time_format, $match->date ) ) : 'N/A'; ?>
+                                    <?php echo esc_html( $formatted_time ); ?>
                                 </td>
                                 <?php
                             }

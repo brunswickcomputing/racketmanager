@@ -14,7 +14,7 @@ readonly class Fixture_Reset_Request {
     }
 
     /**
-     * Create from global $_POST.
+     * Create from request data.
      *
      * @param array $post
      *

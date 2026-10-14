@@ -4,6 +4,8 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Util\Util;
@@ -20,9 +22,15 @@ class Result_Service {
      */
     private Team_Repository_Interface $team_repository;
 
-    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository ) {
+    /**
+     * @var Mailer_Interface
+     */
+    private Mailer_Interface $mailer;
+
+    public function __construct( Fixture_Repository_Interface $fixture_repository, Team_Repository_Interface $team_repository, ?Mailer_Interface $mailer = null ) {
         $this->fixture_repository = $fixture_repository;
         $this->team_repository    = $team_repository;
+        $this->mailer             = $mailer ?? new Wp_Mailer();
     }
 
     /**
@@ -161,7 +169,7 @@ class Result_Service {
                 ),
                 'email'
             );
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
         }
     }
 

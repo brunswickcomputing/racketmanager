@@ -30,6 +30,7 @@ readonly final class Tournament_Competition_Config_Page_View_Model {
         public array $clubs,
         public array $events,
         public string $tab = 'general',
+        public Error_Bag $errors = new Error_Bag(),
     ) {
     }
 
@@ -46,6 +47,7 @@ readonly final class Tournament_Competition_Config_Page_View_Model {
             'clubs'         => $this->clubs,
             'events'        => $this->events,
             'tab'           => $this->tab,
+            'errors'        => $this->errors,
             // Legacy variables that were previously set in display_config_page
             'forwin'           => 0,
             'fordraw'          => 0,

@@ -185,19 +185,21 @@ Migrate all remaining persistence, lifecycle workflows, and result operations aw
 
 ###   Step 3: Stage 3: Admin & AJAX Controller Architecture Uniformity
 Standardize administrative and asynchronous mutation workflows on the Action Dispatcher, Guard, and Post-Redirect-Get (PRG) patterns.
-
+*Status: Partial.*
 - Extend the Controller-Service + Action Dispatcher + PRG pattern to remaining tournament and league admin views (`view=contact`, `view=teams`, `view=setup-event`).
 - Standardize redirect URL generation and integrate `Error_Bag` validation across admin views.
 - Refactor `Ajax_Fixture` endpoints into `Fixture_Ajax_Adapter` using command DTOs (`Update_Fixture_Command`, `Reschedule_Command`) and explicit composition with `Security_Service`.
 - Register all newly extracted controllers and adapters in `Container_Bootstrap` via `Simple_Container`.
+*Remaining Work:* Inline POST processing is confirmed in `Admin_Season`, `Admin_Finances`, `Admin_Player`, `Admin_Competition`, `Admin_Cup` and `Admin_Event`; these are examples, not an exhaustive inventory, and the remaining admin screens need a systematic review. GET rendering in screen classes still uses PHP template includes rather than dedicated screen presenters/view models.
 
 ###   Step 4: Stage 4: Presentation Layer Decoupling & View Models
 Eliminate direct model dependencies from UI templates and shortcodes by introducing dedicated query handlers, presenters, and view models.
-
+*Status: Partial.*
 - Refactor `Shortcodes_Match.php` and `Shortcodes_Club.php` to resolve data through `Fixture_Detail_Service` rather than legacy helper calls.
 - Decompose monolithic presenters into focused UI formatters (`Fixture_Status_Presenter`, `Fixture_Header_Presenter`, `Club_Presenter`).
 - Enforce logic-less templates by ensuring all view files consume typed View Models (`$vm`) without direct calls to `mysql2date`, `$wpdb`, or global state.
 - Complete frontend JavaScript Phase 10 cleanup by ensuring all user interactions route through delegated event handlers (`data-action`).
+*Remaining Work:* Admin and some GET templates are still rendered via `require_once`/local variables rather than typed `$vm` view models.
 
 ###   Step 5: Stage 5: Legacy God Object Deprecation & System Consolidation
 Safely decommission legacy god objects, procedural entry points, and temporary backward-compatibility shims.

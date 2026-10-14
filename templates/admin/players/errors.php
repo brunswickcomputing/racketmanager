@@ -10,6 +10,13 @@ namespace Racketmanager;
 
 /** @var string $status */
 /** @var array $player_errors */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model ) {
+    $player_errors = $vm->player_errors;
+    $status        = $vm->status;
+    $errors        = $vm->errors;
+}
+$player_errors = $player_errors ?? array();
+$status        = $status ?? null;
 ?>
 <!-- Club Player Request Filter -->
 <form method="get" action="" class="form-control mb-3">

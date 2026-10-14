@@ -33,4 +33,12 @@ interface View_Renderer_Interface {
      * @return string
      */
     public function render_to_string( string $template_path, object|array $view_model, array $additional_vars = [] ): string;
+
+    /**
+     * Check whether a template exists.
+     *
+     * @param string $template_path Relative path to the template (without extension).
+     * @return bool
+     */
+    public function template_exists( string $template_path ): bool;
 }

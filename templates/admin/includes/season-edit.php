@@ -14,6 +14,26 @@ use Racketmanager\Util\Util_Lookup;
 /** @var array  $clubs */
 /** @var object $current_season */
 /** @var array $seasons */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Season_Modify_Page_View_Model ) {
+    $competition    = $vm->competition;
+    $season         = $vm->season ? strval( $vm->season ) : null;
+    $current_season = $vm->current_season;
+    $seasons        = $vm->seasons;
+    $clubs          = $vm->clubs;
+    $edit_mode      = $vm->edit_mode;
+    $errors         = $vm->errors;
+}
+if ( ! isset( $validator ) ) {
+    $validator           = new \stdClass();
+    $validator->err_flds = array();
+    $validator->err_msgs = array();
+}
+if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+    foreach ( $errors->all() as $err_fld => $err_msg ) {
+        $validator->err_flds[] = $err_fld;
+        $validator->err_msgs[] = $err_msg;
+    }
+}
 $is_invalid = false;
 $breadcrumb = '<a href="admin.php?page=racketmanager-' . $competition->get_type() . 's">' . ucfirst( $competition->get_type() ) . 's</a> &raquo; <a href="admin.php?page=racketmanager-' . $competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $competition->id . '">' . $competition->name . '</a> &raquo; ';
 if ( empty( $edit_mode ) ) {

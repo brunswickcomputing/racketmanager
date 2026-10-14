@@ -12,6 +12,14 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var array  $competitions */
 /** @var Season[]  $seasons */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model ) {
+    $finance_charges   = $vm->charges;
+    $competition_id    = $vm->competition_id;
+    $season            = $vm->season;
+    $competitions      = $vm->competitions;
+    $seasons           = $vm->seasons;
+    $racketmanager_tab = $vm->racketmanager_tab;
+}
 $charges = $finance_charges;
 ?>
 <div class="container">

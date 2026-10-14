@@ -22,10 +22,10 @@ $leagues = $event->get_leagues();
         <div class="col-md-3">
             <?php
             $is_invalid = false;
-            if ( ! empty( $racketmanager->error_fields ) && is_numeric( array_search( 'primary_league', $racketmanager->error_fields, true ) ) ) {
+            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'primary_league', $validator->err_flds, true ) ) ) {
                 $error_tab  = empty( $error_tab ) ? $tab_name : $error_tab;
                 $is_invalid = true;
-                $msg_id     = array_search( 'primary_league', $racketmanager->error_fields, true );
+                $msg_id     = array_search( 'primary_league', $validator->err_flds, true );
                 $msg        = $validator->err_msgs[ $msg_id ] ?? null;
             }
             ?>

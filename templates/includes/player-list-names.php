@@ -7,8 +7,11 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presenters\Player_Presenter;
+
 /** @var string $player_link */
-$alphabet_key = array();
+$player_presenter = $player_presenter ?? new Player_Presenter();
+$alphabet_key     = array();
 ?>
 <div class="module module--card">
     <div class="module__banner">
@@ -86,16 +89,11 @@ $alphabet_key = array();
                 <div class="alphabet__wrapper">
                     <ul class="alphabet">
                         <?php
-                        $alphabet = range('A', 'Z');
-                        foreach ( $alphabet as $alphabet_char ) {
-                            if ( ! in_array( $alphabet_char, $alphabet_key, true ) ) {
-                                $alphabet_class = 'is-disabled';
-                            } else {
-                                $alphabet_class = null;
-                            }
+                        $alphabet_items = $player_presenter->get_alphabet_navigation( $alphabet_key );
+                        foreach ( $alphabet_items as $item ) {
                             ?>
                             <li class="alphabet__char">
-                                <a href="#<?php echo esc_attr( $alphabet_char ); ?>" class="alphabet__char-href <?php echo esc_attr( $alphabet_class ); ?>"><?php echo esc_attr( $alphabet_char ); ?></a>
+                                <a href="#<?php echo esc_attr( $item['letter'] ); ?>" class="alphabet__char-href <?php echo esc_attr( $item['class'] ?? '' ); ?>"><?php echo esc_attr( $item['letter'] ); ?></a>
                             </li>
                             <?php
                         }

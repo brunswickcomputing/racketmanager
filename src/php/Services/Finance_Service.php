@@ -32,6 +32,10 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\Stripe_API_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -41,8 +45,6 @@ use Racketmanager\Services\Validator\Validator_Finance;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Messages;
 use stdClass;
-use Stripe\Exception\ApiErrorException;
-use Stripe\StripeClient;
 use WP_Error;
 
 /**
@@ -56,12 +58,24 @@ class Finance_Service {
     private Competition_Service $competition_service;
     private Player_Service $player_service;
     private Tournament_Repository_Interface $tournament_repository;
+    private Payment_Gateway_Interface $payment_gateway;
+    private Mailer_Interface $mailer;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Charge_Repository_Interface $charge_repository, Invoice_Repository_Interface $invoice_repository, Club_Repository_Interface $club_repository, Tournament_Repository_Interface $tournament_repository, Competition_Service $competition_service, Player_Service $player_service ) {
+    public function __construct(
+        RacketManager $plugin_instance,
+        Charge_Repository_Interface $charge_repository,
+        Invoice_Repository_Interface $invoice_repository,
+        Club_Repository_Interface $club_repository,
+        Tournament_Repository_Interface $tournament_repository,
+        Competition_Service $competition_service,
+        Player_Service $player_service,
+        ?Payment_Gateway_Interface $payment_gateway = null,
+        ?Mailer_Interface $mailer = null
+    ) {
         $this->racketmanager         = $plugin_instance;
         $this->charge_repository     = $charge_repository;
         $this->invoice_repository    = $invoice_repository;
@@ -69,6 +83,8 @@ class Finance_Service {
         $this->tournament_repository = $tournament_repository;
         $this->competition_service   = $competition_service;
         $this->player_service        = $player_service;
+        $this->payment_gateway       = $payment_gateway ?? new Stripe_Payment_Gateway( $plugin_instance->get_options( 'billing' ) );
+        $this->mailer                = $mailer ?? new Wp_Mailer();
     }
 
     public function get_charge( $charge_id ): Charge {
@@ -348,7 +364,7 @@ class Finance_Service {
                 ),
                 'email'
             );
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
 
             return true;
         } else {
@@ -535,7 +551,7 @@ class Finance_Service {
         return $this->invoice_repository->save( $invoice );
     }
 
-    public function create_tournament_payment_request( ?int $tournament_id, ?int $player_id, ?int $invoice_id ): bool {
+    public function create_tournament_payment_request( ?int $tournament_id, ?int $player_id, ?int $invoice_id ): string {
         $invoice = $this->invoice_repository->find_by_id( $invoice_id );
         if ( ! $invoice ) {
             throw new Invoice_Not_Found_Exception( Util_Messages::invoice_not_found( $invoice_id ) );
@@ -551,29 +567,20 @@ class Finance_Service {
             throw new Player_Not_Found_Exception( $e->getMessage() );
         }
         $args['description']                 = $player->get_fullname() . ' - ' . $tournament_name;
-        $args['amount']                      = $invoice->amount * 100;
+        $args['amount']                      = intval( round( floatval( $invoice->amount ) * 100 ) );
         $args['currency']                    = $this->racketmanager->currency_code;
         $args['payment_method_types']        = array('card');
         $args['statement_descriptor_suffix'] = $tournament_name;
         $args['receipt_email']               = $player->get_email();
-        $stripe_details                      = new Stripe_Settings( $this->racketmanager );
-        // Ensure Stripe classes are available via Composer autoloading.
-        if ( ! class_exists( StripeClient::class ) ) {
-            throw new Stripe_API_Exception( __( 'Stripe client is not installed', 'racketmanager' ) );
-        }
-        $stripe = new StripeClient( $stripe_details->api_secret_key );
-        try {
-            // Create a PaymentIntent with amount and currency
-            $payment_intent = $stripe->paymentIntents->create( $args );
-        } catch ( ApiErrorException $e ) {
-            throw new Stripe_API_Exception( $e->getMessage() );
-        }
-        if ( $payment_intent ) {
+
+        $payment_intent = $this->payment_gateway->create_payment_intent( $args );
+
+        if ( $payment_intent && ! empty( $payment_intent->id ) ) {
             $reference = $payment_intent->id;
             $invoice->set_payment_reference( $reference );
             $this->invoice_repository->save( $invoice );
         }
-        return $payment_intent->client_secret;
+        return $payment_intent->client_secret ?? '';
     }
 
     public function cancel_player_invoices_by_tournament( ?int $player_id, Tournament $tournament ): void {

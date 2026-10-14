@@ -8,6 +8,10 @@
 namespace Racketmanager;
 
 /** @var string $racketmanager_tab */
+if ( isset( $vm ) && isset( $vm->racketmanager_tab ) ) {
+    $racketmanager_tab = $vm->racketmanager_tab;
+}
+$racketmanager_tab = $racketmanager_tab ?? 'errors';
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">

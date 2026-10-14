@@ -44,16 +44,21 @@ final class Admin_Message_Service {
      * Set a flash message for the next request.
      *
      * @param string $message
-     * @param bool|string|null $error
+     * @param bool|string|null   $error
+     * @param array<string,mixed> $data
      */
-    public function set_flash_message( string $message, bool|string|null $error = false ): void {
-        $this->flash_store->set( $message, $error );
+    public function set_flash_message( string $message, bool|string|null $error = false, array $data = array() ): void {
+        if ( empty( $data ) ) {
+            $this->flash_store->set( $message, $error );
+            return;
+        }
+        $this->flash_store->set( $message, $error, $data );
     }
 
     /**
      * Get and clear the flash message.
      *
-     * @return array{message?:string, message_type?:bool|string}
+     * @return array{message?:string, message_type?:bool|string, flash_data?:array<string,mixed>}
      */
     public function pop_flash_message(): array {
         return $this->flash_store->pop();

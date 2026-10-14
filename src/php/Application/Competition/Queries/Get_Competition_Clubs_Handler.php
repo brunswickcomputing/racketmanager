@@ -1,0 +1,147 @@
+<?php
+declare( strict_types=1 );
+
+namespace Racketmanager\Application\Competition\Queries;
+
+use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Exceptions\Season_Not_Found_Exception;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
+use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Competition_Service;
+use function is_numeric;
+use function Racketmanager\un_seo_url;
+use function substr;
+use function __;
+
+/**
+ * Handler for resolving [competition-clubs] shortcode data into a view model.
+ */
+class Get_Competition_Clubs_Handler {
+    public function __construct(
+        private readonly Competition_Service $competition_service,
+        private readonly Club_Service $club_service
+    ) {}
+
+    public function handle( Get_Competition_Clubs_Query $query ): Shortcode_View_Model {
+        $comp_id = $query->competition_id ?? $query->competition_name;
+        if ( null === $comp_id || '' === $comp_id ) {
+            return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
+        }
+
+        if ( is_string( $comp_id ) ) {
+            $comp_id = un_seo_url( $comp_id );
+        }
+
+        try {
+            $competition = $this->competition_service->get_by_id( $comp_id );
+        } catch ( Competition_Not_Found_Exception $e ) {
+            return Shortcode_View_Model::error( $e->getMessage() );
+        }
+
+        if ( ! $competition ) {
+            return Shortcode_View_Model::error( __( 'Competition not found', 'racketmanager' ) );
+        }
+
+        if ( null !== $query->season ) {
+            $competition->set_current_season( (string) $query->season );
+        }
+
+        $season_name = $competition->current_season['name'] ?? null;
+        $season_int  = $query->season ?? ( ( null !== $season_name && is_numeric( $season_name ) ) ? (int) $season_name : null );
+
+        $clubs            = null;
+        $competition_club = null;
+
+        if ( ! empty( $query->club_identifier ) ) {
+            try {
+                if ( is_numeric( $query->club_identifier ) ) {
+                    $competition_club = $this->club_service->get_club( (int) $query->club_identifier );
+                } else {
+                    $competition_club = $this->club_service->get_club_by_shortcode( $query->club_identifier );
+                }
+            } catch ( Club_Not_Found_Exception ) {
+                $competition_club = null;
+            }
+
+            if ( $competition_club ) {
+                $club_id = method_exists( $competition_club, 'get_id' ) ? $competition_club->get_id() : ( $competition_club->id ?? null );
+                $competition_club->teams = $competition->get_teams(
+                    [
+                        'club'   => $club_id,
+                        'season' => $season_name,
+                        'status' => 1,
+                    ]
+                );
+
+                $competition_club->matches = [];
+                $matches                   = $competition->get_matches(
+                    [
+                        'season'  => $season_name,
+                        'club'    => $club_id,
+                        'time'    => 'next',
+                        'orderby' => [
+                            'date'      => 'ASC',
+                            'league_id' => 'DESC',
+                        ],
+                    ]
+                );
+                foreach ( $matches as $match ) {
+                    $key = substr( (string) $match->date, 0, 10 );
+                    if ( ! isset( $competition_club->matches[ $key ] ) ) {
+                        $competition_club->matches[ $key ] = [];
+                    }
+                    $competition_club->matches[ $key ][] = $match;
+                }
+
+                $competition_club->results = [];
+                $results_matches           = $competition->get_matches(
+                    [
+                        'season'  => $season_name,
+                        'club'    => $club_id,
+                        'time'    => 'latest',
+                        'orderby' => [
+                            'date'      => 'ASC',
+                            'league_id' => 'DESC',
+                        ],
+                    ]
+                );
+                foreach ( $results_matches as $match ) {
+                    $key = substr( (string) $match->date, 0, 10 );
+                    if ( ! isset( $competition_club->results[ $key ] ) ) {
+                        $competition_club->results[ $key ] = [];
+                    }
+                    $competition_club->results[ $key ][] = $match;
+                }
+
+                $competition_club->players = $competition->get_players(
+                    [
+                        'club'   => $club_id,
+                        'season' => $season_name,
+                        'stats'  => true,
+                    ]
+                );
+            } else {
+                return Shortcode_View_Model::error( __( 'Club not found', 'racketmanager' ) );
+            }
+        } else {
+            try {
+                $clubs = $this->competition_service->get_club_details_for_competition( (int) $competition->get_id(), $season_int );
+            } catch ( Season_Not_Found_Exception $e ) {
+                return Shortcode_View_Model::error( $e->getMessage() );
+            }
+        }
+
+        $template = '' !== $query->template ? 'clubs-' . $query->template : 'clubs';
+
+        return new Shortcode_View_Model(
+            template: $template,
+            vars: [
+                'competition'      => $competition,
+                'competition_club' => $competition_club,
+                'clubs'            => $clubs,
+            ],
+            template_type: 'competition'
+        );
+    }
+}

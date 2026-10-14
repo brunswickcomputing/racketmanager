@@ -128,10 +128,10 @@ class Fixture_Presentation_Adapter {
         $raw_comp_type             = $competition ? ( method_exists( $competition, 'get_type' ) ? $competition->get_type() : ( $competition->type ?? '' ) ) : '';
         $comp_type                 = $raw_comp_type instanceof \BackedEnum ? $raw_comp_type->value : (string) ( $raw_comp_type ?? '' );
         $comp_obj->type            = $comp_type;
-        $comp_obj->is_championship = ( 'championship' === $comp_type || ( $competition && method_exists( $competition, 'is_championship' ) && $competition->is_championship() ) );
-        $comp_obj->is_cup          = ( 'cup' === $comp_type || ( $competition && method_exists( $competition, 'is_cup' ) && $competition->is_cup() ) );
-        $comp_obj->is_tournament   = ( 'tournament' === $comp_type || ( $competition && method_exists( $competition, 'is_tournament' ) && $competition->is_tournament() ) );
-        $comp_obj->is_league       = ( 'league' === $comp_type || ( $competition && method_exists( $competition, 'is_league' ) && $competition->is_league() ) );
+        $comp_obj->is_championship = ( 'championship' === $comp_type || ! empty( $competition->is_championship ) || ( $competition && method_exists( $competition, 'is_championship' ) && $competition->is_championship() ) );
+        $comp_obj->is_cup          = ( 'cup' === $comp_type || ! empty( $competition->is_cup ) || ( $competition && method_exists( $competition, 'is_cup' ) && $competition->is_cup() ) );
+        $comp_obj->is_tournament   = ( 'tournament' === $comp_type || ! empty( $competition->is_tournament ) || ( $competition && method_exists( $competition, 'is_tournament' ) && $competition->is_tournament() ) );
+        $comp_obj->is_league       = ( 'league' === $comp_type || ! empty( $competition->is_league ) || ( $competition && method_exists( $competition, 'is_league' ) && $competition->is_league() ) );
 
         $event_obj->competition = $comp_obj;
         $this->league->event    = $event_obj;
@@ -156,8 +156,8 @@ class Fixture_Presentation_Adapter {
         $home_team_obj->players      = $home_team_dtls->players ?? array();
         $home_team_obj->player       = $home_team_obj->players;
         $home_team_obj->captain      = $home_team_dtls->captain ?? '';
-        $home_team_obj->contactemail = $home_team_dtls->captain_email ?? '';
-        $home_team_obj->contactno    = $home_team_dtls->captain_tel ?? '';
+        $home_team_obj->contactemail = $home_team_dtls->contactemail ?? $home_team_dtls->captain_email ?? '';
+        $home_team_obj->contactno    = $home_team_dtls->contactno ?? $home_team_dtls->captain_tel ?? '';
         $home_team_obj->match_day    = $home_team_dtls->match_day ?? '';
         $home_team_obj->match_time   = $home_team_dtls->match_time ?? '';
         $home_team_obj->is_withdrawn = $home_team_dtls->is_withdrawn ?? false;
@@ -173,8 +173,8 @@ class Fixture_Presentation_Adapter {
         $away_team_obj->players      = $away_team_dtls->players ?? array();
         $away_team_obj->player       = $away_team_obj->players;
         $away_team_obj->captain      = $away_team_dtls->captain ?? '';
-        $away_team_obj->contactemail = $away_team_dtls->captain_email ?? '';
-        $away_team_obj->contactno    = $away_team_dtls->captain_tel ?? '';
+        $away_team_obj->contactemail = $away_team_dtls->contactemail ?? $away_team_dtls->captain_email ?? '';
+        $away_team_obj->contactno    = $away_team_dtls->contactno ?? $away_team_dtls->captain_tel ?? '';
         $away_team_obj->match_day    = $away_team_dtls->match_day ?? '';
         $away_team_obj->match_time   = $away_team_dtls->match_time ?? '';
         $away_team_obj->is_withdrawn = $away_team_dtls->is_withdrawn ?? false;

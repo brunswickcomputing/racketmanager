@@ -9,6 +9,22 @@ namespace Racketmanager;
 
 /** @var object $invoice */
 /** @var string $invoice_view */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoice_Page_View_Model ) {
+    $invoice      = $vm->invoice;
+    $invoice_view = $vm->invoice_view;
+    $errors       = $vm->errors;
+}
+if ( ! isset( $validator ) ) {
+    $validator           = new \stdClass();
+    $validator->err_flds = array();
+    $validator->err_msgs = array();
+}
+if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+    foreach ( $errors->all() as $err_fld => $err_msg ) {
+        $validator->err_flds[] = $err_fld;
+        $validator->err_msgs[] = $err_msg;
+    }
+}
 $inv_name   = $invoice->billable_name;
 if ( 'club' === $invoice->invoice->billable_type ) {
     $view       = 'club-invoices';

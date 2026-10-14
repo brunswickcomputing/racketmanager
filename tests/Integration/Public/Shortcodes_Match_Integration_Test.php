@@ -21,6 +21,17 @@ namespace Racketmanager\Tests\Integration\Public {
 
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\TestCase;
+    use Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Handler;
+    use Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler;
+    use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
+    use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
+    use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
+    use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
+    use Racketmanager\Presenters\Match_Shortcode_Presenter;
+    use Racketmanager\Presenters\Matches_List_Presenter;
+    use Racketmanager\Presenters\Shortcode_View_Presenter;
+    use Racketmanager\Services\View\Shortcode_Template_Renderer;
+    use Racketmanager\Services\View\View_Renderer_Interface;
     use Racketmanager\Domain\Competition\Competition;
     use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Competition\Event;
@@ -59,14 +70,16 @@ namespace Racketmanager\Tests\Integration\Public {
         private $plugin;
         private $container;
         private $shortcode;
+        private array $rendered = [];
 
         public function test_shortcode_flow_with_real_detail_service(): void {
-            $this->shortcode->expects( $this->once() )->method( 'load_template' )->with( $this->equalTo( 'match-header' ), $this->callback( function ( $args ) {
-                    return $args['dto'] instanceof Fixture_Details_DTO && $args['match'] instanceof Fixture && $args['dto']->league->title === 'Premier League';
-                } ), $this->equalTo( 'match' ) )->willReturn( 'header_html' );
-
             $result = $this->shortcode->show_match_header( [ 'id' => 123 ] );
+
             $this->assertEquals( 'header_html', $result );
+            $this->assertSame( 'match/match-header', $this->rendered['path'] );
+            $this->assertInstanceOf( Fixture_Details_DTO::class, $this->rendered['vars']['dto'] );
+            $this->assertInstanceOf( Fixture::class, $this->rendered['vars']['match'] );
+            $this->assertSame( 'Premier League', $this->rendered['vars']['dto']->league->title );
         }
 
         protected function setUp(): void {
@@ -143,7 +156,23 @@ namespace Racketmanager\Tests\Integration\Public {
             $competition->is_tournament = false;
             $competition_service->method( 'get_by_id' )->willReturn( $competition );
 
-            $this->shortcode = $this->getMockBuilder( Shortcodes_Match::class )->setConstructorArgs( [ $this->plugin ] )->onlyMethods( [ 'load_template' ] )->getMock();
+            $renderer = $this->createStub( View_Renderer_Interface::class );
+            $renderer->method( 'render_to_string' )->willReturnCallback( function ( string $path, $vm, array $vars ): string {
+                $this->rendered = [ 'path' => $path, 'vars' => $vars ];
+
+                return 'header_html';
+            } );
+            $this->container->set( 'matches_shortcode_adapter', fn() => new Matches_Shortcode_Adapter(
+                $this->createStub( Get_Daily_Matches_Handler::class ),
+                $this->createStub( Get_Latest_Results_Handler::class ),
+                $this->createStub( Matches_List_Presenter::class ),
+                new Get_Match_Score_Handler( $detail_service ),
+                new Get_Match_Header_Handler( $detail_service ),
+                new Get_Match_Detail_Handler( $detail_service, $this->createStub( Player_Service::class ) ),
+                new Match_Shortcode_Presenter( new Shortcode_View_Presenter( new Shortcode_Template_Renderer( $renderer ) ) )
+            ) );
+
+            $this->shortcode = new Shortcodes_Match( $this->plugin );
         }
     }
 }

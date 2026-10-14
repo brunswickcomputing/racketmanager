@@ -43,21 +43,21 @@ class Club_Role {
     /**
      * Role
      *
-     * @var object
+     * @var ?object
      */
-    public object $role;
+    public ?object $role = null;
     /**
      * Club
      *
-     * @var object
+     * @var ?object
      */
-    public object $club;
+    public ?object $club = null;
     /**
      * User
      *
-     * @var object
+     * @var ?object
      */
-    public object $user;
+    public ?object $user = null;
     /**
      * Constructor
      *

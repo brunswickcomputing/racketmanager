@@ -17,7 +17,7 @@ readonly class Fixture_Date_Update_Request {
     }
 
     /**
-     * Create from global $_POST.
+     * Create from request data.
      *
      * @param array $post
      *

@@ -13,9 +13,10 @@ class Admin_Flash_Message_Store {
 
     /**
      * @param string $message
-     * @param bool|string $message_type Legacy bridge type: true|'warning'|'info'|false
+     * @param bool|string         $message_type Legacy bridge type: true|'warning'|'info'|false
+     * @param array<string,mixed> $data       Additional view state to preserve across a PRG redirect.
      */
-    public function set( string $message, bool|string $message_type = false ): void {
+    public function set( string $message, bool|string $message_type = false, array $data = array() ): void {
         $user_id = get_current_user_id();
         if ( ! $user_id ) {
             return;
@@ -26,6 +27,9 @@ class Admin_Flash_Message_Store {
             'message_type' => $message_type,
             'ts'           => time(),
         );
+        if ( ! empty( $data ) ) {
+            $payload['flash_data'] = $data;
+        }
 
         update_user_meta( $user_id, self::META_KEY, $payload );
     }
@@ -33,7 +37,7 @@ class Admin_Flash_Message_Store {
     /**
      * Pop the flash message (read once).
      *
-     * @return array{message?:string,message_type?:bool|string,ts?:int}
+     * @return array{message?:string,message_type?:bool|string,ts?:int,flash_data?:array<string,mixed>}
      */
     public function pop(): array {
         $user_id = get_current_user_id();

@@ -12,6 +12,28 @@ namespace Racketmanager;
 /** @var string $season */
 /** @var string $tab */
 /** @var bool $new_event */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Tournament_Event_Config_Page_View_Model ) {
+    $competition = $vm->competition;
+    $event       = $vm->event;
+    $tournament  = $vm->tournament;
+    $new_event   = $vm->new_event;
+    $tab         = $vm->tab;
+    $errors      = $vm->errors;
+}
+if ( ! isset( $tab ) ) {
+    $tab = 'general';
+}
+if ( ! isset( $validator ) ) {
+    $validator           = new \stdClass();
+    $validator->err_flds = array();
+    $validator->err_msgs = array();
+}
+if ( isset( $errors ) && $errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+    foreach ( $errors->all() as $err_fld => $err_msg ) {
+        $validator->err_flds[] = $err_fld;
+        $validator->err_msgs[] = $err_msg;
+    }
+}
 if ( $new_event ) {
     $page_title = __( 'New event config', 'racketmanager' );
 } else {
@@ -89,14 +111,14 @@ if ( empty( $tournament ) ) {
                 <div class="tab-content">
                     <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <h2><?php esc_html_e( 'General', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/include/settings/general.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/event/include/settings/general.php'; ?>
                     </div>
                     <?php
                     if ( ! $competition->is_tournament ) {
                         ?>
                         <div class="tab-pane fade" id="fixtures" role="tabpanel" aria-labelledby="fixtures-tab">
                             <h2><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></h2>
-                            <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/include/settings/fixtures.php'; ?>
+                            <?php require RACKETMANAGER_PATH . 'templates/admin/event/include/settings/fixtures.php'; ?>
                         </div>
                         <?php
                     }
@@ -106,7 +128,7 @@ if ( empty( $tournament ) ) {
                         ?>
                         <div class="tab-pane fade" id="championship" role="tabpanel" aria-labelledby="championship-tab">
                             <h2><?php esc_html_e( 'Championship', 'racketmanager' ); ?></h2>
-                            <?php require_once RACKETMANAGER_PATH . 'templates/admin/event/include/settings/championship.php'; ?>
+                            <?php require RACKETMANAGER_PATH . 'templates/admin/event/include/settings/championship.php'; ?>
                         </div>
                         <?php
                     }

@@ -9,6 +9,8 @@
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Charge;
 use Racketmanager\Domain\Competition\Competition;
@@ -33,6 +35,8 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Updated_Exception;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Charge_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
@@ -64,12 +68,27 @@ class Tournament_Service {
     private Club_Service $club_service;
     private Finance_Service $finance_service;
     private League_Service $league_service;
+    private Mailer_Interface $mailer;
 
     /**
      * Constructor
      *
      */
-    public function __construct( RacketManager $plugin_instance, Tournament_Repository_Interface $tournament_repository, Charge_Repository_Interface $charge_repository, Event_Repository_Interface $event_repository, Fixture_Service $fixture_service, League_Team_Repository_Interface $league_team_repository, Tournament_Entry_Repository_Interface $tournament_entry_repository, Competition_Service $competition_service, Player_Service $player_service, Club_Service $club_service, Finance_Service $finance_service, League_Service $league_service ) {
+    public function __construct(
+        RacketManager $plugin_instance,
+        Tournament_Repository_Interface $tournament_repository,
+        Charge_Repository_Interface $charge_repository,
+        Event_Repository_Interface $event_repository,
+        Fixture_Service $fixture_service,
+        League_Team_Repository_Interface $league_team_repository,
+        Tournament_Entry_Repository_Interface $tournament_entry_repository,
+        Competition_Service $competition_service,
+        Player_Service $player_service,
+        Club_Service $club_service,
+        Finance_Service $finance_service,
+        League_Service $league_service,
+        ?Mailer_Interface $mailer = null
+    ) {
         $this->racketmanager               = $plugin_instance;
         $this->tournament_repository       = $tournament_repository;
         $this->charge_repository           = $charge_repository;
@@ -82,6 +101,7 @@ class Tournament_Service {
         $this->club_service                = $club_service;
         $this->finance_service             = $finance_service;
         $this->league_service              = $league_service;
+        $this->mailer                      = $mailer ?? new Wp_Mailer();
     }
 
     public function get_tournaments( array $criteria = array() ): array {
@@ -608,7 +628,7 @@ class Tournament_Service {
                 ),
                 'email'
             );
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
             $message_sent = true;
         }
 
@@ -947,7 +967,7 @@ class Tournament_Service {
             }
         }
         if ( $send ) {
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
         }
 
         return $send;
@@ -1175,6 +1195,9 @@ class Tournament_Service {
             }
         }
 
+        $finals_presenter = $this->resolve_championship_finals_presenter();
+        $finals           = $finals_presenter->present_finals( $finals, $tournament, $league, $season );
+
         return new Tournament_Draw_Page_View_Model(
             tournament: $tournament,
             league: $league,
@@ -1184,5 +1207,14 @@ class Tournament_Service {
             teams: $teams,
             finals: $finals,
         );
+    }
+
+    private function resolve_championship_finals_presenter(): Admin_Championship_Finals_Presenter {
+        $container = $this->racketmanager->container ?? null;
+        if ( $container instanceof \Racketmanager\Services\Container\Simple_Container && $container->has( 'admin_championship_finals_presenter' ) ) {
+            return $container->get( 'admin_championship_finals_presenter' );
+        }
+
+        return new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
     }
 }

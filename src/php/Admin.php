@@ -10,7 +10,6 @@
 namespace Racketmanager;
 
 use Racketmanager\Admin\Admin_Display;
-use Racketmanager\Ajax\Ajax_Admin;
 use WP_Error;
 
 /**
@@ -55,7 +54,8 @@ class Admin extends RacketManager {
         require_once ABSPATH . 'wp-admin/includes/template.php';
 
         // PSR-4 autoloading handles class loading; no manual includes needed here.
-        $this->ajax_admin    = new Ajax_Admin( $this );
+        $this->ajax_admin    = $this->container->get( 'admin_ajax_controller' );
+        $this->ajax_admin->register_hooks( $this->container->get( 'ajax_registry' ) );
         $this->admin_display = new Admin_Display( $this );
 
         add_action( 'admin_enqueue_scripts', array( &$this, 'load_scripts' ) );
@@ -623,19 +623,6 @@ class Admin extends RacketManager {
      * Schedule player ratings calculation
      */
     public function schedule_player_ratings(): bool|WP_Error {
-        $day            = intval( gmdate( 'd' ) );
-        $month          = intval( gmdate( 'm' ) );
-        $year           = intval( gmdate( 'Y' ) );
-        $schedule_start = mktime( 12, 0, 0, $month, $day, $year );
-        $interval       = 'weekly';
-        $schedule_name  = 'rm_calculate_player_ratings';
-        $schedule_args  = array();
-        $next_schedule  = wp_next_scheduled( $schedule_name, $schedule_args );
-        if ( ! $next_schedule ) {
-            $success = wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args, true );
-        } else {
-            $success = false;
-        }
-        return $success;
+        return $this->container->get( 'player_service' )->schedule_global_player_ratings();
     }
 }

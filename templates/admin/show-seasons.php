@@ -7,7 +7,10 @@
 
 namespace Racketmanager;
 
-/** @var array $seasons */
+use Racketmanager\Admin\View_Models\Seasons_Page_View_Model;
+
+$vm      = isset( $vm ) && ( $vm instanceof Seasons_Page_View_Model ) ? $vm : new Seasons_Page_View_Model( $seasons ?? array() );
+$seasons = $vm->seasons;
 ?>
 <div class="container">
 
@@ -64,21 +67,16 @@ namespace Racketmanager;
         <?php wp_nonce_field( 'racketmanager_add-season', 'racketmanager_nonce' ); ?>
         <div class="form-floating mb-3">
             <?php
-            $is_invalid  = false;
-            $msg         = null;
-            $season_name = $_POST['seasonName'] ?? null;
-            if ( ! empty( $validator->err_flds ) && is_numeric( array_search( 'seasonName', $validator->err_flds, true ) ) ) {
-                $is_invalid  = true;
-                $msg_id      = array_search( 'season', $validator->err_flds, true );
-                $msg         = $validator->err_msgs[ $msg_id ] ?? null;
-            }
+            $is_invalid  = $vm->errors->has( 'seasonName' );
+            $msg         = $vm->errors->message( 'seasonName' );
+            $season_name = $vm->season_name ?? '';
             ?>
-            <input class="form-control <?php echo $is_invalid ? esc_html( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter season name', 'racketmanager' ); ?>" type="text" name="seasonName" id="seasonName" value="<?php echo esc_html( $season_name ); ?>"  />
+            <input class="form-control <?php echo $is_invalid ? esc_attr( RACKETMANAGER_IS_INVALID ) : null; ?>" placeholder="<?php esc_html_e( 'Enter season name', 'racketmanager' ); ?>" type="text" name="seasonName" id="seasonName" value="<?php echo esc_attr( $season_name ); ?>"  />
             <label for="seasonName"><?php esc_html_e( 'Name', 'racketmanager' ); ?></label>
             <?php
             if ( $is_invalid ) {
                 ?>
-                <div class="invalid-feedback"><?php echo esc_html( $msg ); ?></div>
+                <div class="invalid-feedback"><?php echo esc_html( $msg ?? '' ); ?></div>
                 <?php
             }
             ?>

@@ -8,6 +8,9 @@
 namespace Racketmanager;
 
 /** @var string $racketmanager_tab */
+if ( isset( $vm ) && ( $vm instanceof \Racketmanager\Admin\View_Models\Finances_Charges_Page_View_Model || $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model ) ) {
+    $racketmanager_tab = $vm->racketmanager_tab;
+}
 ?>
     <div class="row justify-content-end">
         <div class="col-auto racketmanager_breadcrumb">

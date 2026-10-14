@@ -12,6 +12,17 @@ namespace Racketmanager;
 /** @var int $club_id */
 /** @var string $status */
 /** @var array $player_requests */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model ) {
+    $player_requests = $vm->player_requests;
+    $clubs           = $vm->clubs;
+    $club_id         = $vm->club_id;
+    $status          = $vm->status;
+    $errors          = $vm->errors;
+}
+$player_requests = $player_requests ?? array();
+$clubs           = $clubs ?? array();
+$club_id         = $club_id ?? null;
+$status          = $status ?? 'outstanding';
 $tooltip_left = 'data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="';
 ?>
 <!-- Club Player Request Filter -->

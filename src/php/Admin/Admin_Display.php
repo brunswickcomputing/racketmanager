@@ -9,14 +9,39 @@
 
 namespace Racketmanager\Admin;
 
+use Racketmanager\Admin\Controllers\Admin_Redirect_Url_Builder;
+use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
+use Racketmanager\Admin\Presenters\Admin_Message_Mapper;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Updated_Exception;
+use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\League_Not_Found_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
+use Racketmanager\Services\Admin\Admin_Message_Service;
+use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
+use Racketmanager\Services\Admin\Club\Club_Player_Action_Dispatcher;
+use Racketmanager\Services\Admin\Club\Club_Role_Action_Dispatcher;
+use Racketmanager\Services\Admin\Club\Club_Team_Action_Dispatcher;
+use Racketmanager\Services\Admin\Finance\Finance_Charge_Action_Dispatcher;
+use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Constitution_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Event_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Schedule_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
+use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
+use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
 use Racketmanager\Services\Club_Service;
+use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
@@ -58,9 +83,9 @@ class Admin_Display {
     public Admin_Import $admin_import;
     public Admin_Finances $admin_finances;
     public Admin_Player $admin_players;
-    protected ?string $invalid_permissions;
-    protected ?string $invalid_security_token = 'invalid';
-    protected ?string $no_permission;
+    protected ?string $invalid_permissions = 'You do not have sufficient permissions to access this page';
+    protected ?string $invalid_security_token = 'Security token invalid';
+    protected ?string $no_permission = 'You do not have permission to perform this task';
     protected ?string $team_ranking_saved = 'Team ranking saved';
     public Admin_League $admin_league;
     public Admin_Season $admin_seasons;
@@ -82,12 +107,29 @@ class Admin_Display {
     protected Tournament_Service $tournament_service;
     protected Admin_Club $admin_club;
     protected Fixture_Repository_Interface $fixture_repository;
+    protected Admin_Action_Adapter $admin_action_adapter;
+    protected Admin_Message_Service $admin_message_service;
+    protected League_Contact_Action_Dispatcher $league_contact_dispatcher;
+    protected League_Setup_Action_Dispatcher $league_setup_dispatcher;
+    protected Event_Setup_Action_Dispatcher $event_setup_dispatcher;
+    protected Season_Delete_Action_Dispatcher $season_delete_dispatcher;
+    protected League_Team_Action_Dispatcher $league_team_dispatcher;
+    protected League_Match_Action_Dispatcher $league_match_dispatcher;
+    protected League_Constitution_Action_Dispatcher $league_constitution_dispatcher;
+    protected League_Event_Action_Dispatcher $league_event_dispatcher;
+    protected League_Schedule_Action_Dispatcher $league_schedule_dispatcher;
+    protected Club_Action_Dispatcher $club_action_dispatcher;
+    protected Club_Player_Action_Dispatcher $club_player_action_dispatcher;
+    protected Club_Team_Action_Dispatcher $club_team_action_dispatcher;
+    protected Club_Role_Action_Dispatcher $club_role_action_dispatcher;
+    protected Season_Action_Dispatcher $season_admin_action_dispatcher;
 
     /**
      * Constructor
      */
     public function __construct( $plugin_instance ) {
         $this->racketmanager = $plugin_instance;
+        $this->load_translations();
         add_action( 'init', array( &$this, 'load_translations' ) );
         $c                          = $this->racketmanager->container;
         $this->club_service         = $c->get( 'club_service' );
@@ -100,6 +142,22 @@ class Admin_Display {
         $this->season_service       = $c->get( 'season_service' );
         $this->tournament_service   = $c->get( 'tournament_service' );
         $this->fixture_repository   = $c->get( 'fixture_repository' );
+        $this->admin_action_adapter      = $c->get( 'admin_action_adapter' );
+        $this->admin_message_service     = $c->get( 'admin_message_service' );
+        $this->league_contact_dispatcher = $c->get( 'league_contact_action_dispatcher' );
+        $this->league_setup_dispatcher   = $c->get( 'league_setup_action_dispatcher' );
+        $this->event_setup_dispatcher    = $c->get( 'event_setup_action_dispatcher' );
+        $this->season_delete_dispatcher  = $c->get( 'season_delete_action_dispatcher' );
+        $this->league_team_dispatcher         = $c->get( 'league_team_action_dispatcher' );
+        $this->league_match_dispatcher        = $c->get( 'league_match_action_dispatcher' );
+        $this->league_constitution_dispatcher = $c->get( 'league_constitution_action_dispatcher' );
+        $this->league_event_dispatcher        = $c->get( 'league_event_action_dispatcher' );
+        $this->league_schedule_dispatcher     = $c->get( 'league_schedule_action_dispatcher' );
+        $this->club_action_dispatcher         = $c->get( 'club_action_dispatcher' );
+        $this->club_player_action_dispatcher  = $c->get( 'club_player_action_dispatcher' );
+        $this->club_team_action_dispatcher    = $c->get( 'club_team_action_dispatcher' );
+        $this->club_role_action_dispatcher    = $c->get( 'club_role_action_dispatcher' );
+        $this->season_admin_action_dispatcher = $c->get( 'season_action_dispatcher' );
     }
     public function load_translations(): void {
         $this->invalid_permissions    = __( 'You do not have sufficient permissions to access this page', 'racketmanager' );
@@ -145,7 +203,9 @@ class Admin_Display {
                 $admin_tournament = new Admin_Tournament(
                     $this->racketmanager,
                     $this->racketmanager->container->get( 'view_renderer' ),
-                    $this->racketmanager->container->get( 'admin_message_service' )
+                    $this->racketmanager->container->get( 'admin_message_service' ),
+                    $this->racketmanager->container->get( 'admin_action_adapter' ),
+                    $this->racketmanager->container->get( 'admin_screen_presenter' )
                 );
                 $admin_tournament->handle_display( $view );
                 break;
@@ -302,39 +362,345 @@ class Admin_Display {
         require_once RACKETMANAGER_PATH . 'templates/admin/includes/contact.php';
     }
     /**
-     * Contact teams in league in admin screen
+     * Contact teams in league in admin screen (guarded mutation, Post-Redirect-Get).
+     *
+     * @return bool True when the request was redirected and the screen must not render again.
      */
-    protected function contact_teams(): void {
-        $sent      = false;
-        $validator = new Validator();
-        $validator = $validator->check_security_token( 'racketmanager_nonce', 'racketmanager_contact-teams-preview' );
-        if ( empty( $validator->error ) ) {
-            $validator = $validator->capability( 'edit_teams' );
+    protected function contact_teams(): bool {
+        $result = $this->league_contact_dispatcher->handle( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified by the action guard.
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::league_screen( $_GET ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+            ),
+            true
+        );
+    }
+    /**
+     * Show a notice stored by a previous Post-Redirect-Get redirect.
+     *
+     * @return array{message?:string, message_type?:bool|string, flash_data?:array<string,mixed>}
+     */
+    protected function apply_flash_message(): array {
+        $flash = $this->admin_message_service->pop_flash_message();
+        if ( ! empty( $flash['message'] ) ) {
+            $this->set_message( strval( $flash['message'] ), $flash['message_type'] ?? false );
         }
-        if ( ! empty( $validator->error ) ) {
-            $this->set_message( $validator->msg, true );
-            return;
+        return $flash;
+    }
+
+    /**
+     * Deliver a guarded mutation result via Post-Redirect-Get.
+     *
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_league_action_result( Action_Result_DTO $result, array $query ): bool {
+        $extra_args = array();
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
         }
-        $league_id      = isset( $_POST['league_id'] ) ? intval( $_POST['league_id'] ) : null;
-        $competition_id = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null;
-        $season         = isset( $_POST['season'] ) ? sanitize_text_field( wp_unslash( $_POST['season'] ) ) : null;
-        $message        = isset( $_POST['emailMessage'] ) ? htmlspecialchars_decode( $_POST['emailMessage'] ) : null;
-        if ( $season && $message ) {
-            if ( $league_id ) {
-                $league = get_league( $league_id );
-                if ( $league ) {
-                    $sent = $league->contact_teams( $season, $message );
-                }
-            } elseif ( $competition_id ) {
-                $competition = $this->competition_service->get_competition( $competition_id );
-                if ( $competition ) {
-                    $sent = $competition->contact_teams( $season, $message );
-                }
-            }
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::league_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded club mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_club_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
         }
-        if ( $sent ) {
-            $this->set_message( __( 'Email sent to captains', 'racketmanager' ) );
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::club_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded season mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_season_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
         }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::season_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded competition mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_competition_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::competition_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded event mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_event_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::event_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded finances mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_finances_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::finances_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded cup mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_cup_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null === $result->message && null === $result->message_type && null === $result->tab_override && empty( $result->flash_data ) ) {
+            return false;
+        }
+
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::cup_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded results mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_results_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null === $result->message && null === $result->message_type && null === $result->tab_override && empty( $result->flash_data ) ) {
+            return false;
+        }
+
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::results_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded index (competitions) mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_index_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null === $result->message && null === $result->message_type && null === $result->tab_override && empty( $result->flash_data ) ) {
+            return false;
+        }
+
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::index_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded options (settings) mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_options_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null === $result->message && null === $result->message_type && null === $result->tab_override && empty( $result->flash_data ) ) {
+            return false;
+        }
+
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::options_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
+    }
+
+    /**
+     * Deliver a guarded import mutation result via Post-Redirect-Get.
+     *
+     * @param Action_Result_DTO    $result
+     * @param array<string, mixed> $query Typically $_GET identifying the current screen.
+     * @param array<string, mixed> $extra_args
+     *
+     * @return bool True when a redirect was issued and the screen must not render.
+     */
+    protected function deliver_import_action_result( Action_Result_DTO $result, array $query, array $extra_args = array() ): bool {
+        if ( null === $result->message && null === $result->message_type && null === $result->tab_override && empty( $result->flash_data ) ) {
+            return false;
+        }
+
+        if ( null !== $result->tab_override && '' !== $result->tab_override ) {
+            $extra_args['tab'] = $result->tab_override;
+        }
+
+        $extra_args = array_merge( $extra_args, $result->query_params );
+
+        return $this->admin_action_adapter->deliver_redirect(
+            array(
+                'redirect'     => Admin_Redirect_Url_Builder::import_screen( $query, $extra_args ),
+                'message'      => $result->message,
+                'message_type' => Admin_Message_Mapper::to_legacy( $result->message_type ),
+                'flash_data'   => $result->flash_data,
+            ),
+            true
+        );
     }
     /**
      * Handle league teams action function
@@ -749,7 +1115,8 @@ class Admin_Display {
                         $_POST['begin_minutes'][ $i ] = 0;
                     }
                     if ( isset( $_POST['myDatePicker'][ $index ] ) && isset( $_POST['begin_hour'][ $i ] ) ) {
-                        $match->date      = sanitize_text_field( wp_unslash( $_POST['myDatePicker'][ $index ] ) ) . ' ' . intval( $_POST['begin_hour'][ $i ] ) . ':' . intval( $_POST['begin_minutes'][ $i ] ) . ':00';
+                        $time             = sprintf( '%02d:%02d:00', intval( $_POST['begin_hour'][ $i ] ), intval( $_POST['begin_minutes'][ $i ] ) );
+                        $match->date      = sanitize_text_field( wp_unslash( $_POST['myDatePicker'][ $index ] ) ) . ' ' . $time;
                         $match->match_day = '';
                         if ( isset( $_POST['match_day'][ $i ] ) ) {
                             $match->match_day = sanitize_text_field( wp_unslash( $_POST['match_day'][ $i ] ) );
@@ -799,15 +1166,16 @@ class Admin_Display {
                 $match         = $this->fixture_repository->find_by_id( (int) $match_id );
                 $begin_hour    = isset( $_POST['begin_hour'][ $i ] ) ? intval( $_POST['begin_hour'][ $i ] ) : '00';
                 $begin_minutes = isset( $_POST['begin_minutes'][ $i ] ) ? intval( $_POST['begin_minutes'][ $i ] ) : '00';
+                $time          = sprintf( '%02d:%02d:00', intval( $begin_hour ), intval( $begin_minutes ) );
                 if ( isset( $_POST['myDatePicker'][ $i ] ) ) {
                     $date  = sanitize_text_field( wp_unslash( $_POST['myDatePicker'][ $i ] ) );
-                    $date  = $date . ' ' . $begin_hour . ':' . $begin_minutes . ':00';
+                    $date  = $date . ' ' . $time;
                 } else {
                     $index = ( isset( $_POST['year'][ $i ] ) && isset( $_POST['month'][ $i ] ) && isset( $_POST['day'][ $i ] ) ) ? $i : 0;
                     $year  = isset( $_POST['year'][ $index ] ) ? intval( $_POST['year'][ $index ] ) : 0;
                     $month = isset( $_POST['month'][ $index ] ) ? intval( $_POST['month'][ $index ] ) : 0;
                     $day   = isset( $_POST['day'][ $index ] ) ? intval( $_POST['day'][ $index ] ) : 0;
-                    $date  = $year . '-' . $month . '-' . $day . ' ' . $begin_hour . ':' . $begin_minutes . ':00';
+                    $date  = sprintf( '%04d-%02d-%02d %s', $year, $month, $day, $time );
                 }
                 $match->date      = $date;
                 $match->league_id = $league->id;
@@ -835,18 +1203,15 @@ class Admin_Display {
      * Display season list
      */
     public function display_seasons_page(): void {
+        $this->apply_flash_message();
         $competition_id = isset( $_GET['competition_id'] ) ? intval( $_GET['competition_id'] ) : null;
         if ( isset( $_POST['doActionSeason'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            $competition_id_post = isset( $_POST['competition_id'] ) ? intval( $_POST['competition_id'] ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-            $validator           = new Validator();
-            $validator           = $validator->compare( $competition_id_post, $competition_id );
-            if ( ! empty( $validator->error ) ) {
-                $this->set_message( $validator->msg, true );
-            } else {
-                $this->delete_seasons_from_competition( $competition_id );
+            $result = $this->season_delete_dispatcher->handle( $_GET, $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified by the action guard.
+            if ( $this->deliver_league_action_result( $result, $_GET ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+                return;
             }
-            $this->show_message();
         }
+        $this->show_message();
         try {
             $competition = $this->competition_service->get_by_id( $competition_id );
             require_once RACKETMANAGER_PATH . 'templates/admin/includes/show-seasons.php';
@@ -920,5 +1285,53 @@ class Admin_Display {
             echo show_alert( $this->message, $alert_class ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
         $this->message = '';
+    }
+
+    /**
+     * Build presented finals (with preformatted fixture view models) for a cup or league championship.
+     *
+     * @param object $league League with a championship.
+     * @param string $season Season name.
+     *
+     * @return array Presented finals, indexed as a list; rounds without fixtures are omitted.
+     */
+    public function present_league_finals( object $league, string $season ): array {
+        if ( empty( $league->championship ) || ! method_exists( $league->championship, 'get_finals' ) ) {
+            return array();
+        }
+        $container       = $this->racketmanager->container;
+        $detail_service  = $container->get( 'fixture_detail_service' );
+        $active_finals   = array();
+        foreach ( array_reverse( (array) $league->championship->get_finals() ) as $final ) {
+            $matches = $league->get_matches(
+                array(
+                    'season'           => $season,
+                    'final'            => $final['key'],
+                    'orderby'          => array( 'id' => 'ASC' ),
+                    'reset_query_args' => true,
+                )
+            );
+            if ( empty( $matches ) || ! is_array( $matches ) ) {
+                continue;
+            }
+            $fixtures = array();
+            foreach ( $matches as $match ) {
+                try {
+                    $details = $detail_service->get_fixture_with_details( $match );
+                } catch ( Fixture_Not_Found_Exception $e ) {
+                    continue;
+                }
+                if ( $details ) {
+                    $fixtures[] = $details;
+                }
+            }
+            $final['fixtures'] = $fixtures;
+            $active_finals[]   = (object) $final;
+        }
+        $presenter = $container instanceof Simple_Container && $container->has( 'admin_championship_finals_presenter' )
+            ? $container->get( 'admin_championship_finals_presenter' )
+            : new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
+
+        return $presenter->present_finals( $active_finals, null, $league, $season );
     }
 }

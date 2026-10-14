@@ -10,6 +10,24 @@ namespace Racketmanager;
 use Racketmanager\Admin\View_Models\Tournament_Competition_Config_Page_View_Model;
 
 /** @var Tournament_Competition_Config_Page_View_Model $vm */
+$competition   = $vm->competition;
+$tournament    = $vm->tournament;
+$rules_options = $vm->rules_options;
+$clubs         = $vm->clubs;
+$events        = $vm->events;
+$tab           = $vm->tab;
+$mode          = $vm->competition->config->mode ?? '';
+
+$validator           = new \stdClass();
+$validator->err_flds = array();
+$validator->err_msgs = array();
+if ( isset( $vm->errors ) && $vm->errors instanceof \Racketmanager\Admin\View_Models\Error_Bag ) {
+    foreach ( $vm->errors->all() as $fld => $msg ) {
+        $validator->err_flds[] = $fld;
+        $validator->err_msgs[] = $msg;
+    }
+}
+
 if ( empty( $tournament ) ) {
     $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->get_type() . 's&amp;view=seasons&amp;competition_id=' . $vm->competition->id . '">' . $vm->competition->name . '</a>';
     $add_link        = '';
@@ -17,7 +35,6 @@ if ( empty( $tournament ) ) {
     $breadcrumb_link = '<a href="/wp-admin/admin.php?page=racketmanager-' . $vm->competition->get_type() . 's&amp;view=tournament&amp;tournament=' . $tournament->id . '">' . $tournament->name . '</a>';
     $add_link        = '&amp;tournament=' . $tournament->id;
 }
-$mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'] ) ) : $vm->competition->config->mode;
 ?>
 <div>
     <div class="alert_rm" id="alert-season" style="display:none;">
@@ -89,38 +106,38 @@ $mode = isset( $_POST['mode'] ) ? sanitize_text_field( wp_unslash( $_POST['mode'
                 <div class="tab-content">
                     <div class="tab-pane fade" id="general" role="tabpanel" aria-labelledby="general-tab">
                         <h2><?php esc_html_e( 'General', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/general.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/general.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="constitution" role="tabpanel" aria-labelledby="constitution-tab">
                         <h2><?php esc_html_e( 'Constitution', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/constitution.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/constitution.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="matches" role="tabpanel" aria-labelledby="matches-tab">
                         <h2><?php esc_html_e( 'Matches', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/matches.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/matches.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="fixtures" role="tabpanel" aria-labelledby="fixtures-tab">
                         <h2><?php esc_html_e( 'Fixtures', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/fixtures.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/fixtures.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="display" role="tabpanel" aria-labelledby="display-tab">
                         <h2><?php esc_html_e( 'Display', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/display.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/display.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
                         <h2><?php esc_html_e( 'Events', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/events.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/events.php'; ?>
                     </div>
                     <div class="tab-pane fade" id="rules" role="tabpanel" aria-labelledby="rules-tab">
                         <h2><?php esc_html_e( 'Rules', 'racketmanager' ); ?></h2>
-                        <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/rules.php'; ?>
+                        <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/rules.php'; ?>
                     </div>
                     <?php
                     if ( 'league' === $vm->competition->get_type() ) {
                         ?>
                         <div class="tab-pane fade" id="availability" role="tabpanel" aria-labelledby="availability-tab">
                             <h2><?php esc_html_e( 'Availability', 'racketmanager' ); ?></h2>
-                            <?php require_once RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/availability.php'; ?>
+                            <?php require RACKETMANAGER_PATH . 'templates/admin/competition/include/settings/availability.php'; ?>
                         </div>
                         <?php
                     }

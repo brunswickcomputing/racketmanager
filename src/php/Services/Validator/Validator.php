@@ -112,9 +112,10 @@ class Validator {
      *
      * @return object $validation updated validation object.
      */
-    public function check_security_token( string $nonce = 'security', string $nonce_action = 'ajax-nonce' ): object {
-        if ( isset( $_REQUEST[ $nonce ] ) ) {
-            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST[ $nonce ] ) ), $nonce_action ) ) {
+    public function check_security_token( string $nonce = 'security', string $nonce_action = 'ajax-nonce', ?array $request = null ): object {
+        $source = $request ?? $_REQUEST;
+        if ( isset( $source[ $nonce ] ) ) {
+            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $source[ $nonce ] ) ), $nonce_action ) ) {
                 $this->error  = true;
                 $this->msg    = __( 'Sorry, the action could not be completed. The link or form you are using has expired or is invalid. Please try again, or go back to the previous page and try again', 'racketmanager' );
                 $this->status = 403;

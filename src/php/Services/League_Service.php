@@ -169,8 +169,24 @@ class League_Service {
         );
     }
 
-    public function get_league( ?int $league_id ): ?object {
-        return $this->league_repository->find_by_id( $league_id );
+    public function get_league( object|int|string|null $league_id ): ?object {
+        if ( is_object( $league_id ) ) {
+            return $league_id;
+        }
+        if ( empty( $league_id ) ) {
+            return null;
+        }
+        if ( is_numeric( $league_id ) ) {
+            return $this->league_repository->find_by_id( (int) $league_id );
+        }
+        if ( is_string( $league_id ) ) {
+            return $this->league_repository->find_by_name( $league_id );
+        }
+        return null;
+    }
+
+    public function get_league_by_name( string $name ): ?object {
+        return $this->league_repository->find_by_name( $name );
     }
 
     /**

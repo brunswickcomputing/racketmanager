@@ -7,13 +7,21 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Admin\View_Models\Index_Page_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var string $competition_type */
-$age_group_select = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
-$competitions     = $this->competition_service->find_competitions_with_summary( $age_group_select, $competition_type );
-$age_groups       = Util_Lookup::get_age_groups();
-$page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
+if ( isset( $vm ) && $vm instanceof Index_Page_View_Model ) {
+    $competitions     = $vm->competitions;
+    $age_groups       = $vm->age_groups;
+    $age_group_select = $vm->age_group_select;
+    $page_name        = $vm->page_name;
+} else {
+    /** @var string $competition_type */
+    $age_group_select = isset( $_GET['age_group'] ) ? sanitize_text_field( wp_unslash( $_GET['age_group'] ) ) : '';
+    $competitions     = $this->competition_service->find_competitions_with_summary( $age_group_select, $competition_type ?? null );
+    $age_groups       = Util_Lookup::get_age_groups();
+    $page_name        = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : 'racketmanager';
+}
 ?>
 <div class="container">
     <div class="row justify-content-between mb-3">

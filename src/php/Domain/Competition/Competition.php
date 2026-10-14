@@ -146,9 +146,9 @@ class Competition {
     /**
      * Type
      *
-     * @var Competition_Type
+     * @var ?Competition_Type
      */
-    public Competition_Type $type;
+    public ?Competition_Type $type = null;
 
     /**
      * Current season
@@ -391,7 +391,7 @@ class Competition {
      *
      * @var string|null
      */
-    public ?string $age_group;
+    public ?string $age_group = null;
     /**
      * Reverse rubbers
      *

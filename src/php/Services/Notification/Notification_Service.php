@@ -5,6 +5,8 @@ namespace Racketmanager\Services\Notification;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Results_Checker;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\Presenters\Notification_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
@@ -85,6 +87,13 @@ class Notification_Service {
     private View_Renderer_Interface $view_renderer;
 
     /**
+     * Mailer Gateway.
+     *
+     * @var Mailer_Interface
+     */
+    private Mailer_Interface $mailer;
+
+    /**
      * Constructor.
      *
      * @param Repository_Provider $repository_provider
@@ -92,9 +101,10 @@ class Notification_Service {
      * @param Notification_Presenter $presenter
      * @param View_Renderer_Interface $view_renderer
      * @param RacketManager $app
+     * @param Mailer_Interface|null $mailer
      */
     public function __construct(
-        Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter $presenter, View_Renderer_Interface $view_renderer, RacketManager $app
+        Repository_Provider $repository_provider, Settings_Service $settings_service, Notification_Presenter $presenter, View_Renderer_Interface $view_renderer, RacketManager $app, ?Mailer_Interface $mailer = null
     ) {
         $this->league_repository      = $repository_provider->get_league_repository();
         $this->league_team_repository = $repository_provider->get_league_team_repository();
@@ -105,6 +115,7 @@ class Notification_Service {
         $this->presenter              = $presenter;
         $this->view_renderer          = $view_renderer;
         $this->app                    = $app;
+        $this->mailer                 = $mailer ?? new Wp_Mailer();
     }
 
     /**
@@ -179,7 +190,7 @@ class Notification_Service {
         $vars    = $this->presenter->present_result_notification( $fixture, $message_args );
         $message = $this->view_renderer->render_to_string( 'email/result-notification', $vars );
 
-        wp_mail( $email_to, $subject, $message, $headers );
+        $this->mailer->send( $email_to, $subject, $message, $headers );
     }
 
     /**
@@ -302,7 +313,7 @@ class Notification_Service {
         }
 
         if ( ! empty( $emails ) ) {
-            wp_mail( $emails, $subject, $message, $headers );
+            $this->mailer->send( $emails, $subject, $message, $headers );
         }
     }
 
@@ -335,7 +346,7 @@ class Notification_Service {
             $email_subject = __( 'Fixture result pending', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $data['league']->title;
             $vars          = $this->presenter->present_result_outstanding_notification( $fixture, $args );
             $email_message = $this->view_renderer->render_to_string( 'email/match-result-pending', $vars );
-            wp_mail( $email_to, $email_subject, $email_message, $data['headers'] );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $data['headers'] );
         }
     }
 
@@ -409,7 +420,7 @@ class Notification_Service {
             $email_subject = __( 'Fixture result approval', 'racketmanager' ) . ' - ' . $data['fixture_title'] . ' - ' . $data['league']->title;
             $vars          = $this->presenter->present_captain_result_approval_notification( $fixture, $args );
             $email_message = $this->view_renderer->render_to_string( 'email/result-notification', $vars );
-            wp_mail( $email_to, $email_subject, $email_message, $data['headers'] );
+            $this->mailer->send( $email_to, $email_subject, $email_message, $data['headers'] );
         }
     }
 
@@ -463,7 +474,7 @@ class Notification_Service {
         }
         $subject .= ' - ' . $league->title;
 
-        wp_mail( $email_to, $subject, $email_message, $headers );
+        $this->mailer->send( $email_to, $subject, $email_message, $headers );
 
         return true;
     }
@@ -627,7 +638,7 @@ class Notification_Service {
         $vars                          = $this->presenter->present_date_change_notification( $fixture, $message_args );
         $email_message                 = $this->view_renderer->render_to_string( 'email/match-date-change-notification', $vars );
 
-        wp_mail( $email_to, $subject, $email_message, $headers );
+        $this->mailer->send( $email_to, $subject, $email_message, $headers );
     }
 
     /**
@@ -675,7 +686,7 @@ class Notification_Service {
         if ( ! empty( $email_to ) ) {
             $vars    = $this->presenter->present_team_withdrawn_notification( $fixture, $message_args );
             $message = $this->view_renderer->render_to_string( 'email/match-team-withdrawn', $vars );
-            wp_mail( $email_to, $subject, $message, $headers );
+            $this->mailer->send( $email_to, $subject, $message, $headers );
         }
     }
 }

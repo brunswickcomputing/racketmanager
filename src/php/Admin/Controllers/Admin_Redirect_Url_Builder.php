@@ -224,4 +224,286 @@ final class Admin_Redirect_Url_Builder {
 
         return add_query_arg( $args, admin_url( 'admin.php' ) );
     }
+
+    /**
+     * Build redirect URL that returns to the current league/competition screen after a mutation.
+     *
+     * Only the identifying query args of the screen are carried over (page, view, league_id, competition_id, season).
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override (e.g. tab).
+     *
+     * @return string
+     */
+    public static function league_screen( array $query, array $extra_args = array() ): string {
+        $args = array();
+
+        foreach ( array( 'page', 'view', 'league_id', 'competition_id', 'event_id', 'season', 'group', 'match_day', 'team_id', 'match_paged', 'standingstable' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current club screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function club_screen( array $query, array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-clubs',
+        );
+
+        foreach ( array( 'view', 'club_id', 'team_id', 'edit', 'tournament', 'active', 'gender', 'season' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current season screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function season_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-seasons',
+        );
+
+        foreach ( array( 'view' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current competition screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function competition_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-leagues',
+        );
+
+        foreach ( array( 'view', 'competition_id', 'season', 'tournament', 'tab' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current event screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function event_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-leagues',
+        );
+
+        foreach ( array( 'view', 'competition_id', 'event_id', 'season', 'tournament', 'tab' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current finances screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function finances_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-finances',
+        );
+
+        foreach ( array( 'view', 'tab', 'competition', 'competition_id', 'season', 'club', 'club_id', 'charge', 'charges', 'invoice', 'invoice_id', 'status' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current players screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function players_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-players',
+        );
+
+        foreach ( array( 'view', 'tab', 'player_id', 'club_id', 'club', 'status', 'name' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current cup screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function cup_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-cups',
+        );
+
+        foreach ( array( 'view', 'competition_id', 'league_id', 'league', 'season', 'tab', 'final', 'edit' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current results screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function results_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-results',
+        );
+
+        foreach ( array( 'view', 'tab', 'season', 'competition', 'event', 'filterResultsChecker' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current index (competitions) screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function index_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager',
+        );
+
+        foreach ( array( 'age_group' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current options screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function options_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) && '' !== strval( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-settings',
+        );
+
+        foreach ( array( 'tab' ) as $key ) {
+            if ( isset( $query[ $key ] ) && '' !== strval( $query[ $key ] ) ) {
+                $args[ $key ] = sanitize_text_field( wp_unslash( strval( $query[ $key ] ) ) );
+            }
+        }
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
+
+    /**
+     * Build redirect URL that returns to the current import screen after a mutation.
+     *
+     * @param array<string, mixed> $query Typically $_GET
+     * @param array<string, mixed> $extra_args Additional parameters to append or override.
+     *
+     * @return string
+     */
+    public static function import_screen( array $query = array(), array $extra_args = array() ): string {
+        $args = array(
+            'page' => isset( $query['page'] ) && '' !== strval( $query['page'] ) ? sanitize_text_field( wp_unslash( strval( $query['page'] ) ) ) : 'racketmanager-import',
+        );
+
+        $args = array_merge( $args, $extra_args );
+
+        return add_query_arg( $args, admin_url( 'admin.php' ) );
+    }
 }

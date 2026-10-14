@@ -32,4 +32,14 @@ final class Ajax_Registry {
         add_action( "wp_ajax_racketmanager_$action", $callback );
         add_action( "wp_ajax_nopriv_racketmanager_$action", $unauthenticated_callback );
     }
+
+    /**
+     * Register an AJAX action for non-authenticated users only.
+     *
+     * @param string $action The action name (without racketmanager_ prefix).
+     * @param callable $callback The callback for non-authenticated users.
+     */
+    public function register_unauthenticated( string $action, callable $callback ): void {
+        add_action( "wp_ajax_nopriv_racketmanager_$action", $callback );
+    }
 }

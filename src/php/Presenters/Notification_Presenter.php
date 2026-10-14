@@ -344,13 +344,103 @@ readonly class Notification_Presenter {
      * Prepare variables for the date-change-notification template.
      */
     public function present_date_change_notification( Fixture $fixture, array $args ): array {
-        $match_adapter = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $match_adapter    = Fixture_Presentation_Adapter::from_fixture( $fixture, $this->competition_service, $this->team_service, $this->fixture_link_service, $this->permission_service );
+        $competition_type = $args['competition_type'] ?? '';
+        $tournament_id    = $args['tournament'] ?? false;
+        $tournament_link  = '';
+        $competition_link = '';
+        $draw_link        = '';
+        $match_link       = '';
+        $rules_link       = $this->site_url . '/rules/' . $competition_type . '-rules/';
+
+        if ( 'tournament' === $competition_type && $tournament_id ) {
+            $tournament = $this->tournament_repository->find_by_id( $tournament_id );
+            if ( $tournament ) {
+                $tournament_link = '<a href="' . $this->site_url . $tournament->link . '">' . $tournament->name . '</a>';
+                $draw_link       = '<a href="' . $this->site_url . $tournament->link . 'draw/' . seo_url( $match_adapter->league->event->name ?? '' ) . '/">' . ( $match_adapter->league->event->name ?? '' ) . '</a>';
+                $match_link      = $this->site_url . $tournament->link . 'match/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . seo_url( $match_adapter->teams['home']->title ?? '' ) . '-vs-' . seo_url( $match_adapter->teams['away']->title ?? '' ) . '/' . $fixture->get_id() . '/';
+            }
+        } elseif ( 'cup' === $competition_type ) {
+            $competition_link = '<a href="' . $this->site_url . '/cups/' . seo_url( $match_adapter->league->title ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
+            $match_link       = $this->site_url . $match_adapter->link;
+            if ( ! empty( $match_adapter->leg ) ) {
+                $match_link .= 'leg-' . $match_adapter->leg . '/';
+            }
+        } elseif ( 'league' === $competition_type ) {
+            $competition_link = '<a href="' . $this->site_url . '/leagues/' . seo_url( $match_adapter->league->event->name ?? '' ) . '/' . $match_adapter->season . '/">' . ( $match_adapter->league->title ?? '' ) . '</a>';
+            $match_link       = $this->site_url . $match_adapter->link;
+        }
 
         return array_merge( $args, array(
-            'match'        => $match_adapter,
-            'organisation' => $this->site_name,
-            'site_url'     => $this->site_url,
+            'match'            => $match_adapter,
+            'organisation'     => $this->site_name,
+            'site_url'         => $this->site_url,
+            'tournament_link'  => $tournament_link,
+            'competition_link' => $competition_link,
+            'draw_link'        => $draw_link,
+            'action_url'       => $match_link,
+            'rules_link'       => $rules_link,
+            'email_from'       => $args['emailfrom'] ?? ( $args['email_from'] ?? '' ),
+            'from_email'       => $args['emailfrom'] ?? ( $args['email_from'] ?? '' ),
         ) );
+    }
+
+    /**
+     * Prepare variables for club player notification template.
+     */
+    public function present_club_player_notification( array $args ): array {
+        $club       = (string) ( $args['club'] ?? '' );
+        $player     = (string) ( $args['player'] ?? '' );
+        $action_url = $this->site_url . '/clubs/' . seo_url( $club ) . '/' . seo_url( $player ) . '/';
+
+        return array_merge( $args, array(
+            'action'        => $args['action'] ?? false,
+            'club'          => $club,
+            'player'        => $player,
+            'organisation'  => $this->site_name,
+            'action_url'    => $action_url,
+            'requestor'     => $args['requestor'] ?? false,
+            'btm'           => $args['btm'] ?? false,
+            'email_subject' => $this->site_name . ' - ' . __( 'Club Player Request', 'racketmanager' ) . ' - ' . $club,
+        ) );
+    }
+
+    /**
+     * Prepare variables for team withdrawn email template.
+     */
+    public function present_team_withdrawn_email( object $team, object $league, string $season, array $args ): array {
+        return array_merge( $args, array(
+            'team'          => $team,
+            'league'        => $league,
+            'season'        => $season,
+            'organisation'  => $this->site_name,
+            'email_subject' => $args['subject'] ?? false,
+            'email_from'    => $args['from'] ?? false,
+        ) );
+    }
+
+    /**
+     * Prepare variables for withdrawn team match template.
+     */
+    public function present_withdrawn_team_match( array $args ): array {
+        return array_merge( $args, array(
+            'is_tournament' => $args['is_tournament'] ?? false,
+            'event'         => $args['event'] ?? '',
+            'round'         => $args['round'] ?? '',
+            'organisation'  => $this->site_name,
+            'email_from'    => $args['emailfrom'] ?? '',
+            'email_subject' => $args['subject'] ?? null,
+        ) );
+    }
+
+    /**
+     * Prepare variables for event constitution template.
+     */
+    public function present_event_constitution( object $event, ?string $season = null ): array {
+        return array(
+            'event'        => $event,
+            'organisation' => $this->site_name,
+        );
     }
 
     /**

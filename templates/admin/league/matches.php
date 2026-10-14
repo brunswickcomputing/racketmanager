@@ -7,7 +7,6 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
 /** @var object $league */
 /** @var string $season */
 /** @var array  $teams */
@@ -181,7 +180,7 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
                             <label for="match-<?php echo esc_html( $match->id ); ?>" class="visually-hidden"><?php esc_html_e( 'Check', 'racketmanager' ); ?></label><input type="checkbox" value="<?php echo esc_html( $match->id ); ?>" name="match[<?php echo esc_html( $match->id ); ?>]" id="match-<?php echo esc_html( $match->id ); ?>" />
                         </th>
                         <td><?php echo esc_html( $match->id ); ?></td>
-                        <td><?php echo esc_html( (str_starts_with($match->date, '0000-00-00')) ? 'N/A' : mysql2date( $racketmanager->date_format, $match->date ) ); ?></td>
+                        <td><?php echo esc_html( $match->formatted_date ?? 'N/A' ); ?></td>
                         <?php
                         if ( ! empty( $league->groups ) && $league->event->competition->is_championship ) {
                             ?>
@@ -189,9 +188,9 @@ $competition_type = $league->event->competition->type instanceof \BackedEnum ? $
                             <?php
                         }
                         ?>
-                        <td class="match-title"><a href="/wp-admin/admin.php?page=racketmanager-<?php echo esc_attr( $league->event->competition->type ); ?>s&amp;view=match&amp;league_id=<?php echo esc_html( $league->id ); ?>&amp;edit=<?php echo esc_html( $match->id ); ?>&amp;season=<?php echo esc_html( $season ); ?><?php echo empty( $group ) ? null : '&amp;group=' . esc_attr( $group ); ?>"><?php echo esc_html( $match->match_title ); ?></a></td>
-                        <td><?php echo esc_html( ( empty( $match->location ) ) ? 'N/A' : $match->location ); ?></td>
-                        <td><?php echo esc_html( ( '00:00' === $match->hour . ':' . $match->minutes ) ? 'N/A' : mysql2date( $racketmanager->time_format, $match->date ) ); ?></td>
+                        <td class="match-title"><a href="<?php echo esc_attr( $match->edit_url ?? '#' ); ?>"><?php echo esc_html( $match->match_title ); ?></a></td>
+                        <td><?php echo esc_html( $match->formatted_location ?? 'N/A' ); ?></td>
+                        <td><?php echo esc_html( $match->formatted_time ?? 'N/A' ); ?></td>
                         <?php
                         if ( ! empty( $league->num_rubbers ) ) {
                             if ( is_numeric( $match->home_team ) && is_numeric( $match->away_team ) ) {

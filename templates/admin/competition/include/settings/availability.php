@@ -21,7 +21,7 @@ namespace Racketmanager;
             <?php
             foreach ( $clubs as $club ) {
                 $club_id       = $club->get_id();
-                $current_value = $_POST['num_courts_available'][ $club_id ] ?? $competition->config->num_courts_available[ $club_id ] ?? null;
+                $current_value = $competition->config->num_courts_available[ $club_id ] ?? null;
                 ?>
                 <tr>
                     <td><?php echo esc_html( $club->name ); ?></td>

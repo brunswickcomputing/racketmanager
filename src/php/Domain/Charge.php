@@ -149,7 +149,7 @@ class Charge {
      * @param float|null $fee_competition
      */
     public function set_fee_competition( float|null $fee_competition ): void {
-        $this->fee_competition = number_format( $fee_competition, 2, '.', '' );
+        $this->fee_competition = null === $fee_competition ? null : floatval( number_format( $fee_competition, 2, '.', '' ) );
     }
 
     public function get_fee_event(): float|null {
@@ -162,7 +162,7 @@ class Charge {
      * @param float|null $fee_event team fee value.
      */
     public function set_fee_event( float|null $fee_event ): void {
-        $this->fee_event = number_format( $fee_event, 2, '.', '' );
+        $this->fee_event = null === $fee_event ? null : floatval( number_format( $fee_event, 2, '.', '' ) );
     }
 
 }

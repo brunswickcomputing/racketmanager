@@ -8,6 +8,92 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\the_match_time' ) ) {
+        function the_match_time( $start_time ): void {
+            if ( '00:00' === $start_time ) {
+                echo '';
+            } else {
+                echo (string) $start_time;
+            }
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\latest_results' ) ) {
+        function latest_results( int $club_id = 0, array $args = array() ): void {}
+    }
+
+    if ( ! function_exists( 'Racketmanager\daily_matches' ) ) {
+        function daily_matches( array $args = array() ): void {}
+    }
+
+    if ( ! function_exists( 'Racketmanager\upcoming_matches' ) ) {
+        function upcoming_matches( int $club_id = 0, array $args = array() ): void {}
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_league_team' ) ) {
+        function get_league_team( $id ) {
+            return $GLOBALS['wp_stubs_league_teams'][ $id ] ?? null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\player_search' ) ) {
+        function player_search( string $search_string, array $args = [] ): string {
+            return "<div>Player search for: $search_string</div>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\event_dropdown' ) ) {
+        function event_dropdown( int $competition_id, array $args = array() ): string {
+            return "<select name='event_id'></select>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\league_dropdown' ) ) {
+        function league_dropdown( int $event_id, array $args = array() ): string {
+            return "<select name='league_id'></select>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\season_dropdown' ) ) {
+        function season_dropdown( int $league_id, array $args = array() ): string {
+            return "<select name='season'></select>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\match_dropdown' ) ) {
+        function match_dropdown( int $league_id, array $args = array() ): string {
+            return "<select name='match_id'></select>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\team_order_players' ) ) {
+        function team_order_players( int $event_id, array $args = array() ): string {
+            return "<div class='team-order-players'></div>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\event_team_match_dropdown' ) ) {
+        function event_team_match_dropdown( int $event_id, array $args = array() ): string {
+            return "<select name='team_matches'></select>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\show_team_edit_modal' ) ) {
+        function show_team_edit_modal( int $team_id, array $args = array() ): string {
+            return "<div class='modal-team-edit'></div>";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\is_lta_number_required' ) ) {
+        function is_lta_number_required(): bool {
+            return $GLOBALS['wp_stubs_is_lta_number_required'] ?? false;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\do_action' ) ) {
+        function do_action( string $hook_name, ...$arg ): void {}
+    }
+
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
         eval('
             class RacketManager {
@@ -77,6 +163,7 @@ namespace Racketmanager {
                 }
 
                 public function set_message( string $message ): void {}
+                public function is_user_favourite( $type = null, $id = null ): bool { return false; }
                 public function load_options(): void {
                     $this->options = [];
                     $this->date_format = "Y-m-d";
@@ -101,6 +188,16 @@ namespace {
         function stripslashes_deep( $value ) {
             return $value;
         }
+    }
+
+    if ( ! function_exists( 'apply_filters' ) ) {
+        function apply_filters( $hook_name, $value, ...$args ) {
+            return $value;
+        }
+    }
+
+    if ( ! function_exists( 'do_action' ) ) {
+        function do_action( string $hook_name, ...$arg ): void {}
     }
 
     if ( ! function_exists( 'home_url' ) ) {
@@ -132,13 +229,13 @@ namespace {
 
     if ( ! function_exists( 'get_stylesheet_directory' ) ) {
         function get_stylesheet_directory(): string {
-            return '';
+            return $GLOBALS['wp_stubs_stylesheet_directory'] ?? '';
         }
     }
 
     if ( ! function_exists( 'get_template_directory' ) ) {
         function get_template_directory(): string {
-            return '';
+            return $GLOBALS['wp_stubs_template_directory'] ?? '';
         }
     }
 
@@ -152,8 +249,23 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'retrieve_password' ) ) {
+        function retrieve_password( string $user_login ) {
+            if ( isset( $GLOBALS['wp_stubs_retrieve_password_callback'] ) ) {
+                return ( $GLOBALS['wp_stubs_retrieve_password_callback'] )( $user_login );
+            }
+            if ( $user_login === 'error@example.test' ) {
+                return new WP_Error( 'invalid_email', 'Invalid email' );
+            }
+            return true;
+        }
+    }
+
     if ( ! function_exists( 'get_option' ) ) {
         function get_option( $option, $default = false ) {
+            if ( isset( $GLOBALS['wp_stubs_options'] ) && array_key_exists( $option, $GLOBALS['wp_stubs_options'] ) ) {
+                return $GLOBALS['wp_stubs_options'][ $option ];
+            }
             if ($option === 'racketmanager_options') {
                 return is_array($default) ? $default : array();
             }
@@ -341,10 +453,21 @@ namespace {
             return $value;
         }
     }
+    if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+        function wp_strip_all_tags( $value ) {
+            return strip_tags( $value );
+        }
+    }
 
     if ( ! function_exists( 'sanitize_text_field' ) ) {
         function sanitize_text_field( $value ) {
             return is_string( $value ) ? trim( strip_tags( $value ) ) : $value;
+        }
+    }
+
+    if ( ! function_exists( 'sanitize_email' ) ) {
+        function sanitize_email( $email ) {
+            return is_string( $email ) ? trim( $email ) : $email;
         }
     }
 
@@ -394,6 +517,10 @@ namespace {
 
     if ( ! function_exists( 'rest_do_request' ) ) {
         function rest_do_request( $request ) {
+            $GLOBALS['wp_stubs_last_rest_request'] = $request;
+            if ( isset( $GLOBALS['wp_stubs_rest_do_request_callback'] ) && is_callable( $GLOBALS['wp_stubs_rest_do_request_callback'] ) ) {
+                return ( $GLOBALS['wp_stubs_rest_do_request_callback'] )( $request );
+            }
             return $GLOBALS['wp_stubs_rest_do_request_return'] ?? new WP_REST_Response();
         }
     }
@@ -417,13 +544,22 @@ namespace {
 
     if ( ! function_exists( 'is_user_logged_in' ) ) {
         function is_user_logged_in(): bool {
+            if ( isset( $GLOBALS['wp_stubs_is_user_logged_in'] ) ) {
+                return (bool) $GLOBALS['wp_stubs_is_user_logged_in'];
+            }
             return ( $GLOBALS['wp_stubs_get_current_user_id'] ?? 1 ) > 0;
         }
     }
 
     if ( ! function_exists( 'get_current_user_id' ) ) {
         function get_current_user_id(): int {
-            return $GLOBALS['wp_stubs_get_current_user_id'] ?? 1;
+            return $GLOBALS['wp_stubs_get_current_user_id'] ?? $GLOBALS['wp_stubs_current_user_id'] ?? 1;
+        }
+    }
+
+    if ( ! function_exists( 'wp_get_current_user' ) ) {
+        function wp_get_current_user() {
+            return (object) [ 'ID' => $GLOBALS['wp_stubs_get_current_user_id'] ?? 1 ];
         }
     }
 
@@ -455,9 +591,19 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_die' ) ) {
-        #[NoReturn]
         function wp_die( $message = '', $title = '', $args = array() ) {
-            die( $message );
+            $GLOBALS['wp_stubs_last_wp_die'] = array(
+                'message' => $message,
+                'title'   => $title,
+                'args'    => $args,
+            );
+            if ( isset( $GLOBALS['wp_stubs_wp_die_handler'] ) && is_callable( $GLOBALS['wp_stubs_wp_die_handler'] ) ) {
+                return ( $GLOBALS['wp_stubs_wp_die_handler'] )( $message, $title, $args );
+            }
+            if ( ! empty( $GLOBALS['wp_stubs_throw_on_wp_die'] ) ) {
+                $status = is_array( $args ) && isset( $args['response'] ) ? (int) $args['response'] : ( is_numeric( $args ) ? (int) $args : 500 );
+                throw new \RuntimeException( (string) $message, $status );
+            }
         }
     }
 
@@ -490,8 +636,8 @@ namespace {
     }
 
     if ( ! function_exists( 'is_admin' ) ) {
-        function is_admin() {
-            return false;
+        function is_admin(): bool {
+            return (bool) ( $GLOBALS['wp_stubs_is_admin'] ?? false );
         }
     }
 
@@ -514,6 +660,22 @@ namespace {
     if ( ! function_exists( 'is_serialized' ) ) {
         function is_serialized( $data ): bool {
             return is_string( $data ) && preg_match( '/^([adObis]):/', $data );
+        }
+    }
+
+    if ( ! function_exists( 'wp_register_script' ) ) {
+        function wp_register_script( $handle, $src, $deps = array(), $ver = false, $in_footer = false ): bool {
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'wp_enqueue_script' ) ) {
+        function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $in_footer = false ): void {}
+    }
+
+    if ( ! function_exists( 'plugins_url' ) ) {
+        function plugins_url( $path = '', $plugin = '' ): string {
+            return 'https://example.com/wp-content/plugins/' . ltrim( $path, '/' );
         }
     }
 
@@ -544,9 +706,77 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'disabled' ) ) {
+        function disabled( $disabled, $current = true, $echo = true ) {
+            $result = ( (string) $disabled === (string) $current ) ? ' disabled="disabled"' : '';
+            if ( $echo ) {
+                echo $result;
+            }
+            return $result;
+        }
+    }
+
     if ( ! function_exists( 'get_permalink' ) ) {
         function get_permalink( $post = 0, $leavename = false ) {
             return 'https://example.test/page/' . ( is_object( $post ) ? ( $post->ID ?? 0 ) : $post );
+        }
+    }
+
+    if ( ! function_exists( 'sanitize_url' ) ) {
+        function sanitize_url( string $url, array $protocols = array( 'http', 'https', 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet', 'mms', 'rtsp', 'svn', 'tel', 'fax', 'xmpp', 'webcal', 'urn' ) ): string {
+            return filter_var( $url, FILTER_SANITIZE_URL ) ?: '';
+        }
+    }
+
+    if ( ! function_exists( 'wp_validate_redirect' ) ) {
+        function wp_validate_redirect( string $location, string $default = '' ): string {
+            return $location ?: $default;
+        }
+    }
+
+    if ( ! function_exists( 'wp_signon' ) ) {
+        function wp_signon( array $credentials = array(), $secure_cookie = '' ) {
+            $GLOBALS['wp_stubs_last_signon_args'] = $credentials;
+            if ( isset( $GLOBALS['wp_stubs_signon_error'] ) ) {
+                return $GLOBALS['wp_stubs_signon_error'];
+            }
+            return (object) array( 'ID' => 1, 'user_login' => $credentials['user_login'] ?? 'user' );
+        }
+    }
+
+    if ( ! function_exists( 'get_user_meta' ) ) {
+        function get_user_meta( int $user_id, string $key = '', bool $single = false ) {
+            $user_meta = $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $key ] ?? array();
+            if ( $single ) {
+                return is_array( $user_meta ) ? ( $user_meta[0] ?? '' ) : $user_meta;
+            }
+            return is_array( $user_meta ) ? $user_meta : array( $user_meta );
+        }
+    }
+
+    if ( ! function_exists( 'add_user_meta' ) ) {
+        function add_user_meta( int $user_id, string $meta_key, $meta_value, bool $unique = false ): bool {
+            if ( ! isset( $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ] ) ) {
+                $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ] = array();
+            }
+            $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ][] = (string) $meta_value;
+            return true;
+        }
+    }
+
+    if ( ! function_exists( 'delete_user_meta' ) ) {
+        function delete_user_meta( int $user_id, string $meta_key, $meta_value = '' ): bool {
+            if ( isset( $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ] ) ) {
+                if ( $meta_value !== '' ) {
+                    $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ] = array_values( array_filter(
+                        $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ],
+                        fn( $val ) => (string) $val !== (string) $meta_value
+                    ) );
+                } else {
+                    unset( $GLOBALS['wp_stubs_user_meta'][ $user_id ][ $meta_key ] );
+                }
+            }
+            return true;
         }
     }
 
@@ -575,6 +805,18 @@ namespace {
     if ( ! function_exists( 'wp_json_encode' ) ) {
         function wp_json_encode( $data ) {
             return json_encode( $data );
+        }
+    }
+
+    if ( ! function_exists( 'wp_next_scheduled' ) ) {
+        function wp_next_scheduled( $hook, $args = [] ) {
+            return false;
+        }
+    }
+
+    if ( ! function_exists( 'wp_clear_scheduled_hook' ) ) {
+        function wp_clear_scheduled_hook( $hook, $args = [] ) {
+            return 0;
         }
     }
 
@@ -687,6 +929,41 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'get_query_var' ) ) {
+        function get_query_var( $var, $default = '' ) {
+            return $GLOBALS['query_vars'][ $var ] ?? $default;
+        }
+    }
+
+    if ( ! function_exists( 'is_user_logged_in' ) ) {
+        function is_user_logged_in(): bool {
+            return $GLOBALS['wp_stubs_is_user_logged_in'] ?? false;
+        }
+    }
+
+    if ( ! function_exists( 'get_current_user_id' ) ) {
+        function get_current_user_id(): int {
+            return $GLOBALS['wp_stubs_current_user_id'] ?? 0;
+        }
+    }
+
+    if ( ! function_exists( 'wp_get_current_user' ) ) {
+        function wp_get_current_user() {
+            $user_id = get_current_user_id();
+            return (object) [
+                'ID' => $user_id,
+                'display_name' => 'User ' . $user_id,
+                'user_email' => 'user' . $user_id . '@example.test',
+            ];
+        }
+    }
+
+    if ( ! function_exists( 'home_url' ) ) {
+        function home_url( $path = '' ): string {
+            return 'https://example.test' . ( $path ? '/' . ltrim( $path, '/' ) : '' );
+        }
+    }
+
     if ( ! function_exists( 'wp_mail' ) ) {
         function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
             $GLOBALS['wp_mail_calls'][] = array(
@@ -702,6 +979,14 @@ namespace {
 
     if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
         define( 'RACKETMANAGER_PATH', dirname( __DIR__ ) . '/' );
+    }
+
+    if ( ! defined( 'RACKETMANAGER_IS_INVALID' ) ) {
+        define( 'RACKETMANAGER_IS_INVALID', 'is-invalid' );
+    }
+
+    if ( ! defined( 'RACKETMANAGER_CHECKED' ) ) {
+        define( 'RACKETMANAGER_CHECKED', 'checked' );
     }
 
     if ( ! defined( 'RACKETMANAGER_FROM_EMAIL' ) ) {
@@ -722,6 +1007,7 @@ namespace {
         eval('
         class WP_Error {
             public array $errors = array();
+            public array $error_data = array();
 
             public function __construct( $code = "", $message = "", $data = "" ) {
                 if ( ! empty( $code ) ) {
@@ -731,6 +1017,21 @@ namespace {
 
             public function add( $code, $message, $data = "" ): void {
                 $this->errors[ $code ][] = $message;
+                if ( ! empty( $data ) ) {
+                    $this->error_data[ $code ] = $data;
+                }
+            }
+
+            public function add_data( $data, $code = "" ): void {
+                if ( empty( $code ) ) {
+                    $code = $this->get_error_code();
+                }
+                $this->error_data[ $code ] = $data;
+            }
+
+            public function get_error_code(): string|int {
+                $codes = $this->get_error_codes();
+                return $codes[0] ?? "";
             }
 
             public function get_error_messages( $code = "" ) {
@@ -754,6 +1055,9 @@ namespace {
             }
 
             public function get_error_data( $code = "" ) {
+                if ( empty( $code ) ) {
+                    $code = $this->get_error_code();
+                }
                 return $this->error_data[ $code ] ?? null;
             }
         }
@@ -784,6 +1088,19 @@ namespace {
         }
     }
 
+    if ( ! function_exists( 'wp_specialchars_decode' ) ) {
+        function wp_specialchars_decode( $string, $quote_style = ENT_NOQUOTES ) {
+            $string = (string) $string;
+            if ( 0 === strlen( $string ) ) {
+                return '';
+            }
+            if ( false === strpos( $string, '&' ) ) {
+                return $string;
+            }
+            return htmlspecialchars_decode( $string, $quote_style );
+        }
+    }
+
     if ( ! function_exists( 'esc_attr_e' ) ) {
         function esc_attr_e( $text, $domain = 'default' ) {
             echo esc_attr( $text );
@@ -808,6 +1125,8 @@ namespace {
             private $method;
             private $route;
             private $params = [];
+            private $body = "";
+            private $headers = [];
 
             public function __construct( $method = "", $route = "", $params = [] ) {
                 $this->method = $method;
@@ -833,6 +1152,22 @@ namespace {
 
             public function set_route( $route ) {
                 $this->route = $route;
+            }
+
+            public function set_body( $body ) {
+                $this->body = (string) $body;
+            }
+
+            public function get_body() {
+                return $this->body;
+            }
+
+            public function set_header( $key, $value ) {
+                $this->headers[ strtolower( $key ) ] = $value;
+            }
+
+            public function get_header( $key ) {
+                return $this->headers[ strtolower( $key ) ] ?? null;
             }
 
             public function offsetExists( $offset ): bool {
@@ -886,13 +1221,27 @@ namespace {
             public function get_headers() {
                 return $this->headers;
             }
+
+            public function is_error() {
+                return $this->get_status() >= 400;
+            }
         }
         ');
+    }
+
+    if ( ! function_exists( 'register_rest_route' ) ) {
+        function register_rest_route( string $namespace, string $route, array $args = array(), bool $override = false ): bool {
+            $GLOBALS['wp_stubs_registered_rest_routes'][ $namespace ][ $route ] = $args;
+            return true;
+        }
     }
 
     if ( ! class_exists( 'WP_REST_Controller' ) ) {
         eval('
         class WP_REST_Controller {
+            public function prepare_response_for_collection( $response ) {
+                return $response;
+            }
         }
         ');
     }
@@ -901,6 +1250,10 @@ namespace {
         eval('
         class WP_REST_Server {
             const READABLE = "GET";
+            const CREATABLE = "POST";
+            const EDITABLE = "POST, PUT, PATCH";
+            const DELETABLE = "DELETE";
+            const ALLMETHODS = "GET, POST, PUT, PATCH, DELETE";
 
             public function send_header( $key, $value ) {}
             public function send_headers( $headers ) {}
@@ -936,7 +1289,10 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_league' ) ) {
-        function get_league( $id ) {
+        function get_league( $id = null ) {
+            if ( null === $id ) {
+                return $GLOBALS['league'] ?? null;
+            }
             if ( isset( $GLOBALS['wp_stubs_leagues'][ $id ] ) ) {
                 return $GLOBALS['wp_stubs_leagues'][ $id ];
             }
@@ -972,6 +1328,96 @@ namespace Racketmanager {
         }
     }
 
+    if ( ! function_exists( 'Racketmanager\get_club' ) ) {
+        function get_club( $id ) {
+            if ( isset( $GLOBALS['wp_stubs_clubs'][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_clubs'][ $id ];
+            }
+            if ( isset( $GLOBALS['wp_stubs_clubs'][ (string) $id ] ) ) {
+                return $GLOBALS['wp_stubs_clubs'][ (string) $id ];
+            }
+            return $GLOBALS['wp_stubs_clubs']['default'] ?? null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_player' ) ) {
+        function get_player( $id, $search = 'id' ) {
+            if ( isset( $GLOBALS['wp_stubs_players'][ $search ][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_players'][ $search ][ $id ];
+            }
+            if ( $search === 'email' ) {
+                return null;
+            }
+            if ( isset( $GLOBALS['wp_stubs_players'][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_players'][ $id ];
+            }
+            return $GLOBALS['wp_stubs_players']['default'] ?? null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_user' ) ) {
+        function get_user( $id ) {
+            if ( isset( $GLOBALS['wp_stubs_users'][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_users'][ $id ];
+            }
+            return $GLOBALS['wp_stubs_users']['default'] ?? null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_club_role' ) ) {
+        function get_club_role( $id ) {
+            if ( isset( $GLOBALS['wp_stubs_club_roles'][ $id ] ) ) {
+                return $GLOBALS['wp_stubs_club_roles'][ $id ];
+            }
+            return $GLOBALS['wp_stubs_club_roles']['default'] ?? null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\show_club_role_modal' ) ) {
+        function show_club_role_modal( $club_role_id, array $args = array() ): string {
+            return 'club-role-modal:' . (int) $club_role_id . ':' . ( $args['modal'] ?? '' );
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\show_purchase_order_modal' ) ) {
+        function show_purchase_order_modal( $invoice_id, array $args = array() ): string {
+            return 'purchase-order-modal:' . (int) $invoice_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\show_invoice' ) ) {
+        function show_invoice( $invoice_id, array $args = array() ): string {
+            return 'invoice:' . (int) $invoice_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\show_message' ) ) {
+        function show_message( $message_id ): string {
+            return 'message-content:' . (int) $message_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\get_message' ) ) {
+        function get_message( $message_id ) {
+            if ( isset( $GLOBALS['wp_stubs_messages'][ $message_id ] ) ) {
+                return $GLOBALS['wp_stubs_messages'][ $message_id ];
+            }
+            return $GLOBALS['wp_stubs_messages']['default'] ?? null;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\tournament_withdrawal_modal' ) ) {
+        function tournament_withdrawal_modal( $tournament_id, array $args = array() ): string {
+            return 'tournament-withdrawal-modal:' . (int) $tournament_id;
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\event_partner_modal' ) ) {
+        function event_partner_modal( $event_id, array $args = array() ): string {
+            return 'event-partner-modal:' . (int) $event_id;
+        }
+    }
+
     if ( ! function_exists( 'Racketmanager\result_notification' ) ) {
         function result_notification( $match_id, $args = array() ) {
             return 'Result notification for match ' . $match_id;
@@ -991,7 +1437,16 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_event' ) ) {
-        function get_event( $event_id ): Event {
+        function get_event( $event_id ): ?Event {
+            if ( isset( $GLOBALS['wp_stubs_events'][ $event_id ] ) ) {
+                return $GLOBALS['wp_stubs_events'][ $event_id ];
+            }
+            if ( array_key_exists( $event_id, $GLOBALS['wp_stubs_events'] ?? [] ) ) {
+                return $GLOBALS['wp_stubs_events'][ $event_id ];
+            }
+            if ( empty( $event_id ) ) {
+                return null;
+            }
             return new class((object)['id'=>$event_id]) extends Event {
                 public function __construct($obj) {
                     $this->id = $obj->id;
@@ -1019,15 +1474,13 @@ namespace Racketmanager {
         }
     }
 
-    if ( ! function_exists( 'Racketmanager\get_league' ) ) {
-        function get_league( $league_id ): object|string {
-            try {
-                $league = (new ReflectionClass( 'Racketmanager\Domain\Competition\League' ))->newInstanceWithoutConstructor();
-                $league->id = $league_id;
-                return $league;
-            } catch ( ReflectionException $e ) {
-                return (object) [ 'id' => $league_id ];
+    if ( ! function_exists( 'Racketmanager\show_standings' ) ) {
+        function show_standings( string $key ): bool {
+            global $league;
+            if ( isset( $league->standings[ $key ] ) && 1 === (int) $league->standings[ $key ] ) {
+                return true;
             }
+            return false;
         }
     }
 }
@@ -1073,5 +1526,113 @@ namespace Racketmanager {
                 public function get_season_by_name($name): array { return [ 'match_dates' => ['2023-01-01']]; }
             };
         }
+    }
+}
+
+namespace {
+    if ( ! function_exists( 'wp_stubs_reset_export_rest_globals' ) ) {
+        /**
+         * Reset global state tracked by export / REST / admin-referer stubs so tests are order-independent.
+         */
+        function wp_stubs_reset_export_rest_globals(): void {
+            unset(
+                $GLOBALS['wp_stubs_last_rest_request'],
+                $GLOBALS['wp_stubs_rest_do_request_return'],
+                $GLOBALS['wp_stubs_rest_do_request_callback'],
+                $GLOBALS['wp_stubs_is_admin'],
+                $GLOBALS['wp_stubs_last_check_admin_referer'],
+                $GLOBALS['wp_stubs_check_admin_referer_return'],
+                $GLOBALS['wp_stubs_last_wp_die'],
+                $GLOBALS['wp_stubs_current_user_can']
+            );
+        }
+    }
+    if ( ! function_exists( 'check_admin_referer' ) ) {
+        function check_admin_referer( $action = -1, $query_arg = '_wpnonce' ) {
+            $GLOBALS['wp_stubs_last_check_admin_referer'] = array(
+                'action'    => $action,
+                'query_arg' => $query_arg,
+            );
+            if ( isset( $GLOBALS['wp_stubs_check_admin_referer_return'] ) ) {
+                return $GLOBALS['wp_stubs_check_admin_referer_return'];
+            }
+            return 1;
+        }
+    }
+    if ( ! function_exists( 'wp_register_script' ) ) {
+        function wp_register_script( $handle, $src, $deps = array(), $ver = false, $args = array() ) {}
+    }
+    if ( ! function_exists( 'wp_enqueue_script' ) ) {
+        function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $args = array() ) {}
+    }
+    if ( ! function_exists( 'plugins_url' ) ) {
+        function plugins_url( $path = '', $plugin = '' ) { return 'http://test.local/plugins/' . $path; }
+    }
+    if ( ! function_exists( 'site_url' ) ) {
+        function site_url( $path = '', $scheme = null ) {
+            return 'http://example.com' . ( $path ? '/' . ltrim( (string) $path, '/' ) : '' );
+        }
+    }
+    if ( ! function_exists( 'get_filesystem_method' ) ) {
+        function get_filesystem_method( $args = array(), $context = '', $allow_relaxed_file_ownership = false ) {
+            return $GLOBALS['wp_stubs_filesystem_method'] ?? 'direct';
+        }
+    }
+    if ( ! function_exists( 'request_filesystem_credentials' ) ) {
+        function request_filesystem_credentials( $form_post, $type = '', $error = false, $context = '', $extra_fields = null, $allow_relaxed_file_ownership = false ) {
+            return $GLOBALS['wp_stubs_filesystem_credentials'] ?? true;
+        }
+    }
+    if ( ! function_exists( 'WP_Filesystem' ) ) {
+        function WP_Filesystem( $args = false, $context = false, $allow_relaxed_file_ownership = false ) {
+            return $GLOBALS['wp_stubs_wp_filesystem_return'] ?? true;
+        }
+    }
+    if ( ! function_exists( 'wp_remote_get' ) ) {
+        function wp_remote_get( $url, $args = array() ) {
+            if ( isset( $GLOBALS['wp_stubs_remote_get_callback'] ) && is_callable( $GLOBALS['wp_stubs_remote_get_callback'] ) ) {
+                return ( $GLOBALS['wp_stubs_remote_get_callback'] )( $url, $args );
+            }
+            if ( isset( $GLOBALS['wp_stubs_remote_get_return'][ $url ] ) ) {
+                return $GLOBALS['wp_stubs_remote_get_return'][ $url ];
+            }
+            return $GLOBALS['wp_stubs_remote_get_default'] ?? array( 'response' => array( 'code' => 200 ), 'body' => '', 'cookies' => array() );
+        }
+    }
+    if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
+        function wp_remote_retrieve_response_code( $response ) {
+            if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+                return '';
+            }
+            return $response['response']['code'] ?? 200;
+        }
+    }
+    if ( ! function_exists( 'wp_remote_retrieve_cookies' ) ) {
+        function wp_remote_retrieve_cookies( $response ) {
+            if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+                return array();
+            }
+            return $response['cookies'] ?? array();
+        }
+    }
+    if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+        function wp_remote_retrieve_body( $response ) {
+            if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+                return '';
+            }
+            return $response['body'] ?? '';
+        }
+    }
+    if ( ! defined( 'RACKETMANAGER_VERSION' ) ) {
+        define( 'RACKETMANAGER_VERSION', '1.0.0' );
+    }
+    if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
+        define( 'RACKETMANAGER_PATH', __DIR__ . '/../' );
+    }
+    if ( ! defined( 'WP_CONTENT_DIR' ) ) {
+        define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/wp-content' );
+    }
+    if ( ! defined( 'ABSPATH' ) ) {
+        define( 'ABSPATH', sys_get_temp_dir() . '/wordpress/' );
     }
 }

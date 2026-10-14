@@ -18,7 +18,7 @@ readonly class Fixture_Status_Update_Request {
     }
 
     /**
-     * Create from global $_POST.
+     * Create from request data.
      *
      * @param array $post
      *
@@ -28,7 +28,7 @@ readonly class Fixture_Status_Update_Request {
         return new self(
             fixture_id: isset( $post['match_id'] ) ? (int) $post['match_id'] : 0,
             match_status: isset( $post['score_status'] ) ? sanitize_text_field( wp_unslash( $post['score_status'] ) ) : null,
-            modal: isset( $post['modal'] ) ? sanitize_text_field( wp_unslash( $_POST['modal'] ) ) : null,
+            modal: isset( $post['modal'] ) ? sanitize_text_field( wp_unslash( $post['modal'] ) ) : null,
             rubber_number: isset( $post['rubber_number'] ) ? (int) $post['rubber_number'] : null
         );
     }

@@ -15,6 +15,15 @@ namespace Racketmanager;
 /** @var string $status */
 /** @var array  $clubs */
 /** @var array  $charges */
+if ( isset( $vm ) && $vm instanceof \Racketmanager\Admin\View_Models\Finances_Invoices_Page_View_Model ) {
+    $finance_invoices  = $vm->invoices;
+    $club_id           = $vm->club_id;
+    $charge_id         = $vm->charge_id;
+    $status            = $vm->status;
+    $clubs             = $vm->clubs;
+    $charges           = $vm->charges;
+    $racketmanager_tab = $vm->racketmanager_tab;
+}
 $invoices = $finance_invoices;
 if ( 'club-invoices' === $racketmanager_tab ) {
     $billable_type = __( 'Club', 'racketmanager' );

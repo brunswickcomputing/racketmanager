@@ -11,6 +11,7 @@ namespace Racketmanager\Services\Export;
 
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Services\Contracts\Data_Exporter_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use Racketmanager\Services\Export\Formatters\Csv_Formatter;
 use Racketmanager\Services\Export\Formatters\Ics_Formatter;
@@ -22,7 +23,7 @@ use stdClass;
 /**
  * Class to implement the Export_Service object
  */
-class Export_Service {
+class Export_Service implements Data_Exporter_Interface {
 
     private Fixture_Repository_Interface $fixture_repository;
     private Result_Reporting_Service $result_reporting_service;

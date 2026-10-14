@@ -12,7 +12,7 @@ namespace Racketmanager;
 if ( count( $league->teams ) ) {
     ?>
     <div class="table-responsive">
-        <table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php esc_html_e( 'Standings', 'racketmanager' ) . ' ' . esc_html( $league->title ); ?>">
+        <table class="table table-striped table-borderless" aria-label="<?php esc_html_e( 'League Standings', 'racketmanager' ); ?>" aria-describedby="<?php echo esc_attr( sprintf( __( 'Standings %s', 'racketmanager' ), $league->title ) ); ?>">
             <thead class="">
                 <tr>
                     <th class="num">
@@ -127,19 +127,22 @@ if ( count( $league->teams ) ) {
                                 <s aria-label="<?php echo esc_attr( $title_text ); ?>" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $title_text ); ?>">
                                 <?php
                             }
-                            if ( $league->event->is_box ) {
-                                $season_link = __( 'round', 'racketmanager' ) . '-' . $league->current_season['name'];
+                            $is_box = isset( $league->event ) && ! empty( $league->event->is_box );
+                            $current_season_name = is_array( $league->current_season ?? null ) ? ( $league->current_season['name'] ?? '' ) : (string) ( $league->current_season ?? '' );
+                            if ( $is_box ) {
+                                $season_link = __( 'round', 'racketmanager' ) . '-' . $current_season_name;
                             } else {
-                                $season_link = $league->current_season['name'];
+                                $season_link = $current_season_name;
                             }
-                            $competition_type = $league->event->competition->type instanceof \BackedEnum ? $league->event->competition->type->value : (string) ( $league->event->competition->type ?? '' );
+                            $comp_type = ( isset( $league->event ) && isset( $league->event->competition->type ) ) ? $league->event->competition->type : 'league';
+                            $competition_type = $comp_type instanceof \BackedEnum ? $comp_type->value : (string) $comp_type;
                             $team_link = '/' . $competition_type . '/' . seo_url( $league->title ) . '/' . $season_link . '/team/' . seo_url( $team->title ) . '/';
                             ?>
-                            <a href="<?php echo esc_attr( $team_link ); ?>" class="tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $league->current_season['name'] ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( $team->id ); ?>" data-link-type="teams">
+                            <a href="<?php echo esc_attr( $team_link ); ?>" class="tabDataLink" data-type="league" data-type-id="<?php echo esc_attr( $league->id ); ?>" data-season="<?php echo esc_attr( $current_season_name ); ?>" data-link="<?php echo esc_attr( $team_link ); ?>" data-link-id="<?php echo esc_attr( $team->id ?? $team->table_id ?? '' ); ?>" data-link-type="teams">
                                 <?php echo esc_html( $team->title ); ?>
                             </a>
                             <?php
-                            if ( $team->is_withdrawn ) {
+                            if ( ! empty( $team->is_withdrawn ) ) {
                                 ?>
                                 </s>
                                 <?php
@@ -150,7 +153,7 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'pld' ) ) {
                             ?>
                             <td class='num'>
-                                <?php echo esc_html( $team->done_matches ); ?>
+                                <?php echo esc_html( $team->done_matches ?? 0 ); ?>
                             </td>
                             <?php
                         }
@@ -159,7 +162,7 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'won' ) ) {
                             ?>
                             <td class='num d-none d-md-table-cell'>
-                                <?php echo esc_html( $team->won_matches ); ?>
+                                <?php echo esc_html( $team->won_matches ?? 0 ); ?>
                             </td>
                             <?php
                         }
@@ -168,7 +171,7 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'tie' ) ) {
                             ?>
                             <td class='num d-none d-md-table-cell'>
-                                <?php echo esc_html( $team->draw_matches ); ?>
+                                <?php echo esc_html( $team->draw_matches ?? 0 ); ?>
                             </td>
                             <?php
                         }
@@ -177,7 +180,7 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'lost' ) ) {
                             ?>
                             <td class='num d-none d-md-table-cell'>
-                                <?php echo esc_html( $team->lost_matches ) ?>
+                                <?php echo esc_html( $team->lost_matches ?? 0 ) ?>
                             </td>
                             <?php
                         }
@@ -186,7 +189,7 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'winPercent' ) ) {
                             ?>
                             <td class="num d-none d-md-table-cell">
-                                <?php echo esc_html( $team->win_percent ); ?>
+                                <?php echo esc_html( $team->win_percent ?? 0 ); ?>
                             </td>
                             <?php
                         }
@@ -195,7 +198,7 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'sets' ) ) {
                             ?>
                             <td class='num'>
-                                <?php echo esc_html( $team->sets_won . '-' . $team->sets_allowed ); ?>
+                                <?php echo esc_html( ( $team->sets_won ?? 0 ) . '-' . ( $team->sets_allowed ?? 0 ) ); ?>
                             </td>
                             <?php
                         }
@@ -204,13 +207,13 @@ if ( count( $league->teams ) ) {
                         if ( show_standings( 'games' ) ) {
                             ?>
                             <td class='num'>
-                                <?php echo esc_html( $team->games_won . '-' . $team->games_allowed ); ?>
+                                <?php echo esc_html( ( $team->games_won ?? 0 ) . '-' . ( $team->games_allowed ?? 0 ) ); ?>
                             </td>
                             <?php
                         }
                         ?>
                         <td class='num'>
-                            <?php echo esc_html( $team->points_formatted['primary'] ); ?>
+                            <?php echo esc_html( is_array( $team->points_formatted ?? null ) ? ( $team->points_formatted['primary'] ?? $team->points_plus ?? 0 ) : ( $team->points_plus ?? 0 ) ); ?>
                         </td>
                     </tr>
                     <?php

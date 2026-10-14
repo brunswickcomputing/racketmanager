@@ -16,7 +16,9 @@
 
 namespace Racketmanager\Services\Contracts;
 
-interface Wtn_Api_Client_Interface {
+use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
+
+interface Wtn_Api_Client_Interface extends Rating_Gateway_Interface {
     /**
      * Prepare HTTP/environment arguments (cookies, headers, etc.) required to call the external API.
      *

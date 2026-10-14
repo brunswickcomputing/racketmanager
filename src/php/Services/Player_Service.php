@@ -14,6 +14,7 @@ use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Domain\Player_Error;
+use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Duplicate_BTM_Exception;
 use Racketmanager\Exceptions\Duplicate_Email_Exception;
@@ -24,6 +25,8 @@ use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Updated_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
 use Racketmanager\Exceptions\WTN_Error_Exception;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\League_Team_Repository;
@@ -48,17 +51,18 @@ class Player_Service {
     /**
      * @var mixed|null
      */
-    private null|Wtn_Api_Client_Interface $wtn_api_client;
+    private null|Rating_Gateway_Interface $wtn_api_client;
     private ?Club_Role_Repository_Interface $club_role_repository;
     private League_Team_Repository $league_team_repository;
     private Club_Repository $club_repository;
     private Registration_Repository_Interface $registration_repository;
+    private Mailer_Interface $mailer;
 
     /**
      * Constructor
      *
      */
-    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository_Interface $player_error_repository, Club_Role_Repository_Interface $club_role_repository, Wtn_Api_Client_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository_Interface $registration_repository ) {
+    public function __construct( $plugin_instance, Player_Repository $player_repository, Player_Error_Repository_Interface $player_error_repository, Club_Role_Repository_Interface $club_role_repository, Rating_Gateway_Interface $wtn_api_client, League_Team_Repository $league_team_repository, Club_Repository $club_repository, Registration_Repository_Interface $registration_repository, ?Mailer_Interface $mailer = null ) {
         $this->racketmanager           = $plugin_instance;
         $this->player_repository       = $player_repository;
         $this->player_error_repository = $player_error_repository;
@@ -67,10 +71,11 @@ class Player_Service {
         $this->league_team_repository  = $league_team_repository;
         $this->club_repository         = $club_repository;
         $this->registration_repository = $registration_repository;
+        $this->mailer                  = $mailer ?? new Wp_Mailer();
     }
 
-    public function add_new_player(): Player|WP_Error {
-        $player = $this->validate_player();
+    public function add_new_player( ?array $request = null ): Player|WP_Error {
+        $player = $this->validate_player( $request );
         if ( is_wp_error( $player ) ) {
             return $player;
         }
@@ -83,19 +88,21 @@ class Player_Service {
     /**
      * Validate player details
      *
+     * @param array|null $request
      * @return stdClass|WP_Error
      */
-    public function validate_player(): stdClass|WP_Error {
+    public function validate_player( ?array $request = null ): stdClass|WP_Error {
         // phpcs:disable WordPress.Security.NonceVerification.Missing
-        $player_id     = isset( $_POST['playerId'] ) ? intval( $_POST['playerId'] ) : null;
-        $firstname     = isset( $_POST['firstname'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['firstname'] ) ) ) : null;
-        $surname       = isset( $_POST['surname'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['surname'] ) ) ) : null;
-        $gender        = isset( $_POST['gender'] ) ? sanitize_text_field( wp_unslash( $_POST['gender'] ) ) : null;
-        $btm           = isset( $_POST['btm'] ) ? sanitize_text_field( wp_unslash( $_POST['btm'] ) ) : null;
-        $contactno     = empty( $_POST['contactno'] ) ? null : sanitize_text_field( wp_unslash( $_POST['contactno'] ) );
-        $email         = isset( $_POST['email'] ) ? sanitize_text_field( wp_unslash( $_POST['email'] ) ) : null;
-        $locked        = isset( $_POST['locked'] );
-        $year_of_birth = empty( $_POST['year_of_birth'] ) ? null : intval( $_POST['year_of_birth'] );
+        $source        = $request ?? $_POST;
+        $player_id     = isset( $source['playerId'] ) ? intval( $source['playerId'] ) : null;
+        $firstname     = isset( $source['firstname'] ) ? trim( sanitize_text_field( wp_unslash( $source['firstname'] ) ) ) : null;
+        $surname       = isset( $source['surname'] ) ? trim( sanitize_text_field( wp_unslash( $source['surname'] ) ) ) : null;
+        $gender        = isset( $source['gender'] ) ? sanitize_text_field( wp_unslash( $source['gender'] ) ) : null;
+        $btm           = isset( $source['btm'] ) ? sanitize_text_field( wp_unslash( $source['btm'] ) ) : null;
+        $contactno     = empty( $source['contactno'] ) ? null : sanitize_text_field( wp_unslash( $source['contactno'] ) );
+        $email         = isset( $source['email'] ) ? sanitize_text_field( wp_unslash( $source['email'] ) ) : null;
+        $locked        = isset( $source['locked'] );
+        $year_of_birth = empty( $source['year_of_birth'] ) ? null : intval( $source['year_of_birth'] );
         $validator     = new Validator();
         $validator     = $validator->first_name( $firstname );
         $validator     = $validator->surname( $surname );
@@ -115,7 +122,7 @@ class Player_Service {
         $player->firstname     = $firstname;
         $player->surname       = $surname;
         $player->fullname      = $firstname . ' ' . $surname;
-        $player->user_login    = strtolower( $firstname ) . '.' . strtolower( $surname );
+        $player->user_login    = strtolower( (string) $firstname ) . '.' . strtolower( (string) $surname );
         $player->email         = $email;
         $player->btm           = $btm;
         $player->contactno     = $contactno;
@@ -236,16 +243,17 @@ class Player_Service {
      * Amend player details
      *
      * @param int|null $player_id
+     * @param array|null $request
      *
      * @return Player|WP_Error
      * @throws Exception
      */
-    public function amend_player_details( ?int $player_id ): Player|WP_Error {
+    public function amend_player_details( ?int $player_id, ?array $request = null ): Player|WP_Error {
         $player = $this->player_repository->find( $player_id );
         if ( ! $player ) {
             throw new Player_Not_Found_Exception( Util_Messages::player_not_found( $player_id ) );
         }
-        $player = $this->validate_player();
+        $player = $this->validate_player( $request );
         if ( is_wp_error( $player ) ) {
             return $player;
         }
@@ -425,6 +433,28 @@ class Player_Service {
     }
 
     /**
+     * Schedule weekly recurring player ratings calculation for all clubs.
+     *
+     * @return bool|\WP_Error
+     */
+    public function schedule_global_player_ratings(): bool|\WP_Error {
+        $day            = intval( gmdate( 'd' ) );
+        $month          = intval( gmdate( 'm' ) );
+        $year           = intval( gmdate( 'Y' ) );
+        $schedule_start = mktime( 12, 0, 0, $month, $day, $year );
+        $interval       = 'weekly';
+        $schedule_name  = 'rm_calculate_player_ratings';
+        $schedule_args  = array();
+        $next_schedule  = wp_next_scheduled( $schedule_name, $schedule_args );
+        if ( ! $next_schedule ) {
+            $success = wp_schedule_event( $schedule_start, $interval, $schedule_name, $schedule_args, true );
+        } else {
+            $success = false;
+        }
+        return $success;
+    }
+
+    /**
      * Calculate player ratings
      *
      * Moved from RacketManager to the Player__Service to better align
@@ -508,7 +538,7 @@ class Player_Service {
         ),
             'email',
         );
-        wp_mail( $email_to, $email_subject, $email_message, $headers );
+        $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
     }
 
     /**

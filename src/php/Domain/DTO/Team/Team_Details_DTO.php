@@ -21,6 +21,14 @@ class Team_Details_DTO {
     public ?Club $club;
     public ?Player $match_secretary;
     public bool $is_withdrawn;
+    public ?string $captain = null;
+    public ?string $captain_email = null;
+    public ?string $captain_tel = null;
+    public ?string $contactemail = null;
+    public ?string $contactno = null;
+    public ?string $match_day = null;
+    public ?string $match_time = null;
+    public array $players = [];
 
     /**
      * Team_Details_DTO constructor.

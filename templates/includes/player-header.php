@@ -7,17 +7,17 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presenters\Player_Presenter;
 use Racketmanager\Util\Util_Lookup;
 
 /** @var object $player */
 /** @var array  $clubs */
-if ( empty( $is_page_header ) ) {
-    $is_page_header = false;
-    $header_level   = 3;
-} else {
-    $is_page_header = true;
-    $header_level   = 1;
-}
+$player_presenter = $player_presenter ?? new Player_Presenter();
+$is_page_header   = ! empty( $is_page_header );
+$header_level     = $player_presenter->get_heading_level( $is_page_header, $header_level ?? null );
+$player_initials  = $player_presenter->get_initials( $player->firstname ?? '', $player->surname ?? '' );
+$wtn_badges       = $player_presenter->get_wtn_badges( $player->wtn ?? array() );
+$win_loss_summary = $player_presenter->get_win_loss_summary( $player->statistics ?? null );
 ?>
     <div class="page-subhead player-header">
         <div class="media">
@@ -25,10 +25,7 @@ if ( empty( $is_page_header ) ) {
                 <div class="media__img">
                     <span class="profile-icon">
                         <span class="profile-icon__abbr">
-                            <?php
-                            $player_initials = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
-                            echo esc_html( $player_initials );
-                            ?>
+                            <?php echo esc_html( $player_initials ); ?>
                         </span>
                     </span>
                 </div>
@@ -94,37 +91,36 @@ if ( empty( $is_page_header ) ) {
                             ?>
                         </span>
                     </div>
-                    <div class="media__content-subinfo">
-                        <ul class="list list--inline">
-                            <?php
-                            $rating      = $player->wtn;
-                            $help_text   = __( 'World Tennis Number for', 'racketmanager');
-                            $match_types = Util_Lookup::get_match_types();
-                            foreach ( $match_types as $match_type => $description ) {
-                                ?>
-                                <li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php printf( esc_html( $help_text . ' ' . $description ) ); ?>">
-                                    <span class="tag tag-pair" >
-                                        <span class="tag-pair__title"><?php echo esc_html( $description ); ?></span>
-                                        <span class="tag-pair__value"><?php echo esc_html( $rating[ $match_type ] ); ?></span>
-                                    </span>
-                                </li>
+                    <?php if ( ! empty( $wtn_badges ) ) { ?>
+                        <div class="media__content-subinfo">
+                            <ul class="list list--inline">
                                 <?php
-                            }
-                            ?>
-                        </ul>
-                    </div>
+                                foreach ( $wtn_badges as $badge ) {
+                                    ?>
+                                    <li class="list__item" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="<?php echo esc_attr( $badge['tooltip'] ); ?>">
+                                        <span class="tag tag-pair">
+                                            <span class="tag-pair__title"><?php echo esc_html( $badge['description'] ); ?></span>
+                                            <span class="tag-pair__value"><?php echo esc_html( $badge['value'] ); ?></span>
+                                        </span>
+                                    </li>
+                                    <?php
+                                }
+                                ?>
+                            </ul>
+                        </div>
+                    <?php } ?>
                 </div>
                 <div class="media__aside">
                     <div class="progress-bar-container">
                         <?php
-                        if ( isset( $player->statistics['total'] ) && $player->statistics['total']->played ) {
+                        if ( ! empty( $win_loss_summary ) ) {
                             ?>
                             <div class="clearfix">
                                 <span class="pull-left"><?php esc_html_e( 'Win-Loss', 'racketmanager' ); ?></span>
-                                <span class="pull-right"><?php echo esc_html( $player->statistics['total']->matches_won ) . '-' . esc_html( $player->statistics['total']->matches_lost ) . ' (' . esc_html( $player->statistics['total']->played ) . ')'; ?></span>
+                                <span class="pull-right"><?php echo esc_html( $win_loss_summary['record_text'] ); ?></span>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $player->statistics['total']->win_pct ); ?>%" aria-valuenow="<?php echo esc_html( $player->statistics['total']->win_pct ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_html( $player->statistics['total']->win_pct ) . ' ' . esc_html__( 'won', 'racketmanager' ); ?>%"></div>
+                                <div class="progress-bar bg-success" role="progressbar" style="width: <?php echo esc_html( $win_loss_summary['win_pct'] ); ?>%" aria-valuenow="<?php echo esc_html( $win_loss_summary['win_pct'] ); ?>" aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<?php echo esc_attr( $win_loss_summary['progress_title'] ); ?>"></div>
                             </div>
                             <?php
                         }

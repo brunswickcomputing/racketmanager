@@ -24,6 +24,8 @@ readonly final class Tournament_Event_Config_Page_View_Model {
         public mixed $event,
         public ?object $tournament,
         public bool $new_event = false,
+        public Error_Bag $errors = new Error_Bag(),
+        public string $tab = 'general',
     ) {
     }
 
@@ -38,6 +40,8 @@ readonly final class Tournament_Event_Config_Page_View_Model {
             'event'       => $this->event,
             'tournament'  => $this->tournament,
             'new_event'   => $this->new_event,
+            'errors'      => $this->errors,
+            'tab'         => $this->tab,
         );
     }
 }

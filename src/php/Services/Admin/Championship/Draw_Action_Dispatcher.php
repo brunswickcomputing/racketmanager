@@ -14,8 +14,10 @@
 namespace Racketmanager\Services\Admin\Championship;
 
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
+use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Request_DTO;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
+use Racketmanager\Exceptions\Invalid_Status_Exception;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 
 class Draw_Action_Dispatcher {
@@ -41,7 +43,14 @@ class Draw_Action_Dispatcher {
             }
             $context = $resolved;
 
-            $this->action_guard->assert_allowed( $policy['nonce_field'], $policy['nonce_action'], $policy['capability'] );
+            try {
+                $this->action_guard->assert_allowed( $policy['nonce_field'], $policy['nonce_action'], $policy['capability'] );
+            } catch ( Invalid_Status_Exception $e ) {
+                return new Draw_Action_Response_DTO(
+                    message: $e->getMessage(),
+                    message_type: Admin_Message_Type::ERROR,
+                );
+            }
 
             $action_result = $this->invoke_handler( $policy['handler'], $dto, $context );
             $tab_override  = $this->resolve_tab_override( $policy['tab_override'], $action_result );

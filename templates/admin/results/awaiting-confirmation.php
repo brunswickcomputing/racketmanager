@@ -7,15 +7,11 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-$racketmanager_match_args            = array();
-$racketmanager_match_args['status']  = 'P';
-$racketmanager_match_args['orderby'] = array(
-    'updated' => 'ASC',
-    'id'      => 'ASC',
-);
-$racketmanager_matches     = $racketmanager->get_matches( $racketmanager_match_args );
-$racketmanager_prev_league = 0;
+use Racketmanager\Admin\View_Models\Admin_Results_Match_View_Model;
+
+/** @var Admin_Results_Match_View_Model[] $awaiting_confirmation_matches */
+$awaiting_confirmation_matches = $awaiting_confirmation_matches ?? array();
+$prev_league                   = 0;
 ?>
 <table class="table table-striped">
     <thead class="table-dark">
@@ -29,22 +25,21 @@ $racketmanager_prev_league = 0;
     </thead>
     <tbody>
     <?php
-    if ( $racketmanager_matches ) {
-        foreach ( $racketmanager_matches as $racketmanager_match ) {
-            $racketmanager_match = get_match( $racketmanager_match );
-            if ( $racketmanager_prev_league !== $racketmanager_match->league_id ) {
-                $racketmanager_prev_league = $racketmanager_match->league_id;
+    if ( $awaiting_confirmation_matches ) {
+        foreach ( $awaiting_confirmation_matches as $row ) {
+            if ( $prev_league !== $row->league_id ) {
+                $prev_league = $row->league_id;
                 ?>
-                <tr><td colspan="5" class="fw-bold fst-italic"><?php echo esc_html( $racketmanager_match->league->title ); ?></td></tr>
+                <tr><td colspan="5" class="fw-bold fst-italic"><?php echo esc_html( $row->league_title ); ?></td></tr>
                 <?php
             }
             ?>
             <tr>
-                <td class=""><?php echo esc_html( mysql2date( 'Y-m-d', $racketmanager_match->date ) ); ?></td>
-                <td class="match-title"><a href="<?php echo esc_html( $racketmanager_match->link ); ?>?referrer=awaiting-confirmation; ?>"><?php echo esc_html( $racketmanager_match->match_title ); ?></a></td>
-                <td class=""><?php echo esc_html( $racketmanager_match->confirmed_display ); ?></td>
-                <td class=""><?php echo esc_html( $racketmanager_match->score ); ?></td>
-                <td class=""><a href="<?php echo esc_html( $racketmanager_match->link ); ?>result/?referrer=awaiting-confirmation" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a></td>
+                <td class=""><?php echo esc_html( $row->formatted_date ); ?></td>
+                <td class="match-title"><a href="<?php echo esc_url( $row->match_link ); ?>"><?php echo esc_html( $row->match_title ); ?></a></td>
+                <td class=""><?php echo esc_html( $row->confirmed_display ); ?></td>
+                <td class=""><?php echo esc_html( $row->score ); ?></td>
+                <td class=""><a href="<?php echo esc_url( $row->result_link ); ?>" class="btn btn-secondary"><?php esc_html_e( 'View result', 'racketmanager' ); ?></a></td>
             </tr>
             <?php
         }
@@ -56,4 +51,3 @@ $racketmanager_prev_league = 0;
     ?>
     </tbody>
 </table>
-

@@ -16,7 +16,7 @@ readonly class Fixture_Switch_Teams_Request {
     }
 
     /**
-     * Create from global $_POST.
+     * Create from request data.
      *
      * @param array $post
      *

@@ -15,17 +15,14 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presenters\Club_Presenter;
+
 /** @var object $club */
-if ( empty( $standalone ) ) {
-    $standalone = false;
-}
-if ( ! empty( $header_level ) ) {
-    $heading_type = 'h' . $header_level;
-} elseif ( empty( $standalone ) ) {
-    $heading_type = 'h2';
-} else {
-    $heading_type = 'h1';
-}
+$club_presenter = $club_presenter ?? new Club_Presenter();
+$standalone     = ! empty( $standalone );
+$heading_type   = $club_presenter->get_heading_tag( $standalone, $header_level ?? null );
+$club_link      = $club_presenter->get_link( $club );
+$club_name      = $club_presenter->get_display_name( $club );
 ?>
 <div class="page-subhead">
     <div class="media">
@@ -49,10 +46,10 @@ if ( ! empty( $header_level ) ) {
                     <?php
                     if ( ! $standalone ) {
                         ?>
-                        <a href="/clubs/<?php echo esc_html( sanitize_title( $club->shortcode ) ); ?>/">
+                        <a href="<?php echo esc_url( $club_link ); ?>">
                         <?php
                     }
-                    echo esc_html( $club->name );
+                    echo esc_html( $club_name );
                     if ( ! $standalone ) {
                         ?>
                         </a>

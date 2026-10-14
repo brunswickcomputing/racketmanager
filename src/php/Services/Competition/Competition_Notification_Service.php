@@ -4,11 +4,19 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\Competition;
 
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
 
 /**
  * Service for competition notifications.
  */
 class Competition_Notification_Service {
+	private Mailer_Interface $mailer;
+
+	public function __construct( ?Mailer_Interface $mailer = null ) {
+		$this->mailer = $mailer ?? new Wp_Mailer();
+	}
+
 	/**
 	 * Contact Competition Teams
 	 *
@@ -52,7 +60,7 @@ class Competition_Notification_Service {
 			}
 		}
 		
-		wp_mail( $email_to, $email_subject, $email_message, $headers );
+		$this->mailer->send( $email_to, $email_subject, $email_message, $headers );
 		return true;
 	}
 }

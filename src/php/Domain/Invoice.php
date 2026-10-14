@@ -182,7 +182,7 @@ class Invoice {
      *
      * @param string $purchase_order purchase order.
      */
-    public function set_purchase_order(string $purchase_order ): void {
+    public function set_purchase_order( string $purchase_order ): void {
         $this->purchase_order = $purchase_order;
     }
     /**

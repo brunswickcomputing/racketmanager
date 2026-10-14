@@ -51,13 +51,13 @@ class Fixture_Ajax_Adapter {
     /**
      * Build screen to allow printing of match cards
      */
-    public function print_match_card(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+    public function print_match_card( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
             return $this->response_factory->create_error_response( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
         }
 
         try {
-            $match_id = isset( $_POST['matchId'] ) ? intval( $_POST['matchId'] ) : null;
+            $match_id = isset( $post['matchId'] ) ? intval( $post['matchId'] ) : null;
             if ( ! $match_id ) {
                 throw new Fixture_Not_Found_Exception( __( 'Match id not supplied', 'racketmanager' ), 400 );
             }
@@ -94,13 +94,13 @@ class Fixture_Ajax_Adapter {
     /**
      * Update fixture result
      */
-    public function update_fixture_result(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['racketmanager_nonce'] ?? '', 'scores-match' ) ) {
+    public function update_fixture_result( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'scores-match' ) ) {
             return $this->response_factory->create_error_response( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
         }
 
         try {
-            $request    = Fixture_Result_Update_Request::from_post( $_POST );
+            $request    = Fixture_Result_Update_Request::from_post( $post );
             $fixture_id = $request->fixture_id;
 
             $fixture_repository = $this->container->get( 'fixture_repository' );
@@ -136,13 +136,13 @@ class Fixture_Ajax_Adapter {
     /**
      * Build screen to allow match status to be captured
      */
-    public function fixture_status_options(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+    public function fixture_status_options( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
             return $this->response_factory->create_error_response( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
         }
 
         try {
-            $request = Fixture_Status_Options_Request::from_post( $_POST );
+            $request = Fixture_Status_Options_Request::from_post( $post );
             $request->validate();
 
             $dto = $this->fixture_detail_service->get_fixture_with_details( $request->fixture_id );
@@ -167,13 +167,13 @@ class Fixture_Ajax_Adapter {
     /**
      * Build screen to allow rubber status to be captured
      */
-    public function match_rubber_status_options(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+    public function match_rubber_status_options( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
             return $this->create_alert_response( __( 'Security check failed', 'racketmanager' ), 403 );
         }
 
         try {
-            $request = Rubber_Status_Options_Request::from_post( $_POST );
+            $request = Rubber_Status_Options_Request::from_post( $post );
             $request->validate();
 
             $rubber = $this->container->get( 'rubber_repository' )->find_by_id( $request->rubber_id );
@@ -205,20 +205,20 @@ class Fixture_Ajax_Adapter {
     /**
      * Set match status
      */
-    public function set_fixture_status(): Response {
-        return $this->handle_status_update( 'match-status' );
+    public function set_fixture_status( array $post = [] ): Response {
+        return $this->handle_status_update( 'match-status', $post );
     }
 
     /**
      * Build screen to show the selected match option
      */
-    public function show_fixture_option(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['security'] ?? '', 'ajax-nonce' ) ) {
+    public function show_fixture_option( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['security'] ?? '', 'ajax-nonce' ) ) {
             return $this->create_alert_response( __( 'Security check failed', 'racketmanager' ), 403 );
         }
 
         try {
-            $request = Fixture_Option_Request::from_post( $_POST );
+            $request = Fixture_Option_Request::from_post( $post );
             $request->validate();
 
             $dto = $this->fixture_detail_service->get_fixture_with_details( $request->match_id );
@@ -274,20 +274,20 @@ class Fixture_Ajax_Adapter {
      * Set match rubber status
      *
      */
-    public function set_rubber_status(): Response {
-        return $this->handle_status_update( 'match-rubber-status' );
+    public function set_rubber_status( array $post = [] ): Response {
+        return $this->handle_status_update( 'match-rubber-status', $post );
     }
 
     /**
      * Set the match date
      */
-    public function set_fixture_date(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['racketmanager_nonce'] ?? '', 'match-option' ) ) {
+    public function set_fixture_date( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'match-option' ) ) {
             return $this->create_alert_response( __( 'Security check failed', 'racketmanager' ), 403 );
         }
 
         try {
-            $request = Fixture_Date_Update_Request::from_post( $_POST );
+            $request = Fixture_Date_Update_Request::from_post( $post );
             $request->validate();
 
             $fixture_repository = $this->container->get( 'fixture_repository' );
@@ -328,13 +328,13 @@ class Fixture_Ajax_Adapter {
     /**
      * Switch home and away teams
      */
-    public function switch_home_away(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['racketmanager_nonce'] ?? '', 'match-option' ) ) {
+    public function switch_home_away( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'match-option' ) ) {
             return $this->response_factory->create_error_response( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
         }
 
         try {
-            $request = Fixture_Switch_Teams_Request::from_post( $_POST );
+            $request = Fixture_Switch_Teams_Request::from_post( $post );
             $request->validate();
 
             $fixture_repository = $this->container->get( 'fixture_repository' );
@@ -383,13 +383,13 @@ class Fixture_Ajax_Adapter {
     /**
      * Reset fixture result
      */
-    public function reset_fixture_result(): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['racketmanager_nonce'] ?? '', 'match-option' ) ) {
+    public function reset_fixture_result( array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', 'match-option' ) ) {
             return $this->response_factory->create_error_response( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
         }
 
         try {
-            $request = Fixture_Reset_Request::from_post( $_POST );
+            $request = Fixture_Reset_Request::from_post( $post );
 
             $fixture_repository = $this->container->get( 'fixture_repository' );
             $fixture            = $fixture_repository->find_by_id( $request->fixture_id );
@@ -419,23 +419,23 @@ class Fixture_Ajax_Adapter {
     /**
      * Update match header
      */
-    public function update_fixture_header(): Response {
+    public function update_fixture_header( array $post = [] ): Response {
         $validator = new Validator_Fixture();
-        $validator = $validator->check_security_token();
+        $validator = $validator->check_security_token( 'security', 'ajax-nonce', $post );
 
         try {
             if ( ! empty( $validator->error ) ) {
                 throw new Exception();
             }
 
-            $match_id  = isset( $_POST['match_id'] ) ? intval( $_POST['match_id'] ) : null;
+            $match_id  = isset( $post['match_id'] ) ? intval( $post['match_id'] ) : null;
             $validator = $validator->match( $match_id );
 
             if ( ! empty( $validator->error ) ) {
                 throw new Exception();
             }
 
-            $edit_mode = isset( $_POST['edit_mode'] ) ? (bool) $_POST['edit_mode'] : false;
+            $edit_mode = isset( $post['edit_mode'] ) ? (bool) $post['edit_mode'] : false;
             
             $query = new Get_Fixture_Details_Query( fixture_id: $match_id );
             $dto   = $this->fixture_details_handler->handle( $query );
@@ -459,16 +459,16 @@ class Fixture_Ajax_Adapter {
     /**
      * Update match details for team matches only
      */
-    public function update_team_match(): Response {
+    public function update_team_match( array $post = [] ): Response {
         $validator = new Validator_Fixture();
-        $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match' );
+        $validator->check_security_token( 'racketmanager_nonce', 'rubbers-match', $post );
 
         try {
             if ( ! empty( $validator->error ) ) {
                 throw new Exception();
             }
 
-            $request = Team_Result_Update_Request::from_post( $_POST );
+            $request = Team_Result_Update_Request::from_post( $post );
 
             $fixture_repository = $this->container->get( 'fixture_repository' );
             $fixture            = $fixture_repository->find_by_id( $request->match_id );
@@ -478,14 +478,14 @@ class Fixture_Ajax_Adapter {
             }
 
             $result_manager = $this->get_fixture_result_manager();
-            $action         = isset( $_POST['updateRubber'] ) ? sanitize_text_field( wp_unslash( $_POST['updateRubber'] ) ) : null;
+            $action         = isset( $post['updateRubber'] ) ? sanitize_text_field( wp_unslash( $post['updateRubber'] ) ) : null;
 
             switch ( $action ) {
                 case 'results':
                     $validator = $result_manager->handle_team_result_update( $fixture, $request );
                     break;
                 case 'confirm':
-                    $request   = Team_Result_Confirmation_Request::from_post( $_POST );
+                    $request   = Team_Result_Confirmation_Request::from_post( $post );
                     $validator = $result_manager->handle_team_result_confirmation( $fixture, $request );
                     break;
                 default:
@@ -526,13 +526,13 @@ class Fixture_Ajax_Adapter {
      * @param string $nonce_action
      * @return Response
      */
-    private function handle_status_update( string $nonce_action ): Response {
-        if ( ! $this->security_service->verify_nonce( $_POST['racketmanager_nonce'] ?? '', $nonce_action ) ) {
+    private function handle_status_update( string $nonce_action, array $post = [] ): Response {
+        if ( ! $this->security_service->verify_nonce( $post['racketmanager_nonce'] ?? '', $nonce_action ) ) {
             return $this->response_factory->create_error_response( array( 'msg' => __( 'Security check failed', 'racketmanager' ) ), 403 );
         }
 
         try {
-            $request = Fixture_Status_Update_Request::from_post( $_POST );
+            $request = Fixture_Status_Update_Request::from_post( $post );
             $request->validate();
 
             $fixture_repository = $this->container->get( 'fixture_repository' );

@@ -17,7 +17,6 @@ namespace Racketmanager;
 /** @var bool   $recaptcha_error */
 /** @var string $recaptcha_message */
 ?>
-?>
 <div>
     <form id="signupForm" method="post" action="<?php echo esc_url( wp_registration_url() ); ?>">
         <?php wp_nonce_field( 'racketmanager_register', 'racketmanager_register_nonce' ); ?>
@@ -70,14 +69,15 @@ namespace Racketmanager;
         </div>
         <div class="row">
             <?php
-            if ( $vars['recaptcha_site_key'] ) {
+            $recaptcha_site_key_val = $vars['recaptcha_site_key'] ?? ( $recaptcha_site_key ?? '' );
+            if ( ! empty( $recaptcha_site_key_val ) ) {
                 ?>
                 <div class="recaptcha-container col-6">
-                    <div class="g-recaptcha  <?php echo empty( $recaptcha_error ) ? null : 'is-invalid'; ?>" data-sitekey="<?php echo esc_html( $vars['recaptcha_site_key'] ); ?>" data-size="invisible" aria-describedby="recaptchaFeedback" data-badge="inline" data-bind="recaptchaSubmit"    data-callback="submitForm">
+                    <div class="g-recaptcha  <?php echo empty( $recaptcha_error ) ? null : 'is-invalid'; ?>" data-sitekey="<?php echo esc_attr( $recaptcha_site_key_val ); ?>" data-size="invisible" aria-describedby="recaptchaFeedback" data-badge="inline" data-bind="recaptchaSubmit"    data-callback="submitForm">
                     </div>
                     <div id="recaptchaFeedback" class="invalid-feedback">
                         <?php
-                        if ( $recaptcha_error ) {
+                        if ( ! empty( $recaptcha_error ) ) {
                             echo esc_html( $recaptcha_message );
                         }
                         ?>

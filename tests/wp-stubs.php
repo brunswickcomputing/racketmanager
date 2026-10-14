@@ -1629,6 +1629,39 @@ namespace {
             return 'https://example.com' . ( $path ? '/' . ltrim( (string) $path, '/' ) : '' );
         }
     }
+    if ( ! function_exists( 'wp_login_url' ) ) {
+        function wp_login_url( $redirect = '', $force_reauth = false ) {
+            $login_url = 'https://example.com/wp-login.php';
+            if ( ! empty( $redirect ) ) {
+                $login_url .= '?redirect_to=' . urlencode( (string) $redirect );
+            }
+            return $login_url;
+        }
+    }
+    if ( ! function_exists( 'wp_registration_url' ) ) {
+        function wp_registration_url() {
+            return 'https://example.com/wp-login.php?action=register';
+        }
+    }
+    if ( ! function_exists( 'wp_lostpassword_url' ) ) {
+        function wp_lostpassword_url( $redirect = '' ) {
+            $url = 'https://example.com/wp-login.php?action=lostpassword';
+            if ( ! empty( $redirect ) ) {
+                $url .= '&redirect_to=' . urlencode( (string) $redirect );
+            }
+            return $url;
+        }
+    }
+    if ( ! function_exists( 'wp_get_password_hint' ) ) {
+        function wp_get_password_hint() {
+            return 'Hint: The password should be at least twelve characters long.';
+        }
+    }
+    if ( ! function_exists( 'wp_kses' ) ) {
+        function wp_kses( $string, $allowed_html, $allowed_protocols = array() ) {
+            return (string) $string;
+        }
+    }
     if ( ! function_exists( 'get_filesystem_method' ) ) {
         function get_filesystem_method( $args = array(), $context = '', $allow_relaxed_file_ownership = false ) {
             return $GLOBALS['wp_stubs_filesystem_method'] ?? 'direct';

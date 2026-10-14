@@ -62,9 +62,10 @@ namespace Racketmanager;
                 <?php esc_html_e( 'Login', 'racketmanager' ); ?>
             </button>
             <?php
-            if ( isset( $vars['redirect'] ) ) {
+            $redirect_val = $vars['redirect'] ?? ( $redirect ?? '' );
+            if ( ! empty( $redirect_val ) ) {
                 ?>
-                <input type="hidden" id="redirect_to" name="redirect_to" value="<?php echo esc_url( $vars['redirect'] ); ?>"/>
+                <input type="hidden" id="redirect_to" name="redirect_to" value="<?php echo esc_url( $redirect_val ); ?>"/>
                 <?php
             }
             ?>

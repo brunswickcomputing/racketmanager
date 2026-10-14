@@ -70,7 +70,7 @@ class Shortcode_Template_Renderer_Test extends TestCase {
     }
 
     public function test_flat_theme_override_wins_over_plugin_template(): void {
-        file_put_contents( $this->theme_dir . '/racketmanager/score.php', '<?php echo "theme:" . $answer;' );
+        file_put_contents( $this->theme_dir . '/racketmanager/score.php', '<?php echo "theme:" . $answer . ":" . $vars["answer"];' );
         $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
 
         $renderer = $this->createMock( View_Renderer_Interface::class );
@@ -78,7 +78,30 @@ class Shortcode_Template_Renderer_Test extends TestCase {
 
         $output = ( new Shortcode_Template_Renderer( $renderer ) )->render( 'score', [ 'answer' => 42 ], 'match' );
 
-        $this->assertSame( 'theme:42', $output );
+        $this->assertSame( 'theme:42:42', $output );
+    }
+
+    public function test_flat_theme_override_protects_closure_locals_from_clobbering(): void {
+        file_put_contents(
+            $this->theme_dir . '/racketmanager/clobber.php',
+            '<?php echo "vars_is_array:" . (is_array($vars) ? "yes" : "no") . ":answer:" . ($vars["answer"] ?? "none");'
+        );
+        $GLOBALS['wp_stubs_stylesheet_directory'] = $this->theme_dir;
+
+        $renderer = $this->createMock( View_Renderer_Interface::class );
+        $renderer->expects( $this->never() )->method( 'render_to_string' );
+
+        $output = ( new Shortcode_Template_Renderer( $renderer ) )->render(
+            'clobber',
+            [
+                'answer' => 42,
+                'vars'   => 'evil_vars_string',
+                '__file' => '/etc/passwd',
+            ],
+            'match'
+        );
+
+        $this->assertSame( 'vars_is_array:yes:answer:42', $output );
     }
 
     public function test_parent_theme_flat_override_is_also_honoured(): void {

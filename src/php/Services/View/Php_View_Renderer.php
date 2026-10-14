@@ -27,19 +27,14 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
      * @inheritDoc
      */
     public function render( string $template_path, object|array $view_model, array $additional_vars = [] ): void {
-        // Templates expect variables named $vm and $renderer
-        $vm       = $view_model;
-        $renderer = $this;
-
-        // Extract variables for templates that use them (legacy/BC support).
-        if ( is_array( $view_model ) ) {
-            extract( $view_model );
-        }
-        if ( ! empty( $additional_vars ) ) {
-            extract( $additional_vars );
-        }
-
+        // Prepare template variables before extraction to avoid clobbering.
+        $vars      = is_array( $view_model ) ? array_merge( $view_model, $additional_vars ) : $additional_vars;
+        $vm        = $view_model;
+        $renderer  = $this;
         $full_path = $this->get_full_path( $template_path );
+
+        // Extract variables for templates that use them (legacy/BC support), preserving reserved renderer locals.
+        extract( $vars, EXTR_SKIP );
 
         require $full_path;
     }

@@ -13,33 +13,39 @@ $password_message   = '';
 $error_found        = false;
 /** @var string $login_error_msg */
 /** @var array $vars */
-if ( count( $vars['errors'] ) > 0 ) {
+$errors_list        = $vars['errors'] ?? ( $errors ?? [] );
+$error_codes_list   = $vars['error_codes'] ?? ( $error_codes ?? [] );
+if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
     $error_found     = true;
     $login_error_msg = __( 'Error in password reset', 'racketmanager' );
 
-    foreach ( $vars['error_codes'] as $i => $error_code ) {
-        if ( 'password_reset_empty' === $error_code ) {
-            $password_error   = true;
-            $password_message = __( 'New password must be entered', 'racketmanager' );
-        }
-        if ( 'password_reset_mismatch' === $error_code ) {
-            $password_error   = true;
-            $password_2_error = true;
-            $password_message = __( 'Passwords do not match', 'racketmanager' );
-        }
-        if ( 'form_has_timedout' === $error_code ) {
-            $login_error_msg .= '<br />' . $vars['errors'][ $i ];
+    if ( ! empty( $error_codes_list ) && is_array( $error_codes_list ) ) {
+        foreach ( $error_codes_list as $i => $error_code ) {
+            if ( 'password_reset_empty' === $error_code ) {
+                $password_error   = true;
+                $password_message = __( 'New password must be entered', 'racketmanager' );
+            }
+            if ( 'password_reset_mismatch' === $error_code ) {
+                $password_error   = true;
+                $password_2_error = true;
+                $password_message = __( 'Passwords do not match', 'racketmanager' );
+            }
+            if ( 'form_has_timedout' === $error_code ) {
+                $login_error_msg .= '<br />' . ( is_scalar( $errors_list[ $i ] ?? null ) ? (string) $errors_list[ $i ] : '' );
+            }
         }
     }
 }
+$login_val = $vars['login'] ?? ( $login ?? '' );
+$key_val   = $vars['key'] ?? ( $key ?? '' );
 ?>
 <div class="row justify-content-center">
     <div id="tabs-login" class="col-12">
         <h1><?php esc_html_e( 'Reset Password', 'racketmanager' ); ?></h1>
         <form name="reset-pass-form" id="reset-pass-form" action="<?php echo esc_url( site_url( 'wp-login.php?action=resetpass' ) ); ?>" method="post" autocomplete="off">
             <?php wp_nonce_field( 'racketmanager_reset-password', 'racketmanager_nonce' ); ?>
-            <input type="hidden" id="user_login" name="rp_login" value="<?php echo esc_attr( $vars['login'] ); ?>" />
-            <input type="hidden" name="rp_key" value="<?php echo esc_attr( $vars['key'] ); ?>" />
+            <input type="hidden" id="user_login" name="rp_login" value="<?php echo esc_attr( $login_val ); ?>" />
+            <input type="hidden" name="rp_key" value="<?php echo esc_attr( $key_val ); ?>" />
             <?php
             if ( $error_found ) {
                 ?>

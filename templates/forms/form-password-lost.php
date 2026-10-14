@@ -7,29 +7,33 @@
 
 namespace Racketmanager;
 
-$email_error   = false;
-$email_message = '';
-$valid         = true;
 /** @var array $vars */
-if ( count( $vars['errors'] ) > 0 ) {
+$email_error      = false;
+$email_message    = '';
+$valid            = true;
+$errors_list      = $vars['errors'] ?? ( $errors ?? [] );
+$error_codes_list = $vars['error_codes'] ?? ( $error_codes ?? [] );
+if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
     $valid = false;
-    foreach ( $vars['error_codes'] as $error_code ) {
-        switch ( $error_code ) {
-            case 'empty_username':
-                $email_error   = true;
-                $email_message = __( 'Email address must be entered', 'racketmanager' );
-                break;
-            case 'invalid_email':
-                $email_error   = true;
-                $email_message = __( 'No user found with that email address', 'racketmanager' );
-                break;
-            case 'invalidkey':
-            case 'expiredkey':
-                $email_error   = true;
-                $email_message = __( 'The password reset link you used is no longer valid', 'racketmanager' );
-                break;
-            default:
-                break;
+    if ( ! empty( $error_codes_list ) && is_array( $error_codes_list ) ) {
+        foreach ( $error_codes_list as $error_code ) {
+            switch ( $error_code ) {
+                case 'empty_username':
+                    $email_error   = true;
+                    $email_message = __( 'Email address must be entered', 'racketmanager' );
+                    break;
+                case 'invalid_email':
+                    $email_error   = true;
+                    $email_message = __( 'No user found with that email address', 'racketmanager' );
+                    break;
+                case 'invalidkey':
+                case 'expiredkey':
+                    $email_error   = true;
+                    $email_message = __( 'The password reset link you used is no longer valid', 'racketmanager' );
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
@@ -51,7 +55,8 @@ if ( count( $vars['errors'] ) > 0 ) {
         }
         ?>
         <?php
-        if ( isset( $vars['lost_password_sent'] ) && $vars['lost_password_sent'] ) {
+        $lost_password_sent_flag = $vars['lost_password_sent'] ?? ( $lost_password_sent ?? false );
+        if ( ! empty( $lost_password_sent_flag ) ) {
             ?>
             <div class="login-info">
                 <?php esc_html_e( 'Check your email for a link to reset your password', 'racketmanager' ); ?>

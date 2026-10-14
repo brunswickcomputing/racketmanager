@@ -10,11 +10,9 @@ namespace Racketmanager;
 use Racketmanager\Util\Util;
 
 /** @var array $vars */
-global $wp_query;
 // phpcs:disable WordPress.WP.GlobalVariablesOverride.Prohibited
-$post_id = $wp_query->post->ID;
-$tab     = 'login';
-$action  = isset( $_GET[ ( 'action' ) ] ) ? sanitize_text_field( wp_unslash( $_GET[ ( 'action' ) ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$tab    = 'login';
+$action = isset( $_GET[ ( 'action' ) ] ) ? sanitize_text_field( wp_unslash( $_GET[ ( 'action' ) ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 if ( isset( $action ) && 'register' === $action ) {
     $tab = 'registration';
 }
@@ -51,46 +49,50 @@ if ( isset( $action ) && 'register' === $action ) {
         $firstname_message = '';
         $surname_message   = '';
         $recaptcha_message = '';
-        $error_message = null;
-        if ( count( $vars['errors'] ) > 0 ) {
+        $error_message     = null;
+        $errors_list       = $vars['errors'] ?? ( $errors ?? [] );
+        $error_codes_list  = $vars['error_codes'] ?? ( $error_codes ?? [] );
+        if ( ! empty( $errors_list ) && is_array( $errors_list ) ) {
             ?>
             <?php
-            foreach ( $vars['error_codes'] as $error_code ) {
-                switch ( $error_code ) {
-                    case 'empty_username':
-                    case 'invalid_username':
-                        $username_error   = true;
-                        $username_message = Util::get_error_message( $error_code );
-                        break;
-                    case 'incorrect_password':
-                    case 'empty_password':
-                        $password_error   = true;
-                        $password_message = Util::get_error_message( $error_code );
-                        break;
-                    case 'email_exists':
-                    case 'email':
-                        $email_error   = true;
-                        $email_message = Util::get_error_message( $error_code );
-                        break;
-                    case 'captcha':
-                        $recaptcha_error   = true;
-                        $recaptcha_message = Util::get_error_message( $error_code );
-                        break;
-                    case 'first_name':
-                        $firstname_error   = true;
-                        $firstname_message = Util::get_error_message( $error_code );
-                        break;
-                    case 'last_name':
-                        $surname_error   = true;
-                        $surname_message = Util::get_error_message( $error_code );
-                        break;
-                    case 'security':
-                    case 'invalidkey':
-                        $other_error   = true;
-                        $error_message = Util::get_error_message( $error_code );
-                        break;
-                    default:
-                        break;
+            if ( ! empty( $error_codes_list ) && is_array( $error_codes_list ) ) {
+                foreach ( $error_codes_list as $error_code ) {
+                    switch ( $error_code ) {
+                        case 'empty_username':
+                        case 'invalid_username':
+                            $username_error   = true;
+                            $username_message = Util::get_error_message( $error_code );
+                            break;
+                        case 'incorrect_password':
+                        case 'empty_password':
+                            $password_error   = true;
+                            $password_message = Util::get_error_message( $error_code );
+                            break;
+                        case 'email_exists':
+                        case 'email':
+                            $email_error   = true;
+                            $email_message = Util::get_error_message( $error_code );
+                            break;
+                        case 'captcha':
+                            $recaptcha_error   = true;
+                            $recaptcha_message = Util::get_error_message( $error_code );
+                            break;
+                        case 'first_name':
+                            $firstname_error   = true;
+                            $firstname_message = Util::get_error_message( $error_code );
+                            break;
+                        case 'last_name':
+                            $surname_error   = true;
+                            $surname_message = Util::get_error_message( $error_code );
+                            break;
+                        case 'security':
+                        case 'invalidkey':
+                            $other_error   = true;
+                            $error_message = Util::get_error_message( $error_code );
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             ?>
@@ -112,7 +114,8 @@ if ( isset( $action ) && 'register' === $action ) {
         }
         ?>
         <?php
-        if ( isset( $vars['logged_out'] ) && $vars['logged_out'] ) {
+        $logged_out_flag = $vars['logged_out'] ?? ( $logged_out ?? false );
+        if ( ! empty( $logged_out_flag ) ) {
             ?>
             <p class="login-info">
             <?php esc_html_e( 'You have signed out. Would you like to sign in again?', 'racketmanager' ); ?>
@@ -121,7 +124,8 @@ if ( isset( $action ) && 'register' === $action ) {
         }
         ?>
         <?php
-        if ( isset( $vars['registered'] ) && $vars['registered'] ) {
+        $registered_flag = $vars['registered'] ?? ( $registered ?? false );
+        if ( ! empty( $registered_flag ) ) {
             ?>
             <p class="login-info">
             <?php esc_html_e( 'You have successfully registered. We have emailed your password to the email address you entered.', 'racketmanager' ); ?>
@@ -130,7 +134,8 @@ if ( isset( $action ) && 'register' === $action ) {
         }
         ?>
         <?php
-        if ( isset( $vars['password_updated'] ) && $vars['password_updated'] ) {
+        $password_updated_flag = $vars['password_updated'] ?? ( $password_updated ?? false );
+        if ( ! empty( $password_updated_flag ) ) {
             ?>
             <p class="login-info">
             <?php esc_html_e( 'Your password has been changed. You can sign in now.', 'racketmanager' ); ?>

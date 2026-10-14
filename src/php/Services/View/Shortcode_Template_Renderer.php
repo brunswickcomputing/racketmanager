@@ -166,8 +166,8 @@ class Shortcode_Template_Renderer {
         $level = ob_get_level();
         ob_start();
         try {
-            ( static function ( string $__file, array $__vars ): void {
-                extract( $__vars ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+            ( static function ( string $__file, array $vars ): void {
+                extract( $vars, EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
                 require $__file;
             } )( $file, $vars );
 

@@ -5,8 +5,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\Competition_Type;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
-use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 
 class Matches_Team_List_Template_Test extends TestCase {
     private string $template_path;
@@ -31,30 +30,14 @@ class Matches_Team_List_Template_Test extends TestCase {
             }
         };
 
-        $dto = new Fixture_Hydration_DTO(
+        $fixture = Fixture_Test_Factory::create(
             id: 101,
             fixture_title: 'Team A vs Team B',
             link: 'https://example.test/match/101/',
             group: 'Group A',
-            date: '2026-10-12',
-            date_original: '2026-10-12',
-            home_team: '1',
-            away_team: '2',
-            match_day: 1,
-            location: 'Court 1',
-            host: null,
             league_id: 5,
-            season: '2026',
-            status: null,
             start_time: '14:00',
-            winner_id: null,
-            loser_id: null,
-            home_points: null,
-            away_points: null,
-            custom: []
         );
-
-        $fixture = new Fixture( $dto );
         $fixture->teams = [
             'home' => (object) [ 'id' => 1, 'title' => 'Team A', 'club' => (object) [ 'id' => 10 ] ],
             'away' => (object) [ 'id' => 2, 'title' => 'Team B', 'club' => (object) [ 'id' => 20 ] ],

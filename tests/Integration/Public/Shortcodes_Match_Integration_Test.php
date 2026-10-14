@@ -26,46 +26,39 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
     use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
     use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
-    use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
-    use Racketmanager\Presenters\Match_Shortcode_Presenter;
-    use Racketmanager\Presenters\Matches_List_Presenter;
-    use Racketmanager\Presenters\Shortcode_View_Presenter;
-    use Racketmanager\Services\View\Shortcode_Template_Renderer;
-    use Racketmanager\Services\View\View_Renderer_Interface;
     use Racketmanager\Domain\Competition\Competition;
     use Racketmanager\Domain\Competition\Competition_Type;
     use Racketmanager\Domain\Competition\Event;
     use Racketmanager\Domain\Competition\League;
     use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
-    use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Fixture\Fixture_Factory;
-    use Racketmanager\Domain\Team;
+    use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
+    use Racketmanager\Presenters\Match_Shortcode_Presenter;
+    use Racketmanager\Presenters\Matches_List_Presenter;
+    use Racketmanager\Presenters\Shortcode_View_Presenter;
     use Racketmanager\Public\Shortcodes_Match;
     use Racketmanager\RacketManager;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
-    use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
     use Racketmanager\Repositories\Repository_Provider;
-    use Racketmanager\Services\Club_Service;
-    use Racketmanager\Services\Competition_Entry_Service;
     use Racketmanager\Services\Competition_Service;
-    use Racketmanager\Services\Container\Simple_Container;
-    use Racketmanager\Services\Finance_Service;
     use Racketmanager\Services\Fixture\Fixture_Detail_Service;
     use Racketmanager\Services\Fixture\Fixture_Link_Service;
     use Racketmanager\Services\Fixture\Fixture_Permission_Service;
-    use Racketmanager\Services\Fixture_Service;
     use Racketmanager\Services\Player_Service;
     use Racketmanager\Services\Registration_Service;
-    use Racketmanager\Services\Team_Service;
     use Racketmanager\Services\Tournament_Service;
+    use Racketmanager\Services\View\Shortcode_Template_Renderer;
+    use Racketmanager\Services\View\View_Renderer_Interface;
+    use Racketmanager\Tests\Helpers\Creates_Test_Container;
 
     #[AllowMockObjectsWithoutExpectations]
     class Shortcodes_Match_Integration_Test extends TestCase {
+        use Creates_Test_Container;
 
         private $plugin;
         private $container;
@@ -84,31 +77,26 @@ namespace Racketmanager\Tests\Integration\Public {
 
         protected function setUp(): void {
             $this->plugin            = $this->createMock( RacketManager::class );
-            $this->container         = new Simple_Container();
+            $this->container         = $this->create_test_container( [
+                '1' => [ 'name' => 'Home Team', 'type' => 'T' ],
+                '2' => [ 'name' => 'Away Team', 'type' => 'T' ],
+            ] );
             $this->plugin->container = $this->container;
 
             $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
             $league_repo  = $this->createMock( League_Repository_Interface::class );
             $team_repo    = $this->createMock( Team_Repository_Interface::class );
 
-            $repo_provider = new Repository_Provider( league_repository: $league_repo, team_repository: $team_repo, rubber_repository: $this->createMock( Rubber_Repository_Interface::class ), fixture_repository: $fixture_repo, club_repository: $this->createMock( Club_Repository_Interface::class ) );
+            $repo_provider = new Repository_Provider(
+                league_repository: $league_repo,
+                team_repository: $team_repo,
+                rubber_repository: $this->createMock( Rubber_Repository_Interface::class ),
+                fixture_repository: $fixture_repo,
+                club_repository: $this->createMock( Club_Repository_Interface::class ),
+            );
 
             $competition_service = $this->createStub( Competition_Service::class );
-            $team_service        = $this->createStub( Team_Service::class );
-
-            $home_team = $this->createMock( Team::class );
-            $home_team->method( 'get_name' )->willReturn( 'Home Team' );
-            $home_team_dto = new Team_Details_DTO( $home_team, null, null );
-
-            $away_team = $this->createMock( Team::class );
-            $away_team->method( 'get_name' )->willReturn( 'Away Team' );
-            $away_team_dto = new Team_Details_DTO( $away_team, null, null );
-
-            $team_service->method( 'get_team_details' )->willReturnMap( [
-                [ 1, $home_team_dto ],
-                [ 2, $away_team_dto ],
-            ] );
-
+            $team_service        = $this->container->get( 'team_service' );
             $registration_service = $this->createStub( Registration_Service::class );
             $permission_service   = new Fixture_Permission_Service( $repo_provider, $registration_service, [] );
             $link_service         = new Fixture_Link_Service( $this->createMock( Tournament_Service::class ) );
@@ -116,17 +104,9 @@ namespace Racketmanager\Tests\Integration\Public {
             $detail_service = new Fixture_Detail_Service( $repo_provider, $competition_service, $team_service, $permission_service, $link_service );
 
             $this->container->set( 'fixture_detail_service', $detail_service );
-            $this->container->set( 'competition_repository', $this->createMock( Competition_Repository_Interface::class ) );
             $this->container->set( 'fixture_repository', $fixture_repo );
             $this->container->set( 'competition_service', $competition_service );
-            $this->container->set( 'club_service', $this->createMock( Club_Service::class ) );
-            $this->container->set( 'finance_service', $this->createMock( Finance_Service::class ) );
-            $this->container->set( 'player_service', $this->createMock( Player_Service::class ) );
             $this->container->set( 'registration_service', $registration_service );
-            $this->container->set( 'team_service', $team_service );
-            $this->container->set( 'tournament_service', $this->createMock( Tournament_Service::class ) );
-            $this->container->set( 'competition_entry_service', $this->createMock( Competition_Entry_Service::class ) );
-            $this->container->set( 'fixture_service', $this->createMock( Fixture_Service::class ) );
 
             $fixture = Fixture_Factory::from_object( (object) [
                 'id'        => 123,

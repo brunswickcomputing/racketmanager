@@ -21,10 +21,7 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
-use Racketmanager\Domain\DTO\Fixture\Fixture_Hydration_DTO;
-use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Team;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
 use Racketmanager\Presenters\Matches_List_Presenter;
@@ -33,16 +30,16 @@ use Racketmanager\Public\Shortcodes_Match;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
-use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
-use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 
 class Matches_Shortcode_Adapter_Test extends TestCase {
+    use Creates_Test_Container;
     private mixed $original_racketmanager;
     private mixed $original_wp;
     private mixed $original_query_vars;
@@ -105,14 +102,20 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $this->assertStringNotContainsString( 'class="btn match__btn"', $denied );
     }
 
-    public function test_daily_matches_uses_query_var_date_then_get_parameter(): void {
+    public function test_daily_matches_prioritizes_query_vars_date(): void {
         $GLOBALS['query_vars']['match_date'] = '2025-01-04';
-        $this->build_adapter( [] )->show_daily_matches( [] );
-        $this->assertSame( '2025-01-04', $this->get_matches_calls[0]['match_date'] );
+        $_GET['match_date']                  = '2025-02-08';
 
-        $GLOBALS['query_vars'] = [];
-        $_GET['match_date']    = '2025-02-08';
-        $output                = $this->build_adapter( [] )->show_daily_matches( [] );
+        $this->build_adapter( [] )->show_daily_matches( [] );
+
+        $this->assertSame( '2025-01-04', $this->get_matches_calls[0]['match_date'] );
+    }
+
+    public function test_daily_matches_uses_get_parameter_when_query_vars_not_set(): void {
+        $_GET['match_date'] = '2025-02-08';
+
+        $output = $this->build_adapter( [] )->show_daily_matches( [] );
+
         $this->assertSame( '2025-02-08', $this->get_matches_calls[0]['match_date'] );
         $this->assertStringContainsString( 'value="2025-02-08"', $output );
         $this->assertStringContainsString( 'No Matches on selected day', $output );
@@ -457,41 +460,24 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
         $this->get_matches_calls = [];
         $calls                   = &$this->get_matches_calls;
 
-        $team_service = $this->createStub( Team_Service::class );
-        $team_service->method( 'get_team_details' )->willReturnCallback( function ( $id ) {
-            $names = [ 1 => 'Red Club 1st Team', 2 => 'Blue Club 2nd Team', 3 => 'Green Team', 4 => 'Yellow Team' ];
-            $team  = $this->createStub( Team::class );
-            $team->method( 'get_name' )->willReturn( $names[ (int) $id ] ?? 'Unknown' );
-            $team->method( 'get_team_type' )->willReturn( 'T' );
+        $container = $this->create_test_container( [
+            '1' => [ 'name' => 'Red Club 1st Team', 'type' => 'T' ],
+            '2' => [ 'name' => 'Blue Club 2nd Team', 'type' => 'T' ],
+            '3' => [ 'name' => 'Green Team', 'type' => 'T' ],
+            '4' => [ 'name' => 'Yellow Team', 'type' => 'T' ],
+        ] );
 
-            return new Team_Details_DTO( team: $team );
-        } );
-
-        $event              = $this->createStub( Event::class );
-        $event->competition = (object) [ 'type' => Competition_Type::LEAGUE ];
-        $league             = $this->createStub( League::class );
-        $league->method( 'get_name' )->willReturn( 'Division 2' );
-        $league->title      = 'Division 2';
-        $league->id         = 10;
-        $league->event      = $event;
-        $league_repo        = $this->createStub( League_Repository::class );
-        $league_repo->method( 'find_by_id' )->willReturnCallback( static fn( $id ) => 10 === (int) $id ? $league : null );
-        $competition_service = $this->createStub( Competition_Service::class );
-        $competition_service->method( 'get_league_repository' )->willReturn( $league_repo );
+        $this->configure_league_repository( $container, 10, 'Division 2' );
 
         $permission_service = null;
         if ( null !== $can_update ) {
             $permission_service = $this->createStub( Fixture_Permission_Service::class );
             $permission_service->method( 'is_update_allowed' )->willReturn( (object) [ 'user_can_update' => $can_update ] );
-        }
-
-        $container = new Simple_Container();
-        $container->set( 'competition_service', fn() => $competition_service );
-        $container->set( 'team_service', fn() => $team_service );
-        $container->set( 'competition_repository', fn() => $this->createStub( Competition_Repository_Interface::class ) );
-        if ( $permission_service ) {
             $container->set( 'fixture_permission_service', fn() => $permission_service );
         }
+
+        $competition_service = $container->get( 'competition_service' );
+        $team_service        = $container->get( 'team_service' );
 
         $app = $this->createStub( RacketManager::class );
         $app->method( 'get_matches' )->willReturnCallback( static function ( array $args ) use ( &$calls, $fixtures ) {
@@ -570,52 +556,25 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     }
 
     private function played_fixture( int $id, string $home, string $away, ?int $winner, ?int $loser, ?string $home_points, ?string $away_points, string $date = '2026-10-12' ): Fixture {
-        return new Fixture( new Fixture_Hydration_DTO(
+        return Fixture_Test_Factory::create(
             id: $id,
-            fixture_title: "Team {$home} vs Team {$away}",
-            link: "https://example.test/match/{$id}/",
-            group: 'Group 1',
-            date: $date,
-            date_original: $date,
             home_team: $home,
             away_team: $away,
-            match_day: 1,
-            location: 'Court 1',
-            host: null,
-            league_id: 10,
-            season: '2026',
-            status: null,
-            start_time: '18:00',
             winner_id: $winner,
             loser_id: $loser,
             home_points: $home_points,
             away_points: $away_points,
-            custom: []
-        ) );
+            date: $date,
+            league_id: 10,
+        );
     }
 
     private function fixture( int $id, string $home, string $away, ?int $league_id ): Fixture {
-        return new Fixture( new Fixture_Hydration_DTO(
+        return Fixture_Test_Factory::create(
             id: $id,
-            fixture_title: "Team {$home} vs Team {$away}",
-            link: "https://example.test/match/{$id}/",
-            group: 'Group 1',
-            date: '2026-10-12',
-            date_original: '2026-10-12',
             home_team: $home,
             away_team: $away,
-            match_day: 1,
-            location: 'Court 1',
-            host: null,
             league_id: $league_id,
-            season: '2026',
-            status: null,
-            start_time: '18:00',
-            winner_id: null,
-            loser_id: null,
-            home_points: null,
-            away_points: null,
-            custom: []
-        ) );
+        );
     }
 }

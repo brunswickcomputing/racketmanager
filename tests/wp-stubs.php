@@ -591,19 +591,34 @@ namespace {
     }
 
     if ( ! function_exists( 'wp_die' ) ) {
-        function wp_die( $message = '', $title = '', $args = array() ) {
-            $GLOBALS['wp_stubs_last_wp_die'] = array(
+        function wp_die( mixed $message = '', string|int $title = '', array|int|string $args = [] ): mixed {
+            $GLOBALS['wp_stubs_last_wp_die'] = [
                 'message' => $message,
                 'title'   => $title,
                 'args'    => $args,
-            );
+            ];
+
             if ( isset( $GLOBALS['wp_stubs_wp_die_handler'] ) && is_callable( $GLOBALS['wp_stubs_wp_die_handler'] ) ) {
                 return ( $GLOBALS['wp_stubs_wp_die_handler'] )( $message, $title, $args );
             }
+
             if ( ! empty( $GLOBALS['wp_stubs_throw_on_wp_die'] ) ) {
-                $status = is_array( $args ) && isset( $args['response'] ) ? (int) $args['response'] : ( is_numeric( $args ) ? (int) $args : 500 );
-                throw new \RuntimeException( (string) $message, $status );
+                $status = match ( true ) {
+                    is_array( $args ) && isset( $args['response'] ) && is_numeric( $args['response'] ) => (int) $args['response'],
+                    is_numeric( $args ) => (int) $args,
+                    default => 500,
+                };
+
+                $errorMessage = match ( true ) {
+                    $message instanceof \WP_Error || ( is_object( $message ) && method_exists( $message, 'get_error_message' ) ) => $message->get_error_message(),
+                    is_scalar( $message ) || ( is_object( $message ) && method_exists( $message, '__toString' ) ) => (string) $message,
+                    default => 'wp_die called',
+                };
+
+                throw new \RuntimeException( $errorMessage, $status );
             }
+
+            return null;
         }
     }
 

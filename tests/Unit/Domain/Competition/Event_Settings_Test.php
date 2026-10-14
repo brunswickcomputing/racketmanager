@@ -95,17 +95,20 @@ class Event_Settings_Test extends TestCase {
         $fixture_raw->date      = '2026-06-01 19:00:00';
         $fixture                = Fixture_Factory::from_object( $fixture_raw );
 
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->exactly( 3 ) )
+            ->method( 'find_by_id' )
             ->with( 100 )
             ->willReturn( $fixture );
 
-        $this->rubber_repository->method( 'count_by_fixture_id' )
+        $this->rubber_repository->expects( $this->once() )
+            ->method( 'count_by_fixture_id' )
             ->with( 100 )
             ->willReturn( 2 );
 
         $league              = $this->createMock( League::class );
         $league->num_rubbers = 2;
-        $this->league_repository->method( 'find_by_id' )
+        $this->league_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
             ->with( 50 )
             ->willReturn( $league );
 

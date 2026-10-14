@@ -79,7 +79,7 @@ class Competition_Service_Test extends TestCase {
 
     public function test_get_competition_finds_by_id() {
         $competition = $this->createStub( Competition::class );
-        $this->competition_repository->method( 'find_by_id' )
+        $this->competition_repository->expects( $this->once() )->method( 'find_by_id' )
             ->with( 123 )
             ->willReturn( $competition );
 
@@ -89,7 +89,7 @@ class Competition_Service_Test extends TestCase {
 
     public function test_get_competition_finds_by_name() {
         $competition = $this->createStub( Competition::class );
-        $this->competition_repository->method( 'find_by_name' )
+        $this->competition_repository->expects( $this->once() )->method( 'find_by_name' )
             ->with( 'Test Comp' )
             ->willReturn( $competition );
 

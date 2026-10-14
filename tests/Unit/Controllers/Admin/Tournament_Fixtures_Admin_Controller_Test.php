@@ -158,7 +158,7 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         $tournament_service = $this->createMock( Tournament_Service::class );
 
         $guard = $this->createMock( Action_Guard_Interface::class );
-        $guard->method( 'assert_capability' )->with( 'edit_matches' );
+        $guard->expects( self::once() )->method( 'assert_capability' )->with( 'edit_matches' );
 
         $dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
 

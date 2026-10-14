@@ -45,7 +45,7 @@ final class League_Schedule_Service_Test extends TestCase {
         $match1->id = 101;
         $match2     = new stdClass();
         $match2->id = 102;
-        $league->method( 'get_matches' )->with( array( 'season' => '2026' ) )->willReturn( array( $match1, $match2 ) );
+        $league->expects( self::once() )->method( 'get_matches' )->with( array( 'season' => '2026' ) )->willReturn( array( $match1, $match2 ) );
 
         $event->method( 'get_leagues' )->willReturn( array( $league ) );
         $GLOBALS['wp_stubs_events'][10] = $event;

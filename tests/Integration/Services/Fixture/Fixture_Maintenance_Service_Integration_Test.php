@@ -77,7 +77,7 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $event->competition = (object) ['type' => 'league'];
         $league->event = $event;
 
-        $this->league_repository->method('find_by_id')->with(1)->willReturn($league);
+        $this->league_repository->expects($this->once())->method('find_by_id')->with(1)->willReturn($league);
         $this->settings_service->method('get_option')->willReturn('admin@test.com');
 
         $this->notification_service->expects($this->once())
@@ -101,7 +101,7 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
         $event->competition = (object) ['type' => 'league'];
         $league->event = $event;
 
-        $this->league_repository->method('find_by_id')->with(1)->willReturn($league);
+        $this->league_repository->expects($this->once())->method('find_by_id')->with(1)->willReturn($league);
         $this->settings_service->method('get_option')->willReturn('admin@test.com');
 
         $response = new Fixture_Update_Response([Fixture_Update_Status::TABLE_UPDATED]);

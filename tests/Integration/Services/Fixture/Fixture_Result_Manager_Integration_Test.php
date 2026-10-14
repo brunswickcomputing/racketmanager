@@ -293,7 +293,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league->method('get_id')->willReturn(456);
         $league->method('get_event_id')->willReturn(10);
         
-        $this->league_service->method('get_league')->with(456)->willReturn($league);
+        $this->league_service->expects($this->atLeastOnce())->method('get_league')->with(456)->willReturn($league);
         $GLOBALS['wp_stubs_leagues'][456] = $league;
 
         $league->expects($this->once())
@@ -337,7 +337,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league->method('get_name')->willReturn('Tournament');
         $league->method('get_event_id')->willReturn(10);
         
-        $this->league_service->method('get_league')->with(789)->willReturn($league);
+        $this->league_service->expects($this->atLeastOnce())->method('get_league')->with(789)->willReturn($league);
         $GLOBALS['wp_stubs_leagues'][789] = $league;
 
         $this->progression_service->expects($this->once())
@@ -387,8 +387,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
         
-        $this->league_service->method('get_league')->with(789)->willReturn($league);
-        $this->league_repository_repo->method('find_by_id')->with(789)->willReturn($league);
+        $this->league_service->expects($this->atLeastOnce())->method('get_league')->with(789)->willReturn($league);
+        $this->league_repository_repo->expects( $this->once() )->method('find_by_id')->with(789)->willReturn($league);
         $GLOBALS['wp_stubs_leagues'][789] = $league;
         
         $this->result_service->expects($this->once())
@@ -432,8 +432,8 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $event->competition = (object)['type' => 'league'];
         $league->event = $event;
 
-        $this->league_service->method('get_league')->with(456)->willReturn($league);
-        $this->league_repository_repo->method('find_by_id')->with(456)->willReturn($league);
+        $this->league_service->expects($this->atLeastOnce())->method('get_league')->with(456)->willReturn($league);
+        $this->league_repository_repo->expects( $this->once() )->method('find_by_id')->with(456)->willReturn($league);
         $GLOBALS['wp_stubs_leagues'][456] = $league;
 
         $this->result_service->expects($this->once())
@@ -798,7 +798,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
         $league->event = $event;
 
         $this->league_service->method('get_league')->willReturn($league);
-        $this->league_repository_repo->method('find_by_id')->with(456)->willReturn($league);
+        $this->league_repository_repo->expects( $this->once() )->method('find_by_id')->with(456)->willReturn($league);
 
         $this->result_service->expects($this->once())
                              ->method('apply_to_fixture')

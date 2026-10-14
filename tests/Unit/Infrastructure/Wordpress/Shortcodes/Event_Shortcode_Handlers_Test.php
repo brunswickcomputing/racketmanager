@@ -490,9 +490,6 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 123, $vm->vars['partner_id'] );
     }
 
-    /**
-     * @dataProvider age_limit_provider
-     */
     #[\PHPUnit\Framework\Attributes\DataProvider( 'age_limit_provider' )]
     public function test_team_order_players_age_logic( string $age_limit, ?int $exp_max, ?int $exp_min ): void {
         $comp_service = $this->createStub( Competition_Service::class );

@@ -298,7 +298,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $tournament_service->method( 'get_tournament' )
+        $tournament_service->expects( self::once() )
+                           ->method( 'get_tournament' )
                            ->with( 999 )
                            ->willThrowException( new Tournament_Not_Found_Exception( 'Tournament not found' ) );
 

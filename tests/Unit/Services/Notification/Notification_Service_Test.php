@@ -270,14 +270,16 @@ class Notification_Service_Test extends TestCase {
         $home_league_team->captain = 5;
         $home_league_team_domain = new League_Team($home_league_team);
 
-        $this->league_team_repository->method('find_by_team_league_and_season')
+        $this->league_team_repository->expects( $this->once() )
+            ->method('find_by_team_league_and_season')
             ->with(100, 456, 2026)
             ->willReturn($home_league_team_domain);
 
         $home_captain = $this->createStub(Player::class);
         $home_captain->method('get_email')->willReturn('home-captain@example.com');
 
-        $this->player_repository->method('find')
+        $this->player_repository->expects( $this->once() )
+            ->method('find')
             ->with(5, 'id')
             ->willReturn($home_captain);
 
@@ -331,14 +333,16 @@ class Notification_Service_Test extends TestCase {
         $away_league_team->captain = 6;
         $away_league_team_domain = new League_Team($away_league_team);
 
-        $this->league_team_repository->method('find_by_team_league_and_season')
+        $this->league_team_repository->expects( $this->once() )
+            ->method('find_by_team_league_and_season')
             ->with(200, 456, 2026) // Assuming fixture season is derived correctly, but in test it is just data.
             ->willReturn($away_league_team_domain);
 
         $away_captain = $this->createStub(Player::class);
         $away_captain->method('get_email')->willReturn('away-captain@example.com');
 
-        $this->player_repository->method('find')
+        $this->player_repository->expects( $this->once() )
+            ->method('find')
             ->with(6, 'id')
             ->willReturn($away_captain);
 
@@ -451,11 +455,11 @@ class Notification_Service_Test extends TestCase {
         // Mock League_Team to avoid call to get_club() in constructor/initialization
         $league_team = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
         $league_team->club_id = 10;
-        $this->league_team_repository->method('find_by_id')->with(200)->willReturn($league_team);
+        $this->league_team_repository->expects( $this->once() )->method('find_by_id')->with(200)->willReturn($league_team);
 
         $club = $this->createStub( Club::class);
         $club->match_secretary = (object)['email' => 'secretary@example.com'];
-        $this->club_repository->method( 'find_by_id' )->with(10)->willReturn($club);
+        $this->club_repository->expects( $this->once() )->method( 'find_by_id' )->with(10)->willReturn($club);
 
         $GLOBALS['wp_mail_calls'] = [];
         $this->service->send_result_notification($fixture, 'P', 'Test', 'home');
@@ -915,7 +919,7 @@ class Notification_Service_Test extends TestCase {
         $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
         $event->competition = (object) [ 'type' => 'league' ];
         $league->event = $event;
-        $this->league_repository->method( 'find_by_id' )->with( 456 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
 
         $this->app->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
 
@@ -923,18 +927,18 @@ class Notification_Service_Test extends TestCase {
         $league_team = $this->getMockBuilder( League_Team::class )->disableOriginalConstructor()->getMock();
         $league_team->method( 'get_captain' )->willReturn( 5 );
         $league_team->club_id = 10;
-        $this->league_team_repository->method( 'find_by_team_league_and_season' )
+        $this->league_team_repository->expects( $this->once() )->method( 'find_by_team_league_and_season' )
             ->with( 100, 456, 2026 )
             ->willReturn( $league_team );
         
         // Match secretary lookup uses find_by_id(team_id)
-        $this->league_team_repository->method( 'find_by_id' )
+        $this->league_team_repository->expects( $this->once() )->method( 'find_by_id' )
             ->with( 100 )
             ->willReturn( $league_team );
 
         $captain = $this->createStub( Player::class );
         $captain->method( 'get_email' )->willReturn( 'captain@example.com' );
-        $this->player_repository->method( 'find' )->with( 5, 'id' )->willReturn( $captain );
+        $this->player_repository->expects( $this->once() )->method( 'find' )->with( 5, 'id' )->willReturn( $captain );
 
         // Mock Match Secretary
         $club = $this->getMockBuilder( Club::class )->disableOriginalConstructor()->getMock();
@@ -942,7 +946,7 @@ class Notification_Service_Test extends TestCase {
             'display_name' => 'Match Sec',
             'email' => 'secretary@example.com'
         ];
-        $this->club_repository->method( 'find_by_id' )->with( 10 )->willReturn( $club );
+        $this->club_repository->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $club );
 
         $GLOBALS['wp_mail_calls'] = [];
 
@@ -980,7 +984,7 @@ class Notification_Service_Test extends TestCase {
         $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
         $event->competition = (object) [ 'type' => 'league' ];
         $league->event = $event;
-        $this->league_repository->method( 'find_by_id' )->with( 456 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
 
         $this->app->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
         $this->app->site_name = 'Test Site';

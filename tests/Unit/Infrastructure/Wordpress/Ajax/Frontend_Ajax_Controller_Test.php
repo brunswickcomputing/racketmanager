@@ -60,6 +60,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->with( $expected_request )
             ->willReturn( new Response( [ 'msg' => 'ok' ], 200 ) );
 
+        $this->expectOutputString( '{"msg":"ok"}' );
+
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->update_team();
     }
@@ -72,6 +74,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->method( 'update_player' )
             ->with( [ 'racketmanager_nonce' => 'nonce123', 'playerId' => '5' ] )
             ->willReturn( new Response( [ 'msg' => 'ok' ], 200 ) );
+
+        $this->expectOutputString( '{"msg":"ok"}' );
 
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->update_player();
@@ -86,6 +90,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->with( [ 'racketmanager_nonce' => 'cup_nonce', 'competitionId' => '2' ] )
             ->willReturn( new Response( [ 'msg' => 'ok' ], 200 ) );
 
+        $this->expectOutputString( '{"msg":"ok"}' );
+
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->cup_entry();
     }
@@ -98,6 +104,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->method( 'league_entry' )
             ->with( [ 'racketmanager_nonce' => 'league_nonce', 'competitionId' => '3' ] )
             ->willReturn( new Response( [ 'msg' => 'ok' ], 200 ) );
+
+        $this->expectOutputString( '{"msg":"ok"}' );
 
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->league_entry();
@@ -112,6 +120,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->with( [ 'security' => 'sec_nonce', 'search_string' => 'Smith' ] )
             ->willReturn( new Response( 'HTML', 200 ) );
 
+        $this->expectOutputString( 'HTML' );
+
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->search_players();
     }
@@ -124,6 +134,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->method( 'tab_data' )
             ->with( [ 'security' => 'sec_nonce', 'target' => 'competition', 'targetId' => '1' ] )
             ->willReturn( new Response( 'HTML', 200 ) );
+
+        $this->expectOutputString( 'HTML' );
 
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->tab_data();
@@ -138,6 +150,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->with( [ 'security' => 'sec_nonce', 'name' => 'Smith', 'partnerGender' => 'F' ] )
             ->willReturn( new Response( [], 200 ) );
 
+        $this->expectOutputString( '[]' );
+
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->get_player_details();
     }
@@ -148,6 +162,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
             ->method( 'logged_out' )
             ->willReturn( new Response( [ 'msg' => 'unauth' ], 401 ) );
 
+        $this->expectOutputString( '{"msg":"unauth"}' );
+
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->logged_out();
     }
@@ -157,6 +173,8 @@ final class Frontend_Ajax_Controller_Test extends TestCase {
         $adapter->expects( $this->once() )
             ->method( 'logged_out_modal' )
             ->willReturn( new Response( [ 'msg' => 'unauth' ], 401 ) );
+
+        $this->expectOutputString( '{"msg":"unauth"}' );
 
         $controller = new Frontend_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->logged_out_modal();

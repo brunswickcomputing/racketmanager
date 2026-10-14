@@ -37,19 +37,11 @@ class Championship_Admin_Integration_Test extends TestCase {
 
         $GLOBALS['wp_stubs_leagues'][$league_id] = $league;
 
-        $league_team_id = 789;
-        $league_team = $this->createMock( League_Team::class );
-        $league_team->method( 'get_team_id' )->willReturn( $team_id );
-
         $league_service         = $this->createMock( League_Service::class );
         $fixture_service        = $this->createMock( Fixture_Service::class );
         $tournament_service     = $this->createMock( Tournament_Service::class );
-        $league_team_repository = $this->createMock( League_Team_Repository_Interface::class );
-        $team_repository        = $this->createMock( Team_Repository_Interface::class );
-
-        $league_team_repository->method( 'find_by_id' )
-                               ->with( $league_team_id )
-                               ->willReturn( $league_team );
+        $league_team_repository = $this->createStub( League_Team_Repository_Interface::class );
+        $team_repository        = $this->createStub( Team_Repository_Interface::class );
 
         $admin_service = new Championship_Admin_Service(
             $league_service,
@@ -94,7 +86,7 @@ class Championship_Admin_Integration_Test extends TestCase {
         $racketmanager->container = $container;
 
         $player_service = $this->createMock( \Racketmanager\Services\Player_Service::class );
-        $container->method( 'get' )->with( 'player_service' )->willReturn( $player_service );
+        $container->expects( self::once() )->method( 'get' )->with( 'player_service' )->willReturn( $player_service );
 
         $league_id = 123;
         $season = 2024;

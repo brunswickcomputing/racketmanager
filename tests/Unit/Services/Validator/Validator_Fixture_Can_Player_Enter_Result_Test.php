@@ -116,7 +116,7 @@ class Validator_Fixture_Can_Player_Enter_Result_Test extends TestCase {
 
             $registration = (object) ['registration_id' => 456];
             // get_current_user_id() from wp-stubs.php returns 1
-            $this->registration_service->method('get_clubs_for_player')
+            $this->registration_service->expects($this->once())->method('get_clubs_for_player')
                 ->with(1)
                 ->willReturn([$registration]);
 
@@ -141,7 +141,7 @@ class Validator_Fixture_Can_Player_Enter_Result_Test extends TestCase {
 
             $registration = (object) ['registration_id' => 456];
             // get_current_user_id() from wp-stubs.php returns 1
-            $this->registration_service->method('get_clubs_for_player')
+            $this->registration_service->expects($this->once())->method('get_clubs_for_player')
                 ->with(1)
                 ->willReturn([$registration]);
 
@@ -166,7 +166,7 @@ class Validator_Fixture_Can_Player_Enter_Result_Test extends TestCase {
             ];
 
             // get_current_user_id() from wp-stubs.php returns 1
-            $this->registration_service->method('get_clubs_for_player')
+            $this->registration_service->expects($this->once())->method('get_clubs_for_player')
                 ->with(1)
                 ->willThrowException(new Player_Not_Found_Exception());
 

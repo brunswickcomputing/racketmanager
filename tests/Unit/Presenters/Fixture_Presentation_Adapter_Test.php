@@ -57,12 +57,12 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $competition->type = Competition_Type::LEAGUE;
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
-        $league_repo->method( 'find_by_id' )->with( 10 )->willReturn( $league );
+        $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 10 )->willReturn( $league );
 
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->method( 'get_league_repository' )->willReturn( $league_repo );
-        $comp_service->method( 'get_event_by_id' )->with( 20 )->willReturn( $event );
-        $comp_service->method( 'get_by_id' )->with( 30 )->willReturn( $competition );
+        $comp_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 20 )->willReturn( $event );
+        $comp_service->expects( $this->once() )->method( 'get_by_id' )->with( 30 )->willReturn( $competition );
 
         $team1 = $this->createMock( Team::class );
         $team1->method( 'get_name' )->willReturn( 'Club A 1' );

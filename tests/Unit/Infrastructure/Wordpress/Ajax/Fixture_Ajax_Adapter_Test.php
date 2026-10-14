@@ -431,7 +431,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             $competition
         );
         
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
+        $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
         $this->view_renderer->expects( $this->once() )->method( 'render_to_string' )
             ->with( 'match/match-option-modal', $this->callback( function ( $vars ) use ( $dto ) {
@@ -520,7 +520,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $match->method('get_date')->willReturn('2023-10-09');
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
         $maintenance_service = $this->createMock( Fixture_Maintenance_Service::class );
@@ -567,21 +567,21 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
             link: 'https://example.com'
         );
 
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
+        $this->fixture_detail_service->expects( $this->once() )->method( 'get_fixture_with_details' )->with( 123 )->willReturn( $dto );
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_by_id' )->with( 123 )->willReturn( $match );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $match );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
         $league_repo = $this->createMock( League_Repository_Interface::class );
-        $league_repo->method( 'find_by_id' )->with( 789 )->willReturn( $league );
+        $league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 789 )->willReturn( $league );
         $this->container->set( 'league_repository', $league_repo );
 
         $event_repo = $this->createMock( Event_Repository_Interface::class );
-        $event_repo->method( 'find_by_id' )->with( 456 )->willReturn( $event );
+        $event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $event );
         $this->container->set( 'event_repository', $event_repo );
 
-        $event->method( 'get_season_by_name' )->with( '2023' )->willReturn( [
+        $event->expects( $this->once() )->method( 'get_season_by_name' )->with( '2023' )->willReturn( [
             'match_dates' => [ '2023-10-10' ]
         ] );
 
@@ -613,12 +613,12 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $fixture->league_id = 1;
 
         $fixture_repo    = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
         $result_response = new Fixture_Reset_Response( 123, Fixture_Reset_Status::SUCCESS_DIVISION_RESET );
         $result_manager  = $this->getMockBuilder( Fixture_Result_Manager::class )->disableOriginalConstructor()->getMock();
-        $result_manager->method( 'reset_result' )->with( $fixture )->willReturn( $result_response );
+        $result_manager->expects( $this->once() )->method( 'reset_result' )->with( $fixture )->willReturn( $result_response );
         $this->container->set( 'fixture_result_manager', $result_manager );
 
         $response = $this->adapter->reset_fixture_result( $post ?? [] );
@@ -649,7 +649,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $fixture->league_id = 1;
 
         $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
+        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 123 )->willReturn( $fixture );
         $this->container->set( 'fixture_repository', $fixture_repo );
 
         $result_manager  = $this->getMockBuilder( Fixture_Result_Manager::class )->disableOriginalConstructor()->getMock();

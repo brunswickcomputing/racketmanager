@@ -72,7 +72,7 @@ class Tournament_Event_Config_Admin_Controller_Test extends TestCase {
         $event->num_rubbers = 6;
 
         $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->with( 456 )->willReturn( $event );
+        $this->competition_service->expects( self::once() )->method( 'get_event_by_id' )->with( 456 )->willReturn( $event );
 
         $result = $this->controller->handle();
 

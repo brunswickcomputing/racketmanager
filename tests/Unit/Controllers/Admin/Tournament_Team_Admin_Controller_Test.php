@@ -59,7 +59,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         ];
 
         $tournament = unserialize( sprintf( 'O:%d:"Racketmanager\Domain\Tournament":0:{}', strlen( 'Racketmanager\Domain\Tournament' ) ) );
-        $this->tournament_service->method( 'get_tournament' )->with( 456 )->willReturn( $tournament );
+        $this->tournament_service->expects( self::once() )->method( 'get_tournament' )->with( 456 )->willReturn( $tournament );
 
         $team_obj = new stdClass();
         $team_obj->id = 123;
@@ -68,7 +68,7 @@ class Tournament_Team_Admin_Controller_Test extends TestCase {
         $team_obj->team_type = 'C';
         $team = new \Racketmanager\Domain\Team( $team_obj );
 
-        $this->team_service->method( 'get_team_by_id' )->with( 123 )->willReturn( $team );
+        $this->team_service->expects( self::once() )->method( 'get_team_by_id' )->with( 123 )->willReturn( $team );
         $this->club_service->method( 'get_clubs' )->willReturn( [] );
 
         $result = $this->controller->handle( $query );

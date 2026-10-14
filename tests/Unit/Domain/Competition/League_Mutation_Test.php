@@ -71,7 +71,8 @@ class League_Mutation_Test extends TestCase {
         $linked_raw->host   = 'away';
         $linked_fixture     = Fixture_Factory::from_object( $linked_raw );
 
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
             ->with( 20 )
             ->willReturn( $linked_fixture );
 
@@ -95,7 +96,8 @@ class League_Mutation_Test extends TestCase {
         $fixture_raw->custom    = [ 'sets' => [ [ 'home' => 6, 'away' => 3 ] ] ];
         $fixture                = Fixture_Factory::from_object( $fixture_raw );
 
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
             ->with( 15 )
             ->willReturn( $fixture );
 
@@ -127,7 +129,8 @@ class League_Mutation_Test extends TestCase {
     }
 
     public function test_delete_team_deletes_fixtures_via_repository(): void {
-        $this->league->method( 'get_matches' )
+        $this->league->expects( $this->once() )
+            ->method( 'get_matches' )
             ->with( [
                 'team_id' => 50,
                 'season'  => '2026',
@@ -162,7 +165,8 @@ class League_Mutation_Test extends TestCase {
         $this->league->method( 'get_matches' )
             ->willReturn( [ (object) [ 'id' => 101 ] ] );
 
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
             ->with( 101 )
             ->willReturn( $fixture );
 
@@ -198,7 +202,8 @@ class League_Mutation_Test extends TestCase {
         $this->league->method( 'get_matches' )
             ->willReturn( [ (object) [ 'id' => 102 ] ] );
 
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->once() )
+            ->method( 'find_by_id' )
             ->with( 102 )
             ->willReturn( $fixture );
 

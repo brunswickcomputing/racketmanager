@@ -43,7 +43,7 @@ class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
     }
 
     public function test_handle_returns_error_if_no_capability(): void {
-        $this->guard->method( 'assert_capability' )->with( 'edit_leagues' )->willThrowException( new \Exception( 'No capability' ) );
+        $this->guard->expects( self::once() )->method( 'assert_capability' )->with( 'edit_leagues' )->willThrowException( new \Exception( 'No capability' ) );
 
         $result = $this->controller->handle();
 
@@ -63,7 +63,7 @@ class Tournament_Competition_Config_Admin_Controller_Test extends TestCase {
     public function test_handle_returns_error_if_competition_not_found(): void {
         $_GET['competition_id'] = '123';
 
-        $this->competition_service->method( 'get_by_id' )
+        $this->competition_service->expects( self::once() )->method( 'get_by_id' )
             ->with( 123 )
             ->willThrowException( new Competition_Not_Found_Exception( 'Not found' ) );
 

@@ -39,7 +39,7 @@ class Tournament_Teams_Admin_Controller_Test extends TestCase {
         $event->competition = (object) [ 'is_player_entry' => false ];
         $league->event      = $event;
 
-        $league_service->method( 'get_league' )->with( $league_id )->willReturn( $league );
+        $league_service->expects( self::once() )->method( 'get_league' )->with( $league_id )->willReturn( $league );
         $team_service->method( 'get_club_teams' )->willReturn( [] );
 
         $controller = new Tournament_Teams_Admin_Controller(
@@ -64,7 +64,7 @@ class Tournament_Teams_Admin_Controller_Test extends TestCase {
 
         $league_id = 1;
         $league    = $this->createMock( League::class );
-        $league_service->method( 'get_league' )->with( $league_id )->willReturn( $league );
+        $league_service->expects( self::once() )->method( 'get_league' )->with( $league_id )->willReturn( $league );
 
         $controller = new Tournament_Teams_Admin_Controller(
             $tournament_service,

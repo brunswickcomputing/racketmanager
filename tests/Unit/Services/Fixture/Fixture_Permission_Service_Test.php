@@ -99,9 +99,9 @@ class Fixture_Permission_Service_Test extends TestCase {
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
-        $this->service->method( 'current_user_can' )->with( 'manage_racketmanager' )->willReturn( true );
+        $this->service->expects( $this->once() )->method( 'current_user_can' )->with( 'manage_racketmanager' )->willReturn( true );
         $this->service->method( 'get_current_user_id' )->willReturn( 1 );
 
         $result = $this->service->is_update_allowed( 1 );
@@ -122,7 +122,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
@@ -155,7 +155,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
@@ -190,7 +190,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
@@ -221,7 +221,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
@@ -263,7 +263,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
@@ -296,7 +296,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'player_comp' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );
@@ -333,7 +333,7 @@ class Fixture_Permission_Service_Test extends TestCase {
         
         $league = $this->createStub( League::class );
         $league->method( 'get_competition_type' )->willReturn( 'player_comp' );
-        $this->league_repository->method( 'find_by_id' )->with( 100 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 100 )->willReturn( $league );
 
         $home_team = $this->createStub( Team::class );
         $home_team->method( 'get_club_id' )->willReturn( 1000 );

@@ -420,7 +420,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $_POST                     = array( 'unknown_field' => 'value' );
 
         $competition = $this->create_test_competition( 5, '2024' );
-        $this->competition_service->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
+        $this->competition_service->expects( self::once() )->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
 
         $this->cup_setup_dispatcher->expects( self::once() )
             ->method( 'handle' )
@@ -468,10 +468,10 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'overview', 'competition_id' => '5', 'season' => '2024' );
 
         $competition = $this->create_test_competition( 5, '2024' );
-        $this->competition_service->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );
-        $this->competition_service->method( 'get_events_for_competition' )->with( 5, 2024 )->willReturn( array() );
-        $this->competition_service->method( 'get_clubs_for_competition' )->with( 5, 2024 )->willReturn( array() );
-        $this->competition_service->method( 'get_competition_overview' )->with( 5, 2024 )->willReturn( null );
+        $this->competition_service->expects( self::once() )->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );
+        $this->competition_service->expects( self::once() )->method( 'get_events_for_competition' )->with( 5, 2024 )->willReturn( array() );
+        $this->competition_service->expects( self::once() )->method( 'get_clubs_for_competition' )->with( 5, 2024 )->willReturn( array() );
+        $this->competition_service->expects( self::once() )->method( 'get_competition_overview' )->with( 5, 2024 )->willReturn( null );
 
         ob_start();
         $this->screen->display_cup_overview_page();
@@ -485,7 +485,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'setup', 'competition_id' => '5', 'season' => '2024' );
 
         $competition = $this->create_test_competition( 5, '2024' );
-        $this->competition_service->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
+        $this->competition_service->expects( self::once() )->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
 
         ob_start();
         $this->screen->display_cup_setup_page();
@@ -499,7 +499,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'setup-event', 'competition_id' => '5', 'league' => '12', 'season' => '2024' );
 
         $competition = $this->create_test_competition( 5, '2024' );
-        $this->competition_service->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
+        $this->competition_service->expects( self::once() )->method( 'get_by_id' )->with( 5 )->willReturn( $competition );
 
         $event = new class {
             public int $offset = 0;
@@ -538,7 +538,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'matches', 'competition_id' => '5', 'league' => '12', 'season' => '2024', 'final' => 'quarter' );
 
         $competition = $this->create_test_competition( 5, '2024' );
-        $this->competition_service->method( 'get_competition' )->with( 5 )->willReturn( $competition );
+        $this->competition_service->expects( self::once() )->method( 'get_competition' )->with( 5 )->willReturn( $competition );
 
         $event_competition = (object) array(
             'id'            => 5,
@@ -607,8 +607,8 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $_GET                      = array( 'page' => 'racketmanager-cups', 'view' => 'plan', 'competition_id' => '5', 'season' => '2024' );
 
         $competition = $this->create_test_competition( 5, '2024' );
-        $this->competition_service->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );
-        $this->competition_service->method( 'get_events_for_competition' )->with( 5, 2024 )->willReturn( array() );
+        $this->competition_service->expects( self::once() )->method( 'get_competition_by_season' )->with( 5, 2024 )->willReturn( $competition );
+        $this->competition_service->expects( self::once() )->method( 'get_events_for_competition' )->with( 5, 2024 )->willReturn( array() );
 
         $this->flash_store->method( 'pop' )->willReturn( array(
             'message'      => 'Error with plan details',

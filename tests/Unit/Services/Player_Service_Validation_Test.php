@@ -156,7 +156,7 @@ final class Player_Service_Validation_Test extends TestCase {
         $player->btm = '55555555';
 
         $player_repo = $this->createMock( Player_Repository::class );
-        $player_repo->method( 'find' )->with( 15 )->willReturn( $player );
+        $player_repo->expects( $this->exactly( 2 ) )->method( 'find' )->with( 15 )->willReturn( $player );
         $player_repo->expects( $this->once() )
             ->method( 'update' )
             ->with(

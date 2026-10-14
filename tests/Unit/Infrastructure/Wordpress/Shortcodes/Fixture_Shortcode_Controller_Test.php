@@ -16,12 +16,14 @@ class Fixture_Shortcode_Controller_Test extends TestCase {
         $racketmanager = $this->createStub(RacketManager::class);
         $racketmanager->container = $container;
         
-        $container->method('get')
+        $container->expects( $this->once() )
+            ->method('get')
             ->with('fixture_shortcode_adapter')
             ->willReturn($adapter);
             
         $atts = ['match_id' => 123];
-        $adapter->method('handle')
+        $adapter->expects( $this->once() )
+            ->method('handle')
             ->with($atts)
             ->willReturn('html output');
             

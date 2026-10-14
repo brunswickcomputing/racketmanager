@@ -70,7 +70,7 @@ class Championship_Manager_Test extends TestCase {
     }
 
     public function test_set_teams_when_fixture_not_found_does_nothing(): void {
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )
             ->with( 999 )
             ->willReturn( null );
 
@@ -89,7 +89,7 @@ class Championship_Manager_Test extends TestCase {
         $primary_raw->away_team = null;
         $primary_fixture = Fixture_Factory::from_object( $primary_raw );
 
-        $this->fixture_repository->method( 'find_by_id' )
+        $this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )
             ->with( 10 )
             ->willReturn( $primary_fixture );
 

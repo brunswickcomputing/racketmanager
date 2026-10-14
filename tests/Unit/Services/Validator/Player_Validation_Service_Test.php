@@ -355,7 +355,7 @@ class Player_Validation_Service_Test extends TestCase {
             'players' => [ 'home' => [ '1' => $player ], 'away' => [] ]
         ];
 
-        $this->fixture_repository->method( 'count_player_matches_on_same_day' )
+        $this->fixture_repository->expects( $this->once() )->method( 'count_player_matches_on_same_day' )
             ->with( '2026', 5, 456, 500 )
             ->willReturn( 1 );
 

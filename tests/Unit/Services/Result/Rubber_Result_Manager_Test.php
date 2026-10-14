@@ -56,7 +56,7 @@ class Rubber_Result_Manager_Test extends TestCase {
         $league->method('get_point_rule')->willReturn(['match_result' => 'sets']);
         $league->num_sets_to_win = 2;
         $league->num_sets = 3;
-        $this->league_service->method('get_league')->with(456)->willReturn($league);
+        $this->league_service->expects($this->once())->method('get_league')->with(456)->willReturn($league);
 
         $rubber_mock = $this->createMock(Rubber::class);
         $rubber_mock->method('get_id')->willReturn(10);
@@ -66,7 +66,7 @@ class Rubber_Result_Manager_Test extends TestCase {
             'winner' => 1,
             'loser' => 2
         ]);
-        $this->rubber_repository->method('find_by_id')->with(10)->willReturn($rubber_mock);
+        $this->rubber_repository->expects($this->once())->method('find_by_id')->with(10)->willReturn($rubber_mock);
 
         $request = new Rubber_Update_Request(
             rubber_id: 10,

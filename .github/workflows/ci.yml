@@ -57,6 +57,7 @@ jobs:
         with:
           php-version: '8.4'
           tools: composer
+          coverage: none
           extensions: intl
 
       - name: Get Composer Cache Directory
@@ -75,11 +76,8 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run Unit Tests
-        run: vendor/bin/phpunit --testsuite Unit
-
-      - name: Run Integration Tests
-        run: vendor/bin/phpunit --testsuite Integration
+      - name: Run Test Suite
+        run: vendor/bin/phpunit --display-all-issues --fail-on-all-issues
 
   jest:
     name: Jest (JavaScript Tests)

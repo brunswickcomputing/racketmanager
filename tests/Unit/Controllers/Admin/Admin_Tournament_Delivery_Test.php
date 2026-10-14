@@ -159,7 +159,7 @@ final class Admin_Tournament_Delivery_Test extends TestCase {
         $_GET['tournament']        = '7';
 
         $tournament = $this->createStub( Tournament::class );
-        $this->tournament_service->method( 'get_tournament' )->with( 7 )->willReturn( $tournament );
+        $this->tournament_service->expects( self::once() )->method( 'get_tournament' )->with( 7 )->willReturn( $tournament );
         $this->flash_store->expects( self::once() )->method( 'pop' )->willReturn( array( 'message' => 'Information updated', 'message_type' => false ) );
 
         $this->guard->expects( self::never() )->method( 'assert_allowed' );

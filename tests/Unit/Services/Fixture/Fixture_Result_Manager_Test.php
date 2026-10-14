@@ -91,7 +91,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $league->method( 'get_event_id' )->willReturn( 10 );
         $league->is_championship = false;
 
-        $this->league_repository->method( 'find_by_id' )->with( 1 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 1 )->willReturn( $league );
 
         $this->result_service->expects( $this->once() )->method( 'apply_to_fixture' )->with( $fixture, $result, 'Y' );
 
@@ -117,7 +117,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $league->method( 'get_event_id' )->willReturn( 10 );
         $league->is_championship = true;
 
-        $this->league_repository->method( 'find_by_id' )->with( 1 )->willReturn( $league );
+        $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 1 )->willReturn( $league );
 
         $this->result_service->expects( $this->once() )->method( 'apply_to_fixture' )->with( $fixture, $result, 'Y' );
 

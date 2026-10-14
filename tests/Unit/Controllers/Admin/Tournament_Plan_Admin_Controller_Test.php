@@ -174,7 +174,8 @@ class Tournament_Plan_Admin_Controller_Test extends TestCase {
         $guard = $this->createMock( Action_Guard_Interface::class );
 
         $tournament_id = 999;
-        $tournament_service->method( 'get_tournament_with_details' )
+        $tournament_service->expects( self::once() )
+            ->method( 'get_tournament_with_details' )
             ->with( $tournament_id )
             ->willThrowException( new Tournament_Not_Found_Exception( 'Not found' ) );
 

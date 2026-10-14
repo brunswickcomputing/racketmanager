@@ -50,6 +50,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->with( [ 'racketmanager_nonce' => 'valid', 'matchId' => '5' ] )
             ->willReturn( new Response( [ 'msg' => 'saved' ], 200 ) );
 
+        $this->expectOutputString( '{"msg":"saved"}' );
+
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->save_add_points();
     }
@@ -62,6 +64,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->method( 'get_event_dropdown' )
             ->with( [ 'security' => 'sec_nonce', 'competitionId' => '2' ] )
             ->willReturn( new Response( '<select></select>', 200 ) );
+
+        $this->expectOutputString( '<select></select>' );
 
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->get_event_dropdown();
@@ -76,6 +80,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->with( [ 'security' => 'sec_nonce', 'eventId' => '3' ] )
             ->willReturn( new Response( '<select></select>', 200 ) );
 
+        $this->expectOutputString( '<select></select>' );
+
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->get_league_dropdown();
     }
@@ -88,6 +94,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->method( 'set_season_dropdown' )
             ->with( [ 'security' => 'sec_nonce', 'leagueId' => '4' ] )
             ->willReturn( new Response( '<select></select>', 200 ) );
+
+        $this->expectOutputString( '<select></select>' );
 
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->set_season_dropdown();
@@ -102,6 +110,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->with( [ 'security' => 'sec_nonce', 'leagueId' => '4' ] )
             ->willReturn( new Response( '<select></select>', 200 ) );
 
+        $this->expectOutputString( '<select></select>' );
+
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->set_match_dropdown();
     }
@@ -114,6 +124,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->method( 'check_team_exists' )
             ->with( [ 'security' => 'sec_nonce', 'title' => 'Team A' ] )
             ->willReturn( new Response( [ 'exists' => false ], 200 ) );
+
+        $this->expectOutputString( '{"exists":false}' );
 
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->check_team_exists();
@@ -128,6 +140,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->with( [ 'security' => 'sec_nonce', 'competitionId' => '1' ] )
             ->willReturn( new Response( [ 'msg' => 'sent' ], 200 ) );
 
+        $this->expectOutputString( '{"msg":"sent"}' );
+
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->notify_competition_entries_open();
     }
@@ -140,6 +154,8 @@ final class Admin_Ajax_Controller_Test extends TestCase {
             ->method( 'send_fixtures' )
             ->with( [ 'security' => 'sec_nonce', 'eventId' => '2' ] )
             ->willReturn( new Response( [ 'msg' => 'sent' ], 200 ) );
+
+        $this->expectOutputString( '{"msg":"sent"}' );
 
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->send_fixtures();

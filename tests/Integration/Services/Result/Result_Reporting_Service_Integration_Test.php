@@ -102,13 +102,13 @@ class Result_Reporting_Service_Integration_Test extends TestCase {
 		$away_team->method( 'get_players' )->willReturn( [ (object)[ 'display_name' => 'Int Player 2', 'btm' => 'BTM2' ] ] );
 
 		$league_repo = $this->createMock( League_Repository_Interface::class );
-		$league_repo->method( 'find_by_id' )->with( 101 )->willReturn( $league );
+		$league_repo->expects( $this->once() )->method( 'find_by_id' )->with( 101 )->willReturn( $league );
 
 		$event_repo = $this->createMock( Event_Repository_Interface::class );
-		$event_repo->method( 'find_by_id' )->with( 201 )->willReturn( $event );
+		$event_repo->expects( $this->once() )->method( 'find_by_id' )->with( 201 )->willReturn( $event );
 
 		$competition_repo = $this->createMock( Competition_Repository_Interface::class );
-		$competition_repo->method( 'find_by_id' )->with( 301 )->willReturn( $competition );
+		$competition_repo->expects( $this->once() )->method( 'find_by_id' )->with( 301 )->willReturn( $competition );
 
 		$rubber_repo = $this->createStub( Rubber_Repository_Interface::class );
 		$rubber_repo->method( 'find_by_fixture_id' )->willReturn( [] );

@@ -195,7 +195,7 @@ class Export_Service_Test extends TestCase {
 
         $club = $this->createStub( Club::class );
         $club->method( 'get_shortcode' )->willReturn( 'TEST_CLUB' );
-        $this->club_repository->method( 'find_by_id' )->with( 5 )->willReturn( $club );
+        $this->club_repository->expects( $this->once() )->method( 'find_by_id' )->with( 5 )->willReturn( $club );
 
         $result = $this->exporter->results( $criteria );
 

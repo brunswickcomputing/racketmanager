@@ -13,20 +13,21 @@ Triggers:
 - pull_request to: main, master, develop
 
 Jobs:
-- Qodana PHP (Static Analysis)
-  - Linter: jetbrains/qodana-php:2024.3
+- Composer Autoload Smoke Test (Plugin)
+- PHPUnit (Tests)
+  - Full suite with `--display-all-issues --fail-on-all-issues`
+  - Coverage disabled (`coverage: none`)
+- Jest (JavaScript Tests)
+- Qodana PHP (Static Analysis) — commented out in `ci.yml`; does not run
+  - Linter (if re-enabled): jetbrains/qodana-php:2025.3
   - Config: qodana.yaml
-  - Artifacts: full HTML report and SARIF uploaded to GitHub Security tab
-- Qodana JS (ESLint-backed)
-  - Linter: jetbrains/qodana-js:2024.3
+- Qodana JS (ESLint-backed) — commented out in `ci.yml`; does not run
   - Config: qodana-js.yaml
-  - Artifacts: full HTML report
-- PHPCS (WordPress Standards)
+- PHPCS (WordPress Standards) — commented out in `ci.yml`; does not run
   - Non-blocking style/lint check with WordPressCS via phpcs.xml.dist
-  - Runs on plugin path: wp-content/plugins/racketmanager
 
 Notes:
-- SARIF output is uploaded for code scanning alerts where supported.
+- If Qodana jobs are re-enabled, SARIF output is uploaded for code scanning alerts where supported.
 - Results are published even if the job fails to ease troubleshooting.
 
 ---
@@ -54,7 +55,7 @@ Notes:
 ### How to use
 
 CI:
-- Open a PR – both Qodana jobs run and attach reports as artifacts. Review any issues in the PR checks or the Security tab.
+- Open a PR – Composer smoke, PHPUnit, and Jest jobs run. Qodana and PHPCS jobs are commented out in `ci.yml` and do not run.
 
 CD:
 - Create a version tag locally, push it to GitHub:

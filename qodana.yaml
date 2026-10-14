@@ -11,16 +11,10 @@ profile:
 #Enable inspections
 #include:
 #  - name: <SomeEnabledInspectionId>
-include:
-  - name: SomeInspectionId
-    paths:
-      - src/php
+
 #Disable inspections
-exclude:
-  - name: SomeInspectionId
-    paths:
-      - vendor
-      - tests
+#exclude:
+#  - name: <SomeDisabledInspectionId>
 
 php:
   version: 8.4 #(Applied in CI/CD pipeline)

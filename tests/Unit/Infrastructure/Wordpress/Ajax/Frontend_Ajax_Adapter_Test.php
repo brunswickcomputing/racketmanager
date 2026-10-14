@@ -150,7 +150,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $comp = $this->createStub( Competition::class );
         $this->competition_service = $this->createMock( Competition_Service::class );
-        $this->competition_service->method( 'get_by_id' )->with( 1 )->willReturn( $comp );
+        $this->competition_service->expects( $this->once() )->method( 'get_by_id' )->with( 1 )->willReturn( $comp );
 
         $this->adapter  = $this->make_adapter();
         $response       = $this->adapter->tab_data( [
@@ -207,7 +207,7 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     public function test_validate_team_order_event_not_found_returns_404(): void {
         $this->security_service->method( 'verify_nonce' )->willReturn( true );
         $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->method( 'get_event_by_id' )
+        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )
             ->with( 999 )
             ->willThrowException( new \Racketmanager\Exceptions\Event_Not_Found_Exception( 'Event not found' ) );
         $this->competition_service = $competition_service;

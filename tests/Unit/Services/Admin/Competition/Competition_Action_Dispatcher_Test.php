@@ -270,7 +270,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $guard               = $this->createMock( Action_Guard_Interface::class );
 
-        $this->racketmanager->container->method('get')->with('competition_service')->willReturn($competition_service);
+        $this->racketmanager->container->expects( self::once() )->method('get')->with('competition_service')->willReturn($competition_service);
 
         $competition = $this->createMock(\Racketmanager\Domain\Competition\Competition::class);
         $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings(['mode' => 'default']);

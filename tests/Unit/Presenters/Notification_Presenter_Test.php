@@ -126,7 +126,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $tournament       = $this->createStub( Tournament::class );
             $tournament->link = '/tournament/123/';
             $tournament->name = 'Mock Tournament';
-            $this->tournament_repository->method( 'find_by_id' )->with( '123,2024', 'shortcode' )->willReturn( $tournament );
+            $this->tournament_repository->expects( $this->once() )->method( 'find_by_id' )->with( '123,2024', 'shortcode' )->willReturn( $tournament );
 
             $league = $this->createStub( League::class );
             $league->method( 'get_name' )->willReturn( 'Test League' );

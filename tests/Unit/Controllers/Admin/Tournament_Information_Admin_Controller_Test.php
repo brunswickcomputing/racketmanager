@@ -119,7 +119,7 @@ class Tournament_Information_Admin_Controller_Test extends TestCase {
         $tournament_id = 789;
 
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $tournament_service->method( 'get_tournament' )
+        $tournament_service->expects( self::once() )->method( 'get_tournament' )
             ->with( $tournament_id )
             ->willReturn( $this->create_tournament_instance( $tournament_id, 'Test' ) );
         
@@ -139,7 +139,7 @@ class Tournament_Information_Admin_Controller_Test extends TestCase {
         $tournament_id = 101;
 
         $tournament_service = $this->createMock( Tournament_Service::class );
-        $tournament_service->method( 'notify_finalists_for_tournament' )
+        $tournament_service->expects( self::once() )->method( 'notify_finalists_for_tournament' )
             ->with( $tournament_id )
             ->willReturn( true );
         

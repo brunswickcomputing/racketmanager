@@ -6,29 +6,27 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
 class Fixture_Repository_Save_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private $wpdb;
-    private $original_wpdb;
     private Fixture_Repository $repository;
 
     protected function setUp(): void {
         parent::setUp();
-        // Create a stub that behaves like wpdb
-        $this->wpdb = $this->createMock( wpdb::class );
+        $this->backup_globals();
+        $this->wpdb         = $this->createMock( wpdb::class );
         $this->wpdb->prefix = 'wp_';
-
-        global $wpdb;
-        $this->original_wpdb = $wpdb;
-        $wpdb = $this->wpdb;
+        $GLOBALS['wpdb']    = $this->wpdb;
 
         $this->repository = new Fixture_Repository();
     }
 
     protected function tearDown(): void {
-        global $wpdb;
-        $wpdb = $this->original_wpdb;
+        $this->restore_globals();
         parent::tearDown();
     }
 

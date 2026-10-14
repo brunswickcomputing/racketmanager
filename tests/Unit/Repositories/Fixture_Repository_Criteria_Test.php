@@ -5,31 +5,29 @@ namespace Racketmanager\Tests\Unit\Repositories {
 	use PHPUnit\Framework\TestCase;
 	use Racketmanager\Repositories\Fixture_Repository;
 	use Racketmanager\Services\Export\DTO\Export_Criteria;
+	use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 	use wpdb;
 
 	class Fixture_Repository_Criteria_Test extends TestCase {
-	private $wpdb;
-	private $original_wpdb;
-	private Fixture_Repository $repository;
+		use Manages_Wordpress_Globals;
 
-	protected function setUp(): void {
-		parent::setUp();
-		$this->wpdb = $this->createMock( wpdb::class );
-		$this->wpdb->prefix = 'wp_';
+		private $wpdb;
+		private Fixture_Repository $repository;
 
-		// We need to globalize $wpdb because Fixture_Repository::__construct uses it
-		global $wpdb;
-		$this->original_wpdb = $wpdb;
-		$wpdb = $this->wpdb;
+		protected function setUp(): void {
+			parent::setUp();
+			$this->backup_globals();
+			$this->wpdb = $this->createMock( wpdb::class );
+			$this->wpdb->prefix = 'wp_';
+			$GLOBALS['wpdb']    = $this->wpdb;
 
-		$this->repository = new Fixture_Repository();
-	}
+			$this->repository = new Fixture_Repository();
+		}
 
-	protected function tearDown(): void {
-		global $wpdb;
-		$wpdb = $this->original_wpdb;
-		parent::tearDown();
-	}
+		protected function tearDown(): void {
+			$this->restore_globals();
+			parent::tearDown();
+		}
 
 	public function test_find_by_criteria_generates_correct_sql() {
 		$criteria = new Export_Criteria( array(

@@ -5,25 +5,20 @@ namespace Racketmanager\Tests\Unit\Domain\Competition;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 class League_Test extends TestCase {
-    private ?\wpdb $original_wpdb = null;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        if ( isset( $GLOBALS['wpdb'] ) ) {
-            $this->original_wpdb = $GLOBALS['wpdb'];
-        }
+        $this->backup_globals();
         $GLOBALS['wpdb'] = new \wpdb();
     }
 
     protected function tearDown(): void {
-        if ( null !== $this->original_wpdb ) {
-            $GLOBALS['wpdb'] = $this->original_wpdb;
-        } else {
-            unset( $GLOBALS['wpdb'] );
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

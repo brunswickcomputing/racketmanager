@@ -7,22 +7,20 @@ use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Controller;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
 use Racketmanager\RacketManager;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Fixture_Ajax_Controller_Test extends TestCase {
-    private array $original_get;
-    private array $original_post;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_get  = $_GET;
-        $this->original_post = $_POST;
-        $_GET                = array();
-        $_POST               = array();
+        $this->backup_globals();
+        $_GET  = array();
+        $_POST = array();
     }
 
     protected function tearDown(): void {
-        $_GET  = $this->original_get;
-        $_POST = $this->original_post;
+        $this->restore_globals();
         parent::tearDown();
     }
 

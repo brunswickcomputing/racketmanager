@@ -7,29 +7,29 @@ use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Controllers\Export_Admin_Controller;
 use Racketmanager\RacketManager;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use WP_Error;
 use WP_REST_Response;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 final class Export_Admin_Controller_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     private RacketManager|Stub $racketmanager;
-    private mixed $original_racketmanager;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
-        $this->racketmanager          = $this->createStub( RacketManager::class );
-        $GLOBALS['racketmanager']     = $this->racketmanager;
-        $_GET                         = [];
+        $this->backup_globals();
+        $this->racketmanager      = $this->createStub( RacketManager::class );
+        $GLOBALS['racketmanager'] = $this->racketmanager;
+        $_GET                     = [];
         wp_stubs_reset_export_rest_globals();
     }
 
     protected function tearDown(): void {
-        $GLOBALS['racketmanager'] = $this->original_racketmanager;
-        $_GET                     = [];
         wp_stubs_reset_export_rest_globals();
+        $this->restore_globals();
         parent::tearDown();
     }
 

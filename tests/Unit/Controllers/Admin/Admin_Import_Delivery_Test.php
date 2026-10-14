@@ -19,58 +19,25 @@ use Racketmanager\Services\Admin\Import\Import_Action_Dispatcher_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Container_Bootstrap;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
-
-require_once __DIR__ . '/../../../wp-stubs.php';
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 final class Admin_Import_Delivery_Test extends TestCase {
-
-    private array $original_get;
-    private array $original_post;
-    private array $original_files;
-    private array $original_server;
-    private bool $had_capability_flag;
-    private mixed $original_capability_flag;
-    private bool $had_racketmanager;
-    private mixed $original_racketmanager;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_get             = $_GET;
-        $this->original_post            = $_POST;
-        $this->original_files           = $_FILES;
-        $this->original_server          = $_SERVER;
-        $this->had_capability_flag      = array_key_exists( 'wp_stubs_current_user_can', $GLOBALS );
-        $this->original_capability_flag = $GLOBALS['wp_stubs_current_user_can'] ?? null;
-        $this->had_racketmanager        = array_key_exists( 'racketmanager', $GLOBALS );
-        $this->original_racketmanager   = $GLOBALS['racketmanager'] ?? null;
-
-        $_GET                              = array();
-        $_POST                             = array();
-        $_FILES                            = array();
+        $this->backup_globals();
+        $_GET   = array();
+        $_POST  = array();
+        $_FILES = array();
         $_SERVER['REQUEST_METHOD']         = 'GET';
         $GLOBALS['wp_stubs_current_user_can'] = true;
     }
 
     protected function tearDown(): void {
-        $_GET    = $this->original_get;
-        $_POST   = $this->original_post;
-        $_FILES  = $this->original_files;
-        $_SERVER = $this->original_server;
-
-        if ( $this->had_capability_flag ) {
-            $GLOBALS['wp_stubs_current_user_can'] = $this->original_capability_flag;
-        } else {
-            unset( $GLOBALS['wp_stubs_current_user_can'] );
-        }
-        if ( $this->had_racketmanager ) {
-            $GLOBALS['racketmanager'] = $this->original_racketmanager;
-        } else {
-            unset( $GLOBALS['racketmanager'] );
-        }
-
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -211,9 +178,7 @@ final class Admin_Import_Delivery_Test extends TestCase {
     public function test_admin_import_constructor_resolves_services_from_container(): void {
         $wpdb_mock         = $this->createStub( \wpdb::class );
         $wpdb_mock->prefix = 'wp_';
-        global $wpdb;
-        $original_wpdb = $wpdb ?? null;
-        $wpdb          = $wpdb_mock;
+        $GLOBALS['wpdb']   = $wpdb_mock;
 
         $racketmanager            = $this->createStub( RacketManager::class );
         $racketmanager->method( 'get_options' )->willReturn( array() );
@@ -232,8 +197,6 @@ final class Admin_Import_Delivery_Test extends TestCase {
 
         $this->assertInstanceOf( Admin_Action_Adapter::class, $actions_prop->getValue( $admin_import ) );
         $this->assertInstanceOf( Admin_Screen_Presenter::class, $screens_prop->getValue( $admin_import ) );
-
-        $wpdb = $original_wpdb;
     }
 
     private function create_screen(

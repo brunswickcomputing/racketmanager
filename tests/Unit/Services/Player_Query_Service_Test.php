@@ -9,6 +9,7 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use RuntimeException;
 use wpdb;
 
@@ -175,15 +176,9 @@ final class Player_Query_Service_Test extends TestCase {
 			)
 		);
 		$rows = array( (object) array( 'id' => '31', 'name' => 'Summer League', 'season' => '2026' ) );
-		$competition = new Competition( 'Summer League', Competition_Type::LEAGUE, 'open', null, array(), 31 );
-		$competition->set_seasons(
-			array(
-				'2026' => array(
-					'name'       => '2026',
-					'date_start' => '2026-01-10',
-					'date_end'   => '2026-12-20',
-				),
-			)
+		$competition = Competition_Test_Factory::create(
+			id: 31,
+			seasons: Competition_Test_Factory::season_map( '2026', array( 'date_start' => '2026-01-10', 'date_end' => '2026-12-20' ) )
 		);
 		$repository = $this->createMock( Competition_Repository_Interface::class );
 		$repository->expects( $this->once() )

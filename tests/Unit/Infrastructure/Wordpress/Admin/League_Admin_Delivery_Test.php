@@ -17,6 +17,7 @@ use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
 use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
@@ -47,21 +48,16 @@ final class Testable_League_Admin_Display extends Admin_Display {
 
 #[AllowMockObjectsWithoutExpectations]
 final class League_Admin_Delivery_Test extends TestCase {
-
-    private ?string $original_method = null;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $this->backup_globals();
         $_SERVER['REQUEST_METHOD'] = 'POST';
     }
 
     protected function tearDown(): void {
-        if ( null === $this->original_method ) {
-            unset( $_SERVER['REQUEST_METHOD'] );
-        } else {
-            $_SERVER['REQUEST_METHOD'] = $this->original_method;
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

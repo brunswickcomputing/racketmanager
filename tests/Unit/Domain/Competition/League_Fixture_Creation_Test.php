@@ -19,19 +19,21 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
 class League_Fixture_Creation_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private $fixture_repository;
     private $rubber_repository;
     private Fixture_Service $fixture_service;
     private Simple_Container $container;
 
-    private $original_racketmanager;
-
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
         $this->rubber_repository  = $this->createMock( Rubber_Repository_Interface::class );
@@ -51,15 +53,13 @@ class League_Fixture_Creation_Test extends TestCase {
         $this->container->set( 'fixture_service', fn() => $this->fixture_service );
         $this->container->set( 'fixture_repository', fn() => $this->fixture_repository );
 
-        global $racketmanager;
-        $this->original_racketmanager = $racketmanager ?? null;
-        $racketmanager = new stdClass();
+        $racketmanager            = new stdClass();
         $racketmanager->container = $this->container;
+        $GLOBALS['racketmanager'] = $racketmanager;
     }
 
     protected function tearDown(): void {
-        global $racketmanager;
-        $racketmanager = $this->original_racketmanager;
+        $this->restore_globals();
         parent::tearDown();
     }
 

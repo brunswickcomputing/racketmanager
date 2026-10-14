@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Latest_Tournament_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
@@ -47,11 +48,9 @@ use Racketmanager\Presenters\Player_Presenter;
 use Racketmanager\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Public\Shortcodes_Tournament;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -60,6 +59,8 @@ use Racketmanager\Services\View\View_Renderer_Interface;
 use stdClass;
 
 class Tournament_Shortcode_Handlers_Test extends TestCase {
+    use Creates_Test_Container;
+
     private Tournament_Service $tournament_service;
 
     protected function setUp(): void {
@@ -572,10 +573,6 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
     // -------------------------------------------------------------------------
 
     public function test_shortcodes_tournament_facade_delegates_to_adapter(): void {
-        $racketmanager            = $this->createStub( RacketManager::class );
-        $container                = new Simple_Container();
-        $racketmanager->container = $container;
-
         $adapter = $this->createMock( Tournament_Shortcode_Adapter::class );
         $adapter->expects( $this->once() )->method( 'show_tournament' )->willReturn( 'facade_tournament' );
         $adapter->expects( $this->once() )->method( 'show_tournament_overview' )->willReturn( 'facade_overview' );
@@ -590,7 +587,7 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
         $adapter->expects( $this->once() )->method( 'show_tournament_withdrawal_modal' )->willReturn( 'facade_withdrawal_modal' );
         $adapter->expects( $this->once() )->method( 'show_tournament_withdrawal' )->willReturn( 'facade_withdrawal' );
 
-        $container->set( 'tournament_shortcode_adapter', fn() => $adapter );
+        $racketmanager = $this->create_app_with_services( [ 'tournament_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_Tournament( $racketmanager );
 

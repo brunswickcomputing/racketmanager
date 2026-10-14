@@ -996,6 +996,10 @@ namespace {
         define( 'RACKETMANAGER_PATH', dirname( __DIR__ ) . '/' );
     }
 
+    if ( ! defined( 'RACKETMANAGER_URL' ) ) {
+        define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
+    }
+
     if ( ! defined( 'RACKETMANAGER_IS_INVALID' ) ) {
         define( 'RACKETMANAGER_IS_INVALID', 'is-invalid' );
     }
@@ -1677,9 +1681,6 @@ namespace {
     }
     if ( ! defined( 'RACKETMANAGER_VERSION' ) ) {
         define( 'RACKETMANAGER_VERSION', '1.0.0' );
-    }
-    if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-        define( 'RACKETMANAGER_PATH', __DIR__ . '/../' );
     }
     if ( ! defined( 'WP_CONTENT_DIR' ) ) {
         define( 'WP_CONTENT_DIR', sys_get_temp_dir() . '/wp-content' );

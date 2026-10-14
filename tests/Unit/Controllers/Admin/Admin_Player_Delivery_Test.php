@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Controllers\Admin;
 
-use Exception;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_Player;
@@ -12,39 +11,31 @@ use Racketmanager\Admin\View_Models\Player_Errors_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Page_View_Model;
 use Racketmanager\Admin\View_Models\Player_Requests_Page_View_Model;
 use Racketmanager\Admin\View_Models\Players_Page_View_Model;
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
-use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
 use Racketmanager\Services\Admin\Player\Player_Error_Action_Dispatcher;
 use Racketmanager\Services\Admin\Player\Player_Request_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Club_Service;
-use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
-use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Season_Service;
-use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
-use stdClass;
-
-require_once __DIR__ . '/../../../wp-stubs.php';
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 #[AllowMockObjectsWithoutExpectations]
 final class Admin_Player_Delivery_Test extends TestCase {
+    use Creates_Admin_Delivery_Container;
+    use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
     private Admin_Redirector_Interface $redirector;
@@ -58,26 +49,11 @@ final class Admin_Player_Delivery_Test extends TestCase {
     private Player_Error_Action_Dispatcher $player_error_action_dispatcher;
     private Player_Request_Action_Dispatcher $player_request_action_dispatcher;
     private Admin_Player $screen;
-    private array $original_superglobals;
-    private array $original_globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_superglobals = array(
-            'get'                => $_GET,
-            'post'               => $_POST,
-            'request_method_set' => array_key_exists( 'REQUEST_METHOD', $_SERVER ),
-            'request_method'     => $_SERVER['REQUEST_METHOD'] ?? null,
-        );
-        $this->original_globals     = array(
-            'racketmanager_set' => array_key_exists( 'racketmanager', $GLOBALS ),
-            'racketmanager'     => $GLOBALS['racketmanager'] ?? null,
-            'capability_set'    => array_key_exists( 'wp_stubs_current_user_can', $GLOBALS ),
-            'capability'        => $GLOBALS['wp_stubs_current_user_can'] ?? null,
-        );
+        $this->backup_globals();
         $GLOBALS['wp_stubs_current_user_can'] = true;
-        $_GET  = array();
-        $_POST = array();
 
         $this->redirector           = $this->createMock( Admin_Redirector_Interface::class );
         $this->renderer             = $this->createMock( View_Renderer_Interface::class );
@@ -92,42 +68,26 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $this->player_request_action_dispatcher = new Player_Request_Action_Dispatcher( $this->registration_service, $this->guard );
 
         $message_service = new Admin_Message_Service( $this->flash_store );
+        $actions         = new Admin_Action_Adapter( $message_service, $this->redirector );
+        $screens         = new Admin_Screen_Presenter( $this->renderer, $message_service );
 
-        $this->container = new Simple_Container();
-        $this->container->set( 'admin_message_service', fn() => $message_service );
-        $this->container->set( 'player_service', fn() => $this->player_service );
-        $this->container->set( 'club_service', fn() => $this->club_service );
-        $this->container->set( 'registration_service', fn() => $this->registration_service );
-        $this->container->set( 'finance_service', fn() => $this->createStub( Finance_Service::class ) );
-        $this->container->set( 'competition_service', fn() => $this->createStub( Competition_Service::class ) );
-        $this->container->set( 'season_service', fn() => $this->createStub( Season_Service::class ) );
-        $this->container->set( 'team_service', fn() => $this->createStub( Team_Service::class ) );
-        $this->container->set( 'league_contact_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'league_setup_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'event_setup_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'season_delete_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'league_team_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->guard ) );
-        $this->container->set( 'league_match_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( \Racketmanager\Services\Fixture\Fixture_Maintenance_Service::class ), $this->guard ) );
-        $this->container->set( 'league_constitution_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Constitution_Action_Dispatcher( $this->guard ) );
-        $this->container->set( 'league_event_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Event_Action_Dispatcher( $this->createStub( League_Service::class ), $this->guard ) );
-        $this->container->set( 'league_schedule_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Schedule_Action_Dispatcher( new \Racketmanager\Services\Admin\League\League_Schedule_Service( $this->createStub( \Racketmanager\Services\Fixture\Fixture_Maintenance_Service::class ) ), $this->guard ) );
-        $this->container->set( 'club_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Action_Dispatcher( $this->createStub( Club_Service::class ), $this->createStub( Player_Service::class ), $this->guard ) );
-        $this->container->set( 'club_player_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Player_Action_Dispatcher( $this->createStub( Registration_Service::class ), $this->createStub( Player_Service::class ), $this->guard ) );
-        $this->container->set( 'club_team_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Team_Action_Dispatcher( $this->createStub( Club_Service::class ), $this->createStub( Team_Service::class ), $this->guard ) );
-        $this->container->set( 'club_role_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Role_Action_Dispatcher( $this->createStub( Club_Service::class ), $this->guard ) );
-        $this->container->set( 'season_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Season\Season_Action_Dispatcher( $this->createStub( Season_Service::class ), $this->guard ) );
-        $this->container->set( 'league_service', fn() => $this->createStub( League_Service::class ) );
-        $this->container->set( 'tournament_service', fn() => $this->createStub( Tournament_Service::class ) );
-        $this->container->set( 'fixture_repository', fn() => $this->createStub( Fixture_Repository_Interface::class ) );
-
-        $actions = new Admin_Action_Adapter( $message_service, $this->redirector );
-        $screens = new Admin_Screen_Presenter( $this->renderer, $message_service );
-
-        $this->container->set( 'admin_action_adapter', fn() => $actions );
-        $this->container->set( 'admin_screen_presenter', fn() => $screens );
-        $this->container->set( 'player_action_dispatcher', fn() => $this->player_action_dispatcher );
-        $this->container->set( 'player_error_action_dispatcher', fn() => $this->player_error_action_dispatcher );
-        $this->container->set( 'player_request_action_dispatcher', fn() => $this->player_request_action_dispatcher );
+        $this->container = $this->create_admin_delivery_container(
+            services: array(
+                'admin_message_service'            => $message_service,
+                'admin_action_adapter'            => $actions,
+                'admin_screen_presenter'          => $screens,
+                'player_service'                  => $this->player_service,
+                'club_service'                    => $this->club_service,
+                'registration_service'            => $this->registration_service,
+                'player_action_dispatcher'         => $this->player_action_dispatcher,
+                'player_error_action_dispatcher'   => $this->player_error_action_dispatcher,
+                'player_request_action_dispatcher' => $this->player_request_action_dispatcher,
+            ),
+            guard: $this->guard,
+            redirector: $this->redirector,
+            renderer: $this->renderer,
+            flash_store: $this->flash_store,
+        );
 
         $racketmanager            = $this->createMock( \Racketmanager\RacketManager::class );
         $racketmanager->container = $this->container;
@@ -144,25 +104,7 @@ final class Admin_Player_Delivery_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        $_GET  = $this->original_superglobals['get'];
-        $_POST = $this->original_superglobals['post'];
-        if ( $this->original_superglobals['request_method_set'] ) {
-            $_SERVER['REQUEST_METHOD'] = $this->original_superglobals['request_method'];
-        } else {
-            unset( $_SERVER['REQUEST_METHOD'] );
-        }
-
-        if ( $this->original_globals['racketmanager_set'] ) {
-            $GLOBALS['racketmanager'] = $this->original_globals['racketmanager'];
-        } else {
-            unset( $GLOBALS['racketmanager'] );
-        }
-        if ( $this->original_globals['capability_set'] ) {
-            $GLOBALS['wp_stubs_current_user_can'] = $this->original_globals['capability'];
-        } else {
-            unset( $GLOBALS['wp_stubs_current_user_can'] );
-        }
-
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -170,19 +112,19 @@ final class Admin_Player_Delivery_Test extends TestCase {
         $_GET['player_id'] = '10';
         $_GET['club_id']   = '2';
 
-        $player = Player_Factory::from_object( (object) array(
+        $player = Player_Test_Factory::create_sparse( [
             'id'           => 10,
+            'display_name' => 'John Doe',
+            'btm'          => '123456',
             'firstname'    => 'John',
             'surname'      => 'Doe',
-            'display_name' => 'John Doe',
-            'gender'       => 'M',
-            'btm'          => '123456',
             'email'        => 'john@example.com',
+            'gender'       => 'M',
             'contactno'    => '0123456789',
             'locked'       => true,
-        ) );
+        ] );
 
-        $club = new Club( (object) array( 'id' => 2, 'name' => 'Test Club' ) );
+        $club = Club_Test_Factory::create( id: 2, name: 'Test Club' );
 
         $this->player_service->expects( self::once() )
             ->method( 'get_player' )

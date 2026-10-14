@@ -36,11 +36,9 @@ use Racketmanager\Presenters\League_Standings_Presenter;
 use Racketmanager\Presenters\Player_Presenter;
 use Racketmanager\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes_League;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\League_Service;
@@ -49,30 +47,23 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 class League_Shortcode_Handlers_Test extends TestCase {
-    private mixed $original_wp;
-    private mixed $original_league;
+    use Creates_Test_Container;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
-        global $wp, $league;
-        $this->original_wp     = $wp ?? null;
-        $this->original_league = $league ?? null;
-        $wp                    = (object) [ 'query_vars' => [] ];
+        $this->backup_globals();
+        global $wp;
+        $wp = (object) [ 'query_vars' => [] ];
     }
 
     protected function tearDown(): void {
-        global $wp, $league;
-        $wp     = $this->original_wp;
-        $league = $this->original_league;
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -432,10 +423,6 @@ class League_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_shortcodes_league_facade_delegation(): void {
-        $container = new Simple_Container();
-        $racketmanager = $this->createStub( RacketManager::class );
-        $racketmanager->container = $container;
-
         $adapter = $this->createMock( League_Shortcode_Adapter::class );
         $adapter->expects( self::once() )->method( 'show_championship' )->with( [ 'id' => 1 ] )->willReturn( '<div>Champ</div>' );
         $adapter->expects( self::once() )->method( 'show_archive' )->with( [ 'id' => 1 ] )->willReturn( '<div>Archive</div>' );
@@ -448,7 +435,7 @@ class League_Shortcode_Handlers_Test extends TestCase {
         $adapter->expects( self::once() )->method( 'show_match_dropdown' )->with( [ 'id' => 1 ] )->willReturn( '<select>Match</select>' );
         $adapter->expects( self::once() )->method( 'show_last_5' )->with( [ 'id' => 1 ] )->willReturn( '<div>Last5</div>' );
 
-        $container->set( 'league_shortcode_adapter', fn() => $adapter );
+        $racketmanager = $this->create_app_with_services( [ 'league_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_League( $racketmanager );
 

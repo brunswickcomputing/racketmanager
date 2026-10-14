@@ -24,6 +24,7 @@ use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use WP_Error;
 
@@ -31,6 +32,7 @@ require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class Import_Action_Dispatcher_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     private Action_Guard_Interface $action_guard;
     private Fixture_Service $fixture_service;
@@ -38,12 +40,10 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     private Registration_Service $registration_service;
     private object $racketmanager;
     private Import_Action_Dispatcher $dispatcher;
-    private array $backup_post;
 
     protected function setUp(): void {
         parent::setUp();
-        
-        $this->backup_post = $_POST;
+        $this->backup_globals();
 
         $this->action_guard         = $this->createMock( Action_Guard_Interface::class );
         $this->fixture_service      = $this->createMock( Fixture_Service::class );
@@ -66,16 +66,7 @@ final class Import_Action_Dispatcher_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        $_POST = $this->backup_post;
-        
-        unset(
-            $GLOBALS['wp_filesystem'],
-            $GLOBALS['wp_stubs_filesystem_method'],
-            $GLOBALS['wp_stubs_wp_filesystem_return'],
-            $GLOBALS['wp_stubs_leagues'][10],
-            $GLOBALS['wp_stubs_league_teams'][101],
-            $GLOBALS['racketmanager']
-        );
+        $this->restore_globals();
         parent::tearDown();
     }
 

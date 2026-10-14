@@ -79,8 +79,6 @@ use Racketmanager\Presenters\Club_Shortcode_Presenter;
 use Racketmanager\Presenters\Competition_Shortcode_Presenter;
 use Racketmanager\Presenters\League_Standings_Presenter;
 use Racketmanager\Presenters\Matches_List_Presenter;
-use Racketmanager\Domain\Competition\Competition;
-use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Club_Shortcode_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
@@ -103,6 +101,7 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\Public\Shortcodes_Competition;
 use Racketmanager\Public\Shortcodes_Email;
@@ -453,8 +452,7 @@ class Shortcode_Adapters_Bootstrap_Test extends TestCase {
         $renderer->method( 'render_alert' )->willReturn( $dummy_output );
 
         $comp_service = $this->createStub( Competition_Service::class );
-        $comp = new Competition( 'Test Comp', Competition_Type::LEAGUE, 'open', null, [], 1 );
-        $comp->set_seasons( [ [ 'name' => '2026' ] ] );
+        $comp = Competition_Test_Factory::create( id: 1, name: 'Test Comp', seasons: Competition_Test_Factory::season_list() );
         $comp_service->method( 'get_by_id' )->willReturn( $comp );
         $comp_service->method( 'get_by_criteria' )->willReturn( [ $comp ] );
         $comp_service->method( 'get_events_for_competition' )->willReturn( [] );

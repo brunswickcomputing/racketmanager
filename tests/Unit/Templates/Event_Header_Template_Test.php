@@ -12,12 +12,6 @@ class Event_Header_Template_Test extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->template_path = dirname( __DIR__, 3 ) . '/templates/includes/event-header.php';
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 3 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
     }
 
     public function test_renders_with_enum_competition_type() {

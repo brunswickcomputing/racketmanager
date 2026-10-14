@@ -38,7 +38,6 @@ use Racketmanager\Public\Shortcodes_Event;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
@@ -46,29 +45,22 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Event_Shortcode_Handlers_Test extends TestCase {
-    private mixed $original_wp;
-    private mixed $original_event;
+    use Creates_Test_Container;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
-        global $wp, $event;
-        $this->original_wp    = $wp ?? null;
-        $this->original_event = $event ?? null;
-        $wp                   = (object) [ 'query_vars' => [] ];
+        $this->backup_globals();
+        global $wp;
+        $wp = (object) [ 'query_vars' => [] ];
     }
 
     protected function tearDown(): void {
-        global $wp, $event;
-        $wp    = $this->original_wp;
-        $event = $this->original_event;
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -587,10 +579,6 @@ class Event_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_shortcodes_event_facade_delegates_to_adapter(): void {
-        $racketmanager = $this->createStub( RacketManager::class );
-        $container     = new Simple_Container();
-        $racketmanager->container = $container;
-
         $adapter = $this->createMock( Event_Shortcode_Adapter::class );
         $adapter->expects( $this->once() )->method( 'show_event' )->willReturn( 'facade_event' );
         $adapter->expects( $this->once() )->method( 'show_event_standings' )->willReturn( 'facade_standings' );
@@ -604,7 +592,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $adapter->expects( $this->once() )->method( 'show_team_order_players' )->willReturn( 'facade_order_players' );
         $adapter->expects( $this->once() )->method( 'show_dropdown' )->willReturn( 'facade_dropdown' );
 
-        $container->set( 'event_shortcode_adapter', fn() => $adapter );
+        $racketmanager = $this->create_app_with_services( [ 'event_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_Event( $racketmanager );
 

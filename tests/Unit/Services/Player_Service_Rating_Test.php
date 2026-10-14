@@ -6,7 +6,6 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\LTA_Tennis_Number_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
@@ -19,6 +18,7 @@ use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
@@ -63,10 +63,11 @@ final class Player_Service_Rating_Test extends TestCase {
     }
 
     public function test_get_latest_wtn_updates_player_on_successful_rating_fetch(): void {
-        $player = new Player();
-        $player->id = 42;
-        $player->btm = '10203040';
-        $player->display_name = 'Jane Doe';
+        $player = Player_Test_Factory::create_sparse( [
+            'id'           => 42,
+            'display_name' => 'Jane Doe',
+            'btm'          => '10203040',
+        ] );
 
         $this->player_repository->expects( self::once() )
             ->method( 'find' )
@@ -99,10 +100,11 @@ final class Player_Service_Rating_Test extends TestCase {
     }
 
     public function test_get_latest_wtn_logs_error_on_failed_rating_fetch(): void {
-        $player = new Player();
-        $player->id = 99;
-        $player->btm = '99999999';
-        $player->display_name = 'John Doe';
+        $player = Player_Test_Factory::create_sparse( [
+            'id'           => 99,
+            'display_name' => 'John Doe',
+            'btm'          => '99999999',
+        ] );
 
         $this->player_repository->expects( self::once() )
             ->method( 'find' )
@@ -150,10 +152,11 @@ final class Player_Service_Rating_Test extends TestCase {
     }
 
     public function test_get_latest_wtn_throws_exception_when_btm_is_empty(): void {
-        $player = new Player();
-        $player->id = 10;
-        $player->btm = null;
-        $player->display_name = 'No BTM Player';
+        $player = Player_Test_Factory::create_sparse( [
+            'id'           => 10,
+            'display_name' => 'No BTM Player',
+            'btm'          => null,
+        ] );
 
         $this->player_repository->expects( self::once() )
             ->method( 'find' )

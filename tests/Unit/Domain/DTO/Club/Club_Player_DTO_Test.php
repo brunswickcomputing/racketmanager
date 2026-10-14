@@ -4,23 +4,22 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Domain\DTO\Club;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Player;
 use Racketmanager\Domain\DTO\Club\Club_Player_DTO;
-use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
-use Racketmanager\Domain\Player;
-use Racketmanager\Domain\Player_Factory;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Club_Player_DTO_Test extends TestCase {
 
 	public function test_construct_with_null_display_name(): void {
-		$dto = new Player_Hydration_DTO(
-			id: 10,
-			display_name: null
-		);
-		$player = Player_Factory::create_from_dto( $dto );
+		$player = Player_Test_Factory::create_sparse( [
+			'id'           => 10,
+			'display_name' => null,
+			'firstname'    => null,
+			'surname'      => null,
+		] );
 
-		$club = new Club( (object) array( 'shortcode' => 'TST' ) );
+		$club = Club_Test_Factory::create( shortcode: 'TST' );
 
 		$registration = new Club_Player();
 		$registration->id = 1;
@@ -44,15 +43,14 @@ class Club_Player_DTO_Test extends TestCase {
 	}
 
 	public function test_construct_with_valid_display_name(): void {
-		$dto = new Player_Hydration_DTO(
-			id: 20,
-			display_name: 'John Doe',
-			firstname: 'John',
-			surname: 'Doe'
-		);
-		$player = Player_Factory::create_from_dto( $dto );
+		$player = Player_Test_Factory::create_sparse( [
+			'id'           => 20,
+			'display_name' => 'John Doe',
+			'firstname'    => 'John',
+			'surname'      => 'Doe',
+		] );
 
-		$club = new Club( (object) array( 'shortcode' => 'ABC' ) );
+		$club = Club_Test_Factory::create( shortcode: 'ABC' );
 
 		$registration = new Club_Player();
 		$registration->id = 5;

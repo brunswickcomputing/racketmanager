@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Presenters;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Club;
 use Racketmanager\Presenters\Club_Presenter;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 
 class Club_Presenter_Test extends TestCase {
     private Club_Presenter $presenter;
@@ -16,11 +16,11 @@ class Club_Presenter_Test extends TestCase {
     }
 
     public function test_get_link_with_domain_club(): void {
-        $club = new Club( (object) array(
-            'id'        => 5,
-            'name'      => 'Leigh Tennis Club',
-            'shortcode' => 'leigh-tc',
-        ) );
+        $club = Club_Test_Factory::create(
+            id: 5,
+            name: 'Leigh Tennis Club',
+            shortcode: 'leigh-tc'
+        );
 
         $link = $this->presenter->get_link( $club );
         $this->assertEquals( '/clubs/leigh_tc/', $link );

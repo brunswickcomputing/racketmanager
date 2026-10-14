@@ -4,27 +4,19 @@ namespace Racketmanager\Tests\Unit\Services\Validator;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\Validator\Validator;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Validator_Security_Token_Test extends TestCase {
-    private array $original_request;
-    private mixed $original_nonce_result;
-    private bool $had_nonce_result;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_request    = $_REQUEST;
-        $this->had_nonce_result   = array_key_exists( 'wp_stubs_wp_verify_nonce_return', $GLOBALS );
-        $this->original_nonce_result = $GLOBALS['wp_stubs_wp_verify_nonce_return'] ?? null;
-        $_REQUEST                 = array();
+        $this->backup_globals();
+        $_REQUEST = array();
     }
 
     protected function tearDown(): void {
-        $_REQUEST = $this->original_request;
-        if ( $this->had_nonce_result ) {
-            $GLOBALS['wp_stubs_wp_verify_nonce_return'] = $this->original_nonce_result;
-        } else {
-            unset( $GLOBALS['wp_stubs_wp_verify_nonce_return'] );
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

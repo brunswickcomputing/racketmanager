@@ -30,47 +30,31 @@ use Racketmanager\Public\Shortcodes_Match;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Matches_Shortcode_Adapter_Test extends TestCase {
     use Creates_Test_Container;
-    private mixed $original_racketmanager;
-    private mixed $original_wp;
-    private mixed $original_query_vars;
-    private array $original_get;
+    use Manages_Wordpress_Globals;
 
     /** @var array<int, array> Recorded get_matches() calls. */
     private array $get_matches_calls = [];
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
-        global $racketmanager, $wp;
-        $this->original_racketmanager = $racketmanager ?? null;
-        $this->original_wp            = $wp ?? null;
-        $this->original_query_vars    = $GLOBALS['query_vars'] ?? null;
-        $this->original_get           = $_GET;
-        $wp                           = (object) [ 'query_vars' => [] ];
-        $GLOBALS['query_vars']        = [];
+        $this->backup_globals();
+        global $wp;
+        $wp                    = (object) [ 'query_vars' => [] ];
+        $GLOBALS['query_vars'] = [];
     }
 
     protected function tearDown(): void {
-        global $racketmanager, $wp;
-        $racketmanager         = $this->original_racketmanager;
-        $wp                    = $this->original_wp;
-        $GLOBALS['query_vars'] = $this->original_query_vars;
-        $_GET                  = $this->original_get;
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -425,15 +409,12 @@ class Matches_Shortcode_Adapter_Test extends TestCase {
     // ---------------------------------------------------------------------
 
     public function test_shortcodes_match_facade_delegates_to_adapter(): void {
-        $app       = $this->createStub( RacketManager::class );
-        $container = new Simple_Container();
-        $adapter   = $this->createMock( Matches_Shortcode_Adapter::class );
+        $adapter = $this->createMock( Matches_Shortcode_Adapter::class );
         $adapter->expects( $this->once() )->method( 'show_score' )->with( [ 'id' => 10 ] )->willReturn( 'facade-score' );
         $adapter->expects( $this->once() )->method( 'show_match_header' )->with( [ 'id' => 10 ] )->willReturn( 'facade-header' );
         $adapter->expects( $this->once() )->method( 'show_match_detail' )->with( [ 'id' => 10 ] )->willReturn( 'facade-detail' );
 
-        $container->set( 'matches_shortcode_adapter', fn() => $adapter );
-        $app->container = $container;
+        $app = $this->create_app_with_services( [ 'matches_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_Match( $app );
         $this->assertSame( 'facade-score', $facade->show_score( [ 'id' => 10 ] ) );

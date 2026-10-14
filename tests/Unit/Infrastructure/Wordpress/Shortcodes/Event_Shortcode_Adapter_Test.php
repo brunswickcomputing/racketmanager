@@ -20,23 +20,20 @@ use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Event_Shortcode_Adapter_Test extends TestCase {
-    private mixed $original_wp;
-    private mixed $original_event;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        global $wp, $event;
-        $this->original_wp    = $wp ?? null;
-        $this->original_event = $event ?? null;
-        $wp                   = (object) [ 'query_vars' => [] ];
+        $this->backup_globals();
+        global $wp;
+        $wp = (object) [ 'query_vars' => [] ];
     }
 
     protected function tearDown(): void {
-        global $wp, $event;
-        $wp    = $this->original_wp;
-        $event = $this->original_event;
+        $this->restore_globals();
         parent::tearDown();
     }
 

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Login_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Member_Account_Form_Handler;
@@ -21,6 +22,8 @@ use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\Player_Service;
 
 class Login_Shortcode_Handlers_Test extends TestCase {
+    use Creates_Test_Container;
+
     private RacketManager $racketmanager;
     private View_Renderer_Interface $renderer;
     private Shortcode_View_Presenter $view_presenter;
@@ -226,9 +229,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
             $member_account_handler
         );
 
-        $container = new \Racketmanager\Services\Container\Simple_Container();
-        $container->set( 'login_shortcode_adapter', fn() => $adapter );
-        $this->racketmanager->container = $container;
+        $this->racketmanager->container = $this->create_container_with_services( [ 'login_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_Login( $this->racketmanager );
 

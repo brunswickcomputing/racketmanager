@@ -12,10 +12,10 @@ namespace {
 
 namespace Racketmanager\Tests\Unit\Services\Validator {
 
+    use PHPUnit\Framework\Attributes\DataProvider;
     use PHPUnit\Framework\TestCase;
     use Racketmanager\Domain\Scoring\Scoring_Context;
     use Racketmanager\Services\Validator\Score_Validation_Service;
-    use stdClass;
 
     class Fixture_Score_Validator_Match_Test extends TestCase
     {
@@ -84,134 +84,123 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
             $this->assertEquals('null', $validated_sets[3]['settype']);
         }
 
-        public function test_validate_complete_match_2_1(): void
-        {
+        #[DataProvider('points_outcome_scenarios_provider')]
+        public function test_validate_points_outcomes(
+            array $sets,
+            ?string $match_status,
+            int $expected_home_points,
+            int $expected_away_points
+        ): void {
             $context = $this->create_scoring_context();
-            $sets = [
-                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
-                2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
-                3 => ['player1' => '6', 'player2' => '0', 'tiebreak' => ''],
-            ];
 
-            $this->validator->validate($context, $sets, null, 'set_');
+            $this->validator->validate($context, $sets, $match_status, 'set_');
 
             $this->assertFalse($this->validator->get_error());
-            $this->assertEquals(2, $this->validator->get_home_points());
-            $this->assertEquals(1, $this->validator->get_away_points());
+            $this->assertEquals($expected_home_points, $this->validator->get_home_points());
+            $this->assertEquals($expected_away_points, $this->validator->get_away_points());
         }
 
-        public function test_validate_retired_match(): void
+        public static function points_outcome_scenarios_provider(): array
         {
-            $context = $this->create_scoring_context();
-            // Player 1 retires in the second set
-            $sets = [
-                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
-                2 => ['player1' => '1', 'player2' => '2', 'tiebreak' => ''],
-                3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+            return [
+                'complete match 2-1' => [
+                    'sets' => [
+                        1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                        2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
+                        3 => ['player1' => '6', 'player2' => '0', 'tiebreak' => ''],
+                    ],
+                    'match_status' => null,
+                    'expected_home_points' => 2,
+                    'expected_away_points' => 1,
+                ],
+                'retired match player 1' => [
+                    'sets' => [
+                        1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                        2 => ['player1' => '1', 'player2' => '2', 'tiebreak' => ''],
+                        3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+                    ],
+                    // Retirement awards remaining sets to the opponent.
+                    'match_status' => 'retired_player1',
+                    'expected_home_points' => 1,
+                    'expected_away_points' => 2,
+                ],
+                'abandoned match' => [
+                    'sets' => [
+                        1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                        2 => ['player1' => '2', 'player2' => '2', 'tiebreak' => ''],
+                        3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+                    ],
+                    // Abandoned before a winner: home keeps set 1; the 2 unplayed sets (3 - 1 - 0) are credited to both players, giving 3/2.
+                    'match_status' => 'abandoned',
+                    'expected_home_points' => 3,
+                    'expected_away_points' => 2,
+                ],
+                'walkover match player 1' => [
+                    'sets' => [
+                        1 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+                        2 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+                        3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+                    ],
+                    // Walkover: home is awarded the match (num_sets_to_win = 2); away gets 0, as no forwalkover_rubber penalty is configured.
+                    'match_status' => 'walkover_player1',
+                    'expected_home_points' => 2,
+                    'expected_away_points' => 0,
+                ],
             ];
-
-            $this->validator->validate($context, $sets, 'retired_player1', 'set_');
-
-            $this->assertFalse($this->validator->get_error());
-            // Away player should get the remaining sets to win the match
-            // Set 1: Home won
-            // Set 2: Retired (Away wins)
-            // Set 3: Not played (Away wins to reach 2 sets)
-            $this->assertEquals(1, $this->validator->get_home_points());
-            $this->assertEquals(2, $this->validator->get_away_points());
         }
 
-        public function test_validate_abandoned_match(): void
-        {
+        #[DataProvider('error_scoring_scenarios_provider')]
+        public function test_validate_error_scoring_scenarios(
+            array $sets,
+            string $prefix,
+            string $expected_err_fld,
+            ?string $expected_err_msg = null
+        ): void {
             $context = $this->create_scoring_context();
-            $sets = [
-                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
-                2 => ['player1' => '2', 'player2' => '2', 'tiebreak' => ''],
-                3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-            ];
 
-            $this->validator->validate($context, $sets, 'abandoned', 'set_');
-
-            $this->assertFalse($this->validator->get_error());
-            // Abandoned logic typically shares remaining sets
-            // Set 1: Home won
-            // Remaining sets (2 and 3) are shared?
-            // home_score = 1 (set 1)
-            // shared = 3 - 1 - 0 = 2
-            // home_score = 1 + 2 = 3
-            // away_score = 0 + 2 = 2
-            $this->assertEquals(3, $this->validator->get_home_points());
-            $this->assertEquals(2, $this->validator->get_away_points());
-        }
-
-        public function test_validate_walkover(): void
-        {
-            $context = $this->create_scoring_context();
-            $sets = [
-                1 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-                2 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-                3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-            ];
-
-            $this->validator->validate($context, $sets, 'walkover_player1', 'set_');
-
-            $this->assertFalse($this->validator->get_error());
-            // Walkover home: home gets max points
-            $this->assertEquals(2, $this->validator->get_home_points());
-            $this->assertEquals(0, $this->validator->get_away_points());
-        }
-
-        public function test_validate_invalid_score_in_match(): void
-        {
-            $context = $this->create_scoring_context();
-            $sets = [
-                1 => ['player1' => '6', 'player2' => '6', 'tiebreak' => ''], // Invalid tied score
-                2 => ['player1' => '6', 'player2' => '2', 'tiebreak' => ''],
-                3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
-            ];
-
-            $this->validator->validate($context, $sets, null, 'set_');
+            $this->validator->validate($context, $sets, null, $prefix);
 
             $this->assertTrue($this->validator->get_error());
-            $this->assertContains('set_1_player1', $this->validator->get_err_flds());
+            $this->assertContains($expected_err_fld, $this->validator->get_err_flds());
+            if ($expected_err_msg !== null) {
+                $this->assertContains($expected_err_msg, $this->validator->get_err_msgs());
+            }
         }
 
-        public function test_validate_too_many_sets_entered(): void
+        public static function error_scoring_scenarios_provider(): array
         {
-            $context = $this->create_scoring_context();
-            $sets = [
-                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
-                2 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
-                3 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''], // Should be empty
+            return [
+                'invalid tied score in match' => [
+                    'sets' => [
+                        1 => ['player1' => '6', 'player2' => '6', 'tiebreak' => ''],
+                        2 => ['player1' => '6', 'player2' => '2', 'tiebreak' => ''],
+                        3 => ['player1' => '', 'player2' => '', 'tiebreak' => ''],
+                    ],
+                    'prefix' => 'set_',
+                    'expected_err_fld' => 'set_1_player1',
+                    'expected_err_msg' => null,
+                ],
+                'too many sets entered' => [
+                    'sets' => [
+                        1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                        2 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                        3 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                    ],
+                    'prefix' => 'set_',
+                    'expected_err_fld' => 'set_3_player1',
+                    'expected_err_msg' => 'Set score should be empty',
+                ],
+                'tiebreak required' => [
+                    'sets' => [
+                        1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
+                        2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
+                        3 => ['player1' => '7', 'player2' => '6', 'tiebreak' => ''],
+                    ],
+                    'prefix' => 'set_1_',
+                    'expected_err_fld' => 'set_1_3_tiebreak',
+                    'expected_err_msg' => 'Tie break score required',
+                ],
             ];
-
-            $this->validator->validate($context, $sets, null, 'set_');
-
-            $this->assertTrue($this->validator->get_error());
-            $this->assertContains('set_3_player1', $this->validator->get_err_flds());
-            $this->assertContains('Set score should be empty', $this->validator->get_err_msgs());
-        }
-
-        public function test_validate_tiebreak_required(): void
-        {
-            $context = $this->create_scoring_context();
-            $sets = [
-                1 => ['player1' => '6', 'player2' => '4', 'tiebreak' => ''],
-                2 => ['player1' => '4', 'player2' => '6', 'tiebreak' => ''],
-                3 => ['player1' => '7', 'player2' => '6', 'tiebreak' => ''], // Missing tiebreak
-            ];
-
-            // prefix used in the issue: set_1_3_tiebreak
-            // In Score_Validation_Service::validate:
-            // $set_prefix = $set_prefix_start . $s . '_';
-            // If $set_prefix_start is 'set_1_', and $s is 3, then $set_prefix is 'set_1_3_'
-            // Then in Set_Score_Validator: $this->err_flds[] = $set_prefix . 'tiebreak'; -> 'set_1_3_tiebreak'
-            
-            $this->validator->validate($context, $sets, null, 'set_1_');
-
-            $this->assertTrue($this->validator->get_error());
-            $this->assertContains('set_1_3_tiebreak', $this->validator->get_err_flds());
-            $this->assertContains('Tie break score required', $this->validator->get_err_msgs());
         }
 
         public function test_validate_mtb_set_score_no_tiebreak_required(): void
@@ -255,3 +244,4 @@ namespace Racketmanager\Tests\Unit\Services\Validator {
         }
     }
 }
+

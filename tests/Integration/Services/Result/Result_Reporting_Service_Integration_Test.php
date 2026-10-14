@@ -21,15 +21,23 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Result\Result_Reporting_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
 class Result_Reporting_Service_Integration_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
 	protected function setUp(): void {
 		parent::setUp();
+		$this->backup_globals();
 		$GLOBALS['racketmanager']            = new stdClass();
 		$GLOBALS['racketmanager']->site_name = 'Integration Site';
+	}
+
+	protected function tearDown(): void {
+		$this->restore_globals();
+		parent::tearDown();
 	}
 
 	public function test_report_result_with_actual_match_object(): void {

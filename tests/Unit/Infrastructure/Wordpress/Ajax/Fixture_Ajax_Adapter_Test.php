@@ -31,8 +31,11 @@ use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Fixture_Ajax_Adapter_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private Simple_Container $container;
     private MockObject|Security_Service_Interface $security_service;
     private MockObject|Fixture_Detail_Service $fixture_detail_service;
@@ -526,27 +529,15 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
     #[AllowMockObjectsWithoutExpectations]
     public function test_header_and_team_match_missing_nonce_ignore_request_global(): void {
-        $original_request = $_REQUEST;
-        $had_nonce_result = array_key_exists( 'wp_stubs_wp_verify_nonce_return', $GLOBALS );
-        $original_nonce_result = $GLOBALS['wp_stubs_wp_verify_nonce_return'] ?? null;
         $_REQUEST = array( 'security' => 'global-valid', 'racketmanager_nonce' => 'global-valid' );
         $GLOBALS['wp_stubs_wp_verify_nonce_return'] = true;
 
-        try {
-            $header_response = $this->adapter->update_fixture_header( array() );
-            $team_response   = $this->adapter->update_team_match( array() );
+        $header_response = $this->adapter->update_fixture_header( array() );
+        $team_response   = $this->adapter->update_team_match( array() );
 
-            foreach ( array( $header_response, $team_response ) as $response ) {
-                $this->assertSame( 403, $response->get_status_code() );
-                $this->assertStringContainsString( 'problem with your request', $response->get_content()->msg );
-            }
-        } finally {
-            $_REQUEST = $original_request;
-            if ( $had_nonce_result ) {
-                $GLOBALS['wp_stubs_wp_verify_nonce_return'] = $original_nonce_result;
-            } else {
-                unset( $GLOBALS['wp_stubs_wp_verify_nonce_return'] );
-            }
+        foreach ( array( $header_response, $team_response ) as $response ) {
+            $this->assertSame( 403, $response->get_status_code() );
+            $this->assertStringContainsString( 'problem with your request', $response->get_content()->msg );
         }
     }
 
@@ -733,6 +724,7 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
         $this->container        = new Simple_Container();
         $this->security_service = $this->createMock( Security_Service_Interface::class );
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
@@ -760,6 +752,11 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $presenter                    = new Fixture_Presenter( $link_service );
         $fixture_details_handler      = $this->createStub( Get_Fixture_Details_Handler::class );
         $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter, $fixture_details_handler );
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
     #[AllowMockObjectsWithoutExpectations]
     public function test_update_team_match_routes_to_confirmation(): void {

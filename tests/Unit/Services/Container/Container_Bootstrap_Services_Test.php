@@ -17,20 +17,20 @@ use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
 class Container_Bootstrap_Services_Test extends TestCase {
+    use Manages_Wordpress_Globals;
     private Simple_Container $container;
-    private $original_wpdb;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $wpdb_mock = $this->createStub( wpdb::class );
         $wpdb_mock->prefix = 'wp_';
-        global $wpdb;
-        $this->original_wpdb = $wpdb ?? null;
-        $wpdb = $wpdb_mock;
+        $GLOBALS['wpdb'] = $wpdb_mock;
 
         $app_mock = $this->createStub( RacketManager::class );
         $app_mock->method( 'get_options' )->willReturn( [] );
@@ -41,8 +41,7 @@ class Container_Bootstrap_Services_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        global $wpdb;
-        $wpdb = $this->original_wpdb;
+        $this->restore_globals();
         parent::tearDown();
     }
 

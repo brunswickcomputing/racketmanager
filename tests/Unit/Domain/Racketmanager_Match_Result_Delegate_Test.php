@@ -8,30 +8,30 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
 use ReflectionMethod;
 use stdClass;
 
 class Racketmanager_Match_Result_Delegate_Test extends TestCase {
-    private $original_racketmanager;
+    use Manages_Wordpress_Globals;
+
     private $repository;
 
     protected function setUp(): void {
         parent::setUp();
-        global $racketmanager;
-        $this->original_racketmanager = $racketmanager ?? null;
-        $this->repository             = $this->createMock( Result_Repository_Interface::class );
-        $container                    = new Simple_Container();
+        $this->backup_globals();
+        $this->repository         = $this->createMock( Result_Repository_Interface::class );
+        $container                = new Simple_Container();
         $container->set( 'result_repository', fn() => $this->repository );
         $racketmanager            = new stdClass();
         $racketmanager->container = $container;
+        $GLOBALS['racketmanager'] = $racketmanager;
         unset( $GLOBALS['wp_stubs_matches'][300] );
     }
 
     protected function tearDown(): void {
-        global $racketmanager;
-        $racketmanager = $this->original_racketmanager;
-        unset( $GLOBALS['wp_stubs_matches'][300] );
+        $this->restore_globals();
         parent::tearDown();
     }
 

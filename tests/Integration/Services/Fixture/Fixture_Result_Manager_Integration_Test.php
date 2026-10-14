@@ -38,6 +38,7 @@ use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\Scoring\Scoring_Context;
 use Racketmanager\Domain\DTO\Rubber\Rubber_Update_Result;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 interface Event_Mock_Interface {
@@ -61,6 +62,8 @@ class Event_Mock extends \Racketmanager\Domain\Competition\Event {
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Result_Manager_Integration_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private $result_service;
     private $progression_service;
     private $league_service;
@@ -85,6 +88,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
         $this->result_service = $this->createMock(Result_Service::class);
         $this->progression_service = $this->createMock(Knockout_Progression_Service::class);
         $this->league_service = $this->createMock(League_Service::class);
@@ -194,8 +198,7 @@ class Fixture_Result_Manager_Integration_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        unset($GLOBALS['wp_stubs_current_user_can']);
-        unset($GLOBALS['wp_stubs_get_current_user_id']);
+        $this->restore_globals();
         parent::tearDown();
     }
 

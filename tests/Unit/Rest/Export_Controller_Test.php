@@ -16,6 +16,7 @@ namespace Racketmanager\Tests\Unit\Rest {
     use Racketmanager\Services\Export\DTO\Export_Criteria;
     use Racketmanager\Services\Container\Simple_Container;
     use Racketmanager\Services\Export\Formatters\Export_Formatter_Interface;
+    use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
     use stdClass;
     use WP_REST_Request;
     use WP_REST_Response;
@@ -23,20 +24,20 @@ namespace Racketmanager\Tests\Unit\Rest {
 
     #[AllowMockObjectsWithoutExpectations]
     final class Export_Controller_Test extends TestCase {
+        use Manages_Wordpress_Globals;
 
         private RacketManager|MockObject $racketmanager;
         private MockObject|Export_Service $exporter;
-        private mixed $original_racketmanager;
 
         protected function setUp(): void {
             parent::setUp();
-            $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
+            $this->backup_globals();
             $this->racketmanager = $this->createMock( RacketManager::class );
             $container = $this->createMock( Simple_Container::class );
             $this->exporter = $this->createMock( Export_Service::class );
 
             $this->racketmanager->container = $container;
-        
+    
             // Mock container get('exporter')
             $container->method( 'get' )->willReturnCallback( function( $id ) {
                 if ( 'exporter' === $id ) return $this->exporter;
@@ -47,7 +48,7 @@ namespace Racketmanager\Tests\Unit\Rest {
         }
 
         protected function tearDown(): void {
-            $GLOBALS['racketmanager'] = $this->original_racketmanager;
+            $this->restore_globals();
             parent::tearDown();
         }
 

@@ -6,33 +6,31 @@ namespace Racketmanager\Tests\Unit\Domain\DTO\Club;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
-use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
-use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Presenters\Club_Presenter;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Club_Details_DTO_Test extends TestCase {
 
     public function test_construct_with_full_club_details(): void {
-        $club_data = (object) array(
-            'id'         => 12,
-            'name'       => 'Leigh Tennis Club',
-            'shortcode'  => 'leigh-tc',
-            'type'       => 'tennis',
-            'website'    => 'https://example.test',
-            'contactno'  => '01234567890',
-            'founded'    => 1920,
-            'facilities' => '6 hard courts, clubhouse',
-            'address'    => '123 Tennis Lane, SS0 9SB',
+        $club = Club_Test_Factory::create(
+            id: 12,
+            name: 'Leigh Tennis Club',
+            shortcode: 'leigh-tc',
+            type: 'tennis',
+            website: 'https://example.test',
+            contactno: '01234567890',
+            founded: 1920,
+            facilities: '6 hard courts, clubhouse',
+            address: '123 Tennis Lane, SS0 9SB'
         );
-        $club = new Club( $club_data );
 
-        $player_dto = new Player_Hydration_DTO(
-            id: 99,
-            display_name: 'John Doe',
-            email: 'john@example.test',
-            contactno: '01234567890'
-        );
-        $match_secretary = Player_Factory::create_from_dto( $player_dto );
+        $match_secretary = Player_Test_Factory::create_sparse( [
+            'id'           => 99,
+            'display_name' => 'John Doe',
+            'email'        => 'john@example.test',
+            'contactno'    => '01234567890',
+        ] );
         $roles           = array(
             (object) array(
                 'role'      => 'Secretary',
@@ -73,13 +71,12 @@ class Club_Details_DTO_Test extends TestCase {
     }
 
     public function test_club_presenter_integration_with_dto(): void {
-        $club_data = (object) array(
-            'id'        => 5,
-            'name'      => 'Westcliff Hardcourt',
-            'shortcode' => 'westcliff-hard',
-            'address'   => '456 Court Way, SS0 1AA',
+        $club      = Club_Test_Factory::create(
+            id: 5,
+            name: 'Westcliff Hardcourt',
+            shortcode: 'westcliff-hard',
+            address: '456 Court Way, SS0 1AA'
         );
-        $club      = new Club( $club_data );
         $dto       = new Club_Details_DTO( $club );
         $presenter = new Club_Presenter();
 

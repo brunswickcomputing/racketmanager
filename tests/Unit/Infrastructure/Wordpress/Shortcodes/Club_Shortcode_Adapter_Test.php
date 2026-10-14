@@ -30,7 +30,6 @@ use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
@@ -38,41 +37,31 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Club_Shortcode_Adapter_Test extends TestCase {
-    private mixed $original_wp;
-    private mixed $original_racketmanager;
-    private mixed $original_query_vars;
+    use Creates_Test_Container;
+    use Manages_Wordpress_Globals;
 
     /** @var array<int, array{path: string, vars: array}> Templates rendered through the capturing renderer. */
     private array $rendered = [];
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
+        $this->backup_globals();
         global $wp, $racketmanager;
-        $this->original_wp            = $wp ?? null;
-        $this->original_racketmanager = $racketmanager ?? null;
-        $this->original_query_vars    = $GLOBALS['query_vars'] ?? null;
-        $wp                           = (object) [ 'query_vars' => [] ];
-        $racketmanager                = $this->createStub( RacketManager::class );
-        $GLOBALS['query_vars']        = [ 'club_name' => 'leigh-ltc' ];
-        $this->rendered               = [];
+        $wp                    = (object) [ 'query_vars' => [] ];
+        $racketmanager         = $this->createStub( RacketManager::class );
+        $GLOBALS['query_vars'] = [ 'club_name' => 'leigh-ltc' ];
+        $this->rendered        = [];
         unset( $GLOBALS['wp_stubs_is_user_logged_in'], $GLOBALS['wp_stubs_current_user_can'] );
         $GLOBALS['wp_stubs_teams'] = [];
     }
 
     protected function tearDown(): void {
-        global $wp, $racketmanager;
-        $wp                    = $this->original_wp;
-        $racketmanager         = $this->original_racketmanager;
-        $GLOBALS['query_vars'] = $this->original_query_vars;
-        unset( $GLOBALS['wp_stubs_is_user_logged_in'], $GLOBALS['wp_stubs_current_user_can'], $GLOBALS['wp_stubs_get_current_user_id'], $GLOBALS['wp_stubs_teams'] );
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -421,15 +410,14 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     // ---------------------------------------------------------------------
 
     public function test_shortcodes_club_facade_delegates_to_adapter(): void {
-        $app       = $this->createStub( RacketManager::class );
-        $container = new Simple_Container();
-        $adapter   = $this->createMock( Club_Shortcode_Adapter::class );
+        $adapter = $this->createMock( Club_Shortcode_Adapter::class );
         $adapter->expects( $this->once() )->method( 'show_clubs' )->with( [ 'template' => 'list' ] )->willReturn( '<div class="clubs"></div>' );
         $adapter->expects( $this->once() )->method( 'show_club_roles' )->with( [] )->willReturn( '<div class="roles"></div>' );
         $adapter->expects( $this->once() )->method( 'show_club_invoices' )->with( [ 'template' => 'x' ] )->willReturn( 'invoices' );
 
-        $container->set( 'club_shortcode_adapter', fn() => $adapter );
-        $app->container = $container;
+        $app = $this->create_app_with_services( [
+            'club_shortcode_adapter' => $adapter,
+        ] );
 
         $facade = new Shortcodes_Club( $app );
         $this->assertSame( '<div class="clubs"></div>', $facade->show_clubs( [ 'template' => 'list' ] ) );
@@ -453,16 +441,15 @@ class Club_Shortcode_Adapter_Test extends TestCase {
     // ---------------------------------------------------------------------
 
     private function club(): Club {
-        return new Club( (object) [
-            'id'        => 10,
-            'name'      => 'Leigh Tennis Club',
-            'shortcode' => 'Leigh LTC',
-            'single'    => true,
-            'address'   => '123 Tennis Lane',
-            'postcode'  => 'SS9 1AA',
-            'latitude'  => '51.54',
-            'longitude' => '0.65',
-        ] );
+        return Club_Test_Factory::create(
+            id: 10,
+            name: 'Leigh Tennis Club',
+            shortcode: 'Leigh LTC',
+            address: '123 Tennis Lane',
+            overrides: [
+                'single' => true,
+            ],
+        );
     }
 
     private function invoice( int $id, int $billable_id ): Invoice {

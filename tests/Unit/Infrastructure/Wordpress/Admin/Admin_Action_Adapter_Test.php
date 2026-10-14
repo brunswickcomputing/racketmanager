@@ -9,25 +9,21 @@ use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\Services\Admin\Admin_Message_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class Admin_Action_Adapter_Test extends TestCase {
-
-    private ?string $original_method;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $this->backup_globals();
     }
 
     protected function tearDown(): void {
-        if ( null === $this->original_method ) {
-            unset( $_SERVER['REQUEST_METHOD'] );
-        } else {
-            $_SERVER['REQUEST_METHOD'] = $this->original_method;
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

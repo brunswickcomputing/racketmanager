@@ -25,20 +25,22 @@ namespace Racketmanager\Tests\Unit\Cli {
     use Racketmanager\RacketManager;
     use Racketmanager\Services\Export\Export_Service;
     use Racketmanager\Services\Container\Simple_Container;
+    use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
     use stdClass;
     use WP_CLI;
 
     #[AllowMockObjectsWithoutExpectations]
     final class Export_Command_Test extends TestCase {
+        use Manages_Wordpress_Globals;
 
         private Export_Service|MockObject $exporter;
-        private mixed $original_racketmanager;
 
         protected function setUp(): void {
             parent::setUp();
-            $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
-            $racketmanager                = $this->createMock( RacketManager::class );
-            $container = $this->createMock( Simple_Container::class );
+            $this->backup_globals();
+
+            $racketmanager = $this->createMock( RacketManager::class );
+            $container     = $this->createMock( Simple_Container::class );
             $this->exporter = $this->createMock( Export_Service::class );
 
             $racketmanager->container = $container;
@@ -46,16 +48,16 @@ namespace Racketmanager\Tests\Unit\Cli {
                 if ( 'exporter' === $id ) return $this->exporter;
                 return $this->createMock( stdClass::class );
             } );
-            
+
             $GLOBALS['racketmanager'] = $racketmanager;
-            
+
             WP_CLI::$logs = [];
             WP_CLI::$errors = [];
             WP_CLI::$successes = [];
         }
 
         protected function tearDown(): void {
-            $GLOBALS['racketmanager'] = $this->original_racketmanager;
+            $this->restore_globals();
             parent::tearDown();
         }
 

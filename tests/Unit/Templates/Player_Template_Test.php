@@ -15,13 +15,6 @@ class Player_Template_Test extends TestCase {
         parent::setUp();
         $this->player_header_template_path     = dirname( __DIR__, 3 ) . '/templates/includes/player-header.php';
         $this->player_list_names_template_path = dirname( __DIR__, 3 ) . '/templates/includes/player-list-names.php';
-
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 3 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
     }
 
     public function test_player_header_renders_page_header_without_link(): void {

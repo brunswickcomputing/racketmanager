@@ -14,7 +14,6 @@ use Racketmanager\Application\Competition\Queries\Get_Competition_Players_Handle
 use Racketmanager\Application\Competition\Queries\Get_Competition_Teams_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competitions_Handler;
-use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
@@ -35,6 +34,7 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
 
 #[AllowMockObjectsWithoutExpectations]
 class Shortcodes_Competition_Integration_Test extends TestCase {
@@ -45,12 +45,6 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
 
         $this->plugin            = $this->createMock( RacketManager::class );
         $this->container         = new Simple_Container();
@@ -65,9 +59,13 @@ class Shortcodes_Competition_Integration_Test extends TestCase {
         $reg_service    = $this->createStub( Registration_Service::class );
         $entry_service  = $this->createStub( Competition_Entry_Service::class );
 
-        $competition = new Competition( 'Integration Premier League', Competition_Type::LEAGUE, 'open', null, [], 10 );
-        $competition->set_seasons( [ [ 'name' => '2026', 'venue' => null, 'orderofplay' => [] ] ] );
-        $competition->current_season = [ 'name' => '2026', 'venue' => null, 'orderofplay' => [] ];
+        $season      = [ 'name' => '2026', 'venue' => null, 'orderofplay' => [] ];
+        $competition = Competition_Test_Factory::create(
+            id: 10,
+            name: 'Integration Premier League',
+            seasons: [ $season ],
+            current_season: $season
+        );
 
         $overview_dto = new Competition_Overview_DTO( (object) [
             'id'          => 10,

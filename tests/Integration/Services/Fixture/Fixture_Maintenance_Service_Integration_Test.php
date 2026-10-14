@@ -18,9 +18,12 @@ use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Maintenance_Service_Integration_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private $notification_service;
     private $settings_service;
     private $fixture_result_manager;
@@ -30,6 +33,7 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
         
         $this->notification_service = $this->createMock(Notification_Service::class);
         $this->settings_service = $this->createMock(Settings_Service::class);
@@ -66,6 +70,11 @@ class Fixture_Maintenance_Service_Integration_Test extends TestCase {
             public function __construct($container) { $this->container = $container; }
         };
         $GLOBALS['racketmanager'] = $racketmanager_instance;
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_chase_match_result_integration(): void {

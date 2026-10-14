@@ -15,20 +15,23 @@ use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 class Admin_Import_Fixtures_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
     private Simple_Container $container;
     private $fixture_service;
     private $player_service;
     private $registration_service;
     private $action_guard;
-    private $original_racketmanager;
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $this->fixture_service      = $this->createMock( Fixture_Service::class );
         $this->player_service       = $this->createMock( Player_Service::class );
@@ -38,8 +41,6 @@ class Admin_Import_Fixtures_Test extends TestCase {
         $this->container = new Simple_Container();
         $this->container->set( 'fixture_service', fn() => $this->fixture_service );
 
-        global $racketmanager;
-        $this->original_racketmanager = $racketmanager ?? null;
         $racketmanager = $this->getMockBuilder( RacketManager::class )
             ->disableOriginalConstructor()
             ->onlyMethods( [ 'get_team_id' ] )
@@ -47,12 +48,11 @@ class Admin_Import_Fixtures_Test extends TestCase {
         $racketmanager->container = $this->container;
         $racketmanager->method( 'get_team_id' )
             ->willReturn( 10 );
+        $GLOBALS['racketmanager'] = $racketmanager;
     }
 
     protected function tearDown(): void {
-        global $racketmanager;
-        $racketmanager = $this->original_racketmanager;
-        unset( $GLOBALS['wp_stubs_leagues'][99] );
+        $this->restore_globals();
         parent::tearDown();
     }
 

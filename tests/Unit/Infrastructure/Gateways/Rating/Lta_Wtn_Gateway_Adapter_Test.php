@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Gateways\Rating;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Domain\Player;
 use Racketmanager\Exceptions\LTA_System_Not_Available_Exception;
 use Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
 use WP_Error;
 
@@ -119,8 +119,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '10203040';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '10203040' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -151,8 +150,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '99999999';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '99999999' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -184,8 +182,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '99999999';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '99999999' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -219,8 +216,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '10 20&30';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '10 20&30' ] );
 
         $this->adapter->fetch_player_wtn( $player );
 
@@ -251,8 +247,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -284,8 +279,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -322,8 +316,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -363,8 +356,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -404,8 +396,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -445,8 +436,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -486,8 +476,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 
@@ -528,8 +517,7 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
 
         $this->adapter->prepare_env();
 
-        $player = new Player();
-        $player->btm = '12345678';
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
 
         $result = $this->adapter->fetch_player_wtn( $player );
 

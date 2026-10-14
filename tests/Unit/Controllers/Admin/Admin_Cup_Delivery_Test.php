@@ -11,60 +11,23 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Admin\Action_Result_DTO;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Domain\DTO\Admin\Championship\Draw_Action_Response_DTO;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Screen_Presenter;
 use Racketmanager\RacketManager;
-use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
-use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Admin\Championship\Draw_Action_Dispatcher;
-use Racketmanager\Services\Admin\Championship\Draw_Action_Handler_Interface;
-use Racketmanager\Services\Admin\Club\Club_Action_Dispatcher;
-use Racketmanager\Services\Admin\Club\Club_Player_Action_Dispatcher;
-use Racketmanager\Services\Admin\Club\Club_Role_Action_Dispatcher;
-use Racketmanager\Services\Admin\Club\Club_Team_Action_Dispatcher;
-use Racketmanager\Services\Admin\Competition\Competition_Action_Dispatcher;
-use Racketmanager\Services\Admin\Competition\Competition_Season_Action_Dispatcher;
 use Racketmanager\Services\Admin\Cup\Cup_Plan_Action_Dispatcher;
 use Racketmanager\Services\Admin\Cup\Cup_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
-use Racketmanager\Services\Admin\Finance\Finance_Charge_Action_Dispatcher;
-use Racketmanager\Services\Admin\Finance\Finance_Invoice_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Constitution_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Event_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Schedule_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Schedule_Service;
-use Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher;
-use Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher;
-use Racketmanager\Services\Admin\Player\Player_Action_Dispatcher;
-use Racketmanager\Services\Admin\Player\Player_Error_Action_Dispatcher;
-use Racketmanager\Services\Admin\Player\Player_Request_Action_Dispatcher;
-use Racketmanager\Services\Admin\Season\Season_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
-use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Container\Simple_Container;
-use Racketmanager\Services\Finance_Service;
-use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;
-use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\League_Service;
-use Racketmanager\Services\Player_Service;
-use Racketmanager\Services\Registration_Service;
-use Racketmanager\Services\Season_Service;
-use Racketmanager\Services\Team_Service;
-use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
-use stdClass;
-
-require_once __DIR__ . '/../../../wp-stubs.php';
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
 final class Admin_Cup_Delivery_Test extends TestCase {
+    use Creates_Admin_Delivery_Container;
+    use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
     private Admin_Redirector_Interface $redirector;
@@ -76,18 +39,11 @@ final class Admin_Cup_Delivery_Test extends TestCase {
     private Cup_Plan_Action_Dispatcher $cup_plan_dispatcher;
     private Draw_Action_Dispatcher $draw_action_dispatcher;
     private Admin_Cup $screen;
-    private ?string $original_method;
-    private mixed $previous_racketmanager = null;
-    private mixed $previous_capability    = null;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_method        = $_SERVER['REQUEST_METHOD'] ?? null;
-        $this->previous_racketmanager = $GLOBALS['racketmanager'] ?? null;
-        $this->previous_capability    = $GLOBALS['wp_stubs_current_user_can'] ?? null;
+        $this->backup_globals();
         $GLOBALS['wp_stubs_current_user_can'] = true;
-        $_GET                         = array();
-        $_POST                        = array();
 
         $this->redirector             = $this->createMock( Admin_Redirector_Interface::class );
         $this->renderer               = $this->createMock( View_Renderer_Interface::class );
@@ -98,50 +54,18 @@ final class Admin_Cup_Delivery_Test extends TestCase {
         $this->cup_plan_dispatcher    = $this->createMock( Cup_Plan_Action_Dispatcher::class );
         $this->draw_action_dispatcher = $this->createMock( Draw_Action_Dispatcher::class );
 
-        $message_service = new Admin_Message_Service( $this->flash_store );
-
-        $this->container = new Simple_Container();
-        $this->container->set( 'club_service', fn() => $this->createStub( Club_Service::class ) );
-        $this->container->set( 'player_service', fn() => $this->createStub( Player_Service::class ) );
-        $this->container->set( 'registration_service', fn() => $this->createStub( Registration_Service::class ) );
-        $this->container->set( 'team_service', fn() => $this->createStub( Team_Service::class ) );
-        $this->container->set( 'league_service', fn() => $this->createStub( League_Service::class ) );
-        $this->container->set( 'competition_service', fn() => $this->competition_service );
-        $this->container->set( 'finance_service', fn() => $this->createStub( Finance_Service::class ) );
-        $this->container->set( 'season_service', fn() => $this->createStub( Season_Service::class ) );
-        $this->container->set( 'tournament_service', fn() => $this->createStub( Tournament_Service::class ) );
-        $this->container->set( 'fixture_repository', fn() => $this->createStub( Fixture_Repository_Interface::class ) );
-        $this->container->set( 'admin_action_adapter', fn() => new Admin_Action_Adapter( $message_service, $this->redirector ) );
-        $this->container->set( 'admin_screen_presenter', fn() => new Admin_Screen_Presenter( $this->renderer, $message_service ) );
-        $this->container->set( 'admin_message_service', fn() => $message_service );
-
-        $this->container->set( 'league_contact_action_dispatcher', fn() => new League_Contact_Action_Dispatcher( $this->createStub( League_Service::class ), $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'league_setup_action_dispatcher', fn() => new League_Setup_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'event_setup_action_dispatcher', fn() => new Event_Setup_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'season_delete_action_dispatcher', fn() => new Season_Delete_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'league_team_action_dispatcher', fn() => new League_Team_Action_Dispatcher( $this->createStub( League_Service::class ), $this->guard ) );
-        $this->container->set( 'league_match_action_dispatcher', fn() => new League_Match_Action_Dispatcher( $this->createStub( Fixture_Repository_Interface::class ), $this->createStub( Fixture_Maintenance_Service::class ), $this->guard ) );
-        $this->container->set( 'league_constitution_action_dispatcher', fn() => new League_Constitution_Action_Dispatcher( $this->guard ) );
-        $this->container->set( 'league_event_action_dispatcher', fn() => new League_Event_Action_Dispatcher( $this->createStub( League_Service::class ), $this->guard ) );
-        $this->container->set( 'league_schedule_action_dispatcher', fn() => new League_Schedule_Action_Dispatcher( new League_Schedule_Service( $this->createStub( Fixture_Maintenance_Service::class ) ), $this->guard ) );
-
-        $this->container->set( 'club_action_dispatcher', fn() => new Club_Action_Dispatcher( $this->createStub( Club_Service::class ), $this->createStub( Player_Service::class ), $this->guard ) );
-        $this->container->set( 'club_player_action_dispatcher', fn() => new Club_Player_Action_Dispatcher( $this->createStub( Registration_Service::class ), $this->createStub( Player_Service::class ), $this->guard ) );
-        $this->container->set( 'club_team_action_dispatcher', fn() => new Club_Team_Action_Dispatcher( $this->createStub( Club_Service::class ), $this->createStub( Team_Service::class ), $this->guard ) );
-        $this->container->set( 'club_role_action_dispatcher', fn() => new Club_Role_Action_Dispatcher( $this->createStub( Club_Service::class ), $this->guard ) );
-        $this->container->set( 'season_action_dispatcher', fn() => new Season_Action_Dispatcher( $this->createStub( Season_Service::class ), $this->guard ) );
-        $this->container->set( 'competition_action_dispatcher', fn() => new Competition_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'competition_season_action_dispatcher', fn() => new Competition_Season_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->createStub( Finance_Service::class ), $this->guard ) );
-        $this->container->set( 'event_action_dispatcher', fn() => new Event_Action_Dispatcher( $this->createStub( Competition_Service::class ), $this->guard ) );
-        $this->container->set( 'finance_charge_action_dispatcher', fn() => new Finance_Charge_Action_Dispatcher( $this->createStub( Finance_Service::class ), $this->guard ) );
-        $this->container->set( 'finance_invoice_action_dispatcher', fn() => new Finance_Invoice_Action_Dispatcher( $this->createStub( Finance_Service::class ), $this->guard ) );
-        $this->container->set( 'player_action_dispatcher', fn() => new Player_Action_Dispatcher( $this->createStub( Player_Service::class ), $this->guard ) );
-        $this->container->set( 'player_error_action_dispatcher', fn() => new Player_Error_Action_Dispatcher( $this->createStub( Player_Service::class ), $this->guard ) );
-        $this->container->set( 'player_request_action_dispatcher', fn() => new Player_Request_Action_Dispatcher( $this->createStub( Registration_Service::class ), $this->guard ) );
-
-        $this->container->set( 'cup_setup_action_dispatcher', fn() => $this->cup_setup_dispatcher );
-        $this->container->set( 'cup_plan_action_dispatcher', fn() => $this->cup_plan_dispatcher );
-        $this->container->set( 'draw_action_dispatcher', fn() => $this->draw_action_dispatcher );
+        $this->container = $this->create_admin_delivery_container(
+            services: array(
+                'competition_service'         => $this->competition_service,
+                'cup_setup_action_dispatcher' => $this->cup_setup_dispatcher,
+                'cup_plan_action_dispatcher'  => $this->cup_plan_dispatcher,
+                'draw_action_dispatcher'      => $this->draw_action_dispatcher,
+            ),
+            guard: $this->guard,
+            redirector: $this->redirector,
+            renderer: $this->renderer,
+            flash_store: $this->flash_store,
+        );
 
         $racketmanager            = $this->createMock( RacketManager::class );
         $racketmanager->container = $this->container;
@@ -157,24 +81,7 @@ final class Admin_Cup_Delivery_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        if ( null !== $this->original_method ) {
-            $_SERVER['REQUEST_METHOD'] = $this->original_method;
-        } else {
-            unset( $_SERVER['REQUEST_METHOD'] );
-        }
-        $_GET  = array();
-        $_POST = array();
-        if ( null !== $this->previous_racketmanager ) {
-            $GLOBALS['racketmanager'] = $this->previous_racketmanager;
-        } else {
-            unset( $GLOBALS['racketmanager'] );
-        }
-        if ( null !== $this->previous_capability ) {
-            $GLOBALS['wp_stubs_current_user_can'] = $this->previous_capability;
-        } else {
-            unset( $GLOBALS['wp_stubs_current_user_can'] );
-        }
-        unset( $GLOBALS['wp_stubs_leagues'] );
+        $this->restore_globals();
         parent::tearDown();
     }
 
@@ -387,31 +294,32 @@ final class Admin_Cup_Delivery_Test extends TestCase {
     }
 
     private function create_test_competition( int $id = 5, string $season = '2024' ): Competition {
-        $competition = new Competition( 'Test Cup', \Racketmanager\Domain\Competition\Competition_Type::CUP, 'open', null, array(), $id );
-        $competition->set_seasons( array(
-            $season => array(
-                'name'           => $season,
-                'date_start'     => '2024-05-01',
-                'date_end'       => '2024-09-01',
-                'date_closing'   => '2024-04-15',
-                'round_length'   => 7,
-                'match_dates'    => array( '2024-05-01', '2024-06-01', '2024-07-01' ),
-                'starttime'      => '10:00',
-                'time_increment' => '01:00:00',
-                'num_courts'     => 4,
+        return Competition_Test_Factory::create(
+            id: $id,
+            name: 'Test Cup',
+            type: \Racketmanager\Domain\Competition\Competition_Type::CUP,
+            seasons: Competition_Test_Factory::season_map(
+                $season,
+                array(
+                    'date_start'     => '2024-05-01',
+                    'date_end'       => '2024-09-01',
+                    'date_closing'   => '2024-04-15',
+                    'round_length'   => 7,
+                    'match_dates'    => array( '2024-05-01', '2024-06-01', '2024-07-01' ),
+                    'starttime'      => '10:00',
+                    'time_increment' => '01:00:00',
+                    'num_courts'     => 4,
+                )
             ),
-        ) );
-        $competition->finals = array(
-            array(
-                'round'       => 1,
-                'name'        => 'Final',
-                'num_matches' => 1,
-            ),
+            settings: array( 'fixed_match_dates' => false ),
+            finals: array(
+                array(
+                    'round'       => 1,
+                    'name'        => 'Final',
+                    'num_matches' => 1,
+                ),
+            )
         );
-        $competition->set_settings( array(
-            'fixed_match_dates' => false,
-        ) );
-        return $competition;
     }
 
     public function test_unhandled_post_does_not_redirect(): void {

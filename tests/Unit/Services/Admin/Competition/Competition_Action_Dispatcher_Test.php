@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services\Admin\Competition;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Admin\Admin_Message_Type;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
@@ -19,6 +20,8 @@ require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class Competition_Action_Dispatcher_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
 
     public function test_unhandled_action_returns_empty_dto(): void {
         $competition_service = $this->createMock( Competition_Service::class );
@@ -300,21 +303,9 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
     }
 
     private $racketmanager;
-    private mixed $original_racketmanager = null;
-    private mixed $original_wpdb = null;
-    private mixed $original_event = null;
-    private bool $had_racketmanager = false;
-    private bool $had_wpdb = false;
-    private bool $had_event = false;
-
     protected function setUp(): void {
         parent::setUp();
-        $this->had_racketmanager = array_key_exists( 'racketmanager', $GLOBALS );
-        $this->had_wpdb          = array_key_exists( 'wpdb', $GLOBALS );
-        $this->had_event          = isset( $GLOBALS['wp_stubs_events'] ) && array_key_exists( 5, $GLOBALS['wp_stubs_events'] );
-        $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
-        $this->original_wpdb          = $GLOBALS['wpdb'] ?? null;
-        $this->original_event         = $GLOBALS['wp_stubs_events'][5] ?? null;
+        $this->backup_globals();
 
         $GLOBALS['wpdb'] = new class() {
             public string $racketmanager_events = 'events';
@@ -343,21 +334,7 @@ final class Competition_Action_Dispatcher_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        if ( $this->had_racketmanager ) {
-            $GLOBALS['racketmanager'] = $this->original_racketmanager;
-        } else {
-            unset( $GLOBALS['racketmanager'] );
-        }
-        if ( $this->had_wpdb ) {
-            $GLOBALS['wpdb'] = $this->original_wpdb;
-        } else {
-            unset( $GLOBALS['wpdb'] );
-        }
-        if ( $this->had_event ) {
-            $GLOBALS['wp_stubs_events'][5] = $this->original_event;
-        } else {
-            unset( $GLOBALS['wp_stubs_events'][5] );
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 }

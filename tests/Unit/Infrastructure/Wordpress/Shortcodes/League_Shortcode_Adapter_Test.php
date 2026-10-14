@@ -27,32 +27,20 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class League_Shortcode_Adapter_Test extends TestCase {
-    private mixed $original_wp;
-    private mixed $original_racketmanager;
-    private mixed $original_league;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
-        global $wp, $racketmanager, $league;
-        $this->original_wp            = $wp ?? null;
-        $this->original_racketmanager = $racketmanager ?? null;
-        $this->original_league        = $league ?? null;
-        $wp                           = (object) [ 'query_vars' => [] ];
+        $this->backup_globals();
+        global $wp;
+        $wp = (object) [ 'query_vars' => [] ];
     }
 
     protected function tearDown(): void {
-        global $wp, $racketmanager, $league;
-        $wp            = $this->original_wp;
-        $racketmanager = $this->original_racketmanager;
-        $league        = $this->original_league;
+        $this->restore_globals();
         parent::tearDown();
     }
 

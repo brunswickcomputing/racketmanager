@@ -9,11 +9,9 @@ use Racketmanager\Application\Competition\Queries\Get_Competition_Payment_Handle
 use Racketmanager\Application\Competition\Queries\Get_Competition_Payment_Query;
 use Racketmanager\Domain\Charge;
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\Tournament_Entry;
-use Racketmanager\Domain\DTO\Player\Player_Hydration_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Competition_Shortcode_Adapter;
 use Racketmanager\RacketManager;
@@ -27,33 +25,30 @@ use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use Racketmanager\Presenters\Shortcode_View_Presenter;
 
 class Competition_Entry_Flow_Test extends TestCase {
-    private array $original_query_vars;
-    private mixed $original_plugin;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
-        global $racketmanager;
-        $this->original_query_vars = $GLOBALS['query_vars'] ?? [];
-        $this->original_plugin     = $racketmanager ?? null;
-        $GLOBALS['query_vars']     = [];
+        parent::setUp();
+        $this->backup_globals();
+        $GLOBALS['query_vars']                 = [];
         $GLOBALS['wp_stubs_is_user_logged_in'] = true;
-        $GLOBALS['wp_stubs_current_user_can'] = false;
+        $GLOBALS['wp_stubs_current_user_can']  = false;
     }
 
     protected function tearDown(): void {
-        global $racketmanager;
-        $GLOBALS['query_vars'] = $this->original_query_vars;
-        $racketmanager = $this->original_plugin;
-        unset( $GLOBALS['wp_stubs_clubs'], $GLOBALS['wp_stubs_is_user_logged_in'], $GLOBALS['wp_stubs_current_user_can'] );
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_captain_and_admin_club_selection_render_a_real_club_link(): void {
-        $competition = $this->competition( Competition_Type::LEAGUE );
+        $competition = Competition_Test_Factory::create( seasons: Competition_Test_Factory::season_map() );
         $GLOBALS['query_vars'] = [ 'competition_name' => 'Summer League', 'season' => '2026' ];
         $club = (object) [ 'id' => 4, 'shortcode' => 'WST', 'name' => 'Westcliff Tennis' ];
         $plugin = $this->createStub( RacketManager::class );
@@ -109,7 +104,7 @@ class Competition_Entry_Flow_Test extends TestCase {
             } );
         foreach ( [ Competition_Type::LEAGUE, Competition_Type::CUP ] as $type ) {
             $service = $this->createStub( Competition_Service::class );
-            $service->method( 'get_by_id' )->willReturn( $this->competition( $type ) );
+            $service->method( 'get_by_id' )->willReturn( Competition_Test_Factory::create( type: $type, seasons: Competition_Test_Factory::season_map() ) );
             $adapter = new Competition_Shortcode_Adapter(
                 competition_service: $service, club_service: $club_service,
                 team_service: $team_service, player_service: $player_service,
@@ -126,7 +121,7 @@ class Competition_Entry_Flow_Test extends TestCase {
 
     public function test_missing_season_and_unauthorised_club_are_rejected(): void {
         $service = $this->createStub( Competition_Service::class );
-        $service->method( 'get_by_id' )->willReturn( $this->competition( Competition_Type::CUP ) );
+        $service->method( 'get_by_id' )->willReturn( Competition_Test_Factory::create( type: Competition_Type::CUP, seasons: Competition_Test_Factory::season_map() ) );
         $renderer = new Shortcode_Template_Renderer( new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' ) );
         $player_service = $this->createMock( Player_Service::class );
         $player_service->expects( $this->once() )->method( 'find_all_associated_clubs' )
@@ -164,7 +159,7 @@ class Competition_Entry_Flow_Test extends TestCase {
     public function test_tournament_entry_provides_player_season_and_fees_to_the_entry_template(): void {
         $GLOBALS['query_vars'] = [ 'tournament' => 'Autumn Open' ];
         $tournament = $this->tournament();
-        $competition = $this->competition( Competition_Type::TOURNAMENT );
+        $competition = Competition_Test_Factory::create( type: Competition_Type::TOURNAMENT, seasons: Competition_Test_Factory::season_map() );
         $player = $this->player();
         $tournament_service = $this->createStub( Tournament_Service::class );
         $tournament_service->method( 'get_tournament_by_name' )->willReturn( $tournament );
@@ -374,20 +369,10 @@ class Competition_Entry_Flow_Test extends TestCase {
     }
 
     private function player(): Player {
-        return new Player( new Player_Hydration_DTO( id: 1, display_name: 'Jane Doe', gender: 'F' ) );
+        return Player_Test_Factory::create_sparse( [ 'id' => 1, 'display_name' => 'Jane Doe', 'gender' => 'F' ] );
     }
 
     private function club(): Club {
-        $club = new Club();
-        $club->id = 4;
-        $club->shortcode = 'WST';
-        $club->name = 'Westcliff Tennis';
-        return $club;
-    }
-
-    private function competition( Competition_Type $type ): Competition {
-        $competition = new Competition( 'Summer League', $type, 'open', null, [], 5 );
-        $competition->set_seasons( [ '2026' => [ 'name' => '2026' ] ] );
-        return $competition;
+        return Club_Test_Factory::create( id: 4, shortcode: 'WST', name: 'Westcliff Tennis' );
     }
 }

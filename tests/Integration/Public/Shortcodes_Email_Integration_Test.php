@@ -34,9 +34,11 @@ use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 #[AllowMockObjectsWithoutExpectations]
 class Shortcodes_Email_Integration_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     private $plugin;
     private $container;
@@ -50,6 +52,7 @@ class Shortcodes_Email_Integration_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $this->plugin            = $this->createMock( RacketManager::class );
         $this->plugin->site_name = 'Test Tennis League';
@@ -160,6 +163,11 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         ) );
 
         $this->shortcode = new Shortcodes_Email( $this->plugin );
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_show_match_notification_renders_template_with_adapted_data(): void {

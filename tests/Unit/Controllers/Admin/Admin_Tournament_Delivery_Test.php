@@ -22,13 +22,13 @@ use Racketmanager\Services\Admin\Tournament\Tournament_Information_Action_Dispat
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
 
 interface Admin_Draw_Controller_Mock_Interface {
     public function draw_page( array $query, array $post ): array;
 }
-
-require_once __DIR__ . '/../../../wp-stubs.php';
 
 /**
  * Demonstrates the POST (guard -> dispatch -> flash -> PRG redirect) / GET (flash -> view model -> render)
@@ -36,6 +36,8 @@ require_once __DIR__ . '/../../../wp-stubs.php';
  */
 #[AllowMockObjectsWithoutExpectations]
 final class Admin_Tournament_Delivery_Test extends TestCase {
+    use Creates_Admin_Delivery_Container;
+    use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
     private Admin_Redirector_Interface $redirector;
@@ -44,13 +46,10 @@ final class Admin_Tournament_Delivery_Test extends TestCase {
     private Action_Guard_Interface $guard;
     private Tournament_Service $tournament_service;
     private Admin_Tournament $screen;
-    private ?string $original_method;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_method = $_SERVER['REQUEST_METHOD'] ?? null;
-        $_GET                  = array();
-        $_POST                 = array();
+        $this->backup_globals();
 
         $this->redirector         = $this->createMock( Admin_Redirector_Interface::class );
         $this->renderer           = $this->createMock( View_Renderer_Interface::class );
@@ -60,15 +59,21 @@ final class Admin_Tournament_Delivery_Test extends TestCase {
 
         $message_service = new Admin_Message_Service( $this->flash_store );
 
-        $this->container = new Simple_Container();
-        $this->container->set(
-            'tournament_information_admin_controller',
-            fn() => new Tournament_Information_Admin_Controller(
-                $this->tournament_service,
-                new Tournament_Information_Action_Dispatcher( $this->tournament_service, $this->guard ),
-                $this->guard
-            )
+        $this->container = $this->create_admin_delivery_container(
+            services: array(
+                'tournament_service'                      => $this->tournament_service,
+                'tournament_information_admin_controller' => new Tournament_Information_Admin_Controller(
+                    $this->tournament_service,
+                    new Tournament_Information_Action_Dispatcher( $this->tournament_service, $this->guard ),
+                    $this->guard
+                ),
+            ),
+            guard: $this->guard,
+            redirector: $this->redirector,
+            renderer: $this->renderer,
+            flash_store: $this->flash_store,
         );
+
         $racketmanager            = $this->createStub( RacketManager::class );
         $racketmanager->container = $this->container;
 
@@ -82,13 +87,7 @@ final class Admin_Tournament_Delivery_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        $_GET  = array();
-        $_POST = array();
-        if ( null === $this->original_method ) {
-            unset( $_SERVER['REQUEST_METHOD'] );
-        } else {
-            $_SERVER['REQUEST_METHOD'] = $this->original_method;
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

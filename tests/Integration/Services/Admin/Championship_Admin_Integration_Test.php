@@ -16,11 +16,23 @@ use Racketmanager\Services\Admin\Championship_Admin_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Services\Tournament_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
 class Championship_Admin_Integration_Test extends TestCase {
+    use Manages_Wordpress_Globals;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->backup_globals();
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
+    }
 
     private function create_real_instance_without_constructor( string $class_name ) {
         $reflection = new ReflectionClass( $class_name );

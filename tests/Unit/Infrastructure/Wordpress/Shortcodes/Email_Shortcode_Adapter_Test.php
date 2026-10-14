@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
@@ -14,13 +15,13 @@ use Racketmanager\Domain\Team;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
 use Racketmanager\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Public\Shortcodes_Email;
-use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 #[AllowMockObjectsWithoutExpectations]
 class Email_Shortcode_Adapter_Test extends TestCase {
+    use Creates_Test_Container;
+
     private Fixture_Repository_Interface $fixture_repository;
     private Email_Shortcode_Presenter $presenter;
     private Shortcode_Template_Renderer|MockObject $template_renderer;
@@ -263,9 +264,7 @@ class Email_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_shortcodes_email_facade_delegates_to_container_adapter(): void {
-        $app       = $this->createStub( RacketManager::class );
-        $container = new Simple_Container();
-        $adapter   = $this->createMock( Email_Shortcode_Adapter::class );
+        $adapter = $this->createMock( Email_Shortcode_Adapter::class );
 
         $adapter->expects( $this->once() )->method( 'show_match_notification' )->with( [ 'match' => 1 ] )->willReturn( 'match_notif' );
         $adapter->expects( $this->once() )->method( 'show_result_notification' )->with( [ 'match' => 2 ] )->willReturn( 'result_notif' );
@@ -277,8 +276,7 @@ class Email_Shortcode_Adapter_Test extends TestCase {
         $adapter->expects( $this->once() )->method( 'show_withdrawn_team_match' )->with( [ 'event' => 'b' ] )->willReturn( 'withdrawn_match' );
         $adapter->expects( $this->once() )->method( 'show_event_constitution' )->with( [ 'id' => 7 ] )->willReturn( 'constitution' );
 
-        $container->set( 'email_shortcode_adapter', fn() => $adapter );
-        $app->container = $container;
+        $app = $this->create_app_with_services( [ 'email_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_Email( $app );
         $this->assertSame( 'match_notif', $facade->show_match_notification( [ 'match' => 1 ] ) );

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Application\General\Queries\Get_Alert_Handler;
 use Racketmanager\Application\General\Queries\Get_Favourites_Handler;
 use Racketmanager\Application\General\Queries\Get_Invoice_Handler;
@@ -21,6 +22,8 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
 class General_Shortcode_Adapter_Test extends TestCase {
+    use Creates_Test_Container;
+
     private General_Shortcode_Adapter $adapter;
     private Get_Players_Handler $players_handler;
     private Get_Player_Handler $player_handler;
@@ -186,10 +189,7 @@ class General_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_facade_delegates_to_adapter(): void {
-        $racketmanager                  = $this->createStub( RacketManager::class );
-        $container                      = new \Racketmanager\Services\Container\Simple_Container();
-        $container->set( 'general_shortcode_adapter', fn() => $this->adapter );
-        $racketmanager->container = $container;
+        $racketmanager = $this->create_app_with_services( [ 'general_shortcode_adapter' => $this->adapter ] );
 
         $facade = new Shortcodes( $racketmanager );
 

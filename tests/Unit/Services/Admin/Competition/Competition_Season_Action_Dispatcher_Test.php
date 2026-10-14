@@ -13,18 +13,18 @@ use Racketmanager\Services\Admin\Competition\Competition_Season_Action_Dispatche
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class Competition_Season_Action_Dispatcher_Test extends TestCase {
-
-    private mixed $original_racketmanager = null;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
+        $this->backup_globals();
         $container                    = new \Racketmanager\Services\Container\Simple_Container();
         $existence_service            = $this->createStub( Competition_Service::class );
         $existence_service->method( 'get_by_id' )->willReturn( $this->createStub( Competition::class ) );
@@ -35,11 +35,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        if ( null !== $this->original_racketmanager ) {
-            $GLOBALS['racketmanager'] = $this->original_racketmanager;
-        } else {
-            unset( $GLOBALS['racketmanager'] );
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

@@ -11,32 +11,24 @@ use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use wpdb;
 
 class Shortcodes_Test extends TestCase {
     use Creates_Test_Container;
-
-    private mixed $original_wpdb;
-    private mixed $original_racketmanager;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        defined( 'RACKETMANAGER_PATH' ) || define( 'RACKETMANAGER_PATH', dirname( __DIR__, 3 ) . '/' );
-        defined( 'RACKETMANAGER_URL' ) || define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-
-        global $wpdb, $racketmanager;
-        $this->original_wpdb          = $wpdb ?? null;
-        $this->original_racketmanager = $racketmanager ?? null;
+        $this->backup_globals();
 
         $wpdb_mock         = $this->createStub( wpdb::class );
         $wpdb_mock->prefix = 'wp_';
-        $wpdb              = $wpdb_mock;
+        $GLOBALS['wpdb']   = $wpdb_mock;
     }
 
     protected function tearDown(): void {
-        global $wpdb, $racketmanager;
-        $wpdb          = $this->original_wpdb;
-        $racketmanager = $this->original_racketmanager;
+        $this->restore_globals();
         parent::tearDown();
     }
 

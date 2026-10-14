@@ -8,6 +8,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Competition_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
@@ -83,5 +84,20 @@ trait Creates_Test_Container {
         $comp_service->method( 'get_league_repository' )->willReturn( $league_repo );
 
         $container->set( 'competition_service', fn() => $comp_service );
+    }
+
+    protected function create_container_with_services( array $services = [] ): Simple_Container {
+        $container = new Simple_Container();
+        foreach ( $services as $key => $instance ) {
+            $container->set( (string) $key, static fn() => $instance );
+        }
+        return $container;
+    }
+
+    protected function create_app_with_services( array $services = [] ): RacketManager {
+        $container     = $this->create_container_with_services( $services );
+        $racketmanager = $this->createStub( RacketManager::class );
+        $racketmanager->container = $container;
+        return $racketmanager;
     }
 }

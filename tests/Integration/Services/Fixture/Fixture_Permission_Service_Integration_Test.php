@@ -19,8 +19,10 @@ use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Fixture_Permission_Service_Integration_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     private $fixture_repository;
     private $registration_service;
@@ -33,6 +35,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
         
         $GLOBALS['racketmanager'] = new class {
             public function get_options() {
@@ -75,6 +78,11 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
                 return $this->mock_options;
             }
         };
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_admin_can_update_fixture(): void {

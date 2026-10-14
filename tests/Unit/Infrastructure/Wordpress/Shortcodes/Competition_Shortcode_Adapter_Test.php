@@ -16,8 +16,6 @@ use Racketmanager\Application\Competition\Queries\Get_Competition_Teams_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competition_Winners_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competitions_Handler;
 use Racketmanager\Application\Competition\Queries\Get_Competitions_Query;
-use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Competition\Competition_Overview_DTO;
 use Racketmanager\Domain\Player;
@@ -34,7 +32,6 @@ use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
-use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
@@ -42,51 +39,38 @@ use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
+use Racketmanager\Tests\Helpers\Competition_Test_Factory;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 
 class Competition_Shortcode_Adapter_Test extends TestCase {
-    private mixed $original_wp;
-    private mixed $original_racketmanager;
-    private array $original_get;
+    use Creates_Test_Container;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_PATH' ) ) {
-            define( 'RACKETMANAGER_PATH', dirname( __DIR__, 5 ) . '/' );
-        }
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'https://example.test/wp-content/plugins/racketmanager/' );
-        }
-        global $wp, $racketmanager;
-        $this->original_wp            = $wp ?? null;
-        $this->original_racketmanager = $racketmanager ?? null;
-        $this->original_get           = $_GET ?? [];
-        $wp                           = (object) [ 'query_vars' => [] ];
+        $this->backup_globals();
+        global $wp;
+        $wp = (object) [ 'query_vars' => [] ];
     }
 
     protected function tearDown(): void {
-        global $wp, $racketmanager;
-        $wp            = $this->original_wp;
-        $racketmanager = $this->original_racketmanager;
-        $_GET          = $this->original_get;
-        unset( $GLOBALS['wp_stubs_current_user_can'], $GLOBALS['wp_stubs_is_user_logged_in'] );
+        $this->restore_globals();
         parent::tearDown();
     }
 
     public function test_show_competition_renders_competition_via_handler_and_presenter(): void {
-        $competition = new Competition( 'Summer League', Competition_Type::LEAGUE, 'open', null, [], 5 );
-        $competition->set_seasons( [
-            [
-                'name'        => '2026',
-                'venue'       => 12,
-                'orderofplay' => [],
-            ],
-        ] );
+        $competition = Competition_Test_Factory::create(
+            seasons: Competition_Test_Factory::season_list( '2026', [ 'venue' => 12, 'orderofplay' => [] ] )
+        );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
 
         $club_service = $this->createStub( Club_Service::class );
-        $venue_club   = new Club( (object) [ 'id' => 12, 'name' => 'Venue Club', 'shortcode' => 'VC' ] );
+        $venue_club   = Club_Test_Factory::create( id: 12, name: 'Venue Club', shortcode: 'VC' );
         $club_service->method( 'get_club' )->willReturn( $venue_club );
 
         $handler   = new Get_Competition_Handler( $comp_service, $club_service );
@@ -105,14 +89,9 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_handles_missing_venue_club_gracefully(): void {
-        $competition = new Competition( 'Summer League', Competition_Type::LEAGUE, 'open', null, [], 5 );
-        $competition->set_seasons( [
-            [
-                'name'        => '2026',
-                'venue'       => 999,
-                'orderofplay' => [],
-            ],
-        ] );
+        $competition = Competition_Test_Factory::create(
+            seasons: Competition_Test_Factory::season_list( '2026', [ 'venue' => 999, 'orderofplay' => [] ] )
+        );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
@@ -155,7 +134,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competitions_renders_competition_list(): void {
-        $competition = new Competition( 'Division 1', Competition_Type::LEAGUE, 'open', null, [], 1 );
+        $competition = Competition_Test_Factory::create( id: 1, name: 'Division 1' );
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_criteria' )->willReturn( [ $competition ] );
 
@@ -176,8 +155,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_overview_renders_overview(): void {
-        $competition = new Competition( 'Premier League', Competition_Type::LEAGUE, 'open', null, [], 2 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( id: 2, name: 'Premier League', seasons: Competition_Test_Factory::season_list() );
 
         $dto = new Competition_Overview_DTO( (object) [
             'id'          => 2,
@@ -210,8 +188,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_events_renders_events(): void {
-        $competition = new Competition( 'Cup Event', Competition_Type::CUP, 'open', null, [], 3 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( id: 3, name: 'Cup Event', type: Competition_Type::CUP, seasons: Competition_Test_Factory::season_list() );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
@@ -234,8 +211,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_teams_renders_teams(): void {
-        $competition = new Competition( 'Team League', Competition_Type::LEAGUE, 'open', null, [], 4 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( id: 4, name: 'Team League', seasons: Competition_Test_Factory::season_list() );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
@@ -258,8 +234,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_clubs_renders_clubs(): void {
-        $competition = new Competition( 'Club League', Competition_Type::LEAGUE, 'open', null, [], 5 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( name: 'Club League', seasons: Competition_Test_Factory::season_list() );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
@@ -284,14 +259,13 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_clubs_single_club_detail(): void {
-        $competition = new Competition( 'Club League', Competition_Type::LEAGUE, 'open', null, [], 5 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( name: 'Club League', seasons: Competition_Test_Factory::season_list() );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
 
         $club_service = $this->createStub( Club_Service::class );
-        $club         = new Club( (object) [ 'id' => 10, 'name' => 'Westcliff Club', 'shortcode' => 'WST' ] );
+        $club         = Club_Test_Factory::create( id: 10, name: 'Westcliff Club', shortcode: 'WST' );
         $club_service->method( 'get_club' )->willReturn( $club );
         $club_service->method( 'get_club_by_shortcode' )->willReturn( $club );
 
@@ -315,8 +289,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_players_renders_players(): void {
-        $competition = new Competition( 'Player League', Competition_Type::LEAGUE, 'open', null, [], 6 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( id: 6, name: 'Player League', seasons: Competition_Test_Factory::season_list() );
 
         $comp_service   = $this->createStub( Competition_Service::class );
         $player_service = $this->createStub( Player_Service::class );
@@ -341,8 +314,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_winners_renders_winners(): void {
-        $competition = new Competition( 'Championship', Competition_Type::LEAGUE, 'open', null, [], 7 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( id: 7, name: 'Championship', seasons: Competition_Test_Factory::season_list() );
 
         $comp_service = $this->createStub( Competition_Service::class );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
@@ -365,7 +337,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_winners_and_overview_without_a_current_season_show_alerts(): void {
-        $competition = new Competition( 'No Season League', Competition_Type::LEAGUE, 'open', null, [], 7 );
+        $competition = Competition_Test_Factory::create( id: 7, name: 'No Season League' );
         $service     = $this->createMock( Competition_Service::class );
         $service->method( 'get_by_id' )->willReturn( $competition );
         $service->expects( $this->never() )->method( 'get_winners_for_competition' );
@@ -384,7 +356,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
 
     public function test_non_admin_club_selection_passes_null_for_unspecified_club(): void {
         $GLOBALS['wp_stubs_current_user_can'] = false;
-        $competition = new Competition( 'Summer League', Competition_Type::LEAGUE, 'open', null, [], 7 );
+        $competition = Competition_Test_Factory::create( id: 7 );
         $plugin      = $this->createStub( RacketManager::class );
         $plugin->method( 'get_options' )->willReturn( [ 'entry_level' => 'captain' ] );
         $player_service = $this->createMock( Player_Service::class );
@@ -435,19 +407,17 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_competition_players_single_player_detail(): void {
-        $competition = new Competition( 'Player League', Competition_Type::LEAGUE, 'open', null, [], 6 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition = Competition_Test_Factory::create( id: 6, name: 'Player League', seasons: Competition_Test_Factory::season_list() );
 
         $comp_service   = $this->createStub( Competition_Service::class );
         $player_service = $this->createStub( Player_Service::class );
-        $player_dto     = new \Racketmanager\Domain\DTO\Player\Player_Hydration_DTO(
-            id: 42,
-            display_name: 'Jane Doe',
-            firstname: 'Jane',
-            surname: 'Doe',
-            user_login: 'jdoe'
-        );
-        $player         = new Player( $player_dto );
+        $player         = Player_Test_Factory::create_sparse( [
+            'id'           => 42,
+            'display_name' => 'Jane Doe',
+            'firstname'    => 'Jane',
+            'surname'      => 'Doe',
+            'user_login'   => 'jdoe',
+        ] );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $player_service->method( 'get_player' )->willReturn( $player );
         $player_service->method( 'get_player_by_name' )->willReturn( $player );
@@ -497,8 +467,7 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
         $template_renderer = new Shortcode_Template_Renderer( $renderer );
 
         $comp_service = $this->createStub( Competition_Service::class );
-        $competition  = new Competition( 'Facade League', Competition_Type::LEAGUE, 'open', null, [], 9 );
-        $competition->set_seasons( [ [ 'name' => '2026' ] ] );
+        $competition  = Competition_Test_Factory::create( id: 9, name: 'Facade League', seasons: Competition_Test_Factory::season_list() );
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $comp_service->method( 'get_by_criteria' )->willReturn( [ $competition ] );
         $comp_service->method( 'get_events_for_competition' )->willReturn( [] );
@@ -514,10 +483,9 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
             view_presenter: new Shortcode_View_Presenter( $template_renderer )
         );
 
-        $racketmanager            = $this->createStub( RacketManager::class );
-        $container                = new Simple_Container();
-        $racketmanager->container = $container;
-        $container->set( 'competition_shortcode_adapter', fn() => $adapter );
+        $racketmanager = $this->create_app_with_services( [
+            'competition_shortcode_adapter' => $adapter,
+        ] );
 
         $facade = new Shortcodes_Competition( $racketmanager );
 

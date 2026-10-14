@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Tests\Helpers\Creates_Test_Container;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Query;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
@@ -19,6 +20,8 @@ use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 
 class Message_Shortcode_Handlers_Test extends TestCase {
+    use Creates_Test_Container;
+
     private RacketManager $racketmanager;
     private View_Renderer_Interface $renderer;
     private Shortcode_View_Presenter $view_presenter;
@@ -203,9 +206,7 @@ class Message_Shortcode_Handlers_Test extends TestCase {
             $message_handler
         );
 
-        $container = new \Racketmanager\Services\Container\Simple_Container();
-        $container->set( 'message_shortcode_adapter', fn() => $adapter );
-        $this->racketmanager->container = $container;
+        $this->racketmanager->container = $this->create_container_with_services( [ 'message_shortcode_adapter' => $adapter ] );
 
         $facade = new Shortcodes_Message( $this->racketmanager );
 

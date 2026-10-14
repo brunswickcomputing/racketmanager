@@ -14,7 +14,6 @@ namespace Tests\Unit\Controllers\Admin;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_League;
-use Racketmanager\Admin\Flash\Admin_Flash_Message_Store;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\Presenters\Admin_League_Matches_Presenter;
 use Racketmanager\Admin\View_Models\Admin_League_Match_View_Model;
@@ -29,61 +28,27 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team;
 use Racketmanager\Services\Fixture\Fixture_Detail_Service;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Action_Adapter;
-use Racketmanager\Infrastructure\Wordpress\Admin\Admin_Redirector_Interface;
 use Racketmanager\RacketManager;
-use Racketmanager\Services\Admin\Admin_Message_Service;
 use Racketmanager\Services\Container\Simple_Container;
-
-require_once __DIR__ . '/../../../wp-stubs.php';
+use Racketmanager\Tests\Helpers\Creates_Admin_Delivery_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 final class Admin_League_Matches_Delivery_Test extends TestCase {
+    use Creates_Admin_Delivery_Container;
+    use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
     private Admin_League $admin_league;
-    private mixed $saved_racketmanager = null;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->saved_racketmanager   = $GLOBALS['racketmanager'] ?? null;
+        $this->backup_globals();
         $GLOBALS['wp_stubs_options'] = array(
             'date_format' => 'j M Y',
             'time_format' => 'H:i',
         );
 
-        $message_service = new Admin_Message_Service( $this->createStub( Admin_Flash_Message_Store::class ) );
-        $action_adapter  = new Admin_Action_Adapter( $message_service, $this->createStub( Admin_Redirector_Interface::class ) );
-        $x               = $this->createStub( \Racketmanager\Services\Competition_Service::class );
-
-        $container = new Simple_Container();
-        $container->set( 'admin_action_adapter', fn() => $action_adapter );
-        $container->set( 'admin_message_service', fn() => $message_service );
-        $container->set( 'competition_service', fn() => $x );
-        $container->set( 'season_service', fn() => $this->createStub( \Racketmanager\Services\Season_Service::class ) );
-        $container->set( 'results_checker_presenter', fn() => $this->createStub( \Racketmanager\Presentation\Presenters\Results_Checker_Presenter::class ) );
-        $container->set( 'club_service', fn() => $this->createStub( \Racketmanager\Services\Club_Service::class ) );
-        $container->set( 'player_service', fn() => $this->createStub( \Racketmanager\Services\Player_Service::class ) );
-        $container->set( 'registration_service', fn() => $this->createStub( \Racketmanager\Services\Registration_Service::class ) );
-        $container->set( 'team_service', fn() => $this->createStub( \Racketmanager\Services\Team_Service::class ) );
-        $container->set( 'league_service', fn() => $this->createStub( \Racketmanager\Services\League_Service::class ) );
-        $container->set( 'finance_service', fn() => $this->createStub( \Racketmanager\Services\Finance_Service::class ) );
-        $container->set( 'tournament_service', fn() => $this->createStub( \Racketmanager\Services\Tournament_Service::class ) );
-        $container->set( 'fixture_repository', fn() => $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ) );
-        $container->set( 'league_contact_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Contact_Action_Dispatcher( $this->createStub( \Racketmanager\Services\League_Service::class ), $this->createStub( \Racketmanager\Services\Competition_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'league_setup_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Setup_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Competition_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'event_setup_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\Event_Setup_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Competition_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'season_delete_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\Season_Delete_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Competition_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'league_team_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Team_Action_Dispatcher( $this->createStub( \Racketmanager\Services\League_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'league_match_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Match_Action_Dispatcher( $this->createStub( \Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface::class ), $this->createStub( \Racketmanager\Services\Fixture\Fixture_Maintenance_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'league_constitution_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Constitution_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'league_event_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Event_Action_Dispatcher( $this->createStub( \Racketmanager\Services\League_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'league_schedule_action_dispatcher', fn() => new \Racketmanager\Services\Admin\League\League_Schedule_Action_Dispatcher( new \Racketmanager\Services\Admin\League\League_Schedule_Service( $this->createStub( \Racketmanager\Services\Fixture\Fixture_Maintenance_Service::class ) ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'club_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Club_Service::class ), $this->createStub( \Racketmanager\Services\Player_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'club_player_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Player_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Registration_Service::class ), $this->createStub( \Racketmanager\Services\Player_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'club_team_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Team_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Club_Service::class ), $this->createStub( \Racketmanager\Services\Team_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'club_role_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Club\Club_Role_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Club_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'season_action_dispatcher', fn() => new \Racketmanager\Services\Admin\Season\Season_Action_Dispatcher( $this->createStub( \Racketmanager\Services\Season_Service::class ), $this->createStub( \Racketmanager\Services\Admin\Security\Action_Guard_Interface::class ) ) );
-        $container->set( 'fixture_detail_service', fn() => $this->createStub( Fixture_Detail_Service::class ) );
+        $container = $this->create_admin_delivery_container();
         $this->container = $container;
 
         $plugin            = $this->createStub( RacketManager::class );
@@ -93,8 +58,7 @@ final class Admin_League_Matches_Delivery_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        unset( $GLOBALS['wp_stubs_options'] );
-        $GLOBALS['racketmanager'] = $this->saved_racketmanager;
+        $this->restore_globals();
         parent::tearDown();
     }
 

@@ -15,6 +15,7 @@ use Racketmanager\Repositories\Interfaces\Registration_Repository_Interface;
 use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Repositories\Player_Repository;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Tests\Helpers\Player_Test_Factory;
 use stdClass;
 
 require_once __DIR__ . '/../../wp-stubs.php';
@@ -146,14 +147,15 @@ final class Player_Service_Validation_Test extends TestCase {
             'firstname' => 'ShouldBeIgnored',
         ];
 
-        $player = new Player();
-        $player->id = 15;
-        $player->firstname = 'Charlie';
-        $player->surname = 'Brown';
-        $player->display_name = 'Charlie Brown';
-        $player->email = 'charlie@example.com';
-        $player->gender = 'M';
-        $player->btm = '55555555';
+        $player = Player_Test_Factory::create_sparse( [
+            'id'           => 15,
+            'display_name' => 'Charlie Brown',
+            'btm'          => '55555555',
+            'firstname'    => 'Charlie',
+            'surname'      => 'Brown',
+            'email'        => 'charlie@example.com',
+            'gender'       => 'M',
+        ] );
 
         $player_repo = $this->createMock( Player_Repository::class );
         $player_repo->expects( $this->exactly( 2 ) )->method( 'find' )->with( 15 )->willReturn( $player );

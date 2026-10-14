@@ -19,22 +19,29 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Settings;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
-use Racketmanager\Services\View\Php_View_Renderer;
+use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Creates_View_Renderer;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 require_once __DIR__ . '/../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class Admin_Templates_Render_Test extends TestCase {
+    use Creates_View_Renderer;
+    use Manages_Wordpress_Globals;
 
-    private Php_View_Renderer $renderer;
+    private View_Renderer_Interface $renderer;
 
     protected function setUp(): void {
         parent::setUp();
-        if ( ! defined( 'RACKETMANAGER_URL' ) ) {
-            define( 'RACKETMANAGER_URL', 'http://localhost/' );
-        }
-        $this->renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        $this->backup_globals();
+        $this->renderer = $this->create_view_renderer();
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
     }
 
     public function test_render_competition_config_template_with_errors_and_values(): void {
@@ -87,13 +94,8 @@ final class Admin_Templates_Render_Test extends TestCase {
             errors: $errors,
         );
 
-        $original_post = $_POST;
-        $_POST         = array( 'competition_title' => 'HACKED-TITLE', 'max_teams' => '99', 'grade' => 'ZZ' );
-        try {
-            $html = $this->renderer->render_to_string( 'admin/includes/competition-config', $vm );
-        } finally {
-            $_POST = $original_post;
-        }
+        $_POST = array( 'competition_title' => 'HACKED-TITLE', 'max_teams' => '99', 'grade' => 'ZZ' );
+        $html = $this->renderer->render_to_string( 'admin/includes/competition-config', $vm );
 
         self::assertStringNotContainsString( 'HACKED-TITLE', $html );
         self::assertStringNotContainsString( 'value="99"', $html );

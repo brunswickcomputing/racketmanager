@@ -14,23 +14,17 @@ use Racketmanager\Services\Admin\Event\Event_Action_Dispatcher;
 use Racketmanager\Services\Admin\Security\Action_Guard_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\League_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 require_once __DIR__ . '/../../../../wp-stubs.php';
 
 #[AllowMockObjectsWithoutExpectations]
 final class Event_Action_Dispatcher_Test extends TestCase {
-
-    private mixed $original_wpdb = null;
-    private mixed $original_racketmanager = null;
-    private bool $had_wpdb = false;
-    private bool $had_racketmanager = false;
+    use Manages_Wordpress_Globals;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->had_wpdb          = array_key_exists( 'wpdb', $GLOBALS );
-        $this->had_racketmanager = array_key_exists( 'racketmanager', $GLOBALS );
-        $this->original_wpdb          = $GLOBALS['wpdb'] ?? null;
-        $this->original_racketmanager = $GLOBALS['racketmanager'] ?? null;
+        $this->backup_globals();
         $GLOBALS['wpdb']              = new class() {
             public int $insert_id = 5;
             public string $racketmanager_events = 'events';
@@ -60,16 +54,7 @@ final class Event_Action_Dispatcher_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        if ( $this->had_wpdb ) {
-            $GLOBALS['wpdb'] = $this->original_wpdb;
-        } else {
-            unset( $GLOBALS['wpdb'] );
-        }
-        if ( $this->had_racketmanager ) {
-            $GLOBALS['racketmanager'] = $this->original_racketmanager;
-        } else {
-            unset( $GLOBALS['racketmanager'] );
-        }
+        $this->restore_globals();
         parent::tearDown();
     }
 

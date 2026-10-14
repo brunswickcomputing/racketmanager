@@ -28,9 +28,9 @@ class Championship_Admin_Integration_Test extends TestCase {
     }
 
     public function test_championship_admin_service_handles_team_has_matches_exception(): void {
-        $league_id = 123;
-        $season    = 2024;
-        $team_id   = 456;
+        $league_id      = 123;
+        $season         = 2024;
+        $league_team_id = 456;
 
         $league = $this->create_real_instance_without_constructor( League::class );
         $league->id = $league_id;

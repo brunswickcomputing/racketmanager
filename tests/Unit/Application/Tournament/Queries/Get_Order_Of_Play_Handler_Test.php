@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Tests\Unit\Application\Tournament\Queries;
+namespace Racketmanager\Tests\Unit\Application\Tournament\Queries;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Handler;
@@ -27,11 +27,11 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     protected function setUp(): void
     {
-        $this->tournament_service     = $this->createMock(Tournament_Service::class);
-        $this->competition_repository = $this->createMock(Competition_Repository::class);
-        $this->fixture_repository     = $this->createMock(Fixture_Repository::class);
-        $this->competition_service    = $this->createMock(Competition_Service::class);
-        $this->team_service           = $this->createMock(Team_Service::class);
+        $this->tournament_service     = $this->createStub(Tournament_Service::class);
+        $this->competition_repository = $this->createStub(Competition_Repository::class);
+        $this->fixture_repository     = $this->createStub(Fixture_Repository::class);
+        $this->competition_service    = $this->createStub(Competition_Service::class);
+        $this->team_service           = $this->createStub(Team_Service::class);
 
         $this->handler = new Get_Order_Of_Play_Handler(
             $this->tournament_service,
@@ -55,7 +55,10 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_returns_error_if_competition_not_found(): void
     {
-        $this->competition_repository->method('find_by_id')->with(123)->willReturn(null);
+        $this->competition_repository->method('find_by_id')->willReturnCallback(function ($id) {
+            self::assertSame(123, $id);
+            return null;
+        });
         $query = Get_Order_Of_Play_Query::from_atts(['competition_id' => 123]);
         $result = $this->handler->handle($query);
         $this->assertTrue($result->is_error());
@@ -63,8 +66,11 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_returns_error_if_season_missing_for_competition(): void
     {
-        $comp = $this->createMock(Competition::class);
-        $this->competition_repository->method('find_by_id')->with(123)->willReturn($comp);
+        $comp = $this->createStub(Competition::class);
+        $this->competition_repository->method('find_by_id')->willReturnCallback(function ($id) use ($comp) {
+            self::assertSame(123, $id);
+            return $comp;
+        });
         $query = Get_Order_Of_Play_Query::from_atts(['competition_id' => 123]);
         $result = $this->handler->handle($query);
         $this->assertTrue($result->is_error());
@@ -72,9 +78,15 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_returns_error_if_season_not_found_for_competition(): void
     {
-        $comp = $this->createMock(Competition::class);
-        $comp->method('get_season_by_name')->with('2026')->willReturn(null);
-        $this->competition_repository->method('find_by_id')->with(123)->willReturn($comp);
+        $comp = $this->createStub(Competition::class);
+        $comp->method('get_season_by_name')->willReturnCallback(function ($season) {
+            self::assertSame('2026', $season);
+            return null;
+        });
+        $this->competition_repository->method('find_by_id')->willReturnCallback(function ($id) use ($comp) {
+            self::assertSame(123, $id);
+            return $comp;
+        });
         $query = Get_Order_Of_Play_Query::from_atts(['competition_id' => 123, 'season' => '2026']);
         $result = $this->handler->handle($query);
         $this->assertTrue($result->is_error());
@@ -82,13 +94,16 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
 
     public function test_handle_success_with_tournament_id(): void
     {
-        $tournament = $this->createMock('Racketmanager\Domain\Tournament');
+        $tournament = $this->createStub('Racketmanager\Domain\Tournament');
         $tournament->method('get_order_of_play')->willReturn([
             ['court' => '1', 'matches' => ['10', '11']]
         ]);
-        $this->tournament_service->method('get_tournament')->with(1)->willReturn($tournament);
+        $this->tournament_service->method('get_tournament')->willReturnCallback(function ($id) use ($tournament) {
+            self::assertSame(1, $id);
+            return $tournament;
+        });
         
-        $fixture = $this->createMock(Fixture::class);
+        $fixture = $this->createStub(Fixture::class);
         $fixture->method('get_league_id')->willReturn(null);
         $fixture->method('get_date')->willReturn('2026-10-14 10:00:00');
         $fixture->method('get_location')->willReturn('Court 1');

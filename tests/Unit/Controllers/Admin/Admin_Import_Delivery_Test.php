@@ -184,8 +184,8 @@ final class Admin_Import_Delivery_Test extends TestCase {
         $renderer    = $this->createMock( View_Renderer_Interface::class );
         $dispatcher  = $this->createMock( Import_Action_Dispatcher_Interface::class );
 
-        $club_service        = $this->createMock( Club_Service::class );
-        $competition_service = $this->createMock( Competition_Service::class );
+        $club_service        = $this->createStub( Club_Service::class );
+        $competition_service = $this->createStub( Competition_Service::class );
 
         $flash_store->expects( self::never() )->method( 'pop' );
         $redirector->expects( self::never() )->method( 'redirect' );

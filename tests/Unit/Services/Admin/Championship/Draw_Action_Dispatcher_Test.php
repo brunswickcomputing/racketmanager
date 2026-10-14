@@ -121,7 +121,7 @@ final class Draw_Action_Dispatcher_Test extends TestCase {
     }
 
     public function test_guard_failure_returns_error_response(): void {
-        $handler = $this->createMock( Draw_Action_Handler_Interface::class );
+        $handler = $this->createStub( Draw_Action_Handler_Interface::class );
         $guard   = $this->createMock( Action_Guard_Interface::class );
         $guard->expects( self::once() )
             ->method( 'assert_allowed' )

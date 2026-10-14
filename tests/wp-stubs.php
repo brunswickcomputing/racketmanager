@@ -1603,11 +1603,11 @@ namespace {
         function wp_enqueue_script( $handle, $src = '', $deps = array(), $ver = false, $args = array() ) {}
     }
     if ( ! function_exists( 'plugins_url' ) ) {
-        function plugins_url( $path = '', $plugin = '' ) { return 'http://test.local/plugins/' . $path; }
+        function plugins_url( $path = '', $plugin = '' ) { return 'https://test.local/plugins/' . $path; }
     }
     if ( ! function_exists( 'site_url' ) ) {
         function site_url( $path = '', $scheme = null ) {
-            return 'http://example.com' . ( $path ? '/' . ltrim( (string) $path, '/' ) : '' );
+            return 'https://example.com' . ( $path ? '/' . ltrim( (string) $path, '/' ) : '' );
         }
     }
     if ( ! function_exists( 'get_filesystem_method' ) ) {

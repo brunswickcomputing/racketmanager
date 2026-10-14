@@ -259,8 +259,9 @@ class Tournament_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_tournament_withdrawal_missing_nonce_message(): void {
-        $response = $this->adapter->tournament_withdrawal( $post ?? [] );
+        $response = $this->adapter->tournament_withdrawal( array() );
         $this->assertSame( 200, $response->get_status_code() );
+        $this->assertIsString( $response->get_content() );
         $this->assertStringContainsString( 'problem with your request', $response->get_content() );
     }
 

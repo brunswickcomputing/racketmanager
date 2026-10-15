@@ -30,6 +30,10 @@ class Get_Event_Handler {
             return Shortcode_View_Model::for_error( __( 'Season not found for event', 'racketmanager' ) );
         }
 
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? null, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         $season  = $event->current_season['name'] ?? '';
         $seasons = $event->get_seasons();
         $tab     = $query->tab;

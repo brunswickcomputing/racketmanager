@@ -6,6 +6,7 @@ namespace Racketmanager\Tests\Unit\Services;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Services\Result_Calculator;
 use Racketmanager\Domain\Scoring\Set_Score;
+use stdClass;
 
 final class Result_Calculator_Test extends TestCase {
 
@@ -89,7 +90,7 @@ final class Result_Calculator_Test extends TestCase {
         $sets = $result->get_sets();
 
         $this->assertCount(3, $sets);
-        
+
         // Set 3 should be empty/null if it's 6-2 6-0
         // Currently Result_Factory::from_array converts '' to 0 via (int)
         // We want them to be null or some indicator that they are not set
@@ -293,5 +294,188 @@ final class Result_Calculator_Test extends TestCase {
         $this->assertEquals( 3.0, $result['away_points_tie'] );
         $this->assertEquals( -1, $result['winner_id_tie'] );
         $this->assertEquals( -1, $result['loser_id_tie'] );
+    }
+
+    public function test_calculate_stats_from_rubbers_handles_string_and_int_ids(): void {
+        $rubber1 = new stdClass();
+        $rubber1->status = 0;
+        $rubber1->winner_id = 101; // integer ID
+        $rubber1->home_points = 2.0;
+        $rubber1->away_points = 0.0;
+
+        $rubber2 = new stdClass();
+        $rubber2->status = 0;
+        $rubber2->winner_id = '102'; // string ID
+        $rubber2->home_points = 0.0;
+        $rubber2->away_points = 2.0;
+
+        $rubber3 = new stdClass();
+        $rubber3->status = 3; // Shared
+        $rubber3->winner_id = -1;
+        $rubber3->home_points = 1.0;
+        $rubber3->away_points = 1.0;
+
+        $rubber4 = new stdClass();
+        $rubber4->status = 1; // Walkover
+        $rubber4->winner_id = '101';
+        $rubber4->home_points = 2.0;
+        $rubber4->away_points = 0.0;
+
+        $rubbers = [ $rubber1, $rubber2, $rubber3, $rubber4 ];
+
+        $stats = Result_Calculator::calculate_stats_from_rubbers( $rubbers, '101', '102' );
+
+        $this->assertSame( 2, $stats['home_win'] );
+        $this->assertSame( 1, $stats['away_win'] );
+        $this->assertSame( 1, $stats['draw'] );
+        $this->assertSame( 1, $stats['shared'] );
+        $this->assertSame( 1, $stats['away_walkover'] );
+        $this->assertSame( 0, $stats['home_walkover'] );
+        $this->assertSame( 5.0, $stats['home_points'] );
+        $this->assertSame( 3.0, $stats['away_points'] );
+        $this->assertSame( 2.5, $stats['stats']['rubbers']['home'] );
+        $this->assertSame( 1.5, $stats['stats']['rubbers']['away'] );
+    }
+
+    public function test_calculate_points_from_stats_uses_float_comparison_for_wins(): void {
+        $stats_result = [
+            'home_points'   => 4.0,
+            'away_points'   => 4.0,
+            'home_win'      => 2.5, // Float wins from shared rubbers
+            'away_win'      => 2.0,
+            'draw'          => 0,
+            'home_walkover' => 0,
+            'away_walkover' => 0,
+            'stats'         => [
+                'games' => [ 'home' => 30, 'away' => 25 ],
+            ],
+        ];
+
+        $point_rule = [
+            'matches_win'  => 2.0,
+            'matches_draw' => 1.0,
+        ];
+
+        $res = Result_Calculator::calculate_points_from_stats( $stats_result, $point_rule, 6, 0 );
+
+        $this->assertSame( 6.0, $res['home_points'] );
+        $this->assertSame( 4.0, $res['away_points'] );
+
+        // Away wins > home wins
+        $stats_result['home_win'] = 1.5;
+        $stats_result['away_win'] = 2.0;
+
+        $res2 = Result_Calculator::calculate_points_from_stats( $stats_result, $point_rule, 6, 0 );
+
+        $this->assertSame( 4.0, $res2['home_points'] );
+        $this->assertSame( 6.0, $res2['away_points'] );
+
+        // Equal wins -> draw points
+        $stats_result['home_win'] = 2.0;
+        $stats_result['away_win'] = 2.0;
+
+        $res3 = Result_Calculator::calculate_points_from_stats( $stats_result, $point_rule, 6, 0 );
+
+        $this->assertSame( 5.0, $res3['home_points'] );
+        $this->assertSame( 5.0, $res3['away_points'] );
+    }
+
+    public function test_determine_winner_and_loser_walkover_direction(): void {
+        // Custom walkover = home (home conceded -> away is winner)
+        $res1 = Result_Calculator::determine_winner_and_loser( 0.0, 0.0, 10, 20, 1, [ 'walkover' => 'home' ] );
+        $this->assertSame( 10, $res1['winner_id'] );
+        $this->assertSame( 20, $res1['loser_id'] );
+
+        // Custom walkover = away (away conceded -> home is winner)
+        $res2 = Result_Calculator::determine_winner_and_loser( 0.0, 0.0, 10, 20, 1, [ 'walkover' => 'away' ] );
+        $this->assertSame( 20, $res2['winner_id'] );
+        $this->assertSame( 10, $res2['loser_id'] );
+
+        // Fallback to points when direction not specified
+        $res3 = Result_Calculator::determine_winner_and_loser( 4.0, 2.0, 10, 20, 1, [] );
+        $this->assertSame( 10, $res3['winner_id'] );
+        $this->assertSame( 20, $res3['loser_id'] );
+
+        $res4 = Result_Calculator::determine_winner_and_loser( 2.0, 4.0, 10, 20, 1, [] );
+        $this->assertSame( 20, $res4['winner_id'] );
+        $this->assertSame( 10, $res4['loser_id'] );
+    }
+
+    public function test_determine_winner_and_loser_withdrawn_retired_and_bye(): void {
+        // Withdrawn
+        $res_withdrawn = Result_Calculator::determine_winner_and_loser( 0.0, 0.0, 10, 20, 7, [] );
+        $this->assertSame( -1, $res_withdrawn['winner_id'] );
+        $this->assertSame( -1, $res_withdrawn['loser_id'] );
+
+        // Retired away
+        $res_retired = Result_Calculator::determine_winner_and_loser( 0.0, 0.0, 10, 20, 2, [ 'retired' => 'away' ] );
+        $this->assertSame( 10, $res_retired['winner_id'] );
+        $this->assertSame( 20, $res_retired['loser_id'] );
+
+        // Bye / team id -1
+        $res_bye_home = Result_Calculator::determine_winner_and_loser( 0.0, 0.0, -1, 20 );
+        $this->assertSame( 20, $res_bye_home['winner_id'] );
+        $this->assertSame( 0, $res_bye_home['loser_id'] );
+
+        // Bye / team id '-1'
+        $res_bye_away = Result_Calculator::determine_winner_and_loser( 0.0, 0.0, 10, '-1' );
+        $this->assertSame( 10, $res_bye_away['winner_id'] );
+        $this->assertSame( 0, $res_bye_away['loser_id'] );
+    }
+
+    public function test_calculate_stats_from_rubbers_with_mixed_type_ids(): void {
+        $rubbers = [
+            (object) [
+                'winner_id'   => 101, // int winner
+                'loser_id'    => '102',
+                'status'      => 0,
+                'home_points' => '3.0',
+                'away_points' => 0.0,
+            ],
+            (object) [
+                'winner_id'   => '102', // string winner
+                'loser_id'    => 101,
+                'status'      => 1, // Walkover
+                'home_points' => 0,
+                'away_points' => '3.0',
+            ],
+            (object) [
+                'winner_id'   => -1, // Draw
+                'status'      => 3,
+                'home_points' => 1.5,
+                'away_points' => 1.5,
+            ],
+        ];
+
+        // Pass integer home_id and string away_id
+        $stats = Result_Calculator::calculate_stats_from_rubbers( $rubbers, 101, '102' );
+
+        $this->assertSame( 1, $stats['home_win'] );
+        $this->assertSame( 1, $stats['away_win'] );
+        $this->assertSame( 1, $stats['draw'] );
+        $this->assertSame( 1, $stats['home_walkover'] );
+        $this->assertSame( 0, $stats['away_walkover'] );
+        $this->assertSame( 4.5, $stats['home_points'] );
+        $this->assertSame( 4.5, $stats['away_points'] );
+    }
+
+    public function test_calculate_aggregate_result_mixed_ids(): void {
+        // Current Leg (Leg 2): Home (101) = 4, Away (102) = 1.
+        // Linked Leg (Leg 1): Home (102) = 4, Away (101) = 2.
+        // Aggregate for Home (101): Leg 2 Home (4) + Leg 1 Away (2) = 6.
+        // Aggregate for Away (102): Leg 2 Away (1) + Leg 1 Home (4) = 5.
+        $res = Result_Calculator::calculate_aggregate_result(
+            current_home_points: 4.0,
+            current_away_points: 1.0,
+            linked_home_points: 4.0,
+            linked_away_points: 2.0,
+            home_team_id: 101,
+            away_team_id: '102'
+        );
+
+        $this->assertSame( 6.0, $res['home_points_tie'] );
+        $this->assertSame( 5.0, $res['away_points_tie'] );
+        $this->assertSame( 101, $res['winner_id_tie'] );
+        $this->assertSame( '102', $res['loser_id_tie'] );
     }
 }

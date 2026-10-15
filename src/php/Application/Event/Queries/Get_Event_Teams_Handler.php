@@ -29,6 +29,11 @@ class Get_Event_Teams_Handler {
 
         $event->set_season( $query->season );
         $current_season = $event->current_season['name'] ?? '';
+
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $current_season ?: $query->season, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         $event->teams   = $event->get_teams( [
             'season'  => $current_season,
             'orderby' => [ 'name' => 'ASC' ],

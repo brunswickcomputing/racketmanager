@@ -99,7 +99,7 @@ class League_Schedule_Service {
      * @param array<int|string> $events
      */
     public function schedule_league_matches( array $events ): Action_Result_DTO {
-        $validation = $this->validate_schedule( $events );
+        $validation = $this->validate_events( $events );
         if ( ! $validation->success ) {
             return new Action_Result_DTO(
                 message: $validation->message ?? __( 'Schedule validation failed', 'racketmanager' ),
@@ -147,11 +147,11 @@ class League_Schedule_Service {
     }
 
     /**
-     * Validate schedule by team
+     * Validate schedule by team / events
      *
      * @param array<int|string> $events
      */
-    private function validate_schedule( array $events ): object {
+    public function validate_events( array $events ): object {
         global $racketmanager, $wpdb;
 
         $validation             = new stdClass();
@@ -160,7 +160,6 @@ class League_Schedule_Service {
         $messages               = array();
         $c                      = 0;
         $num_match_days         = 0;
-        $home_away              = '';
         $match_dates            = array();
 
         foreach ( $events as $event_id ) {
@@ -191,8 +190,9 @@ class League_Schedule_Service {
                 } else {
                     $match_dates = $event->current_season['match_dates'];
                 }
-                $home_away = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
-                if ( $home_away ) {
+                $validation->match_dates = $match_dates;
+                $validation->home_away   = ! empty( $event->current_season['home_away'] );
+                if ( $validation->home_away ) {
                     $validation->num_rounds = (int) ( $num_match_days / 2 );
                 } else {
                     $validation->num_rounds = (int) $num_match_days;
@@ -210,8 +210,8 @@ class League_Schedule_Service {
                     $validation->success = false;
                     $messages[]          = __( 'Events have different match dates', 'racketmanager' );
                 }
-                $home_away_new = empty( $event->current_season['home_away'] ) ? false : $event->current_season['home_away'];
-                if ( $home_away_new !== $home_away ) {
+                $home_away_new = ! empty( $event->current_season['home_away'] );
+                if ( $home_away_new !== $validation->home_away ) {
                     $validation->success = false;
                     $messages[]          = __( 'Events have different home / away setting', 'racketmanager' );
                 }
@@ -225,7 +225,7 @@ class League_Schedule_Service {
             $teams_missing_details = $wpdb->get_results( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    "SELECT `t`.`title` FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager_league_teams t1, $wpdb->racketmanager l WHERE t.`id` = t1.`team_id` AND t1.`match_day` IS NULL AND l.`id` = t1.`league_id` AND l.`event_id` in (" . $event_ids . ') AND t1.`season` = %s',
+                    "SELECT `t`.`title` FROM $wpdb->racketmanager_teams t, $wpdb->racketmanager_league_teams t1, $wpdb->racketmanager l WHERE t.`id` = t1.`team_id` AND (t1.`match_day` IS NULL OR t1.`match_day` = '') AND l.`id` = t1.`league_id` AND l.`event_id` in (" . $event_ids . ') AND t1.`season` = %s',
                     $season
                 )
             );
@@ -241,7 +241,8 @@ class League_Schedule_Service {
             }
         }
 
-        $validation->message = implode( '<br>', $messages );
+        $validation->messages = $messages;
+        $validation->message  = implode( '<br>', $messages );
         return $validation;
     }
 
@@ -287,7 +288,7 @@ class League_Schedule_Service {
         );
         $validation = $this->handle_teams_in_same_division( $events, $season, $validation, $default_refs );
         if ( $validation->success ) {
-            $validation = $this->handle_teams_with_same_match_time( $events, $season, $max_teams, $validation, $default_refs );
+            $validation = $this->handle_teams_in_different_divisions_with_same_match_day( $events, $season, $max_teams, $validation, $default_refs );
         }
 
         return (bool) $validation->success;
@@ -299,7 +300,7 @@ class League_Schedule_Service {
      * @param array<int|string> $events
      * @param array<int>        $default_refs
      */
-    private function handle_teams_in_same_division( array $events, string $season, object $validation, array $default_refs ): object {
+    public function handle_teams_in_same_division( array $events, string $season, object $validation, array $default_refs ): object {
         global $wpdb;
         if ( ! $wpdb ) {
             return $validation;
@@ -384,9 +385,9 @@ class League_Schedule_Service {
                         $alt_ref_option = array( 5, 6, 4 );
                         $ref            = 0;
                         for ( $i = 0; $i < 3; $i++ ) {
-                            $ref_free = array_search( $ref_option[ $i ], $refs, true );
+                            $ref_free = in_array( $ref_option[ $i ], $refs, true );
                             $ref      = $ref_option[ $i ];
-                            if ( false !== $ref_free ) {
+                            if ( $ref_free ) {
                                 $alt_ref   = $alt_ref_option[ $i ];
                                 $alt_found = in_array( $alt_ref, $alt_refs, true );
                                 if ( false !== $alt_found ) {
@@ -395,8 +396,8 @@ class League_Schedule_Service {
                             }
                         }
                         if ( false !== $alt_found ) {
-                            Util::set_table_group( $ref, $table1 );
-                            Util::set_table_group( $alt_ref, $table2 );
+                            Util::set_table_group( (string) $ref, $table1 );
+                            Util::set_table_group( (string) $alt_ref, $table2 );
                         } else {
                             $validation->success = false;
                             /* translators: %1$d: league %2$d team 1 %3$d team 2 */
@@ -415,12 +416,21 @@ class League_Schedule_Service {
     }
 
     /**
-     * Setup teams from same club with same match time.
+     * Setup teams from same club in different divisions with same match time / day.
+     * These teams will always play alternate home matches.
+     * Options are:
+     *  1 - 3, 2 - 4
+     *  1 - 4, 2 - 5, 3 - 6
+     *  1 - 5, 2 - 6, 3 - 7, 4 - 8
+     *  1 - 6, 2 - 7, 3 - 8, 4 - 9, 5 - 10
      *
-     * @param array<int|string> $events
-     * @param array<int>        $default_refs
+     * @param array<int|string> $events array of events to schedule.
+     * @param string            $season season.
+     * @param int               $max_teams maximum number of teams in division.
+     * @param object            $validation details of validation.
+     * @param array<int>        $default_refs default keys to use for scheduling.
      */
-    private function handle_teams_with_same_match_time( array $events, string $season, int $max_teams, object $validation, array $default_refs ): object {
+    public function handle_teams_in_different_divisions_with_same_match_day( array $events, string $season, int $max_teams, object $validation, array $default_refs ): object {
         global $wpdb;
         if ( ! $wpdb ) {
             return $validation;
@@ -499,18 +509,22 @@ class League_Schedule_Service {
                         if ( ! empty( $group1 ) ) {
                             $ref = (int) $group1;
                             if ( ! empty( $group2 ) ) {
-                                $alt_ref   = (int) $group2;
-                                $alt_found = true;
+                                $alt_ref      = (int) $group2;
+                                $expected_alt = (int) ( $ref + $max_teams / 2 );
+                                if ( $expected_alt > $max_teams ) {
+                                    $expected_alt = $expected_alt - $max_teams;
+                                }
+                                $alt_found = ( $league1 === $league2 ) || ( $alt_ref === $expected_alt );
                             } else {
                                 $alt_ref = (int) ( $ref + $max_teams / 2 );
                                 if ( $alt_ref > $max_teams ) {
                                     $alt_ref = $alt_ref - $max_teams;
                                 }
-                                $alt_found = in_array( intval( $ref ), $refs, true );
+                                $alt_found = in_array( $alt_ref, $alt_refs, true );
                             }
                             if ( false !== $alt_found ) {
-                                Util::set_table_group( $ref, $table1 );
-                                Util::set_table_group( $alt_ref, $table2 );
+                                Util::set_table_group( (string) $ref, $table1 );
+                                Util::set_table_group( (string) $alt_ref, $table2 );
                             } else {
                                 $validation->success = false;
                                 $league              = get_league( $league1 );
@@ -526,10 +540,10 @@ class League_Schedule_Service {
                                 if ( $ref < 1 ) {
                                     $ref = $ref + $max_teams;
                                 }
-                                $alt_found = in_array( intval( $ref ), $refs, true );
+                                $alt_found = in_array( $ref, $refs, true );
                                 if ( false !== $alt_found ) {
-                                    Util::set_table_group( $ref, $table1 );
-                                    Util::set_table_group( $alt_ref, $table2 );
+                                    Util::set_table_group( (string) $ref, $table1 );
+                                    Util::set_table_group( (string) $alt_ref, $table2 );
                                 } else {
                                     $validation->success = false;
                                     $league              = get_league( $league1 );
@@ -545,11 +559,11 @@ class League_Schedule_Service {
                                     if ( $alt_ref > $max_teams ) {
                                         $alt_ref = $alt_ref - $max_teams;
                                     }
-                                    $alt_found = in_array( intval( $alt_ref ), $alt_refs, true );
+                                    $alt_found = in_array( $alt_ref, $alt_refs, true );
                                     if ( false !== $alt_found ) {
                                         $ref_set = true;
-                                        Util::set_table_group( $ref, $table1 );
-                                        Util::set_table_group( $alt_ref, $table2 );
+                                        Util::set_table_group( (string) $ref, $table1 );
+                                        Util::set_table_group( (string) $alt_ref, $table2 );
                                         break;
                                     }
                                 }

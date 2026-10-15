@@ -34,6 +34,10 @@ class Get_Team_Order_Players_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ) );
         }
 
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? null, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         if ( empty( $query->club_id ) ) {
             return Shortcode_View_Model::for_error( __( 'Club id not supplied', 'racketmanager' ) );
         }
@@ -94,19 +98,23 @@ class Get_Team_Order_Players_Handler {
         $club_id = method_exists( $club, 'get_id' ) ? $club->get_id() : ( $club->id ?? null );
         $club_players = [];
 
-        switch ( $event->type ) {
-            case 'BD':
-            case 'MD':
+        switch ( substr( $event->type, 0, 1 ) ) {
+            case 'B':
+            case 'M':
                 $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club_id, 'm', true, $max_age, $min_age );
                 break;
-            case 'GD':
-            case 'WD':
+            case 'G':
+            case 'W':
                 $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club_id, 'f', true, $max_age, $min_age );
                 break;
-            case 'XD':
-            case 'LD':
+            case 'X':
+            case 'L':
                 $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club_id, 'm', true, $max_age, $min_age );
                 $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club_id, 'f', true, $max_age, $min_age_female );
+                break;
+            case 'S':
+            case 'O':
+                $club_players['x'] = $this->registration_service->get_registered_players_list( 'active', null, $club_id, null, true, $max_age, $min_age );
                 break;
             default:
                 $club_players['m'] = [];

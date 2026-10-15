@@ -26,6 +26,11 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\DTO\Tournament\Tournament_Event_Entry_DTO;
+use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
+use Racketmanager\Domain\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presenters\Shortcode_View_Presenter;
@@ -326,5 +331,212 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
 
         $output = $adapter->show_tournament_withdrawal( [ 'id' => 44 ] );
         $this->assertSame( '<div class="tournament-withdrawal-modal"></div>', $output );
+    }
+
+    public function test_show_tournament_events_renders_allowed_single_event(): void {
+        $event       = new Tournament_Event_DTO( 42, 'Men Singles', [ new Tournament_Event_Entry_DTO( 101, 'Alice Example', null, null, [] ) ], 4 );
+        $resolved    = $this->createStub( Event::class );
+        $competition = $this->createMock( Competition::class );
+        $competition->expects( $this->once() )
+            ->method( 'resolve_event' )
+            ->with( $event, '2026' )
+            ->willReturn( $resolved );
+
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->season = '2026';
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $event === $identifier );
+        $vm         = Shortcode_View_Model::for_template( 'event', [
+            'tournament' => $tournament,
+            'event'      => $event,
+        ] );
+
+        $handler = $this->createMock( Get_Tournament_Events_Handler::class );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->identicalTo( $vm ) )
+            ->willReturn( '<div>Allowed Event</div>' );
+
+        $adapter = $this->create_adapter( [
+            'events_handler' => $handler,
+            'view_presenter' => $presenter,
+        ] );
+
+        $this->assertSame( '<div>Allowed Event</div>', $adapter->show_tournament_events( [ 'id' => 8 ] ) );
+    }
+
+    public function test_show_tournament_events_rejects_disallowed_single_event(): void {
+        $event      = 'forged-event-slug';
+        $tournament = $this->create_tournament_stub( false );
+        $vm         = Shortcode_View_Model::for_template( 'event', [
+            'tournament' => $tournament,
+            'event'      => $event,
+        ] );
+
+        $handler = $this->createMock( Get_Tournament_Events_Handler::class );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static function ( Shortcode_View_Model $rendered ): bool {
+                return $rendered->is_error()
+                    && 'Event not found for tournament' === $rendered->error_message;
+            } ) )
+            ->willReturn( 'error view' );
+
+        $adapter = $this->create_adapter( [
+            'events_handler' => $handler,
+            'view_presenter' => $presenter,
+        ] );
+
+        $this->assertSame( 'error view', $adapter->show_tournament_events( [ 'id' => 8, 'event' => 99 ] ) );
+    }
+
+    public function test_show_tournament_events_filters_list_to_allowed_events(): void {
+        $allowed    = (object) [ 'id' => 42, 'name' => 'Men Singles' ];
+        $denied     = (object) [ 'id' => 99, 'name' => 'Closed Event' ];
+        $tournament = $this->create_tournament_stub( null, [ 42 ] );
+        $vm         = Shortcode_View_Model::for_template( 'events', [
+            'tournament' => $tournament,
+            'events'     => [ $allowed, $denied ],
+        ] );
+
+        $handler = $this->createMock( Get_Tournament_Events_Handler::class );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static function ( Shortcode_View_Model $rendered ) use ( $allowed ): bool {
+                return ! $rendered->is_error()
+                    && 'events' === $rendered->template
+                    && [ $allowed ] === array_values( $rendered->vars['events'] );
+            } ) )
+            ->willReturn( '<div>Filtered Events</div>' );
+
+        $adapter = $this->create_adapter( [
+            'events_handler' => $handler,
+            'view_presenter' => $presenter,
+        ] );
+
+        $this->assertSame( '<div>Filtered Events</div>', $adapter->show_tournament_events( [ 'id' => 8 ] ) );
+    }
+
+    public function test_show_draws_filters_list_to_allowed_draws(): void {
+        $allowed    = (object) [ 'id' => 42, 'name' => 'Men Singles' ];
+        $denied     = (object) [ 'id' => 99, 'name' => 'Closed Draw' ];
+        $tournament = $this->create_tournament_stub( null, [ 42 ] );
+        $vm         = Shortcode_View_Model::for_template( 'draws', [
+            'tournament' => $tournament,
+            'draws'      => [ $allowed, $denied ],
+        ] );
+
+        $handler = $this->createMock( Get_Tournament_Draws_Handler::class );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static function ( Shortcode_View_Model $rendered ) use ( $allowed ): bool {
+                return ! $rendered->is_error()
+                    && 'draws' === $rendered->template
+                    && [ $allowed ] === array_values( $rendered->vars['draws'] );
+            } ) )
+            ->willReturn( '<div>Filtered Draws</div>' );
+
+        $adapter = $this->create_adapter( [
+            'draws_handler'  => $handler,
+            'view_presenter' => $presenter,
+        ] );
+
+        $this->assertSame( '<div>Filtered Draws</div>', $adapter->show_draws( [ 'id' => 8 ] ) );
+    }
+
+    public function test_show_draws_renders_allowed_single_draw_without_replacing_view_data(): void {
+        $draw        = new Tournament_Event_DTO( 42, 'Men Singles', [], 4 );
+        $resolved    = $this->createStub( Event::class );
+        $competition = $this->createMock( Competition::class );
+        $competition->expects( $this->once() )
+            ->method( 'resolve_event' )
+            ->with( $draw, '2026' )
+            ->willReturn( $resolved );
+
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->season = '2026';
+        $tournament->method( 'get_competition_object' )->willReturn( $competition );
+        $tournament->method( 'is_event_allowed' )->willReturnCallback( static fn( $identifier ): bool => $draw === $identifier );
+        $vm = Shortcode_View_Model::for_template( 'draw', [
+            'tournament' => $tournament,
+            'draw'       => $draw,
+        ] );
+
+        $handler = $this->createMock( Get_Tournament_Draws_Handler::class );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->identicalTo( $vm ) )
+            ->willReturn( '<div>Allowed Draw</div>' );
+
+        $adapter = $this->create_adapter( [
+            'draws_handler'  => $handler,
+            'view_presenter' => $presenter,
+        ] );
+
+        $this->assertSame( '<div>Allowed Draw</div>', $adapter->show_draws( [ 'id' => 8 ] ) );
+    }
+
+    public function test_show_draws_rejects_disallowed_single_draw(): void {
+        $draw       = (object) [ 'id' => 99, 'name' => 'Forged Draw' ];
+        $tournament = $this->create_tournament_stub( false );
+        $vm         = Shortcode_View_Model::for_template( 'draw', [
+            'tournament' => $tournament,
+            'draw'       => $draw,
+        ] );
+
+        $handler = $this->createMock( Get_Tournament_Draws_Handler::class );
+        $handler->expects( $this->once() )->method( 'handle' )->willReturn( $vm );
+
+        $presenter = $this->createMock( Shortcode_View_Presenter::class );
+        $presenter->expects( $this->once() )
+            ->method( 'render' )
+            ->with( $this->callback( static function ( Shortcode_View_Model $rendered ): bool {
+                return $rendered->is_error()
+                    && 'Event not found for tournament' === $rendered->error_message;
+            } ) )
+            ->willReturn( 'error view' );
+
+        $adapter = $this->create_adapter( [
+            'draws_handler'  => $handler,
+            'view_presenter' => $presenter,
+        ] );
+
+        $this->assertSame( 'error view', $adapter->show_draws( [ 'id' => 8, 'draw' => 99 ] ) );
+    }
+
+    /**
+     * @param bool|null $allow_all When true/false, always allow/deny. When null, allow only IDs in $allowed_ids.
+     * @param int[]     $allowed_ids
+     */
+    private function create_tournament_stub( ?bool $allow_all = true, array $allowed_ids = [] ): Tournament {
+        $tournament = $this->createStub( Tournament::class );
+        $tournament->method( 'get_competition_object' )->willReturn( null );
+        if ( null === $allow_all ) {
+            $tournament->method( 'is_event_allowed' )->willReturnCallback(
+                static function ( $item ) use ( $allowed_ids ): bool {
+                    $id = is_object( $item ) ? (int) ( $item->id ?? 0 ) : (int) $item;
+                    return in_array( $id, $allowed_ids, true );
+                }
+            );
+        } else {
+            $tournament->method( 'is_event_allowed' )->willReturn( $allow_all );
+        }
+
+        return $tournament;
     }
 }

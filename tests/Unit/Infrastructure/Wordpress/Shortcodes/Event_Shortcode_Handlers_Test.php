@@ -27,12 +27,17 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Query;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Query;
 use Racketmanager\Domain\Club;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Factory;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
+use ReflectionClass;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\Public\Shortcodes_Event;
 use Racketmanager\RacketManager;
@@ -69,6 +74,51 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         return new Shortcode_Template_Renderer( $php_renderer );
     }
 
+    private function create_test_competition( int $id = 10, ?array $allowed_entry_events = null ): Competition {
+        return Competition_Factory::create_from_dto(
+            new Competition_Hydration_DTO(
+                id: $id,
+                name: 'Test Competition ' . $id,
+                type: Competition_Type::LEAGUE,
+                age_group: 'Adults',
+                seasons: [
+                    '2025' => [
+                        'name'         => '2025',
+                        'entry_events' => $allowed_entry_events,
+                    ],
+                    '2026' => [
+                        'name'         => '2026',
+                        'entry_events' => $allowed_entry_events,
+                    ],
+                ],
+                settings: []
+            )
+        );
+    }
+
+    private function attach_test_competition( Event $event, ?Competition $competition = null ): Event {
+        $event->competition_id = 10;
+        $event->competition    = $competition ?? $this->create_test_competition();
+        if ( empty( $event->seasons ) ) {
+            $event->seasons = json_encode( [ '2025' => [ 'name' => '2025' ], '2026' => [ 'name' => '2026' ] ] );
+        } elseif ( is_array( $event->seasons ) ) {
+            $seasons_map = [];
+            foreach ( $event->seasons as $s ) {
+                if ( isset( $s['name'] ) ) {
+                    $seasons_map[ $s['name'] ] = $s;
+                }
+            }
+            $event->seasons = json_encode( $seasons_map );
+        }
+        if ( method_exists( $event, 'method' ) ) {
+            $event->method( 'get_season_by_name' )->willReturnCallback( function ( string $name ) use ( $event ) {
+                $seasons = json_decode( (string) $event->seasons, true ) ?? [];
+                return $seasons[ $name ] ?? null;
+            } );
+        }
+        return $event;
+    }
+
     public function test_event_handler_success_and_error(): void {
         $comp_service = $this->createStub( Competition_Service::class );
         $handler      = new Get_Event_Handler( $comp_service );
@@ -92,8 +142,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->type = 'MS';
         $event_stub->seasons = [ [ 'name' => '2025' ] ];
         $event_stub->current_season = [];
-        $event_stub->competition = (object) [ 'id' => 1, 'is_championship' => false ];
         $event_stub->method( 'get_teams' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service_success->method( 'get_event_by_id' )->willReturn( $event_stub );
         $handler_success = new Get_Event_Handler( $comp_service_success );
@@ -123,6 +173,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->id = 5;
         $event_stub->current_season = [ 'name' => '2025' ];
         $event_stub->method( 'get_leagues' )->willReturn( [ (object) [ 'id' => 1 ] ] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -144,8 +195,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub = $this->createStub( Event::class );
         $event_stub->id = 7;
         $event_stub->current_season = [ 'name' => '2025' ];
-        $event_stub->competition = (object) [ 'is_championship' => false ];
         $event_stub->method( 'get_leagues' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -170,8 +221,8 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub = $this->createStub( Event::class );
         $event_stub->id = 8;
         $event_stub->current_season = [ 'name' => '2025' ];
-        $event_stub->competition = (object) [ 'is_championship' => false ];
         $event_stub->method( 'get_leagues' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -195,6 +246,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->method( 'get_clubs' )->willReturn( [] );
         $event_stub->method( 'get_teams' )->willReturn( [] );
         $event_stub->method( 'get_matches' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -237,11 +289,11 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub = $this->createStub( Event::class );
         $event_stub->id = 15;
         $event_stub->current_season = [ 'name' => '2025' ];
-        $event_stub->competition = (object) [ 'is_championship' => false ];
         $event_stub->method( 'get_teams' )->willReturn( [] );
         $event_stub->method( 'get_team_info' )->willReturn( (object) [ 'name' => 'Team A' ] );
         $event_stub->method( 'get_matches' )->willReturn( [] );
         $event_stub->method( 'get_players' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -279,6 +331,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->id = 16;
         $event_stub->current_season = [ 'name' => '2025' ];
         $event_stub->method( 'get_players' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -352,6 +405,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->id = 22;
         $event_stub->type = 'MD';
         $event_stub->current_season = [ 'name' => '2025' ];
+        $this->attach_test_competition( $event_stub );
 
         $comp_service_ok->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -384,6 +438,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->id = 33;
         $event_stub->current_season = [ 'name' => '2025' ];
         $event_stub->method( 'get_matches' )->willReturn( [ (object) [ 'id' => 1 ] ] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -421,6 +476,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->age_offset = '5';
         $event_stub->current_season = [ 'name' => '2025' ];
         $event_stub->method( 'get_teams' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -467,6 +523,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->id = 5;
         $event_stub->type = 'MD';
         $event_stub->current_season = [ 'name' => '2025' ];
+        $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         $partner = $this->createStub( Player::class );
@@ -497,6 +554,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->age_offset = '5';
         $event_stub->current_season = [ 'name' => '2025' ];
         $event_stub->method( 'get_teams' )->willReturn( [] );
+        $this->attach_test_competition( $event_stub );
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
         $club_stub = $this->createStub( Club::class );
@@ -535,6 +593,7 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $event_stub->seasons = [ [ 'name' => '2025' ], [ 'name' => '2024' ] ];
         $leagues = [ (object) [ 'id' => 1 ] ];
         $event_stub->method( 'get_leagues' )->willReturn( $leagues );
+        $this->attach_test_competition( $event_stub );
 
         $comp_service->method( 'get_event_by_id' )->willReturn( $event_stub );
 
@@ -607,5 +666,139 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $this->assertSame( 'facade_team_matches', $facade->show_event_team_matches( [ 'id' => 1 ] ) );
         $this->assertSame( 'facade_order_players', $facade->show_team_order_players( [ 'id' => 1 ] ) );
         $this->assertSame( 'facade_dropdown', $facade->show_dropdown( [ 'id' => 1 ] ) );
+    }
+
+    private function create_test_event( int $id, int $competition_id = 10, ?Competition $competition = null ): Event {
+        $event                 = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
+        $event->id             = $id;
+        $event->name           = 'Event ' . $id;
+        $event->competition_id = $competition_id;
+        $event->seasons        = json_encode( [ '2026' => [ 'name' => '2026' ] ] );
+        $event->current_season = [ 'name' => '2026' ];
+        $event->type           = 'MD';
+        if ( $competition ) {
+            $event->competition = $competition;
+        }
+        return $event;
+    }
+
+    public function test_event_handlers_enforce_allowlist_for_allowed_and_blocked_events(): void {
+        $competition   = $this->create_test_competition( 10, [ 101, 102 ] );
+        $allowed_event = $this->create_test_event( 101, 10, $competition );
+        $blocked_event = $this->create_test_event( 103, 10, $competition );
+
+        $comp_service   = $this->createStub( Competition_Service::class );
+        $league_service = $this->createStub( League_Service::class );
+        $club_service   = $this->createStub( Club_Service::class );
+        $player_service = $this->createStub( Player_Service::class );
+        $reg_service    = $this->createStub( Registration_Service::class );
+
+        // 1. Get_Event_Handler
+        $comp_service->method( 'get_event_by_id' )->willReturnCallback(
+            fn( $id ) => 101 === (int) $id ? $allowed_event : $blocked_event
+        );
+        $event_handler = new Get_Event_Handler( $comp_service );
+        $this->assertFalse( $event_handler->handle( new Get_Event_Query( event_id: 101 ) )->is_error() );
+        $err = $event_handler->handle( new Get_Event_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 2. Get_Event_Standings_Handler
+        $standings_handler = new Get_Event_Standings_Handler( $comp_service );
+        $this->assertFalse( $standings_handler->handle( new Get_Event_Standings_Query( event_id: 101 ) )->is_error() );
+        $err = $standings_handler->handle( new Get_Event_Standings_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 3. Get_Event_Draw_Handler
+        $draw_handler = new Get_Event_Draw_Handler( $comp_service, $league_service );
+        $this->assertFalse( $draw_handler->handle( new Get_Event_Draw_Query( event_id: 101 ) )->is_error() );
+        $err = $draw_handler->handle( new Get_Event_Draw_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 4. Get_Event_Matches_Handler
+        $matches_handler = new Get_Event_Matches_Handler( $comp_service, $league_service );
+        $this->assertFalse( $matches_handler->handle( new Get_Event_Matches_Query( event_id: 101 ) )->is_error() );
+        $err = $matches_handler->handle( new Get_Event_Matches_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 5. Get_Event_Clubs_Handler
+        $clubs_handler = new Get_Event_Clubs_Handler( $comp_service, $club_service );
+        $this->assertFalse( $clubs_handler->handle( new Get_Event_Clubs_Query( event_id: 101 ) )->is_error() );
+        $err = $clubs_handler->handle( new Get_Event_Clubs_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 6. Get_Event_Teams_Handler
+        $teams_handler = new Get_Event_Teams_Handler( $comp_service );
+        $this->assertFalse( $teams_handler->handle( new Get_Event_Teams_Query( event_id: 101 ) )->is_error() );
+        $err = $teams_handler->handle( new Get_Event_Teams_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 7. Get_Event_Players_Handler
+        $players_handler = new Get_Event_Players_Handler( $comp_service, $player_service );
+        $this->assertFalse( $players_handler->handle( new Get_Event_Players_Query( event_id: 101 ) )->is_error() );
+        $err = $players_handler->handle( new Get_Event_Players_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 8. Get_Event_Partner_Handler
+        $partner_handler = new Get_Event_Partner_Handler( $comp_service, $player_service );
+        $this->assertFalse( $partner_handler->handle( new Get_Event_Partner_Query( event_id: 101, player_id: 5 ) )->is_error() );
+        $err = $partner_handler->handle( new Get_Event_Partner_Query( event_id: 103, player_id: 5 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 9. Get_Event_Team_Matches_Handler
+        $team_matches_handler = new Get_Event_Team_Matches_Handler( $comp_service );
+        $this->assertFalse( $team_matches_handler->handle( new Get_Event_Team_Matches_Query( event_id: 101, team_id: 2 ) )->is_error() );
+        $err = $team_matches_handler->handle( new Get_Event_Team_Matches_Query( event_id: 103, team_id: 2 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 10. Get_Event_Dropdown_Handler
+        $dropdown_handler = new Get_Event_Dropdown_Handler( $comp_service );
+        $this->assertFalse( $dropdown_handler->handle( new Get_Event_Dropdown_Query( event_id: 101 ) )->is_error() );
+        $err = $dropdown_handler->handle( new Get_Event_Dropdown_Query( event_id: 103 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // 11. Get_Team_Order_Players_Handler
+        $club_stub = $this->createStub( Club::class );
+        $club_stub->id = 50;
+        $club_stub->method( 'get_id' )->willReturn( 50 );
+        $club_service->method( 'get_club' )->willReturn( $club_stub );
+        $order_handler = new Get_Team_Order_Players_Handler( $comp_service, $club_service, $reg_service );
+        $this->assertFalse( $order_handler->handle( new Get_Team_Order_Players_Query( event_id: 101, club_id: 50 ) )->is_error() );
+        $err = $order_handler->handle( new Get_Team_Order_Players_Query( event_id: 103, club_id: 50 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+    }
+
+    public function test_event_allowlist_guard_fails_closed_when_competition_not_found_or_foreign(): void {
+        $competition   = $this->create_test_competition( 10, [ 101, 102 ] );
+        $foreign_event = $this->create_test_event( 101, 999, $competition );
+
+        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_event_by_id' )->willReturn( $foreign_event );
+
+        $handler = new Get_Event_Handler( $comp_service );
+        $err     = $handler->handle( new Get_Event_Query( event_id: 101 ) );
+        $this->assertTrue( $err->is_error() );
+        $this->assertSame( 'Event not found for competition', $err->error_message );
+
+        // Competition service throwing not found
+        $missing_comp_event = $this->create_test_event( 101, 888 ); // no competition object attached
+        $comp_service_missing = $this->createStub( Competition_Service::class );
+        $comp_service_missing->method( 'get_event_by_id' )->willReturn( $missing_comp_event );
+        $comp_service_missing->method( 'get_by_id' )->willThrowException( new Competition_Not_Found_Exception( 'Competition not found' ) );
+
+        $handler_missing = new Get_Event_Handler( $comp_service_missing );
+        $err_missing     = $handler_missing->handle( new Get_Event_Query( event_id: 101 ) );
+        $this->assertTrue( $err_missing->is_error() );
+        $this->assertSame( 'Event not found for competition', $err_missing->error_message );
     }
 }

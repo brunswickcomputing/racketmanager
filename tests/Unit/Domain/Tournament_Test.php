@@ -4,9 +4,17 @@ declare(strict_types=1);
 namespace Racketmanager\Tests\Unit\Domain;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Factory;
+use Racketmanager\Domain\Competition\Competition_Type;
+use Racketmanager\Domain\Competition\Event;
+use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
+use ReflectionClass;
 use stdClass;
 
     require_once __DIR__ . '/../../wp-stubs.php';
@@ -14,6 +22,7 @@ use stdClass;
     use function Racketmanager\seo_url;
 
 final class Tournament_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     public function test_set_tournament_info_sets_correct_data(): void {
         global $racketmanager;
@@ -116,5 +125,277 @@ final class Tournament_Test extends TestCase {
         $this->assertEquals('2026-12-24', $match_dates[1]);
         // Quarter-final (round 3 - 1 = 2) should be previous - 7 days
         $this->assertEquals('2026-12-17', $match_dates[2]);
+    }
+
+    private array $queries = [];
+
+    /**
+     * Competition lookups made through the container's competition service.
+     *
+     * @var int[]
+     */
+    private array $service_calls = [];
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->backup_globals();
+        $this->queries       = [];
+        $this->service_calls = [];
+        $this->register_competitions( [] );
+    }
+
+    protected function tearDown(): void {
+        $this->restore_globals();
+        parent::tearDown();
+    }
+
+    /**
+     * Provide a container whose competition service knows the given competitions.
+     * Unknown ids throw Competition_Not_Found_Exception like the real service.
+     *
+     * @param Competition[] $competitions Competitions keyed by id.
+     */
+    private function register_competitions( array $competitions ): void {
+        $service = new class( $competitions, $this->service_calls ) {
+            public function __construct( private array $competitions, private array &$calls ) {}
+
+            public function get_by_id( null|string|int $id ): Competition {
+                $this->calls[] = (int) $id;
+                if ( ! isset( $this->competitions[ (int) $id ] ) ) {
+                    throw new Competition_Not_Found_Exception( 'Competition not found' );
+                }
+                return $this->competitions[ (int) $id ];
+            }
+        };
+
+        $GLOBALS['racketmanager'] = new class( $service ) {
+            public $container;
+            public $site_url    = 'http://example.com';
+            public $date_format = 'Y-m-d';
+
+            public function get_options(): array {
+                return [];
+            }
+
+            public function __construct( $service ) {
+                $this->container = new class( $service ) {
+                    public function __construct( private $service ) {}
+
+                    public function has( string $name ): bool {
+                        return 'competition_service' === $name;
+                    }
+
+                    public function get( string $name ) {
+                        return $this->service;
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Register events as database rows for the wpdb double and as hydrated Event objects.
+     *
+     * @param Event[] $events Events.
+     */
+    private function register_events( array $events ): void {
+        $rows = [];
+        $map  = [];
+        foreach ( $events as $event ) {
+            $rows[]            = (object) [ 'id' => $event->id ];
+            $map[ $event->id ] = $event;
+        }
+        $GLOBALS['wp_stubs_events'] = $map;
+
+        $wpdb                       = new \wpdb();
+        $wpdb->get_results_callback = function ( string $query ) use ( $rows ): array {
+            $this->queries[] = $query;
+            return str_contains( $query, 'racketmanager_events' ) ? $rows : [];
+        };
+        $GLOBALS['wpdb'] = $wpdb;
+    }
+
+    private function create_competition( int $id = 10, array $seasons = [ '2026' => [ 'name' => '2026' ] ] ): Competition {
+        return Competition_Factory::create_from_dto(
+            new Competition_Hydration_DTO(
+                id: $id,
+                name: 'Test Tournament Competition ' . $id,
+                type: Competition_Type::TOURNAMENT,
+                age_group: 'Adults',
+                seasons: $seasons,
+                settings: []
+            )
+        );
+    }
+
+    private function create_event(
+        int $id,
+        string $name = 'Men Doubles',
+        int $competition_id = 10,
+        array $seasons = [ '2026' => [ 'name' => '2026' ] ]
+    ): Event {
+        $event                 = ( new ReflectionClass( Event::class ) )->newInstanceWithoutConstructor();
+        $event->id             = $id;
+        $event->name           = $name;
+        $event->competition_id = $competition_id;
+        $event->seasons        = json_encode( $seasons );
+        return $event;
+    }
+
+    /**
+     * Build a tournament from a database-style row, where information is a JSON string.
+     */
+    private function create_tournament( ?array $information, int $competition_id = 10, ?string $season = '2026' ): Tournament {
+        $data                 = new stdClass();
+        $data->id             = 1;
+        $data->name           = 'Test Tournament';
+        $data->competition_id = $competition_id;
+        $data->season         = $season;
+        if ( null !== $information ) {
+            $data->information = json_encode( $information );
+        }
+        return new Tournament( $data );
+    }
+
+    public function test_get_allowlist_event_ids_semantics(): void {
+        $absent    = $this->create_tournament( null );
+        $unset_key = $this->create_tournament( [ 'other' => 1 ] );
+        $null      = $this->create_tournament( [ 'entry_events' => null ] );
+        $empty     = $this->create_tournament( [ 'entry_events' => [] ] );
+        $populated = $this->create_tournament( [ 'entry_events' => [ '101', 103 ] ] );
+
+        foreach ( [ $absent, $unset_key, $null ] as $unrestricted ) {
+            $this->assertNull( $unrestricted->get_allowlist_event_ids( false ) );
+            $this->assertNull( $unrestricted->get_allowlist_event_ids( true ) );
+        }
+
+        $this->assertNull( $empty->get_allowlist_event_ids( false ), 'Viewing is unrestricted for []' );
+        $this->assertSame( [], $empty->get_allowlist_event_ids( true ), 'Entry is closed for []' );
+
+        $this->assertSame( [ 101, 103 ], $populated->get_allowlist_event_ids( false ) );
+        $this->assertSame( [ 101, 103 ], $populated->get_allowlist_event_ids( true ) );
+    }
+
+    public function test_get_allowlist_event_ids_fails_closed_without_season(): void {
+        $tournament = $this->create_tournament( [ 'entry_events' => [ 101 ] ], 10, null );
+
+        $this->assertSame( [], $tournament->get_allowlist_event_ids( false ) );
+        $this->assertSame( [], $tournament->get_allowlist_event_ids( true ) );
+    }
+
+    public function test_is_event_allowed_resolves_competition_through_service_once(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
+        $tournament = $this->create_tournament( [ 'entry_events' => [ 101 ] ] );
+
+        $this->assertTrue( $tournament->is_event_allowed( 101, true ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, false ) );
+        $this->assertSame( [ 10 ], $this->service_calls );
+    }
+
+    public function test_is_event_allowed_entry_closed_but_viewing_open_for_empty_allowlist(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events( [ $this->create_event( 101 ) ] );
+        $tournament = $this->create_tournament( [ 'entry_events' => [] ] );
+
+        $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+    }
+
+    public function test_is_event_allowed_unrestricted_when_information_absent(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events( [ $this->create_event( 101 ) ] );
+        $tournament = $this->create_tournament( null );
+
+        $this->assertTrue( $tournament->is_event_allowed( 101, true ) );
+        $this->assertTrue( $tournament->is_event_allowed( 101, false ) );
+    }
+
+    public function test_is_event_allowed_rejects_foreign_competition_and_out_of_season_events(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $foreign   = $this->create_event( 101, 'Men Doubles', 999 );
+        $old       = $this->create_event( 102, 'Old Event', 10, [ '2024' => [ 'name' => '2024' ] ] );
+        $this->register_events( [ $foreign, $old ] );
+        $tournament = $this->create_tournament( [ 'entry_events' => [ 101, 102 ] ] );
+
+        $this->assertFalse( $tournament->is_event_allowed( $foreign, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( $old, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( 102, false ) );
+    }
+
+    public function test_is_event_allowed_fails_closed_when_competition_is_not_found(): void {
+        $this->register_competitions( [] );
+        $this->register_events( [ $this->create_event( 101 ) ] );
+        $tournament = $this->create_tournament( null );
+
+        $this->assertNull( $tournament->get_competition_object() );
+        $this->assertFalse( $tournament->is_event_allowed( 101, false ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+        $this->assertSame( [], $tournament->get_entry_events() );
+    }
+
+    public function test_competition_cache_is_not_reused_for_a_different_competition_id(): void {
+        $this->register_competitions( [ 100 => $this->create_competition( 100 ), 200 => $this->create_competition( 200 ) ] );
+        $own_event = $this->create_event( 101, 'Men Doubles', 100 );
+        $this->register_events( [ $own_event ] );
+        $tournament = $this->create_tournament( null, 100 );
+
+        $this->assertTrue( $tournament->is_event_allowed( $own_event, true ) );
+
+        $tournament->set_competition_id( 200 );
+
+        $this->assertFalse( $tournament->is_event_allowed( $own_event, true ) );
+        $this->assertFalse( $tournament->is_event_allowed( 101, true ) );
+        $this->assertSame( 200, $tournament->get_competition_object()->id );
+        $this->assertSame( [ 100, 200 ], $this->service_calls );
+    }
+
+    public function test_competition_cache_is_revalidated_when_competition_id_is_assigned_directly(): void {
+        $this->register_competitions( [ 100 => $this->create_competition( 100 ), 200 => $this->create_competition( 200 ) ] );
+        $tournament = $this->create_tournament( null, 100 );
+        $this->assertSame( 100, $tournament->get_competition_object()->id );
+
+        $tournament->competition_id = 200;
+
+        $this->assertSame( 200, $tournament->get_competition_object()->id );
+    }
+
+    public function test_get_entry_events_lists_configured_events_before_any_team_has_entered(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events(
+            [
+                $this->create_event( 101, 'Men Doubles' ),
+                $this->create_event( 102, 'Ladies Doubles' ),
+                $this->create_event( 103, 'Mixed Doubles' ),
+                $this->create_event( 104, 'Old Event', 10, [ '2024' => [ 'name' => '2024' ] ] ),
+            ]
+        );
+        $tournament = $this->create_tournament( [ 'entry_events' => [ 101, 103, 104 ] ] );
+
+        $events = $tournament->get_entry_events();
+
+        $this->assertSame( [ 101, 103 ], array_map( static fn( Event $event ): int => $event->id, $events ) );
+        $this->assertCount( 1, $this->queries );
+        $this->assertStringNotContainsString( 'league_teams', $this->queries[0] );
+    }
+
+    public function test_get_entry_events_returns_all_season_events_when_unrestricted_and_none_when_closed(): void {
+        $this->register_competitions( [ 10 => $this->create_competition() ] );
+        $this->register_events( [ $this->create_event( 101 ), $this->create_event( 102, 'Ladies Doubles' ) ] );
+
+        $this->assertCount( 2, $this->create_tournament( null )->get_entry_events() );
+        $this->assertSame( [], $this->create_tournament( [ 'entry_events' => [] ] )->get_entry_events() );
+    }
+
+    public function test_set_entry_events_updates_information_and_allowlist(): void {
+        $tournament = $this->create_tournament( [ 'other' => 'kept' ] );
+
+        $this->assertTrue( $tournament->set_entry_events( [ '5', 7, 5 ] ) );
+
+        $this->assertSame( [ 5, 7 ], $tournament->get_allowlist_event_ids( true ) );
+        $this->assertSame( 'kept', $tournament->information->other );
     }
 }

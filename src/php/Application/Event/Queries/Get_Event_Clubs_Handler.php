@@ -32,6 +32,10 @@ class Get_Event_Clubs_Handler {
         $event_club = null;
         $event->set_season( $query->season );
 
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         if ( ! empty( $query->club_id ) ) {
             try {
                 if ( is_numeric( $query->club_id ) ) {

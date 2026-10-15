@@ -790,8 +790,8 @@ class Rubber {
             $split_sets_home    = 1;
             $split_sets_away    = 0;
         }
-        $home_points = $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $forwalkover_rubber ) - $invalid_points_home;
-        $away_points = $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $forwalkover_rubber ) - $invalid_points_away;
+        $home_points = (float) ( $home_sets + ( $straight_sets_home * $forwin ) + ( $split_sets_home * $forwin_split ) + ( $shared_sets * $forshare ) - ( $home_walkover * $forwalkover_rubber ) - $invalid_points_home );
+        $away_points = (float) ( $away_sets + ( $straight_sets_away * $forwin ) + ( $split_sets_away * $forwin_split ) + ( $shared_sets * $forshare ) - ( $away_walkover * $forwalkover_rubber ) - $invalid_points_away );
         if ( $home_walkover || $away_walkover ) {
             if ( $home_walkover && $away_walkover ) {
                 $winner = -1;
@@ -822,10 +822,10 @@ class Rubber {
                 $winner = $home_team;
                 $loser  = $away_team;
             }
-        } elseif ( $home_points > $away_points ) {
+        } elseif ( (float) $home_points > (float) $away_points ) {
             $winner = $home_team;
             $loser  = $away_team;
-        } elseif ( $home_points < $away_points ) {
+        } elseif ( (float) $home_points < (float) $away_points ) {
             $winner = $away_team;
             $loser  = $home_team;
         } else {
@@ -833,8 +833,8 @@ class Rubber {
             $loser  = -1;
         }
         $return         = new stdClass();
-        $return->home   = $home_points;
-        $return->away   = $away_points;
+        $return->home   = (float) $home_points;
+        $return->away   = (float) $away_points;
         $return->winner = $winner;
         $return->loser  = $loser;
         return $return;

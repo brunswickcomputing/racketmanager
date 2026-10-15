@@ -35,6 +35,11 @@ class Get_Event_Players_Handler {
         }
 
         $event->set_season( $query->season );
+
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         $event->players = [];
 
         if ( ! empty( $query->player_id ) ) {

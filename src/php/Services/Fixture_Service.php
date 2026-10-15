@@ -78,9 +78,13 @@ class Fixture_Service {
      */
     private function create_associated_rubbers( Fixture $fixture, object $league ): void {
         $max_rubbers = $this->calculate_max_rubbers( $fixture, $league );
+        $num_singles = 0;
+        if ( 'T' === substr( $league->type, 1, 1 ) ) {
+            $num_singles = (int) ( ( $league->num_rubbers / 3 ) * 2 );
+        }
         for ( $ix = 1; $ix <= $max_rubbers; $ix ++ ) {
             $rubber_data = new stdClass();
-            $type        = $this->determine_rubber_type( $league->type, $ix );
+            $type        = $this->determine_rubber_type( $league->type, $ix, $num_singles );
 
             $rubber_data->type          = $type;
             $rubber_data->rubber_number = $ix;
@@ -95,9 +99,10 @@ class Fixture_Service {
      *
      * @param string $league_type
      * @param int $index
+     * @param int $num_singles
      * @return string
      */
-    private function determine_rubber_type( string $league_type, int $index ): string {
+    private function determine_rubber_type( string $league_type, int $index, int $num_singles = 0 ): string {
         if ( 'LD' === $league_type ) {
             return match ( $index ) {
                 1 => 'WD',
@@ -105,6 +110,25 @@ class Fixture_Service {
                 3 => 'XD',
                 default => 'LD',
             };
+        }
+
+        if ( 'T' === substr( $league_type, 1, 1 ) ) {
+            $base_gender = substr( $league_type, 0, 1 );
+            if ( 'S' === $base_gender ) {
+                $base_gender = 'O';
+            }
+            if ( $index <= $num_singles ) {
+                $gender = $base_gender;
+                if ( 'X' === $gender ) {
+                    if ( $index <= ( $num_singles / 2 ) ) {
+                        $gender = 'M';
+                    } else {
+                        $gender = 'F';
+                    }
+                }
+                return $gender . 'S';
+            }
+            return $base_gender . 'D';
         }
 
         return $league_type;
@@ -153,7 +177,13 @@ class Fixture_Service {
      */
     private function calculate_max_rubbers( Fixture $fixture, object $league ): int {
         $max_rubbers = (int) $league->num_rubbers;
-        if ( ! empty( $league->is_championship ) && ! empty( $league->current_season['home_away'] ) && ! empty( $fixture->get_leg() ) && 2 === $fixture->get_leg() && 'MPL' === $league->event->scoring ) {
+        if (
+            ! empty( $league->is_championship )
+            && 'final' === strtolower( (string) $fixture->get_final() )
+            && 0 === ( $league->num_rubbers % 2 )
+        ) {
+            ++ $max_rubbers;
+        } elseif ( ! empty( $league->is_championship ) && ! empty( $league->current_season['home_away'] ) && ! empty( $fixture->get_leg() ) && 2 === $fixture->get_leg() && 'MPL' === $league->event->scoring ) {
             ++ $max_rubbers;
         } elseif ( '1' === $league->event->reverse_rubbers ) {
             $max_rubbers *= 2;

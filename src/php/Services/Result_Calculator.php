@@ -36,9 +36,9 @@ class Result_Calculator {
     /**
      * Calculate aggregate statistics (rubbers, sets, games) from a list of rubber objects.
      *
-     * @param array  $rubbers   List of rubber objects.
-     * @param string $home_id   Home team/player ID.
-     * @param string $away_id   Away team/player ID.
+     * @param array $rubbers List of rubber objects.
+     * @param int|string $home_id Home team/player ID.
+     * @param int|string $away_id Away team/player ID.
      * @return array{
      *     stats: array{
      *         rubbers: array{home: float, away: float},
@@ -55,7 +55,7 @@ class Result_Calculator {
      *     away_points: float
      * }
      */
-    public static function calculate_stats_from_rubbers( array $rubbers, string $home_id, string $away_id ): array {
+    public static function calculate_stats_from_rubbers( array $rubbers, int|string $home_id, int|string $away_id ): array {
         $stats = [
             'rubbers' => [ 'home' => 0.0, 'away' => 0.0 ],
             'sets'    => [ 'home' => 0, 'away' => 0 ],
@@ -71,15 +71,18 @@ class Result_Calculator {
         $home_points   = 0.0;
         $away_points   = 0.0;
 
+        $home_id_str = (string) $home_id;
+        $away_id_str = (string) $away_id;
+
         foreach ( $rubbers as $rubber ) {
             $status    = isset( $rubber->status ) ? (int) $rubber->status : 0;
             $winner_id = isset( $rubber->winner_id ) ? (string) $rubber->winner_id : '0';
 
             switch ( $status ) {
                 case 1: // Walkover
-                    if ( $home_id === $winner_id ) {
+                    if ( $home_id_str === $winner_id ) {
                         ++$away_walkover;
-                    } elseif ( $away_id === $winner_id ) {
+                    } elseif ( $away_id_str === $winner_id ) {
                         ++$home_walkover;
                     }
                     break;
@@ -88,10 +91,10 @@ class Result_Calculator {
                     break;
             }
 
-            if ( $home_id === $winner_id ) {
+            if ( $home_id_str === $winner_id ) {
                 ++$home_win;
                 $stats['rubbers']['home']++;
-            } elseif ( $away_id === $winner_id ) {
+            } elseif ( $away_id_str === $winner_id ) {
                 ++$away_win;
                 $stats['rubbers']['away']++;
             } elseif ( '-1' === $winner_id ) {
@@ -173,9 +176,9 @@ class Result_Calculator {
                 $away_points -= $walkover_penalty * $away_walkover;
             }
         } else {
-            if ( $home_win > $away_win ) {
+            if ( (float) $home_win > (float) $away_win ) {
                 $home_points += $matches_win;
-            } elseif ( $home_win < $away_win ) {
+            } elseif ( (float) $home_win < (float) $away_win ) {
                 $away_points += $matches_win;
             } else {
                 $home_points += $matches_draw;

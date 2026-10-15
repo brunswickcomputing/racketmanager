@@ -287,7 +287,8 @@ final class Container_Bootstrap {
             $c->get( 'security_service' ),
             $c->get( 'json_response_factory' ),
             $c->get( 'competition_entry_service' ),
-            $c->get( 'finance_service' )
+            $c->get( 'finance_service' ),
+            $c->get( 'tournament_service' )
         ) );
         $c->set( 'tournament_ajax_controller', fn( Simple_Container $c ) => new Tournament_Ajax_Controller( $app, $c->get( 'tournament_ajax_adapter' ) ) );
 

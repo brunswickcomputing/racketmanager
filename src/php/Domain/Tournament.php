@@ -9,8 +9,11 @@
 
 namespace Racketmanager\Domain;
 
+use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
+use Racketmanager\Exceptions\Competition_Not_Found_Exception;
 use Racketmanager\Util\Util;
+use stdClass;
 use function Racketmanager\seo_url;
 
 /**
@@ -150,6 +153,12 @@ class Tournament {
      * @var array
      */
     public array $competitions;
+    /**
+     * Associated competition object
+     *
+     * @var Competition|null
+     */
+    public ?Competition $competition = null;
     /**
      * Events variable
      *
@@ -402,6 +411,9 @@ class Tournament {
     }
 
     public function set_competition_id( int $competition_id ): void {
+        if ( isset( $this->competition ) && (int) $this->competition->id !== $competition_id ) {
+            $this->competition = null;
+        }
         $this->competition_id = $competition_id;
     }
 
@@ -508,6 +520,128 @@ class Tournament {
      */
     public function set_information( ?object $information ): void {
         $this->information = $information;
+    }
+
+    /**
+     * Get associated Competition object.
+     *
+     * @return Competition|null
+     */
+    public function get_competition_object(): ?Competition {
+        if ( empty( $this->competition_id ) ) {
+            return null;
+        }
+        if ( isset( $this->competition ) ) {
+            if ( (int) $this->competition->id === (int) $this->competition_id ) {
+                return $this->competition;
+            }
+            $this->competition = null;
+        }
+        global $racketmanager;
+        try {
+            $this->competition = $racketmanager->container->get( 'competition_service' )->get_by_id( (int) $this->competition_id );
+        } catch ( Competition_Not_Found_Exception ) {
+            return null;
+        }
+        return $this->competition;
+    }
+
+    /**
+     * Retrieve raw allowed event IDs for this tournament.
+     *
+     * @param bool $for_entry Whether checking for entry submission.
+     * @return int[]|null Null indicates unrestricted; array indicates explicit allowlist.
+     */
+    public function get_allowlist_event_ids( bool $for_entry = false ): ?array {
+        if ( empty( $this->season ) ) {
+            return array();
+        }
+
+        $information = $this->information;
+        if ( ! is_object( $information ) || ! property_exists( $information, 'entry_events' ) ) {
+            return null;
+        }
+
+        $entry_events = $information->entry_events;
+
+        if ( $for_entry ) {
+            // Entry validation: null/unset means all season events; explicit [] means closed/none
+            if ( is_null( $entry_events ) ) {
+                return null;
+            }
+            return is_array( $entry_events ) ? array_map( 'intval', $entry_events ) : array();
+        }
+
+        // Frontend viewing: null/unset or empty [] means all season events allowed
+        if ( empty( $entry_events ) || ! is_array( $entry_events ) ) {
+            return null;
+        }
+
+        return array_map( 'intval', $entry_events );
+    }
+
+    /**
+     * Check if an event is allowed in this tournament.
+     *
+     * @param int|string|object $event Event ID, event name/slug, or Event object.
+     * @param bool              $for_entry Whether checking for entry submission (where [] denies all) vs frontend viewing (where [] allows all).
+     * @return bool
+     */
+    public function is_event_allowed( int|string|object $event, bool $for_entry = false ): bool {
+        $competition = $this->get_competition_object();
+        if ( ! $competition || empty( $this->season ) ) {
+            return false;
+        }
+
+        $event_obj = $competition->resolve_event( $event, $this->season );
+        if ( ! $event_obj ) {
+            return false;
+        }
+
+        $allowed_ids = $this->get_allowlist_event_ids( $for_entry );
+        if ( null === $allowed_ids ) {
+            return true;
+        }
+
+        $event_id = (int) ( $event_obj->id ?? ( method_exists( $event_obj, 'get_id' ) ? $event_obj->get_id() : 0 ) );
+        return in_array( $event_id, $allowed_ids, true );
+    }
+
+    /**
+     * Save the tournament-specific entry event selection.
+     *
+     * @param array $event_ids selected event IDs.
+     * @return bool
+     */
+    public function set_entry_events( array $event_ids ): bool {
+        $information = is_object( $this->information ) ? clone $this->information : new stdClass();
+        $information->entry_events = array_values( array_unique( array_map( 'intval', $event_ids ) ) );
+        $this->set_information( $information );
+        return true;
+    }
+
+    /**
+     * Get events available for entry in this tournament.
+     *
+     * @return array
+     */
+    public function get_entry_events(): array {
+        $competition = $this->get_competition_object();
+        if ( ! $competition || empty( $this->season ) ) {
+            return array();
+        }
+        $allowed_ids = $this->get_allowlist_event_ids( true );
+        $events      = $competition->get_events_for_season( $this->season );
+        if ( null === $allowed_ids ) {
+            return $events;
+        }
+
+        return array_values(
+            array_filter(
+                $events,
+                static fn( $event ): bool => in_array( (int) $event->id, $allowed_ids, true )
+            )
+        );
     }
 
     /**

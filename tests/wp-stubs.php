@@ -1433,6 +1433,9 @@ namespace Racketmanager {
 
     if ( ! function_exists( 'Racketmanager\event_partner_modal' ) ) {
         function event_partner_modal( $event_id, array $args = array() ): string {
+            if ( isset( $GLOBALS['racketmanager_event_partner_modal_callback'] ) ) {
+                return ( $GLOBALS['racketmanager_event_partner_modal_callback'] )( $event_id, $args );
+            }
             return 'event-partner-modal:' . (int) $event_id;
         }
     }

@@ -18,6 +18,13 @@ use Racketmanager\Util\Util_Lookup;
  */
 final class Validator_Entry_Form extends Validator {
     /**
+     * Validated events list
+     *
+     * @var array
+     */
+    public array $validated_events = array();
+
+    /**
      * Validate if user logged in
      *
      * @return object updated validation object.
@@ -50,21 +57,170 @@ final class Validator_Entry_Form extends Validator {
     /**
      * Validate events
      *
-     * @param array    $events array of events.
-     * @param int|null $max_entries maximum number of entries.
+     * @param array      $events array of events.
+     * @param int|null   $max_entries maximum number of entries.
+     * @param array|null $allowed_event_ids allowed event ids.
      * @return object $validation updated validation object.
      */
-    public function events_entry( array $events, ?int $max_entries = null ): object {
+    public function events_entry( array $events, ?int $max_entries = null, ?array $allowed_event_ids = null ): object {
+        $this->validated_events = array();
         $error_field = 'event';
         if ( empty( $events ) ) {
             $error_message = __( 'You must select a event to enter', 'racketmanager' );
             $this->set_errors( $error_field, $error_message );
-        } elseif ( ! empty( $max_entries ) ) {
-            if ( count( $events ) > $max_entries ) {
+        } elseif ( null === $allowed_event_ids ) {
+            $this->validated_events = $events;
+        } else {
+            $allowed_event_ids = array_map( 'intval', $allowed_event_ids );
+            foreach ( $events as $event_key => $event_entry ) {
+                $event_id = (int) $event_key;
+                if ( $event_id < 1 || ! in_array( $event_id, $allowed_event_ids, true ) ) {
+                    $error_message = __( 'One or more selected events are not available for this season', 'racketmanager' );
+                    $this->set_errors( $error_field, $error_message );
+                    continue;
+                }
+                $this->validated_events[ $event_key ] = $event_entry;
+            }
+        }
+        if ( ! empty( $max_entries ) ) {
+            $count = ! empty( $this->validated_events ) ? count( $this->validated_events ) : count( $events );
+            if ( $count > $max_entries ) {
                 $error_message = __( 'You have entered too many events', 'racketmanager' );
                 $this->set_errors( $error_field, $error_message );
             }
         }
+        return $this;
+    }
+
+    /**
+     * Validate withdrawn team
+     *
+     * @param string $field_ref field reference.
+     * @return object $validation updated validation object.
+     */
+    public function withdrawn_team( string $field_ref ): object {
+        $error_field   = 'teamEvent-' . $field_ref;
+        $error_message = __( 'A higher ranked team cannot be withdrawn if there are still active lower ranked teams', 'racketmanager' );
+        $this->set_errors( $error_field, $error_message );
+        return $this;
+    }
+
+    /**
+     * Validate team withdrawn (alias)
+     *
+     * @param string $field_ref field reference.
+     * @return object $validation updated validation object.
+     */
+    public function team_withdrawn( string $field_ref ): object {
+        return $this->withdrawn_team( $field_ref );
+    }
+
+    /**
+     * Validate team exists
+     *
+     * @param mixed $team team object or identifier.
+     * @param string $field_ref field reference.
+     * @return object $validation updated validation object.
+     */
+    public function team_exists( mixed $team, string $field_ref ): object {
+        if ( empty( $team ) ) {
+            $error_field   = 'teamEvent-' . $field_ref;
+            $error_message = __( 'Team not found', 'racketmanager' );
+            $this->set_errors( $error_field, $error_message );
+        }
+        return $this;
+    }
+
+    /**
+     * Validate team duplicate / conflicting division
+     *
+     * @param string $field_ref field reference.
+     * @return object $validation updated validation object.
+     */
+    public function team_duplicate( string $field_ref ): object {
+        $error_field   = 'teamEvent-' . $field_ref;
+        $error_message = __( 'Team is already registered in conflicting divisions', 'racketmanager' );
+        $this->set_errors( $error_field, $error_message );
+        return $this;
+    }
+
+    /**
+     * Check player/partner event eligibility based on gender and age rules.
+     *
+     * @param object $player
+     * @param object $event
+     * @param int    $tournament_end_year
+     *
+     * @return array{eligible: bool, reason: string}
+     */
+    public static function check_player_event_eligibility( object $player, object $event, int $tournament_end_year ): array {
+        $gender     = $player->gender ?? ( method_exists( $player, 'get_gender' ) ? $player->get_gender() : '' );
+        $event_type = $event->type ?? ( method_exists( $event, 'get_type' ) ? $event->get_type() : '' );
+        $age_limit  = $event->age_limit ?? null;
+        $age_offset = $event->age_offset ?? 0;
+
+        if ( 'M' === $gender ) {
+            if ( str_starts_with( $event_type, 'W' ) || str_starts_with( $event_type, 'G' ) ) {
+                return [ 'eligible' => false, 'reason' => 'gender_invalid' ];
+            }
+        } elseif ( 'F' === $gender ) {
+            if ( str_starts_with( $event_type, 'M' ) || str_starts_with( $event_type, 'B' ) ) {
+                return [ 'eligible' => false, 'reason' => 'gender_invalid' ];
+            }
+        } else {
+            return [ 'eligible' => false, 'reason' => 'gender_invalid' ];
+        }
+
+        if ( empty( $age_limit ) || 'open' === $age_limit ) {
+            return [ 'eligible' => true, 'reason' => '' ];
+        }
+
+        if ( $tournament_end_year <= 0 ) {
+            return [ 'eligible' => false, 'reason' => 'missing_tournament_year' ];
+        }
+
+        $yob = $player->year_of_birth ?? ( method_exists( $player, 'get_year_of_birth' ) ? $player->get_year_of_birth() : 0 );
+        if ( empty( $yob ) ) {
+            return [ 'eligible' => false, 'reason' => 'no_age_specified' ];
+        }
+
+        $player_age = $tournament_end_year - (int) $yob;
+        if ( (int) $age_limit >= 30 ) {
+            $min_age = (int) $age_limit;
+            if ( 'F' === $gender && ! empty( $age_offset ) ) {
+                $min_age -= (int) $age_offset;
+            }
+            if ( $player_age < $min_age ) {
+                return [ 'eligible' => false, 'reason' => 'too_young' ];
+            }
+        } elseif ( $player_age > (int) $age_limit ) {
+            return [ 'eligible' => false, 'reason' => 'too_old' ];
+        }
+
+        return [ 'eligible' => true, 'reason' => '' ];
+    }
+
+    /**
+     * Validate partner eligibility (gender and age)
+     *
+     * @param object $partner partner object.
+     * @param object $event event object.
+     * @param int $tournament_end_year end year of tournament.
+     * @param string $err_field error field reference.
+     * @return object $validation updated validation object.
+     */
+    public function partner_eligibility( object $partner, object $event, int $tournament_end_year, string $err_field ): object {
+        $result = self::check_player_event_eligibility( $partner, $event, $tournament_end_year );
+        if ( ! $result['eligible'] ) {
+            $message = match ( $result['reason'] ) {
+                'no_age_specified' => __( 'Partner has no age specified', 'racketmanager' ),
+                'too_young'        => __( 'Partner is too young', 'racketmanager' ),
+                'too_old'          => __( 'Partner is too old', 'racketmanager' ),
+                default            => __( 'Partner is not eligible for this event', 'racketmanager' ),
+            };
+            $this->set_errors( $err_field, $message );
+        }
+
         return $this;
     }
 
@@ -208,7 +364,7 @@ final class Validator_Entry_Form extends Validator {
      */
     public function weekend_match( string $field_ref ): object {
         $error_field   = 'matchday-' . $field_ref;
-        $error_message = __( 'A higher ranked team is already playing at the weekend', 'racketmanager' );
+        $error_message = __( 'Only the highest numbered team(s) can play at the weekend', 'racketmanager' );
         $this->set_errors( $error_field, $error_message );
         return $this;
     }

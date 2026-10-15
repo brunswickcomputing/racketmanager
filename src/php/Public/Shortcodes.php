@@ -721,19 +721,23 @@ class Shortcodes {
             }
         }
 
-        switch ( $event->type ) {
-            case 'BD':
-            case 'MD':
+        switch ( substr( $event->type, 0, 1 ) ) {
+            case 'B':
+            case 'M':
                 $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
                 break;
-            case 'GD':
-            case 'WD':
+            case 'G':
+            case 'W':
                 $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age );
                 break;
-            case 'XD':
-            case 'LD':
+            case 'X':
+            case 'L':
                 $club_players['m'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'm', true, $max_age, $min_age );
                 $club_players['f'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), 'f', true, $max_age, $min_age_female );
+                break;
+            case 'S':
+            case 'O':
+                $club_players['x'] = $this->registration_service->get_registered_players_list( 'active', null, $club->get_id(), null, true, $max_age, $min_age );
                 break;
             default:
                 $club_players['m'] = array();

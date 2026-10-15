@@ -13,10 +13,14 @@ use Racketmanager\Application\Club\Queries\Get_Club_Roles_Handler;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Club_Role;
 use Racketmanager\Domain\Competition\Competition;
+use Racketmanager\Domain\Competition\Competition_Factory;
+use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
+use Racketmanager\Domain\DTO\Competition\Competition_Hydration_DTO;
 use Racketmanager\Domain\Invoice;
 use Racketmanager\Domain\Player;
+use ReflectionClass;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
@@ -403,6 +407,200 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $this->assertSame( 'Event id not supplied', $this->rendered[1]['vars']['msg'] );
         $this->assertSame( 'Team not found', $this->rendered[2]['vars']['msg'] );
         $this->assertSame( 'danger', $this->rendered[2]['vars']['class'] );
+    }
+
+    private function create_test_competition( int $id = 10, array $allowed_entry_events = [ 101, 102 ] ): Competition {
+        return Competition_Factory::create_from_dto(
+            new Competition_Hydration_DTO(
+                id: $id,
+                name: 'Test Competition ' . $id,
+                type: Competition_Type::LEAGUE,
+                age_group: 'Adults',
+                seasons: [
+                    '2026' => [
+                        'name'         => '2026',
+                        'entry_events' => $allowed_entry_events,
+                    ],
+                ],
+                settings: []
+            )
+        );
+    }
+
+    private function create_test_event(
+        int $id,
+        string $name,
+        int $competition_id = 10,
+        ?Competition $competition = null,
+        string $season = '2026'
+    ): Event {
+        $event                 = new class extends Event {
+            public function __construct() {
+                // no-op
+            }
+            public function get_player_stats( array $args ): array {
+                return [];
+            }
+            public function get_team_info( int $team_id ): object {
+                return (object) [ 'id' => $team_id ];
+            }
+            public function get_seasons(): array {
+                return json_decode( $this->seasons, true ) ?? [];
+            }
+        };
+        $event->id             = $id;
+        $event->name           = $name;
+        $event->competition_id = $competition_id;
+        $event->seasons        = json_encode( [ $season => [ 'name' => $season ] ] );
+        $event->current_season = [ 'name' => $season ];
+        if ( $competition ) {
+            $event->competition = $competition;
+        }
+
+        return $event;
+    }
+
+    public function test_show_club_event_enforces_allowlist(): void {
+        $competition   = $this->create_test_competition( 10, [ 101, 102 ] );
+        $allowed_event = $this->create_test_event( 101, 'Mens Doubles', 10, $competition );
+        $blocked_event = $this->create_test_event( 103, 'Ladies Doubles', 10, $competition );
+
+        $GLOBALS['wp_stubs_events']['mens doubles']   = $allowed_event;
+        $GLOBALS['wp_stubs_events']['ladies doubles'] = $blocked_event;
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+            'renderer'     => $this->capturing_renderer(),
+        ] );
+
+        // 1. Blocked event
+        $GLOBALS['query_vars']['season'] = '2026';
+        $GLOBALS['query_vars']['event']  = 'ladies-doubles';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // 2. Allowed event
+        $this->rendered = [];
+        $GLOBALS['query_vars']['event'] = 'mens-doubles';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'club/event', $this->rendered[0]['path'] );
+        $this->assertSame( 101, $this->rendered[0]['vars']['club']->event->id );
+
+        // 3. Unconfigured season on competition
+        $this->rendered                  = [];
+        $GLOBALS['query_vars']['season'] = '2020';
+        $GLOBALS['query_vars']['event']  = 'mens-doubles';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+    }
+
+    public function test_show_club_team_enforces_allowlist(): void {
+        $competition   = $this->create_test_competition( 10, [ 101, 102 ] );
+        $allowed_event = $this->create_test_event( 101, 'Mens Doubles', 10, $competition );
+        $blocked_event = $this->create_test_event( 103, 'Ladies Doubles', 10, $competition );
+
+        $GLOBALS['wp_stubs_events']['mens doubles']   = $allowed_event;
+        $GLOBALS['wp_stubs_events']['ladies doubles'] = $blocked_event;
+        $GLOBALS['wp_stubs_teams']['first team']      = (object) [ 'id' => 3 ];
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+            'renderer'     => $this->capturing_renderer(),
+        ] );
+
+        // 1. Blocked event
+        $GLOBALS['query_vars']['team']  = 'first-team';
+        $GLOBALS['query_vars']['event'] = 'ladies-doubles';
+        $adapter->show_club_team( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // 2. Allowed event
+        $this->rendered = [];
+        $GLOBALS['query_vars']['event'] = 'mens-doubles';
+        $adapter->show_club_team( [] );
+        $this->assertSame( 'club/team', $this->rendered[0]['path'] );
+        $this->assertSame( 101, $this->rendered[0]['vars']['club']->event->id );
+    }
+
+    public function test_show_team_edit_modal_enforces_allowlist(): void {
+        $competition   = $this->create_test_competition( 10, [ 101, 102 ] );
+        $allowed_event = $this->create_test_event( 101, 'Mens Doubles', 10, $competition );
+        $blocked_event = $this->create_test_event( 103, 'Ladies Doubles', 10, $competition );
+
+        $GLOBALS['wp_stubs_events'][101] = $allowed_event;
+        $GLOBALS['wp_stubs_events'][103] = $blocked_event;
+        $GLOBALS['wp_stubs_teams'][3]    = (object) [ 'id' => 3 ];
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+            'renderer'     => $this->capturing_renderer(),
+        ] );
+
+        // 1. Blocked event
+        $adapter->show_team_edit_modal( [ 'id' => '3', 'event_id' => '103' ] );
+        $this->assertSame( 'alert-modal', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // 2. Allowed event
+        $this->rendered = [];
+        $adapter->show_team_edit_modal( [ 'id' => '3', 'event_id' => '101' ] );
+        $this->assertSame( 'club/team-edit-modal', $this->rendered[0]['path'] );
+        $this->assertSame( 101, $this->rendered[0]['vars']['event']->id );
+    }
+
+    public function test_club_routes_fail_closed_when_competition_missing_or_foreign(): void {
+        $competition   = $this->create_test_competition( 10, [ 101, 102 ] );
+        $foreign_event = $this->create_test_event( 101, 'Foreign Event', 999, $competition );
+        $missing_event = $this->create_test_event( 101, 'Missing Event', 10, null );
+
+        $GLOBALS['wp_stubs_events']['foreign event'] = $foreign_event;
+        $GLOBALS['wp_stubs_events']['missing event'] = $missing_event;
+        $GLOBALS['wp_stubs_events'][999]             = $foreign_event;
+        $GLOBALS['wp_stubs_events'][888]             = $missing_event;
+        $GLOBALS['wp_stubs_teams']['first team']     = (object) [ 'id' => 3 ];
+        $GLOBALS['wp_stubs_teams'][3]                = (object) [ 'id' => 3 ];
+        $GLOBALS['query_vars']['season']             = '2026';
+
+        $adapter = $this->adapter( [
+            'club_service' => $this->club_service_for( $this->club() ),
+            'renderer'     => $this->capturing_renderer(),
+        ] );
+
+        // Foreign event in show_club_event
+        $GLOBALS['query_vars']['event'] = 'foreign-event';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // Missing competition event in show_club_event
+        $this->rendered                 = [];
+        $GLOBALS['query_vars']['event'] = 'missing-event';
+        $adapter->show_club_event( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // Foreign event in show_club_team
+        $this->rendered                 = [];
+        $GLOBALS['query_vars']['team']  = 'first-team';
+        $GLOBALS['query_vars']['event'] = 'foreign-event';
+        $adapter->show_club_team( [] );
+        $this->assertSame( 'alert', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // Foreign event in show_team_edit_modal
+        $this->rendered = [];
+        $adapter->show_team_edit_modal( [ 'id' => '3', 'event_id' => '999' ] );
+        $this->assertSame( 'alert-modal', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
+
+        // Missing competition event in show_team_edit_modal
+        $this->rendered = [];
+        $adapter->show_team_edit_modal( [ 'id' => '3', 'event_id' => '888' ] );
+        $this->assertSame( 'alert-modal', $this->rendered[0]['path'] );
+        $this->assertSame( 'Event not found for competition', $this->rendered[0]['vars']['msg'] );
     }
 
     // ---------------------------------------------------------------------

@@ -29,6 +29,12 @@ class Get_Event_Partner_Handler {
             return Shortcode_View_Model::for_error( __( 'Event not found', 'racketmanager' ), 'modal' );
         }
 
+        $event->set_season( $query->season );
+
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ), 'modal' );
+        }
+
         $event_type = (string) ( $event->type ?? '' );
         if ( 'M' === $query->gender ) {
             if ( str_starts_with( $event_type, 'M' ) || str_starts_with( $event_type, 'B' ) ) {

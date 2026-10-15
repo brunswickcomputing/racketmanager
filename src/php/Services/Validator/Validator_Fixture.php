@@ -34,6 +34,8 @@ class Validator_Fixture extends Validator {
     public array $points;
     public array $rubbers = array();
     private array $players_involved = array();
+    private array $players_involved_singles = array();
+    private array $players_involved_doubles = array();
 
     public function __construct(
         ?Fixture_Repository_Interface $fixture_repository = null,
@@ -420,10 +422,14 @@ class Validator_Fixture extends Validator {
      * @param int|string $rubber
      * @param bool $playoff
      * @param bool $reverse_rubber
+     * @param string|null $type
+     * @param string|null $event_type
      *
      * @return object
      */
-    public function players_involved( array $players, array $player_numbers, int|string $rubber, bool $playoff, bool $reverse_rubber ): object {
+    public function players_involved( array $players, array $player_numbers, int|string $rubber, bool $playoff, bool $reverse_rubber, ?string $type = null, ?string $event_type = null ): object {
+        $is_singles_doubles_setup = ( ! empty( $event_type ) && 'T' === substr( $event_type, 1, 1 ) );
+
         $opponents = array( 'home', 'away' );
         foreach ( $opponents as $opponent ) {
             $team_players = array();
@@ -436,7 +442,7 @@ class Validator_Fixture extends Validator {
                 // So $players['home'] is the array of players for that team.
                 $team_players = $players[ $opponent ];
             }
-            $this->validate_team_players( $team_players, $player_numbers, $rubber, $opponent, $playoff, $reverse_rubber );
+            $this->validate_team_players( $team_players, $player_numbers, $rubber, $opponent, $playoff, $reverse_rubber, $type, $is_singles_doubles_setup );
         }
         return $this;
     }
@@ -446,12 +452,14 @@ class Validator_Fixture extends Validator {
      *
      * @param array  $team_players
      * @param array  $player_numbers
-     * @param int    $rubber
+     * @param int|string $rubber
      * @param string $opponent
      * @param bool   $playoff
      * @param bool   $reverse_rubber
+     * @param string|null $type
+     * @param bool   $is_singles_doubles_setup
      */
-    private function validate_team_players( array $team_players, array $player_numbers, int|string $rubber, string $opponent, bool $playoff, bool $reverse_rubber ): void {
+    private function validate_team_players( array $team_players, array $player_numbers, int|string $rubber, string $opponent, bool $playoff, bool $reverse_rubber, ?string $type = null, bool $is_singles_doubles_setup = false ): void {
         foreach ( $player_numbers as $player_number ) {
             $player_ref = $team_players[ $player_number ] ?? '';
             if ( empty( $player_ref ) || 'NaN' === $player_ref ) {
@@ -462,7 +470,7 @@ class Validator_Fixture extends Validator {
             try {
                 $club_player = $this->registration_service->get_registration( $player_ref );
                 if ( ! ( $club_player->system_record ?? false ) ) {
-                    $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber );
+                    $this->validate_player_eligibility( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber, $type, $is_singles_doubles_setup );
                 }
             } catch ( Registration_Not_Found_Exception ) {
                 $this->add_player_error( 'Player not selected', $rubber, $opponent, $player_number );
@@ -474,17 +482,29 @@ class Validator_Fixture extends Validator {
      * Validate player eligibility based on match context.
      *
      * @param int|string $player_ref
-     * @param int        $rubber
+     * @param int|string $rubber
      * @param string     $opponent
      * @param int        $player_number
      * @param bool       $playoff
      * @param bool       $reverse_rubber
+     * @param string|null $type
+     * @param bool       $is_singles_doubles_setup
      */
-    private function validate_player_eligibility( int|string $player_ref, int $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber ): void {
-        $player_found = in_array( $player_ref, $this->players_involved, true );
+    private function validate_player_eligibility( int|string $player_ref, int|string $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber, ?string $type = null, bool $is_singles_doubles_setup = false ): void {
+        if ( $is_singles_doubles_setup && ! empty( $type ) ) {
+            if ( str_ends_with( $type, 'S' ) ) {
+                $player_found = in_array( $player_ref, $this->players_involved_singles, true );
+            } elseif ( str_ends_with( $type, 'D' ) ) {
+                $player_found = in_array( $player_ref, $this->players_involved_doubles, true );
+            } else {
+                $player_found = in_array( $player_ref, $this->players_involved, true );
+            }
+        } else {
+            $player_found = in_array( $player_ref, $this->players_involved, true );
+        }
 
         if ( ! $player_found ) {
-            $this->handle_new_player( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber );
+            $this->handle_new_player( $player_ref, $rubber, $opponent, $player_number, $playoff, $reverse_rubber, $type, $is_singles_doubles_setup );
         } elseif ( ! $playoff && ! $reverse_rubber ) {
             $this->add_player_error( 'Player already selected', $rubber, $opponent, $player_number );
         }
@@ -494,19 +514,28 @@ class Validator_Fixture extends Validator {
      * Handle a player who hasn't been tracked yet in the current match.
      *
      * @param int|string $player_ref
-     * @param int        $rubber
+     * @param int|string $rubber
      * @param string     $opponent
      * @param int        $player_number
      * @param bool       $playoff
      * @param bool       $reverse_rubber
+     * @param string|null $type
+     * @param bool       $is_singles_doubles_setup
      */
-    private function handle_new_player( int|string $player_ref, int $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber ): void {
+    private function handle_new_player( int|string $player_ref, int|string $rubber, string $opponent, int $player_number, bool $playoff, bool $reverse_rubber, ?string $type = null, bool $is_singles_doubles_setup = false ): void {
         if ( $playoff ) {
             $this->add_player_error( 'Player for playoff must have played', $rubber, $opponent, $player_number );
         } elseif ( $reverse_rubber ) {
             $this->add_player_error( 'Player for reverse rubber must have played', $rubber, $opponent, $player_number );
         } else {
             $this->players_involved[] = $player_ref;
+            if ( $is_singles_doubles_setup && ! empty( $type ) ) {
+                if ( str_ends_with( $type, 'S' ) ) {
+                    $this->players_involved_singles[] = $player_ref;
+                } elseif ( str_ends_with( $type, 'D' ) ) {
+                    $this->players_involved_doubles[] = $player_ref;
+                }
+            }
         }
     }
 

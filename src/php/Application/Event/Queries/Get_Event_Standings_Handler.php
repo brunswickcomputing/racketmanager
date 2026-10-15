@@ -27,6 +27,11 @@ class Get_Event_Standings_Handler {
 
         $event->leagues = $event->get_leagues();
         $event->set_season( $query->season );
+
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? $query->season, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         $filename = ! empty( $query->template ) ? 'standings-' . $query->template : 'standings';
 
         return Shortcode_View_Model::for_template(

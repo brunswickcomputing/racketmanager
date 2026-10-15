@@ -200,5 +200,52 @@ class Validator_Fixture_Players_Involved_Test extends TestCase
             $this->assertTrue($this->validator->error);
             $this->assertContains('Player already selected', $this->validator->err_msgs);
         }
+
+        public function test_players_involved_team_event_singles_and_doubles_allows_same_player_in_both(): void
+        {
+            $this->registration_service->method('get_registration')
+                ->willReturn($this->create_mock_player_dto(false));
+
+            $singles_players = [
+                'home' => [1 => 'H1'],
+                'away' => [1 => 'A1']
+            ];
+            $doubles_players = [
+                'home' => [1 => 'H1', 2 => 'H2'],
+                'away' => [1 => 'A1', 2 => 'A2']
+            ];
+
+            // Rubber 1: Singles in Team event (OT)
+            $this->validator->players_involved($singles_players, [1], 1, false, false, 'OS', 'OT');
+            $this->assertFalse($this->validator->error);
+
+            // Rubber 2: Doubles in Team event (OT) with same player H1 and A1
+            $this->validator->players_involved($doubles_players, [1, 2], 2, false, false, 'OD', 'OT');
+            $this->assertFalse($this->validator->error);
+        }
+
+        public function test_players_involved_team_event_duplicate_within_singles_fails(): void
+        {
+            $this->registration_service->method('get_registration')
+                ->willReturn($this->create_mock_player_dto(false));
+
+            $singles_players1 = [
+                'home' => [1 => 'H1'],
+                'away' => [1 => 'A1']
+            ];
+            $singles_players2 = [
+                'home' => [1 => 'H1'],
+                'away' => [1 => 'A2']
+            ];
+
+            // Rubber 1: Singles
+            $this->validator->players_involved($singles_players1, [1], 1, false, false, 'OS', 'OT');
+            $this->assertFalse($this->validator->error);
+
+            // Rubber 2: Another Singles with H1 again -> should fail
+            $this->validator->players_involved($singles_players2, [1], 2, false, false, 'OS', 'OT');
+            $this->assertTrue($this->validator->error);
+            $this->assertContains('Player already selected', $this->validator->err_msgs);
+        }
     }
 }

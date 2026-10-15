@@ -9,6 +9,7 @@
 
 namespace Racketmanager\Services;
 
+use ArrayAccess;
 use Exception;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\DTO\Team\Team_Entry_DTO;
@@ -316,7 +317,10 @@ class Competition_Entry_Service {
             $competition->set_current_season( $request->season );
             $validator             = $validator->competition_open( $competition );
             $start_times           = $this->get_start_times( $competition->settings );
-            $validator             = $validator->club( $request->club_id );
+            $club                  = $this->club_repository->find_by_id( (int) $request->club_id );
+            if ( ! $club ) {
+                $validator->set_errors( 'club', __( 'Club not found', 'racketmanager' ) );
+            }
             $validator             = $validator->events_entry( $request->events_entered );
             $validator             = $validator->num_courts_available( $request->num_courts_available );
             $match_day_restriction = isset( $competition->settings['match_day_restriction'] );
@@ -325,8 +329,10 @@ class Competition_Entry_Service {
                 $competition_days['teams'][ $i ]     = array();
                 $competition_days['available'][ $i ] = array();
             }
-            $weekend_matches = array();
-            $courts_needed   = array();
+            $weekend_matches          = array();
+            $event_type_allowed_days  = array();
+            $event_type_teams         = array();
+            $courts_needed            = array();
 
             foreach ( $request->events_entered as $event_id => $teams ) {
                 try {
@@ -339,10 +345,22 @@ class Competition_Entry_Service {
                 if ( ! isset( $courts_needed[ $week ] ) ) {
                     $courts_needed[ $week ] = array();
                 }
-                $weekend_matches[ $event->type ] = 0;
-                $event_days                      = $event->match_days_allowed ?? array();
-                if ( $match_day_restriction && ! empty( $event_days ) ) {
-                    foreach ( $event_days as $event_day => $value ) {
+                if ( ! isset( $weekend_matches[ $event->type ] ) ) {
+                    $weekend_matches[ $event->type ] = 0;
+                }
+                $event_days = $event->match_days_allowed ?? array();
+                if ( empty( $event_days ) ) {
+                    $allowed_days = ! empty( $competition->match_days_allowed ) ? array_keys( array_filter( $competition->match_days_allowed ) ) : range( 0, 4 );
+                } else {
+                    $allowed_days = array_keys( array_filter( $event_days ) );
+                }
+                $allowed_weekdays = array_map( 'intval', array_filter( $allowed_days, fn( $d ) => intval( $d ) < 5 ) );
+                if ( ! isset( $event_type_allowed_days[ $event->type ] ) ) {
+                    $event_type_allowed_days[ $event->type ] = array();
+                }
+                $event_type_allowed_days[ $event->type ] = array_unique( array_merge( $event_type_allowed_days[ $event->type ], $allowed_weekdays ) );
+                if ( $match_day_restriction ) {
+                    foreach ( $allowed_weekdays as $event_day ) {
                         if ( ! isset( $competition_days['teams'][ $event_day ][ $event->type ] ) ) {
                             $competition_days['teams'][ $event_day ][ $event->type ] = 0;
                         }
@@ -352,6 +370,18 @@ class Competition_Entry_Service {
                 $event_entry->id   = $event_id;
                 $event_entry->name = $event->get_name();
                 $event_entry->type = $event->get_type();
+
+                // Check withdrawn teams for hierarchy
+                $withdrawn_teams        = $request->missed_team_ids[ $event_id ] ?? array();
+                $withdrawn_team_numbers = array();
+                if ( ! empty( $withdrawn_teams ) ) {
+                    foreach ( $withdrawn_teams as $withdrawn_team_id ) {
+                        $withdrawn_team_obj       = $this->team_repository->find_by_id( (int) $withdrawn_team_id );
+                        $withdrawn_team_title     = $withdrawn_team_obj ? ( $withdrawn_team_obj->title ?? $withdrawn_team_obj->get_name() ) : '';
+                        $withdrawn_team_numbers[] = $this->parse_team_number( (string) $withdrawn_team_title );
+                    }
+                }
+                $min_withdrawn_num = ! empty( $withdrawn_team_numbers ) ? min( $withdrawn_team_numbers ) : null;
 
                 foreach ( $teams as $team_id => $team ) {
                     $team_name    = $team->team_name ?? null;
@@ -366,20 +396,49 @@ class Competition_Entry_Service {
                     $validator    = $validator->match_day( $match_day, $field_ref, $match_day_restriction, $event_days );
                     $validator    = $validator->match_time( $match_time, $field_ref, $match_day, $start_times );
                     $validator    = $validator->captain( $captain, $contactno, $contactemail, $field_ref );
-                    if ( $match_day_restriction && $weekend_allowed && $match_day >= '5' ) {
-                        if ( empty( $weekend_matches[ $event->type ] ) ) {
-                            ++ $weekend_matches[ $event->type ];
-                        } else {
-                            $validator = $validator->weekend_match( $field_ref );
+                    if ( $match_day_restriction && $weekend_allowed && ( '5' === (string) $match_day || '6' === (string) $match_day ) ) {
+                        ++ $weekend_matches[ $event->type ];
+                    }
+
+                    $team_obj  = $this->team_repository->find_by_id( (int) $team_id );
+                    $validator = $validator->team_exists( $team_obj, $field_ref );
+                    if ( ! $team_obj ) {
+                        continue;
+                    }
+
+                    $existing_league_teams = $this->league_team_repository->find_by_event_id( $event_id, $request->season, (int) $team_id );
+                    if ( ! empty( $existing_league_teams ) ) {
+                        $active_league_ids = array();
+                        foreach ( $existing_league_teams as $existing_league_team ) {
+                            if ( $existing_league_team->get_profile_enum() === Team_Profile::ACTIVE ) {
+                                $active_league_ids[ $existing_league_team->get_league_id() ] = true;
+                            }
+                        }
+
+                        if ( count( $active_league_ids ) > 1 ) {
+                            $validator = $validator->team_duplicate( $field_ref );
                         }
                     }
+                    $team_title = $team_obj->title ?? $team_obj->get_name();
+                    $team_num   = $this->parse_team_number( (string) $team_title );
+                    $event_type_teams[ $event->type ][] = array(
+                        'team_id'     => $team_id,
+                        'team_number' => $team_num,
+                        'match_day'   => $match_day,
+                        'field_ref'   => $field_ref,
+                    );
+
+                    if ( null !== $min_withdrawn_num && $team_num > $min_withdrawn_num ) {
+                        $validator = $validator->team_withdrawn( $field_ref );
+                    }
+
                     if ( empty( $validator->error ) ) {
                         if ( $match_day_restriction ) {
                             if ( ! isset( $competition_days['teams'][ $match_day ][ $event->type ] ) ) {
                                 $competition_days['teams'][ $match_day ][ $event->type ] = 0;
                             }
                             ++ $competition_days['teams'][ $match_day ][ $event->type ];
-                            $competition_days['available'][ $match_day ] = $request->num_courts_available / $event->num_rubbers;
+                            $competition_days['available'][ $match_day ] = $request->num_courts_available / ( $event->num_rubbers ?: 2 );
                         }
                         if ( strlen( $match_time ) === 5 ) {
                             $match_time = $match_time . ':00';
@@ -425,19 +484,55 @@ class Competition_Entry_Service {
                         }
                     }
                 }
+                if ( $match_day_restriction && $weekend_allowed && ! empty( $event_type_teams ) ) {
+                    foreach ( $event_type_teams as $event_type => $teams_data ) {
+                        $weekday_team_nums = array();
+                        $weekend_teams     = array();
+
+                        foreach ( $teams_data as $team_info ) {
+                            if ( in_array( strval( $team_info['match_day'] ), array( '5', '6' ), true ) ) {
+                                $weekend_teams[] = $team_info;
+                            } else {
+                                $weekday_team_nums[] = $team_info['team_number'];
+                            }
+                        }
+
+                        if ( ! empty( $weekend_teams ) && ! empty( $weekday_team_nums ) ) {
+                            $max_weekday_num = max( $weekday_team_nums );
+                            foreach ( $weekend_teams as $wknd_team ) {
+                                if ( $wknd_team['team_number'] < $max_weekday_num ) {
+                                    $validator = $validator->weekend_match( $wknd_team['field_ref'] );
+                                }
+                            }
+                        }
+                    }
+                }
                 if ( ! $validator->error && $match_day_restriction && $weekend_allowed && ! empty( $weekend_matches ) ) {
                     foreach ( $weekend_matches as $event_type => $team_count ) {
                         if ( $team_count ) {
-                            $i = 0;
-                            foreach ( $competition_days['teams'] as $match_day => $value ) {
-                                if ( isset( $value[ $event_type ] ) && $i < 5 ) {
-                                    $num_teams[ $match_day ] = array_sum( $value );
-                                    if ( $num_teams[ $match_day ] ) {
-                                        $free_slots = $num_teams[ $match_day ] / 2 / $competition_days['available'][ $i ];
-                                        $validator  = $validator->free_slots( $free_slots );
+                            $allowed_days_for_event = 0;
+                            $underfilled_days       = 0;
+                            $max_allowed_free       = 1;
+                            $permitted_days         = $event_type_allowed_days[ $event_type ] ?? range( 0, 4 );
+                            foreach ( $permitted_days as $match_day ) {
+                                $i = intval( $match_day );
+                                if ( $i < 5 ) {
+                                    ++ $allowed_days_for_event;
+                                    $day_teams          = $competition_days['teams'][ $i ] ?? array();
+                                    $total_teams_on_day = array_sum( $day_teams );
+                                    $available_slots    = ! empty( $competition_days['available'][ $i ] ) ? $competition_days['available'][ $i ] : ( $request->num_courts_available / 2 );
+                                    if ( $total_teams_on_day > 0 && $available_slots > 0 ) {
+                                        $free_slots = ( $total_teams_on_day / 2 ) / $available_slots;
+                                        if ( $free_slots < 1 ) {
+                                            ++ $underfilled_days;
+                                        }
+                                    } else {
+                                        ++ $underfilled_days;
                                     }
                                 }
-                                ++ $i;
+                            }
+                            if ( $allowed_days_for_event > 0 && $underfilled_days > $max_allowed_free ) {
+                                $validator = $validator->free_slots( '0' );
                             }
                         }
                     }
@@ -455,17 +550,41 @@ class Competition_Entry_Service {
             return $this->league_entry_valid( $request->club_id, $club_entry );
         }
 
+        $status = $validator->status ?? 400;
+        foreach ( $validator->err_flds as $index => $error_field ) {
+            if ( in_array( $error_field, $validator->err->get_error_codes(), true ) ) {
+                continue;
+            }
+            $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid league entry', 'racketmanager' ), [ 'status' => $status ] );
+        }
+
         return $validator->err;
+    }
+
+    /**
+     * Parse team number from team title
+     *
+     * @param string $team_title
+     *
+     * @return int
+     */
+    private function parse_team_number( string $team_title ): int {
+        $name_array = explode( ' ', trim( $team_title ) );
+        $num        = intval( end( $name_array ) );
+        if ( ! $num && preg_match( '/(\d+)$/', trim( $team_title ), $matches ) ) {
+            $num = intval( $matches[1] );
+        }
+        return $num > 0 ? $num : 1;
     }
 
     /**
      * Get start times from settings
      *
-     * @param array $settings
+     * @param ArrayAccess|array $settings
      *
      * @return array
      */
-    private function get_start_times( array $settings ): array {
+    private function get_start_times( ArrayAccess|array $settings ): array {
         $start_times = array();
         if ( ! empty( $settings['start_time']['weekday']['min'] ) && ! empty( $settings['start_time']['weekday']['max'] ) ) {
             $start_times['weekday']['min'] = $settings['start_time']['weekday']['min'];
@@ -509,7 +628,40 @@ class Competition_Entry_Service {
                 }
                 $league_teams = $this->league_team_repository->find_by_event_id( $event_id, $club_entry->season, $team_id );
                 if ( $league_teams ) {
-                    foreach ( $league_teams as $league_team ) {
+                    $active_rows         = array();
+                    $pending_or_new_rows = array();
+                    $withdrawn_rows      = array();
+                    foreach ( $league_teams as $lt ) {
+                        if ( $lt->get_profile_enum() === Team_Profile::ACTIVE ) {
+                            $active_rows[] = $lt;
+                        } elseif ( $lt->get_profile_enum() === Team_Profile::PENDING || $lt->get_profile_enum() === Team_Profile::NEW ) {
+                            $pending_or_new_rows[] = $lt;
+                        } elseif ( $lt->get_profile_enum() === Team_Profile::WITHDRAWN ) {
+                            $withdrawn_rows[] = $lt;
+                        }
+                    }
+
+                    if ( ! empty( $active_rows ) ) {
+                        // Persist only active rows
+                        foreach ( $active_rows as $league_team ) {
+                            $league_team->set_captain( $team_entry->captain_id );
+                            $league_team->set_match_day( $match_day );
+                            $league_team->set_match_time( $team_entry->match_time );
+                            $league_team->set_status();
+                            $this->league_team_repository->save( $league_team );
+                        }
+                    } elseif ( ! empty( $pending_or_new_rows ) ) {
+                        // Promote exactly one PENDING or NEW row
+                        $league_team = $pending_or_new_rows[0];
+                        $league_team->set_captain( $team_entry->captain_id );
+                        $league_team->set_match_day( $match_day );
+                        $league_team->set_match_time( $team_entry->match_time );
+                        $league_team->set_entered_state( Team_Profile::ACTIVE );
+                        $league_team->set_status();
+                        $this->league_team_repository->save( $league_team );
+                    } elseif ( ! empty( $withdrawn_rows ) ) {
+                        // Reactivate only the first withdrawn row
+                        $league_team = $withdrawn_rows[0];
                         $league_team->set_captain( $team_entry->captain_id );
                         $league_team->set_match_day( $match_day );
                         $league_team->set_match_time( $team_entry->match_time );
@@ -719,6 +871,14 @@ class Competition_Entry_Service {
             return true;
         }
 
+        $status = $validator->status ?? 400;
+        foreach ( $validator->err_flds as $index => $error_field ) {
+            if ( in_array( $error_field, $validator->err->get_error_codes(), true ) ) {
+                continue;
+            }
+            $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid cup entry', 'racketmanager' ), [ 'status' => $status ] );
+        }
+
         return $validator->err;
     }
 
@@ -896,6 +1056,23 @@ class Competition_Entry_Service {
             $validator->set_errors( 'event', Util_Messages::tournament_not_found( $request->tournament_id ) );
         } else {
             $validator = $validator->tournament_open( $tournament );
+            if ( (string) $season !== (string) $tournament->season ) {
+                $validator->set_errors( 'season', __( 'Season does not match this tournament', 'racketmanager' ) );
+            }
+            if ( ! empty( $tournament->competition_id ) ) {
+                try {
+                    $competition = $this->competition_service->get_by_id( (int) $tournament->competition_id );
+                    if ( $competition ) {
+                        $seasons = $competition->seasons ?? ( method_exists( $competition, 'get_seasons' ) ? $competition->get_seasons() : null );
+                        if ( is_object( $seasons ) && method_exists( $seasons, 'all' ) ) {
+                            $seasons = $seasons->all();
+                        }
+                        $validator = $validator->season_set( $season, $seasons );
+                    }
+                } catch ( Competition_Not_Found_Exception ) {
+                }
+            }
+            $player = null;
             try {
                 $player = $this->player_service->get_player( $player_id );
             } catch ( Player_Not_Found_Exception $e ) {
@@ -911,20 +1088,34 @@ class Competition_Entry_Service {
             } catch ( Club_Not_Found_Exception $e ) {
                 $validator->set_errors( 'clubId', $e->getMessage(), 404 );
             }
-            $validator = $validator->events_entry( $request->entries, $tournament->num_entries );
-            foreach ( $request->entries as $event_id => $entry ) {
+
+            $allowed_event_ids   = [];
+            $end_date_str        = ! empty( $tournament->date_end ) ? (string) $tournament->date_end : ( ! empty( $tournament->date_start ) ? (string) $tournament->date_start : '' );
+            $tournament_end_year = (int) substr( $end_date_str, 0, 4 );
+            if ( $player ) {
                 try {
-                    $event = $this->competition_service->get_event_by_id( $event_id );
+                    $tournament_events = $this->tournament_service->get_events_for_tournament( $tournament->get_id() );
+                    foreach ( $tournament_events as $t_event ) {
+                        if ( $this->is_player_eligible_for_event( $player, $t_event, $tournament_end_year ) ) {
+                            $allowed_event_ids[] = (int) $t_event->get_id();
+                        }
+                    }
+                } catch ( \Throwable ) {
+                }
+            }
+
+            $validator         = $validator->events_entry( $request->entries, $tournament->num_entries, $allowed_event_ids );
+            $validated_entries = [];
+            foreach ( $validator->validated_events as $event_id => $entry ) {
+                try {
+                    $event = $this->competition_service->get_event_by_id( (int) $event_id );
                 } catch ( Event_Not_Found_Exception ) {
                     $validator = $validator->event();
                     continue;
                 }
-                if ( isset( $event->primary_league ) ) {
-                    $league = get_league( $event->primary_league );
-                } else {
-                    $league = get_league( array_key_first( $event->league_index ) );
-                }
-                $league_id        = $league->id;
+                $primary_league   = $event->primary_league ?? ( ! empty( $event->league_index ) ? array_key_first( $event->league_index ) : 0 );
+                $league           = function_exists( 'Racketmanager\get_league' ) ? get_league( $primary_league ) : null;
+                $league_id        = $league->id ?? (int) $primary_league;
                 $entry->league_id = $league_id;
                 $player_team      = $this->league_team_repository->player_already_entered_league( $player_id, $league_id, $season );
                 if ( substr( $event->type, 1, 1 ) === 'D' ) {
@@ -936,16 +1127,19 @@ class Competition_Entry_Service {
                         try {
                             $partner      = $this->player_service->get_player( $entry->partner_id );
                             $partner_team = $this->league_team_repository->player_already_entered_league( $partner->get_id(), $league_id, $season );
-                            if ( empty( $partner_team ) ) {
-                                $entry->partner = $partner;
-                                if ( $player_team ) {
-                                    $entry->new_partner = true;
-                                }
-                            } elseif ( ! empty( $player_team->team_id ) && $player_team->team_id === $partner_team->team_id ) {
-                                $entry->partner     = $partner;
-                                $entry->new_partner = false;
-                            } else {
+                            if ( ! empty( $partner_team ) && ( empty( $player_team->team_id ) || $player_team->team_id !== $partner_team->team_id ) ) {
                                 $validator->set_errors( $err_field, __( 'Partner is in another team in this event', 'racketmanager' ) );
+                            } else {
+                                $validator = $validator->partner_eligibility( $partner, $event, $tournament_end_year, $err_field );
+                                if ( empty( $partner_team ) ) {
+                                    $entry->partner = $partner;
+                                    if ( $player_team ) {
+                                        $entry->new_partner = true;
+                                    }
+                                } else {
+                                    $entry->partner     = $partner;
+                                    $entry->new_partner = false;
+                                }
                             }
                         } catch ( Player_Not_Found_Exception $e ) {
                             $validator->set_errors( $err_field, $e->getMessage(), 404 );
@@ -954,17 +1148,18 @@ class Competition_Entry_Service {
                 } else {
                     $entry->is_doubles = false;
                 }
-                $entry->event_type             = $event->get_type();
-                $entry->event_name             = $event->get_name();
-                $entry->team_id                = $player_team->team_id ?? null;
-                $entry->league_team_id         = $player_team->league_team_id ?? null;
-                $request->entries[ $event_id ] = $entry;
+                $entry->event_type                   = $event->get_type();
+                $entry->event_name                   = $event->get_name();
+                $entry->team_id                      = $player_team->team_id ?? null;
+                $entry->league_team_id               = $player_team->league_team_id ?? null;
+                $validated_entries[ (int) $event_id ] = $entry;
             }
             $validator = $validator->entry_acceptance( $request->acceptance );
             if ( empty( $validator->error ) ) {
+                $validated_event_ids               = array_keys( $validated_entries );
                 $tournament_entry                  = new stdClass();
-                $tournament_entry->missed_events   = $request->missed_event_ids;
-                $tournament_entry->entries         = $request->entries;
+                $tournament_entry->missed_events   = array_values( array_diff( $allowed_event_ids, $validated_event_ids ) );
+                $tournament_entry->entries         = $validated_entries;
                 $tournament_entry->player_id       = $player_id;
                 $tournament_entry->club_id         = $request->club_id;
                 $tournament_entry->btm             = $request->lta_number;
@@ -979,7 +1174,29 @@ class Competition_Entry_Service {
             }
         }
 
+        $status = $validator->status ?? 400;
+        foreach ( $validator->err_flds as $index => $error_field ) {
+            if ( in_array( $error_field, $validator->err->get_error_codes(), true ) ) {
+                continue;
+            }
+            $validator->err->add( $error_field, $validator->err_msgs[ $index ] ?? __( 'Invalid tournament entry', 'racketmanager' ), [ 'status' => $status ] );
+        }
+
         return $validator->err;
+    }
+
+    /**
+     * Check if a player is eligible for a specific event based on gender and age rules
+     *
+     * @param object $player
+     * @param object $event
+     * @param int    $tournament_end_year
+     *
+     * @return bool
+     */
+    public function is_player_eligible_for_event( object $player, object $event, int $tournament_end_year ): bool {
+        $result = Validator_Entry_Form::check_player_event_eligibility( $player, $event, $tournament_end_year );
+        return (bool) $result['eligible'];
     }
 
     private function tournament_entry_valid( Tournament $tournament, Player $player, Club $club, stdclass $tournament_entry ): Tournament_Entry_Response_DTO {

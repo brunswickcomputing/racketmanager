@@ -29,6 +29,10 @@ class Get_Event_Team_Matches_Handler {
             return Shortcode_View_Model::for_error( __( 'No team id supplied', 'racketmanager' ) );
         }
 
+        if ( ! Event_Allowlist_Guard::is_event_allowed( $event, $event->current_season['name'] ?? null, $this->competition_service ) ) {
+            return Shortcode_View_Model::for_error( __( 'Event not found for competition', 'racketmanager' ) );
+        }
+
         $match_args = [
             'season'  => $event->current_season['name'] ?? '',
             'team_id' => $query->team_id,

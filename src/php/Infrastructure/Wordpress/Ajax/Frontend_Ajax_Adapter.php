@@ -19,6 +19,7 @@ use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
+use Racketmanager\Infrastructure\Security\Target_Season_Validator;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
@@ -310,7 +311,7 @@ class Frontend_Ajax_Adapter {
         $output     = null;
         $target_ref = isset( $request['target'] ) ? sanitize_text_field( wp_unslash( (string) $request['target'] ) ) : null;
         if ( $target_ref ) {
-            $target_id = isset( $request['targetId'] ) ? (int) $request['targetId'] : 0;
+            $target_id = isset( $request['targetId'] ) ? (int) $request['targetId'] : ( isset( $request['id'] ) ? (int) $request['id'] : 0 );
             switch ( $target_ref ) {
                 case 'competition':
                     try {
@@ -348,18 +349,31 @@ class Frontend_Ajax_Adapter {
 
                     $args    = [];
                     $link_id = isset( $request['link_id'] ) ? sanitize_text_field( wp_unslash( (string) $request['link_id'] ) ) : null;
-                    if ( $link_id !== null ) {
-                        $args[ $tab ] = $link_id;
+                    if ( $link_id !== null && '' !== $link_id ) {
+                        if ( preg_match( '/^[A-Za-z0-9 _-]+$/', $link_id ) ) {
+                            $args[ $tab ] = $link_id;
+                        } else {
+                            $output = __( 'Invalid link ID', 'racketmanager' );
+                        }
                     }
-                    $season = isset( $request['season'] ) ? (int) $request['season'] : null;
-                    if ( $season ) {
-                        $args['season'] = $season;
-                    }
-                    $function_name = 'Racketmanager\\' . $target_ref . '_' . $tab_name;
-                    if ( function_exists( $function_name ) ) {
-                        $output = $function_name( $target->id, $args );
-                    } else {
-                        $output = __( 'Tab not valid', 'racketmanager' );
+                    if ( empty( $output ) ) {
+                        $season = isset( $request['season'] ) ? sanitize_text_field( wp_unslash( (string) $request['season'] ) ) : null;
+                        if ( ! empty( $season ) ) {
+                            $valid_season = Target_Season_Validator::validate( $target, $target_ref, $season );
+                            if ( ! empty( $valid_season ) ) {
+                                $args['season'] = $valid_season;
+                            }
+                        }
+                        $target_id_for_function = $target->id ?? ( method_exists( $target, 'get_id' ) ? $target->get_id() : $target_id );
+                        $function_name = 'Racketmanager\\' . $target_ref . '_' . $tab_name;
+                        if ( function_exists( $function_name ) ) {
+                            ob_start();
+                            $func_output     = $function_name( $target_id_for_function, $args );
+                            $buffered_output = ob_get_clean();
+                            $output          = ! empty( $func_output ) ? $func_output : $buffered_output;
+                        } else {
+                            $output = __( 'Tab not valid', 'racketmanager' );
+                        }
                     }
                 } else {
                     $output = __( 'Tab not found', 'racketmanager' );

@@ -69,7 +69,7 @@ class Rubber_Result_Manager {
             if ( $request->rubber_type && ( str_contains( $request->rubber_type, 'D' ) || str_contains( $request->rubber_type, 'X' ) ) ) {
                 $player_numbers[] = 2;
             }
-            $this->validator->players_involved( [ $request->rubber_number => $request->players ], $player_numbers, $request->rubber_number, false, false );
+            $this->validator->players_involved( [ $request->rubber_number => $request->players ], $player_numbers, $request->rubber_number, false, false, $request->rubber_type, $league->type ?? null );
         }
 
         // 3. Validate Score

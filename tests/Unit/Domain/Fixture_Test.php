@@ -142,4 +142,28 @@ final class Fixture_Test extends TestCase {
         $this->assertSame( array( 'note' => 'test' ), $fixture->get_custom() );
         $this->assertSame( array( 'admin' => 'ok' ), $fixture->get_comments() );
     }
+
+    public function test_fixture_final_property_and_finals_data(): void {
+        $fixture = Fixture_Factory::from_object( (object) [
+            'id'    => 10,
+            'final' => 'final',
+            'date'  => '2026-06-01 10:00:00',
+        ] );
+
+        $this->assertSame( 'final', $fixture->get_final() );
+
+        $fixture->set_final( 'semi' );
+        $this->assertSame( 'semi', $fixture->get_final() );
+
+        // Test set_finals_data
+        $changed = $fixture->set_finals_data( '2026-06-15 14:00:00', 'Court 1' );
+        $this->assertTrue( $changed );
+        $this->assertSame( '2026-06-15 14:00:00', $fixture->get_date() );
+        $this->assertSame( 'Court 1', $fixture->get_location() );
+
+        // Test reset_finals_data
+        $reset_changed = $fixture->reset_finals_data( '2026-06-20 10:00:00' );
+        $this->assertTrue( $reset_changed );
+        $this->assertSame( '2026-06-20 10:00:00', $fixture->get_date() );
+    }
 }

@@ -2765,10 +2765,10 @@ class League {
             $points_for     = 0;
             $points_against = 0;
             foreach ( $matches as $match ) {
-                if ( $match->home_team === strval( $team_id ) ) {
+                if ( strval( $match->home_team ) === strval( $team_id ) ) {
                     $points_for     += $match->home_points;
                     $points_against += $match->away_points;
-                } elseif ( $match->away_team === strval( $team_id ) ) {
+                } elseif ( strval( $match->away_team ) === strval( $team_id ) ) {
                     $points_for     += $match->away_points;
                     $points_against += $match->home_points;
                 }
@@ -2911,11 +2911,11 @@ class League {
             $matches = $this->get_matches_for_standings( $season, $team_id );
         }
         foreach ( $matches as $match ) {
-            $team_ref       = strval( $team_id ) === $match->home_team ? 'home' : 'away';
+            $team_ref       = strval( $team_id ) === strval( $match->home_team ) ? 'home' : 'away';
             $team_ref_alt   = 'home' === $team_ref ? 'away' : 'home';
-            $player_ref     = strval( $team_id ) === $match->home_team ? 'player1' : 'player2';
+            $player_ref     = strval( $team_id ) === strval( $match->home_team ) ? 'player1' : 'player2';
             $player_ref_alt = 'player1' === $player_ref ? 'player2' : 'player1';
-            $match          = get_match( $match );
+            $match          = $this->resolve_standings_match( $match );
             if ( ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && 'W' !== $match->teams['home']->status && 'W' !== $match->teams['away']->status && ! $match->is_cancelled ) {
                 if ( ! empty( $match->status ) && 3 === $match->status ) {
                     ++$data['matches_shared'];
@@ -2932,7 +2932,7 @@ class League {
                             $set_retired = null;
                             if ( $rubber->is_retired || $rubber->is_abandoned ) {
                                 for ( $s1 = $num_sets; $s1 > 0; $s1-- ) {
-                                    if ( '' !== $rubber->sets[ $s1 ]['player1'] || '' !== $rubber->sets[ $s1 ]['player2'] ) {
+                                    if ( ( isset( $rubber->sets[ $s1 ]['player1'] ) && '' !== $rubber->sets[ $s1 ]['player1'] ) || ( isset( $rubber->sets[ $s1 ]['player2'] ) && '' !== $rubber->sets[ $s1 ]['player2'] ) ) {
                                         $set_retired = $s1;
                                         break;
                                     }
@@ -2944,7 +2944,7 @@ class League {
                                     $set        = $rubber->sets[ $j ];
                                     $set_winner = null;
                                     if ( $rubber->is_retired && $set_retired === $j ) {
-                                        if ( $team_ref === $rubber->custom['retired'] ) {
+                                        if ( ! empty( $rubber->custom['retired'] ) && $team_ref === $rubber->custom['retired'] ) {
                                             $set_winner = $team_ref_alt;
                                         } else {
                                             $set_winner = $team_ref;
@@ -2955,7 +2955,7 @@ class League {
                                     }
                                     if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
                                         if ( 'MTB' === $set_type ) {
-                                            if ( $rubber->loser_id === $team_id ) {
+                                            if ( strval( $rubber->loser_id ) === strval( $team_id ) ) {
                                                 ++$data['games_allowed'];
                                             }
                                         } else {
@@ -2964,7 +2964,7 @@ class League {
                                     }
                                     if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
                                         if ( 'MTB' === $set_type ) {
-                                            if ( $rubber->winner_id === $team_id ) {
+                                            if ( strval( $rubber->winner_id ) === strval( $team_id ) ) {
                                                 ++$data['games_won'];
                                             }
                                         } else {
@@ -2975,7 +2975,11 @@ class League {
                                         $data['sets_won'] += 1;
                                     } elseif ( ( $set[ $player_ref ] < $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref_alt === $set_winner ) {
                                         $data['sets_allowed'] += 1;
-                                    } elseif ( 'S' === strtoupper( $set[ $player_ref ] ) || $rubber->is_abandoned ) {
+                                    } elseif ( 'S' === strtoupper( $set[ $player_ref ] ) || $rubber->is_abandoned || $rubber->is_retired ) {
+                                        $data['sets_shared'] += 1;
+                                    }
+                                } else {
+                                    if ( $rubber->is_abandoned || $rubber->is_retired ) {
                                         $data['sets_shared'] += 1;
                                     }
                                 }
@@ -2985,8 +2989,8 @@ class League {
                             ++$data['rubbers_shared'];
                             ++$rubbers_shared;
                         }
-                        if ( $rubber->winner_id === $team_id || -1 === $rubber->winner_id ) { // winning team.
-                            if ( $rubber->winner_id === $team_id ) {
+                        if ( strval( $rubber->winner_id ) === strval( $team_id ) || '-1' === strval( $rubber->winner_id ) ) { // winning team.
+                            if ( strval( $rubber->winner_id ) === strval( $team_id ) ) {
                                 ++$data['rubbers_won'];
                                 ++$rubbers_won;
                             }
@@ -2994,22 +2998,22 @@ class League {
                                 $data['sets_won']            += $walkover_sets;
                                 $data['games_won']           += $walkover_games;
                                 $data['straight_set']['win'] += 1;
-                            } elseif ( $match->home_team === $team_id ) {   // home team.
-                                if ( $data['sets_won'] > '0' ) {
-                                    if ( $rubber->away_points > '0' ) {
+                            } elseif ( strval( $match->home_team ) === strval( $team_id ) ) {   // home team.
+                                if ( strval( $rubber->home_points ) > '0' ) {
+                                    if ( strval( $rubber->away_points ) > '0' ) {
                                         $data['split_set']['win'] += 1;
                                     } else {
                                         $data['straight_set']['win'] += 1;
                                     }
                                 }
-                            } elseif ( $rubber->home_points > '0' ) { // away team split set win.
-                                if ( $data['sets_won'] > '0' ) {
-                                    $data['split_set']['win'] += 1;       // home team got a set.
+                            } elseif ( strval( $rubber->away_points ) > '0' ) { // away team.
+                                if ( strval( $rubber->home_points ) > '0' ) {
+                                    $data['split_set']['win'] += 1;
+                                } else {
+                                    $data['straight_set']['win'] += 1;
                                 }
-                            } elseif ( $data['sets_won'] > '0' ) {                                  // home team straight set win.
-                                $data['straight_set']['win'] += 1;
                             }
-                        } elseif ( $rubber->loser_id === $team_id ) { // losing team.
+                        } elseif ( strval( $rubber->loser_id ) === strval( $team_id ) ) { // losing team.
                             ++$rubbers_lost;
                             if ( $rubber->is_walkover ) {
                                 $data['sets_allowed']         += $walkover_sets;
@@ -3017,13 +3021,13 @@ class League {
                                 $data['no_player']            += 1;
                                 $data['straight_set']['lost'] += 1;
                                 ++$walkovers;
-                            } elseif ( $match->home_team === $team_id ) {   // team loss.
-                                if ( $rubber->home_points > '0' ) {
+                            } elseif ( strval( $match->home_team ) === strval( $team_id ) ) {   // team loss.
+                                if ( strval( $rubber->home_points ) > '0' ) {
                                     $data['split_set']['lost'] += 1;
                                 } else {
                                     $data['straight_set']['lost'] += 1;
                                 }
-                            } elseif ( $rubber->away_points > '0' ) { // team split set loss.
+                            } elseif ( strval( $rubber->away_points ) > '0' ) { // team split set loss.
                                 $data['split_set']['lost'] += 1;
                             } else {                                 // team straight set loss.
                                 $data['straight_set']['lost'] += 1;
@@ -3057,20 +3061,30 @@ class League {
                         $data['games_won']     += $match->sets[ $j ][ $player_ref ];
                     }
                     if ( $this->num_sets > 1 && '' !== $match->sets[ $this->num_sets ]['player1'] && '' !== $match->sets[ $this->num_sets ]['player2'] ) {
-                        if ( $match->winner_id === $team_id ) {
+                        if ( strval( $match->winner_id ) === strval( $team_id ) ) {
                             $data['split_set']['win'] += 1;
-                        } elseif ( $match->loser_id === $team_id ) {
+                        } elseif ( strval( $match->loser_id ) === strval( $team_id ) ) {
                             $data['split_set']['lost'] += 1;
                         }
-                    } elseif ( $match->winner_id === $team_id ) {
+                    } elseif ( strval( $match->winner_id ) === strval( $team_id ) ) {
                         $data['straight_set']['win'] += 1;
-                    } elseif ( $match->loser_id === $team_id ) {
+                    } elseif ( strval( $match->loser_id ) === strval( $team_id ) ) {
                         $data['straight_set']['lost'] += 1;
                     }
                 }
             }
         }
         return $data;
+    }
+
+    /**
+     * Resolve match object for standings calculation.
+     *
+     * @param mixed $match Match ID or object.
+     * @return mixed
+     */
+    protected function resolve_standings_match( mixed $match ): mixed {
+        return get_match( $match );
     }
 
     /**

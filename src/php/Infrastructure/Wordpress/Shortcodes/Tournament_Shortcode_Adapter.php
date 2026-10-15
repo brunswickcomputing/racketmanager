@@ -25,9 +25,11 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
+use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
+use function __;
 use function is_array;
 use function is_object;
 
@@ -79,7 +81,21 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $this->extract_get_params()
         );
 
-        return $this->view_presenter->render( $this->events_handler->handle( $query ) );
+        $vm = $this->events_handler->handle( $query );
+
+        if ( ! empty( $vm->template ) && ! empty( $vm->vars['tournament'] ) && is_object( $vm->vars['tournament'] ) ) {
+            $tournament = $vm->vars['tournament'];
+            if ( 'event' === $vm->template && isset( $vm->vars['event'] ) ) {
+                $resolved = $this->resolve_tournament_event( $tournament, $vm->vars['event'] );
+                if ( null === $resolved ) {
+                    return $this->view_presenter->render( Shortcode_View_Model::for_error( __( 'Event not found for tournament', 'racketmanager' ) ) );
+                }
+            } elseif ( 'events' === $vm->template && isset( $vm->vars['events'] ) && is_array( $vm->vars['events'] ) ) {
+                $vm = $this->with_view_vars( $vm, [ 'events' => $this->filter_allowed_events( $tournament, $vm->vars['events'] ) ] );
+            }
+        }
+
+        return $this->view_presenter->render( $vm );
     }
 
     public function show_draws( array|string $atts = [] ): string {
@@ -89,7 +105,65 @@ class Tournament_Shortcode_Adapter implements Shortcode_Adapter_Interface {
             $this->extract_get_params()
         );
 
-        return $this->view_presenter->render( $this->draws_handler->handle( $query ) );
+        $vm = $this->draws_handler->handle( $query );
+
+        if ( ! empty( $vm->template ) && ! empty( $vm->vars['tournament'] ) && is_object( $vm->vars['tournament'] ) ) {
+            $tournament = $vm->vars['tournament'];
+            if ( 'draw' === $vm->template && isset( $vm->vars['draw'] ) ) {
+                $resolved = $this->resolve_tournament_event( $tournament, $vm->vars['draw'] );
+                if ( null === $resolved ) {
+                    return $this->view_presenter->render( Shortcode_View_Model::for_error( __( 'Event not found for tournament', 'racketmanager' ) ) );
+                }
+            } elseif ( 'draws' === $vm->template && isset( $vm->vars['draws'] ) && is_array( $vm->vars['draws'] ) ) {
+                $vm = $this->with_view_vars( $vm, [ 'draws' => $this->filter_allowed_events( $tournament, $vm->vars['draws'] ) ] );
+            }
+        }
+
+        return $this->view_presenter->render( $vm );
+    }
+
+    /**
+     * Resolve a tournament event by object, ID, or slug, verifying allowlist membership.
+     *
+     * @param object            $tournament       Tournament object.
+     * @param int|string|object $event_identifier Event ID, slug, or Event/DTO object.
+     * @return object|null Resolved and allowed event, or null if invalid/not allowed.
+     */
+    public function resolve_tournament_event( object $tournament, int|string|object $event_identifier ): ?object {
+        if ( ! $tournament->is_event_allowed( $event_identifier ) ) {
+            return null;
+        }
+
+        $competition = $tournament->get_competition_object();
+        if ( ! $competition ) {
+            return null;
+        }
+
+        $season = $tournament->season ?? null;
+        return $competition->resolve_event( $event_identifier, $season );
+    }
+
+    /**
+     * @param array<int|string, mixed> $items
+     * @return array<int|string, mixed>
+     */
+    private function filter_allowed_events( object $tournament, array $items ): array {
+        $filtered = [];
+        foreach ( $items as $key => $item ) {
+            if ( $tournament->is_event_allowed( $item ) ) {
+                $filtered[ $key ] = $item;
+            }
+        }
+
+        return $filtered;
+    }
+
+    private function with_view_vars( Shortcode_View_Model $vm, array $overrides ): Shortcode_View_Model {
+        return Shortcode_View_Model::for_template(
+            $vm->template,
+            array_merge( $vm->vars, $overrides ),
+            $vm->template_type
+        );
     }
 
     public function show_tournament_players( array|string $atts = [] ): string {

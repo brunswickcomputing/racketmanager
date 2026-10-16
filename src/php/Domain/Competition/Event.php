@@ -14,6 +14,7 @@ use Racketmanager\Exceptions\Event_Not_Found_Exception;
 use Racketmanager\Repositories\Event_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Rubber_Repository;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
@@ -24,7 +25,6 @@ use function Racketmanager\constitution_notification;
 use function Racketmanager\get_club;
 use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 use function Racketmanager\get_player;
 use function Racketmanager\get_team;
 
@@ -1320,20 +1320,33 @@ class Event {
             return (int) $result;
         }
 
-        $matches = is_array( $result ) ? $result : [];
-        $class   = '';
+        $matches            = is_array( $result ) ? $result : [];
+        $class              = '';
+        $fixture_repository = $this->get_fixture_repository();
+        $hydrated_matches   = [];
 
-        foreach ( $matches as $i => $match ) {
-            $class        = ( 'alternate' === $class ) ? '' : 'alternate';
-            $match        = get_match( $match );
-            $match->class = $class;
-            if ( $player ) {
-                $match->rubbers = $match->get_rubbers( $player );
+        foreach ( $matches as $match ) {
+            $match_id = is_object( $match ) ? (int) ( $match->id ?? 0 ) : (int) $match;
+            $fixture  = $fixture_repository->find_by_id( $match_id );
+            if ( ! $fixture ) {
+                continue;
             }
-            $matches[ $i ] = $match;
+            $class          = ( 'alternate' === $class ) ? '' : 'alternate';
+            $fixture->class = $class;
+            if ( $player ) {
+                $fixture->rubbers = $fixture->get_rubbers( (int) $player );
+            }
+            if ( ! empty( $fixture->date ) && 19 === strlen( $fixture->date ) && preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $fixture->date ) ) {
+                $fixture->date = substr( $fixture->date, 0, 16 );
+            }
+            $fixture->get_league();
+            if ( empty( $fixture->match_title ) ) {
+                $fixture->match_title = $fixture->get_title();
+            }
+            $hydrated_matches[] = $fixture;
         }
 
-        return $matches;
+        return $hydrated_matches;
     }
     /**
      * Match query arguments
@@ -1791,5 +1804,15 @@ class Event {
         return isset( $racketmanager->container ) && $racketmanager->container->has( 'event_repository' )
             ? $racketmanager->container->get( 'event_repository' )
             : new Event_Repository();
+    }
+
+    /**
+     * Resolve Fixture_Repository instance from container or fallback.
+     */
+    private function get_fixture_repository(): Fixture_Repository_Interface {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+            ? $racketmanager->container->get( 'fixture_repository' )
+            : new Fixture_Repository();
     }
 }

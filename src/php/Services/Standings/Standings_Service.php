@@ -5,6 +5,8 @@ namespace Racketmanager\Services\Standings;
 
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\Stage;
+use Racketmanager\Repositories\Fixture_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
@@ -12,7 +14,6 @@ use Racketmanager\Repositories\League_Team_Repository;
 use Racketmanager\Services\League_Service;
 use Racketmanager\Util\Util;
 use function Racketmanager\get_league_team;
-use function Racketmanager\get_match;
 
 /**
  * Service for calculating and managing competition standings (league tables).
@@ -21,15 +22,28 @@ class Standings_Service {
 	private ?League_Repository_Interface $league_repository = null;
 	private ?League_Team_Repository_Interface $league_team_repository = null;
 	private ?League_Service $league_service = null;
+	private ?Fixture_Repository_Interface $fixture_repository = null;
 
 	public function __construct(
 		?League_Repository_Interface $league_repository = null,
 		?League_Team_Repository_Interface $league_team_repository = null,
-		?League_Service $league_service = null
+		?League_Service $league_service = null,
+		?Fixture_Repository_Interface $fixture_repository = null
 	) {
 		$this->league_repository      = $league_repository;
 		$this->league_team_repository = $league_team_repository;
 		$this->league_service         = $league_service;
+		$this->fixture_repository     = $fixture_repository;
+	}
+
+	private function get_fixture_repository(): Fixture_Repository_Interface {
+		if ( null === $this->fixture_repository ) {
+			global $racketmanager;
+			$this->fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
+				? $racketmanager->container->get( 'fixture_repository' )
+				: new Fixture_Repository();
+		}
+		return $this->fixture_repository;
 	}
 
 	private function get_league_repository(): League_Repository_Interface {
@@ -493,7 +507,7 @@ class Standings_Service {
 			$team_ref_alt   = 'home' === $team_ref ? 'away' : 'home';
 			$player_ref     = strval( $team_id ) === strval( $match->home_team ) ? 'player1' : 'player2';
 			$player_ref_alt = 'player1' === $player_ref ? 'player2' : 'player1';
-			$match          = is_object( $match ) && method_exists( $match, 'get_rubbers' ) ? $match : get_match( $match );
+			$match          = is_object( $match ) && method_exists( $match, 'get_rubbers' ) ? $match : $this->get_fixture_repository()->find_by_id( is_numeric( $match ) ? (int) $match : (int) $match->id );
 			if ( $match && ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && ( $match->teams['home']->status ?? '' ) !== 'W' && ( $match->teams['away']->status ?? '' ) !== 'W' && empty( $match->is_cancelled ) ) {
 				if ( ! empty( $match->status ) && 3 === $match->status ) {
 					++$data['matches_shared'];

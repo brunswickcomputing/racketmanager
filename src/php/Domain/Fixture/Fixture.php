@@ -32,6 +32,13 @@ class Fixture {
     public ?string $fixture_title = null;
 
     /**
+     * Match title (alias for backwards compatibility)
+     *
+     * @var string|null
+     */
+    public ?string $match_title = null;
+
+    /**
      * Link
      *
      * @var string|null
@@ -372,6 +379,7 @@ class Fixture {
 
         $this->id                  = $dto->id;
         $this->fixture_title       = $dto->fixture_title;
+        $this->final_round         = $dto->final;
         $this->link                = $dto->link;
         $this->group               = $dto->group;
         $this->date                = $dto->date;
@@ -635,8 +643,14 @@ class Fixture {
             }
         }
 
-        $home_name = $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : (string) ( $home_val ?? '' );
-        $away_name = $away_dtls && $away_dtls->team ? $away_dtls->team->get_name() : (string) ( $away_val ?? '' );
+        $home_name = '-1' === (string) $home_val
+            ? __( 'Bye', 'racketmanager' )
+            : ( $home_dtls && $home_dtls->team ? $home_dtls->team->get_name() : __( 'Unknown', 'racketmanager' ) );
+        $away_name = '-1' === (string) $away_val
+            ? __( 'Bye', 'racketmanager' )
+            : ( $away_dtls && $away_dtls->team ? $away_dtls->team->get_name() : __( 'Unknown', 'racketmanager' ) );
+        $home_name = '' !== $home_name ? $home_name : __( 'Unknown', 'racketmanager' );
+        $away_name = '' !== $away_name ? $away_name : __( 'Unknown', 'racketmanager' );
 
         $home_team_obj                  = new \stdClass();
         $home_team_obj->id              = $home_val;
@@ -1195,6 +1209,21 @@ class Fixture {
             }
         }
         return (object) array( 'user_can_update' => false );
+    }
+
+    /**
+     * Get match title.
+     *
+     * @return string
+     */
+    public function get_title(): string {
+        if ( ! empty( $this->fixture_title ) ) {
+            return $this->fixture_title;
+        }
+        $teams     = $this->get_teams();
+        $home_name = ! empty( $teams['home']->title ) ? $teams['home']->title : __( 'Unknown', 'racketmanager' );
+        $away_name = ! empty( $teams['away']->title ) ? $teams['away']->title : __( 'Unknown', 'racketmanager' );
+        return sprintf( '%s - %s', $home_name, $away_name );
     }
 
     /**

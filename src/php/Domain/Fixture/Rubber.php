@@ -256,7 +256,7 @@ class Rubber {
      * @var string
      */
     public string $retired;
-    private Registration_Service $registration_service;
+    private ?Registration_Service $registration_service = null;
 
     /**
      * Get rubber instance function

@@ -220,6 +220,16 @@ class Admin_Result extends Admin_Display {
         if ( is_object( $match ) && ( isset( $match->link ) || isset( $match->match_title ) || isset( $match->fixture_title ) ) ) {
             return $match;
         }
+        $container = $this->racketmanager->container ?? null;
+        if ( $container instanceof Simple_Container && $container->has( 'fixture_repository' ) ) {
+            $id = is_object( $match ) && isset( $match->id ) ? (int) $match->id : ( is_numeric( $match ) ? (int) $match : 0 );
+            if ( $id > 0 ) {
+                $hydrated = $container->get( 'fixture_repository' )->find_by_id( $id );
+                if ( is_object( $hydrated ) ) {
+                    return $hydrated;
+                }
+            }
+        }
         if ( function_exists( '\Racketmanager\get_match' ) ) {
             $hydrated = \Racketmanager\get_match( $match );
             if ( is_object( $hydrated ) ) {

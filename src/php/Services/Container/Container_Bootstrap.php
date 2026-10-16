@@ -1073,7 +1073,12 @@ final class Container_Bootstrap {
             return new Knockout_Progression_Service( $c->get( 'fixture_repository' ) );
         } );
 
-        $c->set( 'standings_service', fn() => new Standings_Service() );
+        $c->set( 'standings_service', fn( Simple_Container $c ) => new Standings_Service(
+            $c->get( 'league_repository' ),
+            $c->get( 'league_team_repository' ),
+            $c->get( 'league_service' ),
+            $c->get( 'fixture_repository' )
+        ) );
 
         $c->set( 'results_checker_manager', function ( Simple_Container $c ) {
             $manager = new Results_Checker_Manager( $c->get( 'results_checker_repository' ), $c->get( 'fixture_result_manager' ), $c->get( 'league_repository' ), $c->get( 'fixture_repository' ) );

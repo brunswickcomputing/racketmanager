@@ -33,7 +33,7 @@ readonly class Scoring_Context {
 			point_rule: $match->league->get_point_rule(),
 			is_championship: (bool) $match->league->is_championship,
 			final_round: $match->final_round,
-			num_rubbers: (int) $match->num_rubbers,
+			num_rubbers: (int) ( $match->num_rubbers ?? $match->league->num_rubbers ?? 0 ),
 			leg: $match->leg,
 			num_sets: (int) $match->league->num_sets
 		);

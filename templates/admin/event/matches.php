@@ -38,7 +38,7 @@ namespace Racketmanager;
                 <td></td>
                 <td><?php echo esc_html( $match->date ); ?></td>
                 <td><?php echo esc_html( $match->match_title ); ?></td>
-                <td><?php echo esc_html( $match->league->title ); ?></td>
+                <td><?php echo esc_html( $match->league->title ?? '' ); ?></td>
             </tr>
             <?php
         }

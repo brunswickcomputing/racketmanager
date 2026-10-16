@@ -139,25 +139,28 @@ class Player_Query_Service {
 		$stats_ref    = $statistics;
 		$league_ref   = 0;
 		foreach ( $matches as $match ) {
+			$match_league = method_exists( $match, 'get_league' ) ? $match->get_league() : ( $match->league ?? null );
 			if ( 'all' === $match_source ) {
-				if ( ! empty( $match->league->is_championship ) ) {
+				if ( ! empty( $match_league->is_championship ) ) {
 					$league_no = 1;
 				} else {
-					$league_title = explode( ' ', $match->league->title ?? '' );
+					$league_title = explode( ' ', $match_league->title ?? '' );
 					$league_no    = end( $league_title );
 				}
-				$age_limit    = $match->league->event->age_limit ?? 'open';
-				$rubber_order = empty( $match->league->event->reverse_rubbers ) ? 'true' : 'false';
-				$league_ref   = $league_no . '-' . ( $match->league->num_rubbers ?? '' ) . '-' . $age_limit . '-' . $rubber_order;
+				$age_limit    = $match_league->event->age_limit ?? 'open';
+				$rubber_order = empty( $match_league->event->reverse_rubbers ) ? 'true' : 'false';
+				$league_ref   = $league_no . '-' . ( $match_league->num_rubbers ?? '' ) . '-' . $age_limit . '-' . $rubber_order;
 			} else {
 				$league_ref = 0;
 			}
 			if ( 'competition' === $match_source || 'event' === $match_source ) {
-				$key = $match->league->title ?? '';
+				$key = ( $match_league && isset( $match_league->title ) ) ? $match_league->title : ( ( $match_league && method_exists( $match_league, 'get_name' ) ) ? $match_league->get_name() : ( $match->league->title ?? '' ) );
 				if ( false === array_key_exists( $key, $player->matches ) ) {
-					$player->matches[ $key ]                   = array();
-					$player->matches[ $key ]['league']         = $match->league;
-					$player->matches[ $key ]['league']->season = $match->season;
+					$player->matches[ $key ]           = array();
+					$player->matches[ $key ]['league'] = $match_league;
+					if ( is_object( $player->matches[ $key ]['league'] ) ) {
+						$player->matches[ $key ]['league']->season = $match->season ?? ( method_exists( $match, 'get_season' ) ? $match->get_season() : null );
+					}
 				}
 				$player->matches[ $key ]['matches'][] = $match;
 			} else {
@@ -170,10 +173,10 @@ class Player_Query_Service {
 					$winner       = null;
 					$loser        = null;
 					if ( ! empty( $rubber->winner_id ) ) {
-						if ( $rubber->winner_id === $match->home_team ) {
+						if ( (string) $rubber->winner_id === (string) $match->home_team ) {
 							$winner = 'home';
 							$loser  = 'away';
-						} elseif ( $rubber->winner_id === $match->away_team ) {
+						} elseif ( (string) $rubber->winner_id === (string) $match->away_team ) {
 							$winner = 'away';
 							$loser  = 'home';
 						}

@@ -273,17 +273,21 @@ jQuery(document).ready(function(){
                                             if ( isset( $order_of_play[ $c ]['fixtures'][ $i ] ) ) {
                                                 $fixtures_players = array();
                                                 $fixture_id      = intval( $order_of_play[ $c ]['fixtures'][ $i ] );
-                                                $fixture         = get_match( $fixture_id );
+                                                global $racketmanager;
+                                                $fixture_repo    = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' ) ? $racketmanager->container->get( 'fixture_repository' ) : null;
+                                                $fixture         = $fixture_repo ? $fixture_repo->find_by_id( $fixture_id ) : ( function_exists( 'Racketmanager\get_match' ) ? get_match( $fixture_id ) : null );
                                                 if ( $fixture ) {
                                                     $fixtures_players = match_add_players( $fixtures_players, $fixture );
                                                     if ( ! empty( $fixture->prev_home_match ) ) {
-                                                        $prev_match = get_match( $fixture->prev_home_match->id );
+                                                        $prev_id    = is_object( $fixture->prev_home_match ) ? (int) $fixture->prev_home_match->id : (int) $fixture->prev_home_match;
+                                                        $prev_match = $fixture_repo ? $fixture_repo->find_by_id( $prev_id ) : ( function_exists( 'Racketmanager\get_match' ) ? get_match( $prev_id ) : null );
                                                         if ( $prev_match ) {
                                                             $fixtures_players = match_add_players( $fixtures_players, $prev_match );
                                                         }
                                                     }
                                                     if ( ! empty( $fixture->prev_away_match ) ) {
-                                                        $prev_match = get_match( $fixture->prev_away_match->id );
+                                                        $prev_id    = is_object( $fixture->prev_away_match ) ? (int) $fixture->prev_away_match->id : (int) $fixture->prev_away_match;
+                                                        $prev_match = $fixture_repo ? $fixture_repo->find_by_id( $prev_id ) : ( function_exists( 'Racketmanager\get_match' ) ? get_match( $prev_id ) : null );
                                                         if ( $prev_match ) {
                                                             $fixtures_players = match_add_players( $fixtures_players, $prev_match );
                                                         }

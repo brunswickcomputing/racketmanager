@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;

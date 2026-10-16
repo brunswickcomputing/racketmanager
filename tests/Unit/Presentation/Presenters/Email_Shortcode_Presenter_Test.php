@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit\Presenters;
+namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club;
@@ -16,7 +16,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Team;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;

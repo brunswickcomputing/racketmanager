@@ -10,7 +10,7 @@ use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;

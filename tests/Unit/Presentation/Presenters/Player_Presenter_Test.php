@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit\Presenters;
+namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
-use Racketmanager\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 
 class Player_Presenter_Test extends TestCase {
     private Player_Presenter $presenter;
@@ -83,5 +83,78 @@ class Player_Presenter_Test extends TestCase {
         $this->assertNull( $navigation[0]['class'] );
         $this->assertFalse( $navigation[2]['is_active'] ); // 'C'
         $this->assertEquals( 'is-disabled', $navigation[2]['class'] );
+    }
+
+    public function test_present_player_creates_immutable_view_model(): void {
+        $player = (object) array(
+            'id'           => 42,
+            'firstname'    => 'Roger',
+            'surname'      => 'Federer',
+            'display_name' => 'Roger Federer',
+            'btm'          => '12345678',
+            'gender'       => 'M',
+            'wtn'          => array( 'singles' => '1.0' ),
+            'statistics'   => (object) array(
+                'total' => (object) array(
+                    'played'      => 100,
+                    'matches_won' => 90,
+                    'matches_lost'=> 10,
+                    'win_pct'     => 90.0,
+                ),
+            ),
+        );
+
+        $vm = $this->presenter->present_player(
+            player: $player,
+            clubs: array( (object) array( 'club_name' => 'Basel TC' ) ),
+            titles: array( '2026' => array() ),
+            player_competitions: array( 'league' => array() ),
+            is_page_header: true,
+            user_can_update: true
+        );
+
+        $this->assertEquals( 'player', $vm->template );
+        $this->assertEquals( 42, $vm->id );
+        $this->assertEquals( 'Roger', $vm->firstname );
+        $this->assertEquals( 'Federer', $vm->surname );
+        $this->assertEquals( 'Roger Federer', $vm->display_name );
+        $this->assertEquals( '12345678', $vm->btm );
+        $this->assertEquals( 'RF', $vm->initials );
+        $this->assertEquals( 1, $vm->header_level );
+        $this->assertTrue( $vm->is_page_header );
+        $this->assertTrue( $vm->user_can_update );
+        $this->assertCount( 1, $vm->wtn_badges );
+        $this->assertEquals( '90-10 (100)', $vm->win_loss_summary['record_text'] );
+
+        $vars = $vm->template_vars();
+        $this->assertSame( $vm, $vars['vm'] );
+        $this->assertEquals( 'RF', $vars['player_initials'] );
+    }
+
+    public function test_error_view_model(): void {
+        $error_vm = \Racketmanager\Presentation\View_Models\Player_View_Model::for_error( 'Player not found' );
+        $this->assertEquals( 'alert', $error_vm->template );
+        $this->assertEquals( 'Player not found', $error_vm->error_message );
+    }
+
+    public function test_present_players_directory_and_list(): void {
+        $dir_vm = $this->presenter->present_players_directory(
+            search_string: 'Smith',
+            search_results: '<div class="res">Found</div>',
+            favourites: array( 1, 2 )
+        );
+        $this->assertEquals( 'players', $dir_vm->template );
+        $this->assertEquals( 'Smith', $dir_vm->search_string );
+        $this->assertEquals( '<div class="res">Found</div>', $dir_vm->search_results );
+        $this->assertCount( 2, $dir_vm->favourites );
+
+        $list_vm = $this->presenter->present_players_list(
+            players_list: array( 'A' => array(), 'B' => array() )
+        );
+        $this->assertEquals( 'players-list', $list_vm->template );
+        $this->assertCount( 26, $list_vm->alphabet_nav );
+        $this->assertTrue( $list_vm->alphabet_nav[0]['is_active'] );
+        $this->assertTrue( $list_vm->alphabet_nav[1]['is_active'] );
+        $this->assertFalse( $list_vm->alphabet_nav[2]['is_active'] );
     }
 }

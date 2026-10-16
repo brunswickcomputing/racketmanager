@@ -26,7 +26,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Tournament_Winners_Query;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Handler;
 use Racketmanager\Application\Tournament\Queries\Get_Tournament_Withdrawal_Query;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;

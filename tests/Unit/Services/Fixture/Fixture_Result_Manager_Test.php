@@ -12,7 +12,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Result\Result;
-use Racketmanager\Presenters\Notification_Presenter;
+use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

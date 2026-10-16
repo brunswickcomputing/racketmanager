@@ -130,17 +130,17 @@ class Container_Bootstrap_Services_Test extends TestCase {
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Ports\Fixture_Listing_Finder_Interface::class, $this->container->get( 'fixture_listing_finder' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Daily_Matches_Handler::class, $this->container->get( 'get_daily_matches_handler' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Latest_Results_Handler::class, $this->container->get( 'get_latest_results_handler' ) );
-        $this->assertInstanceOf( \Racketmanager\Presenters\Matches_List_Presenter::class, $this->container->get( 'matches_list_presenter' ) );
+        $this->assertInstanceOf( \Racketmanager\Presentation\Presenters\Matches_List_Presenter::class, $this->container->get( 'matches_list_presenter' ) );
         $this->assertInstanceOf( \Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter::class, $this->container->get( 'matches_shortcode_adapter' ) );
     }
 
     public function test_container_wires_match_and_club_shortcode_adapters_with_required_dependencies(): void {
         $this->assertInstanceOf( \Racketmanager\Services\View\Shortcode_Template_Renderer::class, $this->container->get( 'shortcode_template_renderer' ) );
-        $this->assertInstanceOf( \Racketmanager\Presenters\Shortcode_View_Presenter::class, $this->container->get( 'shortcode_view_presenter' ) );
+        $this->assertInstanceOf( \Racketmanager\Presentation\Presenters\Shortcode_View_Presenter::class, $this->container->get( 'shortcode_view_presenter' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler::class, $this->container->get( 'get_match_score_handler' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler::class, $this->container->get( 'get_match_header_handler' ) );
         $this->assertInstanceOf( \Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler::class, $this->container->get( 'get_match_detail_handler' ) );
-        $this->assertInstanceOf( \Racketmanager\Presenters\Match_Shortcode_Presenter::class, $this->container->get( 'match_shortcode_presenter' ) );
+        $this->assertInstanceOf( \Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter::class, $this->container->get( 'match_shortcode_presenter' ) );
         foreach ( [ 'get_club_players_handler', 'get_club_roles_handler', 'get_club_role_modal_handler', 'get_club_competitions_handler', 'get_club_invoices_handler' ] as $id ) {
             $this->assertTrue( $this->container->has( $id ), $id );
             $this->assertIsObject( $this->container->get( $id ), $id );

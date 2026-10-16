@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Racketmanager\Services\View;
 
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
-use Racketmanager\Presenters\Club_Presenter;
-use Racketmanager\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Throwable;
 use function __;
 use function file_exists;
@@ -86,7 +86,8 @@ class Shortcode_Template_Renderer {
             }
 
             try {
-                return $this->renderer->render_to_string( $directory . $template, [], $vars );
+                $vm = ( isset( $vars['vm'] ) && is_object( $vars['vm'] ) ) ? $vars['vm'] : [];
+                return $this->renderer->render_to_string( $directory . $template, $vm, $vars );
             } catch ( Template_Not_Found_Exception ) {
                 /* translators: %1$s: template %2$s: directory */
                 $msg = sprintf( __( 'Could not load template %1$s.php from %2$s directory', 'racketmanager' ), $template, 'templates/' . rtrim( $directory, '/' ) );
@@ -167,6 +168,7 @@ class Shortcode_Template_Renderer {
         ob_start();
         try {
             ( static function ( string $__file, array $vars ): void {
+                $vm = ( isset( $vars['vm'] ) && is_object( $vars['vm'] ) ) ? $vars['vm'] : ( $vars['vm'] ?? [] );
                 extract( $vars, EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
                 require $__file;
             } )( $file, $vars );

@@ -10,7 +10,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;

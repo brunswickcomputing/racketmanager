@@ -7,7 +7,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
-use Racketmanager\Presenters\Notification_Presenter;
+use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

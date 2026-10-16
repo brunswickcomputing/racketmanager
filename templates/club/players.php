@@ -12,14 +12,15 @@
 
 namespace Racketmanager;
 
-global $racketmanager;
-
+use Racketmanager\Presentation\View_Models\Club_View_Model;
 use Racketmanager\Util\Util_Lookup;
 
-/** @var object $club */
+/** @var Club_View_Model|null $vm */
+/** @var object|null $club */
 /** @var bool   $user_can_update */
 /** @var array  $players */
-$display_opt = $racketmanager->get_options( 'display' );
+$club_id     = $vm->id ?? ( $club->id ?? 0 );
+$display_opt = $display_opt ?? ( isset( $GLOBALS['racketmanager'] ) && is_object( $GLOBALS['racketmanager'] ) && method_exists( $GLOBALS['racketmanager'], 'get_options' ) ? $GLOBALS['racketmanager']->get_options( 'display' ) : ( function_exists( 'get_option' ) ? get_option( 'racketmanager_display', [] ) : [] ) );
 if ( empty( $player ) ) {
     $header_level = 1;
     require_once RACKETMANAGER_PATH . 'templates/includes/club-header.php';
@@ -35,7 +36,7 @@ if ( empty( $player ) ) {
                 <div class="module-container">
                     <form id="playerRequestFrm" action="" method="post">
                         <?php wp_nonce_field( 'club-player-request', 'racketmanager_nonce' ); ?>
-                        <input type="hidden" name="club" id="club" value="<?php echo esc_html( $club->id ); ?>" />
+                        <input type="hidden" name="club" id="club" value="<?php echo esc_html( $club_id ); ?>" />
                         <div class="form-floating mb-3">
                             <input required="required" type="text" class="form-control" id="firstname" name="firstname" size="30" placeholder="First name" aria-describedby="firstnameFeedback" />
                             <label for="firstname"><?php esc_html_e( 'First name', 'racketmanager' ); ?></label>

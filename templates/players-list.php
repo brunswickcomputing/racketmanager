@@ -7,6 +7,15 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\View_Models\Player_View_Model;
+
+/** @var Player_View_Model|null $vm */
+/** @var Player_Presenter|null $player_presenter */
+/** @var array $players */
+$player_presenter = $player_presenter ?? new Player_Presenter();
+$players          = $vm->players_list ?? ( $players ?? [] );
+
 if ( empty( $players ) ) {
     $result_count = 0;
 } else {
@@ -32,7 +41,7 @@ if ( empty( $players ) ) {
                                     <div class="profile-icon">
                                         <span class="profile-icon__abbr">
                                             <?php
-                                            $player_initials = substr( $player->firstname, 0, 1 ) . substr( $player->surname, 0, 1 );
+                                            $player_initials = $player_presenter->get_initials( $player->firstname ?? '', $player->surname ?? '' );
                                             echo esc_html( $player_initials );
                                             ?>
                                         </span>

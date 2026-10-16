@@ -1,6 +1,6 @@
 <?php
 
-namespace Racketmanager\Tests\Unit\Presenters;
+namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +15,7 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Switch_Teams_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Update_Response;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Option_Request;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use ReflectionClass;
 
 class Fixture_Presenter_Test extends TestCase {

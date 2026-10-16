@@ -1,6 +1,6 @@
 <?php
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;

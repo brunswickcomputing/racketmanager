@@ -7,10 +7,14 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\View_Models\Player_View_Model;
 
+/** @var Player_View_Model|null $vm */
 /** @var string $player_link */
+/** @var array $player_list */
 $player_presenter = $player_presenter ?? new Player_Presenter();
+$player_list      = $vm->players_list ?? ( $player_list ?? array() );
 $alphabet_key     = array();
 ?>
 <div class="module module--card">
@@ -89,7 +93,7 @@ $alphabet_key     = array();
                 <div class="alphabet__wrapper">
                     <ul class="alphabet">
                         <?php
-                        $alphabet_items = $player_presenter->get_alphabet_navigation( $alphabet_key );
+                        $alphabet_items = $vm->alphabet_nav ?? $player_presenter->get_alphabet_navigation( $alphabet_key );
                         foreach ( $alphabet_items as $item ) {
                             ?>
                             <li class="alphabet__char">

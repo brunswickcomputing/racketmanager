@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\League_Standings_View_Model;

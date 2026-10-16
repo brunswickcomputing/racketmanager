@@ -21,7 +21,7 @@ use Racketmanager\Exceptions\Fixture_Validation_Exception;
 use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Maintenance_Service;

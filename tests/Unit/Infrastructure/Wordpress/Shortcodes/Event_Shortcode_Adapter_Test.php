@@ -17,7 +17,7 @@ use Racketmanager\Application\Event\Queries\Get_Event_Teams_Handler;
 use Racketmanager\Application\Event\Queries\Get_Team_Order_Players_Handler;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Event_Shortcode_Adapter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;

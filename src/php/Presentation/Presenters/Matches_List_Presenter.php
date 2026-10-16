@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Application\Matches\DTOs\Match_List_Result;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;

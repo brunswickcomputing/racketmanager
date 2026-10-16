@@ -7,17 +7,22 @@
 
 namespace Racketmanager;
 
-use Racketmanager\Presenters\Player_Presenter;
-use Racketmanager\Util\Util_Lookup;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
+use Racketmanager\Presentation\View_Models\Player_View_Model;
 
-/** @var object $player */
+/** @var Player_View_Model|null $vm */
+/** @var object|null $player */
 /** @var array  $clubs */
 $player_presenter = $player_presenter ?? new Player_Presenter();
-$is_page_header   = ! empty( $is_page_header );
-$header_level     = $player_presenter->get_heading_level( $is_page_header, $header_level ?? null );
-$player_initials  = $player_presenter->get_initials( $player->firstname ?? '', $player->surname ?? '' );
-$wtn_badges       = $player_presenter->get_wtn_badges( $player->wtn ?? array() );
-$win_loss_summary = $player_presenter->get_win_loss_summary( $player->statistics ?? null );
+$is_page_header   = $vm->is_page_header ?? ( ! empty( $is_page_header ) );
+$header_level     = $vm->header_level ?? $player_presenter->get_heading_level( $is_page_header, $header_level ?? null );
+$player_initials  = $vm->initials ?? ( isset( $player ) ? $player_presenter->get_initials( $player->firstname ?? '', $player->surname ?? '' ) : '' );
+$wtn_badges       = $vm->wtn_badges ?? ( isset( $player ) ? $player_presenter->get_wtn_badges( $player->wtn ?? array() ) : array() );
+$win_loss_summary = $vm->win_loss_summary ?? ( isset( $player ) ? $player_presenter->get_win_loss_summary( $player->statistics ?? null ) : null );
+$player_name      = $vm->display_name ?? ( $player->display_name ?? '' );
+$player_link      = $vm->link ?? ( $player->link ?? '' );
+$player_btm       = $vm->btm ?? ( $player->btm ?? null );
+$clubs            = $vm->clubs ?? ( $clubs ?? array() );
 ?>
     <div class="page-subhead player-header">
         <div class="media">
@@ -34,12 +39,12 @@ $win_loss_summary = $player_presenter->get_win_loss_summary( $player->statistics
                         <?php
                         if ( ! $is_page_header ) {
                             ?>
-                            <a href="<?php echo esc_html( $player->link ); ?>">
+                            <a href="<?php echo esc_html( $player_link ); ?>">
                             <?php
                         }
                         ?>
                         <span class="nav--link">
-                            <span class="nav-link__value"><?php echo esc_html( $player->display_name ); ?></span>
+                            <span class="nav-link__value"><?php echo esc_html( $player_name ); ?></span>
                         </span>
                         <?php
                         if ( ! $is_page_header ) {
@@ -49,9 +54,9 @@ $win_loss_summary = $player_presenter->get_win_loss_summary( $player->statistics
                         }
                         ?>
                         <?php
-                        if ( ! empty( $player->btm ) ) {
+                        if ( ! empty( $player_btm ) ) {
                             ?>
-                            <span class="media__title-aside"><?php echo esc_html( $player->btm ); ?></span>
+                            <span class="media__title-aside"><?php echo esc_html( $player_btm ); ?></span>
                             <?php
                         }
                         ?>

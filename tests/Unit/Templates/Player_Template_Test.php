@@ -5,7 +5,7 @@ namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Player;
-use Racketmanager\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 
 class Player_Template_Test extends TestCase {
     private string $player_header_template_path;
@@ -129,5 +129,96 @@ class Player_Template_Test extends TestCase {
         $output = ob_get_clean();
 
         $this->assertStringContainsString( 'No players found', $output );
+    }
+
+    public function test_player_header_renders_from_view_model(): void {
+        $presenter = new Player_Presenter();
+        $player    = (object) array(
+            'id'           => 20,
+            'firstname'    => 'Andy',
+            'surname'      => 'Murray',
+            'display_name' => 'Andy Murray',
+            'link'         => '/players/andy-murray/',
+            'btm'          => '99887766',
+            'wtn'          => array(
+                'singles' => '1.5',
+            ),
+            'statistics'   => (object) array(
+                'total' => (object) array(
+                    'played'       => 50,
+                    'matches_won'  => 45,
+                    'matches_lost' => 5,
+                    'win_pct'      => 90.0,
+                ),
+            ),
+        );
+
+        $vm = $presenter->present_player( $player, is_page_header: true );
+
+        ob_start();
+        include $this->player_header_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( '<h1 class="media__title">', $output );
+        $this->assertStringContainsString( 'Andy Murray', $output );
+        $this->assertStringContainsString( 'AM', $output );
+        $this->assertStringContainsString( '99887766', $output );
+        $this->assertStringContainsString( '1.5', $output );
+        $this->assertStringContainsString( '45-5 (50)', $output );
+    }
+
+    public function test_player_list_names_renders_from_view_model(): void {
+        $presenter = new Player_Presenter();
+        $players   = array(
+            'B' => array(
+                (object) array(
+                    'id'           => 5,
+                    'display_name' => 'Bjorn Borg',
+                    'index'        => 'Borg, Bjorn',
+                    'club'         => (object) array( 'shortcode' => 'SWEDEN' ),
+                ),
+            ),
+        );
+        $vm          = $presenter->present_players_list( $players );
+        $player_link = '/players/';
+
+        ob_start();
+        include $this->player_list_names_template_path;
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString( 'Borg, Bjorn', $output );
+        $this->assertStringContainsString( 'SWEDEN', $output );
+        $this->assertStringContainsString( '<a href="#B" class="alphabet__char-href ">B</a>', $output );
+        $this->assertStringContainsString( '<a href="#A" class="alphabet__char-href is-disabled">A</a>', $output );
+    }
+
+    public function test_player_renders_through_production_shortcode_template_renderer(): void {
+        $base_path         = dirname( __DIR__, 3 ) . '/templates/';
+        $php_renderer      = new \Racketmanager\Services\View\Php_View_Renderer( $base_path );
+        $template_renderer = new \Racketmanager\Services\View\Shortcode_Template_Renderer( $php_renderer );
+
+        $presenter = new Player_Presenter();
+        $player    = (object) array(
+            'id'           => 42,
+            'firstname'    => 'Roger',
+            'surname'      => 'Federer',
+            'display_name' => 'Roger Federer',
+            'link'         => '/players/roger-federer/',
+            'wtn'          => array( 'singles' => '1.0' ),
+            'statistics'   => (object) array(
+                'total' => (object) array(
+                    'played'       => 100,
+                    'matches_won'  => 90,
+                    'matches_lost' => 10,
+                    'win_pct'      => 90.0,
+                ),
+            ),
+        );
+        $vm       = $presenter->present_player( $player );
+        $rendered = $template_renderer->render( 'player', $vm->template_vars() );
+
+        $this->assertStringContainsString( 'Roger Federer', $rendered );
+        $this->assertStringContainsString( 'RF', $rendered );
+        $this->assertStringContainsString( '90-10 (100)', $rendered );
     }
 }

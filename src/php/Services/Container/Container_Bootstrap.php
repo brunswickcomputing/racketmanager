@@ -26,12 +26,12 @@ use Racketmanager\Application\Matches\Queries\Get_Match_Detail_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Header_Handler;
 use Racketmanager\Application\Matches\Queries\Get_Match_Score_Handler;
 use Racketmanager\Infrastructure\Persistence\Legacy_Fixture_Listing_Finder;
-use Racketmanager\Presenters\Club_Shortcode_Presenter;
-use Racketmanager\Presenters\Competition_Shortcode_Presenter;
-use Racketmanager\Presenters\League_Standings_Presenter;
-use Racketmanager\Presenters\Match_Shortcode_Presenter;
-use Racketmanager\Presenters\Matches_List_Presenter;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Competition_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\League_Standings_Presenter;
+use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Exceptions\Interface_Exception;
@@ -42,9 +42,9 @@ use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Export\Export_Delivery_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Rest\Rest_Controller_Adapter;
-use Racketmanager\Presenters\Club_Presenter;
-use Racketmanager\Presenters\Fixture_Presenter;
-use Racketmanager\Presenters\Player_Presenter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Admin\Controllers\Tournament_Contact_Admin_Controller;
 use Racketmanager\Admin\Controllers\Tournament_Teams_Admin_Controller;
@@ -136,7 +136,7 @@ use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\League_Service;
-use Racketmanager\Presenters\Notification_Presenter;
+use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Notify_Service;
 use Racketmanager\Services\Player_Query_Service;
@@ -237,7 +237,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
-use Racketmanager\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 
 /**
  * Registers core services in the Simple_Container.
@@ -336,7 +336,8 @@ final class Container_Bootstrap {
 
         $c->set( 'get_club_handler', fn( Simple_Container $c ) => new Get_Club_Handler(
             $c->get( 'club_service' ),
-            $c->get( 'settings_service' )
+            $c->get( 'settings_service' ),
+            $c->get( 'club_presenter' )
         ) );
         $c->set( 'club_shortcode_presenter', fn( Simple_Container $c ) => new Club_Shortcode_Presenter(
             $c->get( 'view_renderer' ),
@@ -710,11 +711,14 @@ final class Container_Bootstrap {
             message_handler: $c->get( 'get_message_handler' ),
             template_renderer: $c->get( 'shortcode_template_renderer' )
         ) );
-        $c->set( 'get_players_handler', fn() => new Get_Players_Handler() );
+        $c->set( 'get_players_handler', fn( Simple_Container $c ) => new Get_Players_Handler(
+            $c->get( 'player_presenter' )
+        ) );
         $c->set( 'get_player_handler', fn( Simple_Container $c ) => new Get_Player_Handler(
             $c->get( 'registration_service' ),
             $c->get( 'player_service' ),
-            $c->get( 'tournament_service' )
+            $c->get( 'tournament_service' ),
+            $c->get( 'player_presenter' )
         ) );
         $c->set( 'get_favourites_handler', fn() => new Get_Favourites_Handler() );
         $c->set( 'get_invoice_handler', fn( Simple_Container $c ) => new Get_Invoice_Handler(

@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;

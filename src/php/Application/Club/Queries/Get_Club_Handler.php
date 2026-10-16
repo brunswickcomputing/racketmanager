@@ -6,6 +6,7 @@ namespace Racketmanager\Application\Club\Queries;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\DTO\Club\Club_Details_DTO;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\View_Models\Club_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Settings_Service;
@@ -16,7 +17,8 @@ use Racketmanager\Services\Settings_Service;
 class Get_Club_Handler {
     public function __construct(
         private readonly Club_Service $club_service,
-        private readonly ?Settings_Service $settings_service = null
+        private readonly ?Settings_Service $settings_service = null,
+        private readonly ?Club_Presenter $club_presenter = null
     ) {}
 
     public function handle( Get_Club_Query $query ): Club_View_Model {
@@ -25,24 +27,18 @@ class Get_Club_Handler {
         $club_details = null;
 
         if ( empty( $club_name ) ) {
-            return new Club_View_Model(
-                error_message: __( 'Club not found', 'racketmanager' )
-            );
+            return Club_View_Model::for_error( __( 'Club not found', 'racketmanager' ) );
         }
 
         try {
             $club         = $this->club_service->get_club_by_shortcode( $club_name );
             $club_details = $this->club_service->get_club_details( (int) $club->id );
         } catch ( Club_Not_Found_Exception $e ) {
-            return new Club_View_Model(
-                error_message: $e->getMessage()
-            );
+            return Club_View_Model::for_error( $e->getMessage() );
         }
 
         if ( ! $club_details ) {
-            return new Club_View_Model(
-                error_message: __( 'Club not found', 'racketmanager' )
-            );
+            return Club_View_Model::for_error( __( 'Club not found', 'racketmanager' ) );
         }
 
         if ( is_object( $club ) ) {
@@ -54,8 +50,8 @@ class Get_Club_Handler {
 
         $user_can_update_club = false;
         if ( is_user_logged_in() ) {
-            $user   = wp_get_current_user();
-            $userid = $user->ID ?? 0;
+            $user      = wp_get_current_user();
+            $userid    = $user->ID ?? 0;
             $target_id = $club ? $club->id : ( $club_details instanceof Club || is_object( $club_details ) ? $club_details->id : 0 );
             if ( current_user_can( 'manage_racketmanager' ) || ( $target_id && $this->club_service->is_user_match_secretary( (int) $userid, (int) $target_id ) ) ) {
                 $user_can_update_club = true;
@@ -74,14 +70,15 @@ class Get_Club_Handler {
             }
         }
 
-        $template = ! empty( $query->template ) ? 'club-' . $query->template : 'club';
+        $template  = ! empty( $query->template ) ? 'club-' . $query->template : 'club';
+        $presenter = $this->club_presenter ?? new Club_Presenter();
 
-        return new Club_View_Model(
-            template: $template,
+        return $presenter->present(
             club: $club_details,
+            standalone: true,
             google_maps_key: $google_maps_key,
             user_can_update_club: $user_can_update_club,
-            standalone: true
+            template: $template
         );
     }
 }

@@ -8,7 +8,11 @@
 
 namespace Racketmanager;
 
-/** @var object $player */
+use Racketmanager\Presentation\View_Models\Player_View_Model;
+
+/** @var Player_View_Model|null $vm */
+/** @var object|null $player */
+$stats = $vm->stats ?? ( $stats ?? ( $player->stats ?? [] ) );
 ?>
 <div class="module module--card">
     <div class="module__content">
@@ -25,15 +29,19 @@ namespace Racketmanager;
                     <div class="col-1"></div>
                 </div>
                 <?php
-                $stats_type   = 'totals';
-                $player_stats = $player->stats[ $stats_type ];
-                $statistics   = $player_stats['total'];
-                $stat_title   = null;
-                require 'statistics-group.php';
-                foreach ( $player->stats['seasons'] as $stats_type => $player_stats ) {
-                    $statistics = $player_stats['total'];
-                    $stat_title = $stats_type;
+                if ( ! empty( $stats ) && isset( $stats['totals'] ) ) {
+                    $stats_type   = 'totals';
+                    $player_stats = $stats[ $stats_type ];
+                    $statistics   = $player_stats['total'] ?? [];
+                    $stat_title   = null;
                     require 'statistics-group.php';
+                    if ( ! empty( $stats['seasons'] ) && is_array( $stats['seasons'] ) ) {
+                        foreach ( $stats['seasons'] as $stats_type => $player_stats ) {
+                            $statistics = $player_stats['total'] ?? [];
+                            $stat_title = $stats_type;
+                            require 'statistics-group.php';
+                        }
+                    }
                 }
                 ?>
             </div>

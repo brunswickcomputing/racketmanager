@@ -13,7 +13,7 @@ use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Infrastructure\Security\Security_Service;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory;
 use Racketmanager\Infrastructure\Wordpress\Response\Logging_Json_Response_Factory;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\RacketManager;
 
 /**

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use function function_exists;
 use function is_object;
@@ -11,6 +12,10 @@ use function Racketmanager\get_user;
 use function Racketmanager\player_search;
 
 class Get_Players_Handler {
+    public function __construct(
+        private readonly ?Player_Presenter $player_presenter = null
+    ) {}
+
     public function handle( Get_Players_Query $query ): Shortcode_View_Model {
         $search_results = null;
         if ( ! empty( $query->search_string ) ) {
@@ -30,12 +35,16 @@ class Get_Players_Handler {
             }
         }
 
-        $filename = ! empty( $query->template ) ? 'players-' . $query->template : 'players';
+        $filename  = ! empty( $query->template ) ? 'players-' . $query->template : 'players';
+        $presenter = $this->player_presenter ?? new Player_Presenter();
 
-        return Shortcode_View_Model::for_template( $filename, [
-            'favourites'     => $favourites,
-            'search_string'  => $query->search_string,
-            'search_results' => $search_results,
-        ] );
+        $player_vm = $presenter->present_players_directory(
+            search_string: $query->search_string ?? '',
+            search_results: $search_results,
+            favourites: $favourites,
+            template: $filename
+        );
+
+        return Shortcode_View_Model::for_template( $filename, $player_vm->template_vars() );
     }
 }

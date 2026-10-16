@@ -33,7 +33,7 @@ use Racketmanager\Domain\DTO\Tournament\Tournament_Event_DTO;
 use Racketmanager\Domain\Tournament;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 

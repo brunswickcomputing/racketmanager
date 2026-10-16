@@ -1,6 +1,6 @@
 <?php
 
-namespace Racketmanager\Tests\Unit\Presenters;
+namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
@@ -13,7 +13,7 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Team;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 
 class Fixture_Presenter_Phase2_Test extends TestCase {

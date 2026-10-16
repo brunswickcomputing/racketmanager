@@ -12,7 +12,7 @@ use Racketmanager\Application\Message\Queries\Get_Messages_Query;
 use Racketmanager\Domain\Message;
 use Racketmanager\Domain\User;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Message_Shortcode_Adapter;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes_Message;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Php_View_Renderer;

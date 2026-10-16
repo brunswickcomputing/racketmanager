@@ -1,6 +1,6 @@
 <?php
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Application\Fixture\DTOs\Fixture_Date_Update_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Detail_Read_Model;

@@ -15,7 +15,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
 use Racketmanager\Domain\User;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes_Login;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\View_Renderer_Interface;

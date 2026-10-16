@@ -8,7 +8,11 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\View_Models\Player_View_Model;
+
+/** @var Player_View_Model|null $vm */
 /** @var array $titles */
+$titles = $vm->titles ?? ( $titles ?? [] );
 ?>
 <div class="module module--card">
     <div class="module__content">

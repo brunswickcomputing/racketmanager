@@ -7,7 +7,12 @@
 
 namespace Racketmanager;
 
+use Racketmanager\Presentation\View_Models\Player_View_Model;
+
+/** @var Player_View_Model|null $vm */
 /** @var string $search_string */
+$search_string  = $vm->search_string ?? ( $search_string ?? '' );
+$search_results = $vm->search_results ?? ( $search_results ?? null );
 ?>
 <div class="container">
     <div id="pageContentTab">

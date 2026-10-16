@@ -1,28 +1,30 @@
 <?php
 /**
  *
- * Template page to display single club
+ * Template page to display single club header
  *
  * @package Racketmanager/Templates
  *
  * The following variables are usable:
  *
  *  $club: club object
- *  $club_players: club Players object
- *
- * You can check the content of a variable when you insert the tag <?php var_dump($variable) ?>
+ *  $vm: Club_View_Model instance
  */
 
 namespace Racketmanager;
 
-use Racketmanager\Presenters\Club_Presenter;
+use Racketmanager\Presentation\Presenters\Club_Presenter;
+use Racketmanager\Presentation\View_Models\Club_View_Model;
 
-/** @var object $club */
+/** @var Club_View_Model|null $vm */
+/** @var object|null $club */
 $club_presenter = $club_presenter ?? new Club_Presenter();
-$standalone     = ! empty( $standalone );
-$heading_type   = $club_presenter->get_heading_tag( $standalone, $header_level ?? null );
-$club_link      = $club_presenter->get_link( $club );
-$club_name      = $club_presenter->get_display_name( $club );
+$standalone     = $vm->standalone ?? ( ! empty( $standalone ) );
+$heading_type   = $vm->heading_tag ?? $club_presenter->get_heading_tag( $standalone, $header_level ?? null );
+$club_link      = $vm->link ?? ( isset( $club ) ? $club_presenter->get_link( $club ) : '' );
+$club_name      = $vm->name ?? ( isset( $club ) ? $club_presenter->get_display_name( $club ) : '' );
+$initials       = $vm->initials ?? ( isset( $club ) ? $club_presenter->get_initials( $club ) : '' );
+$club_id        = $vm->id ?? ( $club->id ?? 0 );
 ?>
 <div class="page-subhead">
     <div class="media">
@@ -30,14 +32,7 @@ $club_name      = $club_presenter->get_display_name( $club );
             <div class="media__img">
                 <span class="profile-icon">
                     <span class="profile-icon__abbr">
-                        <?php
-                        $words    = explode( ' ', $club->shortcode );
-                        $initials = null;
-                        foreach ( $words as $w ) {
-                            $initials .= $w[0];
-                        }
-                        echo esc_html( $initials );
-                        ?>
+                        <?php echo esc_html( $initials ); ?>
                     </span>
                 </span>
             </div>
@@ -63,7 +58,7 @@ $club_name      = $club_presenter->get_display_name( $club );
             <li class="media__icons-item">
                 <?php
                 $favourite_type = 'club';
-                $favourite_id   = $club->id;
+                $favourite_id   = $club_id;
                 require RACKETMANAGER_PATH . '/templates/includes/favourite-button.php';
                 ?>
             </li>

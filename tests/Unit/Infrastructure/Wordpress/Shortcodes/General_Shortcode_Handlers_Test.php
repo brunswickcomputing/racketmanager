@@ -29,7 +29,7 @@ use Racketmanager\Domain\Player;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\General_Shortcode_Adapter;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\Club_Service;

@@ -34,9 +34,9 @@ namespace Racketmanager\Tests\Integration\Public {
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Fixture\Fixture_Factory;
     use Racketmanager\Infrastructure\Wordpress\Shortcodes\Matches_Shortcode_Adapter;
-    use Racketmanager\Presenters\Match_Shortcode_Presenter;
-    use Racketmanager\Presenters\Matches_List_Presenter;
-    use Racketmanager\Presenters\Shortcode_View_Presenter;
+    use Racketmanager\Presentation\Presenters\Match_Shortcode_Presenter;
+    use Racketmanager\Presentation\Presenters\Matches_List_Presenter;
+    use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
     use Racketmanager\Public\Shortcodes_Match;
     use Racketmanager\RacketManager;
     use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;

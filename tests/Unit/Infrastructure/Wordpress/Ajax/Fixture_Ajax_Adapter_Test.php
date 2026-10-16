@@ -21,7 +21,7 @@ use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Ajax\Fixture_Ajax_Adapter;
 use Racketmanager\Infrastructure\Wordpress\Response\Json_Response_Factory_Interface;
 use Racketmanager\Infrastructure\Wordpress\Response\Response;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;

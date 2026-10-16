@@ -6,7 +6,7 @@ namespace Racketmanager\Tests\Unit\Services\View;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Presenters\Shortcode_View_Presenter;
+use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use RuntimeException;

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\General\Queries;
 
+use Racketmanager\Presentation\Presenters\Player_Presenter;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Services\Player_Service;
 use Racketmanager\Services\Registration_Service;
@@ -17,7 +18,8 @@ class Get_Player_Handler {
     public function __construct(
         private readonly ?Registration_Service $registration_service = null,
         private readonly ?Player_Service $player_service = null,
-        private readonly ?Tournament_Service $tournament_service = null
+        private readonly ?Tournament_Service $tournament_service = null,
+        private readonly ?Player_Presenter $player_presenter = null
     ) {}
 
     public function handle( Get_Player_Query $query ): Shortcode_View_Model {
@@ -60,13 +62,18 @@ class Get_Player_Handler {
             }
         }
 
-        $filename = ! empty( $query->template ) ? 'player-' . $query->template : 'player';
+        $filename  = ! empty( $query->template ) ? 'player-' . $query->template : 'player';
+        $presenter = $this->player_presenter ?? new Player_Presenter();
 
-        return Shortcode_View_Model::for_template( $filename, [
-            'player'              => $player,
-            'clubs'               => $player_clubs,
-            'titles'              => $titles,
-            'player_competitions' => $player_competitions,
-        ] );
+        $player_vm = $presenter->present_player(
+            player: $player,
+            clubs: $player_clubs,
+            titles: $titles,
+            player_competitions: $player_competitions,
+            is_page_header: true,
+            template: $filename
+        );
+
+        return Shortcode_View_Model::for_template( $filename, $player_vm->template_vars() );
     }
 }

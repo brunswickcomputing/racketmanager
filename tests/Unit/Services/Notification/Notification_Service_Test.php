@@ -77,7 +77,7 @@ use Racketmanager\Repositories\Interfaces\League_Team_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
-use Racketmanager\Presenters\Notification_Presenter;
+use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;

@@ -13,7 +13,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Email_Shortcode_Adapter;
-use Racketmanager\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Public\Shortcodes_Email;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;

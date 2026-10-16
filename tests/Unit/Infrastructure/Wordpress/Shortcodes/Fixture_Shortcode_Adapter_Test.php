@@ -7,7 +7,7 @@ use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Fixture_Shortcode_Adapter;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Header_Read_Model;
 
 class Fixture_Shortcode_Adapter_Test extends TestCase {

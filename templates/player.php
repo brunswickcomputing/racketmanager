@@ -9,9 +9,13 @@
 namespace Racketmanager;
 
 use Racketmanager\Domain\Player;
+use Racketmanager\Presentation\View_Models\Player_View_Model;
 
-/** @var Player $player */
+/** @var Player_View_Model|null $vm */
+/** @var Player|null $player */
 /** @var array  $player_competitions */
+$player_competitions = $vm->player_competitions ?? ( $player_competitions ?? [] );
+$titles              = $vm->titles ?? ( $titles ?? ( $player->titles ?? [] ) );
 ?>
 <div class="container">
     <?php
@@ -48,7 +52,7 @@ use Racketmanager\Domain\Player;
         </div>
         <div class="page-content__sidebar col-12 col-lg-4">
             <?php
-            if ( ! empty( $player->titles ) ) {
+            if ( ! empty( $titles ) ) {
                 require RACKETMANAGER_PATH . 'templates/player/titles.php';
             }
             ?>

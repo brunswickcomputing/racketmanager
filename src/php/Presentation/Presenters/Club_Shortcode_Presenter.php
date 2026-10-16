@@ -1,25 +1,25 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Exceptions\Template_Not_Found_Exception;
-use Racketmanager\Presentation\View_Models\Competition_View_Model;
+use Racketmanager\Presentation\View_Models\Club_View_Model;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Throwable;
 use function Racketmanager\show_alert;
 
 /**
- * Presenter for [competition] shortcode view model.
+ * Presenter for [club] shortcode view model.
  */
-class Competition_Shortcode_Presenter {
+class Club_Shortcode_Presenter {
     public function __construct(
         private readonly View_Renderer_Interface $renderer,
         private readonly ?Club_Presenter $club_presenter = null,
         private readonly ?Player_Presenter $player_presenter = null
     ) {}
 
-    public function render( Competition_View_Model $vm ): string {
+    public function render( Club_View_Model $vm ): string {
         $default_vars = [
             'club_presenter'   => $this->club_presenter ?? new Club_Presenter(),
             'player_presenter' => $this->player_presenter ?? new Player_Presenter(),

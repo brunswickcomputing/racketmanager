@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\League\Queries;
 
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
-use Racketmanager\Presenters\Fixture_Presentation_Adapter;
+use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;

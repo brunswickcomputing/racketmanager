@@ -22,13 +22,15 @@ $header_level = 2;
 require RACKETMANAGER_PATH . 'templates/includes/event-header.php';
 if ( $event->is_championship ) {
     if ( isset( $event->primary_league ) ) {
-        $primary_league = get_league( $event->primary_league );
-    } else {
-        $primary_league = get_league( array_key_first( $event->league_index ) );
+        $primary_league = is_object( $event->primary_league ) ? $event->primary_league : ( function_exists( '\Racketmanager\get_league' ) ? get_league( $event->primary_league ) : null );
+    } elseif ( ! empty( $event->league_index ) ) {
+        $first_league_id = array_key_first( $event->league_index );
+        $primary_league  = function_exists( '\Racketmanager\get_league' ) ? get_league( $first_league_id ) : null;
     }
-    $num_cols = $primary_league->championship->num_rounds;
+    $num_cols = $primary_league && isset( $primary_league->championship->num_rounds ) ? $primary_league->championship->num_rounds : 0;
     $i        = 1;
-    foreach ( array_reverse( $primary_league->championship->get_finals() ) as $final ) {
+    $finals   = $primary_league && method_exists( $primary_league->championship, 'get_finals' ) ? $primary_league->championship->get_finals() : [];
+    foreach ( array_reverse( $finals ) as $final ) {
         $rounds[ $i ] = $final;
         ++$i;
     }

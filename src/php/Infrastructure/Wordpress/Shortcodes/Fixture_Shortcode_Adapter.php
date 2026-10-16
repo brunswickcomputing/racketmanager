@@ -5,7 +5,7 @@ namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Handler;
 use Racketmanager\Application\Fixture\Queries\Get_Fixture_Details_Query;
-use Racketmanager\Presenters\Fixture_Presenter;
+use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use function get_query_var;
 use function Racketmanager\un_seo_url;
 use function shortcode_atts;

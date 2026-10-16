@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Tests\Unit\Presenters;
+namespace Racketmanager\Tests\Unit\Presentation\Presenters;
 
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -13,7 +13,7 @@ use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
-use Racketmanager\Presenters\Fixture_Presentation_Adapter;
+use Racketmanager\Presentation\Presenters\Fixture_Presentation_Adapter;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Team_Service;

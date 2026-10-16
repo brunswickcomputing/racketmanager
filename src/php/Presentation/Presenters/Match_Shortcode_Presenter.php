@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters;
+namespace Racketmanager\Presentation\Presenters;
 
 use Racketmanager\Application\Matches\DTOs\Match_Detail_Result;
 use Racketmanager\Application\Matches\DTOs\Match_Header_Result;

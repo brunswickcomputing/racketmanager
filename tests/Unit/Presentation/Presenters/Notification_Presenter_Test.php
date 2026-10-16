@@ -1,8 +1,8 @@
 <?php
 declare( strict_types=1 );
 
-namespace Racketmanager\Presenters {
-    if ( ! function_exists( 'Racketmanager\Presenters\__' ) ) {
+namespace Racketmanager\Presentation\Presenters {
+    if ( ! function_exists( 'Racketmanager\Presentation\Presenters\__' ) ) {
         function __( $text, $domain ) {
             return $text;
         }
@@ -18,14 +18,14 @@ namespace Racketmanager {
     }
 }
 
-namespace Racketmanager\Tests\Unit\Presenters {
+namespace Racketmanager\Tests\Unit\Presentation\Presenters {
 
     use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
     use PHPUnit\Framework\MockObject\MockObject;
     use PHPUnit\Framework\TestCase;
     use Racketmanager\Domain\Fixture\Fixture;
     use Racketmanager\Domain\Tournament;
-    use Racketmanager\Presenters\Notification_Presenter;
+    use Racketmanager\Presentation\Presenters\Notification_Presenter;
     use Racketmanager\Services\Fixture\Fixture_Link_Service;
     use Racketmanager\Services\Fixture\Fixture_Permission_Service;
     use Racketmanager\Services\Competition_Service;

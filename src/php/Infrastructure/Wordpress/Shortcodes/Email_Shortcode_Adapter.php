@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Infrastructure\Wordpress\Shortcodes;
 
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
-use Racketmanager\Presenters\Email_Shortcode_Presenter;
+use Racketmanager\Presentation\Presenters\Email_Shortcode_Presenter;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 use function __;

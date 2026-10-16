@@ -162,245 +162,8 @@ class Competition_Entry_Service_Test extends TestCase {
         return $team;
     }
 
-    public function test_request_league_entry_flags_withdrawn_team_hierarchy_violation(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102' ],
-            'teamEvent'            => [ 10 => [ 102 ] ], // Withdrawing Team 1, keeping Team 2
-            'teamEventTitle'       => [ 10 => [ 102 => 'Club Team 2' ] ],
-            'captain'              => [ 10 => [ 102 => 'John Doe' ] ],
-            'captainId'            => [ 10 => [ 102 => '1' ] ],
-            'contactno'            => [ 10 => [ 102 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 102 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 102 => '1' ] ],
-            'matchtime'            => [ 10 => [ 102 => '19:00:00' ] ],
-        ];
-
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
-
-        $this->assert_league_entry_error(
-            $result,
-            'teamEvent-10-102',
-            'A higher ranked team cannot be withdrawn if there are still active lower ranked teams'
-        );
-    }
-
-    public function test_request_league_entry_flags_weekend_match_ranking_violation(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
-
-        // Team 1 is playing on weekend (day 5 / Sat), but Team 2 is on weekday (day 1 / Mon)
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102' ],
-            'teamEvent'            => [ 10 => [ 101, 102 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2' ] ],
-            'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane' ] ],
-            'captainId'            => [ 10 => [ 101 => '1', 102 => '2' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0987654321' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '5', 102 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
-        ];
-
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
-
-        $this->assert_league_entry_error(
-            $result,
-            'matchday-10-101',
-            'Only the highest numbered team(s) can play at the weekend'
-        );
-    }
-
-    public function test_request_league_entry_flags_match_time_overlap(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
-
-        // Two teams on the same day with overlapping times (19:00 vs 19:30)
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102' ],
-            'teamEvent'            => [ 10 => [ 101, 102 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2' ] ],
-            'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane' ] ],
-            'captainId'            => [ 10 => [ 101 => '1', 102 => '2' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0987654321' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1', 102 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00', 102 => '19:30:00' ] ],
-        ];
-
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
-
-        $this->assert_league_entry_error( $result, 'matchtime-10-102', 'Match overlap' );
-    }
-
-    public function test_request_league_entry_flags_free_slots_when_weekend_used_with_empty_weekdays(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        // 1 team playing on weekend (day 5), but weekdays (days 1, 2) have 0 teams (underfilled capacity)
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '5' ] ],
-            'matchtime'            => [ 10 => [ 101 => '14:00:00' ] ],
-        ];
-
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
-
-        $this->assert_league_entry_error(
-            $result,
-            'event',
-            'Weekend games not allowed when free weekday slots'
-        );
-    }
-
-    public function test_forged_post_title_cannot_bypass_team_number_rules(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        // Persisted DB title is Team 1, but client submits forged title 'Club Team 99'
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102' ],
-            'teamEvent'            => [ 10 => [ 101, 102 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 99', 102 => 'Club Team 2' ] ], // Forged title attempting bypass
-            'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane' ] ],
-            'captainId'            => [ 10 => [ 101 => '1', 102 => '2' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0987654321' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '5', 102 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
-        ];
-
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
-
-        // Must still detect that persisted team 101 is Team 1 and fail the weekend check
-        $this->assert_league_entry_error( $result, 'matchday-10-101' );
-    }
-
-    public function test_valid_league_entry_request_passes_validation(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
-
-        // Team 1 on Mon (day 1), Team 2 on Tue (day 2), filling weekday slots
-        $post_data = [
+    private function create_league_entry_data( array $overrides = [] ): array {
+        return array_replace( [
             'competitionId'        => '1',
             'season'               => '2026',
             'clubId'               => '1',
@@ -417,7 +180,168 @@ class Competition_Entry_Service_Test extends TestCase {
             'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
             'matchday'             => [ 10 => [ 101 => '1', 102 => '2' ] ],
             'matchtime'            => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00' ] ],
-        ];
+        ], $overrides );
+    }
+
+    private function create_single_team_league_entry_data( int $team_id = 101, string $team_title = 'Club Team 1', array $overrides = [] ): array {
+        return array_replace( [
+            'competitionId'        => '1',
+            'season'               => '2026',
+            'clubId'               => '1',
+            'acceptance'           => '1',
+            'numCourtsAvailable'   => '4',
+            'competition_events'   => '10',
+            'event'                => [ 10 ],
+            'event_teams'          => [ 10 => (string) $team_id ],
+            'teamEvent'            => [ 10 => [ $team_id ] ],
+            'teamEventTitle'       => [ 10 => [ $team_id => $team_title ] ],
+            'captain'              => [ 10 => [ $team_id => 'John' ] ],
+            'captainId'            => [ 10 => [ $team_id => '1' ] ],
+            'contactno'            => [ 10 => [ $team_id => '0123456789' ] ],
+            'contactemail'         => [ 10 => [ $team_id => 'john@test.local' ] ],
+            'matchday'             => [ 10 => [ $team_id => '1' ] ],
+            'matchtime'            => [ 10 => [ $team_id => '19:00:00' ] ],
+        ], $overrides );
+    }
+
+    private function setup_mock_teams( Team ...$teams ): void {
+        $map = [];
+        foreach ( $teams as $team ) {
+            $map[ $team->get_id() ] = $team;
+        }
+        $this->team_repository->method( 'find_by_id' )
+            ->willReturnCallback( fn( $id ) => $map[ (int) $id ] ?? null );
+    }
+
+    private function setup_match_secretary_and_notifications(): void {
+        $this->player_service->method( 'update_contact_details' );
+        $secretary = $this->createStub( Player::class );
+        $secretary->display_name = 'Match Secretary';
+        $secretary->email = 'secretary@test.local';
+        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
+        $this->notify_service->method( 'email_entry_form' );
+    }
+
+    private function create_tournament_entry_request( array $overrides = [] ): Tournament_Entry_Request_DTO {
+        $data = array_replace_recursive( [
+            'tournament_id'    => '1',
+            'season'           => '2026',
+            'playerId'         => '10',
+            'clubId'           => '1',
+            'contactemail'     => 'player@test.local',
+            'contactno'        => '0123456789',
+            'btm'              => '12345',
+            'acceptance'       => '1',
+            'tournamentEvents' => '10',
+            'event'            => [ '10' ],
+        ], $overrides );
+        return new Tournament_Entry_Request_DTO( $data );
+    }
+
+    public function test_request_league_entry_flags_withdrawn_team_hierarchy_violation(): void {
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
+
+        $post_data = $this->create_league_entry_data( [
+            'teamEvent'      => [ 10 => [ 102 ] ], // Withdrawing Team 1, keeping Team 2
+            'teamEventTitle' => [ 10 => [ 102 => 'Club Team 2' ] ],
+            'captain'        => [ 10 => [ 102 => 'John Doe' ] ],
+            'captainId'      => [ 10 => [ 102 => '1' ] ],
+            'contactno'      => [ 10 => [ 102 => '0123456789' ] ],
+            'contactemail'   => [ 10 => [ 102 => 'john@test.local' ] ],
+            'matchday'       => [ 10 => [ 102 => '1' ] ],
+            'matchtime'      => [ 10 => [ 102 => '19:00:00' ] ],
+        ] );
+
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
+
+        $this->assert_league_entry_error(
+            $result,
+            'teamEvent-10-102',
+            'A higher ranked team cannot be withdrawn if there are still active lower ranked teams'
+        );
+    }
+
+    public function test_request_league_entry_flags_weekend_match_ranking_violation(): void {
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
+
+        // Team 1 is playing on weekend (day 5 / Sat), but Team 2 is on weekday (day 1 / Mon)
+        $post_data = $this->create_league_entry_data( [
+            'matchday'  => [ 10 => [ 101 => '5', 102 => '1' ] ],
+            'matchtime' => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
+        ] );
+
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
+
+        $this->assert_league_entry_error(
+            $result,
+            'matchday-10-101',
+            'Only the highest numbered team(s) can play at the weekend'
+        );
+    }
+
+    public function test_request_league_entry_flags_match_time_overlap(): void {
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
+
+        // Two teams on the same day with overlapping times (19:00 vs 19:30)
+        $post_data = $this->create_league_entry_data( [
+            'matchday'  => [ 10 => [ 101 => '1', 102 => '1' ] ],
+            'matchtime' => [ 10 => [ 101 => '19:00:00', 102 => '19:30:00' ] ],
+        ] );
+
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
+
+        $this->assert_league_entry_error( $result, 'matchtime-10-102', 'Match overlap' );
+    }
+
+    public function test_request_league_entry_flags_free_slots_when_weekend_used_with_empty_weekdays(): void {
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
+
+        // 1 team playing on weekend (day 5), but weekdays (days 1, 2) have 0 teams (underfilled capacity)
+        $post_data = $this->create_single_team_league_entry_data( 101, 'Club Team 1', [
+            'matchday'  => [ 10 => [ 101 => '5' ] ],
+            'matchtime' => [ 10 => [ 101 => '14:00:00' ] ],
+        ] );
+
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
+
+        $this->assert_league_entry_error(
+            $result,
+            'event',
+            'Weekend games not allowed when free weekday slots'
+        );
+    }
+
+    public function test_forged_post_title_cannot_bypass_team_number_rules(): void {
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
+
+        $post_data = $this->create_league_entry_data( [
+            'teamEventTitle' => [ 10 => [ 101 => 'Club Team 99', 102 => 'Club Team 2' ] ], // Forged title attempting bypass
+            'matchday'       => [ 10 => [ 101 => '5', 102 => '1' ] ],
+            'matchtime'      => [ 10 => [ 101 => '14:00:00', 102 => '19:00:00' ] ],
+        ] );
+
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
+
+        // Must still detect that persisted team 101 is Team 1 and fail the weekend check
+        $this->assert_league_entry_error( $result, 'matchday-10-101' );
+    }
+
+    public function test_valid_league_entry_request_passes_validation(): void {
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
+
+        $post_data = $this->create_league_entry_data();
 
         $league_team = $this->createMock( League_Team::class );
         $league_team->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -430,84 +354,31 @@ class Competition_Entry_Service_Test extends TestCase {
             } );
         $this->league_team_repository->expects( $this->exactly( 2 ) )->method( 'save' );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
         $this->assertTrue( $result );
     }
 
     public function test_unresolved_team_id_is_rejected(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        // team_repository returns null for unknown ID 999
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
         $this->team_repository->method( 'find_by_id' )->willReturn( null );
 
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '999' ],
-            'teamEvent'            => [ 10 => [ 999 ] ],
-            'teamEventTitle'       => [ 10 => [ 999 => 'Forged Team 1' ] ],
-            'captain'              => [ 10 => [ 999 => 'John' ] ],
-            'captainId'            => [ 10 => [ 999 => '1' ] ],
-            'contactno'            => [ 10 => [ 999 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 999 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 999 => '1' ] ],
-            'matchtime'            => [ 10 => [ 999 => '19:00:00' ] ],
-        ];
-
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
+        $post_data = $this->create_single_team_league_entry_data( 999, 'Forged Team 1' );
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
         $this->assert_league_entry_error( $result, 'teamEvent-10-999', 'Team not found' );
     }
 
     public function test_unknown_club_is_rejected(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
         $this->club_to_return = null;
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $team = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '999',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
-
+        $post_data = $this->create_single_team_league_entry_data( 101, 'Club Team 1', [ 'clubId' => '999' ] );
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
         $this->assert_league_entry_error( $result, 'club', 'Club not found' );
@@ -516,11 +387,10 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_weekend_teams_across_multiple_events_of_same_type_enforces_ranking(): void {
-        $competition = $this->create_competition();
+        $this->create_competition();
         $event1 = $this->create_event( 10, 'MD' );
         $event2 = $this->create_event( 20, 'MD' );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willReturnCallback( function( $id ) use ( $event1, $event2 ) {
             return match ( (int) $id ) {
                 10 => $event1,
@@ -529,19 +399,9 @@ class Competition_Entry_Service_Test extends TestCase {
             };
         } );
 
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ), $this->create_mock_team( 102, 'Club Team 2' ) );
 
-        // Event 10 has Team 2 on weekday (Mon / day 1)
-        // Event 20 has Team 1 on weekend (Sat / day 5)
-        // Since both events are 'MD', Team 1 on weekend violates ranking rule (max weekday is Team 2)
+        // Event 10 has Team 2 on weekday (Mon / day 1), Event 20 has Team 1 on weekend (Sat / day 5)
         $post_data = [
             'competitionId'        => '1',
             'season'               => '2026',
@@ -561,8 +421,7 @@ class Competition_Entry_Service_Test extends TestCase {
             'matchtime'            => [ 10 => [ 102 => '19:00:00' ], 20 => [ 101 => '14:00:00' ] ],
         ];
 
-        $request = new League_Entry_Request_DTO( $post_data );
-        $result = $this->service->request_league_entry( $request );
+        $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
         $this->assert_league_entry_error(
             $result,
@@ -572,43 +431,29 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_highest_numbered_team_is_allowed_to_play_at_the_weekend(): void {
-        $competition = $this->create_competition();
+        $this->create_competition();
         $event = $this->create_event( 10 );
         $event->match_days_allowed = [ '1' => '1', '5' => '1' ];
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $team3 = $this->create_mock_team( 103, 'Club Team 3' );
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2, $team3 ) {
-            return match ( (int) $id ) {
-                101 => $team1,
-                102 => $team2,
-                103 => $team3,
-                default => null,
-            };
-        } );
+        $this->setup_mock_teams(
+            $this->create_mock_team( 101, 'Club Team 1' ),
+            $this->create_mock_team( 102, 'Club Team 2' ),
+            $this->create_mock_team( 103, 'Club Team 3' )
+        );
 
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '8',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102,103' ],
-            'teamEvent'            => [ 10 => [ 101, 102, 103 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2', 103 => 'Club Team 3' ] ],
-            'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane', 103 => 'Alex' ] ],
-            'captainId'            => [ 10 => [ 101 => '1', 102 => '2', 103 => '3' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0987654321', 103 => '0111222333' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local', 103 => 'alex@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1', 102 => '1', 103 => '5' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00', 103 => '14:00:00' ] ],
-        ];
+        $post_data = $this->create_league_entry_data( [
+            'numCourtsAvailable' => '8',
+            'event_teams'        => [ 10 => '101,102,103' ],
+            'teamEvent'          => [ 10 => [ 101, 102, 103 ] ],
+            'teamEventTitle'     => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2', 103 => 'Club Team 3' ] ],
+            'captain'            => [ 10 => [ 101 => 'John', 102 => 'Jane', 103 => 'Alex' ] ],
+            'captainId'          => [ 10 => [ 101 => '1', 102 => '2', 103 => '3' ] ],
+            'contactno'          => [ 10 => [ 101 => '0123456789', 102 => '0987654321', 103 => '0111222333' ] ],
+            'contactemail'       => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local', 103 => 'alex@test.local' ] ],
+            'matchday'           => [ 10 => [ 101 => '1', 102 => '1', 103 => '5' ] ],
+            'matchtime'          => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00', 103 => '14:00:00' ] ],
+        ] );
 
         $league_team = $this->createMock( League_Team::class );
         $league_team->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -621,12 +466,7 @@ class Competition_Entry_Service_Test extends TestCase {
             } );
         $this->league_team_repository->expects( $this->exactly( 3 ) )->method( 'save' );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 8 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -634,33 +474,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_team_registered_in_conflicting_divisions_is_rejected(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $league_team_div1 = $this->createMock( League_Team::class );
         $league_team_div1->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -687,33 +505,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_legitimate_single_returning_team_is_accepted_without_conflict(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $league_team_div1 = $this->createMock( League_Team::class );
         $league_team_div1->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -726,12 +522,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->league_team_repository->expects( $this->once() )->method( 'save' )->with( $league_team_div1 );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -739,33 +530,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_withdrawn_and_active_registration_in_different_divisions_is_not_flagged_as_conflict(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $league_team_active = $this->createMock( League_Team::class );
         $league_team_active->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -783,12 +552,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->league_team_repository->expects( $this->once() )->method( 'save' )->with( $league_team_active );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -796,33 +560,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_multiple_active_rows_in_same_division_are_not_flagged_as_conflicting_divisions(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $league_team_row1 = $this->createMock( League_Team::class );
         $league_team_row1->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -839,12 +581,7 @@ class Competition_Entry_Service_Test extends TestCase {
 
         $this->league_team_repository->expects( $this->exactly( 2 ) )->method( 'save' );
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -852,33 +589,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_single_pending_returning_team_is_promoted_to_active_and_persisted(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $pending_team_row = (object) [
             'id'        => 101,
@@ -899,12 +614,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( $pending_league_team );
 
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -913,33 +623,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_multiple_withdrawn_rows_in_different_divisions_reactivates_only_one_row(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $withdrawn_mock_1 = $this->createMock( League_Team::class );
         $withdrawn_mock_1->method( 'get_profile_enum' )->willReturn( Team_Profile::WITHDRAWN );
@@ -961,12 +649,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( $withdrawn_mock_1 );
 
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -974,33 +657,11 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_prior_season_conflicting_rows_do_not_affect_current_season_entry(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams( $this->create_mock_team( 101, 'Club Team 1' ) );
 
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $this->team_repository->method( 'find_by_id' )->willReturn( $team1 );
-
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101' ],
-            'teamEvent'            => [ 10 => [ 101 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1' ] ],
-            'captain'              => [ 10 => [ 101 => 'John' ] ],
-            'captainId'            => [ 10 => [ 101 => '1' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_single_team_league_entry_data();
 
         $prior_season_div1 = $this->createMock( League_Team::class );
         $prior_season_div1->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -1033,12 +694,7 @@ class Competition_Entry_Service_Test extends TestCase {
             ->with( $current_season_team );
 
         $this->competition_service->expects( $this->once() )->method( 'set_court_availability' )->with( 1, 1, 4 );
-        $this->player_service->method( 'update_contact_details' );
-        $secretary = $this->createStub( Player::class );
-        $secretary->display_name = 'Match Secretary';
-        $secretary->email = 'secretary@test.local';
-        $this->player_service->method( 'get_match_secretary_details' )->willReturn( $secretary );
-        $this->notify_service->method( 'email_entry_form' );
+        $this->setup_match_secretary_and_notifications();
 
         $result = $this->service->request_league_entry( new League_Entry_Request_DTO( $post_data ) );
 
@@ -1046,49 +702,21 @@ class Competition_Entry_Service_Test extends TestCase {
     }
 
     public function test_multi_error_on_same_field_does_not_shift_messages_in_league_entry(): void {
-        $competition = $this->create_competition();
-        $event = $this->create_event( 10 );
-
-        $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-        $team1 = $this->create_mock_team( 101, 'Club Team 1' );
-        $team2 = $this->create_mock_team( 102, 'Club Team 2' );
-        $team_withdrawn_obj = $this->create_mock_team( 100, 'Club Team 0' );
-
-        $this->team_repository->method( 'find_by_id' )->willReturnCallback( function( $id ) use ( $team1, $team2, $team_withdrawn_obj ) {
-            return match ( (int) $id ) {
-                100 => $team_withdrawn_obj,
-                101 => $team1,
-                102 => $team2,
-                default => null,
-            };
-        } );
+        $this->create_competition();
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $this->create_event( 10 ) );
+        $this->setup_mock_teams(
+            $this->create_mock_team( 100, 'Club Team 0' ),
+            $this->create_mock_team( 101, 'Club Team 1' ),
+            $this->create_mock_team( 102, 'Club Team 2' )
+        );
 
         // Post data: team 101 (Team 1, day 5 weekend) and team 102 (Team 2, day 1 weekday).
         // Missed team 100 (Team 0) was withdrawn while team 101 is active.
         // Also team 101 has active rows in 2 divisions (duplicate).
-        // This triggers both team_duplicate and team_withdrawn on 'teamEvent-10-101'.
-        // Also triggers a matchday weekend error on 'matchday-10-101' because Team 1 is on weekend while Team 2 is on weekday.
-        $post_data = [
-            'competitionId'        => '1',
-            'season'               => '2026',
-            'clubId'               => '1',
-            'acceptance'           => '1',
-            'numCourtsAvailable'   => '4',
-            'competition_events'   => '10',
-            'event'                => [ 10 ],
-            'event_teams'          => [ 10 => '101,102' ],
-            'missed_teams'         => [ 10 => [ '100' ] ],
-            'teamEvent'            => [ 10 => [ 101, 102 ] ],
-            'teamEventTitle'       => [ 10 => [ 101 => 'Club Team 1', 102 => 'Club Team 2' ] ],
-            'captain'              => [ 10 => [ 101 => 'John', 102 => 'Jane' ] ],
-            'captainId'            => [ 10 => [ 101 => '1', 102 => '2' ] ],
-            'contactno'            => [ 10 => [ 101 => '0123456789', 102 => '0123456788' ] ],
-            'contactemail'         => [ 10 => [ 101 => 'john@test.local', 102 => 'jane@test.local' ] ],
-            'matchday'             => [ 10 => [ 101 => '5', 102 => '1' ] ],
-            'matchtime'            => [ 10 => [ 101 => '19:00:00', 102 => '19:00:00' ] ],
-        ];
+        $post_data = $this->create_league_entry_data( [
+            'missed_teams' => [ 10 => [ '100' ] ],
+            'matchday'     => [ 10 => [ 101 => '5', 102 => '1' ] ],
+        ] );
 
         $active_div1 = $this->createMock( League_Team::class );
         $active_div1->method( 'get_profile_enum' )->willReturn( Team_Profile::ACTIVE );
@@ -1178,19 +806,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event ] );
         $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-        $request_data = [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '10',
-            'clubId'           => '1',
-            'contactemail'     => 'man@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ];
-        $dto = new Tournament_Entry_Request_DTO( $request_data );
+        $dto = $this->create_tournament_entry_request( [
+            'playerId'     => '10',
+            'contactemail' => 'man@test.local',
+        ] );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1212,19 +831,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
-        $request_data = [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '20',
-            'clubId'           => '1',
-            'contactemail'     => 'woman@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-        ];
-        $dto = new Tournament_Entry_Request_DTO( $request_data );
+        $dto = $this->create_tournament_entry_request( [
+            'playerId'     => '20',
+            'contactemail' => 'woman@test.local',
+        ] );
 
         $result = $this->service->request_tournament_entry( $dto );
 
@@ -1253,15 +863,9 @@ class Competition_Entry_Service_Test extends TestCase {
             };
         } );
 
-        $dto_male = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
+        $dto_male = $this->create_tournament_entry_request( [
             'playerId'         => '30',
-            'clubId'           => '1',
             'contactemail'     => 'male@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
             'tournamentEvents' => '10,11',
             'event'            => [ '10', '11' ],
         ] );
@@ -1269,15 +873,9 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $res_male );
 
         // 2. Female age 42 (born 1984) enters Open and Senior
-        $dto_female = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
+        $dto_female = $this->create_tournament_entry_request( [
             'playerId'         => '31',
-            'clubId'           => '1',
             'contactemail'     => 'female@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
             'tournamentEvents' => '10,11',
             'event'            => [ '10', '11' ],
         ] );
@@ -1304,32 +902,19 @@ class Competition_Entry_Service_Test extends TestCase {
             };
         } );
 
-        $dto_male = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '40',
-            'clubId'           => '1',
-            'contactemail'     => 'male@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
+        $dto_male = $this->create_tournament_entry_request( [
+            'playerId'     => '40',
+            'contactemail' => 'male@test.local',
+            'event'        => [ '10' ],
         ] );
         $res_male = $this->service->request_tournament_entry( $dto_male );
         $this->assertInstanceOf( WP_Error::class, $res_male );
         $this->assertContains( 'event', $res_male->get_error_codes() );
 
         // 2. Female entering Men Singles -> rejected
-        $dto_female = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
+        $dto_female = $this->create_tournament_entry_request( [
             'playerId'         => '41',
-            'clubId'           => '1',
             'contactemail'     => 'female@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
             'tournamentEvents' => '11',
             'event'            => [ '11' ],
         ] );
@@ -1347,17 +932,9 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->player_service->method( 'get_player' )->willReturnCallback( fn( $pid ) => (int) $pid === 50 ? $player : null );
 
         // Submits foreign event ID 999
-        $dto = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '50',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '999' ],
+        $dto = $this->create_tournament_entry_request( [
+            'playerId' => '50',
+            'event'    => [ '999' ],
         ] );
 
         $res = $this->service->request_tournament_entry( $dto );
@@ -1388,19 +965,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
         // 1. Submit with underage partner -> fails with partner-10 error
-        $dto_underage = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '60',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-            'partnerId'        => [ 10 => '61' ],
-            'partner'          => [ 10 => 'Partner Underage' ],
+        $dto_underage = $this->create_tournament_entry_request( [
+            'playerId'  => '60',
+            'partnerId' => [ 10 => '61' ],
+            'partner'   => [ 10 => 'Partner Underage' ],
         ] );
 
         $res_underage = $this->service->request_tournament_entry( $dto_underage );
@@ -1412,19 +980,10 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
         $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
 
-        $dto_eligible = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '60',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
-            'partnerId'        => [ 10 => '62' ],
-            'partner'          => [ 10 => 'Partner Eligible' ],
+        $dto_eligible = $this->create_tournament_entry_request( [
+            'playerId'  => '60',
+            'partnerId' => [ 10 => '62' ],
+            'partner'   => [ 10 => 'Partner Eligible' ],
         ] );
 
         $res_eligible = $this->service->request_tournament_entry( $dto_eligible );
@@ -1444,15 +1003,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
         // Forged tournamentEvents containing foreign event 999
-        $dto = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
+        $dto = $this->create_tournament_entry_request( [
             'playerId'         => '70',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
             'tournamentEvents' => '10,999',
             'event'            => [ '10' ],
         ] );
@@ -1483,15 +1035,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
 
         // Only enter event 10
-        $dto = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
+        $dto = $this->create_tournament_entry_request( [
             'playerId'         => '70',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
             'tournamentEvents' => '10,11',
             'event'            => [ '10' ],
         ] );
@@ -1515,17 +1060,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $player_unknown = $this->create_tournament_player( 80, '', 1990 );
         $this->player_service->method( 'get_player' )->willReturn( $player_unknown );
 
-        $dto = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '80',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
+        $dto = $this->create_tournament_entry_request( [
+            'playerId' => '80',
         ] );
 
         $res = $this->service->request_tournament_entry( $dto );
@@ -1546,17 +1082,8 @@ class Competition_Entry_Service_Test extends TestCase {
         $player = $this->create_tournament_player( 90, 'M', 2012 );
         $this->player_service->method( 'get_player' )->willReturn( $player );
 
-        $dto = new Tournament_Entry_Request_DTO( [
-            'tournament_id'    => '1',
-            'season'           => '2026',
-            'playerId'         => '90',
-            'clubId'           => '1',
-            'contactemail'     => 'player@test.local',
-            'contactno'        => '0123456789',
-            'btm'              => '12345',
-            'acceptance'       => '1',
-            'tournamentEvents' => '10',
-            'event'            => [ '10' ],
+        $dto = $this->create_tournament_entry_request( [
+            'playerId' => '90',
         ] );
 
         $res = $this->service->request_tournament_entry( $dto );

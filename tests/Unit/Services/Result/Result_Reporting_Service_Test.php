@@ -41,89 +41,91 @@ class Result_Reporting_Service_Test extends TestCase {
 		$GLOBALS['racketmanager']->site_name = 'Test Site';
 	}
 
-	public function test_report_result_returns_null_if_no_competition_code(): void {
+	private function create_reporting_fixture( array $overrides = [] ): Fixture {
 		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
+		$fixture->method( 'get_id' )->willReturn( $overrides['id'] ?? 1 );
+		$fixture->method( 'get_league_id' )->willReturn( $overrides['league_id'] ?? 10 );
+		$fixture->method( 'get_season' )->willReturn( $overrides['season'] ?? '2024' );
+		$fixture->method( 'get_match_day' )->willReturn( $overrides['match_day'] ?? 1 );
+		$fixture->method( 'get_home_team' )->willReturn( $overrides['home_team'] ?? '1' );
+		$fixture->method( 'get_away_team' )->willReturn( $overrides['away_team'] ?? '2' );
+		$fixture->method( 'get_winner_id' )->willReturn( $overrides['winner_id'] ?? 1 );
+		$fixture->method( 'get_date' )->willReturn( $overrides['date'] ?? '2024-05-01 10:00:00' );
+		$fixture->method( 'is_walkover' )->willReturn( $overrides['is_walkover'] ?? false );
+		$fixture->method( 'is_retired' )->willReturn( $overrides['is_retired'] ?? false );
+		$fixture->method( 'is_shared' )->willReturn( $overrides['is_shared'] ?? false );
+		$fixture->method( 'is_cancelled' )->willReturn( $overrides['is_cancelled'] ?? false );
+		$fixture->method( 'is_withdrawn' )->willReturn( $overrides['is_withdrawn'] ?? false );
+		$fixture->method( 'get_custom' )->willReturn( $overrides['custom'] ?? [] );
+		return $fixture;
+	}
 
-		$league = $this->createStub( League::class );
-		$league->method('get_event_id')->willReturn(20);
-
-		$event = $this->createStub( Event::class );
-		$event->method('get_competition_id')->willReturn(30);
-		$event->method('get_season_by_name')->willReturn(null);
-
+	private function create_standard_competition( array $overrides = [] ): Competition {
 		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(null);
-		$competition->competition_code = null;
+		$season_info = array_key_exists( 'season_info', $overrides )
+			? $overrides['season_info']
+			: [ 'competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31' ];
+		$competition->method( 'get_season_by_name' )->willReturn( $season_info );
+		$competition->name = $overrides['name'] ?? 'Test Competition';
+		$competition->date_start = $overrides['date_start'] ?? '2024-01-01';
+		$competition->date_end = $overrides['date_end'] ?? '2024-12-31';
+		$competition->type = $overrides['type'] ?? Competition_Type::LEAGUE;
+		$competition->settings = $overrides['settings'] ?? new Competition_Settings( [ 'grade' => 4 ] );
+		if ( array_key_exists( 'competition_code', $overrides ) ) {
+			$competition->competition_code = $overrides['competition_code'];
+		}
+		return $competition;
+	}
 
-		$league_repo = $this->createStub( League_Repository_Interface::class );
-		$league_repo->method('find_by_id')->willReturn($league);
+	private function create_standard_event( array $overrides = [] ): Event {
+		$event = $this->createStub( Event::class );
+		$event->method( 'get_competition_id' )->willReturn( $overrides['competition_id'] ?? 30 );
+		$season_info = array_key_exists( 'season_info', $overrides )
+			? $overrides['season_info']
+			: [ 'grade' => 4 ];
+		$event->method( 'get_season_by_name' )->willReturn( $season_info );
+		$event->name = $overrides['name'] ?? 'Test Event';
+		$event->age_limit = $overrides['age_limit'] ?? 'Open';
+		$event->type = $overrides['type'] ?? 'MS';
+		$event->primary_league = $overrides['primary_league'] ?? 10;
+		return $event;
+	}
 
-		$event_repo = $this->createStub( Event_Repository_Interface::class );
-		$event_repo->method('find_by_id')->willReturn($event);
+	private function create_standard_league( array $overrides = [] ): League {
+		$league = $this->createStub( League::class );
+		$league->method( 'get_event_id' )->willReturn( $overrides['event_id'] ?? 20 );
+		$league->title = $overrides['title'] ?? 'Test League';
+		$league->num_teams_total = $overrides['num_teams_total'] ?? 8;
+		$league->num_rubbers = $overrides['num_rubbers'] ?? 0;
+		$league->championship = $this->createStub( Championship::class );
+		$league->championship->method( 'num_teams_first_round' )->willReturn( $overrides['first_round_teams'] ?? 8 );
+		return $league;
+	}
 
-		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
-		$competition_repo->method('find_by_id')->willReturn($competition);
+	public function test_report_result_returns_null_if_no_competition_code(): void {
+		$fixture = $this->create_reporting_fixture();
+		$league = $this->create_standard_league();
+		$event = $this->create_standard_event( [ 'season_info' => null ] );
+		$competition = $this->create_standard_competition( [
+			'season_info' => null,
+			'competition_code' => null,
+		] );
 
-		$repository_provider = $this->createStub( Repository_Provider::class );
-		$repository_provider->method('get_league_repository')->willReturn($league_repo);
-		$repository_provider->method('get_event_repository')->willReturn($event_repo);
-		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
-
-		$service = new Result_Reporting_Service($repository_provider);
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition );
+		$service = new Result_Reporting_Service( $repository_provider );
 		
 		$result = $service->report_result( $fixture );
 		$this->assertNull( $result );
 	}
 
 	public function test_report_result_basic_structure(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_id')->willReturn(1);
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_match_day')->willReturn(1);
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('is_walkover')->willReturn(false);
-		$fixture->method('is_retired')->willReturn(false);
-		$fixture->method('is_shared')->willReturn(false);
-		$fixture->method('is_cancelled')->willReturn(false);
-		$fixture->method('get_custom')->willReturn([]);
+		$fixture = $this->create_reporting_fixture();
+		$competition = $this->create_standard_competition();
+		$event = $this->create_standard_event();
+		$league = $this->create_standard_league();
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31']);
-		$competition->name = 'Test Competition';
-		$competition->date_start = '2024-01-01';
-		$competition->date_end = '2024-12-31';
-		$competition->type = Competition_Type::LEAGUE;
-		$competition->settings = new Competition_Settings( ['grade' => 4] );
-
-		$event = $this->createStub( Event::class );
-		$event->method('get_competition_id')->willReturn(30);
-		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
-		$event->name = 'Test Event';
-		$event->age_limit = 'Open';
-		$event->type = 'MS';
-		$event->primary_league = 10;
-
-		$league = $this->createStub( League::class );
-		$league->method('get_event_id')->willReturn(20);
-		$league->title = 'Test League';
-		$league->num_teams_total = 8;
-		$league->num_rubbers = 0;
-		$league->championship = $this->createStub( Championship::class );
-		$league->championship->method('num_teams_first_round')->willReturn(8);
-
-		$player1 = new stdClass();
-		$player1->display_name = 'Player One';
-		$player1->btm = '123456';
-		
-		$player2 = new stdClass();
-		$player2->display_name = 'Player Two';
-		$player2->btm = '654321';
+		$player1 = (object) [ 'display_name' => 'Player One', 'btm' => '123456' ];
+		$player2 = (object) [ 'display_name' => 'Player Two', 'btm' => '654321' ];
 
 		$home_team = $this->createStub( Team::class );
 		$home_team->method('get_players')->willReturn([$player1]);
@@ -131,28 +133,8 @@ class Result_Reporting_Service_Test extends TestCase {
 		$away_team = $this->createStub( Team::class );
 		$away_team->method('get_players')->willReturn([$player2]);
 
-		$league_repo = $this->createStub( League_Repository_Interface::class );
-		$league_repo->method('find_by_id')->willReturn($league);
-
-		$event_repo = $this->createStub( Event_Repository_Interface::class );
-		$event_repo->method('find_by_id')->willReturn($event);
-
-		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
-		$competition_repo->method('find_by_id')->willReturn($competition);
-
-		$team_repo = $this->createStub( Team_Repository_Interface::class );
-		$team_repo->method('find_by_id')->willReturnMap([
-			[1, $home_team],
-			[2, $away_team],
-		]);
-
-		$repository_provider = $this->createStub( Repository_Provider::class );
-		$repository_provider->method('get_league_repository')->willReturn($league_repo);
-		$repository_provider->method('get_event_repository')->willReturn($event_repo);
-		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
-		$repository_provider->method('get_team_repository')->willReturn($team_repo);
-
-		$service = new Result_Reporting_Service($repository_provider);
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, $home_team, $away_team );
+		$service = new Result_Reporting_Service( $repository_provider );
 		
 		$result = $service->report_result( $fixture );
 
@@ -164,49 +146,13 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_with_rubbers(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_id')->willReturn(1);
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('is_walkover')->willReturn(false);
-		$fixture->method('is_retired')->willReturn(false);
-		$fixture->method('is_shared')->willReturn(false);
-		$fixture->method('is_cancelled')->willReturn(false);
-		$fixture->method('is_withdrawn')->willReturn(false);
+		$fixture = $this->create_reporting_fixture();
+		$competition = $this->create_standard_competition();
+		$event = $this->create_standard_event();
+		$league = $this->create_standard_league( [ 'num_rubbers' => 1 ] );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31']);
-		$competition->name = 'Test Competition';
-		$competition->date_start = '2024-01-01';
-		$competition->date_end = '2024-12-31';
-		$competition->type = Competition_Type::LEAGUE;
-		$competition->settings = new Competition_Settings( ['grade' => 4] );
-
-		$event = $this->createStub( Event::class );
-		$event->method('get_competition_id')->willReturn(30);
-		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
-		$event->name = 'Test Event';
-		$event->age_limit = 'Open';
-		$event->type = 'MS';
-
-		$league = $this->createStub( League::class );
-		$league->method('get_event_id')->willReturn(20);
-		$league->title = 'Test League';
-		$league->num_teams_total = 8;
-		$league->num_rubbers = 1;
-		$league->championship = $this->createStub( Championship::class );
-		$league->championship->method('num_teams_first_round')->willReturn(8);
-
-		$player1 = new stdClass();
-		$player1->display_name = 'Rubber Winner';
-		$player1->btm = '111';
-		
-		$player2 = new stdClass();
-		$player2->display_name = 'Rubber Loser';
-		$player2->btm = '222';
+		$player1 = (object) [ 'display_name' => 'Rubber Winner', 'btm' => '111' ];
+		$player2 = (object) [ 'display_name' => 'Rubber Loser', 'btm' => '222' ];
 
 		$rubber = $this->createStub( Rubber::class );
 		$rubber->method('get_id')->willReturn(101);
@@ -220,24 +166,7 @@ class Result_Reporting_Service_Test extends TestCase {
 			'away' => ['1' => $player2],
 		];
 
-		$league_repo = $this->createStub( League_Repository_Interface::class );
-		$league_repo->method('find_by_id')->willReturn($league);
-
-		$event_repo = $this->createStub( Event_Repository_Interface::class );
-		$event_repo->method('find_by_id')->willReturn($event);
-
-		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
-		$competition_repo->method('find_by_id')->willReturn($competition);
-
-		$rubber_repo = $this->createStub( Rubber_Repository_Interface::class );
-		$rubber_repo->method('find_by_fixture_id')->willReturn([$rubber]);
-
-		$repository_provider = $this->createStub( Repository_Provider::class );
-		$repository_provider->method('get_league_repository')->willReturn($league_repo);
-		$repository_provider->method('get_event_repository')->willReturn($event_repo);
-		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
-		$repository_provider->method('get_rubber_repository')->willReturn($rubber_repo);
-
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, null, null, [ $rubber ] );
 		$service = new Result_Reporting_Service($repository_provider);
 		
 		$result = $service->report_result( $fixture );
@@ -248,72 +177,26 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_with_scores(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_id')->willReturn(1);
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('is_walkover')->willReturn(false);
-		$fixture->method('is_retired')->willReturn(false);
-		$fixture->method('is_shared')->willReturn(false);
-		$fixture->method('is_cancelled')->willReturn(false);
-		$fixture->method('get_custom')->willReturn([
-			'sets' => [
-				1 => ['player1' => 6, 'player2' => 4],
-				2 => ['player1' => 7, 'player2' => 6, 'tiebreak' => 5],
+		$fixture = $this->create_reporting_fixture( [
+			'custom' => [
+				'sets' => [
+					1 => ['player1' => 6, 'player2' => 4],
+					2 => ['player1' => 7, 'player2' => 6, 'tiebreak' => 5],
+				]
 			]
-		]);
+		] );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31']);
-		$competition->name = 'Test Competition';
-		$competition->date_start = '2024-01-01';
-		$competition->date_end = '2024-12-31';
-		$competition->type = Competition_Type::LEAGUE;
-		$competition->settings = new Competition_Settings( ['grade' => 4] );
-
-		$event = $this->createStub( Event::class );
-		$event->method('get_competition_id')->willReturn(30);
-		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
-		$event->name = 'Test Event';
-		$event->age_limit = 'Open';
-		$event->type = 'MS';
-
-		$league = $this->createStub( League::class );
-		$league->method('get_event_id')->willReturn(20);
-		$league->title = 'Test League';
-		$league->num_teams_total = 8;
-		$league->num_rubbers = 0;
-
-		$player1 = new stdClass();
-		$player1->display_name = 'Winner';
-		$player2 = new stdClass();
-		$player2->display_name = 'Loser';
+		$competition = $this->create_standard_competition();
+		$event = $this->create_standard_event();
+		$league = $this->create_standard_league();
 
 		$home_team = $this->createStub( Team::class );
-		$home_team->method('get_players')->willReturn([$player1]);
+		$home_team->method('get_players')->willReturn([ (object) [ 'display_name' => 'Winner' ] ]);
 		$away_team = $this->createStub( Team::class );
-		$away_team->method('get_players')->willReturn([$player2]);
+		$away_team->method('get_players')->willReturn([ (object) [ 'display_name' => 'Loser' ] ]);
 
-		$league_repo = $this->createStub( League_Repository_Interface::class );
-		$league_repo->method('find_by_id')->willReturn($league);
-		$event_repo = $this->createStub( Event_Repository_Interface::class );
-		$event_repo->method('find_by_id')->willReturn($event);
-		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
-		$competition_repo->method('find_by_id')->willReturn($competition);
-		$team_repo = $this->createStub( Team_Repository_Interface::class );
-		$team_repo->method('find_by_id')->willReturnMap([ [1, $home_team], [2, $away_team] ]);
-
-		$repository_provider = $this->createStub( Repository_Provider::class );
-		$repository_provider->method('get_league_repository')->willReturn($league_repo);
-		$repository_provider->method('get_event_repository')->willReturn($event_repo);
-		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
-		$repository_provider->method('get_team_repository')->willReturn($team_repo);
-
-		$service = new Result_Reporting_Service($repository_provider);
+		$repository_provider = $this->setup_repository_provider_mock( $league, $event, $competition, $home_team, $away_team );
+		$service = new Result_Reporting_Service( $repository_provider );
 		$result = $service->report_result( $fixture );
 
 		$this->assertNotNull( $result );
@@ -327,40 +210,19 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_match_tiebreak_legacy_format(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_id')->willReturn(1);
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('is_walkover')->willReturn(false);
-		$fixture->method('is_retired')->willReturn(false);
-		$fixture->method('is_shared')->willReturn(false);
-		$fixture->method('is_cancelled')->willReturn(false);
-		$fixture->method('get_custom')->willReturn([
-			'sets' => [
-				1 => ['player1' => 6, 'player2' => 4],
-				2 => ['player1' => 4, 'player2' => 6],
-				3 => ['player1' => 1, 'player2' => 0], // MTB legacy
+		$fixture = $this->create_reporting_fixture( [
+			'custom' => [
+				'sets' => [
+					1 => ['player1' => 6, 'player2' => 4],
+					2 => ['player1' => 4, 'player2' => 6],
+					3 => ['player1' => 1, 'player2' => 0], // MTB legacy
+				]
 			]
-		]);
+		] );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'COMP123', 'date_start' => '2024-01-01', 'date_end' => '2024-12-31']);
-		$competition->name = 'Test Competition';
-		$competition->type = Competition_Type::LEAGUE;
-
-		$event = $this->createStub( Event::class );
-		$event->name = 'Test Event';
-		$event->method('get_competition_id')->willReturn(30);
-		$event->method('get_season_by_name')->willReturn(['grade' => 4]);
-
-		$league = $this->createStub( League::class );
-		$league->title = 'Test League';
-		$league->method('get_event_id')->willReturn(20);
-		$league->num_rubbers = 0;
+		$competition = $this->create_standard_competition();
+		$event = $this->create_standard_event();
+		$league = $this->create_standard_league();
 
 		$home_team = $this->createStub( Team::class );
 		$home_team->method('get_players')->willReturn([ (object)['display_name' => 'W'] ]);
@@ -377,29 +239,14 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_retired(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('is_retired')->willReturn(true);
-		$fixture->method('get_custom')->willReturn(['sets' => [ 1 => ['player1' => 6, 'player2' => 4], 2 => ['player1' => 3, 'player2' => 2]]]);
+		$fixture = $this->create_reporting_fixture( [
+			'is_retired' => true,
+			'custom'     => [ 'sets' => [ 1 => ['player1' => 6, 'player2' => 4], 2 => ['player1' => 3, 'player2' => 2] ] ],
+		] );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
-		$competition->name = 'Comp';
-		$competition->type = Competition_Type::LEAGUE;
-
-		$event = $this->createStub( Event::class );
-		$event->name = 'Event';
-		$event->method('get_competition_id')->willReturn(30);
-
-		$league = $this->createStub( League::class );
-		$league->title = 'League';
-		$league->method('get_event_id')->willReturn(20);
-		$league->num_rubbers = 0;
+		$competition = $this->create_standard_competition( [ 'name' => 'Comp' ] );
+		$event = $this->create_standard_event( [ 'name' => 'Event' ] );
+		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition);
 		$service = new Result_Reporting_Service($repository_provider);
@@ -409,28 +256,10 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_walkover(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('is_walkover')->willReturn(true);
-		$fixture->method('get_custom')->willReturn([]);
-
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
-		$competition->name = 'Comp';
-		$competition->type = Competition_Type::LEAGUE;
-
-		$event = $this->createStub( Event::class );
-		$event->name = 'Event';
-		$event->method('get_competition_id')->willReturn(30);
-
-		$league = $this->createStub( League::class );
-		$league->title = 'League';
-		$league->method('get_event_id')->willReturn(20);
-		$league->num_rubbers = 0;
+		$fixture = $this->create_reporting_fixture( [ 'is_walkover' => true ] );
+		$competition = $this->create_standard_competition( [ 'name' => 'Comp' ] );
+		$event = $this->create_standard_event( [ 'name' => 'Event' ] );
+		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition);
 		$service = new Result_Reporting_Service($repository_provider);
@@ -441,30 +270,13 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_doubles(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('get_custom')->willReturn(['sets' => [ 1 => ['player1' => 6, 'player2' => 0]]]);
+		$fixture = $this->create_reporting_fixture( [
+			'custom' => [ 'sets' => [ 1 => ['player1' => 6, 'player2' => 0] ] ],
+		] );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
-		$competition->name = 'Comp';
-		$competition->type = Competition_Type::LEAGUE;
-
-		$event = $this->createStub( Event::class );
-		$event->name = 'Event';
-		$event->type = 'MD'; // Men's Doubles
-		$event->primary_league = 10;
-		$event->method('get_competition_id')->willReturn(30);
-
-		$league = $this->createStub( League::class );
-		$league->title = 'League';
-		$league->method('get_event_id')->willReturn(20);
-		$league->num_rubbers = 0;
+		$competition = $this->create_standard_competition( [ 'name' => 'Comp' ] );
+		$event = $this->create_standard_event( [ 'name' => 'Event', 'type' => 'MD' ] );
+		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$p1 = (object)['display_name' => 'H1', 'btm' => 'H1'];
 		$p2 = (object)['display_name' => 'H2', 'btm' => 'H2'];
@@ -488,29 +300,14 @@ class Result_Reporting_Service_Test extends TestCase {
 	}
 
 	public function test_report_result_shared(): void {
-		$fixture = $this->createStub( Fixture::class );
-		$fixture->method('get_league_id')->willReturn(10);
-		$fixture->method('get_season')->willReturn('2024');
-		$fixture->method('get_home_team')->willReturn('1');
-		$fixture->method('get_away_team')->willReturn('2');
-		$fixture->method('get_winner_id')->willReturn(1);
-		$fixture->method('get_date')->willReturn('2024-05-01 10:00:00');
-		$fixture->method('is_shared')->willReturn(true);
-		$fixture->method('get_custom')->willReturn(['sets' => [ 1 => ['player1' => 6, 'player2' => 4]]]);
+		$fixture = $this->create_reporting_fixture( [
+			'is_shared' => true,
+			'custom'    => [ 'sets' => [ 1 => ['player1' => 6, 'player2' => 4] ] ],
+		] );
 
-		$competition = $this->createStub( Competition::class );
-		$competition->method('get_season_by_name')->willReturn(['competition_code' => 'C1', 'date_start' => 'D1', 'date_end' => 'D2']);
-		$competition->name = 'Comp';
-		$competition->type = Competition_Type::LEAGUE;
-
-		$event = $this->createStub( Event::class );
-		$event->name = 'Event';
-		$event->method('get_competition_id')->willReturn(30);
-
-		$league = $this->createStub( League::class );
-		$league->title = 'League';
-		$league->method('get_event_id')->willReturn(20);
-		$league->num_rubbers = 0;
+		$competition = $this->create_standard_competition( [ 'name' => 'Comp' ] );
+		$event = $this->create_standard_event( [ 'name' => 'Event' ] );
+		$league = $this->create_standard_league( [ 'title' => 'League' ] );
 
 		$repository_provider = $this->setup_repository_provider_mock($league, $event, $competition);
 		$service = new Result_Reporting_Service($repository_provider);
@@ -519,7 +316,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$this->assertEquals( 'N', $result->matches[0]->score_code );
 	}
 
-	private function setup_repository_provider_mock($league, $event, $competition, $home_team = null, $away_team = null): Repository_Provider {
+	private function setup_repository_provider_mock($league, $event, $competition, $home_team = null, $away_team = null, array $rubbers = []): Repository_Provider {
 		$league_repo = $this->createStub( League_Repository_Interface::class );
 		$league_repo->method('find_by_id')->willReturn($league);
 
@@ -528,6 +325,9 @@ class Result_Reporting_Service_Test extends TestCase {
 
 		$competition_repo = $this->createStub( Competition_Repository_Interface::class );
 		$competition_repo->method('find_by_id')->willReturn($competition);
+
+		$rubber_repo = $this->createStub( Rubber_Repository_Interface::class );
+		$rubber_repo->method('find_by_fixture_id')->willReturn($rubbers);
 
 		$team_repo = $this->createStub( Team_Repository_Interface::class );
 		if (!$home_team) {
@@ -544,6 +344,7 @@ class Result_Reporting_Service_Test extends TestCase {
 		$repository_provider->method('get_league_repository')->willReturn($league_repo);
 		$repository_provider->method('get_event_repository')->willReturn($event_repo);
 		$repository_provider->method('get_competition_repository')->willReturn($competition_repo);
+		$repository_provider->method('get_rubber_repository')->willReturn($rubber_repo);
 		$repository_provider->method('get_team_repository')->willReturn($team_repo);
 
 		return $repository_provider;

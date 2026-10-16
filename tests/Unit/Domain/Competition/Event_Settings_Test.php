@@ -15,11 +15,13 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 use wpdb;
 
 #[AllowMockObjectsWithoutExpectations]
 class Event_Settings_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
     private $fixture_repository;
@@ -29,6 +31,7 @@ class Event_Settings_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         $this->container          = new Simple_Container();
         $this->fixture_repository = $this->createMock( Fixture_Repository_Interface::class );
@@ -74,7 +77,7 @@ class Event_Settings_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        unset( $GLOBALS['racketmanager'], $GLOBALS['wpdb'] );
+        $this->restore_globals();
         parent::tearDown();
     }
 

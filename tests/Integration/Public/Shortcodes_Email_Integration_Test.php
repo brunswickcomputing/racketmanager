@@ -111,23 +111,8 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $competition->type = Competition_Type::LEAGUE;
         $this->comp_service->method( 'get_by_id' )->willReturn( $competition );
 
-        $home_team = $this->createMock( Team::class );
-        $home_team->method( 'get_name' )->willReturn( 'Home Team' );
-        $home_club = $this->createStub( Club::class );
-        $home_club->shortcode = 'HTC';
-        $home_team_dto = new Team_Details_DTO( $home_team, $home_club, null );
-        $home_team_dto->captain      = 'Captain Home';
-        $home_team_dto->contactemail = 'home@example.com';
-        $home_team_dto->contactno    = '111111';
-
-        $away_team = $this->createMock( Team::class );
-        $away_team->method( 'get_name' )->willReturn( 'Away Team' );
-        $away_club = $this->createStub( Club::class );
-        $away_club->shortcode = 'ATC';
-        $away_team_dto = new Team_Details_DTO( $away_team, $away_club, null );
-        $away_team_dto->captain      = 'Captain Away';
-        $away_team_dto->contactemail = 'away@example.com';
-        $away_team_dto->contactno    = '222222';
+        $home_team_dto = $this->create_team_details_dto( 'Home Team', 'HTC', 'Captain Home', 'home@example.com', '111111' );
+        $away_team_dto = $this->create_team_details_dto( 'Away Team', 'ATC', 'Captain Away', 'away@example.com', '222222' );
 
         $this->team_service->method( 'get_team_details' )->willReturnMap( [
             [ 1, $home_team_dto ],
@@ -168,6 +153,19 @@ class Shortcodes_Email_Integration_Test extends TestCase {
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    private function create_team_details_dto( string $name, string $shortcode, string $captain, string $email, string $contact_no ): Team_Details_DTO {
+        $team = $this->createMock( Team::class );
+        $team->method( 'get_name' )->willReturn( $name );
+        $club = $this->createStub( Club::class );
+        $club->shortcode = $shortcode;
+        $dto = new Team_Details_DTO( $team, $club, null );
+        $dto->captain      = $captain;
+        $dto->contactemail = $email;
+        $dto->contactno    = $contact_no;
+
+        return $dto;
     }
 
     public function test_show_match_notification_renders_template_with_adapted_data(): void {
@@ -241,15 +239,15 @@ class Shortcodes_Email_Integration_Test extends TestCase {
         $php_renderer = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
 
         $fixture = Fixture_Factory::from_object( (object) [
-            'id'        => 555,
-            'league_id' => 10,
-            'home_team' => '1',
-            'away_team' => '2',
-            'date'      => '2026-06-08 19:00:00',
+            'id'            => 555,
+            'league_id'     => 10,
+            'home_team'     => '1',
+            'away_team'     => '2',
+            'date'          => '2026-06-08 19:00:00',
             'date_original' => '2026-06-01 19:00:00',
-            'season'    => '2026',
-            'host'      => 'home',
-            'match_day' => 1,
+            'season'        => '2026',
+            'host'          => 'home',
+            'match_day'     => 1,
         ] );
 
         // 1. Result notification

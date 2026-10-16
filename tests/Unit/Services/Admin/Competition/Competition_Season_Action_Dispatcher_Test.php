@@ -39,6 +39,44 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_competition_mock(
+        int $id = 1,
+        bool $is_league = true,
+        bool $is_team_entry = true,
+        mixed $season_data = false
+    ): Competition {
+        $competition                = $this->createMock( Competition::class );
+        $competition->id            = $id;
+        $competition->is_league     = $is_league;
+        $competition->is_team_entry = $is_team_entry;
+        if ( false !== $season_data ) {
+            $competition->method( 'get_season_by_name' )->willReturn( $season_data );
+        }
+        return $competition;
+    }
+
+    private function create_season_payload( array $overrides = [], string $action = 'addSeason' ): array {
+        $payload = array(
+            'competition_id'   => '1',
+            'season'           => '2025',
+            'grade'            => 'A',
+            'dateOpen'         => '2025-01-01',
+            'dateEnd'          => '2025-06-30',
+            'dateClose'        => '2025-01-15',
+            'dateStart'        => '2025-02-01',
+            'max_teams'        => '10',
+            'teams_per_club'   => '2',
+            'teams_prom_relg'  => '2',
+            'lowest_promotion' => '1',
+            'num_match_days'   => '10',
+            'round_length'     => '7',
+        );
+        if ( '' !== $action ) {
+            $payload[ $action ] = '1';
+        }
+        return array_merge( $payload, $overrides );
+    }
+
     public function test_unhandled_action_returns_empty_dto(): void {
         $competition_service = $this->createMock( Competition_Service::class );
         $finance_service     = $this->createMock( Finance_Service::class );
@@ -95,11 +133,8 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
+        $competition         = $this->create_competition_mock();
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 1;
-        $competition->is_league = true;
-        $competition->is_team_entry = true;
         $competition_service->expects( self::once() )
             ->method( 'get_competition' )
             ->with( 1 )
@@ -126,12 +161,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $competition_service = $this->createMock( Competition_Service::class );
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
-
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 1;
-        $competition->is_league = true;
-        $competition->is_team_entry = true;
-        $competition->method( 'get_season_by_name' )->willReturn( null );
+        $competition         = $this->create_competition_mock( season_data: null );
         $competition->expects( self::once() )->method( 'add_season' );
 
         $competition_service->expects( self::atLeastOnce() )
@@ -142,22 +172,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
-            array(
-                'addSeason'        => '1',
-                'competition_id'   => '1',
-                'season'           => '2025',
-                'grade'            => 'A',
-                'dateOpen'         => '2025-01-01',
-                'dateEnd'          => '2025-06-30',
-                'dateClose'        => '2025-01-15',
-                'dateStart'        => '2025-02-01',
-                'max_teams'        => '10',
-                'teams_per_club'   => '2',
-                'teams_prom_relg'  => '2',
-                'lowest_promotion' => '1',
-                'num_match_days'   => '10',
-                'round_length'     => '7',
-            )
+            $this->create_season_payload()
         );
 
         self::assertSame( 'Season added to competition', $result->message );
@@ -170,35 +185,17 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id            = 1;
-        $competition->is_league     = true;
-        $competition->is_team_entry = true;
-        $competition->method( 'get_season_by_name' )->willReturn( null );
+        $competition = $this->create_competition_mock( season_data: null );
         $competition->expects( self::never() )->method( 'add_season' );
         $competition_service->method( 'get_competition' )->willReturn( $competition );
 
         $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
-            array(
-                'addSeason'        => '1',
-                'competition_id'   => '1',
-                'season'           => '2025',
-                'grade'            => 'A',
-                'dateOpen'         => '2025-01-01',
-                'dateEnd'          => '2025-06-30',
-                'dateClose'        => '2025-01-15',
-                'dateStart'        => '2025-02-01',
-                'max_teams'        => '10',
-                'teams_per_club'   => '2',
-                'teams_prom_relg'  => '2',
-                'lowest_promotion' => '1',
-                'num_match_days'   => '10',
-                'round_length'     => '7',
-                'feeClub'          => '25.50',
-                'feeTeam'          => '10',
-            )
+            $this->create_season_payload( array(
+                'feeClub' => '25.50',
+                'feeTeam' => '10',
+            ) )
         );
 
         self::assertSame( Admin_Message_Type::ERROR, $result->message_type );
@@ -210,36 +207,18 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id            = 1;
-        $competition->is_league     = true;
-        $competition->is_team_entry = true;
-        $competition->method( 'get_season_by_name' )->willReturn( null );
+        $competition = $this->create_competition_mock( season_data: null );
         $competition->expects( self::once() )->method( 'add_season' );
         $competition_service->method( 'get_competition' )->willReturn( $competition );
 
         $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
         $result     = $dispatcher->handle(
             array( 'competition_id' => '1' ),
-            array(
-                'addSeason'        => '1',
-                'competition_id'   => '1',
-                'season'           => '2025',
-                'grade'            => 'A',
-                'dateOpen'         => '2025-01-01',
-                'dateEnd'          => '2025-06-30',
-                'dateClose'        => '2025-01-15',
-                'dateStart'        => '2025-02-01',
-                'max_teams'        => '10',
-                'teams_per_club'   => '2',
-                'teams_prom_relg'  => '2',
-                'lowest_promotion' => '1',
-                'num_match_days'   => '10',
-                'round_length'     => '7',
-                'feeClub'          => '25.50',
-                'feeTeam'          => '10',
-                'feeLeadTime'      => '14',
-            )
+            $this->create_season_payload( array(
+                'feeClub'     => '25.50',
+                'feeTeam'     => '10',
+                'feeLeadTime' => '14',
+            ) )
         );
 
         self::assertSame( Admin_Message_Type::SUCCESS, $result->message_type );
@@ -250,11 +229,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 1;
-        $competition->is_league = true;
-        $competition->is_team_entry = true;
-        $competition->method( 'get_season_by_name' )->willReturn( array(
+        $competition = $this->create_competition_mock( season_data: array(
             'name'           => '2025',
             'grade'          => 'B',
             'date_open'      => '2025-01-01',
@@ -281,22 +256,9 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
-            array(
-                'editSeason'       => '1',
-                'competition_id'   => '1',
-                'season'           => '2025',
-                'grade'            => 'A', // Changed grade triggers updates
-                'dateOpen'         => '2025-01-01',
-                'dateEnd'          => '2025-06-30',
-                'dateClose'        => '2025-01-15',
-                'dateStart'        => '2025-02-01',
-                'max_teams'        => '10',
-                'teams_per_club'   => '2',
-                'teams_prom_relg'  => '2',
-                'lowest_promotion' => '1',
-                'num_match_days'   => '10',
-                'round_length'     => '7',
-            )
+            $this->create_season_payload( array(
+                'grade' => 'A', // Changed grade triggers updates
+            ), 'editSeason' )
         );
 
         self::assertSame( 'Season updated', $result->message );
@@ -309,11 +271,7 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $finance_service     = $this->createMock( Finance_Service::class );
         $guard               = $this->createStub( Action_Guard_Interface::class );
 
-        $competition = $this->createMock( Competition::class );
-        $competition->id = 1;
-        $competition->is_league = true;
-        $competition->is_team_entry = true;
-        $competition->method( 'get_season_by_name' )->willReturn( array(
+        $competition = $this->create_competition_mock( season_data: array(
             'name'           => '2025',
             'grade'          => 'A',
             'date_open'      => '2025-01-01',
@@ -343,27 +301,13 @@ final class Competition_Season_Action_Dispatcher_Test extends TestCase {
         $dispatcher = new Competition_Season_Action_Dispatcher( $competition_service, $finance_service, $guard );
         $result = $dispatcher->handle(
             array( 'competition_id' => '1' ),
-            array(
-                'editSeason'       => '1',
-                'competition_id'   => '1',
-                'season'           => '2025',
-                'grade'            => 'A',
-                'dateOpen'         => '2025-01-01',
-                'dateEnd'          => '2025-06-30',
-                'dateClose'        => '2025-01-15',
-                'dateStart'        => '2025-02-01',
-                'max_teams'        => '10',
-                'teams_per_club'   => '2',
-                'teams_prom_relg'  => '2',
-                'lowest_promotion' => '1',
-                'num_match_days'   => '10',
-                'round_length'     => '7',
+            $this->create_season_payload( array(
                 'home_away_diff'   => '1',
                 'filler_weeks'     => '1',
                 'competition_code' => 'C1',
                 'fixedMatchDates'  => 'true',
                 'homeAway'         => 'true',
-            )
+            ), 'editSeason' )
         );
 
         self::assertSame( 'No updates', $result->message );

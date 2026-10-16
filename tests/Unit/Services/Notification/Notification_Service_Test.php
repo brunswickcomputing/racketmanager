@@ -159,6 +159,75 @@ class Notification_Service_Test extends TestCase {
         $GLOBALS['racketmanager'] = $this->app;
     }
 
+    private function create_test_fixture( array $overrides = [] ): Fixture {
+        $raw = array_merge( [
+            'id'        => 123,
+            'league_id' => 456,
+            'home_team' => '100',
+            'away_team' => '200',
+            'season'    => '2026',
+        ], $overrides );
+        foreach ( $overrides as $key => $value ) {
+            if ( null === $value ) {
+                unset( $raw[ $key ] );
+            }
+        }
+        return Fixture_Factory::from_object( (object) $raw );
+    }
+
+    private function create_mock_league(
+        int $id = 456,
+        string $title = 'Division 1',
+        bool $is_championship = false,
+        string $comp_type = 'league',
+        ?string $comp_name = null,
+        bool $is_tournament = false,
+        int $competition_id = 123
+    ): League {
+        $league                  = $this->createMock( League::class );
+        $league->id              = $id;
+        $league->title           = $title;
+        $league->is_championship = $is_championship;
+
+        $competition = (object) [
+            'type'          => $comp_type,
+            'is_tournament' => $is_tournament,
+        ];
+        if ( null !== $comp_name ) {
+            $competition->name = $comp_name;
+        }
+
+        $event                 = $this->createMock( Event::class );
+        $event->competition    = $competition;
+        $event->competition_id = $competition_id;
+        $league->event         = $event;
+
+        return $league;
+    }
+
+    private function setup_teams_mock(
+        string $home_name = 'Home Team',
+        string $away_name = 'Away Team',
+        int $home_id = 100,
+        int $away_id = 200
+    ): array {
+        $home_team = $this->createStub( Team::class );
+        $home_team->method( 'get_id' )->willReturn( $home_id );
+        $home_team->method( 'get_name' )->willReturn( $home_name );
+
+        $away_team = $this->createStub( Team::class );
+        $away_team->method( 'get_id' )->willReturn( $away_id );
+        $away_team->method( 'get_name' )->willReturn( $away_name );
+
+        $this->team_repository->method( 'find_by_id' )
+            ->willReturnMap( [
+                [ $home_id, $home_team ],
+                [ $away_id, $away_team ],
+            ] );
+
+        return [ $home_team, $away_team ];
+    }
+
     public function test_send_result_notification_league_not_found(): void {
         $fixture = $this->createStub(Fixture::class);
         $fixture->method('get_league_id')->willReturn(1);
@@ -170,26 +239,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_result_notification_success_championship(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->final = 'Final';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $league->id = 456;
-        $league->title = 'Championship League';
-        $league->is_championship = true;
-        $event = $this->getMockBuilder( Event::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $event->competition = (object)['type' => 'tournament'];
-        $league->event = $event;
-
+        $fixture = $this->create_test_fixture( [ 'final' => 'Final' ] );
+        $league  = $this->create_mock_league( 456, 'Championship League', true, 'tournament' );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -200,16 +251,7 @@ class Notification_Service_Test extends TestCase {
         ]);
         $this->app->method('get_from_user_email')->willReturn('From: User <user@example.com>');
 
-        $home_team = $this->createStub(Team::class);
-        $home_team->method('get_name')->willReturn('Home Team');
-        $away_team = $this->createStub(Team::class);
-        $away_team->method('get_name')->willReturn('Away Team');
-
-        $this->team_repository->method('find_by_id')
-            ->willReturnMap([
-                [100, $home_team],
-                [200, $away_team]
-            ]);
+        $this->setup_teams_mock();
 
         // Capture wp_mail calls
         $GLOBALS['wp_mail_calls'] = [];
@@ -224,26 +266,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_result_notification_with_confirmation_recipient(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $league->is_championship = false;
-        $event = $this->getMockBuilder( Event::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
-
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'league' );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -254,16 +278,7 @@ class Notification_Service_Test extends TestCase {
         ]);
         $this->app->method('get_from_user_email')->willReturn('From: User <user@example.com>');
 
-        $home_team = $this->createStub(Team::class);
-        $home_team->method('get_name')->willReturn('Home Team');
-        $away_team = $this->createStub(Team::class);
-        $away_team->method('get_name')->willReturn('Away Team');
-
-        $this->team_repository->method('find_by_id')
-            ->willReturnMap([
-                [100, $home_team],
-                [200, $away_team]
-            ]);
+        $this->setup_teams_mock();
 
         // For get_confirmation_email resolution (it uses league_team_repository and player_repository)
         $home_league_team = new stdClass();
@@ -295,39 +310,11 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_notify_team_withdrawal(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $event = $this->getMockBuilder( Event::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
-
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'league' );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $home_team = $this->createStub(Team::class);
-        $home_team->method('get_id')->willReturn(100);
-        $home_team->method('get_name')->willReturn('Home Team');
-        $away_team = $this->createStub(Team::class);
-        $away_team->method('get_id')->willReturn(200);
-        $away_team->method('get_name')->willReturn('Away Team');
-
-        $this->team_repository->method('find_by_id')
-            ->willReturnMap([
-                [100, $home_team],
-                [200, $away_team]
-              ]);
+        $this->setup_teams_mock();
 
         $away_league_team = new stdClass();
         $away_league_team->captain = 6;
@@ -363,10 +350,7 @@ class Notification_Service_Test extends TestCase {
     public function test_send_result_notification_admin_email_empty(): void {
         $fixture = $this->createStub(Fixture::class);
         $fixture->method('get_league_id')->willReturn(1);
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
         $this->app->method('get_confirmation_email')->willReturn('');
 
@@ -376,21 +360,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_result_notification_regular_league_matchday(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->match_day = '5';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $league->is_championship = false;
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'match_day' => '5' ] );
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -405,19 +376,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_result_notification_challenge_status(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -432,19 +392,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_confirmation_email_secretary_recipient(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -468,19 +417,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_confirmation_email_not_sent_if_not_pending(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -496,20 +434,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_team_captain_email_null_cases(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -542,19 +468,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_club_secretary_email_null_cases(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $GLOBALS['racketmanager']->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -615,23 +530,8 @@ class Notification_Service_Test extends TestCase {
         $this->assertEmpty($GLOBALS['wp_mail_calls']);
     }
     public function test_send_next_match_notification_success(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture_data->leg = 1;
-        $fixture_data->host = 'home';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'cup', 'name' => 'Cup Name'];
-        $event->competition_id = 123;
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'leg' => 1, 'host' => 'home' ] );
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'cup', 'Cup Name' );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -642,9 +542,9 @@ class Notification_Service_Test extends TestCase {
         $away_captain = $this->createStub(Player::class);
         $away_captain->method('get_email')->willReturn('away@example.com');
 
-        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home = $this->createMock(League_Team::class);
         $league_team_home->method('get_captain')->willReturn(1);
-        $league_team_away = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_away = $this->createMock(League_Team::class);
         $league_team_away->method('get_captain')->willReturn(2);
 
         $this->league_team_repository->method('find_by_team_league_and_season')->willReturnMap([
@@ -670,24 +570,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_next_fixture_notification_tournament_round(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture_data->host = 'home';
-        $fixture_data->final = 'semi'; // Should be translated to Semi Final
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Tournament 1';
-        $league->is_championship = false;
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name'];
-        $event->competition_id = 123;
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'host' => 'home', 'final' => 'semi' ] );
+        $league  = $this->create_mock_league( 456, 'Tournament 1', false, 'tournament', 'Tournament Name' );
         $league->method('get_competition_type')->willReturn('tournament');
         $this->league_repository->method('find_by_id')->willReturn($league);
 
@@ -714,22 +598,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_next_fixture_notification_no_host_returns_false(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture_data->host = null;
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $event = $this->getMockBuilder(Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'cup', 'name' => 'Cup Name'];
-        $event->competition_id = 123;
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'host' => null ] );
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'cup', 'Cup Name' );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $result = $this->service->send_next_fixture_notification($fixture);
@@ -738,23 +608,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_date_change_notification_success(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture_data->date = '2026-05-01';
-        $fixture_data->date_original = '2026-04-01';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league', 'name' => 'League Name', 'is_tournament' => false];
-        $event->competition_id = 456;
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'date' => '2026-05-01', 'date_original' => '2026-04-01' ] );
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'league', 'League Name', false );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -763,7 +618,7 @@ class Notification_Service_Test extends TestCase {
         $home_captain = $this->createStub(Player::class);
         $home_captain->method('get_email')->willReturn('home@example.com');
         $this->player_repository->method('find')->willReturn($home_captain);
-        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home = $this->createMock(League_Team::class);
         $league_team_home->method('get_captain')->willReturn(1);
         $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
 
@@ -776,23 +631,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_date_change_notification_tournament_delay(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture_data->date = '2026-05-01';
-        $fixture_data->date_original = '2026-04-01';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name', 'is_tournament' => true];
-        $event->competition_id = 789;
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'date' => '2026-05-01', 'date_original' => '2026-04-01' ] );
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'tournament', 'Tournament Name', true );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -801,7 +641,7 @@ class Notification_Service_Test extends TestCase {
         $home_captain = $this->createStub(Player::class);
         $home_captain->method('get_email')->willReturn('home@example.com');
         $this->player_repository->method('find')->willReturn($home_captain);
-        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home = $this->createMock(League_Team::class);
         $league_team_home->method('get_captain')->willReturn(1);
         $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
 
@@ -814,25 +654,8 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_send_date_change_notification_tournament_round(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture_data->date = '2026-05-01';
-        $fixture_data->date_original = '2026-04-01';
-        $fixture_data->final = 'quarter'; // Should be translated to Quarter Final
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Tournament 1';
-        $league->is_championship = false;
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'tournament', 'name' => 'Tournament Name', 'is_tournament' => true];
-        $event->competition_id = 789;
-        $league->event = $event;
+        $fixture = $this->create_test_fixture( [ 'date' => '2026-05-01', 'date_original' => '2026-04-01', 'final' => 'quarter' ] );
+        $league  = $this->create_mock_league( 456, 'Tournament 1', false, 'tournament', 'Tournament Name', true );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $this->app->method('get_confirmation_email')->willReturn('admin@example.com');
@@ -841,7 +664,7 @@ class Notification_Service_Test extends TestCase {
         $home_captain = $this->createStub(Player::class);
         $home_captain->method('get_email')->willReturn('home@example.com');
         $this->player_repository->method('find')->willReturn($home_captain);
-        $league_team_home = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_home = $this->createMock(League_Team::class);
         $league_team_home->method('get_captain')->willReturn(1);
         $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_home);
 
@@ -854,38 +677,16 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_notify_team_withdrawal_enhanced(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
-
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'Division 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $fixture = $this->create_test_fixture();
+        $league  = $this->create_mock_league( 456, 'Division 1', false, 'league' );
         $this->league_repository->method('find_by_id')->willReturn($league);
 
-        $home_team = $this->createStub(Team::class);
-        $home_team->method('get_id')->willReturn(100);
-        $home_team->method('get_name')->willReturn('Home Team');
-        $away_team = $this->createStub(Team::class);
-        $away_team->method('get_id')->willReturn(200);
-        $away_team->method('get_name')->willReturn('Away Team');
-
-        $this->team_repository->method('find_by_id')->willReturnMap([
-            [100, $home_team],
-            [200, $away_team]
-        ]);
+        $this->setup_teams_mock();
 
         $away_captain = $this->createStub(Player::class);
         $away_captain->method('get_email')->willReturn('away-captain@example.com');
         $this->player_repository->method('find')->willReturn($away_captain);
-        $league_team_away = $this->getMockBuilder(League_Team::class)->disableOriginalConstructor()->getMock();
+        $league_team_away = $this->createMock(League_Team::class);
         $league_team_away->method('get_captain')->willReturn(2);
         $this->league_team_repository->method('find_by_team_league_and_season')->willReturn($league_team_away);
 
@@ -905,20 +706,10 @@ class Notification_Service_Test extends TestCase {
         $checker->description = 'Penalty for late result';
         $checker->league_id   = 456;
 
-        $fixture_data = new stdClass();
-        $fixture_data->id          = 123;
-        $fixture_data->league_id   = 456;
-        $fixture_data->match_title = 'Home v Away';
-        $fixture_data->home_team   = '100';
-        $fixture_data->season      = '2026';
-        $fixture = Fixture_Factory::from_object( $fixture_data );
+        $fixture = $this->create_test_fixture( [ 'match_title' => 'Home v Away', 'home_team' => '100' ] );
         $fixture->fixture_title = 'Home v Away';
 
-        $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
-        $event->competition = (object) [ 'type' => 'league' ];
-        $league->event = $event;
+        $league = $this->create_mock_league();
         $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
 
         $this->app->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
@@ -971,19 +762,16 @@ class Notification_Service_Test extends TestCase {
         $checker->description = 'Test error description';
         $checker->league_id   = 456;
 
-        $fixture_data = new stdClass();
-        $fixture_data->id          = 123;
-        $fixture_data->league_id   = 456;
-        $fixture_data->match_title = 'Home v Away';
-        $fixture_data->home_captain = 5;
-        $fixture = Fixture_Factory::from_object( $fixture_data );
+        $fixture = $this->create_test_fixture( [
+            'match_title'  => 'Home v Away',
+            'home_captain' => 5,
+            'home_team'    => null,
+            'away_team'    => null,
+            'season'       => null,
+        ] );
         $fixture->fixture_title = 'Home v Away';
 
-        $league = $this->getMockBuilder( League::class )->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $event = $this->getMockBuilder( Event::class )->disableOriginalConstructor()->getMock();
-        $event->competition = (object) [ 'type' => 'league' ];
-        $league->event = $event;
+        $league = $this->create_mock_league();
         $this->league_repository->expects( $this->once() )->method( 'find_by_id' )->with( 456 )->willReturn( $league );
 
         $this->app->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
@@ -1021,12 +809,7 @@ class Notification_Service_Test extends TestCase {
         $fixture->method('get_updated_by')->willReturn('home');
         $fixture->method('get_season')->willReturn('2024');
 
-        $league = $this->getMockBuilder(League::class)->disableOriginalConstructor()->getMock();
-        $league->id = 456;
-        $league->title = 'League 1';
-        $event = $this->getMockBuilder( Event::class)->disableOriginalConstructor()->getMock();
-        $event->competition = (object)['type' => 'league'];
-        $league->event = $event;
+        $league = $this->create_mock_league();
         $this->league_repository->method('find_by_id')->willReturn($league);
 
         $team = $this->getMockBuilder(Team::class)->disableOriginalConstructor()->getMock();
@@ -1055,13 +838,7 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_fixture_emails_non_tournament(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
+        $fixture = $this->create_test_fixture();
 
         $league = $this->createMock(League::class);
         $league->method('get_competition_type')->willReturn('league');
@@ -1094,13 +871,7 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_fixture_emails_tournament(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
+        $fixture = $this->create_test_fixture();
 
         $league = $this->createMock(League::class);
         $league->method('get_competition_type')->willReturn('tournament');
@@ -1124,13 +895,7 @@ class Notification_Service_Test extends TestCase {
     }
 
     public function test_get_fixture_emails_tournament_home_only(): void {
-        $fixture_data = new stdClass();
-        $fixture_data->id = 123;
-        $fixture_data->league_id = 456;
-        $fixture_data->home_team = '100';
-        $fixture_data->away_team = '200';
-        $fixture_data->season = '2026';
-        $fixture = Fixture_Factory::from_object($fixture_data);
+        $fixture = $this->create_test_fixture();
 
         $league = $this->createMock(League::class);
         $league->method('get_competition_type')->willReturn('tournament');

@@ -43,26 +43,39 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_tournament_details(
+        int $tournament_id = 123,
+        string $season = '2023',
+        array $match_dates = [],
+        string $name = 'Test Tournament',
+        string $date_end = '2023-12-31'
+    ): Tournament_Details_DTO {
+        $reflectionTournament = new \ReflectionClass( Tournament::class );
+        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
+        $tournament->id = $tournament_id;
+        $tournament->name = $name;
+        $tournament->season = $season;
+        $tournament->finals = [];
+        $tournament->date_end = $date_end;
+
+        $competition = $this->createMock( Competition::class );
+        $competition->method( 'get_season_by_name' )->willReturn( $match_dates ? [ 'match_dates' => $match_dates ] : [] );
+
+        $reflectionClub = new \ReflectionClass( Club::class );
+        $club = $reflectionClub->newInstanceWithoutConstructor();
+
+        return new Tournament_Details_DTO( $tournament, $competition, $club );
+    }
+
     public function test_setup_page_get_returns_view_model(): void {
         $tournament_id = 123;
         $query = [ 'tournament' => (string) $tournament_id ];
         $post = [];
 
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->id = $tournament_id;
-        $tournament->name = 'Test Tournament';
-        $tournament->season = '2023';
-        $tournament->finals = [];
-        $tournament->date_end = '2023-12-31';
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [ 'match_dates' => [ 1 => '2023-12-25' ] ] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
+        $details = $this->create_tournament_details(
+            tournament_id: $tournament_id,
+            match_dates: [ 1 => '2023-12-25' ]
+        );
 
         $this->tournament_service->expects( self::once() )
             ->method( 'get_tournament_with_details' )
@@ -82,19 +95,8 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
         $query = [ 'tournament' => (string) $tournament_id, 'updated' => '1' ];
         $post = [];
 
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->season = '2023';
-        $tournament->finals = [];
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
-        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+        $this->tournament_service->method( 'get_tournament_with_details' )
+            ->willReturn( $this->create_tournament_details( $tournament_id ) );
 
         $result = $this->controller->setup_page( $query, $post );
 
@@ -120,20 +122,8 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
             ->method( 'set_round_dates_for_tournament' )
             ->willReturn( true );
 
-        // Mock build_view_model dependencies
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->season = '2023';
-        $tournament->finals = [];
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
-        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+        $this->tournament_service->method( 'get_tournament_with_details' )
+            ->willReturn( $this->create_tournament_details( $tournament_id ) );
 
         $result = $this->controller->setup_page( $query, $post );
 
@@ -156,20 +146,8 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
             ->with( $tournament_id )
             ->willReturn( true );
 
-        // Mock build_view_model dependencies
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->season = '2023';
-        $tournament->finals = [];
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
-        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+        $this->tournament_service->method( 'get_tournament_with_details' )
+            ->willReturn( $this->create_tournament_details( $tournament_id ) );
 
         $result = $this->controller->setup_page( $query, $post );
 
@@ -184,19 +162,8 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
         $query = [ 'tournament' => (string) $tournament_id, 'ratings_set' => '1' ];
         $post = [];
 
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->season = '2023';
-        $tournament->finals = [];
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
-        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+        $this->tournament_service->method( 'get_tournament_with_details' )
+            ->willReturn( $this->create_tournament_details( $tournament_id ) );
 
         $result = $this->controller->setup_page( $query, $post );
 
@@ -209,19 +176,8 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
         $query = [ 'tournament' => (string) $tournament_id, 'ratings_set' => '0' ];
         $post = [];
 
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->season = '2023';
-        $tournament->finals = [];
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
-        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+        $this->tournament_service->method( 'get_tournament_with_details' )
+            ->willReturn( $this->create_tournament_details( $tournament_id ) );
 
         $result = $this->controller->setup_page( $query, $post );
 
@@ -245,20 +201,8 @@ class Tournament_Setup_Admin_Controller_Test extends TestCase {
             ->method( 'set_round_dates_for_tournament' )
             ->willReturn( $wp_error );
 
-        // Mock build_view_model dependencies
-        $reflectionTournament = new \ReflectionClass( Tournament::class );
-        $tournament = $reflectionTournament->newInstanceWithoutConstructor();
-        $tournament->season = '2023';
-        $tournament->finals = [];
-
-        $competition = $this->createMock( Competition::class );
-        $competition->method( 'get_season_by_name' )->willReturn( [] );
-
-        $reflectionClub = new \ReflectionClass( Club::class );
-        $club = $reflectionClub->newInstanceWithoutConstructor();
-
-        $details = new Tournament_Details_DTO( $tournament, $competition, $club );
-        $this->tournament_service->method( 'get_tournament_with_details' )->willReturn( $details );
+        $this->tournament_service->method( 'get_tournament_with_details' )
+            ->willReturn( $this->create_tournament_details( $tournament_id ) );
 
         $result = $this->controller->setup_page( $query, $post );
 

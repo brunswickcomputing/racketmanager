@@ -42,6 +42,26 @@ final class Export_Delivery_Adapter_Test extends TestCase {
             ->getMock();
     }
 
+    private function make_terminate_spy(): Export_Delivery_Adapter&MockObject {
+        return $this->getMockBuilder( Export_Delivery_Adapter::class )
+            ->setConstructorArgs( [ $this->racketmanager ] )
+            ->onlyMethods( [ 'terminate' ] )
+            ->getMock();
+    }
+
+    private function capture_handle_export( Export_Delivery_Adapter $adapter, ?array $args = null ): string {
+        $level = ob_get_level();
+        ob_start();
+        try {
+            $adapter->handle_export( $args );
+            return (string) ob_get_clean();
+        } finally {
+            while ( ob_get_level() > $level ) {
+                ob_end_clean();
+            }
+        }
+    }
+
     public function test_handle_export_passes_content_disposition_filename_and_content_type_to_send_response(): void {
         $_GET['racketmanager_export'] = 'report_results';
 
@@ -115,16 +135,10 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         $response->header( 'Content-Disposition', 'attachment; filename="calendar.ics"' );
         $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::once() )->method( 'terminate' );
 
-        ob_start();
-        $adapter->handle_export();
-        $output = ob_get_clean();
+        $output = $this->capture_handle_export( $adapter );
 
         self::assertSame( 'BEGIN:VCALENDAR...END:VCALENDAR', $output );
         /** @var WP_REST_Request $request */
@@ -144,16 +158,10 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         $response->header( 'Content-Disposition', 'attachment; filename="fixtures.json"' );
         $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::once() )->method( 'terminate' );
 
-        ob_start();
-        $adapter->handle_export();
-        $output = ob_get_clean();
+        $output = $this->capture_handle_export( $adapter );
 
         self::assertSame( '[{"home":"Team A","away":"Team B"}]', $output );
         /** @var WP_REST_Request $request */
@@ -171,16 +179,10 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         $response->header( 'Content-Type', 'application/json' );
         $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::once() )->method( 'terminate' );
 
-        ob_start();
-        $adapter->handle_export();
-        $output = ob_get_clean();
+        $output = $this->capture_handle_export( $adapter );
 
         self::assertSame( 'JSON RESULTS', $output );
         /** @var WP_REST_Request $request */
@@ -202,16 +204,10 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         $response->header( 'Content-Disposition', 'attachment; filename="custom_report.csv"' );
         $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::once() )->method( 'terminate' );
 
-        ob_start();
-        $adapter->handle_export( $custom_params );
-        $output = ob_get_clean();
+        $output = $this->capture_handle_export( $adapter, $custom_params );
 
         self::assertSame( 'Tournament,Code,Organiser', $output );
         /** @var WP_REST_Request $request */
@@ -229,16 +225,10 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         $response = new WP_REST_Response( 'CALENDAR CONTENT' );
         $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::once() )->method( 'terminate' );
 
-        ob_start();
-        $adapter->handle_export();
-        ob_end_clean();
+        $this->capture_handle_export( $adapter );
 
         self::assertNotNull( $GLOBALS['wp_stubs_last_check_admin_referer'] ?? null );
         self::assertSame( 'racketmanager_export_nonce', $GLOBALS['wp_stubs_last_check_admin_referer']['action'] );
@@ -255,11 +245,7 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         ], 403 );
         $GLOBALS['wp_stubs_rest_do_request_return'] = $response;
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::never() )->method( 'terminate' );
 
         $adapter->handle_export();
@@ -279,11 +265,7 @@ final class Export_Delivery_Adapter_Test extends TestCase {
             [ 'status' => 401 ]
         );
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::never() )->method( 'terminate' );
 
         $adapter->handle_export();
@@ -297,11 +279,7 @@ final class Export_Delivery_Adapter_Test extends TestCase {
         $_GET['racketmanager_export'] = 'unknown_type';
         unset( $GLOBALS['wp_stubs_last_wp_die'] );
 
-        $adapter = $this->getMockBuilder( Export_Delivery_Adapter::class )
-            ->setConstructorArgs( [ $this->racketmanager ] )
-            ->onlyMethods( [ 'terminate' ] )
-            ->getMock();
-
+        $adapter = $this->make_terminate_spy();
         $adapter->expects( self::never() )->method( 'terminate' );
 
         $adapter->handle_export();

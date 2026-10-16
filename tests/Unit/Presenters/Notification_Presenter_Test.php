@@ -40,8 +40,11 @@ namespace Racketmanager\Tests\Unit\Presenters {
     use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
     use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
+    use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
     class Notification_Presenter_Test extends TestCase {
+        use Manages_Wordpress_Globals;
+
         private Tournament_Repository_Interface|MockObject $tournament_repository;
         private Fixture_Link_Service|MockObject $fixture_link_service;
         private Team_Service|MockObject $team_service;
@@ -51,37 +54,46 @@ namespace Racketmanager\Tests\Unit\Presenters {
         private Fixture_Repository_Interface|MockObject $fixture_repository;
         private Notification_Presenter $presenter;
 
-        private function create_mock_fixture_details( $fixture_id = 1 ): Fixture_Details_DTO {
+        private function setup_notification_services(
+            string $league_name = 'Test League',
+            string $competition_name = 'Test Competition',
+            ?int $event_id = 100,
+            ?int $competition_id = 50,
+            ?string $event_name = 'Test Event',
+            ?string $event_type = 'LD'
+        ): void {
             $league = $this->createStub( League::class );
-            $league->method( 'get_name' )->willReturn( 'Test League' );
+            $league->method( 'get_name' )->willReturn( $league_name );
+            if ( null !== $event_id ) {
+                $league->method( 'get_event_id' )->willReturn( $event_id );
+            }
+            $this->league_repository->method( 'find_by_id' )->willReturn( $league );
 
             $event = $this->createStub( Event::class );
-            $event->method( 'get_name' )->willReturn( 'Test Event' );
-            $event->method( 'get_type' )->willReturn( 'LD' );
+            if ( null !== $event_name ) {
+                $event->method( 'get_name' )->willReturn( $event_name );
+            }
+            if ( null !== $event_type ) {
+                $event->method( 'get_type' )->willReturn( $event_type );
+            }
+            if ( null !== $competition_id ) {
+                $event->method( 'get_competition_id' )->willReturn( $competition_id );
+            }
+            $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
 
-            $home_team = $this->createStub( Team::class );
-            $home_team->method( 'get_name' )->willReturn( 'Home Team' );
-            $home_team_details = new Team_Details_DTO( $home_team, null, null );
+            $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
+            $competition->method( 'get_name' )->willReturn( $competition_name );
+            $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
 
-            $away_team = $this->createStub( Team::class );
-            $away_team->method( 'get_name' )->willReturn( 'Away Team' );
-            $away_team_details = new Team_Details_DTO( $away_team, null, null );
+            $home_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
+            $home_team_details->team->method( 'get_name' )->willReturn( 'Home Team' );
+            $away_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
+            $away_team_details->team->method( 'get_name' )->willReturn( 'Away Team' );
 
-            return new Fixture_Details_DTO(
-                $this->createStub( Fixture::class ),
-                $league,
-                $event,
-                $this->createStub( \Racketmanager\Domain\Competition\Competition::class ),
-                $home_team_details,
-                $away_team_details,
-                null,
-                null,
-                null,
-                'match/' . $fixture_id . '/',
-                null,
-                [],
-                ''
-            );
+            $this->team_service->method( 'get_team_details' )->willReturnMap( [
+                [ 101, $home_team_details ],
+                [ 102, $away_team_details ],
+            ] );
         }
 
         public function test_present_match_notification(): void {
@@ -92,30 +104,6 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $fixture->method( 'get_home_team' )->willReturn( "101" );
             $fixture->method( 'get_away_team' )->willReturn( "102" );
             $fixture->method( 'get_league_id' )->willReturn( 10 );
-
-            $match                          = (object) [
-                'id'     => 1,
-                'league' => (object) [
-                    'title' => 'Test League',
-                    'type'  => 'LD',
-                    'event' => (object) [
-                        'name'        => 'Test Event',
-                        'competition' => (object) [
-                            'type' => 'tournament',
-                            'id'   => 123
-                        ]
-                    ]
-                ],
-                'teams'  => [
-                    'home' => (object) [ 'title' => 'Home Team', 'team_type' => 'P', 'players' => [] ],
-                    'away' => (object) [ 'title' => 'Away Team', 'team_type' => 'P', 'players' => [] ],
-                ],
-                'link'   => 'match/1/',
-                'season' => '2024',
-                'host'   => 'home'
-            ];
-            $GLOBALS['mock_match'] = $match;
-            $GLOBALS['wp_stubs_matches'][1] = $match;
 
             $args = [
                 'competition_type'  => 'tournament',
@@ -128,30 +116,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $tournament->name = 'Mock Tournament';
             $this->tournament_repository->expects( $this->once() )->method( 'find_by_id' )->with( '123,2024', 'shortcode' )->willReturn( $tournament );
 
-            $league = $this->createStub( League::class );
-            $league->method( 'get_name' )->willReturn( 'Test League' );
-            $league->method( 'get_event_id' )->willReturn( 100 );
-            $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-            $event = $this->createStub( Event::class );
-            $event->method( 'get_name' )->willReturn( 'Test Event' );
-            $event->method( 'get_type' )->willReturn( 'LD' );
-            $event->method( 'get_competition_id' )->willReturn( 50 );
-            $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-            $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
-            $competition->method( 'get_name' )->willReturn( 'Test Competition' );
-            $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-
-            $home_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
-            $home_team_details->team->method( 'get_name' )->willReturn( 'Home Team' );
-            $away_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
-            $away_team_details->team->method( 'get_name' )->willReturn( 'Away Team' );
-            
-            $this->team_service->method( 'get_team_details' )->willReturnMap([
-                [101, $home_team_details],
-                [102, $away_team_details]
-            ]);
+            $this->setup_notification_services();
 
             $vars = $this->presenter->present_match_notification( $fixture, $args );
 
@@ -171,58 +136,12 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $fixture->method( 'get_home_team' )->willReturn( "101" );
             $fixture->method( 'get_away_team' )->willReturn( "102" );
 
-            $match                          = (object) [
-                'id'     => 2,
-                'league' => (object) [
-                    'title' => 'Test League',
-                    'type'  => 'LD',
-                    'event' => (object) [
-                        'name'        => 'Test Event',
-                        'competition' => (object) [
-                            'type' => 'league',
-                            'name' => 'League Name',
-                            'id'   => 124
-                        ]
-                    ]
-                ],
-                'teams'  => [
-                    'home' => (object) [ 'title' => 'Home Team', 'team_type' => 'P', 'players' => [] ],
-                    'away' => (object) [ 'title' => 'Away Team', 'team_type' => 'P', 'players' => [] ],
-                ],
-                'link'   => 'match/2/',
-                'season' => '2024',
-                'host'   => 'home'
-            ];
-            $match->teams['home']->title = 'Home Team';
-            $match->teams['away']->title = 'Away Team';
-            $GLOBALS['mock_match'] = $match;
-            $GLOBALS['wp_stubs_matches'][2] = $match;
-
             $args = [
                 'competition_type' => 'league',
                 'competition'      => 'League Name'
             ];
 
-            $league = $this->createStub( League::class );
-            $league->method( 'get_name' )->willReturn( 'Test League' );
-            $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-            $event = $this->createStub( Event::class );
-            $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-            $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
-            $competition->method( 'get_name' )->willReturn( 'League Name' );
-            $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-
-            $home_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
-            $home_team_details->team->method( 'get_name' )->willReturn( 'Home Team' );
-            $away_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
-            $away_team_details->team->method( 'get_name' )->willReturn( 'Away Team' );
-            
-            $this->team_service->method( 'get_team_details' )->willReturnMap([
-                [101, $home_team_details],
-                [102, $away_team_details]
-            ]);
+            $this->setup_notification_services( competition_name: 'League Name', event_id: null, competition_id: null, event_name: null, event_type: null );
 
             $vars = $this->presenter->present_match_notification( $fixture, $args );
 
@@ -239,57 +158,12 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $fixture->method( 'get_home_team' )->willReturn( "101" );
             $fixture->method( 'get_away_team' )->willReturn( "102" );
 
-            $match                          = (object) [
-                'id'     => 3,
-                'league' => (object) [
-                    'title' => 'Test League',
-                    'type'  => 'LD',
-                    'event' => (object) [
-                        'name'        => 'Test Event',
-                        'competition' => (object) [
-                            'type' => 'cup',
-                            'id'   => 125
-                        ]
-                    ]
-                ],
-                'teams'  => [
-                    'home' => (object) [ 'title' => 'Home Team', 'team_type' => 'T' ],
-                    'away' => (object) [ 'title' => 'Away Team', 'team_type' => 'T' ],
-                ],
-                'link'   => 'match/3/',
-                'season' => '2024',
-                'host'   => 'home'
-            ];
-            $match->league->title = 'Test League';
-            $match->teams['home']->title = 'Home Team';
-            $match->teams['away']->title = 'Away Team';
-            $GLOBALS['mock_match'] = $match;
-            $GLOBALS['wp_stubs_matches'][3] = $match;
-
             $args = [
                 'competition_type' => 'cup',
                 'competition'      => 'Cup Name'
             ];
 
-            $league = $this->createStub( League::class );
-            $league->method( 'get_name' )->willReturn( 'Test League' );
-            $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-            $event = $this->createStub( Event::class );
-            $this->competition_service->method( 'get_event_by_id' )->willReturn( $event );
-
-            $competition = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
-            $this->competition_service->method( 'get_by_id' )->willReturn( $competition );
-
-            $home_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
-            $home_team_details->team->method( 'get_name' )->willReturn( 'Home Team' );
-            $away_team_details = new Team_Details_DTO( $this->createStub( Team::class ), null, null );
-            $away_team_details->team->method( 'get_name' )->willReturn( 'Away Team' );
-            
-            $this->team_service->method( 'get_team_details' )->willReturnMap([
-                [101, $home_team_details],
-                [102, $away_team_details]
-            ]);
+            $this->setup_notification_services( competition_name: 'Cup Name', event_id: null, competition_id: null, event_name: null, event_type: null );
 
             $vars = $this->presenter->present_match_notification( $fixture, $args );
 
@@ -300,23 +174,6 @@ namespace Racketmanager\Tests\Unit\Presenters {
         public function test_present_result_notification_includes_action_url(): void {
             $fixture = $this->createStub( Fixture::class );
             $fixture->method( 'get_id' )->willReturn( 1 );
-
-            $match = (object) [
-                'id' => 1,
-                'league' => (object) [
-                    'title' => 'Test League',
-                    'current_season' => ['name' => '2024'],
-                    'event' => (object) [
-                        'competition' => (object) [ 'is_championship' => false ]
-                    ]
-                ],
-                'match_day' => 1,
-                'teams' => [
-                    'home' => (object) [ 'title' => 'Home' ],
-                    'away' => (object) [ 'title' => 'Away' ],
-                ]
-            ];
-            $GLOBALS['wp_stubs_matches'][1] = $match;
 
             $vars = $this->presenter->present_result_notification( $fixture, [] );
 
@@ -330,23 +187,6 @@ namespace Racketmanager\Tests\Unit\Presenters {
             $fixture = $this->createStub( Fixture::class );
             $fixture->method( 'get_id' )->willReturn( 1 );
 
-            $match = (object) [
-                'id' => 1,
-                'league' => (object) [
-                    'title' => 'Test League',
-                    'current_season' => ['name' => '2024'],
-                    'event' => (object) [
-                        'competition' => (object) [ 'is_championship' => false ]
-                    ]
-                ],
-                'match_day' => 1,
-                'teams' => [
-                    'home' => (object) [ 'title' => 'Home' ],
-                    'away' => (object) [ 'title' => 'Away' ],
-                ]
-            ];
-            $GLOBALS['wp_stubs_matches'][1] = $match;
-
             $vars = $this->presenter->present_result_outstanding_notification( $fixture, [] );
 
             $this->assertArrayHasKey( 'action_url', $vars );
@@ -356,6 +196,7 @@ namespace Racketmanager\Tests\Unit\Presenters {
 
         protected function setUp(): void {
             parent::setUp();
+            $this->backup_globals();
             $this->tournament_repository = $this->createMock( Tournament_Repository_Interface::class );
             $this->fixture_link_service = $this->createStub( Fixture_Link_Service::class );
             $this->team_service = $this->createStub( Team_Service::class );
@@ -381,6 +222,11 @@ namespace Racketmanager\Tests\Unit\Presenters {
                 'https://example.com',
                 'Test Site'
             );
+        }
+
+        protected function tearDown(): void {
+            $this->restore_globals();
+            parent::tearDown();
         }
     }
 }

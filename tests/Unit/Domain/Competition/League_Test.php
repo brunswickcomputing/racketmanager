@@ -38,24 +38,35 @@ class League_Test extends TestCase {
         parent::tearDown();
     }
 
-    private function create_test_league(): Testable_League {
+    private function create_test_league( array $overrides = [] ): Testable_League {
         $league_raw = (object) [
-            'id'       => 1,
-            'title'    => 'Division 1',
-            'event_id' => 10,
-            'settings' => [],
-            'seasons'  => [ '2024-25' ],
+            'id'       => $overrides['id'] ?? 1,
+            'title'    => $overrides['title'] ?? 'Division 1',
+            'event_id' => $overrides['event_id'] ?? 10,
+            'settings' => $overrides['settings'] ?? [],
+            'seasons'  => $overrides['seasons'] ?? [ '2024-25' ],
         ];
 
         $league = new Testable_League( $league_raw );
-        $league->num_rubbers     = 6;
-        $league->num_sets        = 2;
-        $league->num_sets_to_win = 2;
-        $league->scoring         = 'TB';
-        $league->point_rule      = 'three';
-        $league->current_season  = [ 'name' => '2024-25' ];
+        $league->num_rubbers     = $overrides['num_rubbers'] ?? 6;
+        $league->num_sets        = $overrides['num_sets'] ?? 2;
+        $league->num_sets_to_win = $overrides['num_sets_to_win'] ?? 2;
+        $league->scoring         = $overrides['scoring'] ?? 'TB';
+        $league->point_rule      = $overrides['point_rule'] ?? 'three';
+        $league->current_season  = $overrides['current_season'] ?? [ 'name' => '2024-25' ];
 
         return $league;
+    }
+
+    private function make_sets( array $scores ): array {
+        $sets = [];
+        foreach ( $scores as $index => $score ) {
+            $sets[ $index + 1 ] = [
+                'player1' => (string) $score[0],
+                'player2' => (string) $score[1],
+            ];
+        }
+        return $sets;
     }
 
     private function create_rubber( array $attributes = [] ): object {
@@ -70,10 +81,7 @@ class League_Test extends TestCase {
             'is_retired'   => false,
             'is_abandoned' => false,
             'custom'       => [],
-            'sets'         => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => '6', 'player2' => '2' ],
-            ],
+            'sets'         => $this->make_sets( [ [ '6', '4' ], [ '6', '2' ] ] ),
         ], $attributes );
     }
 
@@ -140,16 +148,9 @@ class League_Test extends TestCase {
 
         // Rubber retired after 1st set (set 2 unplayed, stored as empty strings as in Set_Score_Validator)
         $rubber = $this->create_rubber( [
-            'is_retired'  => true,
-            'custom'      => [ 'retired' => 'away' ],
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => '', 'player2' => '' ],
-            ],
+            'is_retired' => true,
+            'custom'     => [ 'retired' => 'away' ],
+            'sets'       => $this->make_sets( [ [ '6', '4' ], [ '', '' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -185,15 +186,9 @@ class League_Test extends TestCase {
 
         // Rubber retired after 1st set (set 2 unplayed and key omitted)
         $rubber = $this->create_rubber( [
-            'is_retired'  => true,
-            'custom'      => [ 'retired' => 'away' ],
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-            ],
+            'is_retired' => true,
+            'custom'     => [ 'retired' => 'away' ],
+            'sets'       => $this->make_sets( [ [ '6', '4' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -220,22 +215,13 @@ class League_Test extends TestCase {
     }
 
     public function test_standings_data_credits_shared_sets_when_rubber_is_retired_with_multi_set_match(): void {
-        $league = $this->create_test_league();
-        $league->num_sets = 3;
+        $league = $this->create_test_league( [ 'num_sets' => 3 ] );
 
         // Rubber retired during set 2 (set 1 won 6-4, set 2 retired by away at 1-2, set 3 empty string unplayed)
         $rubber = $this->create_rubber( [
-            'is_retired'  => true,
-            'custom'      => [ 'retired' => 'away' ],
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => '1', 'player2' => '2' ],
-                3 => [ 'player1' => '', 'player2' => '' ],
-            ],
+            'is_retired' => true,
+            'custom'     => [ 'retired' => 'away' ],
+            'sets'       => $this->make_sets( [ [ '6', '4' ], [ '1', '2' ], [ '', '' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -269,14 +255,9 @@ class League_Test extends TestCase {
         // Rubber abandoned during 1st set (4-4), set 2 unplayed
         $rubber = $this->create_rubber( [
             'is_abandoned' => true,
-            'winner_id'    => '10',
-            'loser_id'     => '20',
             'home_points'  => 1.5,
             'away_points'  => 0.5,
-            'sets'         => [
-                1 => [ 'player1' => '4', 'player2' => '4' ],
-                2 => [ 'player1' => '', 'player2' => '' ],
-            ],
+            'sets'         => $this->make_sets( [ [ '4', '4' ], [ '', '' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -312,10 +293,6 @@ class League_Test extends TestCase {
 
         $rubber = $this->create_rubber( [
             'is_walkover' => true,
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
             'sets'        => [],
         ] );
 
@@ -346,26 +323,14 @@ class League_Test extends TestCase {
 
         // Rubber 1: Home split set win (Home loses set 1 4-6, wins set 2 6-4, home_points = 1.5, away_points = 0.5)
         $rubber1 = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
             'home_points' => 1.5,
             'away_points' => 0.5,
-            'sets'        => [
-                1 => [ 'player1' => '4', 'player2' => '6' ],
-                2 => [ 'player1' => '6', 'player2' => '4' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '4', '6' ], [ '6', '4' ] ] ),
         ] );
 
         // Rubber 2: Home straight set win (Home wins set 1 6-2, set 2 6-3, home_points = 2, away_points = 0)
         $rubber2 = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '2' ],
-                2 => [ 'player1' => '6', 'player2' => '3' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '6', '2' ], [ '6', '3' ] ] ),
         ] );
 
         // Rubber 3: Home split set loss (Home wins set 1 6-4, loses set 2 4-6, home_points = 0.5, away_points = 1.5)
@@ -374,10 +339,7 @@ class League_Test extends TestCase {
             'loser_id'    => '10',
             'home_points' => 0.5,
             'away_points' => 1.5,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => '4', 'player2' => '6' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '6', '4' ], [ '4', '6' ] ] ),
         ] );
 
         // Rubber 4: Home straight set loss (Home loses set 1 2-6, set 2 1-6, home_points = 0, away_points = 2)
@@ -386,10 +348,7 @@ class League_Test extends TestCase {
             'loser_id'    => '10',
             'home_points' => 0,
             'away_points' => 2,
-            'sets'        => [
-                1 => [ 'player1' => '2', 'player2' => '6' ],
-                2 => [ 'player1' => '1', 'player2' => '6' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '2', '6' ], [ '1', '6' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -421,10 +380,7 @@ class League_Test extends TestCase {
             'loser_id'    => '10',
             'home_points' => 0.5,
             'away_points' => 1.5,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => '4', 'player2' => '6' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '6', '4' ], [ '4', '6' ] ] ),
         ] );
 
         // Rubber 2: Away straight set win (Away wins set 1 6-2, set 2 6-3, home_points = 0, away_points = 2)
@@ -433,34 +389,19 @@ class League_Test extends TestCase {
             'loser_id'    => '10',
             'home_points' => 0,
             'away_points' => 2,
-            'sets'        => [
-                1 => [ 'player1' => '2', 'player2' => '6' ],
-                2 => [ 'player1' => '3', 'player2' => '6' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '2', '6' ], [ '3', '6' ] ] ),
         ] );
 
         // Rubber 3: Away split set loss (Away wins set 1 6-4, loses set 2 4-6, home_points = 1.5, away_points = 0.5)
         $rubber3 = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
             'home_points' => 1.5,
             'away_points' => 0.5,
-            'sets'        => [
-                1 => [ 'player1' => '4', 'player2' => '6' ],
-                2 => [ 'player1' => '6', 'player2' => '4' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '4', '6' ], [ '6', '4' ] ] ),
         ] );
 
         // Rubber 4: Away straight set loss (Away loses set 1 2-6, set 2 1-6, home_points = 2, away_points = 0)
         $rubber4 = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '2' ],
-                2 => [ 'player1' => '6', 'player2' => '1' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '6', '2' ], [ '6', '1' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -484,8 +425,7 @@ class League_Test extends TestCase {
     }
 
     public function test_standings_data_split_set_evaluations_for_abandoned_away_winner_with_points_threshold(): void {
-        $league = $this->create_test_league();
-        $league->num_sets = 3;
+        $league = $this->create_test_league( [ 'num_sets' => 3 ] );
 
         $rubber = $this->create_rubber( [
             'winner_id'    => 20,
@@ -493,7 +433,7 @@ class League_Test extends TestCase {
             'home_points'  => 0.5,
             'away_points'  => 1.5,
             'is_abandoned' => true,
-            'sets'         => [ 1 => [ 'player1' => '4', 'player2' => '4' ], 2 => [ 'player1' => '', 'player2' => '' ] ],
+            'sets'         => $this->make_sets( [ [ '4', '4' ], [ '', '' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -569,14 +509,7 @@ class League_Test extends TestCase {
         $league = $this->create_test_league();
 
         $rubber = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '2' ],
-                2 => [ 'player1' => '6', 'player2' => '3' ],
-            ],
+            'sets' => $this->make_sets( [ [ '6', '2' ], [ '6', '3' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -601,21 +534,13 @@ class League_Test extends TestCase {
     }
 
     public function test_standings_data_match_tiebreak_scoring(): void {
-        $league = $this->create_test_league();
-        $league->num_sets = 3;
-        $league->scoring = 'TM';
+        $league = $this->create_test_league( [ 'num_sets' => 3, 'scoring' => 'TM' ] );
 
         // Rubber with 3 sets: set 1 home (6-4), set 2 away (4-6), set 3 MTB home (10-8)
         $rubber = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
             'home_points' => 1.5,
             'away_points' => 0.5,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => '4', 'player2' => '6' ],
-                3 => [ 'player1' => '10', 'player2' => '8' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '6', '4' ], [ '4', '6' ], [ '10', '8' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -646,14 +571,9 @@ class League_Test extends TestCase {
         $league = $this->create_test_league();
 
         $rubber = $this->create_rubber( [
-            'winner_id'   => '10',
-            'loser_id'    => '20',
             'home_points' => 1.5,
             'away_points' => 0.5,
-            'sets'        => [
-                1 => [ 'player1' => '6', 'player2' => '4' ],
-                2 => [ 'player1' => 'S', 'player2' => 'S' ],
-            ],
+            'sets'        => $this->make_sets( [ [ '6', '4' ], [ 'S', 'S' ] ] ),
         ] );
 
         $match = $this->create_match( [
@@ -676,24 +596,15 @@ class League_Test extends TestCase {
     }
 
     public function test_standings_data_full_match_walkover(): void {
-        $league = $this->create_test_league();
-        $league->num_rubbers = 2;
+        $league = $this->create_test_league( [ 'num_rubbers' => 2 ] );
 
         $rubber1 = $this->create_rubber( [
             'is_walkover' => true,
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
             'sets'        => [],
         ] );
 
         $rubber2 = $this->create_rubber( [
             'is_walkover' => true,
-            'winner_id'   => '10',
-            'loser_id'    => '20',
-            'home_points' => 2,
-            'away_points' => 0,
             'sets'        => [],
         ] );
 

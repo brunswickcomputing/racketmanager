@@ -41,6 +41,48 @@ class Export_Service_Test extends TestCase {
         );
     }
 
+    private function create_fixture_details(
+        Fixture $fixture,
+        ?string $home_title = null,
+        ?string $away_title = null,
+        string $score = '',
+        string $title = 'Mock Fixture'
+    ): Fixture_Details_DTO {
+        $league      = $this->createStub( League::class );
+        $event       = $this->createStub( Event::class );
+        $competition = $this->createStub( Competition::class );
+
+        $home_team = null;
+        if ( null !== $home_title ) {
+            $home_team_obj        = $this->createStub( Team::class );
+            $home_team_obj->title = $home_title;
+            $home_team            = new Team_Details_DTO( $home_team_obj, null, null );
+        }
+
+        $away_team = null;
+        if ( null !== $away_title ) {
+            $away_team_obj        = $this->createStub( Team::class );
+            $away_team_obj->title = $away_title;
+            $away_team            = new Team_Details_DTO( $away_team_obj, null, null );
+        }
+
+        return new Fixture_Details_DTO(
+            $fixture,
+            $league,
+            $event,
+            $competition,
+            $home_team,
+            $away_team,
+            null,
+            null,
+            null,
+            '',
+            $score,
+            array(),
+            $title
+        );
+    }
+
     #[AllowMockObjectsWithoutExpectations]
     public function test_calendar_returns_ics_format() {
         $criteria = new Export_Criteria( array( 'league_id' => 1 ) );
@@ -50,17 +92,8 @@ class Export_Service_Test extends TestCase {
         $fixture->location = 'Center Court';
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
-        
-        $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $competition = $this->createStub( Competition::class );
-        
-        $details = new Fixture_Details_DTO(
-            $fixture, $league, $event, $competition,
-            null, null, null, null, null, '', '', array(), 'Mock Fixture'
-        );
-        
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( $details );
+        $this->fixture_detail_service->method( 'get_fixture_with_details' )
+            ->willReturn( $this->create_fixture_details( $fixture ) );
 
         $result = $this->exporter->calendar( $criteria );
 
@@ -95,25 +128,8 @@ class Export_Service_Test extends TestCase {
         $fixture->winner_id = 1;
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
-        
-        $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $competition = $this->createStub( Competition::class );
-        
-        $home_team_obj = $this->createStub( Team::class );
-        $home_team_obj->title = 'Home Team';
-        $home_team = new Team_Details_DTO( $home_team_obj, null, null );
-        
-        $away_team_obj = $this->createStub( Team::class );
-        $away_team_obj->title = 'Away Team';
-        $away_team = new Team_Details_DTO( $away_team_obj, null, null );
-
-        $details = new Fixture_Details_DTO(
-            $fixture, $league, $event, $competition,
-            $home_team, $away_team, null, null, null, '', '6-0 6-0', array(), 'Mock Fixture'
-        );
-        
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( $details );
+        $this->fixture_detail_service->method( 'get_fixture_with_details' )
+            ->willReturn( $this->create_fixture_details( $fixture, 'Home Team', 'Away Team', '6-0 6-0' ) );
 
         $result = $this->exporter->results( $criteria );
 
@@ -130,25 +146,8 @@ class Export_Service_Test extends TestCase {
         $fixture->winner_id = 1;
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
-        
-        $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $competition = $this->createStub( Competition::class );
-        
-        $home_team_obj = $this->createStub( Team::class );
-        $home_team_obj->title = 'Home Team';
-        $home_team = new Team_Details_DTO( $home_team_obj, null, null );
-        
-        $away_team_obj = $this->createStub( Team::class );
-        $away_team_obj->title = 'Away Team';
-        $away_team = new Team_Details_DTO( $away_team_obj, null, null );
-
-        $details = new Fixture_Details_DTO(
-            $fixture, $league, $event, $competition,
-            $home_team, $away_team, null, null, null, '', '6-0 6-0', array(), 'Mock Fixture'
-        );
-        
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( $details );
+        $this->fixture_detail_service->method( 'get_fixture_with_details' )
+            ->willReturn( $this->create_fixture_details( $fixture, 'Home Team', 'Away Team', '6-0 6-0' ) );
 
         $result = $this->exporter->results( $criteria );
 
@@ -224,15 +223,8 @@ class Export_Service_Test extends TestCase {
         $fixture->winner_id = 1;
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
-        
-        $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $competition = $this->createStub( Competition::class );
-        $details = new Fixture_Details_DTO(
-            $fixture, $league, $event, $competition,
-            null, null, null, null, null, '', '6-0 6-0', array(), 'Mock Fixture'
-        );
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( $details );
+        $this->fixture_detail_service->method( 'get_fixture_with_details' )
+            ->willReturn( $this->create_fixture_details( $fixture, score: '6-0 6-0' ) );
 
         $result = $this->exporter->fixtures( $criteria );
 
@@ -246,18 +238,8 @@ class Export_Service_Test extends TestCase {
         $fixture->date = '2026-04-13 12:00:00';
 
         $this->fixture_repository->method( 'find_by_criteria' )->willReturn( array( $fixture ) );
-        
-        $league = $this->createStub( League::class );
-        $event = $this->createStub( Event::class );
-        $competition = $this->createStub( Competition::class );
-        
-        // details exist but teams are null
-        $details = new Fixture_Details_DTO(
-            $fixture, $league, $event, $competition,
-            null, null, null, null, null, '', '', array(), 'Mock Fixture'
-        );
-        
-        $this->fixture_detail_service->method( 'get_fixture_with_details' )->willReturn( $details );
+        $this->fixture_detail_service->method( 'get_fixture_with_details' )
+            ->willReturn( $this->create_fixture_details( $fixture ) );
 
         $result = $this->exporter->results( $criteria );
 

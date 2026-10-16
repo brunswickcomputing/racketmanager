@@ -29,15 +29,8 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         parent::tearDown();
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function test_fixtures_page_get_multiple_fixtures_returns_view_model(): void {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-
-        $tournament = $this->create_tournament_instance( 1, 'Club Championship', '2026' );
-        
-        $league = (object) array(
+    private function create_mock_league( mixed $championship = null ): object {
+        return (object) array(
             'id' => 10,
             'title' => 'Men\'s Singles',
             'event' => (object) array(
@@ -47,7 +40,7 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
                     'type' => 'tournament',
                 ),
             ),
-            'championship' => (object) array(
+            'championship' => $championship ?? (object) array(
                 'is_consolation' => false,
             ),
             'current_season' => array(
@@ -55,6 +48,16 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
                 'num_match_days' => 5,
             ),
         );
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function test_fixtures_page_get_multiple_fixtures_returns_view_model(): void {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        $tournament = $this->create_tournament_instance( 1, 'Club Championship', '2026' );
+        $league     = $this->create_mock_league();
 
         $tournament_service = $this->createMock( Tournament_Service::class );
 
@@ -127,25 +130,11 @@ class Tournament_Fixtures_Admin_Controller_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
         $tournament = $this->create_tournament_instance( 1, 'Club Championship', '2026' );
-        
-        $league = (object) array(
-            'id' => 10,
-            'title' => 'Men\'s Singles',
-            'event' => (object) array(
-                'competition' => (object) array(
-                    'id' => 5,
-                    'name' => 'Tournament 2026',
-                    'type' => 'tournament',
-                ),
-            ),
-            'championship' => new class {
+        $league     = $this->create_mock_league(
+            new class {
                 public function get_finals($key) { return ['key' => $key]; }
                 public function get_final_teams($key) { return []; }
-            },
-            'current_season' => array(
-                'name' => '2026',
-                'num_match_days' => 5,
-            ),
+            }
         );
 
         $fixture = (object) array(

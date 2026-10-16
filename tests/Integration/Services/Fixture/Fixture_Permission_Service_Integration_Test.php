@@ -5,20 +5,19 @@ namespace Racketmanager\Tests\Integration\Services\Fixture;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Club;
-use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Fixture\Fixture;
-use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Interfaces\Club_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
-use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
+use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Services\Registration_Service;
+use Racketmanager\Tests\Helpers\Fixture_Test_Factory;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 
 class Fixture_Permission_Service_Integration_Test extends TestCase {
@@ -85,8 +84,46 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function setup_standard_fixture(
+        string $confirmed = 'P',
+        ?int $home_captain = null,
+        ?int $away_captain = null,
+        ?int $winner_id = null,
+        int $home_club_id = 1000,
+        int $away_club_id = 2000,
+        string $competition_type = 'standard',
+    ): Fixture {
+        $fixture = Fixture_Test_Factory::create(
+            id: 1,
+            league_id: 100,
+            home_team: '200',
+            away_team: '300',
+            winner_id: $winner_id,
+            confirmed: $confirmed,
+            home_captain: $home_captain,
+            away_captain: $away_captain,
+        );
+        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
+
+        $league = $this->createStub( League::class );
+        $league->method( 'get_competition_type' )->willReturn( $competition_type );
+        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
+
+        $home_team = $this->createStub( Team::class );
+        $home_team->method( 'get_club_id' )->willReturn( $home_club_id );
+        $away_team = $this->createStub( Team::class );
+        $away_team->method( 'get_club_id' )->willReturn( $away_club_id );
+
+        $this->team_repository->method( 'find_by_id' )->willReturnMap( [
+            [ 200, $home_team ],
+            [ 300, $away_team ],
+        ] );
+
+        return $fixture;
+    }
+
     public function test_admin_can_update_fixture(): void {
-        $fixture = Fixture_Factory::from_object( (object)[ 'id' => 1, 'confirmed' => 'P', 'league_id' => 100 ] );
+        $fixture = Fixture_Test_Factory::create( id: 1, league_id: 100, confirmed: 'P' );
         $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
         
         $league = $this->createStub( League::class );
@@ -101,29 +138,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_home_captain_can_update_pending_match(): void {
-        $fixture = Fixture_Factory::from_object( (object)[ 
-            'id' => 1, 
-            'confirmed' => 'P', 
-            'league_id' => 100, 
-            'home_captain' => 10,
-            'home_team' => '200',
-            'away_team' => '300'
-        ] );
-        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
-        
-        $league = $this->createStub( League::class );
-        $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-        $home_team = $this->createStub( Team::class );
-        $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createStub( Team::class );
-        $away_team->method( 'get_club_id' )->willReturn( 2000 );
-
-        $this->team_repository->method( 'find_by_id' )->willReturnMap([
-            [ 200, $home_team ],
-            [ 300, $away_team ]
-        ]);
+        $this->setup_standard_fixture( home_captain: 10 );
 
         $this->service->mock_current_user_id = 10;
         $this->service->mock_options = [
@@ -138,29 +153,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_away_captain_can_update_pending_match_in_home_entry_mode_with_approval(): void {
-        $fixture = Fixture_Factory::from_object( (object)[ 
-            'id' => 1, 
-            'confirmed' => 'P', 
-            'league_id' => 100, 
-            'away_captain' => 20,
-            'home_team' => '200',
-            'away_team' => '300'
-        ] );
-        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
-        
-        $league = $this->createStub( League::class );
-        $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-        $home_team = $this->createStub( Team::class );
-        $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createStub( Team::class );
-        $away_team->method( 'get_club_id' )->willReturn( 2000 );
-
-        $this->team_repository->method( 'find_by_id' )->willReturnMap([
-            [ 200, $home_team ],
-            [ 300, $away_team ]
-        ]);
+        $this->setup_standard_fixture( away_captain: 20 );
 
         $this->service->mock_current_user_id = 20;
         $this->service->mock_options = [
@@ -176,28 +169,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_player_can_update_if_capability_is_player(): void {
-        $fixture = Fixture_Factory::from_object( (object)[ 
-            'id' => 1, 
-            'confirmed' => 'P', 
-            'league_id' => 100, 
-            'home_team' => '200',
-            'away_team' => '300'
-        ] );
-        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
-        
-        $league = $this->createStub( League::class );
-        $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-        $home_team = $this->createStub( Team::class );
-        $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createStub( Team::class );
-        $away_team->method( 'get_club_id' )->willReturn( 2000 );
-
-        $this->team_repository->method( 'find_by_id' )->willReturnMap([
-            [ 200, $home_team ],
-            [ 300, $away_team ]
-        ]);
+        $this->setup_standard_fixture();
 
         $this->service->mock_current_user_id = 50;
         $this->service->mock_options = [
@@ -218,28 +190,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_match_secretary_can_update(): void {
-        $fixture = Fixture_Factory::from_object( (object)[ 
-            'id' => 1, 
-            'confirmed' => 'P', 
-            'league_id' => 100, 
-            'home_team' => '200',
-            'away_team' => '300'
-        ] );
-        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
-        
-        $league = $this->createStub( League::class );
-        $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-        $home_team = $this->createStub( Team::class );
-        $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createStub( Team::class );
-        $away_team->method( 'get_club_id' )->willReturn( 2000 );
-
-        $this->team_repository->method( 'find_by_id' )->willReturnMap([
-            [ 200, $home_team ],
-            [ 300, $away_team ]
-        ]);
+        $this->setup_standard_fixture();
 
         $home_club = $this->createStub( Club::class );
         $home_club->match_secretary = (object)[ 'id' => 30 ];
@@ -263,30 +214,7 @@ class Fixture_Permission_Service_Integration_Test extends TestCase {
     }
 
     public function test_confirmed_match_cannot_be_updated_by_captain(): void {
-        $fixture = Fixture_Factory::from_object( (object)[ 
-            'id' => 1, 
-            'confirmed' => 'Y', 
-            'league_id' => 100, 
-            'home_captain' => 10,
-            'home_team' => '200',
-            'away_team' => '300',
-            'winner_id' => 200
-        ] );
-        $this->fixture_repository->method( 'find_by_id' )->willReturn( $fixture );
-        
-        $league = $this->createStub( League::class );
-        $league->method( 'get_competition_type' )->willReturn( 'standard' );
-        $this->league_repository->method( 'find_by_id' )->willReturn( $league );
-
-        $home_team = $this->createStub( Team::class );
-        $home_team->method( 'get_club_id' )->willReturn( 1000 );
-        $away_team = $this->createStub( Team::class );
-        $away_team->method( 'get_club_id' )->willReturn( 2000 );
-
-        $this->team_repository->method( 'find_by_id' )->willReturnMap([
-            [ 200, $home_team ],
-            [ 300, $away_team ]
-        ]);
+        $this->setup_standard_fixture( confirmed: 'Y', home_captain: 10, winner_id: 200 );
 
         $this->service->mock_current_user_id = 10;
         $this->service->mock_options = [

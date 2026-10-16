@@ -27,6 +27,14 @@ class Fixture_Test_Factory {
         int $match_day = 1,
         ?string $host = null,
         array $custom = [],
+        ?string $confirmed = null,
+        ?string $final = null,
+        ?int $home_captain = null,
+        ?int $away_captain = null,
+        ?int $leg = null,
+        ?int $linked_fixture = null,
+        ?string $date_result_entered = null,
+        ?array $comments = null,
     ): Fixture {
         return new Fixture( new Fixture_Hydration_DTO(
             id: $id,
@@ -49,6 +57,14 @@ class Fixture_Test_Factory {
             home_points: $home_points,
             away_points: $away_points,
             custom: $custom,
+            confirmed: $confirmed,
+            final: $final,
+            home_captain: $home_captain,
+            away_captain: $away_captain,
+            leg: $leg,
+            linked_fixture: $linked_fixture,
+            date_result_entered: $date_result_entered,
+            comments: $comments,
         ) );
     }
 }

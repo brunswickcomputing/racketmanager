@@ -14,10 +14,12 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use stdClass;
 
 #[AllowMockObjectsWithoutExpectations]
 class League_Mutation_Test extends TestCase {
+    use Manages_Wordpress_Globals;
 
     private Simple_Container $container;
     private $fixture_repository;
@@ -27,6 +29,7 @@ class League_Mutation_Test extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        $this->backup_globals();
 
         if ( ! isset( $GLOBALS['wpdb'] ) ) {
             $GLOBALS['wpdb'] = new \wpdb( 'user', 'password', 'dbname', 'localhost');
@@ -52,7 +55,7 @@ class League_Mutation_Test extends TestCase {
     }
 
     protected function tearDown(): void {
-        unset( $GLOBALS['racketmanager'] );
+        $this->restore_globals();
         parent::tearDown();
     }
 

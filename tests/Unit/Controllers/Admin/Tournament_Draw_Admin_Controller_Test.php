@@ -31,18 +31,24 @@ require_once __DIR__ . '/../../../wp-stubs.php';
 final
 class Tournament_Draw_Admin_Controller_Test extends TestCase {
 
+    private function create_mock_league( int $id = 10, int $event_id = 100 ): League {
+        $league            = $this->createMock( League::class );
+        $league->id        = $id;
+        $league->event     = $this->createMock( Event::class );
+        $league->event->id = $event_id;
+        $league->method( 'get_league_teams' )->willReturn( array() );
+
+        return $league;
+    }
+
     /**
      * @throws ReflectionException
      */
     public function test_draw_page_returns_view_model_on_get(): void {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $tournament        = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
-        $league            = $this->createMock( League::class );
-        $league->id        = 10;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->id = 100;
-        $league->method( 'get_league_teams' )->willReturn( array() );
+        $tournament = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
+        $league     = $this->create_mock_league();
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->expects( self::once() )
@@ -158,12 +164,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
     public function test_draw_page_returns_redirect_on_post(): void {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $tournament        = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
-        $league            = $this->createMock( League::class );
-        $league->id        = 10;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->id = 100;
-        $league->method( 'get_league_teams' )->willReturn( array() );
+        $tournament = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
+        $league     = $this->create_mock_league();
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -227,12 +229,7 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
         $tournament = $this->create_tournament_instance( 1, 'Test Tournament', 2024 );
-        $league     = $this->createMock( League::class );
-
-        $league->id        = 10;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->id = 100;
-        $league->method( 'get_league_teams' )->willReturn( array() );
+        $league     = $this->create_mock_league();
 
         // Mock championship
         $settings     = new Championship_Settings();
@@ -352,12 +349,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
     public function test_draw_page_handles_null_event_details(): void {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $tournament        = $this->create_tournament_instance( 1, 'T', 2024 );
-        $league            = $this->createMock( League::class );
-        $league->id        = 10;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->id = 100;
-        $league->method( 'get_league_teams' )->willReturn( array() );
+        $tournament = $this->create_tournament_instance( 1, 'T', 2024 );
+        $league     = $this->create_mock_league();
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -392,12 +385,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
     public function test_extract_tab_priority(): void {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $tournament        = $this->create_tournament_instance( 1, 'T', 2024 );
-        $league            = $this->createMock( League::class );
-        $league->id        = 10;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->id = 100;
-        $league->method( 'get_league_teams' )->willReturn( array() );
+        $tournament = $this->create_tournament_instance( 1, 'T', 2024 );
+        $league     = $this->create_mock_league();
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );
@@ -462,12 +451,8 @@ class Tournament_Draw_Admin_Controller_Test extends TestCase {
     public function test_extract_season_priority(): void {
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $tournament        = $this->create_tournament_instance( 1, 'T', 2024 );
-        $league            = $this->createMock( League::class );
-        $league->id        = 10;
-        $league->event     = $this->createMock( Event::class );
-        $league->event->id = 100;
-        $league->method( 'get_league_teams' )->willReturn( array() );
+        $tournament = $this->create_tournament_instance( 1, 'T', 2024 );
+        $league     = $this->create_mock_league();
 
         $tournament_service = $this->createMock( Tournament_Service::class );
         $tournament_service->method( 'get_tournament' )->willReturn( $tournament );

@@ -15,18 +15,16 @@ use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
-use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\League_Repository;
-use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Championship_Factory;
 use Racketmanager\Services\Competition\Competition_Notification_Service;
 use Racketmanager\Services\Competition\League_Schedule_Service;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Fixture_Service;
-use Racketmanager\Services\Fixture\Service_Provider;
+use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Result_Factory;
-use Racketmanager\Services\Schedule_Round_Robin;
 use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -620,18 +618,20 @@ class League {
      */
     public array $finals;
     /**
-     * Retrieve league instance
+     * Retrieve league instance.
+     *
+     * Compatibility helper: retrieves a League by ID or name using the passed repository
+     * or a fallback repository instance. Domain methods do not consult the container.
      *
      * @param int|string $league_id league id.
+     * @param League_Repository_Interface|null $league_repository
+     * @return League|false
      */
-    public static function get_instance( int|string $league_id ) {
+    public static function get_instance( int|string $league_id, ?League_Repository_Interface $league_repository = null ): League|false {
         if ( ! $league_id ) {
             return false;
         }
-        global $racketmanager;
-        $league_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
-            ? $racketmanager->container->get( 'league_repository' )
-            : new League_Repository();
+        $league_repository = $league_repository ?? new League_Repository();
 
         if ( is_numeric( $league_id ) ) {
             $league = $league_repository->find_by_id( (int) $league_id );
@@ -641,12 +641,77 @@ class League {
         return $league ?: false;
     }
 
+    public function __serialize(): array {
+        $data = get_object_vars( $this );
+        unset(
+            $data['league_repository'],
+            $data['fixture_repository'],
+            $data['standings_service'],
+            $data['league_schedule_service'],
+            $data['competition_notification_service'],
+            $data['fixture_service'],
+            $data['fixture_result_manager'],
+            $data['notification_service']
+        );
+        return $data;
+    }
+
+    public function __unserialize( array $data ): void {
+        foreach ( $data as $key => $value ) {
+            $this->$key = $value;
+        }
+        $this->league_repository = null;
+        $this->fixture_repository = null;
+        $this->standings_service = null;
+        $this->league_schedule_service = null;
+        $this->competition_notification_service = null;
+        $this->fixture_service = null;
+        $this->fixture_result_manager = null;
+        $this->notification_service = null;
+    }
+
+    private ?League_Repository_Interface $league_repository = null;
+    private ?Fixture_Repository_Interface $fixture_repository = null;
+    private ?Standings_Service $standings_service = null;
+    private ?League_Schedule_Service $league_schedule_service = null;
+    private ?Competition_Notification_Service $competition_notification_service = null;
+    private ?Fixture_Service $fixture_service = null;
+    private ?Fixture_Result_Manager $fixture_result_manager = null;
+    private ?Notification_Service $notification_service = null;
+
     /**
      * Constructor
      *
      * @param object|null $league League object.
+     * @param League_Repository_Interface|null $league_repository
+     * @param Fixture_Repository_Interface|null $fixture_repository
+     * @param Standings_Service|null $standings_service
+     * @param League_Schedule_Service|null $league_schedule_service
+     * @param Competition_Notification_Service|null $competition_notification_service
+     * @param Fixture_Service|null $fixture_service
+     * @param Fixture_Result_Manager|null $fixture_result_manager
+     * @param Notification_Service|null $notification_service
      */
-    public function __construct( object $league ) {
+    public function __construct(
+        object $league,
+        ?League_Repository_Interface $league_repository = null,
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?Standings_Service $standings_service = null,
+        ?League_Schedule_Service $league_schedule_service = null,
+        ?Competition_Notification_Service $competition_notification_service = null,
+        ?Fixture_Service $fixture_service = null,
+        ?Fixture_Result_Manager $fixture_result_manager = null,
+        ?Notification_Service $notification_service = null
+    ) {
+        $this->league_repository = $league_repository;
+        $this->fixture_repository = $fixture_repository;
+        $this->standings_service = $standings_service;
+        $this->league_schedule_service = $league_schedule_service;
+        $this->competition_notification_service = $competition_notification_service;
+        $this->fixture_service = $fixture_service;
+        $this->fixture_result_manager = $fixture_result_manager;
+        $this->notification_service = $notification_service;
+
         if ( isset( $league->settings ) ) {
             $league->settings = (array) maybe_unserialize( $league->settings );
             $league           = (object) array_merge( (array) $league, $league->settings );
@@ -725,6 +790,46 @@ class League {
         add_filter( 'racketmanager_import_teams_' . $this->sport, array( &$this, 'import_teams' ), 10, 3 );
     }
 
+    public function set_league_repository( ?League_Repository_Interface $league_repository ): self {
+        $this->league_repository = $league_repository;
+        return $this;
+    }
+
+    public function set_fixture_repository( ?Fixture_Repository_Interface $fixture_repository ): self {
+        $this->fixture_repository = $fixture_repository;
+        return $this;
+    }
+
+    public function set_standings_service( ?Standings_Service $standings_service ): self {
+        $this->standings_service = $standings_service;
+        return $this;
+    }
+
+    public function set_league_schedule_service( ?League_Schedule_Service $league_schedule_service ): self {
+        $this->league_schedule_service = $league_schedule_service;
+        return $this;
+    }
+
+    public function set_competition_notification_service( ?Competition_Notification_Service $competition_notification_service ): self {
+        $this->competition_notification_service = $competition_notification_service;
+        return $this;
+    }
+
+    public function set_fixture_service( ?Fixture_Service $fixture_service ): self {
+        $this->fixture_service = $fixture_service;
+        return $this;
+    }
+
+    public function set_fixture_result_manager( ?Fixture_Result_Manager $fixture_result_manager ): self {
+        $this->fixture_result_manager = $fixture_result_manager;
+        return $this;
+    }
+
+    public function set_notification_service( ?Notification_Service $notification_service ): self {
+        $this->notification_service = $notification_service;
+        return $this;
+    }
+
     /**
      * Get the id
      *
@@ -801,7 +906,10 @@ class League {
         if ( ! empty( $sequence ) ) {
             $this->sequence = $sequence;
         }
-        $this->get_league_repository()->update_title_and_sequence( $this->id, $this->title, $this->sequence );
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot update League: League_Repository_Interface collaborator is required.' );
+        }
+        $this->league_repository->update_title_and_sequence( $this->id, $this->title, $this->sequence );
         wp_cache_set( $this->id, $this, 'leagues' );
     }
 
@@ -809,13 +917,16 @@ class League {
      * Delete League
      */
     public function delete(): void {
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot delete League: League_Repository_Interface collaborator is required.' );
+        }
         $matches = $this->get_matches( array() );
         if ( $matches ) {
             $this->delete_matches( $matches );
         }
         // remove tables.
-        $this->get_league_repository()->delete_league_teams( $this->id );
-        $this->get_league_repository()->delete( $this->id );
+        $this->league_repository->delete_league_teams( $this->id );
+        $this->league_repository->delete( $this->id );
         wp_cache_delete( $this->id, 'leagues' );
     }
     /**
@@ -825,6 +936,9 @@ class League {
      * @param string $season season.
      */
     public function delete_team( int $team, string $season ): void {
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot delete team from League: League_Repository_Interface collaborator is required.' );
+        }
         $matches = $this->get_matches(
             array(
                 'team_id' => $team,
@@ -832,15 +946,14 @@ class League {
                 'final'   => 'all',
             )
         );
-        if ( $matches ) {
-            $fixture_repository = $this->get_fixture_repository();
+        if ( $matches && $this->fixture_repository ) {
             foreach ( $matches as $match ) {
                 $fixture_id = is_object( $match ) ? (int) $match->id : (int) $match;
-                $fixture_repository->delete( $fixture_id );
+                $this->fixture_repository->delete( $fixture_id );
             }
         }
         // remove tables.
-        $this->get_league_repository()->delete_team( $this->id, $team, $season );
+        $this->league_repository->delete_team( $this->id, $team, $season );
         wp_cache_delete( $team, '$league_team' );
         wp_cache_delete( $this->id, 'leaguetable' );
     }
@@ -851,7 +964,9 @@ class League {
      * @param string $season season.
      */
     public function withdraw_team( int $team_id, string $season ): void {
-        global $racketmanager;
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot withdraw team from League: League_Repository_Interface collaborator is required.' );
+        }
         $match_args                     = array();
         $match_args['team_id']          = $team_id;
         $match_args['season']           = $season;
@@ -862,17 +977,15 @@ class League {
         // update matches.
         $matches = $this->get_matches( $match_args );
         if ( $matches ) {
-            $fixture_repository   = $this->get_fixture_repository();
-            $notification_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'notification_service' )
-                ? $racketmanager->container->get( 'notification_service' )
-                : null;
-            $result_manager       = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_result_manager' )
-                ? $racketmanager->container->get( 'fixture_result_manager' )
-                : null;
-
+            if ( ! $this->fixture_repository ) {
+                throw new \RuntimeException( 'Cannot withdraw team from League: Fixture_Repository_Interface collaborator is required.' );
+            }
+            if ( ! $this->fixture_result_manager ) {
+                throw new \RuntimeException( 'Cannot withdraw team from League: Fixture_Result_Manager collaborator is required.' );
+            }
             foreach ( $matches as $match_item ) {
                 $fixture_id = is_object( $match_item ) ? (int) $match_item->id : (int) $match_item;
-                $fixture    = $fixture_repository->find_by_id( $fixture_id );
+                $fixture    = $this->fixture_repository->find_by_id( $fixture_id );
                 if ( ! $fixture ) {
                     continue;
                 }
@@ -887,33 +1000,29 @@ class League {
                             $match_status = 'walkover_player1';
                         }
                         if ( empty( $fixture->get_leg() ) || 2 === (int) $fixture->get_leg() ) {
-                            if ( $notification_service ) {
-                                $notification_service->notify_team_withdrawal( $fixture, $team_id );
+                            if ( $this->notification_service ) {
+                                $this->notification_service->notify_team_withdrawal( $fixture, $team_id );
                             }
                         }
 
-                        if ( $result_manager ) {
-                            $request = new Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $fixture->get_confirmed() );
-                            $result_manager->handle_fixture_result_update( $fixture, $request );
-                        }
+                        $request = new Fixture_Result_Update_Request( $fixture->get_id(), [], $match_status, $fixture->get_confirmed() );
+                        $this->fixture_result_manager->handle_fixture_result_update( $fixture, $request );
                     } else {
-                        if ( $result_manager ) {
-                            $result_data = [
-                                'home_points' => 0,
-                                'away_points' => 0,
-                                'status'      => Util_Lookup::get_match_status_code( 'cancelled' ),
-                                'custom'      => $fixture->get_custom() ?? [],
-                                'sets'        => [],
-                            ];
-                            $result      = Result_Factory::from_array( $result_data, (string) $fixture->get_home_team(), (string) $fixture->get_away_team() );
-                            $result_manager->confirm_result( $fixture, '', null, $result );
-                        }
+                        $result_data = [
+                            'home_points' => 0,
+                            'away_points' => 0,
+                            'status'      => Util_Lookup::get_match_status_code( 'cancelled' ),
+                            'custom'      => $fixture->get_custom() ?? [],
+                            'sets'        => [],
+                        ];
+                        $result      = Result_Factory::from_array( $result_data, (string) $fixture->get_home_team(), (string) $fixture->get_away_team() );
+                        $this->fixture_result_manager->confirm_result( $fixture, '', null, $result );
                     }
                 }
             }
         }
         // update table.
-        $this->get_league_repository()->withdraw_team( $this->id, $team_id, $season );
+        $this->league_repository->withdraw_team( $this->id, $team_id, $season );
         wp_cache_delete( $team_id, '$league_team' );
         wp_cache_delete( $this->id, 'leaguetable' );
         if ( ! $this->is_championship ) {
@@ -932,7 +1041,9 @@ class League {
      * @return void
      */
     protected function notify_league_team_withdrawn( int $team_id, string $season ): void {
-        $this->get_notification_service()->notify_withdrawn_team( $this, $team_id, $season );
+        if ( $this->competition_notification_service ) {
+            $this->competition_notification_service->notify_withdrawn_team( $this, $team_id, $season );
+        }
     }
     /**
      * Set default dataset query arguments
@@ -1146,7 +1257,7 @@ class League {
         } elseif ( 'last' === $_match_day ) {
             $match_day = wp_cache_get( 'last_' . $this->id, 'leagues_match_days' );
             if ( ! $match_day ) {
-                $match_day_val = $this->get_league_repository()->get_match_day( $this->id, $this->current_season['name'], 'last' );
+                $match_day_val = $this->league_repository ? $this->league_repository->get_match_day( $this->id, $this->current_season['name'], 'last' ) : null;
                 if ( $match_day_val ) {
                     $match_day = $match_day_val;
                     wp_cache_set( 'last_' . $this->id, $match_day, 'leagues_match_days' );
@@ -1157,7 +1268,7 @@ class League {
         } elseif ( 'next' === $_match_day ) {
             $match_day = wp_cache_get( 'next_' . $this->id, 'leagues_match_days' );
             if ( ! $match_day ) {
-                $match_day_val = $this->get_league_repository()->get_match_day( $this->id, $this->current_season['name'], 'next' );
+                $match_day_val = $this->league_repository ? $this->league_repository->get_match_day( $this->id, $this->current_season['name'], 'next' ) : null;
                 if ( $match_day_val ) {
                     $match_day = $match_day_val;
                     wp_cache_set( 'next_' . $this->id, $match_day, 'leagues_match_days' );
@@ -1168,7 +1279,7 @@ class League {
         } elseif ( 'current' === $_match_day || 'latest' === $_match_day ) {
             $match_day = wp_cache_get( 'current_' . $this->id, 'leagues_match_days' );
             if ( ! $match_day ) {
-                $match_day_val = $this->get_league_repository()->get_match_day( $this->id, $this->current_season['name'], 'current' );
+                $match_day_val = $this->league_repository ? $this->league_repository->get_match_day( $this->id, $this->current_season['name'], 'current' ) : null;
                 if ( $match_day_val ) {
                     $match_day = $match_day_val;
                     wp_cache_set( 'current_' . $this->id, $match_day, 'leagues_match_days' );
@@ -1328,7 +1439,7 @@ class League {
             unset( $repo_args['season'] );
             $repo_args['skip_season_filter'] = true;
         }
-        $teams = $this->get_league_repository()->query_league_teams( $this->id, $repo_args, (bool) $count );
+        $teams = $this->league_repository ? $this->league_repository->query_league_teams( $this->id, $repo_args, (bool) $count ) : ( $count ? 0 : array() );
 
         if ( ! $count ) {
             $teams      = is_array( $teams ) ? $teams : array();
@@ -1402,6 +1513,9 @@ class League {
      */
     public function add_team( int|string $team_id, string $season, ?string $rank = null, ?string $status = null, int|string $profile = 1 ): bool|int {
         global $racketmanager;
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot add team to League: League_Repository_Interface collaborator is required.' );
+        }
         $valid = true;
         if ( ! is_numeric( $team_id ) ) {
             $team = get_team( $team_id );
@@ -1416,7 +1530,7 @@ class League {
             }
             $team_id = $team->id;
         }
-        $table_id = $this->get_league_repository()->add_team_to_league(
+        $table_id = $this->league_repository->add_team_to_league(
             $this->id,
             (int) $team_id,
             $season,
@@ -1431,7 +1545,9 @@ class League {
             $message_text = __( 'Table entry added', 'racketmanager' );
             $valid        = true;
         }
-        $racketmanager->set_message( $message_text, ! $valid );
+        if ( is_object( $racketmanager ) && method_exists( $racketmanager, 'set_message' ) ) {
+            $racketmanager->set_message( $message_text, ! $valid );
+        }
 
         return $valid ? $table_id : false;
     }
@@ -1478,7 +1594,7 @@ class League {
             return $team;
         }
 
-        $team = $this->get_league_repository()->get_team_details( $this->id, $team_id, $season );
+        $team = $this->league_repository ? $this->league_repository->get_team_details( $this->id, $team_id, $season ) : null;
 
         if ( ! isset( $team ) ) {
             return false;
@@ -1585,25 +1701,26 @@ class League {
 
         if ( $count ) {
             $this->set_match_query_arg( 'count', false );
-            $matches = $this->get_league_repository()->query_matches( $this->id, $query_args_to_pass, true );
+            $matches = $this->league_repository ? $this->league_repository->query_matches( $this->id, $query_args_to_pass, true ) : 0;
         } else {
-            $matches = $this->get_league_repository()->query_matches( $this->id, $query_args_to_pass, false );
-            $fixture_repository = $this->get_fixture_repository();
-            $class = '';
-            foreach ( $matches as $i => $match ) {
-                $match        = $fixture_repository->find_by_id( (int) $match->id );
-                $class        = ( 'alternate' === $class ) ? '' : 'alternate';
-                if ( $match ) {
-                    $match->class = $class;
-                }
-                if ( $player && $match ) {
-                    $match->rubbers = $match->get_rubbers( $player );
-                }
+            $matches = $this->league_repository ? $this->league_repository->query_matches( $this->id, $query_args_to_pass, false ) : array();
+            if ( $this->fixture_repository ) {
+                $class = '';
+                foreach ( $matches as $i => $match ) {
+                    $match        = $this->fixture_repository->find_by_id( (int) $match->id );
+                    $class        = ( 'alternate' === $class ) ? '' : 'alternate';
+                    if ( $match ) {
+                        $match->class = $class;
+                    }
+                    if ( $player && $match ) {
+                        $match->rubbers = $match->get_rubbers( $player );
+                    }
 
-                $matches[ $i ] = $match;
-            }
-            if ( 1 === $limit && $matches ) {
-                $matches = $matches[0];
+                    $matches[ $i ] = $match;
+                }
+                if ( 1 === $limit && $matches ) {
+                    $matches = $matches[0];
+                }
             }
         }
 
@@ -1640,7 +1757,10 @@ class League {
      * @return array the ranked teams
      */
     public function get_standings( array $teams, int $match_day, string $mode = 'all' ): array {
-        return $this->get_standings_service()->get_standings( $this, $teams, $match_day, $mode );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot get standings: Standings_Service collaborator is required.' );
+        }
+        return $this->standings_service->get_standings( $this, $teams, $match_day, $mode );
     }
     /**
      * Set finals flag for championship mode
@@ -1961,7 +2081,10 @@ class League {
      * @param false|string $season season.
      */
     public function set_teams_rank( false|string $season = false ): void {
-        $this->get_standings_service()->set_teams_rank( $this, $season );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot set teams rank: Standings_Service collaborator is required.' );
+        }
+        $this->standings_service->set_teams_rank( $this, $season );
     }
 
     /**
@@ -1973,7 +2096,10 @@ class League {
      * @return int|null team ranking.
      */
     public function get_rank( int $team_id, string $season ): ?int {
-        return $this->get_league_repository()->get_rank( $this->id, $season, $team_id );
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot get rank: League_Repository_Interface collaborator is required.' );
+        }
+        return $this->league_repository->get_rank( $this->id, $season, $team_id );
     }
 
     /**
@@ -1985,7 +2111,10 @@ class League {
      * @return string|null team status.
      */
     public function get_status( int $team_id, string $season ): ?string {
-        return $this->get_league_repository()->get_status( $this->id, $season, $team_id );
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot get status: League_Repository_Interface collaborator is required.' );
+        }
+        return $this->league_repository->get_status( $this->id, $season, $team_id );
     }
     /**
      * =======================
@@ -2002,7 +2131,10 @@ class League {
      * @param array $custom custom.
      */
     public function save_standings_manually( array $teams, array $points, array $matches, array $custom ): void {
-        $this->get_standings_service()->save_standings_manually( $this, $teams, $points, $matches, $custom );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot save standings manually: Standings_Service collaborator is required.' );
+        }
+        $this->standings_service->save_standings_manually( $this, $teams, $points, $matches, $custom );
     }
 
     /**
@@ -2019,40 +2151,38 @@ class League {
      * @return int
      */
     public function update_match_results( array $matches, array $home_points, array $away_points, array $custom, string $season, false|string $final_round = false, string $confirmed = 'Y' ): int {
+        if ( empty( $matches ) ) {
+            return 0;
+        }
+        $fixture_repository = $this->get_fixture_repository();
+        $result_manager = $this->fixture_result_manager;
+        if ( ! $fixture_repository || ! $result_manager ) {
+            throw new \RuntimeException( 'Cannot update match results: Fixture_Repository_Interface and Fixture_Result_Manager collaborators are required.' );
+        }
         $num_matches = 0;
-        if ( ! empty( $matches ) ) {
-            global $racketmanager;
-            $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-                ? $racketmanager->container->get( 'fixture_repository' )
-                : new Fixture_Repository();
-            $result_manager = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_result_manager' )
-                ? $racketmanager->container->get( 'fixture_result_manager' )
-                : null;
+        foreach ( $matches as $match_id ) {
+            $c           = $custom[ $match_id ] ?? array();
+            $points_home = isset( $home_points[ $match_id ] ) ? floatval( $home_points[ $match_id ] ) : null;
+            $points_away = isset( $away_points[ $match_id ] ) ? floatval( $away_points[ $match_id ] ) : null;
 
-            foreach ( $matches as $match_id ) {
-                $c           = $custom[ $match_id ] ?? array();
-                $points_home = isset( $home_points[ $match_id ] ) ? floatval( $home_points[ $match_id ] ) : null;
-                $points_away = isset( $away_points[ $match_id ] ) ? floatval( $away_points[ $match_id ] ) : null;
+            $fixture = $fixture_repository->find_by_id( (int) $match_id );
+            if ( $fixture ) {
+                $fixture_custom = $fixture->get_custom() ?? array();
+                $result_data    = [
+                    'home_points' => $points_home,
+                    'away_points' => $points_away,
+                    'status'      => $fixture->get_status(),
+                    'custom'      => $c,
+                    'sets'        => $c['sets'] ?? ( $fixture_custom['sets'] ?? array() ),
+                ];
+                $result = Result_Factory::from_array( $result_data, $fixture->get_home_team(), $fixture->get_away_team() );
 
-                $fixture = $fixture_repository->find_by_id( (int) $match_id );
-                if ( $fixture && $result_manager ) {
-                    $fixture_custom = $fixture->get_custom() ?? array();
-                    $result_data    = [
-                        'home_points' => $points_home,
-                        'away_points' => $points_away,
-                        'status'      => $fixture->get_status(),
-                        'custom'      => $c,
-                        'sets'        => $c['sets'] ?? ( $fixture_custom['sets'] ?? array() ),
-                    ];
-                    $result = Result_Factory::from_array( $result_data, $fixture->get_home_team(), $fixture->get_away_team() );
-
-                    if ( 'Y' === $confirmed ) {
-                        $result_manager->confirm_result( $fixture, '', null, $result );
-                    } else {
-                        $result_manager->update_result( $fixture, $result, $confirmed );
-                    }
-                    ++$num_matches;
+                if ( 'Y' === $confirmed ) {
+                    $result_manager->confirm_result( $fixture, '', null, $result );
+                } else {
+                    $result_manager->update_result( $fixture, $result, $confirmed );
                 }
+                ++$num_matches;
             }
         }
 
@@ -2067,7 +2197,10 @@ class League {
      * @param string $season season.
      */
     public function update_standings( string $season ): void {
-        $this->get_standings_service()->update_standings( $this, $season );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot update standings: Standings_Service collaborator is required.' );
+        }
+        $this->standings_service->update_standings( $this, $season );
     }
     /**
      * Update points for given team
@@ -2075,7 +2208,10 @@ class League {
      * @param object $league_team team.
      */
     private function save_standings( object $league_team ): void {
-        $this->get_standings_service()->save_standings( $this, $league_team );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot save standings: Standings_Service collaborator is required.' );
+        }
+        $this->standings_service->save_standings( $this, $league_team );
     }
 
     /**
@@ -2087,7 +2223,10 @@ class League {
      * @return array
      */
     public function calculate_points( object $team, false|array $matches = false ): array {
-        return $this->get_standings_service()->calculate_points( $this, $team, $matches );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot calculate points: Standings_Service collaborator is required.' );
+        }
+        return $this->standings_service->calculate_points( $this, $team, $matches );
     }
 
     /**
@@ -2099,7 +2238,10 @@ class League {
      * @return boolean
      */
     public function is_tie( object $team1, object $team2 ): bool {
-        return $this->get_standings_service()->is_tie( $team1, $team2 );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot determine tie: Standings_Service collaborator is required.' );
+        }
+        return $this->standings_service->is_tie( $team1, $team2 );
     }
 
     /**
@@ -2112,7 +2254,10 @@ class League {
      * @return array
      */
     public function get_standings_data( int $team_id, array $data = array(), array $matches = array() ): array {
-        return $this->get_standings_service()->get_standings_data( $this, $team_id, $data, $matches );
+        if ( ! $this->standings_service ) {
+            throw new \RuntimeException( 'Cannot get standings data: Standings_Service collaborator is required.' );
+        }
+        return $this->standings_service->get_standings_data( $this, $team_id, $data, $matches );
     }
 
     /**
@@ -2232,7 +2377,10 @@ class League {
      * Schedule matches
      */
     public function schedule_matches(): void {
-        $this->get_schedule_service()->schedule_league( $this );
+        if ( ! $this->league_schedule_service ) {
+            throw new \RuntimeException( 'Cannot schedule matches: League_Schedule_Service collaborator is required.' );
+        }
+        $this->league_schedule_service->schedule_league( $this );
     }
 
     /**
@@ -2243,7 +2391,10 @@ class League {
      * @param boolean $home_away home and away indicator.
      */
     public function create_schedule( array $teams, string $num_rounds, bool $home_away ): void {
-        $this->get_schedule_service()->create_schedule( $this, $teams, $num_rounds, $home_away );
+        if ( ! $this->league_schedule_service ) {
+            throw new \RuntimeException( 'Cannot create schedule: League_Schedule_Service collaborator is required.' );
+        }
+        $this->league_schedule_service->create_schedule( $this, $teams, $num_rounds, $home_away );
     }
 
     /**
@@ -2256,7 +2407,10 @@ class League {
      * @param boolean $is_box is this a box league.
      */
     public function create_match_schedule( array $rounds, array $teams, array $match_dates, string $season, bool $is_box ): void {
-        $this->get_schedule_service()->create_match_schedule( $this, $rounds, $teams, $match_dates, $season, $is_box );
+        if ( ! $this->league_schedule_service ) {
+            throw new \RuntimeException( 'Cannot create match schedule: League_Schedule_Service collaborator is required.' );
+        }
+        $this->league_schedule_service->create_match_schedule( $this, $rounds, $teams, $match_dates, $season, $is_box );
     }
     /**
      * Add match to league function
@@ -2266,10 +2420,12 @@ class League {
      * @return void
      */
     public function add_match( object $match ): void {
-        $fixture_service = $this->get_fixture_service();
+        if ( ! $this->fixture_service ) {
+            throw new \RuntimeException( 'Cannot add match: Fixture_Service collaborator is required.' );
+        }
 
         $fixture = $match instanceof Fixture ? $match : Fixture_Factory::from_object( $match );
-        $fixture_service->create_fixture( $fixture, $this );
+        $this->fixture_service->create_fixture( $fixture, $this );
     }
 
 
@@ -2279,20 +2435,19 @@ class League {
      * @param object $match match object.
      */
     public function update_match( object $match ): void {
-        global $racketmanager;
-        $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-            ? $racketmanager->container->get( 'fixture_repository' )
-            : new Fixture_Repository();
+        if ( ! $this->fixture_repository ) {
+            throw new \RuntimeException( 'Cannot update match: Fixture_Repository_Interface collaborator is required.' );
+        }
 
         if ( method_exists( $match, 'update' ) ) {
             $match->update();
         } elseif ( $match instanceof Fixture ) {
-            $fixture_repository->save( $match );
+            $this->fixture_repository->save( $match );
         }
 
         $linked_match_id = $match instanceof Fixture ? $match->get_linked_fixture() : ( $match->linked_match ?? null );
         if ( ! empty( $linked_match_id ) ) {
-            $linked_fixture = $fixture_repository->find_by_id( (int) $linked_match_id );
+            $linked_fixture = $this->fixture_repository->find_by_id( (int) $linked_match_id );
             if ( $linked_fixture ) {
                 $home_team = $match instanceof Fixture ? $match->get_home_team() : ( $match->home_team ?? null );
                 $away_team = $match instanceof Fixture ? $match->get_away_team() : ( $match->away_team ?? null );
@@ -2311,7 +2466,7 @@ class League {
                 if ( ! empty( $host ) ) {
                     $linked_fixture->set_host( 'home' === $host ? 'away' : 'home' );
                 }
-                $fixture_repository->save( $linked_fixture );
+                $this->fixture_repository->save( $linked_fixture );
             }
         }
     }
@@ -2410,7 +2565,7 @@ class League {
         if ( ! $args['season'] ) {
             $args['season'] = $this->current_season['name'] ?? '';
         }
-        $team = $this->get_league_repository()->get_player_team( $this->id, $args );
+        $team = $this->league_repository ? $this->league_repository->get_player_team( $this->id, $args ) : null;
         return $team ?? new stdClass();
     }
     /**
@@ -2422,13 +2577,17 @@ class League {
      * @return void
      */
     public function set_rounds( string $season, array $rounds ): void {
+        if ( ! $this->league_repository ) {
+            throw new \RuntimeException( 'Cannot set rounds: League_Repository_Interface collaborator is required.' );
+        }
         if ( empty( $this->seasons[ $season ] ) ) {
             $this->seasons[ $season ] = array();
         }
         $this->seasons[ $season ]['rounds'] = $rounds;
 
-        $this->get_league_repository()->update_seasons( $this->id, $this->seasons );
-        wp_cache_set( $this->id, $this, 'leagues' );
+        if ( $this->league_repository->update_seasons( $this->id, $this->seasons ) ) {
+            wp_cache_set( $this->id, $this, 'leagues' );
+        }
     }
     /**
      * Contact League Teams
@@ -2439,67 +2598,42 @@ class League {
      * @return boolean
      */
     public function contact_teams( string $season, string $email_message ): bool {
-        return $this->get_notification_service()->contact_league_teams( $this, $season, $email_message );
+        if ( $this->competition_notification_service ) {
+            return $this->competition_notification_service->contact_league_teams( $this, $season, $email_message );
+        }
+        return false;
     }
 
-    /**
-     * Resolve Standings_Service instance from container or fallback.
-     */
-    private function get_standings_service(): Standings_Service {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'standings_service' )
-            ? $racketmanager->container->get( 'standings_service' )
-            : new Standings_Service();
+    public function get_standings_service(): ?Standings_Service {
+        return $this->standings_service;
     }
 
-    /**
-     * Resolve League_Schedule_Service instance from container or fallback.
-     */
-    private function get_schedule_service(): League_Schedule_Service {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'league_schedule_service' )
-            ? $racketmanager->container->get( 'league_schedule_service' )
-            : new League_Schedule_Service();
+    public function get_schedule_service(): ?League_Schedule_Service {
+        return $this->league_schedule_service;
     }
 
-    /**
-     * Resolve Competition_Notification_Service instance from container or fallback.
-     */
-    private function get_notification_service(): Competition_Notification_Service {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_notification_service' )
-            ? $racketmanager->container->get( 'competition_notification_service' )
-            : new Competition_Notification_Service();
+    public function get_notification_service(): ?Competition_Notification_Service {
+        return $this->competition_notification_service;
     }
 
-    /**
-     * Resolve Fixture_Service instance from container or provider.
-     */
-    private function get_fixture_service(): Fixture_Service {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_service' )
-            ? $racketmanager->container->get( 'fixture_service' )
-            : new Fixture_Service( new Repository_Provider(), new Service_Provider() );
+    public function get_fixture_service(): ?Fixture_Service {
+        return $this->fixture_service;
     }
 
-    /**
-     * Resolve Fixture_Repository instance from container or fallback.
-     */
-    private function get_fixture_repository(): Fixture_Repository_Interface {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-            ? $racketmanager->container->get( 'fixture_repository' )
-            : new Fixture_Repository();
+    public function get_fixture_repository(): ?Fixture_Repository_Interface {
+        return $this->fixture_repository;
     }
 
-    /**
-     * Resolve League_Repository instance from container or fallback.
-     */
-    private function get_league_repository(): League_Repository_Interface {
-        global $racketmanager;
-        return isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
-            ? $racketmanager->container->get( 'league_repository' )
-            : new League_Repository();
+    public function get_league_repository(): ?League_Repository_Interface {
+        return $this->league_repository;
+    }
+
+    public function get_fixture_result_manager(): ?Fixture_Result_Manager {
+        return $this->fixture_result_manager;
+    }
+
+    public function get_app_notification_service(): ?Notification_Service {
+        return $this->notification_service;
     }
 }
 

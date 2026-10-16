@@ -11,6 +11,7 @@ namespace Racketmanager\Services;
 
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\DTO\Team\Team_Fixture_Settings_DTO;
+use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
 use Racketmanager\Domain\Team;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Event_Not_Found_Exception;
@@ -27,7 +28,7 @@ use WP_Error;
 /**
  * Class to implement the Team Management Service
  */
-class Team_Service {
+class Team_Service implements Fixture_Team_Resolver_Interface {
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
     private Event_Repository $event_repository;

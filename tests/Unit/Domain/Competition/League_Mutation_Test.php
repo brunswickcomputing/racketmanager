@@ -56,6 +56,10 @@ class League_Mutation_Test extends TestCase {
             ->onlyMethods( [ 'update_standings', 'get_matches', 'notify_league_team_withdrawn' ] )
             ->getMock();
         $this->league->id = 5;
+        $this->league->set_fixture_repository( $this->fixture_repository );
+        $this->league->set_league_repository( $this->league_repository );
+        $this->league->set_fixture_result_manager( $this->fixture_result_manager );
+        $this->league->set_notification_service( $this->notification_service );
     }
 
     protected function tearDown(): void {

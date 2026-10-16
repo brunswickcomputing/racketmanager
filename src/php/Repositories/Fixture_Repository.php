@@ -11,6 +11,9 @@ namespace Racketmanager\Repositories;
 
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
+use Racketmanager\Domain\Fixture\Fixture_Team_Resolver_Interface;
+use Racketmanager\Domain\Fixture\Fixture_Update_Authorizer_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Export\DTO\Export_Criteria;
 use wpdb;
@@ -22,11 +25,22 @@ use wpdb;
 class Fixture_Repository implements Fixture_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
+    private ?League_Repository_Interface $league_repository;
+    private ?Fixture_Team_Resolver_Interface $team_service;
+    private ?Fixture_Update_Authorizer_Interface $update_authorizer;
 
-    public function __construct() {
+    public function __construct(
+        ?wpdb $db = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Fixture_Team_Resolver_Interface $team_service = null,
+        ?Fixture_Update_Authorizer_Interface $update_authorizer = null
+    ) {
         global $wpdb;
-        $this->wpdb       = $wpdb;
+        $this->wpdb       = $db ?? $wpdb;
         $this->table_name = $this->wpdb->prefix . 'racketmanager_matches';
+        $this->league_repository = $league_repository;
+        $this->team_service = $team_service;
+        $this->update_authorizer = $update_authorizer;
     }
 
     public function save( object $entity ): bool|int {
@@ -177,7 +191,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
             return null;
         }
 
-        return Fixture_Factory::from_object( $row );
+        return $this->hydrate_fixture( $row );
     }
 
     /**
@@ -241,7 +255,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results           = $this->wpdb->get_results( $query );
 
         return array_map(
-            fn( $row ) => Fixture_Factory::from_object( $row ),
+            fn( $row ) => $this->hydrate_fixture( $row ),
             $results
         );
     }
@@ -272,7 +286,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         );
         $results = $this->wpdb->get_results( $query );
         foreach ( $results as &$row ) {
-            $row = Fixture_Factory::from_object( $row );
+            $row = $this->hydrate_fixture( $row );
         }
 
         return $results;
@@ -313,7 +327,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results = $this->wpdb->get_results( $sql );
 
         return array_map(
-            fn( $row ) => Fixture_Factory::from_object( $row ),
+            fn( $row ) => $this->hydrate_fixture( $row ),
             $results
         );
     }
@@ -336,7 +350,7 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         $results = $this->wpdb->get_results( $query );
 
         return array_map(
-            fn( $row ) => Fixture_Factory::from_object( $row ),
+            fn( $row ) => $this->hydrate_fixture( $row ),
             $results
         );
     }
@@ -577,6 +591,15 @@ class Fixture_Repository implements Fixture_Repository_Interface {
         }
 
         return null;
+    }
+
+    private function hydrate_fixture( object $row ): Fixture {
+        return Fixture_Factory::from_object(
+            $row,
+            $this->league_repository,
+            $this->team_service,
+            $this->update_authorizer
+        );
     }
 
     /**

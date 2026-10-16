@@ -38,4 +38,5 @@ interface League_Repository_Interface extends Repository_Interface {
     public function get_player_team( int $league_id, array $args ): ?object;
     public function update_seasons( int $league_id, array $seasons ): bool;
     public function query_matches( int $league_id, array $query_args, bool $count = false ): array|int;
+    public function wire_league_collaborators( League $league ): void;
 }

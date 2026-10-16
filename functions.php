@@ -16,6 +16,7 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Team;
 use Racketmanager\Domain\Message;
 use Racketmanager\Domain\Player;
+use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Domain\Racketmanager_Match;
 use Racketmanager\Domain\Results_Checker;
 use Racketmanager\Domain\Results_Report;
@@ -25,6 +26,7 @@ use Racketmanager\Domain\Tournament_Entry;
 use Racketmanager\Domain\User;
 use Racketmanager\Repositories\Club_Repository;
 use Racketmanager\Repositories\Club_Role_Repository;
+use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Player_Repository;
 
 /**
@@ -252,10 +254,25 @@ function get_league( object|int|string|null $league = null ): ?League {
     }
     if ( $league instanceof League ) {
         $_league = $league;
-    } elseif ( is_object( $league ) ) {
-        $_league = new League( $league );
+    } elseif ( is_object( $league ) || $league ) {
+        global $racketmanager;
+        $league_repository = null;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' ) ) {
+            $league_repository = $racketmanager->container->get( 'league_repository' );
+        }
+        $league_repository = $league_repository ?? new League_Repository();
+        if ( is_object( $league ) ) {
+            $_league = new League( $league );
+            $league_repository->wire_league_collaborators( $_league );
+        } else {
+            if ( is_numeric( $league ) ) {
+                $_league = $league_repository->find_by_id( (int) $league );
+            } else {
+                $_league = $league_repository->find_by_name( (string) $league );
+            }
+        }
     } else {
-        $_league = League::get_instance( $league );
+        $_league = null;
     }
     if ( ! $_league ) {
         return null;
@@ -382,15 +399,27 @@ function get_team( object|int|string|null $team = null ): ?object {
  *
  * @return object|null player|null
  */
-function get_player( int|string|null $player = null, string $search_term = 'id' ): ?object {
+function get_player( int|string|object|null $player = null, string $search_term = 'id' ): ?object {
     if ( empty( $player ) && isset( $GLOBALS['player'] ) ) {
         $player = $GLOBALS['player'];
     }
+    if ( ! $player ) {
+        return null;
+    }
+    global $racketmanager;
+    $player_repository = null;
+    if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'player_repository' ) ) {
+        $player_repository = $racketmanager->container->get( 'player_repository' );
+    }
+    $player_repository = $player_repository ?? new Player_Repository();
     if ( $player instanceof Player ) {
         $_player = $player;
+        $player_repository->wire_player_collaborators( $_player );
+    } elseif ( is_object( $player ) ) {
+        $_player = Player_Factory::from_object( $player );
+        $player_repository->wire_player_collaborators( $_player );
     } else {
-        $player_repository = new Player_Repository();
-        $_player           = $player_repository->find( $player, $search_term );
+        $_player = $player_repository->find( $player, $search_term );
     }
     if ( ! $_player ) {
         return null;

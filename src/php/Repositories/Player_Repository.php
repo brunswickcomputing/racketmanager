@@ -9,12 +9,15 @@
 
 namespace Racketmanager\Repositories;
 
+use Closure;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Player_Factory;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Update_Exception;
 use Racketmanager\Repositories\Interfaces\Player_Repository_Interface;
+use Racketmanager\Services\Player_Query_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use WP_User;
@@ -28,14 +31,53 @@ class Player_Repository implements Player_Repository_Interface {
     const string META_KEY_BTM = 'btm';
     const string META_KEY_YOB = 'year_of_birth';
     private wpdb $wpdb;
+    private Player_Query_Service|Closure|null $player_query_service = null;
+    private Player_Stats_Service|Closure|null $player_stats_service = null;
 
     /**
      * Create a new Player_Repository instance.
      *
+     * @param wpdb|null $db
+     * @param Player_Query_Service|Closure|null $player_query_service
+     * @param Player_Stats_Service|Closure|null $player_stats_service
      */
-    public function __construct() {
+    public function __construct(
+        ?wpdb $db = null,
+        Player_Query_Service|Closure|null $player_query_service = null,
+        Player_Stats_Service|Closure|null $player_stats_service = null
+    ) {
         global $wpdb;
-        $this->wpdb = $wpdb;
+        $this->wpdb = $db ?? $wpdb;
+        $this->player_query_service = $player_query_service;
+        $this->player_stats_service = $player_stats_service;
+    }
+
+    public function wire_player_collaborators( Player $player ): void {
+        $query_svc = $this->resolve_player_query_service();
+        if ( $query_svc ) {
+            $player->set_player_query_service( $query_svc );
+        }
+        $stats_svc = $this->resolve_player_stats_service();
+        if ( $stats_svc ) {
+            $player->set_player_stats_service( $stats_svc );
+        }
+    }
+
+    private function resolve_collaborator( mixed &$collaborator ): mixed {
+        if ( $collaborator instanceof Closure ) {
+            $collaborator = $collaborator();
+        }
+        return $collaborator;
+    }
+
+    private function resolve_player_query_service(): ?Player_Query_Service {
+        $resolved = $this->resolve_collaborator( $this->player_query_service );
+        return $resolved instanceof Player_Query_Service ? $resolved : null;
+    }
+
+    private function resolve_player_stats_service(): ?Player_Stats_Service {
+        $resolved = $this->resolve_collaborator( $this->player_stats_service );
+        return $resolved instanceof Player_Stats_Service ? $resolved : null;
     }
 
     /**
@@ -255,6 +297,9 @@ class Player_Repository implements Player_Repository_Interface {
         }
         $player = wp_cache_get( $player_id, 'players' );
         if ( $player ) {
+            if ( $player instanceof Player ) {
+                $this->wire_player_collaborators( $player );
+            }
             return $player;
         }
 
@@ -302,7 +347,11 @@ class Player_Repository implements Player_Repository_Interface {
         $player->data->opt_ins = get_user_meta( $player->data->ID, 'racketmanager_opt_in' );
 
         // Create a new Player object from the retrieved user data.
-        $player = Player_Factory::from_object( $player->data );
+        $player = Player_Factory::from_object(
+            $player->data,
+            $this->resolve_player_query_service(),
+            $this->resolve_player_stats_service()
+        );
         wp_cache_set( $player_id, $player, 'players' );
 
         return $player;

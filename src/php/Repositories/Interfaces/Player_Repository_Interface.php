@@ -34,4 +34,5 @@ interface Player_Repository_Interface extends Repository_Interface {
     public function get_titles( $player_id ): array;
     public function find_active_players_by_competition_and_season( int $competition_id, string $season ): array;
     public function find_by_team( int $team_id ): array;
+    public function wire_player_collaborators( Player $player ): void;
 }

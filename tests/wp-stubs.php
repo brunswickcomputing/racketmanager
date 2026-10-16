@@ -586,12 +586,30 @@ namespace {
 
     if ( ! function_exists( 'wp_cache_get' ) ) {
         function wp_cache_get( $id, $group = '' ) {
+            if ( ! empty( $GLOBALS['wp_stubs_cache_enabled'] ) ) {
+                $group = $group ?: 'default';
+                if ( isset( $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ] ) ) {
+                    $item = $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ];
+                    if ( 'serialize' === ( $GLOBALS['wp_stubs_cache_mode'] ?? 'clone' ) ) {
+                        return is_object( $item ) || is_array( $item ) ? unserialize( serialize( $item ) ) : $item;
+                    }
+                    return is_object( $item ) ? clone $item : $item;
+                }
+            }
             return false;
         }
     }
 
     if ( ! function_exists( 'wp_cache_set' ) ) {
         function wp_cache_set( $id, $data, $group = '', $expire = 0 ) {
+            if ( ! empty( $GLOBALS['wp_stubs_cache_enabled'] ) ) {
+                $group = $group ?: 'default';
+                if ( 'serialize' === ( $GLOBALS['wp_stubs_cache_mode'] ?? 'clone' ) ) {
+                    $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ] = is_object( $data ) || is_array( $data ) ? unserialize( serialize( $data ) ) : $data;
+                } else {
+                    $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ] = is_object( $data ) ? clone $data : $data;
+                }
+            }
             return true;
         }
     }
@@ -709,6 +727,10 @@ namespace {
     if ( ! function_exists( 'wp_cache_delete' ) ) {
         function wp_cache_delete( $id, $group = '' ) {
             $GLOBALS['wp_stubs_cache_deleted'][] = array( $id, $group );
+            if ( ! empty( $GLOBALS['wp_stubs_cache_enabled'] ) ) {
+                $group = $group ?: 'default';
+                unset( $GLOBALS['wp_stubs_cache'][ $group ][ (string) $id ] );
+            }
             return true;
         }
     }
@@ -1324,12 +1346,15 @@ namespace Racketmanager {
     }
 
     if ( ! function_exists( 'Racketmanager\get_league' ) ) {
-        function get_league( $id = null ) {
-            if ( null === $id ) {
+        function get_league( $league = null ) {
+            if ( $league instanceof \Racketmanager\Domain\Competition\League ) {
+                return $league;
+            }
+            if ( null === $league ) {
                 return $GLOBALS['league'] ?? null;
             }
-            if ( isset( $GLOBALS['wp_stubs_leagues'][ $id ] ) ) {
-                return $GLOBALS['wp_stubs_leagues'][ $id ];
+            if ( ( is_int( $league ) || is_string( $league ) ) && isset( $GLOBALS['wp_stubs_leagues'][ $league ] ) ) {
+                return $GLOBALS['wp_stubs_leagues'][ $league ];
             }
             return null;
         }
@@ -1474,6 +1499,58 @@ namespace Racketmanager {
         }
     }
 
+    class Stub_Event extends Event {
+        private const DEFAULT_SEASON = '2024-25';
+
+        /**
+         * @noinspection PhpMissingParentConstructorInspection
+         */
+        public function __construct( int $id = 0 ) {
+            $this->id   = $id;
+            $this->name = 'Test Event';
+            $this->type = 'doubles';
+
+            $default_season = [ 'name' => self::DEFAULT_SEASON ];
+
+            $this->competition = (object) [
+                'settings'        => new \Racketmanager\Domain\Competition\Competition_Settings( [
+                    'point_rule' => 'three',
+                    'mode'       => 'league',
+                    'sport'      => 'tennis',
+                ] ),
+                'type'            => \Racketmanager\Domain\Competition\Competition_Type::LEAGUE,
+                'is_player_entry' => false,
+                'standings'       => [],
+                'current_season'  => $default_season,
+            ];
+
+            $this->seasons     = json_encode( [ $default_season ] );
+            $this->num_sets    = 3;
+            $this->num_rubbers = 6;
+            $this->standings   = [];
+        }
+
+        public function get_num_sets(): int {
+            return $this->num_sets;
+        }
+
+        public function get_num_rubbers(): ?int {
+            return $this->num_rubbers;
+        }
+
+        public function get_season_event( $season = false, bool $index = false ): array|false|string {
+            return self::DEFAULT_SEASON;
+        }
+
+        public function get_seasons(): array {
+            return [ [ 'name' => self::DEFAULT_SEASON ] ];
+        }
+
+        public function set_num_leagues( bool $total = false ): void {}
+
+        public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
+    }
+
     if ( ! function_exists( 'Racketmanager\get_event' ) ) {
         /**
          * Stub for get_event() in test environments.
@@ -1495,57 +1572,7 @@ namespace Racketmanager {
                 return null;
             }
 
-            return new class( (int) $event_id ) extends Event {
-                private const DEFAULT_SEASON = '2024-25';
-
-                /**
-                 * @noinspection PhpMissingParentConstructorInspection
-                 */
-                public function __construct( int $id ) {
-                    $this->id   = $id;
-                    $this->name = 'Test Event';
-                    $this->type = 'doubles';
-
-                    $default_season = [ 'name' => self::DEFAULT_SEASON ];
-
-                    $this->competition = (object) [
-                        'settings'        => new \Racketmanager\Domain\Competition\Competition_Settings( [
-                            'point_rule' => 'three',
-                            'mode'       => 'league',
-                            'sport'      => 'tennis',
-                        ] ),
-                        'type'            => \Racketmanager\Domain\Competition\Competition_Type::LEAGUE,
-                        'is_player_entry' => false,
-                        'standings'       => [],
-                        'current_season'  => $default_season,
-                    ];
-
-                    $this->seasons     = json_encode( [ $default_season ] );
-                    $this->num_sets    = 3;
-                    $this->num_rubbers = 6;
-                    $this->standings   = [];
-                }
-
-                public function get_num_sets(): int {
-                    return $this->num_sets;
-                }
-
-                public function get_num_rubbers(): ?int {
-                    return $this->num_rubbers;
-                }
-
-                public function get_season_event( $season = false, bool $index = false ): array|false|string {
-                    return self::DEFAULT_SEASON;
-                }
-
-                public function get_seasons(): array {
-                    return [ [ 'name' => self::DEFAULT_SEASON ] ];
-                }
-
-                public function set_num_leagues( bool $total = false ): void {}
-
-                public function set_season( ?string $season = null, bool $force_overwrite = false ): void {}
-            };
+            return new Stub_Event( (int) $event_id );
         }
     }
 

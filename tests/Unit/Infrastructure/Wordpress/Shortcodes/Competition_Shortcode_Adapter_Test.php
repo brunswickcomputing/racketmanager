@@ -33,7 +33,9 @@ use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Finance_Service;
+use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Player_Stats_Service;
 use Racketmanager\Services\Registration_Service;
 use Racketmanager\Services\Team_Service;
 use Racketmanager\Services\Tournament_Service;
@@ -418,6 +420,16 @@ class Competition_Shortcode_Adapter_Test extends TestCase {
             'surname'      => 'Doe',
             'user_login'   => 'jdoe',
         ] );
+        $player_query_service = $this->createStub( Player_Query_Service::class );
+        $player_query_service->method( 'get_matches' )->willReturn( [] );
+        $player_query_service->method( 'get_competitions' )->willReturn( [] );
+        $player->set_player_query_service( $player_query_service );
+
+        $player_stats_service = $this->createStub( Player_Stats_Service::class );
+        $player_stats_service->method( 'get_stats' )->willReturn( [] );
+        $player_stats_service->method( 'get_career_stats' )->willReturn( [] );
+        $player->set_player_stats_service( $player_stats_service );
+
         $comp_service->method( 'get_by_id' )->willReturn( $competition );
         $player_service->method( 'get_player' )->willReturn( $player );
         $player_service->method( 'get_player_by_name' )->willReturn( $player );

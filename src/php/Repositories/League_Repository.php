@@ -9,9 +9,17 @@
 
 namespace Racketmanager\Repositories;
 
+use Closure;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\Competition\League_Factory;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Services\Competition\Competition_Notification_Service;
+use Racketmanager\Services\Competition\League_Schedule_Service;
+use Racketmanager\Services\Fixture\Fixture_Result_Manager;
+use Racketmanager\Services\Fixture_Service;
+use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Util\Util;
 
 /**
@@ -20,13 +28,36 @@ use Racketmanager\Util\Util;
 class League_Repository implements League_Repository_Interface {
     private ?object $wpdb = null;
     private ?string $table_name = null;
+    private Fixture_Repository_Interface|Closure|null $fixture_repository = null;
+    private Standings_Service|Closure|null $standings_service = null;
+    private League_Schedule_Service|Closure|null $league_schedule_service = null;
+    private Competition_Notification_Service|Closure|null $competition_notification_service = null;
+    private Fixture_Service|Closure|null $fixture_service = null;
+    private Fixture_Result_Manager|Closure|null $fixture_result_manager = null;
+    private Notification_Service|Closure|null $notification_service = null;
 
-    public function __construct( ?object $db = null ) {
+    public function __construct(
+        ?object $db = null,
+        Fixture_Repository_Interface|Closure|null $fixture_repository = null,
+        Standings_Service|Closure|null $standings_service = null,
+        League_Schedule_Service|Closure|null $league_schedule_service = null,
+        Competition_Notification_Service|Closure|null $competition_notification_service = null,
+        Fixture_Service|Closure|null $fixture_service = null,
+        Fixture_Result_Manager|Closure|null $fixture_result_manager = null,
+        Notification_Service|Closure|null $notification_service = null
+    ) {
         $this->wpdb = $db ?? ( $GLOBALS['wpdb'] ?? null );
         if ( $this->wpdb ) {
             $prefix = isset( $this->wpdb->prefix ) ? (string) $this->wpdb->prefix : 'wp_';
             $this->table_name = $prefix . 'racketmanager_leagues';
         }
+        $this->fixture_repository = $fixture_repository;
+        $this->standings_service = $standings_service;
+        $this->league_schedule_service = $league_schedule_service;
+        $this->competition_notification_service = $competition_notification_service;
+        $this->fixture_service = $fixture_service;
+        $this->fixture_result_manager = $fixture_result_manager;
+        $this->notification_service = $notification_service;
     }
 
     public function save( object $entity ): bool|int {
@@ -89,12 +120,14 @@ class League_Repository implements League_Repository_Interface {
             if ( ! $league ) {
                 return null;
             }
-            $league = League_Factory::from_object( $league );
+            $league = $this->hydrate_league( $league );
             if ( ! $league ) {
                 return null;
             }
 
             wp_cache_set( $league->id, $league, 'leagues' );
+        } elseif ( $league instanceof League ) {
+            $this->wire_league_collaborators( $league );
         }
 
         return $league;
@@ -118,16 +151,108 @@ class League_Repository implements League_Repository_Interface {
             if ( ! $league ) {
                 return null;
             }
-            $league = League_Factory::from_object( $league );
+            $league = $this->hydrate_league( $league );
             if ( ! $league ) {
                 return null;
             }
 
             wp_cache_set( $name, $league, 'leagues' );
             wp_cache_set( $league->id, $league, 'leagues' );
+        } elseif ( $league instanceof League ) {
+            $this->wire_league_collaborators( $league );
         }
 
         return $league;
+    }
+
+    public function wire_league_collaborators( League $league ): void {
+        $league->set_league_repository( $this );
+
+        $fixture_repo = $this->resolve_fixture_repository();
+        if ( $fixture_repo ) {
+            $league->set_fixture_repository( $fixture_repo );
+        }
+        $standings_svc = $this->resolve_standings_service();
+        if ( $standings_svc ) {
+            $league->set_standings_service( $standings_svc );
+        }
+        $schedule_svc = $this->resolve_league_schedule_service();
+        if ( $schedule_svc ) {
+            $league->set_league_schedule_service( $schedule_svc );
+        }
+        $notification_svc = $this->resolve_competition_notification_service();
+        if ( $notification_svc ) {
+            $league->set_competition_notification_service( $notification_svc );
+        }
+        $fixture_svc = $this->resolve_fixture_service();
+        if ( $fixture_svc ) {
+            $league->set_fixture_service( $fixture_svc );
+        }
+        $result_mgr = $this->resolve_fixture_result_manager();
+        if ( $result_mgr ) {
+            $league->set_fixture_result_manager( $result_mgr );
+        }
+        $app_notify_svc = $this->resolve_notification_service();
+        if ( $app_notify_svc ) {
+            $league->set_notification_service( $app_notify_svc );
+        }
+    }
+
+    private function hydrate_league( object $row ): ?League {
+        return League_Factory::from_object(
+            $row,
+            null,
+            $this,
+            $this->resolve_fixture_repository(),
+            $this->resolve_standings_service(),
+            $this->resolve_league_schedule_service(),
+            $this->resolve_competition_notification_service(),
+            $this->resolve_fixture_service(),
+            $this->resolve_fixture_result_manager(),
+            $this->resolve_notification_service()
+        );
+    }
+
+    private function resolve_collaborator( mixed &$collaborator ): mixed {
+        if ( $collaborator instanceof Closure ) {
+            $collaborator = $collaborator();
+        }
+        return $collaborator;
+    }
+
+    private function resolve_fixture_repository(): ?Fixture_Repository_Interface {
+        $resolved = $this->resolve_collaborator( $this->fixture_repository );
+        return $resolved instanceof Fixture_Repository_Interface ? $resolved : null;
+    }
+
+    private function resolve_standings_service(): ?Standings_Service {
+        $resolved = $this->resolve_collaborator( $this->standings_service );
+        return $resolved instanceof Standings_Service ? $resolved : null;
+    }
+
+    private function resolve_league_schedule_service(): ?League_Schedule_Service {
+        $resolved = $this->resolve_collaborator( $this->league_schedule_service );
+        return $resolved instanceof League_Schedule_Service ? $resolved : null;
+    }
+
+    private function resolve_competition_notification_service(): ?Competition_Notification_Service {
+        $resolved = $this->resolve_collaborator( $this->competition_notification_service );
+        return $resolved instanceof Competition_Notification_Service ? $resolved : null;
+    }
+
+    private function resolve_fixture_service(): ?Fixture_Service {
+        $resolved = $this->resolve_collaborator( $this->fixture_service );
+        return $resolved instanceof Fixture_Service ? $resolved : null;
+    }
+
+    private function resolve_fixture_result_manager(): ?Fixture_Result_Manager {
+        $resolved = $this->resolve_collaborator( $this->fixture_result_manager );
+        return $resolved instanceof Fixture_Result_Manager ? $resolved : null;
+    }
+
+    private function resolve_notification_service(): ?Notification_Service {
+        $resolved = $this->resolve_collaborator( $this->notification_service );
+        return $resolved instanceof Notification_Service ? $resolved : null;
     }
 
     public function find_next_sequence_number( string $event_name ): int {

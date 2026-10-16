@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Domain\Competition;
 
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionMethod;
 use stdClass;
@@ -48,6 +49,7 @@ class League_Test extends TestCase {
         ];
 
         $league = new Testable_League( $league_raw );
+        $league->set_standings_service( new Standings_Service() );
         $league->num_rubbers     = $overrides['num_rubbers'] ?? 6;
         $league->num_sets        = $overrides['num_sets'] ?? 2;
         $league->num_sets_to_win = $overrides['num_sets_to_win'] ?? 2;

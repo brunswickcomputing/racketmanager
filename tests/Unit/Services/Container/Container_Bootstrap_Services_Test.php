@@ -7,12 +7,15 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
 use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
 use Racketmanager\RacketManager;
+use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Result_Repository_Interface;
+use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Container\Container_Bootstrap;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Finance_Service;
 use Racketmanager\Services\Fixture\Fixture_Lifecycle_Service;
+use Racketmanager\Services\Fixture\Fixture_Permission_Service;
 use Racketmanager\Services\Notification\Notification_Service;
 use Racketmanager\Services\Player_Query_Service;
 use Racketmanager\Services\Player_Stats_Service;
@@ -55,6 +58,25 @@ class Container_Bootstrap_Services_Test extends TestCase {
         $this->assertTrue( $this->container->has( 'fixture_lifecycle_service' ) );
         $service = $this->container->get( 'fixture_lifecycle_service' );
         $this->assertInstanceOf( Fixture_Lifecycle_Service::class, $service );
+    }
+
+    public function test_fixture_repository_and_permission_service_resolve_without_cycle(): void {
+        $repository = $this->container->get( 'fixture_repository' );
+        $this->assertInstanceOf( Fixture_Repository::class, $repository );
+
+        $service = $this->container->get( 'fixture_permission_service' );
+        $this->assertInstanceOf( Fixture_Permission_Service::class, $service );
+    }
+
+    public function test_league_repository_and_fixture_repository_resolve_without_cycle(): void {
+        $league_repository = $this->container->get( 'league_repository' );
+        $this->assertInstanceOf( League_Repository::class, $league_repository );
+
+        $fixture_repository = $this->container->get( 'fixture_repository' );
+        $this->assertInstanceOf( Fixture_Repository::class, $fixture_repository );
+
+        $this->assertSame( $league_repository, $this->container->get( 'league_repository' ) );
+        $this->assertSame( $fixture_repository, $this->container->get( 'fixture_repository' ) );
     }
 
     public function test_container_resolves_player_query_and_stats_services(): void {

@@ -274,7 +274,9 @@ class Event_Matches_Hydration_Test extends TestCase {
 				'away_team' => '102',
 				'date'      => '2026-06-15 19:30:45',
 				'match_day' => 1,
-			)
+			),
+			$league_repo,
+			$team_service
 		);
 
 		$this->event_repository->expects( $this->once() )
@@ -538,6 +540,18 @@ class Event_Matches_Hydration_Test extends TestCase {
 			)
 		);
 		$this->container->set( 'team_service', $team_service );
+		$fixture = Fixture_Factory::from_array(
+			array(
+				'id'        => $fixture->get_id(),
+				'date'      => $fixture->get_date(),
+				'match_day' => $fixture->get_match_day(),
+				'league_id' => $fixture->get_league_id(),
+				'home_team' => $fixture->get_home_team(),
+				'away_team' => $fixture->get_away_team(),
+			),
+			$league_repository,
+			$team_service
+		);
 
 		$this->event_repository->method( 'query_matches' )->willReturn( array( (object) array( 'id' => $fixture->id ) ) );
 		$this->fixture_repository->expects( $this->once() )->method( 'find_by_id' )->with( $fixture->id )->willReturn( $fixture );

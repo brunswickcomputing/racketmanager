@@ -15,6 +15,7 @@ use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invalid_Argument_Exception;
 use Racketmanager\Exceptions\Team_Not_Found_Exception;
 use Racketmanager\Repositories\Rubber_Repository;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 
 /**
  * Class Fixture
@@ -23,6 +24,10 @@ use Racketmanager\Repositories\Rubber_Repository;
  * @package Racketmanager\Domain
  */
 class Fixture {
+
+    private ?League_Repository_Interface $league_repository = null;
+    private ?Fixture_Team_Resolver_Interface $team_service = null;
+    private ?Fixture_Update_Authorizer_Interface $update_authorizer = null;
 
     /**
      * Fixture title
@@ -372,7 +377,16 @@ class Fixture {
      *
      * @param Fixture_Hydration_DTO|null $dto Typed hydration DTO. Use Fixture_Factory for raw rows.
      */
-    public function __construct( ?Fixture_Hydration_DTO $dto = null ) {
+    public function __construct(
+        ?Fixture_Hydration_DTO $dto = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Fixture_Team_Resolver_Interface $team_service = null,
+        ?Fixture_Update_Authorizer_Interface $update_authorizer = null
+    ) {
+        $this->league_repository = $league_repository;
+        $this->team_service = $team_service;
+        $this->update_authorizer = $update_authorizer;
+
         if ( is_null( $dto ) ) {
             return;
         }
@@ -588,25 +602,10 @@ class Fixture {
         if ( is_object( $this->league ) ) {
             return $this->league;
         }
-        if ( $this->league_id ) {
-            global $racketmanager;
-            if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_service' ) ) {
-                $league_repo = $racketmanager->container->get( 'competition_service' )->get_league_repository();
-                $league = $league_repo->find_by_id( (int) $this->league_id );
-                if ( $league ) {
-                    $this->league = $league;
-                    return $league;
-                }
-            }
-            if ( function_exists( '\Racketmanager\get_league' ) ) {
-                $league = get_league( $this->league_id );
-                if ( $league ) {
-                    $this->league = $league;
-                    return $league;
-                }
-            }
+        if ( $this->league_id && $this->league_repository ) {
+            $this->league = $this->league_repository->find_by_id( $this->league_id );
         }
-        return null;
+        return is_object( $this->league ) ? $this->league : null;
     }
 
     /**
@@ -619,25 +618,20 @@ class Fixture {
             return $this->teams;
         }
 
-        global $racketmanager;
-        $team_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'team_service' )
-            ? $racketmanager->container->get( 'team_service' )
-            : null;
-
         $home_val = $this->get_home_team();
         $away_val = $this->get_away_team();
 
         $home_dtls = null;
         $away_dtls = null;
-        if ( $team_service ) {
+        if ( $this->team_service ) {
             try {
-                $home_dtls = is_numeric( $home_val ) ? $team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $team_service->derive_team_details( (string) $home_val ) : null );
+                $home_dtls = is_numeric( $home_val ) ? $this->team_service->get_team_details( (int) $home_val ) : ( ! empty( $home_val ) ? $this->team_service->derive_team_details( (string) $home_val ) : null );
             } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
                 $home_dtls = null;
             }
 
             try {
-                $away_dtls = is_numeric( $away_val ) ? $team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $team_service->derive_team_details( (string) $away_val ) : null );
+                $away_dtls = is_numeric( $away_val ) ? $this->team_service->get_team_details( (int) $away_val ) : ( ! empty( $away_val ) ? $this->team_service->derive_team_details( (string) $away_val ) : null );
             } catch ( Team_Not_Found_Exception | Club_Not_Found_Exception | Invalid_Argument_Exception ) {
                 $away_dtls = null;
             }
@@ -1199,14 +1193,8 @@ class Fixture {
      * @return object
      */
     public function is_update_allowed(): object {
-        global $racketmanager;
-        if ( isset( $racketmanager->container ) ) {
-            if ( $racketmanager->container->has( 'fixture_permission_service' ) ) {
-                return $racketmanager->container->get( 'fixture_permission_service' )->is_update_allowed( $this );
-            }
-            if ( $racketmanager->container->has( 'fixture_service' ) ) {
-                return $racketmanager->container->get( 'fixture_service' )->is_update_allowed( $this );
-            }
+        if ( $this->update_authorizer ) {
+            return $this->update_authorizer->is_update_allowed( $this );
         }
         return (object) array( 'user_can_update' => false );
     }

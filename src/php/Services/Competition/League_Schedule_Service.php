@@ -26,13 +26,11 @@ class League_Schedule_Service {
 		$this->schedule_round_robin = $schedule_round_robin ?? new Schedule_Round_Robin();
 	}
 
-	private function get_fixture_service(): Fixture_Service {
-		if ( null === $this->fixture_service ) {
-			global $racketmanager;
-			$this->fixture_service = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_service' )
-				? $racketmanager->container->get( 'fixture_service' )
-				: new Fixture_Service();
-		}
+	public function set_fixture_service( Fixture_Service $fixture_service ): void {
+		$this->fixture_service = $fixture_service;
+	}
+
+	public function get_fixture_service(): ?Fixture_Service {
 		return $this->fixture_service;
 	}
 
@@ -161,6 +159,9 @@ class League_Schedule_Service {
 	 */
 	public function create_match_schedule( League $league, array $rounds, array $teams, array $match_dates, string $season, bool $is_box ): void {
 		$fixture_service = $this->get_fixture_service();
+		if ( ! $fixture_service ) {
+			throw new \RuntimeException( 'Cannot create match schedule: Fixture_Service collaborator is required.' );
+		}
 
 		$num_rounds = count( $rounds );
 		for ( $i = 0; $i < $num_rounds; $i++ ) {

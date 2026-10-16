@@ -9,6 +9,9 @@ use Racketmanager\Domain\Competition\League;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Event_Repository;
+use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\Event_Repository_Interface;
 use Racketmanager\Services\Notification\Notification_Service;
 
 /**
@@ -16,13 +19,21 @@ use Racketmanager\Services\Notification\Notification_Service;
  */
 class Knockout_Progression_Service
 {
-    private Fixture_Repository $fixture_repository;
+    private Fixture_Repository_Interface $fixture_repository;
+    private League_Repository_Interface $league_repository;
+    private Event_Repository_Interface $event_repository;
     private ?Notification_Service $notification_service = null;
 
     public function __construct(
-        ?Fixture_Repository $fixture_repository = null
+        ?Fixture_Repository_Interface $fixture_repository = null,
+        ?League_Repository_Interface $league_repository = null,
+        ?Event_Repository_Interface $event_repository = null,
+        ?Notification_Service $notification_service = null
     ) {
         $this->fixture_repository = $fixture_repository ?? new Fixture_Repository();
+        $this->league_repository = $league_repository ?? new League_Repository();
+        $this->event_repository = $event_repository ?? new Event_Repository();
+        $this->notification_service = $notification_service;
     }
 
     /**
@@ -57,7 +68,7 @@ class Knockout_Progression_Service
         }
 
         if (!$league) {
-            $league = (new League_Repository())->find_by_id($championship->league_id());
+            $league = $this->league_repository->find_by_id($championship->league_id());
         }
 
         if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
@@ -196,7 +207,7 @@ class Knockout_Progression_Service
         }
 
         if (!$league) {
-            $league = (new League_Repository())->find_by_id($championship->league_id());
+            $league = $this->league_repository->find_by_id($championship->league_id());
         }
 
         if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
@@ -234,8 +245,7 @@ class Knockout_Progression_Service
         $championship = $stage->get_championship();
 
         if (!$league) {
-            $league_repository = new League_Repository();
-            $league = $league_repository->find_by_id($fixture->get_league_id());
+            $league = $this->league_repository->find_by_id($fixture->get_league_id());
         }
 
         if ($league && $fixture->get_season() && $league->get_season() !== $fixture->get_season()) {
@@ -259,8 +269,7 @@ class Knockout_Progression_Service
             return;
         }
 
-        $event_repository = new Event_Repository();
-        $event = $event_repository->find_by_id($league->get_event_id());
+        $event = $this->event_repository->find_by_id($league->get_event_id());
         if (!$event) {
             return;
         }
@@ -282,7 +291,8 @@ class Knockout_Progression_Service
         $team_ref = '2_' . $final_round . '_' . $fixture->get_id();
 
         foreach ($consolation_league_ids as $c_league_id) {
-            $c_league = (new League_Repository())->find_by_id($c_league_id);
+            $league_lookup_id = is_object($c_league_id) ? (int) ($c_league_id->id ?? 0) : (int) $c_league_id;
+            $c_league = $this->league_repository->find_by_id($league_lookup_id);
             if (!$c_league) {
                 continue;
             }
@@ -314,13 +324,13 @@ class Knockout_Progression_Service
     /**
      * Find the 0-based index of the fixture in its current round.
      *
-     * @param Fixture_Repository $repository
+     * @param Fixture_Repository_Interface $repository
      * @param League $league
      * @param Fixture $fixture
      * @param string $final_round
      * @return int
      */
-    private function find_fixture_index(Fixture_Repository $repository, League $league, Fixture $fixture, string $final_round): int
+    private function find_fixture_index(Fixture_Repository_Interface $repository, League $league, Fixture $fixture, string $final_round): int
     {
         $current_round_fixtures = $repository->find_by_league_and_final(
             $league->get_id(),
@@ -345,7 +355,7 @@ class Knockout_Progression_Service
     /**
      * Update fixtures in the next round with placeholders.
      *
-     * @param Fixture_Repository $repository
+     * @param Fixture_Repository_Interface $repository
      * @param League $league
      * @param Fixture $fixture
      * @param string $next_round_key
@@ -354,7 +364,7 @@ class Knockout_Progression_Service
      * @return void
      */
     private function update_next_round_fixtures(
-        Fixture_Repository $repository,
+        Fixture_Repository_Interface $repository,
         League $league,
         Fixture $fixture,
         string $next_round_key,
@@ -401,8 +411,7 @@ class Knockout_Progression_Service
      */
     private function reset_consolation(Fixture $fixture, League $league, string $final_round): void
     {
-        $event_repository = new Event_Repository();
-        $event = $event_repository->find_by_id($league->get_event_id());
+        $event = $this->event_repository->find_by_id($league->get_event_id());
         if (!$event) {
             return;
         }

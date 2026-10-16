@@ -324,12 +324,24 @@ class Player {
      * @var object|null
      */
     public ?object $tournament_entry = null;
+    private ?Player_Query_Service $player_query_service = null;
+    private ?Player_Stats_Service $player_stats_service = null;
+
     /**
      * Constructor
      *
      * @param Player_Hydration_DTO|null $dto Typed hydration DTO. Use Player_Factory for raw rows.
+     * @param Player_Query_Service|null $player_query_service
+     * @param Player_Stats_Service|null $player_stats_service
      */
-    public function __construct( ?Player_Hydration_DTO $dto = null ) {
+    public function __construct(
+        ?Player_Hydration_DTO $dto = null,
+        ?Player_Query_Service $player_query_service = null,
+        ?Player_Stats_Service $player_stats_service = null
+    ) {
+        $this->player_query_service = $player_query_service;
+        $this->player_stats_service = $player_stats_service;
+
         if ( is_null( $dto ) ) {
             return;
         }
@@ -765,52 +777,40 @@ class Player {
         return $this->age;
     }
 
-    /**
-     * Handle outstanding results warnings function
-     *
-     * @param string $type type of check.
-     */
-    private function check_results_warning( string $type ): void {
-        global $racketmanager;
-        $args = array();
-        switch ( $type ) {
-            case 'btm':
-                $description = __( 'LTA tennis number missing', 'racketmanager' );
-                break;
-            case 'dob':
-                $description = __( 'no age provided', 'racketmanager' );
-                break;
-            default:
-                return;
-        }
-        $args['count']     = true;
-        $args['status']    = 'outstanding';
-        $args['player']    = $this->id;
-        $args['type']      = $description;
-        $args['confirmed'] = 'Y';
-        $count             = $racketmanager->get_result_warnings( $args );
-        if ( $count ) {
-            $args['count']    = false;
-            $results_warnings = $racketmanager->get_result_warnings( $args );
-            foreach ( $results_warnings as $result_warning ) {
-                $result_warning->delete();
-            }
-        }
-    }
-    private function get_player_query_service(): Player_Query_Service {
-        global $racketmanager;
-        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'player_query_service' ) ) {
-            return $racketmanager->container->get( 'player_query_service' );
-        }
-        return new Player_Query_Service();
+    public function __serialize(): array {
+        $data = get_object_vars( $this );
+        unset(
+            $data['player_query_service'],
+            $data['player_stats_service']
+        );
+        return $data;
     }
 
-    private function get_player_stats_service(): Player_Stats_Service {
-        global $racketmanager;
-        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'player_stats_service' ) ) {
-            return $racketmanager->container->get( 'player_stats_service' );
+    public function __unserialize( array $data ): void {
+        foreach ( $data as $key => $value ) {
+            $this->$key = $value;
         }
-        return new Player_Stats_Service( $this->get_player_query_service() );
+        $this->id = &$this->ID;
+        $this->email = &$this->user_email;
+        $this->fullname = &$this->display_name;
+        $this->player_query_service = null;
+        $this->player_stats_service = null;
+    }
+
+    public function set_player_query_service( Player_Query_Service $player_query_service ): void {
+        $this->player_query_service = $player_query_service;
+    }
+
+    public function set_player_stats_service( Player_Stats_Service $player_stats_service ): void {
+        $this->player_stats_service = $player_stats_service;
+    }
+
+    public function get_player_query_service(): ?Player_Query_Service {
+        return $this->player_query_service;
+    }
+
+    public function get_player_stats_service(): ?Player_Stats_Service {
+        return $this->player_stats_service;
     }
 
     /**
@@ -824,7 +824,10 @@ class Player {
      * @return array of matches.
      */
     public function get_matches( ?object $grouping, ?string $season, string $match_source, ?int $period = null, ?string $type = null ): array {
-        return $this->get_player_query_service()->get_matches( $this, $grouping, $season, $match_source, $period, $type );
+        if ( ! $this->player_query_service ) {
+            throw new \RuntimeException( 'Cannot retrieve player matches: Player_Query_Service collaborator is required.' );
+        }
+        return $this->player_query_service->get_matches( $this, $grouping, $season, $match_source, $period, $type );
     }
 
     /**
@@ -834,7 +837,10 @@ class Player {
      * @return array of statistics
      */
     public function get_stats( false|array $stats = false ): array {
-        return $this->get_player_stats_service()->get_stats( $this, $stats );
+        if ( ! $this->player_stats_service ) {
+            throw new \RuntimeException( 'Cannot retrieve player stats: Player_Stats_Service collaborator is required.' );
+        }
+        return $this->player_stats_service->get_stats( $this, $stats );
     }
 
     /**
@@ -845,7 +851,10 @@ class Player {
      * @return array
      */
     public function get_competitions( array|string $args = array(), ?Competition_Service $competition_service = null ): array {
-        return $this->get_player_query_service()->get_competitions( $this, $args, $competition_service );
+        if ( ! $this->player_query_service ) {
+            throw new \RuntimeException( 'Cannot retrieve player competitions: Player_Query_Service collaborator is required.' );
+        }
+        return $this->player_query_service->get_competitions( $this, $args, $competition_service );
     }
 
     /**
@@ -854,7 +863,10 @@ class Player {
      * @return array of statistics
      */
     public function get_career_stats(): array {
-        return $this->get_player_stats_service()->get_career_stats( $this );
+        if ( ! $this->player_stats_service ) {
+            throw new \RuntimeException( 'Cannot retrieve player career stats: Player_Stats_Service collaborator is required.' );
+        }
+        return $this->player_stats_service->get_career_stats( $this );
     }
 
     /**
@@ -864,7 +876,10 @@ class Player {
      * @return array
      */
     public function get_stats_teams( array|string $args = array() ): array {
-        return $this->get_player_query_service()->get_stats_teams( $this, $args );
+        if ( ! $this->player_query_service ) {
+            throw new \RuntimeException( 'Cannot retrieve player team stats: Player_Query_Service collaborator is required.' );
+        }
+        return $this->player_query_service->get_stats_teams( $this, $args );
     }
 
     /**
@@ -874,7 +889,10 @@ class Player {
      * @return array
      */
     public function get_stats_players( array|string $args = array() ): array {
-        return $this->get_player_query_service()->get_stats_players( $this, $args );
+        if ( ! $this->player_query_service ) {
+            throw new \RuntimeException( 'Cannot retrieve player stats: Player_Query_Service collaborator is required.' );
+        }
+        return $this->player_query_service->get_stats_players( $this, $args );
     }
     /**
      * Set player wtn function

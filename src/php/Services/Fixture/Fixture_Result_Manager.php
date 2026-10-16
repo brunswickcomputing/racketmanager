@@ -152,7 +152,11 @@ class Fixture_Result_Manager {
         $this->result_reporting_service = $service_provider->get_result_reporting_service() ?? new Result_Reporting_Service( $repository_provider );
         $this->fixture_maintenance_service = $service_provider->get_fixture_maintenance_service() ?? new Fixture_Maintenance_Service( $service_provider, $repository_provider, $this );
         $container = $container ?? $GLOBALS['racketmanager']->container ?? null;
-        $this->progression_service = $service_provider->get_progression_service( $container ) ?? new Knockout_Progression_Service();
+        $this->progression_service = $service_provider->get_progression_service( $container ) ?? new Knockout_Progression_Service(
+            $repository_provider->get_fixture_repository(),
+            $repository_provider->get_league_repository(),
+            $repository_provider->get_event_repository()
+        );
         $this->finalization_service = $service_provider->get_fixture_finalization_service() ?? new Fixture_Finalization_Service( null, $this->progression_service, $this->result_reporting_service );
         $this->result_service      = $service_provider->get_result_service() ?? new Result_Service( $repository_provider->get_fixture_repository(), $repository_provider->get_team_repository() );
         $this->league_service      = $service_provider->get_league_service() ?? new League_Service( $GLOBALS['racketmanager'], $repository_provider->get_league_repository(), new Event_Repository(), $repository_provider->get_league_team_repository(), $repository_provider->get_team_repository() );

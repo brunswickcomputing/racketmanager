@@ -16,6 +16,7 @@ use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Rubber_Repository_Interface;
 use Racketmanager\Repositories\Interfaces\Team_Repository_Interface;
 use Racketmanager\Repositories\Repository_Provider;
+use Racketmanager\Services\Competition\League_Schedule_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Service_Provider as Fixture_Service_Provider;
 use Racketmanager\Services\Container\Simple_Container;
@@ -66,6 +67,7 @@ class League_Fixture_Creation_Test extends TestCase {
     public function test_league_add_match_invokes_fixture_service(): void {
         $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $league->id = 50;
+        $league->set_fixture_service( $this->fixture_service );
 
         $match_data = (object) [
             'league_id' => 50,
@@ -84,6 +86,7 @@ class League_Fixture_Creation_Test extends TestCase {
     public function test_league_create_match_schedule_invokes_fixture_service(): void {
         $league = (new \ReflectionClass( League::class ))->newInstanceWithoutConstructor();
         $league->id = 50;
+        $league->set_league_schedule_service( new League_Schedule_Service( $this->fixture_service ) );
 
         $rounds = [
             [

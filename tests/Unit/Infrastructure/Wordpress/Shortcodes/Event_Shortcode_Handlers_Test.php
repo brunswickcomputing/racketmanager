@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Infrastructure\Wordpress\Shortcodes;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Application\Event\Queries\Event_Allowlist_Guard;
 use Racketmanager\Application\Event\Queries\Get_Event_Clubs_Handler;
 use Racketmanager\Application\Event\Queries\Get_Event_Clubs_Query;
 use Racketmanager\Application\Event\Queries\Get_Event_Draw_Handler;
@@ -800,5 +801,23 @@ class Event_Shortcode_Handlers_Test extends TestCase {
         $err_missing     = $handler_missing->handle( new Get_Event_Query( event_id: 101 ) );
         $this->assertTrue( $err_missing->is_error() );
         $this->assertSame( 'Event not found for competition', $err_missing->error_message );
+    }
+
+    public function test_event_allowlist_guard_handles_integer_season_without_type_error(): void {
+        $competition = $this->create_test_competition( 10, [ 101 ] );
+        $event       = $this->create_test_event( 101, 10, $competition );
+        // Integer season name simulated from numeric database/JSON payloads
+        $event->current_season = [ 'name' => 2026 ];
+
+        $comp_service = $this->createStub( Competition_Service::class );
+        $comp_service->method( 'get_event_by_id' )->willReturn( $event );
+
+        $handler = new Get_Event_Handler( $comp_service );
+        $result  = $handler->handle( new Get_Event_Query( event_id: 101, season: '2026' ) );
+
+        $this->assertFalse( $result->is_error() );
+
+        // Direct guard invocation with integer season
+        $this->assertTrue( Event_Allowlist_Guard::is_event_allowed( $event, 2026, $comp_service ) );
     }
 }

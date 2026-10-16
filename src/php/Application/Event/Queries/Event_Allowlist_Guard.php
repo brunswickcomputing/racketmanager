@@ -14,16 +14,16 @@ final class Event_Allowlist_Guard {
      * Check if an event is permitted for viewing in its parent competition for the specified season.
      *
      * @param object|Event $event Event instance.
-     * @param string|null $season Season identifier (or null to use the event's current season).
+     * @param int|string|null $season Season identifier (or null to use the event's current season).
      * @param Competition_Service|null $competition_service Competition service.
      * @return bool True if allowed; false if restricted or competition invalid/missing.
      */
     public static function is_event_allowed(
         object $event,
-        ?string $season = null,
+        int|string|null $season = null,
         ?Competition_Service $competition_service = null
     ): bool {
-        $season_name = $season;
+        $season_name = null !== $season && '' !== $season ? (string) $season : null;
         if ( empty( $season_name ) && isset( $event->current_season['name'] ) ) {
             $season_name = (string) $event->current_season['name'];
         }

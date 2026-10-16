@@ -94,6 +94,18 @@ namespace Racketmanager {
         function do_action( string $hook_name, ...$arg ): void {}
     }
 
+    if ( ! function_exists( 'Racketmanager\constitution_notification' ) ) {
+        function constitution_notification( int $event_id, array $args = [] ): string {
+            return "Constitution notification for event $event_id";
+        }
+    }
+
+    if ( ! function_exists( 'Racketmanager\withdrawn_team_email' ) ) {
+        function withdrawn_team_email( array $args = [] ): string {
+            return "Withdrawn team notification";
+        }
+    }
+
     if ( ! class_exists( 'Racketmanager\RacketManager' ) ) {
         eval('
             class RacketManager {
@@ -1014,6 +1026,10 @@ namespace {
 
     if ( ! defined( 'RACKETMANAGER_CC_EMAIL' ) ) {
         define( 'RACKETMANAGER_CC_EMAIL', 'Cc: ' );
+    }
+
+    if ( ! defined( 'RACKETMANAGER_BCC_EMAIL' ) ) {
+        define( 'RACKETMANAGER_BCC_EMAIL', 'Bcc: ' );
     }
 
     if ( ! function_exists( 'current_user_can' ) ) {

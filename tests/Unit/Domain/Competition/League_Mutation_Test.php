@@ -11,6 +11,7 @@ use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
 use Racketmanager\Services\Container\Simple_Container;
 use Racketmanager\Services\Fixture\Fixture_Result_Manager;
 use Racketmanager\Services\Notification\Notification_Service;
@@ -23,6 +24,7 @@ class League_Mutation_Test extends TestCase {
 
     private Simple_Container $container;
     private $fixture_repository;
+    private $league_repository;
     private $fixture_result_manager;
     private $notification_service;
     private League $league;
@@ -37,10 +39,12 @@ class League_Mutation_Test extends TestCase {
 
         $this->container              = new Simple_Container();
         $this->fixture_repository     = $this->createMock( Fixture_Repository_Interface::class );
+        $this->league_repository      = $this->createMock( League_Repository_Interface::class );
         $this->fixture_result_manager = $this->createMock( Fixture_Result_Manager::class );
         $this->notification_service   = $this->createMock( Notification_Service::class );
 
         $this->container->set( 'fixture_repository', $this->fixture_repository );
+        $this->container->set( 'league_repository', $this->league_repository );
         $this->container->set( 'fixture_result_manager', $this->fixture_result_manager );
         $this->container->set( 'notification_service', $this->notification_service );
 
@@ -148,9 +152,12 @@ class League_Mutation_Test extends TestCase {
             ->method( 'delete' )
             ->willReturn( true );
 
-        $this->league->delete_team( 50, '2026' );
+        $this->league_repository->expects( $this->once() )
+            ->method( 'delete_team' )
+            ->with( 5, 50, '2026' )
+            ->willReturn( true );
 
-        $this->assertStringContainsString( 'DELETE FROM wp_racketmanager_league_teams', $GLOBALS['wpdb']->last_query );
+        $this->league->delete_team( 50, '2026' );
     }
 
     public function test_withdraw_team_championship_updates_result_and_notifies(): void {
@@ -186,9 +193,12 @@ class League_Mutation_Test extends TestCase {
                 } )
             );
 
-        $this->league->withdraw_team( 50, '2026' );
+        $this->league_repository->expects( $this->once() )
+            ->method( 'withdraw_team' )
+            ->with( 5, 50, '2026' )
+            ->willReturn( true );
 
-        $this->assertStringContainsString( "UPDATE wp_racketmanager_league_teams SET `status` = 'W'", $GLOBALS['wpdb']->last_query );
+        $this->league->withdraw_team( 50, '2026' );
     }
 
     public function test_withdraw_team_league_confirms_cancelled_result_and_updates_standings(): void {
@@ -231,8 +241,11 @@ class League_Mutation_Test extends TestCase {
             ->method( 'notify_league_team_withdrawn' )
             ->with( 50, '2026' );
 
-        $this->league->withdraw_team( 50, '2026' );
+        $this->league_repository->expects( $this->once() )
+            ->method( 'withdraw_team' )
+            ->with( 5, 50, '2026' )
+            ->willReturn( true );
 
-        $this->assertStringContainsString( "UPDATE wp_racketmanager_league_teams SET `status` = 'W'", $GLOBALS['wpdb']->last_query );
+        $this->league->withdraw_team( 50, '2026' );
     }
 }

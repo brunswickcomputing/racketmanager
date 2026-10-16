@@ -17,12 +17,17 @@ use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Team;
 use Racketmanager\Repositories\Fixture_Repository;
 use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
+use Racketmanager\Repositories\Interfaces\League_Repository_Interface;
+use Racketmanager\Repositories\League_Repository;
 use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Championship_Factory;
+use Racketmanager\Services\Competition\Competition_Notification_Service;
+use Racketmanager\Services\Competition\League_Schedule_Service;
 use Racketmanager\Services\Fixture_Service;
 use Racketmanager\Services\Fixture\Service_Provider;
 use Racketmanager\Services\Result_Factory;
 use Racketmanager\Services\Schedule_Round_Robin;
+use Racketmanager\Services\Standings\Standings_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
 use stdClass;
@@ -620,50 +625,20 @@ class League {
      * @param int|string $league_id league id.
      */
     public static function get_instance( int|string $league_id ) {
-        global $wpdb;
-
-        if ( is_numeric( $league_id ) ) {
-            $search = $wpdb->prepare(
-                '`id` = %d',
-                intval( $league_id )
-            );
-        } else {
-            $search = $wpdb->prepare(
-                '`title` = %s',
-                $league_id
-            );
-        }
         if ( ! $league_id ) {
             return false;
         }
-        $league = wp_cache_get( $league_id, 'leagues' );
-        if ( ! $league ) {
-            $league = $wpdb->get_row(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                "SELECT `title`, `id`, `settings`, `event_id`, `seasons`, `sequence` FROM $wpdb->racketmanager WHERE " . $search . ' LIMIT 1'
-            );
-            if ( $league ) {
-                $event = get_event( $league->event_id );
-            }
-            if ( empty( $league ) || empty( $event ) ) {
-                return false;
-            }
-            $league->settings = (array) maybe_unserialize( $league->settings );
-            $league           = (object) array_merge( (array) $league, $league->settings );
-            // check if specific sports class exists.
-            if ( ! isset( $event->competition->sport ) ) {
-                $league->sport = '';
-            }
-            $instance = 'Racketmanager\sports\League_' . ucfirst( $event->competition->sport );
+        global $racketmanager;
+        $league_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
+            ? $racketmanager->container->get( 'league_repository' )
+            : new League_Repository();
 
-            if ( class_exists( $instance ) ) {
-                $league = new $instance( $league );
-            } else {
-                $league = new League( $league );
-            }
-            wp_cache_set( $league->id, $league, 'leagues' );
+        if ( is_numeric( $league_id ) ) {
+            $league = $league_repository->find_by_id( (int) $league_id );
+        } else {
+            $league = $league_repository->find_by_name( (string) $league_id );
         }
-        return $league;
+        return $league ?: false;
     }
 
     /**
@@ -822,25 +797,11 @@ class League {
      * @param string|null $sequence sequence.
      */
     public function update( string $title, ?string $sequence = null ): void {
-        global $wpdb;
         $this->title = $title;
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager SET `title` = %s WHERE `id` = %d",
-                $this->title,
-                $this->id
-            )
-        );
         if ( ! empty( $sequence ) ) {
             $this->sequence = $sequence;
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager SET `sequence` = %s WHERE `id` = %d",
-                    $this->sequence,
-                    $this->id,
-                )
-            );
         }
+        $this->get_league_repository()->update_title_and_sequence( $this->id, $this->title, $this->sequence );
         wp_cache_set( $this->id, $this, 'leagues' );
     }
 
@@ -848,24 +809,14 @@ class League {
      * Delete League
      */
     public function delete(): void {
-        global $wpdb;
         $matches = $this->get_matches( array() );
         if ( $matches ) {
             $this->delete_matches( $matches );
         }
         // remove tables.
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d",
-                $this->id
-            )
-        );
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager WHERE `id` = %d",
-                $this->id
-            )
-        );
+        $this->get_league_repository()->delete_league_teams( $this->id );
+        $this->get_league_repository()->delete( $this->id );
+        wp_cache_delete( $this->id, 'leagues' );
     }
     /**
      * Delete team from League
@@ -874,7 +825,6 @@ class League {
      * @param string $season season.
      */
     public function delete_team( int $team, string $season ): void {
-        global $wpdb;
         $matches = $this->get_matches(
             array(
                 'team_id' => $team,
@@ -890,14 +840,9 @@ class League {
             }
         }
         // remove tables.
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "DELETE FROM $wpdb->racketmanager_league_teams WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
-                $team,
-                $this->id,
-                $season
-            )
-        );
+        $this->get_league_repository()->delete_team( $this->id, $team, $season );
+        wp_cache_delete( $team, '$league_team' );
+        wp_cache_delete( $this->id, 'leaguetable' );
     }
     /**
      * Withdraw team from League
@@ -906,7 +851,7 @@ class League {
      * @param string $season season.
      */
     public function withdraw_team( int $team_id, string $season ): void {
-        global $wpdb, $racketmanager;
+        global $racketmanager;
         $match_args                     = array();
         $match_args['team_id']          = $team_id;
         $match_args['season']           = $season;
@@ -968,14 +913,9 @@ class League {
             }
         }
         // update table.
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager_league_teams SET `status` = 'W' WHERE `team_id` = %d AND `league_id` = %d and `season` = %s",
-                $team_id,
-                $this->id,
-                $season
-            )
-        );
+        $this->get_league_repository()->withdraw_team( $this->id, $team_id, $season );
+        wp_cache_delete( $team_id, '$league_team' );
+        wp_cache_delete( $this->id, 'leaguetable' );
         if ( ! $this->is_championship ) {
             $this->update_standings( $season );
         }
@@ -992,38 +932,7 @@ class League {
      * @return void
      */
     protected function notify_league_team_withdrawn( int $team_id, string $season ): void {
-        global $racketmanager;
-        $team          = get_team( $team_id );
-        $message_send  = false;
-        $teams         = $this->get_league_teams( array( 'season' => $season ) );
-        $headers       = array();
-        $email_from    = $racketmanager->get_confirmation_email( $this->event->competition->type );
-        $headers[]     = RACKETMANAGER_FROM_EMAIL . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
-        $headers[]     = RACKETMANAGER_CC_EMAIL . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
-        $email_subject = $this->title . ' ' . $season . ' - ' . __( 'Withdrawn team', 'racketmanager' ) . ' - ' . $team->title;
-        $email_to      = array();
-        foreach ( $teams as $team ) {
-            $team_dtls = $this->get_team_dtls( $team->id );
-            if ( ! empty( $team_dtls->contactemail ) ) {
-                $email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
-                $message_send = true;
-            }
-            if ( ! empty( $team_dtls->club->match_secretary->email ) ) {
-                $headers[]    = RACKETMANAGER_CC_EMAIL . ucwords( $team_dtls->club->match_secretary->display_name ) . ' <' . $team_dtls->club->match_secretary->email . '>';
-                $message_send = true;
-            }
-        }
-        $message_args            = array();
-        $message_args['team']    = $team_id;
-        $message_args['season']  = $season;
-        $message_args['league']  = $this->id;
-        $message_args['subject'] = $email_subject;
-        $message_args['from']    = $email_from;
-
-        if ( $message_send ) {
-            $email_message = withdrawn_team_email( $message_args );
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
-        }
+        $this->get_notification_service()->notify_withdrawn_team( $this, $team_id, $season );
     }
     /**
      * Set default dataset query arguments
@@ -1223,7 +1132,7 @@ class League {
      * @param false|string $_match_day match day.
      */
     public function set_match_day( false|string $_match_day = false ): void {
-        global $wpdb, $wp;
+        global $wp;
         if ( isset( $_GET['match_day'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
             $match_day = intval( $_GET['match_day'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         } elseif ( isset( $_GET[ 'match_day_' . $this->id ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -1237,15 +1146,9 @@ class League {
         } elseif ( 'last' === $_match_day ) {
             $match_day = wp_cache_get( 'last_' . $this->id, 'leagues_match_days' );
             if ( ! $match_day ) {
-                $match = $wpdb->get_row(
-                    $wpdb->prepare(
-                        "SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s AND DATEDIFF(NOW(), `date`) > 0 ORDER BY datediff LIMIT 1",
-                        $this->id,
-                        $this->current_season['name']
-                    )
-                ); // db call ok.
-                if ( $match ) {
-                    $match_day = $match->match_day;
+                $match_day_val = $this->get_league_repository()->get_match_day( $this->id, $this->current_season['name'], 'last' );
+                if ( $match_day_val ) {
+                    $match_day = $match_day_val;
                     wp_cache_set( 'last_' . $this->id, $match_day, 'leagues_match_days' );
                 } else {
                     $match_day = $_match_day;
@@ -1254,15 +1157,9 @@ class League {
         } elseif ( 'next' === $_match_day ) {
             $match_day = wp_cache_get( 'next_' . $this->id, 'leagues_match_days' );
             if ( ! $match_day ) {
-                $match = $wpdb->get_row(
-                    $wpdb->prepare(
-                        "SELECT `match_day`, DATEDIFF(NOW(), `date`) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s AND DATEDIFF(NOW(), `date`) < 0 ORDER BY datediff DESC LIMIT 1",
-                        $this->id,
-                        $this->current_season['name']
-                    )
-                ); // db call ok.
-                if ( $match ) {
-                    $match_day = $match->match_day;
+                $match_day_val = $this->get_league_repository()->get_match_day( $this->id, $this->current_season['name'], 'next' );
+                if ( $match_day_val ) {
+                    $match_day = $match_day_val;
                     wp_cache_set( 'next_' . $this->id, $match_day, 'leagues_match_days' );
                 } else {
                     $match_day = $_match_day;
@@ -1271,15 +1168,9 @@ class League {
         } elseif ( 'current' === $_match_day || 'latest' === $_match_day ) {
             $match_day = wp_cache_get( 'current_' . $this->id, 'leagues_match_days' );
             if ( ! $match_day ) {
-                $match = $wpdb->get_row(
-                    $wpdb->prepare(
-                        "SELECT `id`, `match_day`, ABS(DATEDIFF(NOW(), `date`)) AS datediff FROM $wpdb->racketmanager_matches WHERE `league_id` = %d AND `season` = %s ORDER BY datediff LIMIT 1",
-                        $this->id,
-                        $this->current_season['name']
-                    )
-                ); // db call ok.
-                if ( $match ) {
-                    $match_day = $match->match_day;
+                $match_day_val = $this->get_league_repository()->get_match_day( $this->id, $this->current_season['name'], 'current' );
+                if ( $match_day_val ) {
+                    $match_day = $match_day_val;
                     wp_cache_set( 'current_' . $this->id, $match_day, 'leagues_match_days' );
                 } else {
                     $match_day = $_match_day;
@@ -1415,108 +1306,31 @@ class League {
      * @return array|int database results
      */
     public function get_league_teams( array $query_args = array() ): array|int {
-        global $wpdb;
         $old_query_args = $this->team_query_args;
 
         // set query args.
         foreach ( $query_args as $key => $value ) {
             $this->set_team_query_arg( $key, $value );
         }
-        $club             = $this->team_query_args['club'];
-        $season           = $this->team_query_args['season'];
-        $rank             = $this->team_query_args['rank'];
-        $orderby          = $this->team_query_args['orderby'];
-        $home             = $this->team_query_args['home'];
-        $cache            = $this->team_query_args['cache'];
         $reset_query_args = $this->team_query_args['reset_query_args'];
         $get_details      = $this->team_query_args['get_details'];
-        $status           = $this->team_query_args['status'];
-        $team_name        = $this->team_query_args['team_name'];
-        $team_id          = $this->team_query_args['team_id'];
         $count            = $this->team_query_args['count'];
-        $active           = $this->team_query_args['active'];
 
-        $args = array( $this->id );
-        if ( $count ) {
-            $sql = 'SELECT COUNT(*)';
-        } else {
-            $sql = 'SELECT B.`id` AS `id`, B.`title`, B.`club_id`, B.`stadium`, B.`home`, A.`group`, B.`roster`, B.`profile`, A.`group`, A.`points_plus`, A.`points_minus`, A.`points_2_plus`, A.`points_2_minus`, A.`add_points`, A.`done_matches`, A.`won_matches`, A.`draw_matches`, A.`lost_matches`, A.`diff`, A.`league_id`, A.`id` AS `table_id`, A.`season`, A.`rank`, A.`status`, A.`custom`, B.`team_type`, A.`rating`';
-        }
-        $sql .= " FROM $wpdb->racketmanager_teams B INNER JOIN $wpdb->racketmanager_league_teams A ON B.id = A.team_id WHERE `league_id` = %d";
-
+        $repo_args = $this->team_query_args;
+        $season    = $repo_args['season'] ?? '';
         if ( empty( $season ) ) {
-            $sql   .= ' AND A.`season` = %s';
-            $args[] = $this->current_season['name'];
+            $repo_args['season'] = $this->current_season['name'] ?? '';
         } elseif ( 'any' === $season ) {
-            $sql .= " AND A.`season` != ''";
-        } elseif ( $this->season_exists( htmlspecialchars( $season ) ) ) {
-            $sql   .= ' AND A.`season` = %s';
-            $args[] = htmlspecialchars( $season );
-        }
-
-        if ( $rank ) {
-            $sql   .= ' AND A.`rank` = %s';
-            $args[] = $rank;
-        }
-        if ( $home ) {
-            $sql .= ' AND B.`home` = 1';
-        }
-        if ( $status ) {
-            if ( 'active' === $status ) {
-                $sql .= ' AND A.`profile` != 3';
-            } elseif ( 1 === $status ) {
-                $sql   .= ' AND A.`profile` = %d';
-                $args[] = $status;
-            }
-        }
-        if ( $club ) {
-            $sql   .= ' AND B.`club_id` = %d';
-            $args[] = $club;
-        }
-        if ( $team_name ) {
-            $sql   .= ' AND B.`title` = %s';
-            $args[] = $team_name;
-        }
-        if ( $team_id ) {
-            $sql   .= ' AND B.`id` = %d';
-            $args[] = $team_id;
-        }
-        if ( $active ) {
-            $sql .= " AND A.`status` != 'W'";
-        }
-        if ( ! $cache ) {
-            $sql .= " AND 'nocache' = 'nocache'";
-        }
-        if ( $count ) {
-            $sql = $wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-                $args,
-            );
-            $teams = wp_cache_get( md5( $sql ), 'leaguetable' );
-            if ( ! $teams || ! $cache ) {
-                $teams = $wpdb->get_var(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql
-                ); // db call ok.
-                wp_cache_set( md5( $sql ), $teams, 'leaguetable' );
-            }
-            $teams = is_numeric( $teams ) ? (int) $teams : 0;
+            $repo_args['season'] = 'any';
+        } elseif ( $this->season_exists( htmlspecialchars( (string) $season ) ) ) {
+            $repo_args['season'] = htmlspecialchars( (string) $season );
         } else {
-            $sql .= Util::order_by_string( $orderby );
-            $sql  = $wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-                $args
-            );
-            $teams = wp_cache_get( $sql, 'leaguetable' );
-            if ( ! $teams || ! $cache ) {
-                $teams = $wpdb->get_results(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql
-                ); // db call ok.
-                wp_cache_set( $sql, $teams, 'leaguetable' );
-            }
+            unset( $repo_args['season'] );
+            $repo_args['skip_season_filter'] = true;
+        }
+        $teams = $this->get_league_repository()->query_league_teams( $this->id, $repo_args, (bool) $count );
+
+        if ( ! $count ) {
             $teams      = is_array( $teams ) ? $teams : array();
             $class      = array();
             $team_index = array();
@@ -1587,7 +1401,7 @@ class League {
      * @return int|boolean $table_id
      */
     public function add_team( int|string $team_id, string $season, ?string $rank = null, ?string $status = null, int|string $profile = 1 ): bool|int {
-        global $wpdb, $racketmanager;
+        global $racketmanager;
         $valid = true;
         if ( ! is_numeric( $team_id ) ) {
             $team = get_team( $team_id );
@@ -1602,64 +1416,24 @@ class League {
             }
             $team_id = $team->id;
         }
-        $table_id = $wpdb->get_var( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                "SELECT `id` FROM $wpdb->racketmanager_league_teams WHERE `team_id` = %d AND `season` = %s AND `league_id` = %d",
-                $team_id,
-                $season,
-                $this->id
-            )
+        $table_id = $this->get_league_repository()->add_team_to_league(
+            $this->id,
+            (int) $team_id,
+            $season,
+            $rank,
+            $status,
+            (int) $profile
         );
-        if ( $table_id ) {
-            $message_text = __( 'Team already in table', 'racketmanager' );
+        if ( false === $table_id ) {
+            $message_text = __( 'Team already in table or error adding team', 'racketmanager' );
             $valid        = false;
         } else {
-            if ( ! $rank ) {
-                $result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $wpdb->prepare(
-                    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                        "INSERT INTO $wpdb->racketmanager_league_teams (`team_id`, `season`, `league_id`, `profile`) VALUES (%d, %s, %d, %d)",
-                        $team_id,
-                        $season,
-                        $this->id,
-                        $profile
-                    )
-                );
-            } else {
-                $result = $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                    $wpdb->prepare(
-                        "INSERT INTO $wpdb->racketmanager_league_teams (`team_id`, `season`, `league_id`, `rank`, `status`, `profile`) VALUES (%d, %s, %d, %d, %s, %d)",
-                        $team_id,
-                        $season,
-                        $this->id,
-                        $rank,
-                        $status,
-                        $profile
-                    )
-                );
-            }
-            if ( $result ) {
-                $table_id     = $wpdb->insert_id;
-                $message_text = __( 'Table entry added', 'racketmanager' );
-            } else {
-                $message_text = __( 'Error adding team to table', 'racketmanager' );
-                $valid        = false;
-                error_log( $message_text ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                error_log( $wpdb->last_error ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-            }
+            $message_text = __( 'Table entry added', 'racketmanager' );
+            $valid        = true;
         }
-        if ( $valid ) {
-            $error = false;
-        } else {
-            $error = true;
-        }
-        $racketmanager->set_message( $message_text, $error );
+        $racketmanager->set_message( $message_text, ! $valid );
 
-        if ( $valid ) {
-            return $table_id;
-        } else {
-            return false;
-        }
+        return $valid ? $table_id : false;
     }
 
     /**
@@ -1686,7 +1460,6 @@ class League {
      * @return object|false
      */
     public function get_team_dtls( int $team_id, ?string $season = null ): object|false {
-        global $wpdb;
         if ( empty( $season ) ) {
             $season = $this->current_season['name'];
         }
@@ -1705,21 +1478,7 @@ class League {
             return $team;
         }
 
-        $sql = $wpdb->prepare(
-            "SELECT A.`title`, C.`captain`, A.`club_id`, C.`match_day`, C.`match_time`, A.`stadium`, A.`home`, A.`roster`, A.`profile`, A.`id`, A.`status`, A.`type`, A.`team_type`, C.`status` as `league_status`, C.`rating`, C.`rank`, C.`points_plus`, C.`points_minus`, C.`points_2_plus`, C.`points_2_minus`, C.`add_points`, C.`done_matches`, C.`won_matches`, C.`draw_matches`, C.`lost_matches`, C.`diff` FROM $wpdb->racketmanager_league_teams C INNER JOIN  $wpdb->racketmanager_teams A ON A.`id` = C.`team_id` AND C.`league_id` = %d WHERE A.`id` = %d AND C.`season` = %s",
-            $this->id,
-            $team_id,
-            $season
-        );
-
-        $team = wp_cache_get( md5( $sql ), 'teamdetails' );
-        if ( ! $team ) {
-            $team = $wpdb->get_row(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call ok.
-            wp_cache_set( md5( $sql ), $team, 'teamdetails' );
-        }
+        $team = $this->get_league_repository()->get_team_details( $this->id, $team_id, $season );
 
         if ( ! isset( $team ) ) {
             return false;
@@ -1783,7 +1542,6 @@ class League {
      * @return array|int|object of matches
      */
     public function get_matches( array $query_args ): array|int|object {
-        global $wpdb, $racketmanager;
         $old_query_args = $this->match_query_args;
         // set query args.
         foreach ( $query_args as $key => $value ) {
@@ -1791,233 +1549,46 @@ class League {
         }
         $limit            = $this->match_query_args['limit'];
         $season           = $this->match_query_args['season'];
-        $final            = $this->match_query_args['final'];
-        $match_day        = $this->match_query_args['match_day'];
-        $time             = $this->match_query_args['time'];
-        $match_date       = $this->match_query_args['match_date'];
         $count            = $this->match_query_args['count'];
-        $orderby          = $this->match_query_args['orderby'];
-        $standingstable   = $this->match_query_args['standingstable'];
-        $cache            = $this->match_query_args['cache'];
-        $team_id          = $this->match_query_args['team_id'];
-        $home_team        = $this->match_query_args['home_team'];
-        $away_team        = $this->match_query_args['away_team'];
-        $team_pair        = $this->match_query_args['team_pair'];
-        $winner_id        = $this->match_query_args['winner_id'];
-        $loser_id         = $this->match_query_args['loser_id'];
-        $home_points      = $this->match_query_args['home_points'];
-        $away_points      = $this->match_query_args['away_points'];
         $reset_limit      = $this->match_query_args['reset_limit'];
         $reset_query_args = $this->match_query_args['reset_query_args'];
-        $confirmed        = $this->match_query_args['confirmed'];
-        $leg              = $this->match_query_args['leg'];
         $player           = $this->match_query_args['player'];
-        $withdrawn        = $this->match_query_args['withdrawn'];
-        $club             = $this->match_query_args['club'];
-        $pending          = $this->match_query_args['pending'];
         $status           = $this->match_query_args['status'];
 
         $matches = array();
-        $args    = array( $this->id );
-        if ( $count ) {
-            $sql_start = "SELECT COUNT(*) FROM $wpdb->racketmanager_matches m";
-        } else {
-            $sql_start = "SELECT  DISTINCT m.`id`, m.`date` FROM $wpdb->racketmanager_matches m";
-        }
-        $sql = ' WHERE m.`league_id` = %d';
 
         // disable limit for championship mode.
         if ( $this->is_championship ) {
             $limit = false;
         }
-        if ( empty( $season ) ) {
-            $sql   .= ' AND m.`season` = %s';
-            $args[] = $this->current_season['name'];
-        } elseif ( 'any' === $season ) {
-            $sql .= " AND m.`season` != ''";
-        } elseif ( $this->season_exists( $season ) ) {
-            $sql   .= ' AND m.`season` = %s';
-            $args[] = htmlspecialchars( $season );
-        } else {
+        if ( ! empty( $season ) && 'any' !== $season && ! $this->season_exists( $season ) ) {
             return $matches;
         }
-        if ( $final ) {
-            if ( 'all' !== $final ) {
-                $sql      .= ' AND m.`final` = %s';
-                $args[]    = htmlspecialchars( wp_strip_all_tags( $final ) );
-                $match_day = -1;
-                $limit     = 0;
-            }
-        } elseif ( $this->is_championship ) {
-            $sql .= " AND m.`final` IS NOT NULL";
-        } else {
-            $sql .= " AND ( m.`final` = '' OR m.`final` IS NULL )";
-        }
 
-        if ( $team_id ) {
-            $sql   .= ' AND (`home_team` = %d OR `away_team` = %d)';
-            $args[] = $team_id;
-            $args[] = $team_id;
-        } elseif ( count( $team_pair ) === 2 ) {
-            $sql   .= " AND ( (`home_team` = %d AND `away_team` = %d' OR (`home_team` = %d AND `away_team` = %d ) )";
-            $args[] = intval( $team_pair[0] );
-            $args[] = intval( $team_pair[1] );
-            $args[] = intval( $team_pair[1] );
-            $args[] = intval( $team_pair[0] );
-        } else {
-            if ( ! empty( $home_team ) ) {
-                $sql   .= ' AND `home_team` = %d';
-                $args[] = $home_team;
-            }
-            if ( ! empty( $away_team ) ) {
-                $sql   .= ' AND `away_team` = %d';
-                $args[] = $away_team;
-            }
-        }
-        if ( $match_day && intval( $match_day ) > 0 ) {
-            if ( $standingstable ) {
-                $sql .= ' AND `match_day` <=%d';
-            } else {
-                $sql .= ' AND `match_day` = %d';
-            }
-            $args[] = $match_day;
-        }
+        $query_args_to_pass                    = $this->match_query_args;
+        $query_args_to_pass['current_season']  = $this->current_season['name'] ?? '';
+        $offset                                = intval( $limit > 0 ) ? ( $this->get_current_page() - 1 ) * $limit : 0;
+        $query_args_to_pass['offset']          = $offset;
+        $query_args_to_pass['is_championship'] = $this->is_championship;
 
-        // get only finished matches with score for time 'latest'.
-        if ( 'latest' === $time ) {
-            $home_points = false;
-            $away_points = false;
-            $sql        .= " AND (m.`home_points` != '' OR m.`away_points` != '')";
-        }
-
-        if ( '' !== $home_points ) {
-            if ( 'null' === $home_points ) {
-                $sql .= ' AND m.`home_points` IS NULL';
-            } elseif ( 'not_null' === $home_points ) {
-                $sql .= ' AND m.`home_points` IS NOT NULL';
-            } elseif ( 'not_empty' === $home_points ) {
-                $sql .= " AND m.`home_points` != ''";
-            }
-        }
-        if ( $away_points ) {
-            if ( 'null' === $away_points ) {
-                $sql .= ' AND m.`away_points` IS NULL';
-            } elseif ( 'not_null' === $away_points ) {
-                $sql .= ' AND m.`away_points` IS NOT NULL';
-            } elseif ( 'not_empty' === $away_points ) {
-                $sql .= " AND m.`away_points` != ''";
-            }
-        }
-
-        if ( $winner_id ) {
-            $sql   .= ' AND m.`winner_id` = %d';
-            $args[] = $winner_id;
-        }
-        if ( $loser_id ) {
-            $sql   .= ' AND m.`loser_id` = %d';
-            $args[] = $loser_id;
-        }
-
-        if ( 'next' === $time ) {
-            $sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) >= 0';
-        } elseif ( 'prev' === $time || 'latest' === $time ) {
-            $sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) < 0';
-        } elseif ( 'prev1' === $time ) {
-            $sql .= ' AND TIMESTAMPDIFF(MINUTE, NOW(), m.`date`) < 0) AND (m.`winner_id` != 0) ';
-        } elseif ( 'today' === $time ) {
-            $sql .= ' AND DATEDIFF(NOW(), m.`date`) = 0';
-        } elseif ( 'day' === $time ) {
-            $sql .= " AND DATEDIFF('" . htmlspecialchars( wp_strip_all_tags( $match_date ) ) . "', m.`date`) = 0";
-        }
-        if ( $confirmed ) {
-            $sql .= " AND m.`confirmed` = 'Y'";
-        }
-        if ( $leg ) {
-            $sql   .= ' AND m.`leg` = %s';
-            $args[] = $leg;
-        }
-        if ( $player ) {
-            $sql_start .= " ,$wpdb->racketmanager_rubbers r, $wpdb->racketmanager_rubber_players rp";
-            $sql       .= " AND m.`id` = r.`match_id` AND r.`id` = rp.`rubber_id` AND `player_id` = '$player'";
-        }
-        // Force ordering by date ascending if next matches are queried.
-        if ( 'next' === $time ) {
-            $orderby['date'] = 'ASC';
-        }
-        // Force ordering by date descending if previous/latest matches are queried.
-        if ( 'prev' === $time || 'latest' === $time ) {
-            $orderby['date'] = 'DESC';
-        }
-        if ( ! $withdrawn ) {
-            $sql_start .= " ,$wpdb->racketmanager_league_teams t1, $wpdb->racketmanager_league_teams t2";
-            $sql       .= " AND `home_team` = t1.`team_id` AND t1.`league_id` = m.`league_id` and t1.`season` = m.`season` AND t1.`status` != 'W'";
-            $sql       .= " AND `away_team` = t2.`team_id` AND t2.`league_id` = m.`league_id` and t2.`season` = m.`season` AND t2.`status` != 'W'";
-        }
-        if ( $club ) {
-            $sql .= " AND (`home_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = " . $club . ") OR `away_team` IN (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = " . $club . '))';
-        }
-        if ( $pending ) {
-            $sql .= ' AND m.winner_id = 0';
-        }
         if ( $status ) {
             $status_code = $status['status_code'] ?? null;
             $compare     = $status['compare'] ?? null;
             if ( $status_code ) {
                 $status_value = Util_Lookup::get_match_status_code( $status_code );
                 if ( $status_value ) {
-                    if ( 'not' === $compare ) {
-                        $sql   .= ' AND m.`status` != %d';
-                        $args[] = $status_value;
-                    } elseif ( '=' === $compare ) {
-                        $sql   .= ' AND m.`status` = %d';
-                        $args[] = $status_value;
-                    }
+                    $query_args_to_pass['status_value']   = $status_value;
+                    $query_args_to_pass['status_compare'] = $compare;
                 }
             }
         }
-        // get number of matches.
+
         if ( $count ) {
             $this->set_match_query_arg( 'count', false );
-            $sql = $sql_start . $sql;
-            $sql = $wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-                $args
-            );
-            // Use WordPress cache for counting matches.
-            $matches = wp_cache_get( md5( $sql ), 'num_matches' );
-            if ( ! $matches || false === $cache ) {
-                $matches = intval(
-                    $wpdb->get_var(
-                    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                        $sql
-                    )
-                ); // db call ok.
-                wp_cache_set( md5( $sql ), $matches, 'num_matches' );
-            }
+            $matches = $this->get_league_repository()->query_matches( $this->id, $query_args_to_pass, true );
         } else {
-            $sql   .= Util::order_by_string( $orderby );
-            $offset = intval( $limit > 0 ) ? ( $this->get_current_page() - 1 ) * $limit : 0;
-            if ( intval( $limit > 0 ) ) {
-                $sql .= ' LIMIT ' . intval( $offset ) . ',' . intval( $limit );
-            }
-            $sql = $sql_start . $sql;
-            $sql = $wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-                $args
-            );
-            $matches = wp_cache_get( md5( $sql ), 'matches' );
-            if ( ! $matches || false === $cache ) {
-                $matches = $wpdb->get_results(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql
-                ); // db call ok.
-                wp_cache_set( md5( $sql ), $matches, 'matches' );
-            }
-            $fixture_repository = isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
-                ? $racketmanager->container->get( 'fixture_repository' )
-                : new Fixture_Repository();
+            $matches = $this->get_league_repository()->query_matches( $this->id, $query_args_to_pass, false );
+            $fixture_repository = $this->get_fixture_repository();
             $class = '';
             foreach ( $matches as $i => $match ) {
                 $match        = $fixture_repository->find_by_id( (int) $match->id );
@@ -2069,91 +1640,7 @@ class League {
      * @return array the ranked teams
      */
     public function get_standings( array $teams, int $match_day, string $mode = 'all' ): array {
-        global $racketmanager;
-        // hide status as it's meaningless.
-        $this->standings['status'] = 0;
-
-        // set basic match query args.
-        $this->set_match_query_arg( 'standingstable', true );
-        $this->set_match_query_arg( 'match_day', $match_day );
-        $this->set_match_query_arg( 'final', '' );
-        $this->set_match_query_arg( 'limit', false );
-
-        $this->set_match_query_arg( 'mode', $mode );
-
-        foreach ( $teams as $i => $team ) {
-            $team       = get_league_team( $team );
-            $match_args = array();
-
-            // get only home matches.
-            if ( 'home' === $mode ) {
-                $match_args['home_team'] = $team->id;
-            }
-            // get only away matches.
-            if ( 'away' === $mode ) {
-                $match_args['away_team'] = $team->id;
-            }
-            // get all matches for given team.
-            if ( 'all' === $mode ) {
-                $match_args['team_id'] = $team->id;
-            }
-            // get matches up to given match day.
-            if ( $match_day ) {
-                $match_args['match_day'] = $match_day;
-            }
-            $match_args['confirmed'] = true;
-            $match_args['status']    = array(
-                'status_code' => 'Cancelled',
-                'compare'     => 'not',
-            );
-
-            // initialize team standings data.
-            $team->done_matches  = 0;
-            $team->won_matches   = 0;
-            $team->draw_matches  = 0;
-            $team->lost_matches  = 0;
-            $team->points_plus   = 0;
-            $team->points_minus  = 0;
-            $team->points_2_plus  = 0;
-            $team->points_2_minus = 0;
-
-            // get matches.
-            $matches = $this->get_matches( $match_args );
-            foreach ( $matches as $match ) {
-                if ( '' !== $match->home_points && '' !== $match->away_points ) {
-                    $team->done_matches += 1;
-                }
-                if ( $match->winner_id === $team->id ) {
-                    $team->won_matches += 1;
-                }
-                if ( $match->loser_id === $team->id ) {
-                    $team->lost_matches += 1;
-                }
-                if ( -1 === $match->winner_id && -1 === $match->loser_id ) {
-                    $team->draw_matches += 1;
-                }
-            }
-            $team->points         = $this->calculate_points( $team, $matches );
-            $team->points_plus    = $team->points['plus'];
-            $team->points_minus   = $team->points['minus'];
-            $team->points_2_plus   = 0;
-            $team->points_2_minus  = 0;
-            $team->diff           = $team->points_2_plus - $team->points_2_minus;
-            $team->custom['diff'] = $team->diff;
-            $team->win_percent();
-            $custom = $this->get_standings_data( $team->id, $team->custom, $matches );
-            foreach ( $custom as $key => $value ) {
-                $team->{$key} = $value;
-            }
-            $teams[ $i ] = $team;
-        }
-
-        /*
-        * rank teams.
-        */
-        $league_service = $racketmanager->container->get( 'league_service' );
-        $teams          = $league_service->rank_teams_by_points( $teams );
-        return $league_service->get_ranking( $this, $teams );
+        return $this->get_standings_service()->get_standings( $this, $teams, $match_day, $mode );
     }
     /**
      * Set finals flag for championship mode
@@ -2474,28 +1961,7 @@ class League {
      * @param false|string $season season.
      */
     public function set_teams_rank( false|string $season = false ): void {
-        global $racketmanager;
-        if ( ! isset( $season ) ) {
-            $season = $this->current_season;
-        }
-        $season = is_array( $season ) ? $season['name'] : $season;
-
-        // rank Teams in groups.
-        $groups = ! empty( $this->groups ) ? explode( ';', $this->groups ) : array( '0' );
-        foreach ( $groups as $group ) {
-            $team_args = array( 'season' => $season );
-            if ( ! empty( $group ) ) {
-                $team_args['group'] = $group;
-            }
-            $teams = $this->get_league_teams( $team_args );
-
-            if ( ! empty( $teams ) && 'auto' === $this->event->competition->settings['team_ranking'] ) {
-                $league_service = $racketmanager->container->get( 'league_service' );
-                $teams          = $league_service->rank_teams_by_points( $teams );
-                $teams          = $league_service->get_ranking( $this, $teams );
-                $league_service->update_ranking( $teams );
-            }
-        }
+        $this->get_standings_service()->set_teams_rank( $this, $season );
     }
 
     /**
@@ -2507,26 +1973,7 @@ class League {
      * @return int|null team ranking.
      */
     public function get_rank( int $team_id, string $season ): ?int {
-        global $wpdb;
-        $sql       = $wpdb->prepare(
-            "SELECT `rank` FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
-            $this->id,
-            $season,
-            $team_id,
-        );
-        $team_rank = wp_cache_get( md5( $sql ), 'team_rank' );
-        if ( ! $team_rank ) {
-            $team_rank = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-            );
-            wp_cache_set( md5( $sql ), $team_rank, 'team_rank' );
-        }
-        if ( $team_rank ) {
-            return $team_rank->rank;
-        } else {
-            return null;
-        }
+        return $this->get_league_repository()->get_rank( $this->id, $season, $team_id );
     }
 
     /**
@@ -2538,26 +1985,7 @@ class League {
      * @return string|null team status.
      */
     public function get_status( int $team_id, string $season ): ?string {
-        global $wpdb;
-        $sql         = $wpdb->prepare(
-            "SELECT `status` FROM $wpdb->racketmanager_league_teams WHERE `league_id` = %d AND `season` = %s AND `team_id` = %d",
-            $this->id,
-            $season,
-            $team_id,
-        );
-        $team_status = wp_cache_get( md5( $sql ), 'team_status' );
-        if ( ! $team_status ) {
-            $team_status = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-            );
-            wp_cache_set( md5( $sql ), $team_status, 'team_status' );
-        }
-        if ( $team_status ) {
-            return $team_status->status;
-        } else {
-            return null;
-        }
+        return $this->get_league_repository()->get_status( $this->id, $season, $team_id );
     }
     /**
      * =======================
@@ -2574,40 +2002,7 @@ class League {
      * @param array $custom custom.
      */
     public function save_standings_manually( array $teams, array $points, array $matches, array $custom ): void {
-        global $wpdb;
-
-        $season = $this->current_season['name'];
-
-        foreach ( array_keys( $teams ) as $id ) {
-            $points_2_plus  = 0;
-            $points_2_minus = 0;
-            $diff           = 0;
-
-            $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_league_teams SET `points_plus` = %d, `points_minus` = %d, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `add_points` = %d WHERE `team_id` = %d and `league_id` = %d AND `season` = %s",
-                    $points['points_plus'][ $id ],
-                    $points['points_minus'][ $id ],
-                    $points_2_plus,
-                    $points_2_minus,
-                    $matches['num_done_matches'][ $id ],
-                    $matches['num_won_matches'][ $id ],
-                    $matches['num_draw_matches'][ $id ],
-                    $matches['num_lost_matches'][ $id ],
-                    $diff,
-                    $points['add_points'][ $id ],
-                    $id,
-                    $this->id,
-                    $season
-                )
-            );
-            wp_cache_flush();
-        }
-
-        // Update Teams Rank and Status if not set to manual ranking.
-        if ( 'manual' !== $this->event->competition->settings['team_ranking'] ) {
-            $this->set_teams_rank( $season );
-        }
+        $this->get_standings_service()->save_standings_manually( $this, $teams, $points, $matches, $custom );
     }
 
     /**
@@ -2672,18 +2067,7 @@ class League {
      * @param string $season season.
      */
     public function update_standings( string $season ): void {
-        // update Standings for each team.
-        $league_teams = $this->get_league_teams(
-            array(
-                'season' => $season,
-                'cache'  => false,
-            )
-        );
-        foreach ( $league_teams as $league_team ) {
-            $this->save_standings( $league_team );
-        }
-        // Update Teams Rank and Status.
-        $this->set_teams_rank( $season );
+        $this->get_standings_service()->update_standings( $this, $season );
     }
     /**
      * Update points for given team
@@ -2691,45 +2075,7 @@ class League {
      * @param object $league_team team.
      */
     private function save_standings( object $league_team ): void {
-        global $wpdb;
-
-        if ( 'manual' !== $this->point_rule ) {
-            $league_team = get_league_team( $league_team );
-            $league_team->get_num_done_matches();
-            $league_team->get_num_won_matches();
-            $league_team->get_num_draw_matches();
-            $league_team->get_num_lost_matches();
-
-            $league_team->points  = $this->calculate_points( $league_team );
-            $league_team->diff    = 0;
-            $league_team->points_2 = array(
-                'plus'  => 0,
-                'minus' => 0,
-            );
-            // get custom team standings data.
-            $league_team->custom = $this->get_standings_data( $league_team->id, $league_team->custom );
-            $wpdb->query(
-                $wpdb->prepare(
-                    "UPDATE $wpdb->racketmanager_league_teams SET `points_plus` = %f, `points_minus` = %f, `points_2_plus` = %d, `points_2_minus` = %d, `done_matches` = %d, `won_matches` = %d, `draw_matches` = %d, `lost_matches` = %d, `diff` = %d, `custom` = %s WHERE `team_id` = %d AND `league_id` = %d AND `season` = %s",
-                    $league_team->points['plus'],
-                    $league_team->points['minus'],
-                    $league_team->points_2['plus'],
-                    $league_team->points_2['minus'],
-                    $league_team->done_matches,
-                    $league_team->won_matches,
-                    $league_team->draw_matches,
-                    $league_team->lost_matches,
-                    $league_team->diff,
-                    maybe_serialize( $league_team->custom ),
-                    $league_team->id,
-                    $league_team->league_id,
-                    $league_team->season
-                )
-            ); // db call ok.
-            wp_cache_delete( $league_team->id, '$league_team' );
-            wp_cache_delete( $league_team->league_id, 'leaguetable' );
-        }
-
+        $this->get_standings_service()->save_standings( $this, $league_team );
     }
 
     /**
@@ -2740,98 +2086,12 @@ class League {
      *
      * @return array
      */
-    private function calculate_points( object $team, false|array $matches = false ): array {
-        $team_id     = $team->id;
-        $season      = $team->season;
-        $point_rule  = $this->get_point_rule( $this->point_rule );
-        $points      = array(
-            'plus'  => 0,
-            'minus' => 0,
-        );
-        if ( ! $matches ) {
-            $matches = $this->get_matches(
-                array(
-                    'team_id'          => $team->id,
-                    'match_day'        => -1,
-                    'limit'            => false,
-                    'season'           => $season,
-                    'cache'            => false,
-                    'reset_query_args' => true,
-                )
-            );
-        }
-
-        if ( $matches ) {
-            $points_for     = 0;
-            $points_against = 0;
-            foreach ( $matches as $match ) {
-                if ( strval( $match->home_team ) === strval( $team_id ) ) {
-                    $points_for     += $match->home_points;
-                    $points_against += $match->away_points;
-                } elseif ( strval( $match->away_team ) === strval( $team_id ) ) {
-                    $points_for     += $match->away_points;
-                    $points_against += $match->home_points;
-                }
-            }
-            $points['plus']  = $points_for;
-            $points['minus'] = $points_against;
-        } else {
-            $forwin             = empty( $point_rule['forwin'] ) ? 0 : $point_rule['forwin'];
-            $forwin_split       = empty( $point_rule['forwin_split'] ) ? 0 : $point_rule['forwin_split'];
-            $forloss_split      = empty( $point_rule['forloss_split'] ) ? 0 : $point_rule['forloss_split'];
-            $forshare           = empty( $point_rule['forshare'] ) ? 0 : $point_rule['forshare'];
-            $forwalkover_rubber = empty( $point_rule['forwalkover_rubber'] ) ? 0 : $point_rule['forwalkover_rubber'];
-            $walkover_penalty   = empty( $point_rule['forwalkover_match'] ) ? 0 : $point_rule['forwalkover_match'];
-            $rubber_win         = empty( $point_rule['rubber_win'] ) ? 0 : $point_rule['rubber_win'];
-            $rubber_draw        = empty( $point_rule['rubber_draw'] ) ? 0 : $point_rule['rubber_draw'];
-            $matches_win        = empty( $point_rule['matches_win'] ) ? 0 : $point_rule['matches_win'];
-            $matches_draw       = empty( $point_rule['matches_draw'] ) ? 0 : $point_rule['matches_draw'];
-            $shared_match       = empty( $point_rule['shared_match'] ) ? 0 : $point_rule['shared_match'];
-            $data               = $this->get_standings_data( $team_id, array(), $matches );
-            if ( ! empty( $point_rule['match_result'] ) ) {
-                if ( 'rubber_count' === $point_rule['match_result'] ) {
-                    $points['plus'] = $data['rubbers_won'] * $rubber_win + $data['rubbers_shared'] * $rubber_draw - ( $data['no_player'] * $forwalkover_rubber ) - $data['no_team'] * $walkover_penalty + $data['matches_shared'] * $shared_match;
-                } elseif ( 'games' === $point_rule['match_result'] ) {
-                    $points['plus'] = $data['games_won'];
-                }
-            } else {
-                $points['plus']  = $data['sets_won'] + ( $data['straight_set']['win'] * $forwin ) + ( $data['split_set']['win'] * $forwin_split ) + ( $data['split_set']['lost'] * $forloss_split ) + ( $data['sets_shared'] * $forshare ) - ( $data['no_player'] * $forwalkover_rubber ) - ( $data['no_team'] * $walkover_penalty ) + ( $data['matches_won'] * $matches_win ) + ( $data['matches_shared'] * $matches_draw );
-                $points['minus'] = $data['sets_allowed'] + ( $data['straight_set']['lost'] * $forwin ) + ( $data['split_set']['win'] * $forloss_split ) + ( $data['split_set']['lost'] * $forwin_split ) + ( $data['sets_shared'] * $forshare );
-            }
-        }
-        return $points;
+    public function calculate_points( object $team, false|array $matches = false ): array {
+        return $this->get_standings_service()->calculate_points( $this, $team, $matches );
     }
 
     /**
-     * Break ties
-     *
-     * @param array $teams teams.
-     *
-     * @return array
-     */
-    private function tiebreak( array $teams ): array {
-        // re-order teams by rank.
-        foreach ( $teams as $key => $row ) {
-            $rank[ $key ] = $row->rank;
-        }
-        array_multisort( $rank, SORT_ASC, $teams );
-
-        return $teams;
-    }
-
-    /**
-     * ========================
-     * Sports customization section. The following functions can be overridden by sports class
-     * ========================
-     */
-
-    /**
-     * Determine if two teams are tied based on
-     *
-     * 1) Primary points
-     * 2) Secondary point difference
-     * 3) Secondary points
-     * 4) Win Percentage
+     * Determine if two teams are tied based on criteria
      *
      * @param object $team1 team1.
      * @param object $team2 team2.
@@ -2839,37 +2099,7 @@ class League {
      * @return boolean
      */
     public function is_tie( object $team1, object $team2 ): bool {
-        // initialize results array.
-
-        $res = array(
-            'primary'    => false,
-            'sets_diff'  => false,
-            'games_diff' => false,
-            'sets_won'   => false,
-        );
-
-        if ( $team1->points['plus'] === $team2->points['plus'] ) {
-            $res['primary'] = true;
-        }
-        if ( ( $team1->sets_won - $team1->sets_allowed ) === ( $team2->sets_won - $team2->sets_allowed ) ) {
-            $res['sets_diff'] = true;
-        }
-        if ( ( $team1->games_won - $team1->games_allowed ) === ( $team2->games_won - $team2->games_allowed ) ) {
-            $res['sets_diff'] = true;
-        }
-        if ( $team1->sets_won === $team2->sets_won ) {
-            $res['sets_won'] = true;
-        }
-
-        // get unique results.
-        $res = array_values( array_unique( $res ) );
-
-        // more than one results, i.e. not tied.
-        if ( count( $res ) > 1 ) {
-            return false;
-        }
-
-        return $res[0];
+        return $this->get_standings_service()->is_tie( $team1, $team2 );
     }
 
     /**
@@ -2881,235 +2111,8 @@ class League {
      *
      * @return array
      */
-    protected function get_standings_data( int $team_id, array $data, array $matches = array() ): array {
-        $data['straight_set']   = array(
-            'win'  => 0,
-            'lost' => 0,
-        );
-        $data['split_set']      = $data['straight_set'];
-        $data['games_allowed']  = 0;
-        $data['games_won']      = 0;
-        $data['sets_won']       = 0;
-        $data['sets_allowed']   = 0;
-        $data['sets_shared']    = 0;
-        $data['no_player']      = 0;
-        $data['no_team']        = 0;
-        $data['rubbers_won']    = 0;
-        $data['rubbers_shared'] = 0;
-        $data['matches_won']    = 0;
-        $data['matches_shared'] = 0;
-
-        $walkover_sets  = $this->num_sets_to_win;
-        $set_type       = Util::get_set_type( $this->scoring );
-        $set_info       = Util::get_set_info( $set_type );
-        $games_to_win   = $set_info->min_win;
-        $walkover_games = $walkover_sets * $games_to_win;
-
-        $season = $this->get_season();
-
-        if ( ! $matches ) {
-            $matches = $this->get_matches_for_standings( $season, $team_id );
-        }
-        foreach ( $matches as $match ) {
-            $team_ref       = strval( $team_id ) === strval( $match->home_team ) ? 'home' : 'away';
-            $team_ref_alt   = 'home' === $team_ref ? 'away' : 'home';
-            $player_ref     = strval( $team_id ) === strval( $match->home_team ) ? 'player1' : 'player2';
-            $player_ref_alt = 'player1' === $player_ref ? 'player2' : 'player1';
-            $match          = $this->resolve_standings_match( $match );
-            if ( ! empty( $match->winner_id ) && ! empty( $match->loser_id ) && 'W' !== $match->teams['home']->status && 'W' !== $match->teams['away']->status && ! $match->is_cancelled ) {
-                if ( ! empty( $match->status ) && 3 === $match->status ) {
-                    ++$data['matches_shared'];
-                }
-                if ( ! empty( $this->num_rubbers ) ) {
-                    $rubbers_won    = 0;
-                    $rubbers_lost   = 0;
-                    $rubbers_shared = 0;
-                    $rubbers        = $match->get_rubbers();
-                    $walkovers      = 0;
-                    foreach ( $rubbers as $rubber ) {
-                        if ( ! $rubber->is_walkover && ! $rubber->is_shared ) {
-                            $num_sets    = count( $rubber->sets );
-                            $set_retired = null;
-                            if ( $rubber->is_retired || $rubber->is_abandoned ) {
-                                for ( $s1 = $num_sets; $s1 > 0; $s1-- ) {
-                                    if ( ( isset( $rubber->sets[ $s1 ]['player1'] ) && '' !== $rubber->sets[ $s1 ]['player1'] ) || ( isset( $rubber->sets[ $s1 ]['player2'] ) && '' !== $rubber->sets[ $s1 ]['player2'] ) ) {
-                                        $set_retired = $s1;
-                                        break;
-                                    }
-                                }
-                            }
-                            for ( $j = 1; $j <= $this->num_sets; $j++ ) {
-                                $set_type = Util::get_set_type( $this->scoring, null, $this->num_sets, $j );
-                                if ( isset( $rubber->sets[ $j ]['player1'] ) && null !== $rubber->sets[ $j ]['player1'] ) {
-                                    $set        = $rubber->sets[ $j ];
-                                    $set_winner = null;
-                                    if ( $rubber->is_retired && $set_retired === $j ) {
-                                        if ( ! empty( $rubber->custom['retired'] ) && $team_ref === $rubber->custom['retired'] ) {
-                                            $set_winner = $team_ref_alt;
-                                        } else {
-                                            $set_winner = $team_ref;
-                                        }
-                                    }
-                                    if ( $rubber->is_abandoned && $set_retired === $j ) {
-                                        $set_winner = 'abandoned';
-                                    }
-                                    if ( is_numeric( trim( $set[ $player_ref_alt ] ) ) ) {
-                                        if ( 'MTB' === $set_type ) {
-                                            if ( strval( $rubber->loser_id ) === strval( $team_id ) ) {
-                                                ++$data['games_allowed'];
-                                            }
-                                        } else {
-                                            $data['games_allowed'] += intval( $set[ $player_ref_alt ] );
-                                        }
-                                    }
-                                    if ( is_numeric( trim( $set[ $player_ref ] ) ) ) {
-                                        if ( 'MTB' === $set_type ) {
-                                            if ( strval( $rubber->winner_id ) === strval( $team_id ) ) {
-                                                ++$data['games_won'];
-                                            }
-                                        } else {
-                                            $data['games_won'] += intval( $set[ $player_ref ] );
-                                        }
-                                    }
-                                    if ( ( $set[ $player_ref ] > $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref === $set_winner ) {
-                                        $data['sets_won'] += 1;
-                                    } elseif ( ( $set[ $player_ref ] < $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref_alt === $set_winner ) {
-                                        $data['sets_allowed'] += 1;
-                                    } elseif ( 'S' === strtoupper( $set[ $player_ref ] ) || $rubber->is_abandoned || $rubber->is_retired ) {
-                                        $data['sets_shared'] += 1;
-                                    }
-                                } else {
-                                    if ( $rubber->is_abandoned || $rubber->is_retired ) {
-                                        $data['sets_shared'] += 1;
-                                    }
-                                }
-                            }
-                        } elseif ( $rubber->is_shared ) {
-                            $data['sets_shared'] += $this->num_sets;
-                            ++$data['rubbers_shared'];
-                            ++$rubbers_shared;
-                        }
-                        if ( strval( $rubber->winner_id ) === strval( $team_id ) || '-1' === strval( $rubber->winner_id ) ) { // winning team.
-                            if ( strval( $rubber->winner_id ) === strval( $team_id ) ) {
-                                ++$data['rubbers_won'];
-                                ++$rubbers_won;
-                            }
-                            if ( $rubber->is_walkover ) {
-                                $data['sets_won']            += $walkover_sets;
-                                $data['games_won']           += $walkover_games;
-                                $data['straight_set']['win'] += 1;
-                            } elseif ( strval( $match->home_team ) === strval( $team_id ) ) {   // home team.
-                                if ( strval( $rubber->home_points ) > '0' ) {
-                                    if ( strval( $rubber->away_points ) > '0' ) {
-                                        $data['split_set']['win'] += 1;
-                                    } else {
-                                        $data['straight_set']['win'] += 1;
-                                    }
-                                }
-                            } elseif ( strval( $rubber->away_points ) > '0' ) { // away team.
-                                if ( strval( $rubber->home_points ) > '0' ) {
-                                    $data['split_set']['win'] += 1;
-                                } else {
-                                    $data['straight_set']['win'] += 1;
-                                }
-                            }
-                        } elseif ( strval( $rubber->loser_id ) === strval( $team_id ) ) { // losing team.
-                            ++$rubbers_lost;
-                            if ( $rubber->is_walkover ) {
-                                $data['sets_allowed']         += $walkover_sets;
-                                $data['games_allowed']        += $walkover_games;
-                                $data['no_player']            += 1;
-                                $data['straight_set']['lost'] += 1;
-                                ++$walkovers;
-                            } elseif ( strval( $match->home_team ) === strval( $team_id ) ) {   // team loss.
-                                if ( strval( $rubber->home_points ) > '0' ) {
-                                    $data['split_set']['lost'] += 1;
-                                } else {
-                                    $data['straight_set']['lost'] += 1;
-                                }
-                            } elseif ( strval( $rubber->away_points ) > '0' ) { // team split set loss.
-                                $data['split_set']['lost'] += 1;
-                            } else {                                 // team straight set loss.
-                                $data['straight_set']['lost'] += 1;
-                            }
-                        }
-                    }
-                    if ( intval( $match->league->num_rubbers ) === $walkovers ) {
-                        $data['no_team'] += $walkovers;
-                    }
-                    if ( $rubbers_shared ) {
-                        if ( $rubbers_won === $rubbers_lost ) {
-                            ++$data['matches_shared'];
-                        } elseif ( $rubbers_won > $rubbers_lost ) {
-                            ++$data['matches_won'];
-                        }
-                    } elseif ( $rubbers_won > $rubbers_lost ) {
-                        ++$data['matches_won'];
-                    }
-                } else {
-                    $set_winner = null;
-                    for ( $j = 1; $j <= $this->num_sets; $j++ ) {
-                        $set = $match->sets[ $j ];
-                        if ( ( $set[ $player_ref ] > $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref === $set_winner ) {
-                            $data['sets_won'] += 1;
-                        } elseif ( ( $set[ $player_ref ] < $set[ $player_ref_alt ] && empty( $set_winner ) ) || $team_ref_alt === $set_winner ) {
-                            $data['sets_allowed'] += 1;
-                        } elseif ( 'S' === strtoupper( $set[ $player_ref ] ) ) {
-                            $data['sets_shared'] += 1;
-                        }
-                        $data['games_allowed'] += $match->sets[ $j ][ $player_ref_alt ];
-                        $data['games_won']     += $match->sets[ $j ][ $player_ref ];
-                    }
-                    if ( $this->num_sets > 1 && '' !== $match->sets[ $this->num_sets ]['player1'] && '' !== $match->sets[ $this->num_sets ]['player2'] ) {
-                        if ( strval( $match->winner_id ) === strval( $team_id ) ) {
-                            $data['split_set']['win'] += 1;
-                        } elseif ( strval( $match->loser_id ) === strval( $team_id ) ) {
-                            $data['split_set']['lost'] += 1;
-                        }
-                    } elseif ( strval( $match->winner_id ) === strval( $team_id ) ) {
-                        $data['straight_set']['win'] += 1;
-                    } elseif ( strval( $match->loser_id ) === strval( $team_id ) ) {
-                        $data['straight_set']['lost'] += 1;
-                    }
-                }
-            }
-        }
-        return $data;
-    }
-
-    /**
-     * Resolve match object for standings calculation.
-     *
-     * @param mixed $match Match ID or object.
-     * @return mixed
-     */
-    protected function resolve_standings_match( mixed $match ): mixed {
-        return get_match( $match );
-    }
-
-    /**
-     * Get matches for standings function
-     *
-     * @param string $season season.
-     * @param int $team team id.
-     *
-     * @return array of matches.
-     */
-    private function get_matches_for_standings( string $season, int $team ): array {
-        return $this->get_matches(
-            array(
-                'season'           => $season,
-                'team_id'          => $team,
-                'final'            => '',
-                'limit'            => false,
-                'cache'            => false,
-                'home_points'      => 'not null',
-                'away_points'      => 'not null',
-                'reset_query_args' => true,
-                'confirmed'        => true,
-                'withdrawn'        => false,
-            )
-        );
+    public function get_standings_data( int $team_id, array $data = array(), array $matches = array() ): array {
+        return $this->get_standings_service()->get_standings_data( $this, $team_id, $data, $matches );
     }
 
     /**
@@ -3229,78 +2232,7 @@ class League {
      * Schedule matches
      */
     public function schedule_matches(): void {
-        $season         = $this->get_season();
-        $schedule_teams = $this->get_league_teams(
-            array(
-                'season'  => $season,
-                'status'  => 'active',
-                'orderby' => array(
-                    'group' => 'ASC',
-                    'title' => 'ASC',
-                ),
-            )
-        );
-        if ( $this->event->is_box ) {
-            $num_teams = $this->num_teams;
-            if ( 0 !== $this->num_teams % 2 ) {
-                ++$num_teams;
-            }
-            $num_rounds    = $num_teams - 1;
-            $num_teams_max = $num_teams;
-            $home_away     = false;
-        } else {
-            $num_rounds = $this->current_season['num_match_days'];
-            $home_away  = empty( $this->event->current_season['home_away'] ) ? false : $this->event->current_season['home_away'];
-            if ( $home_away ) {
-                $num_rounds = $num_rounds / 2;
-            }
-            $num_teams_max = $num_rounds + 1;
-        }
-        $refs = array();
-        for ( $i = 1; $i <= $num_teams_max; $i++ ) {
-            $refs[] = $i;
-        }
-        foreach ( $schedule_teams as $team ) {
-            if ( $team->group ) {
-                $ref = array_search( intval( $team->group ), $refs, true );
-                array_splice( $refs, $ref, 1 );
-            }
-        }
-        foreach ( $schedule_teams as $team ) {
-            if ( ! $team->group ) {
-                $group = $refs[0];
-                Util::set_table_group( $group, $team->table_id );
-                array_splice( $refs, 0, 1 );
-            }
-        }
-
-        $schedule_teams = $this->get_league_teams(
-            array(
-                'season'      => $season,
-                'status'      => 'active',
-                'get_details' => true,
-                'cache'       => false,
-                'orderby'     => array(
-                    'group' => 'ASC',
-                    'title' => 'ASC',
-                ),
-            )
-        );
-        if ( $schedule_teams ) {
-            if ( $refs ) {
-                foreach ( $refs as $ref ) {
-                    $team             = array(
-                        'id'     => -1,
-                        'title'  => __( 'Bye', 'racketmanager' ),
-                        'player' => array(),
-                        'group'  => $ref,
-                    );
-                    $schedule_teams[] = (object) $team;
-                }
-                usort( $schedule_teams, fn ( $a, $b ) => $a->group <=> $b->group );
-            }
-            $this->create_schedule( $schedule_teams, $num_rounds, $home_away );
-        }
+        $this->get_schedule_service()->schedule_league( $this );
     }
 
     /**
@@ -3311,19 +2243,9 @@ class League {
      * @param boolean $home_away home and away indicator.
      */
     public function create_schedule( array $teams, string $num_rounds, bool $home_away ): void {
-        $season      = $this->current_season['name'];
-        $match_dates = $this->current_season['match_dates'];
-        $num_teams   = count( $teams );
-        if ( ! $num_rounds ) {
-            $num_rounds = $this->current_season['num_match_days'];
-        }
-        if ( $num_teams & 1 ) {
-            ++$num_teams;
-        }
-        $schedule_round_robin = new Schedule_Round_Robin();
-        $rounds               = $schedule_round_robin->generate( $num_teams, $num_rounds, $home_away );
-        $this->create_match_schedule( $rounds, $teams, $match_dates, $season, $this->event->is_box );
+        $this->get_schedule_service()->create_schedule( $this, $teams, $num_rounds, $home_away );
     }
+
     /**
      * Create match schedule with teams
      *
@@ -3334,43 +2256,7 @@ class League {
      * @param boolean $is_box is this a box league.
      */
     public function create_match_schedule( array $rounds, array $teams, array $match_dates, string $season, bool $is_box ): void {
-        $fixture_service = $this->get_fixture_service();
-
-        $num_rounds = count( $rounds );
-        for ( $i = 0; $i < $num_rounds; $i++ ) {
-            if ( ! $is_box ) {
-                $round_number              = $i + 1;
-                $start_date                = $match_dates[ $i ];
-                $rounds[ $i ]['startDate'] = $start_date;
-            }
-            $fixtures = $rounds[ $i ]['fixtures'];
-            foreach ( $fixtures as $fixture ) {
-                $home_team_dtls = $teams[ $fixture['home'] - 1 ];
-                $away_team_dtls = $teams[ $fixture['away'] - 1 ];
-                if ( -1 !== $home_team_dtls->id && -1 !== $away_team_dtls->id ) {
-                    $match            = new stdClass();
-                    $match->season    = $season;
-                    $match->league_id = $this->id;
-                    $match->home_team = $home_team_dtls->id;
-                    $match->away_team = $away_team_dtls->id;
-                    if ( $is_box ) {
-                        $match->date      = null;
-                        $match->match_day = 1;
-                        $match->location  = '';
-                    } else {
-                        $match_day        = $home_team_dtls->match_day;
-                        $match_time       = $home_team_dtls->match_time;
-                        $day              = Util_Lookup::get_match_day_number( $match_day );
-                        $match_date       = Util::amend_date( $start_date, $day );
-                        $match->date      = $match_date . ' ' . $match_time;
-                        $match->match_day = $round_number;
-                        $match->location  = $home_team_dtls->club->shortcode;
-                    }
-                    $fixture_entity = Fixture_Factory::from_object( $match );
-                    $fixture_service->create_fixture( $fixture_entity, $this );
-                }
-            }
-        }
+        $this->get_schedule_service()->create_match_schedule( $this, $rounds, $teams, $match_dates, $season, $is_box );
     }
     /**
      * Add match to league function
@@ -3437,8 +2323,6 @@ class League {
      * @return array
      */
     public function get_players( array $args = array() ): array {
-        global $wpdb;
-
         $defaults = array(
             'offset'  => 0,
             'limit'   => 99999999,
@@ -3451,83 +2335,20 @@ class League {
             'stats'   => false,
         );
         $args     = array_merge( $defaults, $args );
-        $offset   = $args['offset'];
-        $limit    = $args['limit'];
-        $season   = $args['season'];
-        $orderby  = $args['orderby'];
-        $club     = $args['club'];
-        $team     = $args['team'];
         $count    = $args['count'];
         $group    = $args['group'];
         $stats    = $args['stats'];
+        $team     = $args['team'];
 
-        $search_terms  = array();
-        $search_args   = array();
-        $search_args[] = $this->id;
-        if ( ! $season ) {
-            $season = $this->current_season['name'];
+        if ( ! $args['season'] ) {
+            $args['season'] = $this->current_season['name'] ?? '';
         }
-        if ( $season ) {
-            $search_terms[] = '`season` = %s';
-            $search_args[]  = $season;
-        }
-        if ( $team ) {
-            $search_terms[] .= '(( `home_team` = %d AND `player_team` = %s) OR (`away_team` = %d AND `player_team` = %s))';
-            $search_args[]   = $team;
-            $search_args[]   = 'home';
-            $search_args[]   = $team;
-            $search_args[]   = 'away';
-        }
-        if ( $club ) {
-            $search_terms[] .= "(( `home_team` in (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d) AND `player_team` = %s) OR (`away_team` in (SELECT `id` FROM $wpdb->racketmanager_teams WHERE `club_id` = %d) AND `player_team` = %s))";
-            $search_args[]   = $club;
-            $search_args[]   = 'home';
-            $search_args[]   = $club;
-            $search_args[]   = 'away';
-        }
-        $search = Util::search_string( $search_terms );
-        $order  = Util::order_by_string( $orderby );
+
         if ( $count ) {
-            $sql = 'SELECT COUNT(*)';
-        } else {
-            $sql = 'SELECT DISTINCT `player_id`, `club_player_id`';
+            return $this->get_league_repository()->query_players( $this->id, $args, true );
         }
-        $sql .= " FROM $wpdb->racketmanager_rubber_players rp, $wpdb->racketmanager_rubbers r, $wpdb->racketmanager_matches m  WHERE rp.`rubber_id` = r.`id` AND r.`match_id` = m.`id` AND m.`league_id` = %d" . $search;
-        if ( $count ) {
-            $sql = $wpdb->prepare(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql,
-                $search_args,
-            );
-            $num_players = wp_cache_get( md5( $sql ), 'league_rubber_players' );
-            if ( ! $num_players ) {
-                $num_players = $wpdb->get_var(
-                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                    $sql
-                ); // db call ok.
-                wp_cache_set( md5( $sql ), $num_players, 'league_rubber_players' );
-            }
-            return $num_players;
-        }
-        $sql .= $order;
-        if ( intval( $limit > 0 ) ) {
-            $sql          .= ' LIMIT %d, %d';
-            $search_args[] = $offset;
-            $search_args[] = $limit;
-        }
-        $sql = $wpdb->prepare(
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-            $sql,
-            $search_args,
-        );
-        $players = wp_cache_get( md5( $sql ), 'league_rubber_players' );
-        if ( ! $players ) {
-            $players = $wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call ok.
-            wp_cache_set( md5( $sql ), $players, 'league_rubber_players' );
-        }
+
+        $players = $this->get_league_repository()->query_players( $this->id, $args, false );
         $league_players = array();
         foreach ( $players as $player ) {
             $player = get_player( $player->player_id );
@@ -3580,50 +2401,17 @@ class League {
      * @return object team
      */
     private function get_player_team( array $args = array() ): object {
-        global $wpdb;
         $defaults = array(
             'season' => false,
             'team'   => false,
             'player' => false,
         );
         $args     = array_merge( $defaults, $args );
-        $season   = $args['season'];
-        $team     = $args['team'];
-        $player   = $args['player'];
-
-        $search_terms  = array();
-        $search_args   = array();
-        $search_args[] = $this->id;
-        if ( ! $season ) {
-            $season = $this->current_season['name'];
+        if ( ! $args['season'] ) {
+            $args['season'] = $this->current_season['name'] ?? '';
         }
-        if ( $season ) {
-            $search_terms[] = '`season` = %s';
-            $search_args[]  = $season;
-        }
-        if ( $player ) {
-            $search_terms[] = 'ro.`player_id` = %d';
-            $search_args[]  = intval( $player );
-        }
-        $search = Util::search_string( $search_terms );
-        $sql    = "SELECT distinct t.`id`, t.`title` FROM $wpdb->racketmanager_teams AS t, $wpdb->racketmanager_rubbers AS r, $wpdb->racketmanager_rubber_players AS rp, $wpdb->racketmanager_matches AS m, $wpdb->racketmanager_club_players AS ro WHERE r.`winner_id` != 0 AND r.`id` = rp.`rubber_id` AND rp.`club_player_id` = ro.`id` AND ((rp.`player_team` = 'home' AND m.`home_team` = t.`id`) OR (rp.`player_team` = 'away' AND m.`away_team` = t.`id`)) AND ro.`club_id` = t.`club_id` AND r.`match_id` = m.`id` AND m.`league_id` = %d " . $search;
-        $sql    = $wpdb->prepare(
-        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-            $sql,
-            $search_args,
-        );
-        $teams = wp_cache_get( md5( $sql ), 'player_team' );
-        if ( ! $teams ) {
-            $teams = $wpdb->get_results(
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-                $sql
-            ); // db call ok.
-            wp_cache_set( md5( $sql ), $teams, 'player_team' );
-        }
-        if ( $teams ) {
-            $team = $teams[0];
-        }
-        return $team;
+        $team = $this->get_league_repository()->get_player_team( $this->id, $args );
+        return $team ?? new stdClass();
     }
     /**
      * Set rounds function
@@ -3634,19 +2422,12 @@ class League {
      * @return void
      */
     public function set_rounds( string $season, array $rounds ): void {
-        global $wpdb;
         if ( empty( $this->seasons[ $season ] ) ) {
             $this->seasons[ $season ] = array();
         }
         $this->seasons[ $season ]['rounds'] = $rounds;
 
-        $wpdb->query( //phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE $wpdb->racketmanager SET `seasons` = %s WHERE `id` = %d",
-                maybe_serialize( $this->seasons ),
-                $this->id
-            )
-        );
+        $this->get_league_repository()->update_seasons( $this->id, $this->seasons );
         wp_cache_set( $this->id, $this, 'leagues' );
     }
     /**
@@ -3658,31 +2439,37 @@ class League {
      * @return boolean
      */
     public function contact_teams( string $season, string $email_message ): bool {
+        return $this->get_notification_service()->contact_league_teams( $this, $season, $email_message );
+    }
+
+    /**
+     * Resolve Standings_Service instance from container or fallback.
+     */
+    private function get_standings_service(): Standings_Service {
         global $racketmanager;
-        $message_sent  = false;
-        $teams         = $this->get_league_teams( array( 'season' => $season ) );
-        $email_message = str_replace( '\"', '"', $email_message );
-        $headers       = array();
-        $email_from    = $racketmanager->get_confirmation_email( $this->event->competition->type );
-        $headers[]     = 'From: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
-        $headers[]     = 'cc: ' . ucfirst( $this->event->competition->type ) . ' Secretary <' . $email_from . '>';
-        $email_subject = $racketmanager->site_name . ' - ' . $this->title . ' ' . $season . ' - Important Message';
-        $email_to      = array();
-        foreach ( $teams as $team ) {
-            $team_dtls = $this->get_team_dtls( $team->id );
-            if ( ! empty( $team_dtls->contactemail ) ) {
-                $email_to[]   = ucwords( $team_dtls->captain ) . ' <' . $team_dtls->contactemail . '>';
-                $message_sent = true;
-            }
-            if ( ! empty( $team_dtls->club->match_secretary->email ) ) {
-                $headers[]    = 'cc: ' . ucwords( $team_dtls->club->match_secretary->display_name ) . ' <' . $team_dtls->club->match_secretary->email . '>';
-                $message_sent = true;
-            }
-        }
-        if ( $message_sent ) {
-            wp_mail( $email_to, $email_subject, $email_message, $headers );
-        }
-        return $message_sent;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'standings_service' )
+            ? $racketmanager->container->get( 'standings_service' )
+            : new Standings_Service();
+    }
+
+    /**
+     * Resolve League_Schedule_Service instance from container or fallback.
+     */
+    private function get_schedule_service(): League_Schedule_Service {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'league_schedule_service' )
+            ? $racketmanager->container->get( 'league_schedule_service' )
+            : new League_Schedule_Service();
+    }
+
+    /**
+     * Resolve Competition_Notification_Service instance from container or fallback.
+     */
+    private function get_notification_service(): Competition_Notification_Service {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'competition_notification_service' )
+            ? $racketmanager->container->get( 'competition_notification_service' )
+            : new Competition_Notification_Service();
     }
 
     /**
@@ -3703,6 +2490,16 @@ class League {
         return isset( $racketmanager->container ) && $racketmanager->container->has( 'fixture_repository' )
             ? $racketmanager->container->get( 'fixture_repository' )
             : new Fixture_Repository();
+    }
+
+    /**
+     * Resolve League_Repository instance from container or fallback.
+     */
+    private function get_league_repository(): League_Repository_Interface {
+        global $racketmanager;
+        return isset( $racketmanager->container ) && $racketmanager->container->has( 'league_repository' )
+            ? $racketmanager->container->get( 'league_repository' )
+            : new League_Repository();
     }
 }
 

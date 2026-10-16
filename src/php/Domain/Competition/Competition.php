@@ -736,10 +736,10 @@ class Competition {
     /**
      * Resolve a season name from input or fall back to competition state.
      *
-     * @param string|null $season Season name.
+     * @param int|string|null $season Season name or identifier.
      * @return string|null
      */
-    public function resolve_season_name( ?string $season = null ): ?string {
+    public function resolve_season_name( int|string|null $season = null ): ?string {
         if ( ! empty( $season ) ) {
             return (string) $season;
         }
@@ -755,10 +755,10 @@ class Competition {
     /**
      * Get season configuration array for a given season.
      *
-     * @param string|null $season Season name.
+     * @param int|string|null $season Season name.
      * @return array|null
      */
-    public function get_season_config( ?string $season = null ): ?array {
+    public function get_season_config( int|string|null $season = null ): ?array {
         $season_name = $this->resolve_season_name( $season );
         if ( empty( $season_name ) ) {
             return null;
@@ -820,10 +820,10 @@ class Competition {
      *
      * Does not modify the competition's cached events.
      *
-     * @param string|null $season Season name.
+     * @param int|string|null $season Season name.
      * @return Event[]
      */
-    public function get_events_for_season( ?string $season = null ): array {
+    public function get_events_for_season( int|string|null $season = null ): array {
         $season_name = $this->resolve_season_name( $season );
         if ( empty( $season_name ) ) {
             return array();
@@ -886,11 +886,11 @@ class Competition {
      * Check if an event is allowed/active for a specific competition season.
      *
      * @param int|string|object $event Event ID, event name/slug, or Event object.
-     * @param string|null       $season Season name.
+     * @param int|string|null   $season Season name.
      * @param bool              $for_entry Whether checking for entry submission (where [] denies all) vs frontend viewing (where [] allows all).
      * @return bool
      */
-    public function is_event_allowed( int|string|object $event, ?string $season = null, bool $for_entry = false ): bool {
+    public function is_event_allowed( int|string|object $event, int|string|null $season = null, bool $for_entry = false ): bool {
         $season_name = $this->resolve_season_name( $season );
         if ( empty( $season_name ) ) {
             return false;
@@ -932,10 +932,10 @@ class Competition {
      * Get frontend active/allowlisted events for a season.
      * Unset or empty allowlist displays all season events.
      *
-     * @param string|null $season Season name.
+     * @param int|string|null $season Season name.
      * @return array
      */
-    public function get_frontend_events( ?string $season = null ): array {
+    public function get_frontend_events( int|string|null $season = null ): array {
         $season = $this->resolve_season_name( $season );
         if ( empty( $season ) ) {
             return array();
@@ -963,10 +963,10 @@ class Competition {
     /**
      * Get events available for entry in this competition.
      *
-     * @param string|null $season Season name.
+     * @param int|string|null $season Season name.
      * @return array
      */
-    public function get_entry_events( ?string $season = null ): array {
+    public function get_entry_events( int|string|null $season = null ): array {
         $season = $this->resolve_season_name( $season );
         if ( empty( $season ) ) {
             return array();

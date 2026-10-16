@@ -4,11 +4,10 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Templates;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Date_Presenter;
 use Racketmanager\Admin\View_Models\Tournament_Draw_Page_View_Model;
 use Racketmanager\Domain\Competition\Competition_Type;
-use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Competition\Tournament;
 use Racketmanager\Domain\Scoring\Set_Score;
 use stdClass;
 
@@ -16,128 +15,39 @@ require_once dirname( __DIR__, 2 ) . '/wp-stubs.php';
 
 final class Admin_Championship_Finals_Template_Test extends TestCase {
 
+    protected function setUp(): void {
+        parent::setUp();
+        $GLOBALS['wp_stubs_options'] = array(
+            'date_format' => 'j M Y',
+            'time_format' => 'H:i',
+        );
+    }
+
     protected function tearDown(): void {
         unset( $GLOBALS['wp_stubs_options'] );
         parent::tearDown();
     }
 
-    public function test_finals_template_renders_preformatted_dates_and_times_with_date_presenter(): void {
-        $GLOBALS['wp_stubs_options'] = array(
-            'date_format' => 'j M Y',
-            'time_format' => 'H:i',
-        );
-
-        $competition                  = new stdClass();
-        $competition->id              = 10;
-        $competition->type            = Competition_Type::TOURNAMENT;
-        $competition->is_tournament   = true;
-        $competition->is_cup          = false;
-        $competition->is_team_entry   = true;
-
-        $event              = new stdClass();
-        $event->id          = 20;
-        $event->competition = $competition;
-
-        $league                 = new stdClass();
-        $league->id             = 30;
-        $league->event          = $event;
-        $league->num_rubbers    = 0;
-        $league->num_sets       = 3;
-        $league->current_season = array( 'name' => '2026' );
-        $league->championship   = new class() {
-            public function get_current_final_key(): string {
-                return 'final';
-            }
-        };
-
-        $tournament     = new stdClass();
-        $tournament->id = 5;
-
-        $home_team = new class() {
+    private function create_named_team( string $name ): object {
+        return new class( $name ) {
+            public function __construct( private string $name ) {}
             public function get_name(): string {
-                return 'Roger Federer';
+                return $this->name;
             }
         };
-        $away_team = new class() {
-            public function get_name(): string {
-                return 'Rafael Nadal';
-            }
-        };
-
-        $match              = new stdClass();
-        $match->id          = 99;
-        $match->date        = '2026-07-12 14:00:00';
-        $match->season      = '2026';
-        $match->final       = 'final';
-        $match->home_team   = '1';
-        $match->away_team   = '2';
-        $match->location    = 'Centre Court';
-        $match->hour        = '14';
-        $match->minutes     = '00';
-        $match->link        = '/match/99/';
-        $match->sets        = array(
-            1 => new Set_Score( 6, 4 ),
-            2 => new Set_Score( 7, 6, 7, 5 ),
-            3 => new Set_Score( 6, 3 ),
-        );
-        $match->custom      = array( 'sets' => $match->sets );
-        $match->home_points = 3;
-        $match->away_points = 0;
-
-        $fixture_details              = new stdClass();
-        $fixture_details->fixture     = $match;
-        $fixture_details->league      = $league;
-        $fixture_details->event       = $event;
-        $fixture_details->competition = $competition;
-        $fixture_details->home_team   = (object) array( 'team' => $home_team );
-        $fixture_details->away_team   = (object) array( 'team' => $away_team );
-
-        $presenter = new \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
-        $presented_finals = $presenter->present_finals(
-            array(
-                (object) array(
-                    'key'      => 'final',
-                    'name'     => 'Final',
-                    'fixtures' => array( $fixture_details ),
-                ),
-            ),
-            $tournament,
-            $league,
-            '2026'
-        );
-
-        $vm = new Tournament_Draw_Page_View_Model(
-            tournament: $tournament,
-            league: $league,
-            tab: 'fixtures',
-            season: '2026',
-            finals: $presented_finals,
-        );
-
-        $fixtures = $presented_finals[0]->fixtures;
-
-        ob_start();
-        include dirname( __DIR__, 3 ) . '/templates/admin/championship/finals.php';
-        $output = (string) ob_get_clean();
-
-        $this->assertStringContainsString( '12 Jul 2026', $output );
-        $this->assertStringContainsString( '14:00', $output );
-        $this->assertStringContainsString( 'Roger Federer - Rafael Nadal', $output );
-        $this->assertStringContainsString( 'Centre Court', $output );
-        $this->assertStringNotContainsString( 'mysql2date', $output );
     }
 
-    public function test_finals_template_renders_na_when_date_or_hour_is_missing(): void {
-        $GLOBALS['wp_stubs_options'] = array(
-            'date_format' => 'j M Y',
-            'time_format' => 'H:i',
-        );
-
+    private function create_league(
+        Competition_Type $type = Competition_Type::CUP,
+        bool $is_tournament = false,
+        bool $is_cup = true,
+        int $num_sets = 1
+    ): stdClass {
         $competition                = new stdClass();
         $competition->id            = 10;
-        $competition->type          = 'cup';
-        $competition->is_tournament = false;
-        $competition->is_cup        = true;
+        $competition->type          = $type;
+        $competition->is_tournament = $is_tournament;
+        $competition->is_cup        = $is_cup;
         $competition->is_team_entry = true;
 
         $event              = new stdClass();
@@ -148,99 +58,7 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
         $league->id             = 30;
         $league->event          = $event;
         $league->num_rubbers    = 0;
-        $league->num_sets       = 1;
-        $league->current_season = array( 'name' => '2026' );
-        $league->championship   = new class() {
-            public function get_current_final_key(): string {
-                return 'final';
-            }
-        };
-
-        $home_team = new class() {
-            public function get_name(): string {
-                return 'Team A';
-            }
-        };
-        $away_team = new class() {
-            public function get_name(): string {
-                return 'Team B';
-            }
-        };
-
-        $match              = new stdClass();
-        $match->id          = 101;
-        $match->date        = null;
-        $match->season      = '2026';
-        $match->final       = 'final';
-        $match->home_team   = '1';
-        $match->away_team   = '2';
-        $match->location    = null;
-        $match->link        = '/match/101/';
-        $match->sets        = array();
-        $match->custom      = array();
-        $match->home_points = null;
-        $match->away_points = null;
-
-        $fixture_details              = new stdClass();
-        $fixture_details->fixture     = $match;
-        $fixture_details->league      = $league;
-        $fixture_details->event       = $event;
-        $fixture_details->competition = $competition;
-        $fixture_details->home_team   = (object) array( 'team' => $home_team );
-        $fixture_details->away_team   = (object) array( 'team' => $away_team );
-
-        $tournament = new stdClass();
-        $tournament->id = 5;
-
-        $presenter = new \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
-        $presented_finals = $presenter->present_finals(
-            array(
-                (object) array(
-                    'key'      => 'final',
-                    'name'     => 'Final',
-                    'fixtures' => array( $fixture_details ),
-                ),
-            ),
-            $tournament,
-            $league,
-            '2026'
-        );
-
-        $vm = new Tournament_Draw_Page_View_Model(
-            tournament: $tournament,
-            league: $league,
-            tab: 'fixtures',
-            season: '2026',
-            finals: $presented_finals,
-        );
-
-        $fixtures = $presented_finals[0]->fixtures;
-
-        ob_start();
-        include dirname( __DIR__, 3 ) . '/templates/admin/championship/finals.php';
-        $output = (string) ob_get_clean();
-
-        $this->assertStringContainsString( 'N/A', $output );
-        $this->assertStringContainsString( 'Team A - Team B', $output );
-    }
-
-    private function make_cup_league(): object {
-        $competition                = new stdClass();
-        $competition->id            = 10;
-        $competition->type          = Competition_Type::CUP;
-        $competition->is_tournament = false;
-        $competition->is_cup        = true;
-        $competition->is_team_entry = true;
-
-        $event              = new stdClass();
-        $event->id          = 20;
-        $event->competition = $competition;
-
-        $league                 = new stdClass();
-        $league->id             = 30;
-        $league->event          = $event;
-        $league->num_rubbers    = 0;
-        $league->num_sets       = 1;
+        $league->num_sets       = $num_sets;
         $league->current_season = array( 'name' => '2026' );
         $league->championship   = new class() {
             public function get_current_final_key(): string {
@@ -251,64 +69,74 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
         return $league;
     }
 
-    public function test_finals_template_renders_cup_fixture_from_supplied_finals_without_view_model(): void {
-        $GLOBALS['wp_stubs_options'] = array(
-            'date_format' => 'j M Y',
-            'time_format' => 'H:i',
-        );
-
-        $league      = $this->make_cup_league();
-        $event       = $league->event;
-        $competition = $event->competition;
-
-        $home_team = new class() {
-            public function get_name(): string {
-                return 'Cup Home';
-            }
-        };
-        $away_team = new class() {
-            public function get_name(): string {
-                return 'Cup Away';
-            }
-        };
-
+    private function create_match( array $overrides = array() ): stdClass {
         $match              = new stdClass();
-        $match->id          = 202;
-        $match->date        = '2026-05-09 11:00:00';
+        $match->id          = 101;
+        $match->date        = '2026-07-12 14:00:00';
         $match->season      = '2026';
         $match->final       = 'final';
         $match->home_team   = '1';
         $match->away_team   = '2';
-        $match->location    = 'Club Court';
-        $match->link        = '/match/202/';
+        $match->location    = 'Centre Court';
+        $match->hour        = '14';
+        $match->minutes     = '00';
+        $match->link        = '/match/101/';
         $match->sets        = array();
         $match->custom      = array();
         $match->home_points = null;
         $match->away_points = null;
 
+        foreach ( $overrides as $key => $value ) {
+            $match->$key = $value;
+        }
+
+        return $match;
+    }
+
+    private function create_fixture_details(
+        object $league,
+        object $match,
+        object $home_team,
+        object $away_team
+    ): stdClass {
         $fixture_details              = new stdClass();
         $fixture_details->fixture     = $match;
         $fixture_details->league      = $league;
-        $fixture_details->event       = $event;
-        $fixture_details->competition = $competition;
-        $fixture_details->home_team   = (object) array( 'team' => $home_team );
-        $fixture_details->away_team   = (object) array( 'team' => $away_team );
+        $fixture_details->event       = $league->event;
+        $fixture_details->competition = $league->event->competition;
+        $fixture_details->home_team   = isset( $home_team->team ) || isset( $home_team->title ) ? $home_team : (object) array( 'team' => $home_team );
+        $fixture_details->away_team   = isset( $away_team->team ) || isset( $away_team->title ) ? $away_team : (object) array( 'team' => $away_team );
 
-        $presenter = new \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
-        $finals    = $presenter->present_finals(
+        return $fixture_details;
+    }
+
+    private function present_finals_round(
+        array $fixtures,
+        ?object $tournament,
+        object $league,
+        string $season = '2026',
+        string $key = 'final',
+        string $name = 'Final',
+        int $num_matches = 1
+    ): array {
+        $presenter = new Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
+        return $presenter->present_finals(
             array(
                 (object) array(
-                    'key'      => 'final',
-                    'name'     => 'Final',
-                    'fixtures' => array( $fixture_details ),
+                    'key'         => $key,
+                    'name'        => $name,
+                    'num_matches' => $num_matches,
+                    'fixtures'    => $fixtures,
                 ),
             ),
-            null,
+            $tournament,
             $league,
-            '2026'
+            $season
         );
-        $season = '2026';
+    }
 
+    private function render_template( string $template_name, array $vars = array() ): string {
+        extract( $vars, EXTR_SKIP );
         $errors = array();
         set_error_handler(
             static function ( int $errno, string $errstr ) use ( &$errors ): bool {
@@ -316,15 +144,137 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
                 return true;
             }
         );
+        $level = ob_get_level();
+        ob_start();
         try {
-            ob_start();
-            include dirname( __DIR__, 3 ) . '/templates/admin/championship/finals.php';
+            include dirname( __DIR__, 3 ) . '/templates/admin/championship/' . $template_name;
             $output = (string) ob_get_clean();
         } finally {
+            while ( ob_get_level() > $level ) {
+                ob_end_clean();
+            }
             restore_error_handler();
         }
 
         $this->assertSame( array(), $errors );
+        return $output;
+    }
+
+    public function test_finals_template_renders_preformatted_dates_and_times_with_date_presenter(): void {
+        $league     = $this->create_league( Competition_Type::TOURNAMENT, true, false, 3 );
+        $tournament = (object) array( 'id' => 5 );
+        $home_team  = $this->create_named_team( 'Roger Federer' );
+        $away_team  = $this->create_named_team( 'Rafael Nadal' );
+
+        $match = $this->create_match(
+            array(
+                'id'          => 99,
+                'link'        => '/match/99/',
+                'sets'        => array(
+                    1 => new Set_Score( 6, 4 ),
+                    2 => new Set_Score( 7, 6, 7, 5 ),
+                    3 => new Set_Score( 6, 3 ),
+                ),
+                'home_points' => 3,
+                'away_points' => 0,
+            )
+        );
+        $match->custom = array( 'sets' => $match->sets );
+
+        $fixture_details  = $this->create_fixture_details( $league, $match, $home_team, $away_team );
+        $presented_finals = $this->present_finals_round( array( $fixture_details ), $tournament, $league );
+
+        $vm = new Tournament_Draw_Page_View_Model(
+            tournament: $tournament,
+            league: $league,
+            tab: 'fixtures',
+            season: '2026',
+            finals: $presented_finals,
+        );
+
+        $fixtures = $presented_finals[0]->fixtures;
+
+        $output = $this->render_template(
+            'finals.php',
+            array(
+                'vm'       => $vm,
+                'fixtures' => $fixtures,
+            )
+        );
+
+        $this->assertStringContainsString( '12 Jul 2026', $output );
+        $this->assertStringContainsString( '14:00', $output );
+        $this->assertStringContainsString( 'Roger Federer - Rafael Nadal', $output );
+        $this->assertStringContainsString( 'Centre Court', $output );
+        $this->assertStringNotContainsString( 'mysql2date', $output );
+    }
+
+    public function test_finals_template_renders_na_when_date_or_hour_is_missing(): void {
+        $league     = $this->create_league();
+        $home_team  = $this->create_named_team( 'Team A' );
+        $away_team  = $this->create_named_team( 'Team B' );
+        $match      = $this->create_match(
+            array(
+                'date'     => null,
+                'location' => null,
+            )
+        );
+        unset( $match->hour, $match->minutes );
+
+        $fixture_details  = $this->create_fixture_details( $league, $match, $home_team, $away_team );
+        $tournament       = (object) array( 'id' => 5 );
+        $presented_finals = $this->present_finals_round( array( $fixture_details ), $tournament, $league );
+
+        $vm = new Tournament_Draw_Page_View_Model(
+            tournament: $tournament,
+            league: $league,
+            tab: 'fixtures',
+            season: '2026',
+            finals: $presented_finals,
+        );
+
+        $fixtures = $presented_finals[0]->fixtures;
+
+        $output = $this->render_template(
+            'finals.php',
+            array(
+                'vm'       => $vm,
+                'fixtures' => $fixtures,
+            )
+        );
+
+        $this->assertStringContainsString( 'N/A', $output );
+        $this->assertStringContainsString( 'Team A - Team B', $output );
+    }
+
+    public function test_finals_template_renders_cup_fixture_from_supplied_finals_without_view_model(): void {
+        $league    = $this->create_league();
+        $home_team = $this->create_named_team( 'Cup Home' );
+        $away_team = $this->create_named_team( 'Cup Away' );
+
+        $match = $this->create_match(
+            array(
+                'id'       => 202,
+                'date'     => '2026-05-09 11:00:00',
+                'location' => 'Club Court',
+                'hour'     => null,
+                'minutes'  => null,
+                'link'     => '/match/202/',
+            )
+        );
+
+        $fixture_details = $this->create_fixture_details( $league, $match, $home_team, $away_team );
+        $finals          = $this->present_finals_round( array( $fixture_details ), null, $league );
+
+        $output = $this->render_template(
+            'finals.php',
+            array(
+                'league' => $league,
+                'finals' => $finals,
+                'season' => '2026',
+            )
+        );
+
         $this->assertStringContainsString( 'Cup Home - Cup Away', $output );
         $this->assertStringContainsString( '9 May 2026', $output );
         $this->assertStringContainsString( 'Club Court', $output );
@@ -336,101 +286,53 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
     }
 
     public function test_finals_template_renders_without_warnings_when_no_finals_supplied(): void {
-        $league = $this->make_cup_league();
-        $season = '2026';
-
-        $errors = array();
-        set_error_handler(
-            static function ( int $errno, string $errstr ) use ( &$errors ): bool {
-                $errors[] = $errstr;
-                return true;
-            }
+        $league = $this->create_league();
+        $output = $this->render_template(
+            'finals.php',
+            array(
+                'league' => $league,
+                'season' => '2026',
+            )
         );
-        try {
-            ob_start();
-            include dirname( __DIR__, 3 ) . '/templates/admin/championship/finals.php';
-            $output = (string) ob_get_clean();
-        } finally {
-            restore_error_handler();
-        }
 
-        $this->assertSame( array(), $errors );
         $this->assertStringContainsString( 'championship-block', $output );
         $this->assertStringNotContainsString( '<table', $output );
     }
 
     public function test_final_results_template_renders_presented_finals_with_team_names_and_winner(): void {
-        $GLOBALS['wp_stubs_options'] = array(
-            'date_format' => 'j M Y',
-            'time_format' => 'H:i',
-        );
+        $league    = $this->create_league();
+        $home_team = $this->create_named_team( 'Carlos Alcaraz' );
+        $away_team = $this->create_named_team( 'Jannik Sinner' );
 
-        $league      = $this->make_cup_league();
-        $event       = $league->event;
-        $competition = $event->competition;
-
-        $home_team = new class() {
-            public function get_name(): string {
-                return 'Carlos Alcaraz';
-            }
-        };
-        $away_team = new class() {
-            public function get_name(): string {
-                return 'Jannik Sinner';
-            }
-        };
-
-        $match              = new stdClass();
-        $match->id          = 101;
-        $match->date        = '2026-07-25 15:30:00';
-        $match->season      = '2026';
-        $match->final       = 'final';
-        $match->home_team   = '1';
-        $match->away_team   = '2';
-        $match->winner_id   = 1;
-        $match->home_points = 3;
-        $match->away_points = 2;
-
-        $fixture_details              = new stdClass();
-        $fixture_details->fixture     = $match;
-        $fixture_details->league      = $league;
-        $fixture_details->event       = $event;
-        $fixture_details->competition = $competition;
-        $fixture_details->home_team   = (object) array( 'team' => $home_team );
-        $fixture_details->away_team   = (object) array( 'team' => $away_team );
-
-        $presenter = new \Racketmanager\Admin\Presenters\Admin_Championship_Finals_Presenter( new Admin_Date_Presenter() );
-        $finals    = $presenter->present_finals(
+        $match = $this->create_match(
             array(
-                (object) array(
-                    'key'         => 'final',
-                    'name'        => 'Championship Final',
-                    'num_matches' => 1,
-                    'fixtures'    => array( $fixture_details ),
-                ),
-            ),
-            null,
-            $league,
-            '2026'
+                'date'        => '2026-07-25 15:30:00',
+                'location'    => null,
+                'hour'        => null,
+                'minutes'     => null,
+                'winner_id'   => 1,
+                'home_points' => 3,
+                'away_points' => 2,
+            )
         );
-        $season = '2026';
 
-        $errors = array();
-        set_error_handler(
-            static function ( int $errno, string $errstr ) use ( &$errors ): bool {
-                $errors[] = $errstr;
-                return true;
-            }
+        $fixture_details = $this->create_fixture_details( $league, $match, $home_team, $away_team );
+        $finals          = $this->present_finals_round(
+            fixtures: array( $fixture_details ),
+            tournament: null,
+            league: $league,
+            name: 'Championship Final'
         );
-        try {
-            ob_start();
-            include dirname( __DIR__, 3 ) . '/templates/admin/championship/final-results.php';
-            $output = (string) ob_get_clean();
-        } finally {
-            restore_error_handler();
-        }
 
-        $this->assertSame( array(), $errors );
+        $output = $this->render_template(
+            'final-results.php',
+            array(
+                'finals' => $finals,
+                'league' => $league,
+                'season' => '2026',
+            )
+        );
+
         $this->assertStringContainsString( 'Championship Final', $output );
         $this->assertStringContainsString( 'Carlos Alcaraz', $output );
         $this->assertStringContainsString( 'Jannik Sinner', $output );
@@ -440,29 +342,21 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
     }
 
     public function test_final_results_template_renders_legacy_raw_finals_with_team_names_and_host_styling(): void {
-        $league      = $this->make_cup_league();
-        $event       = $league->event;
-        $competition = $event->competition;
+        $league    = $this->create_league();
+        $home_team = (object) array( 'team' => (object) array( 'title' => 'Legacy Home' ) );
+        $away_team = (object) array( 'team' => (object) array( 'title' => 'Legacy Away' ) );
 
-        $home_team = (object) array( 'title' => 'Legacy Home' );
-        $away_team = (object) array( 'title' => 'Legacy Away' );
+        $match = $this->create_match(
+            array(
+                'id'        => 202,
+                'home_team' => '10',
+                'away_team' => '20',
+                'host'      => 'away',
+                'winner_id' => null,
+            )
+        );
 
-        $match              = new stdClass();
-        $match->id          = 202;
-        $match->home_team   = '10';
-        $match->away_team   = '20';
-        $match->winner_id   = null;
-        $match->host        = 'away';
-        $match->home_points = null;
-        $match->away_points = null;
-
-        $fixture_details              = new stdClass();
-        $fixture_details->fixture     = $match;
-        $fixture_details->league      = $league;
-        $fixture_details->event       = $event;
-        $fixture_details->competition = $competition;
-        $fixture_details->home_team   = (object) array( 'team' => $home_team );
-        $fixture_details->away_team   = (object) array( 'team' => $away_team );
+        $fixture_details = $this->create_fixture_details( $league, $match, $home_team, $away_team );
 
         $finals = array(
             (object) array(
@@ -472,24 +366,16 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
                 'fixtures'    => array( $fixture_details ),
             ),
         );
-        $season = '2026';
 
-        $errors = array();
-        set_error_handler(
-            static function ( int $errno, string $errstr ) use ( &$errors ): bool {
-                $errors[] = $errstr;
-                return true;
-            }
+        $output = $this->render_template(
+            'final-results.php',
+            array(
+                'finals' => $finals,
+                'league' => $league,
+                'season' => '2026',
+            )
         );
-        try {
-            ob_start();
-            include dirname( __DIR__, 3 ) . '/templates/admin/championship/final-results.php';
-            $output = (string) ob_get_clean();
-        } finally {
-            restore_error_handler();
-        }
 
-        $this->assertSame( array(), $errors );
         $this->assertStringContainsString( 'Cup Final', $output );
         $this->assertStringContainsString( 'Legacy Home', $output );
         $this->assertStringContainsString( 'Legacy Away', $output );
@@ -499,25 +385,15 @@ final class Admin_Championship_Finals_Template_Test extends TestCase {
     }
 
     public function test_final_results_template_renders_without_warnings_when_no_finals_supplied(): void {
-        $league = $this->make_cup_league();
-        $season = '2026';
-
-        $errors = array();
-        set_error_handler(
-            static function ( int $errno, string $errstr ) use ( &$errors ): bool {
-                $errors[] = $errstr;
-                return true;
-            }
+        $league = $this->create_league();
+        $output = $this->render_template(
+            'final-results.php',
+            array(
+                'league' => $league,
+                'season' => '2026',
+            )
         );
-        try {
-            ob_start();
-            include dirname( __DIR__, 3 ) . '/templates/admin/championship/final-results.php';
-            $output = (string) ob_get_clean();
-        } finally {
-            restore_error_handler();
-        }
 
-        $this->assertSame( array(), $errors );
         $this->assertStringContainsString( 'championship-block', $output );
     }
 }

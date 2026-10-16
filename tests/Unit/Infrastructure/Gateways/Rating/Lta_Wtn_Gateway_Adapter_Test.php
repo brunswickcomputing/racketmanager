@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Infrastructure\Gateways\Rating;
 
+use Closure;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Exceptions\LTA_System_Not_Available_Exception;
 use Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter;
@@ -35,10 +36,86 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
         parent::tearDown();
     }
 
+    private function create_cookie( string $name = 'st', string $value = 'tok' ): stdClass {
+        $cookie        = new stdClass();
+        $cookie->name  = $name;
+        $cookie->value = $value;
+        return $cookie;
+    }
+
+    private function normalize_response( mixed $response, string $url = '', array $args = [], mixed $default = null ): mixed {
+        if ( $response instanceof Closure ) {
+            return ( $response )( $url, $args );
+        }
+        if ( $response instanceof WP_Error ) {
+            return $response;
+        }
+        if ( is_int( $response ) ) {
+            return [
+                'response' => [ 'code' => $response ],
+                'body'     => '',
+            ];
+        }
+        if ( is_string( $response ) ) {
+            return [
+                'response' => [ 'code' => 200 ],
+                'body'     => $response,
+            ];
+        }
+        if ( is_array( $response ) ) {
+            return $response;
+        }
+        return $default;
+    }
+
+    private function mock_lta_http(
+        mixed $search_response = null,
+        mixed $profile_response = null,
+        ?stdClass $cookiewall_cookie = null,
+        string $player_profile_path = 'player/'
+    ): void {
+        $cookie = $cookiewall_cookie ?? $this->create_cookie();
+
+        $GLOBALS['wp_stubs_remote_get_callback'] = function ( string $url, array $args = [] ) use ( $cookie, $search_response, $profile_response, $player_profile_path ) {
+            if ( str_contains( $url, 'cookiewall' ) ) {
+                return [
+                    'response' => [ 'code' => 200 ],
+                    'cookies'  => [ $cookie ],
+                    'body'     => '',
+                ];
+            }
+
+            if ( str_contains( $url, 'DoSearch' ) ) {
+                return $this->normalize_response(
+                    $search_response,
+                    $url,
+                    $args,
+                    [
+                        'response' => [ 'code' => 200 ],
+                        'body'     => '<h5 class="media__title"><a href="/player/1">Player</a></h5>',
+                    ]
+                );
+            }
+
+            if ( str_contains( $url, $player_profile_path ) ) {
+                $response = $this->normalize_response( $profile_response, $url, $args );
+                if ( null !== $response ) {
+                    return $response;
+                }
+            }
+
+            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
+        };
+    }
+
+    private function fetch_player_wtn( string $btm = '12345678' ): array {
+        $this->adapter->prepare_env();
+        $player = Player_Test_Factory::create_sparse( [ 'btm' => $btm ] );
+        return $this->adapter->fetch_player_wtn( $player );
+    }
+
     public function test_prepare_env_success_sets_cookies_and_args(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'session_token';
+        $cookie = $this->create_cookie( 'st', 'session_token' );
 
         $GLOBALS['wp_stubs_remote_get_return'] = [
             'https://competitions.lta.org.uk/cookiewall/' => [
@@ -66,10 +143,6 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
     }
 
     public function test_fetch_player_wtn_success_parses_html_response(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
         $search_body = '
             <div class="results">
                 <h5 class="media__title">
@@ -94,34 +167,8 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
             </div>
         ';
 
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body, $profile_body ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/profile/12345' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $profile_body,
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '10203040' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( $search_body, $profile_body );
+        $result = $this->fetch_player_wtn( '10203040' );
 
         $this->assertTrue( $result['status'] );
         $this->assertIsArray( $result['value'] );
@@ -130,396 +177,98 @@ final class Lta_Wtn_Gateway_Adapter_Test extends TestCase {
     }
 
     public function test_fetch_player_wtn_returns_error_status_when_player_search_fails(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return new WP_Error( 'http_request_failed', 'Connection timeout' );
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '99999999' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( new WP_Error( 'http_request_failed', 'Connection timeout' ) );
+        $result = $this->fetch_player_wtn( '99999999' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'search error', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_status_when_player_not_found(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => '<div class="no-results">No players found</div>',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '99999999' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( '<div class="no-results">No players found</div>' );
+        $result = $this->fetch_player_wtn( '99999999' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'Player not found', $result['message'] );
     }
 
     public function test_fetch_player_wtn_encodes_search_query(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
         $requested_url = '';
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, &$requested_url ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
+        $this->mock_lta_http(
+            function ( string $url ) use ( &$requested_url ) {
                 $requested_url = $url;
                 return [
                     'response' => [ 'code' => 200 ],
                     'body'     => '<div class="no-results">No players found</div>',
                 ];
             }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
+        );
 
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '10 20&30' ] );
-
-        $this->adapter->fetch_player_wtn( $player );
+        $this->fetch_player_wtn( '10 20&30' );
 
         $this->assertStringContainsString( 'Query=10%2020%2630', $requested_url );
     }
 
     public function test_fetch_player_wtn_returns_error_when_search_status_not_200(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 500 ],
-                    'body'     => 'Server error',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( 500 );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'LTA number not found', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_when_player_link_malformed(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => '<h5 class="media__title">No link here</h5>',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( '<h5 class="media__title">No link here</h5>' );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'Player link not found', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_when_profile_request_fails_wp_error(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $search_body = '<h5 class="media__title"><a href="/player/1">Player</a></h5>';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/1' ) ) {
-                return new WP_Error( 'http_error', 'Profile connection timeout' );
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( null, new WP_Error( 'http_error', 'Profile connection timeout' ) );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'View error', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_when_profile_response_not_200(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $search_body = '<h5 class="media__title"><a href="/player/1">Player</a></h5>';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/1' ) ) {
-                return [
-                    'response' => [ 'code' => 500 ],
-                    'body'     => 'Server error',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( null, 500 );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'Unable to retrieve player page', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_when_world_tennis_number_not_found(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $search_body = '<h5 class="media__title"><a href="/player/1">Player</a></h5>';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/1' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => '<div>Player without tennis ratings</div>',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( null, '<div>Player without tennis ratings</div>' );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'WTN not found', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_when_no_wtn_list_found(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $search_body = '<h5 class="media__title"><a href="/player/1">Player</a></h5>';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/1' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => '<div>World Tennis Number without list block</div>',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( null, '<div>World Tennis Number without list block</div>' );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'No WTN list found', $result['message'] );
     }
 
     public function test_fetch_player_wtn_returns_error_when_no_wtn_entries_found(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $search_body = '<h5 class="media__title"><a href="/player/1">Player</a></h5>';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/1' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => 'World Tennis Number <ul class="list--inline list"></ul>',
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( null, 'World Tennis Number <ul class="list--inline list"></ul>' );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'No WTN entries found', $result['message'] );
     }
 
     public function test_fetch_player_wtn_handles_malformed_list_item_html_without_type_error(): void {
-        $cookie = new stdClass();
-        $cookie->name = 'st';
-        $cookie->value = 'tok';
-
-        $search_body = '<h5 class="media__title"><a href="/player/1">Player</a></h5>';
         $malformed_profile = 'World Tennis Number <ul class="list--inline list"><li class="list__item">Malformed Content Without Tags</li></ul>';
-
-        $GLOBALS['wp_stubs_remote_get_callback'] = function( string $url ) use ( $cookie, $search_body, $malformed_profile ) {
-            if ( str_contains( $url, 'cookiewall' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'cookies'  => [ $cookie ],
-                    'body'     => '',
-                ];
-            }
-            if ( str_contains( $url, 'DoSearch' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $search_body,
-                ];
-            }
-            if ( str_contains( $url, 'player/1' ) ) {
-                return [
-                    'response' => [ 'code' => 200 ],
-                    'body'     => $malformed_profile,
-                ];
-            }
-            return [ 'response' => [ 'code' => 404 ], 'body' => '' ];
-        };
-
-        $this->adapter->prepare_env();
-
-        $player = Player_Test_Factory::create_sparse( [ 'btm' => '12345678' ] );
-
-        $result = $this->adapter->fetch_player_wtn( $player );
+        $this->mock_lta_http( null, $malformed_profile );
+        $result = $this->fetch_player_wtn( '12345678' );
 
         $this->assertFalse( $result['status'] );
         $this->assertStringContainsString( 'WTN values not set', $result['message'] );

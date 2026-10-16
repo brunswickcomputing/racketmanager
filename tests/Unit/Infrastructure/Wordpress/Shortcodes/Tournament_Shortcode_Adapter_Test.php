@@ -57,280 +57,178 @@ class Tournament_Shortcode_Adapter_Test extends TestCase {
         );
     }
 
-    public function test_show_tournament_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'tournament', [] );
-        $handler = $this->createMock( Get_Tournament_Handler::class );
+    private function assert_delegation_to_handler_and_presenter(
+        string $handler_class,
+        string $query_class,
+        Shortcode_View_Model $vm,
+        string $rendered_output,
+        string $handler_key,
+        string $method,
+        array $atts
+    ): void {
+        $handler = $this->createMock( $handler_class );
         $handler->expects( $this->once() )
             ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Query::class ) )
+            ->with( $this->isInstanceOf( $query_class ) )
             ->willReturn( $vm );
 
         $presenter = $this->createMock( Shortcode_View_Presenter::class );
         $presenter->expects( $this->once() )
             ->method( 'render' )
             ->with( $vm )
-            ->willReturn( '<div>Tournament Output</div>' );
+            ->willReturn( $rendered_output );
 
         $adapter = $this->create_adapter( [
-            'tournament_handler' => $handler,
-            'view_presenter'     => $presenter,
+            $handler_key     => $handler,
+            'view_presenter' => $presenter,
         ] );
 
-        $output = $adapter->show_tournament( [ 'tournament' => 'Championship' ] );
-        $this->assertSame( '<div>Tournament Output</div>', $output );
+        $output = $adapter->$method( $atts );
+        $this->assertSame( $rendered_output, $output );
+    }
+
+    public function test_show_tournament_delegates_to_handler_and_presenter(): void {
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Handler::class,
+            Get_Tournament_Query::class,
+            Shortcode_View_Model::for_template( 'tournament', [] ),
+            '<div>Tournament Output</div>',
+            'tournament_handler',
+            'show_tournament',
+            [ 'tournament' => 'Championship' ]
+        );
     }
 
     public function test_show_tournament_overview_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'overview', [] );
-        $handler = $this->createMock( Get_Tournament_Overview_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Overview_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Overview Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'overview_handler' => $handler,
-            'view_presenter'   => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_overview( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Overview Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Overview_Handler::class,
+            Get_Tournament_Overview_Query::class,
+            Shortcode_View_Model::for_template( 'overview', [] ),
+            '<div>Overview Output</div>',
+            'overview_handler',
+            'show_tournament_overview',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_tournament_events_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'events', [] );
-        $handler = $this->createMock( Get_Tournament_Events_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Events_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Events Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'events_handler' => $handler,
-            'view_presenter' => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_events( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Events Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Events_Handler::class,
+            Get_Tournament_Events_Query::class,
+            Shortcode_View_Model::for_template( 'events', [] ),
+            '<div>Events Output</div>',
+            'events_handler',
+            'show_tournament_events',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_draws_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'draws', [] );
-        $handler = $this->createMock( Get_Tournament_Draws_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Draws_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Draws Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'draws_handler'  => $handler,
-            'view_presenter' => $presenter,
-        ] );
-
-        $output = $adapter->show_draws( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Draws Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Draws_Handler::class,
+            Get_Tournament_Draws_Query::class,
+            Shortcode_View_Model::for_template( 'draws', [] ),
+            '<div>Draws Output</div>',
+            'draws_handler',
+            'show_draws',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_tournament_players_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'players', [] );
-        $handler = $this->createMock( Get_Tournament_Players_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Players_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Players Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'players_handler' => $handler,
-            'view_presenter'  => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_players( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Players Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Players_Handler::class,
+            Get_Tournament_Players_Query::class,
+            Shortcode_View_Model::for_template( 'players', [] ),
+            '<div>Players Output</div>',
+            'players_handler',
+            'show_tournament_players',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_tournament_winners_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'winners', [] );
-        $handler = $this->createMock( Get_Tournament_Winners_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Winners_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Winners Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'winners_handler' => $handler,
-            'view_presenter'  => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_winners( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Winners Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Winners_Handler::class,
+            Get_Tournament_Winners_Query::class,
+            Shortcode_View_Model::for_template( 'winners', [] ),
+            '<div>Winners Output</div>',
+            'winners_handler',
+            'show_tournament_winners',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_tournament_matches_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'matches', [] );
-        $handler = $this->createMock( Get_Tournament_Matches_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Matches_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Matches Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'matches_handler' => $handler,
-            'view_presenter'  => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_matches( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Matches Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Matches_Handler::class,
+            Get_Tournament_Matches_Query::class,
+            Shortcode_View_Model::for_template( 'matches', [] ),
+            '<div>Matches Output</div>',
+            'matches_handler',
+            'show_tournament_matches',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_tournament_match_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'match-tournament', [] );
-        $handler = $this->createMock( Get_Tournament_Match_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Match_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Match Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'match_handler'  => $handler,
-            'view_presenter' => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_match( [ 'match_id' => 456 ] );
-        $this->assertSame( '<div>Match Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Match_Handler::class,
+            Get_Tournament_Match_Query::class,
+            Shortcode_View_Model::for_template( 'match-tournament', [] ),
+            '<div>Match Output</div>',
+            'match_handler',
+            'show_tournament_match',
+            [ 'match_id' => 456 ]
+        );
     }
 
     public function test_show_order_of_play_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'orderofplay', [] );
-        $handler = $this->createMock( Get_Order_Of_Play_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Order_Of_Play_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div>Order of Play Output</div>' );
-
-        $adapter = $this->create_adapter( [
-            'order_of_play_handler' => $handler,
-            'view_presenter'        => $presenter,
-        ] );
-
-        $output = $adapter->show_order_of_play( [ 'id' => 123 ] );
-        $this->assertSame( '<div>Order of Play Output</div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Order_Of_Play_Handler::class,
+            Get_Order_Of_Play_Query::class,
+            Shortcode_View_Model::for_template( 'orderofplay', [] ),
+            '<div>Order of Play Output</div>',
+            'order_of_play_handler',
+            'show_order_of_play',
+            [ 'id' => 123 ]
+        );
     }
 
     public function test_show_latest_tournament_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_html( '<script>location.href = "/tournament/active/"</script>' );
-        $handler = $this->createMock( Get_Latest_Tournament_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Latest_Tournament_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<script>location.href = "/tournament/active/"</script>' );
-
-        $adapter = $this->create_adapter( [
-            'latest_tournament_handler' => $handler,
-            'view_presenter'            => $presenter,
-        ] );
-
-        $output = $adapter->show_latest_tournament( [ 'age_group' => 'seniors' ] );
-        $this->assertSame( '<script>location.href = "/tournament/active/"</script>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Latest_Tournament_Handler::class,
+            Get_Latest_Tournament_Query::class,
+            Shortcode_View_Model::for_html( '<script>location.href = "/tournament/active/"</script>' ),
+            '<script>location.href = "/tournament/active/"</script>',
+            'latest_tournament_handler',
+            'show_latest_tournament',
+            [ 'age_group' => 'seniors' ]
+        );
     }
 
     public function test_show_tournament_withdrawal_modal_delegates_to_handler_and_presenter(): void {
-        $vm = Shortcode_View_Model::for_template( 'withdrawal-modal', [] );
-        $handler = $this->createMock( Get_Tournament_Withdrawal_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Withdrawal_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div class="tournament-withdrawal-modal"></div>' );
-
-        $adapter = $this->create_adapter( [
-            'withdrawal_handler' => $handler,
-            'view_presenter'     => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_withdrawal_modal( [ 'id' => 44 ] );
-        $this->assertSame( '<div class="tournament-withdrawal-modal"></div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Withdrawal_Handler::class,
+            Get_Tournament_Withdrawal_Query::class,
+            Shortcode_View_Model::for_template( 'withdrawal-modal', [] ),
+            '<div class="tournament-withdrawal-modal"></div>',
+            'withdrawal_handler',
+            'show_tournament_withdrawal_modal',
+            [ 'id' => 44 ]
+        );
     }
 
     public function test_show_tournament_withdrawal_alias_delegates_to_modal(): void {
-        $vm = Shortcode_View_Model::for_template( 'withdrawal-modal', [] );
-        $handler = $this->createMock( Get_Tournament_Withdrawal_Handler::class );
-        $handler->expects( $this->once() )
-            ->method( 'handle' )
-            ->with( $this->isInstanceOf( Get_Tournament_Withdrawal_Query::class ) )
-            ->willReturn( $vm );
-
-        $presenter = $this->createMock( Shortcode_View_Presenter::class );
-        $presenter->expects( $this->once() )
-            ->method( 'render' )
-            ->with( $vm )
-            ->willReturn( '<div class="tournament-withdrawal-modal"></div>' );
-
-        $adapter = $this->create_adapter( [
-            'withdrawal_handler' => $handler,
-            'view_presenter'     => $presenter,
-        ] );
-
-        $output = $adapter->show_tournament_withdrawal( [ 'id' => 44 ] );
-        $this->assertSame( '<div class="tournament-withdrawal-modal"></div>', $output );
+        $this->assert_delegation_to_handler_and_presenter(
+            Get_Tournament_Withdrawal_Handler::class,
+            Get_Tournament_Withdrawal_Query::class,
+            Shortcode_View_Model::for_template( 'withdrawal-modal', [] ),
+            '<div class="tournament-withdrawal-modal"></div>',
+            'withdrawal_handler',
+            'show_tournament_withdrawal',
+            [ 'id' => 44 ]
+        );
     }
 
     public function test_show_tournament_events_renders_allowed_single_event(): void {

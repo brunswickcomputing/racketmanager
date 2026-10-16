@@ -82,6 +82,56 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         );
     }
 
+    private function allow_security( bool $verify_nonce = true, bool $user_can = true ): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( $verify_nonce );
+        $this->security_service->method( 'current_user_can' )->willReturn( $user_can );
+    }
+
+    private function create_competition_mock( string $entry_type = 'team', string $season_name = '2026' ): Competition {
+        $competition           = $this->createMock( Competition::class );
+        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( [ 'entry_type' => $entry_type ] );
+        $competition->expects( $this->once() )
+            ->method( 'get_season_by_name' )
+            ->with( $season_name )
+            ->willReturn( [ 'name' => $season_name ] );
+        return $competition;
+    }
+
+    private function setup_tournament_entry_service_notification( int $tournament_id, int|\Throwable $result ): void {
+        $entry_service = $this->createMock( Competition_Entry_Service::class );
+        $expectation   = $entry_service->expects( $this->once() )
+            ->method( 'notify_tournament_entry_open' )
+            ->with( $tournament_id );
+
+        if ( $result instanceof \Throwable ) {
+            $expectation->willThrowException( $result );
+        } else {
+            $expectation->willReturn( $result );
+        }
+
+        $this->competition_entry_service = $entry_service;
+        $this->adapter                   = $this->make_adapter();
+    }
+
+    private function setup_fixture_notification( int $match_id, bool $notification_result ): void {
+        $match = $this->createStub( Fixture::class );
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( $match_id )
+            ->willReturn( $match );
+
+        $notif_service = $this->createMock( Notification_Service::class );
+        $notif_service->expects( $this->once() )
+            ->method( 'send_next_fixture_notification' )
+            ->with( $match )
+            ->willReturn( $notification_result );
+
+        $this->fixture_repository   = $fixture_repo;
+        $this->notification_service = $notif_service;
+        $this->adapter              = $this->make_adapter();
+    }
+
     public function test_register_hooks_routes_all_admin_actions(): void {
         $controller = new Admin_Ajax_Controller( $this->createStub( RacketManager::class ) );
         $registry   = new Ajax_Registry();
@@ -104,8 +154,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_save_add_points_success(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $league_team = new class {
             public int $points = 0;
@@ -126,8 +175,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_save_add_points_empty_table_id_is_noop_success(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $response = $this->adapter->save_add_points( [
             'security' => 'valid',
@@ -138,8 +186,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_save_add_points_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->save_add_points( [
             'security' => 'valid',
@@ -159,8 +206,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_save_add_points_entry_not_found_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
         $GLOBALS['wp_stubs_league_teams'] = [];
 
         $response = $this->adapter->save_add_points( [
@@ -222,8 +268,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_save_add_points_league_entry_not_found_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
         $GLOBALS['wp_stubs_league_teams'] = [];
 
         $response = $this->adapter->save_add_points( [
@@ -265,8 +310,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_email_constitution_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->email_constitution( [
             'security' => 'valid',
@@ -276,8 +320,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_email_constitution_missing_event_id_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $response = $this->adapter->email_constitution( [
             'security' => 'valid',
@@ -287,8 +330,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_email_constitution_event_not_found_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
         $GLOBALS['wp_stubs_events'] = [ 999 => null ];
 
         $response = $this->adapter->email_constitution( [
@@ -300,8 +342,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_email_constitution_success(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $constitution_sent_season = null;
         $event = $this->createStub( Event::class );
@@ -323,8 +364,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->notify_competition_entries_open( [
             'security'      => 'valid',
@@ -334,8 +374,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_competition_not_found_returns_404(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )
@@ -356,8 +395,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_season_not_found_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $competition = $this->createMock( Competition::class );
         $competition->expects( $this->once() )
@@ -384,16 +422,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_invalid_entry_type_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
-        $competition           = $this->createMock( Competition::class );
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( [ 'entry_type' => 'individual' ] );
-        $competition->expects( $this->once() )
-            ->method( 'get_season_by_name' )
-            ->with( '2026' )
-            ->willReturn( [ 'name' => '2026' ] );
-
+        $competition  = $this->create_competition_mock( 'individual' );
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )
             ->method( 'get_by_id' )
@@ -413,16 +444,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_with_existing_entries_triggers_reminder(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
-        $competition           = $this->createMock( Competition::class );
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( [ 'entry_type' => 'team' ] );
-        $competition->expects( $this->once() )
-            ->method( 'get_season_by_name' )
-            ->with( '2026' )
-            ->willReturn( [ 'name' => '2026' ] );
-
+        $competition  = $this->create_competition_mock( 'team' );
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )
             ->method( 'get_by_id' )
@@ -453,16 +477,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_without_existing_entries_triggers_open(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
-        $competition           = $this->createMock( Competition::class );
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( [ 'entry_type' => 'team' ] );
-        $competition->expects( $this->once() )
-            ->method( 'get_season_by_name' )
-            ->with( '2026' )
-            ->willReturn( [ 'name' => '2026' ] );
-
+        $competition  = $this->create_competition_mock( 'team' );
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )
             ->method( 'get_by_id' )
@@ -493,16 +510,9 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_competition_entries_open_reminder_exception_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
-        $competition           = $this->createMock( Competition::class );
-        $competition->settings = new \Racketmanager\Domain\Competition\Competition_Settings( [ 'entry_type' => 'team' ] );
-        $competition->expects( $this->once() )
-            ->method( 'get_season_by_name' )
-            ->with( '2026' )
-            ->willReturn( [ 'name' => '2026' ] );
-
+        $competition  = $this->create_competition_mock( 'team' );
         $comp_service = $this->createMock( Competition_Service::class );
         $comp_service->expects( $this->once() )
             ->method( 'get_by_id' )
@@ -533,8 +543,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_tournament_entries_open_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->notify_tournament_entries_open( [
             'security'     => 'valid',
@@ -544,17 +553,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_tournament_entries_open_success(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
-
-        $entry_service = $this->createMock( Competition_Entry_Service::class );
-        $entry_service->expects( $this->once() )
-            ->method( 'notify_tournament_entry_open' )
-            ->with( 55 )
-            ->willReturn( 12 );
-
-        $this->competition_entry_service = $entry_service;
-        $this->adapter                   = $this->make_adapter();
+        $this->allow_security();
+        $this->setup_tournament_entry_service_notification( 55, 12 );
 
         $response = $this->adapter->notify_tournament_entries_open( [
             'security'     => 'valid',
@@ -565,17 +565,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_tournament_entries_open_failure_zero_sent_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
-
-        $entry_service = $this->createMock( Competition_Entry_Service::class );
-        $entry_service->expects( $this->once() )
-            ->method( 'notify_tournament_entry_open' )
-            ->with( 55 )
-            ->willReturn( 0 );
-
-        $this->competition_entry_service = $entry_service;
-        $this->adapter                   = $this->make_adapter();
+        $this->allow_security();
+        $this->setup_tournament_entry_service_notification( 55, 0 );
 
         $response = $this->adapter->notify_tournament_entries_open( [
             'security'     => 'valid',
@@ -586,17 +577,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_tournament_entries_open_exception_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
-
-        $entry_service = $this->createMock( Competition_Entry_Service::class );
-        $entry_service->expects( $this->once() )
-            ->method( 'notify_tournament_entry_open' )
-            ->with( 55 )
-            ->willThrowException( new Tournament_Not_Found_Exception( 'Tournament not found' ) );
-
-        $this->competition_entry_service = $entry_service;
-        $this->adapter                   = $this->make_adapter();
+        $this->allow_security();
+        $this->setup_tournament_entry_service_notification( 55, new Tournament_Not_Found_Exception( 'Tournament not found' ) );
 
         $response = $this->adapter->notify_tournament_entries_open( [
             'security'     => 'valid',
@@ -607,8 +589,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_teams_fixture_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->notify_teams_fixture( [
             'security' => 'valid',
@@ -618,25 +599,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_teams_fixture_success(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
-
-        $match = $this->createStub( Fixture::class );
-        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->expects( $this->once() )
-            ->method( 'find_by_id' )
-            ->with( 777 )
-            ->willReturn( $match );
-
-        $notif_service = $this->createMock( Notification_Service::class );
-        $notif_service->expects( $this->once() )
-            ->method( 'send_next_fixture_notification' )
-            ->with( $match )
-            ->willReturn( true );
-
-        $this->fixture_repository   = $fixture_repo;
-        $this->notification_service = $notif_service;
-        $this->adapter              = $this->make_adapter();
+        $this->allow_security();
+        $this->setup_fixture_notification( 777, true );
 
         $response = $this->adapter->notify_teams_fixture( [
             'security' => 'valid',
@@ -647,25 +611,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_notify_teams_fixture_not_sent(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
-
-        $match = $this->createStub( Fixture::class );
-        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->expects( $this->once() )
-            ->method( 'find_by_id' )
-            ->with( 777 )
-            ->willReturn( $match );
-
-        $notif_service = $this->createMock( Notification_Service::class );
-        $notif_service->expects( $this->once() )
-            ->method( 'send_next_fixture_notification' )
-            ->with( $match )
-            ->willReturn( false );
-
-        $this->fixture_repository   = $fixture_repo;
-        $this->notification_service = $notif_service;
-        $this->adapter              = $this->make_adapter();
+        $this->allow_security();
+        $this->setup_fixture_notification( 777, false );
 
         $response = $this->adapter->notify_teams_fixture( [
             'security' => 'valid',
@@ -676,8 +623,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_send_fixtures_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->send_fixtures( [
             'security' => 'valid',
@@ -687,8 +633,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_send_fixtures_event_not_found_returns_404(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
         $GLOBALS['wp_stubs_events'] = [ 404 => null ];
 
         $response = $this->adapter->send_fixtures( [
@@ -700,8 +645,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_send_fixtures_no_contact_emails_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $event = $this->createStub( Event::class );
         $event->competition = (object) [ 'type' => 'league' ];
@@ -730,8 +674,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_send_fixtures_success_sends_email_and_returns_200(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $event              = $this->createStub( Event::class );
         $event->name        = 'Men Doubles Event';
@@ -797,8 +740,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_set_tournament_dates_unauthorized_returns_403(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( false );
+        $this->allow_security( true, false );
 
         $response = $this->adapter->set_tournament_dates( [
             'security'  => 'valid',
@@ -808,8 +750,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_set_tournament_dates_missing_start_date_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $response = $this->adapter->set_tournament_dates( [
             'security' => 'valid',
@@ -819,8 +760,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_set_tournament_dates_no_lead_time_parameters_returns_500(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
         $this->racketmanager->method( 'get_options' )->willReturn( [] );
 
         $response = $this->adapter->set_tournament_dates( [
@@ -832,8 +772,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_set_tournament_dates_success(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $this->security_service->method( 'current_user_can' )->willReturn( true );
+        $this->allow_security();
 
         $this->racketmanager->method( 'get_options' )->willReturn( [
             'open_lead_time'  => '30',

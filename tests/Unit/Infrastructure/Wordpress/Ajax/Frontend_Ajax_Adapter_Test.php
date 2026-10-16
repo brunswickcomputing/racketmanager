@@ -89,6 +89,52 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
         );
     }
 
+    private function create_player_dto( string|float|null $wtn_d = null ): \Racketmanager\Domain\DTO\Club\Club_Player_DTO {
+        $player = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
+        $player->wtn = null !== $wtn_d ? [ 'D' => $wtn_d ] : [];
+        return $player;
+    }
+
+    /**
+     * @param array<int, \Racketmanager\Domain\DTO\Club\Club_Player_DTO> $players
+     */
+    private function create_registration_service_for_players( array $players ): Registration_Service {
+        $reg_service = $this->createStub( Registration_Service::class );
+        $reg_service->method( 'get_registration' )->willReturnCallback(
+            static fn( int $id ) => $players[ $id ] ?? null
+        );
+        return $reg_service;
+    }
+
+    private function setup_event_for_team_order( int $event_id = 10, string $type = 'MD' ): void {
+        $this->security_service->method( 'verify_nonce' )->willReturn( true );
+        $event       = $this->createStub( Event::class );
+        $event->type = $type;
+        $competition_service = $this->createMock( Competition_Service::class );
+        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( $event_id )->willReturn( $event );
+        $this->competition_service = $competition_service;
+    }
+
+    private function create_rubber_with_recorder( int $rubber_number, ?array &$recorded_players ): \Racketmanager\Domain\Fixture\Rubber {
+        $rubber = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
+        $rubber->rubber_number = $rubber_number;
+        $rubber->method( 'set_players' )->willReturnCallback(
+            static function ( array $players ) use ( &$recorded_players ): void {
+                $recorded_players = $players;
+            }
+        );
+        return $rubber;
+    }
+
+    private function setup_fixture_repo_for_match( int $match_id, ?object $match ): void {
+        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
+        $fixture_repo->expects( $this->once() )
+            ->method( 'find_by_id' )
+            ->with( $match_id )
+            ->willReturn( $match );
+        $this->fixture_repository = $fixture_repo;
+    }
+
     public function test_register_hooks_routes_all_frontend_actions(): void {
         $controller = new Frontend_Ajax_Controller( $this->createStub( RacketManager::class ) );
         $registry   = new Ajax_Registry();
@@ -225,13 +271,8 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_unselected_player_returns_400(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-        $this->competition_service = $competition_service;
-        $this->adapter             = $this->make_adapter();
+        $this->setup_event_for_team_order();
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -247,18 +288,12 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_registration_not_found_returns_400(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
+        $this->setup_event_for_team_order();
         $reg_service = $this->createMock( Registration_Service::class );
         $reg_service->expects( $this->once() )->method( 'get_registration' )
             ->with( 404 )
             ->willThrowException( new \Racketmanager\Exceptions\Registration_Not_Found_Exception( 'Player registration not found' ) );
 
-        $this->competition_service  = $competition_service;
         $this->registration_service = $reg_service;
         $this->adapter              = $this->make_adapter();
 
@@ -276,21 +311,14 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_duplicate_player_returns_400(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
-        $player1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $player1->wtn = [ 'D' => '10.0' ];
+        $this->setup_event_for_team_order();
+        $player1 = $this->create_player_dto( '10.0' );
 
         $reg_service = $this->createMock( Registration_Service::class );
         $reg_service->expects( $this->exactly( 2 ) )->method( 'get_registration' )
             ->with( 100 )
             ->willReturn( $player1 );
 
-        $this->competition_service  = $competition_service;
         $this->registration_service = $reg_service;
         $this->adapter              = $this->make_adapter();
 
@@ -311,29 +339,12 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_wtn_calculation_with_default_40_9(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
-        $player1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $player1->wtn = [ 'D' => '15.2' ];
-        $player2      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $player2->wtn = []; // Missing WTN, should default to 40.9
-
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                101 => $player1,
-                102 => $player2,
-                default => null,
-            }
-        );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->adapter              = $this->make_adapter();
+        $this->setup_event_for_team_order();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            101 => $this->create_player_dto( '15.2' ),
+            102 => $this->create_player_dto(), // Missing WTN, should default to 40.9
+        ] );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -351,36 +362,15 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_valid_wtn_ordering_assigns_winner_status(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
+        $this->setup_event_for_team_order();
         // Rubber 1 (WTN 20.0) <= Rubber 2 (WTN 30.0) => Valid Order
-        $p1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p1->wtn = [ 'D' => '10.0' ];
-        $p2      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p2->wtn = [ 'D' => 10.0 ];
-        $p3      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p3->wtn = [ 'D' => 15.0 ];
-        $p4      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p4->wtn = [ 'D' => '15.0' ];
-
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                1 => $p1,
-                2 => $p2,
-                3 => $p3,
-                4 => $p4,
-                default => null,
-            }
-        );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->adapter              = $this->make_adapter();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            1 => $this->create_player_dto( '10.0' ),
+            2 => $this->create_player_dto( 10.0 ),
+            3 => $this->create_player_dto( 15.0 ),
+            4 => $this->create_player_dto( '15.0' ),
+        ] );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -404,44 +394,19 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_three_rubbers_valid_exercises_middle_rubber(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'XD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
+        $this->setup_event_for_team_order( 10, 'XD' );
         // Rubber 1: 10 + 10 = 20.0
         // Rubber 2: 15 + 15 = 30.0
         // Rubber 3: 20 + 20 = 40.0
-        $p1 = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p1->wtn = [ 'D' => '10.0' ];
-        $p2 = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p2->wtn = [ 'D' => 10.0 ];
-        $p3 = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p3->wtn = [ 'D' => 15.0 ];
-        $p4 = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p4->wtn = [ 'D' => '15.0' ];
-        $p5 = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p5->wtn = [ 'D' => 20.0 ];
-        $p6 = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p6->wtn = [ 'D' => 20.0 ];
-
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                1 => $p1,
-                2 => $p2,
-                3 => $p3,
-                4 => $p4,
-                5 => $p5,
-                6 => $p6,
-                default => null,
-            }
-        );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->adapter              = $this->make_adapter();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            1 => $this->create_player_dto( '10.0' ),
+            2 => $this->create_player_dto( 10.0 ),
+            3 => $this->create_player_dto( 15.0 ),
+            4 => $this->create_player_dto( '15.0' ),
+            5 => $this->create_player_dto( 20.0 ),
+            6 => $this->create_player_dto( 20.0 ),
+        ] );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -466,36 +431,15 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_invalid_wtn_ordering_assigns_loser_status(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
+        $this->setup_event_for_team_order();
         // Rubber 1 (WTN 35.0) > Rubber 2 (WTN 20.0) => Invalid Order
-        $p1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p1->wtn = [ 'D' => '20.0' ];
-        $p2      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p2->wtn = [ 'D' => 15.0 ];
-        $p3      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p3->wtn = [ 'D' => 10.0 ];
-        $p4      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p4->wtn = [ 'D' => '10.0' ];
-
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                1 => $p1,
-                2 => $p2,
-                3 => $p3,
-                4 => $p4,
-                default => null,
-            }
-        );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->adapter              = $this->make_adapter();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            1 => $this->create_player_dto( '20.0' ),
+            2 => $this->create_player_dto( 15.0 ),
+            3 => $this->create_player_dto( 10.0 ),
+            4 => $this->create_player_dto( '10.0' ),
+        ] );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -519,49 +463,20 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_set_team_home_opponent_persists_players(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
-        $p1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p1->wtn = [ 'D' => '10.0' ];
-        $p2      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p2->wtn = [ 'D' => 10.0 ];
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                1 => $p1,
-                2 => $p2,
-                default => null,
-            }
-        );
+        $this->setup_event_for_team_order();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            1 => $this->create_player_dto( '10.0' ),
+            2 => $this->create_player_dto( 10.0 ),
+        ] );
 
         $rubber1_players_called = null;
-        $match_rubber1 = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
-        $match_rubber1->rubber_number = 1;
-        $match_rubber1->method( 'set_players' )->willReturnCallback(
-            function ( array $players ) use ( &$rubber1_players_called ) {
-                $rubber1_players_called = $players;
-            }
-        );
-
         $match = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
         $match->home_team = '100';
         $match->away_team = '200';
-        $match->method( 'get_rubbers' )->willReturn( [ $match_rubber1 ] );
+        $match->method( 'get_rubbers' )->willReturn( [ $this->create_rubber_with_recorder( 1, $rubber1_players_called ) ] );
 
-        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->expects( $this->once() )
-            ->method( 'find_by_id' )
-            ->with( 555 )
-            ->willReturn( $match );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->fixture_repository   = $fixture_repo;
-        $this->adapter              = $this->make_adapter();
+        $this->setup_fixture_repo_for_match( 555, $match );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -582,49 +497,20 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_set_team_away_opponent_persists_players(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
-        $p1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p1->wtn = [ 'D' => '10.0' ];
-        $p2      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p2->wtn = [ 'D' => 10.0 ];
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                1 => $p1,
-                2 => $p2,
-                default => null,
-            }
-        );
+        $this->setup_event_for_team_order();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            1 => $this->create_player_dto( '10.0' ),
+            2 => $this->create_player_dto( 10.0 ),
+        ] );
 
         $rubber1_players_called = null;
-        $match_rubber1 = $this->createStub( \Racketmanager\Domain\Fixture\Rubber::class );
-        $match_rubber1->rubber_number = 1;
-        $match_rubber1->method( 'set_players' )->willReturnCallback(
-            function ( array $players ) use ( &$rubber1_players_called ) {
-                $rubber1_players_called = $players;
-            }
-        );
-
         $match = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
         $match->home_team = '100';
         $match->away_team = '200';
-        $match->method( 'get_rubbers' )->willReturn( [ $match_rubber1 ] );
+        $match->method( 'get_rubbers' )->willReturn( [ $this->create_rubber_with_recorder( 1, $rubber1_players_called ) ] );
 
-        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->expects( $this->once() )
-            ->method( 'find_by_id' )
-            ->with( 555 )
-            ->willReturn( $match );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->fixture_repository   = $fixture_repo;
-        $this->adapter              = $this->make_adapter();
+        $this->setup_fixture_repo_for_match( 555, $match );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',
@@ -645,37 +531,19 @@ class Frontend_Ajax_Adapter_Test extends TestCase {
     }
 
     public function test_validate_team_order_set_team_no_matching_opponent_returns_unable_to_set_team(): void {
-        $this->security_service->method( 'verify_nonce' )->willReturn( true );
-        $event       = $this->createStub( Event::class );
-        $event->type = 'MD';
-        $competition_service = $this->createMock( Competition_Service::class );
-        $competition_service->expects( $this->once() )->method( 'get_event_by_id' )->with( 10 )->willReturn( $event );
-
-        $p1      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p1->wtn = [ 'D' => '10.0' ];
-        $p2      = $this->createStub( \Racketmanager\Domain\DTO\Club\Club_Player_DTO::class );
-        $p2->wtn = [ 'D' => 10.0 ];
-        $reg_service = $this->createStub( Registration_Service::class );
-        $reg_service->method( 'get_registration' )->willReturnCallback(
-            static fn( int $id ) => match( $id ) {
-                1 => $p1,
-                2 => $p2,
-                default => null,
-            }
-        );
+        $this->setup_event_for_team_order();
+        $this->registration_service = $this->create_registration_service_for_players( [
+            1 => $this->create_player_dto( '10.0' ),
+            2 => $this->create_player_dto( 10.0 ),
+        ] );
 
         $match = $this->createStub( \Racketmanager\Domain\Fixture\Fixture::class );
         $match->home_team = '100';
         $match->away_team = '200';
         $match->method( 'get_rubbers' )->willReturn( [] );
 
-        $fixture_repo = $this->createMock( Fixture_Repository_Interface::class );
-        $fixture_repo->expects( $this->once() )->method( 'find_by_id' )->with( 555 )->willReturn( $match );
-
-        $this->competition_service  = $competition_service;
-        $this->registration_service = $reg_service;
-        $this->fixture_repository   = $fixture_repo;
-        $this->adapter              = $this->make_adapter();
+        $this->setup_fixture_repo_for_match( 555, $match );
+        $this->adapter = $this->make_adapter();
 
         $response = $this->adapter->validate_team_order( [
             'security'   => 'valid',

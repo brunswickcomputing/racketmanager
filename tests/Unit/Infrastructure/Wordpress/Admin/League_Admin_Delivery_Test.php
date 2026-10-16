@@ -46,6 +46,34 @@ final class Testable_League_Admin_Display extends Admin_Display {
     }
 }
 
+final class In_Memory_Admin_Flash_Message_Store extends Admin_Flash_Message_Store {
+    private ?array $data = null;
+
+    public function set( string $message, bool|string $type = false, array $flash_data = array() ): void {
+        $this->data = array(
+            'message'      => $message,
+            'message_type' => $type,
+        );
+        if ( ! empty( $flash_data ) ) {
+            $this->data['flash_data'] = $flash_data;
+        }
+    }
+
+    public function pop(): array {
+        $copy       = $this->data ?? array();
+        $this->data = null;
+        return $copy;
+    }
+}
+
+final class In_Memory_Admin_Redirector implements Admin_Redirector_Interface {
+    public string $redirect_url = '';
+
+    public function redirect( string $url, int $status = 302 ): void {
+        $this->redirect_url = $url;
+    }
+}
+
 #[AllowMockObjectsWithoutExpectations]
 final class League_Admin_Delivery_Test extends TestCase {
     use Manages_Wordpress_Globals;
@@ -59,6 +87,27 @@ final class League_Admin_Delivery_Test extends TestCase {
     protected function tearDown(): void {
         $this->restore_globals();
         parent::tearDown();
+    }
+
+    private function create_display( Admin_Flash_Message_Store $store, Admin_Redirector_Interface $redirector ): Testable_League_Admin_Display {
+        $messages = new Admin_Message_Service( $store );
+        return new Testable_League_Admin_Display(
+            new Admin_Action_Adapter( $messages, $redirector ),
+            $messages
+        );
+    }
+
+    /**
+     * @return array{0: Testable_League_Admin_Display, 1: In_Memory_Admin_Redirector, 2: Admin_Action_Adapter, 3: Admin_Message_Service}
+     */
+    private function create_roundtrip_environment(): array {
+        $store           = new In_Memory_Admin_Flash_Message_Store();
+        $redirector      = new In_Memory_Admin_Redirector();
+        $message_service = new Admin_Message_Service( $store );
+        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
+        $display         = new Testable_League_Admin_Display( $adapter, $message_service );
+
+        return array( $display, $redirector, $adapter, $message_service );
     }
 
     public function test_success_redirects_with_flash_and_preserves_event_id(): void {
@@ -76,10 +125,7 @@ final class League_Admin_Delivery_Test extends TestCase {
             )
         );
 
-        $display = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( new Admin_Message_Service( $store ), $redirector ),
-            new Admin_Message_Service( $store )
-        );
+        $display = $this->create_display( $store, $redirector );
 
         $result = new Action_Result_DTO(
             message: 'Match dates updated',
@@ -105,10 +151,7 @@ final class League_Admin_Delivery_Test extends TestCase {
         $store->expects( self::once() )->method( 'set' )->with( 'Match date missing for round 1', true );
         $redirector->expects( self::once() )->method( 'redirect' );
 
-        $display = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( new Admin_Message_Service( $store ), $redirector ),
-            new Admin_Message_Service( $store )
-        );
+        $display = $this->create_display( $store, $redirector );
 
         self::assertTrue(
             $display->expose_deliver(
@@ -133,11 +176,7 @@ final class League_Admin_Delivery_Test extends TestCase {
         $redirector = $this->createMock( Admin_Redirector_Interface::class );
         $redirector->expects( self::never() )->method( 'redirect' );
 
-        $messages = new Admin_Message_Service( $store );
-        $display  = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( $messages, $redirector ),
-            $messages
-        );
+        $display = $this->create_display( $store, $redirector );
 
         self::assertFalse(
             $display->expose_deliver(
@@ -169,10 +208,7 @@ final class League_Admin_Delivery_Test extends TestCase {
         $store->expects( self::once() )->method( 'set' )->with( 'Season(s) deleted', false );
         $redirector->expects( self::once() )->method( 'redirect' );
 
-        $display = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( new Admin_Message_Service( $store ), $redirector ),
-            new Admin_Message_Service( $store )
-        );
+        $display = $this->create_display( $store, $redirector );
 
         self::assertTrue(
             $display->expose_deliver(
@@ -199,10 +235,7 @@ final class League_Admin_Delivery_Test extends TestCase {
         $store->expects( self::once() )->method( 'set' )->with( 'Security token invalid', true );
         $redirector->expects( self::once() )->method( 'redirect' );
 
-        $display = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( new Admin_Message_Service( $store ), $redirector ),
-            new Admin_Message_Service( $store )
-        );
+        $display = $this->create_display( $store, $redirector );
 
         self::assertTrue(
             $display->expose_deliver( $result, array( 'page' => 'racketmanager-leagues', 'view' => 'setup', 'competition_id' => '3' ) )
@@ -228,10 +261,7 @@ final class League_Admin_Delivery_Test extends TestCase {
             )
         );
 
-        $display = new Testable_League_Admin_Display(
-            new Admin_Action_Adapter( new Admin_Message_Service( $store ), $redirector ),
-            new Admin_Message_Service( $store )
-        );
+        $display = $this->create_display( $store, $redirector );
 
         $result = new Action_Result_DTO(
             message: 'Match id 101 deleted',
@@ -253,34 +283,7 @@ final class League_Admin_Delivery_Test extends TestCase {
     }
 
     public function test_post_delivery_and_get_flash_roundtrip(): void {
-        $store = new class() extends Admin_Flash_Message_Store {
-            private ?array $data = null;
-            public function set( string $message, bool|string $type = false, array $flash_data = array() ): void {
-                $this->data = array(
-                    'message'      => $message,
-                    'message_type' => $type,
-                );
-                if ( ! empty( $flash_data ) ) {
-                    $this->data['flash_data'] = $flash_data;
-                }
-            }
-            public function pop(): array {
-                $copy = $this->data ?? [];
-                $this->data = null;
-                return $copy;
-            }
-        };
-
-        $redirector = new class() implements Admin_Redirector_Interface {
-            public string $redirect_url = '';
-            public function redirect( string $url, int $status = 302 ): void {
-                $this->redirect_url = $url;
-            }
-        };
-
-        $message_service = new Admin_Message_Service( $store );
-        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
-        $display         = new Testable_League_Admin_Display( $adapter, $message_service );
+        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
 
         // 1. POST delivery
         $result = new Action_Result_DTO(
@@ -315,34 +318,7 @@ final class League_Admin_Delivery_Test extends TestCase {
     }
 
     public function test_constitution_delivery_and_get_flash_roundtrip(): void {
-        $store = new class() extends Admin_Flash_Message_Store {
-            private ?array $data = null;
-            public function set( string $message, bool|string $type = false, array $flash_data = array() ): void {
-                $this->data = array(
-                    'message'      => $message,
-                    'message_type' => $type,
-                );
-                if ( ! empty( $flash_data ) ) {
-                    $this->data['flash_data'] = $flash_data;
-                }
-            }
-            public function pop(): array {
-                $copy = $this->data ?? [];
-                $this->data = null;
-                return $copy;
-            }
-        };
-
-        $redirector = new class() implements Admin_Redirector_Interface {
-            public string $redirect_url = '';
-            public function redirect( string $url, int $status = 302 ): void {
-                $this->redirect_url = $url;
-            }
-        };
-
-        $message_service = new Admin_Message_Service( $store );
-        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
-        $display         = new Testable_League_Admin_Display( $adapter, $message_service );
+        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
 
         $result = new Action_Result_DTO(
             message: 'Matches generated',
@@ -372,34 +348,7 @@ final class League_Admin_Delivery_Test extends TestCase {
     }
 
     public function test_event_delivery_and_get_flash_roundtrip(): void {
-        $store = new class() extends Admin_Flash_Message_Store {
-            private ?array $data = null;
-            public function set( string $message, bool|string $type = false, array $flash_data = array() ): void {
-                $this->data = array(
-                    'message'      => $message,
-                    'message_type' => $type,
-                );
-                if ( ! empty( $flash_data ) ) {
-                    $this->data['flash_data'] = $flash_data;
-                }
-            }
-            public function pop(): array {
-                $copy = $this->data ?? [];
-                $this->data = null;
-                return $copy;
-            }
-        };
-
-        $redirector = new class() implements Admin_Redirector_Interface {
-            public string $redirect_url = '';
-            public function redirect( string $url, int $status = 302 ): void {
-                $this->redirect_url = $url;
-            }
-        };
-
-        $message_service = new Admin_Message_Service( $store );
-        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
-        $display         = new Testable_League_Admin_Display( $adapter, $message_service );
+        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
 
         $result = new Action_Result_DTO(
             message: 'League added',
@@ -429,34 +378,7 @@ final class League_Admin_Delivery_Test extends TestCase {
     }
 
     public function test_schedule_delivery_and_get_flash_roundtrip(): void {
-        $store = new class() extends Admin_Flash_Message_Store {
-            private ?array $data = null;
-            public function set( string $message, bool|string $type = false, array $flash_data = array() ): void {
-                $this->data = array(
-                    'message'      => $message,
-                    'message_type' => $type,
-                );
-                if ( ! empty( $flash_data ) ) {
-                    $this->data['flash_data'] = $flash_data;
-                }
-            }
-            public function pop(): array {
-                $copy = $this->data ?? [];
-                $this->data = null;
-                return $copy;
-            }
-        };
-
-        $redirector = new class() implements Admin_Redirector_Interface {
-            public string $redirect_url = '';
-            public function redirect( string $url, int $status = 302 ): void {
-                $this->redirect_url = $url;
-            }
-        };
-
-        $message_service = new Admin_Message_Service( $store );
-        $adapter         = new Admin_Action_Adapter( $message_service, $redirector );
-        $display         = new Testable_League_Admin_Display( $adapter, $message_service );
+        list( $display, $redirector, $adapter, $message_service ) = $this->create_roundtrip_environment();
 
         $result = new Action_Result_DTO(
             message: 'Matches scheduled',

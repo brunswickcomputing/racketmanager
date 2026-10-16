@@ -63,19 +63,8 @@ class League_Shortcode_Adapter_Test extends TestCase {
         );
     }
 
-    public function test_show_standings_renders_standings_via_handler_and_presenter(): void {
-        $league_obj = $this->createStub( League::class );
-        $league_obj->id        = 1;
-        $league_obj->title     = 'Premier Division';
-        $league_obj->sport     = 'tennis';
-        $league_obj->standings = [
-            'rank'   => 1,
-            'status' => 1,
-            'pld'    => 1,
-            'won'    => 1,
-            'pts'    => 1,
-        ];
-        $team = (object) [
+    private function create_standings_team_row( array $overrides = [] ): object {
+        $defaults = [
             'rank'           => 1,
             'status'         => '',
             'title'          => 'Leigh LTC 1',
@@ -91,20 +80,46 @@ class League_Shortcode_Adapter_Test extends TestCase {
             'points_2_minus' => 0,
             'add_points'     => 0,
         ];
-        $league_obj->teams = [ $team ];
+
+        return (object) array_merge( $defaults, $overrides );
+    }
+
+    private function create_standings_league(
+        string $title = 'Premier Division',
+        array $team_overrides = [],
+        array $standings_cols = [ 'rank' => 1, 'status' => 1, 'pld' => 1, 'won' => 1, 'pts' => 1 ]
+    ): League {
+        $team       = $this->create_standings_team_row( $team_overrides );
+        $league_obj = $this->createStub( League::class );
+        $league_obj->id        = 1;
+        $league_obj->title     = $title;
+        $league_obj->sport     = 'tennis';
+        $league_obj->standings = $standings_cols;
+        $league_obj->teams     = [ $team ];
         $league_obj->method( 'get_league_teams' )->willReturn( [ $team ] );
 
+        return $league_obj;
+    }
+
+    private function create_standings_adapter( ?League $league_obj = null, ?League_Standings_Presenter $presenter = null ): League_Shortcode_Adapter {
         $league_service = $this->createStub( League_Service::class );
         $league_service->method( 'get_league' )->willReturn( $league_obj );
 
         $handler   = new Get_League_Standings_Handler( $league_service );
         $renderer  = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $presenter = new League_Standings_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
+        $presenter = $presenter ?? new League_Standings_Presenter( $renderer );
 
-        $adapter = $this->create_adapter( [
+        return $this->create_adapter( [
             'get_league_standings_handler' => $handler,
             'league_standings_presenter'   => $presenter,
         ] );
+    }
+
+    public function test_show_standings_renders_standings_via_handler_and_presenter(): void {
+        $league_obj = $this->create_standings_league( 'Premier Division', [ 'title' => 'Leigh LTC 1' ] );
+        $renderer   = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
+        $presenter  = new League_Standings_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() );
+        $adapter    = $this->create_standings_adapter( $league_obj, $presenter );
 
         $output = $adapter->show_standings( [ 'league_id' => 1 ] );
         $this->assertStringContainsString( 'Premier Division', $output );
@@ -114,41 +129,23 @@ class League_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_standings_handles_default_attributes_without_season_or_group(): void {
-        $league_obj = $this->createStub( League::class );
-        $league_obj->id        = 1;
-        $league_obj->title     = 'Division 1';
-        $league_obj->sport     = 'tennis';
-        $league_obj->standings = [ 'pld' => 1, 'pts' => 1 ];
-        $team = (object) [
-            'rank'           => 1,
-            'status'         => '',
-            'title'          => 'Westcliff 1',
-            'done_matches'   => 4,
-            'won_matches'    => 3,
-            'draw_matches'   => 0,
-            'lost_matches'   => 1,
-            'diff'           => 6,
-            'points_plus'    => 12,
-            'points_minus'   => 4,
-            'table_id'       => 102,
-            'points_2_plus'  => 0,
-            'points_2_minus' => 0,
-            'add_points'     => 0,
-        ];
-        $league_obj->teams     = [ $team ];
-        $league_obj->method( 'get_league_teams' )->willReturn( [ $team ] );
+        $league_obj = $this->create_standings_league(
+            'Division 1',
+            [
+                'title'        => 'Westcliff 1',
+                'done_matches' => 4,
+                'won_matches'  => 3,
+                'draw_matches' => 0,
+                'lost_matches' => 1,
+                'diff'         => 6,
+                'points_plus'  => 12,
+                'points_minus' => 4,
+                'table_id'     => 102,
+            ],
+            [ 'pld' => 1, 'pts' => 1 ]
+        );
 
-        $league_service = $this->createStub( League_Service::class );
-        $league_service->method( 'get_league' )->willReturn( $league_obj );
-
-        $handler   = new Get_League_Standings_Handler( $league_service );
-        $renderer  = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $presenter = new League_Standings_Presenter( $renderer );
-
-        $adapter = $this->create_adapter( [
-            'get_league_standings_handler' => $handler,
-            'league_standings_presenter'   => $presenter,
-        ] );
+        $adapter = $this->create_standings_adapter( $league_obj );
 
         global $league;
         $league = $league_obj;
@@ -160,17 +157,7 @@ class League_Shortcode_Adapter_Test extends TestCase {
     }
 
     public function test_show_standings_handles_missing_league(): void {
-        $league_service = $this->createStub( League_Service::class );
-        $league_service->method( 'get_league' )->willReturn( null );
-
-        $handler   = new Get_League_Standings_Handler( $league_service );
-        $renderer  = new Php_View_Renderer( RACKETMANAGER_PATH . 'templates/' );
-        $presenter = new League_Standings_Presenter( $renderer );
-
-        $adapter = $this->create_adapter( [
-            'get_league_standings_handler' => $handler,
-            'league_standings_presenter'   => $presenter,
-        ] );
+        $adapter = $this->create_standings_adapter( null );
 
         $output = $adapter->show_standings( [ 'league_id' => 99999 ] );
         $this->assertSame( '', $output );

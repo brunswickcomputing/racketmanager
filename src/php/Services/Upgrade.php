@@ -66,6 +66,7 @@ class Upgrade {
         $this->v10_0_14();
         $this->v10_0_15();
         $this->v10_0_16();
+        $this->v10_0_17();
         /*
         * Update version and dbversion
         */
@@ -555,6 +556,20 @@ class Upgrade {
         if ( version_compare( $this->installed, $version, '<' ) ) {
             $this->show_upgrade_step( $version );
             $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_matches CHANGE `post_id` `post_id` INT NULL DEFAULT NULL;" );
+        }
+    }
+
+    /**
+     * Upgrade to 10.0.17
+     * Change columns to allow null
+     *
+     * @return void
+     */
+    private function v10_0_17 ():void {
+        $version = '10.0.17';
+        if ( version_compare( $this->installed, $version, '<' ) ) {
+            $this->show_upgrade_step( $version );
+            $this->wpdb->query( "ALTER TABLE {$this->wpdb->prefix}racketmanager_league_teams CHANGE `group` `group` VARCHAR(30) NULL DEFAULT NULL, CHANGE `rank` `rank` INT NULL DEFAULT '0', CHANGE `status` `status` VARCHAR(50) NULL;" );
         }
     }
 

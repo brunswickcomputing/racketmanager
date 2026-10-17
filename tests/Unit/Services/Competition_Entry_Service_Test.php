@@ -5,6 +5,7 @@ namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use Racketmanager\Domain\Club;
 use Racketmanager\Domain\Player;
 use Racketmanager\Domain\Tournament;
@@ -46,7 +47,7 @@ class Competition_Entry_Service_Test extends TestCase {
     private Team_Repository $team_repository;
     private Club_Repository $club_repository;
     private League_Team_Repository $league_team_repository;
-    private Player_Service $player_service;
+    private Player_Service|MockObject $player_service;
     private Notify_Service $notify_service;
     private Tournament_Repository $tournament_repository;
     private Tournament_Service $tournament_service;
@@ -70,7 +71,7 @@ class Competition_Entry_Service_Test extends TestCase {
         $this->team_repository = $this->createStub( Team_Repository::class );
         $this->club_repository = $this->createStub( Club_Repository::class );
         $this->league_team_repository = $this->createMock( League_Team_Repository::class );
-        $this->player_service = $this->createStub( Player_Service::class );
+        $this->player_service = $this->createMock( Player_Service::class );
         $this->notify_service = $this->createStub( Notify_Service::class );
         $this->tournament_repository = $this->createStub( Tournament_Repository::class );
         $this->tournament_service = $this->createStub( Tournament_Service::class );
@@ -1089,5 +1090,33 @@ class Competition_Entry_Service_Test extends TestCase {
         $res = $this->service->request_tournament_entry( $dto );
         $this->assertInstanceOf( WP_Error::class, $res );
         $this->assertContains( 'event', $res->get_error_codes() );
+    }
+
+    public function test_tournament_entry_saves_player_opt_in_via_player_service(): void {
+        $tournament = $this->create_tournament( 1, '2026', '2026-08-30' );
+        $event10    = $this->create_tournament_event( 10, 'MS' );
+        $this->tournament_service->method( 'get_events_for_tournament' )->willReturn( [ $event10 ] );
+        $this->competition_service->method( 'get_event_by_id' )->willReturn( $event10 );
+
+        $player = $this->create_tournament_player( 95, 'M', 1990 );
+        $this->player_service->method( 'get_player' )->willReturn( $player );
+        $this->tournament_service->method( 'get_fees' )->willReturn( (object) [ 'event' => 10.0, 'competition' => 5.0 ] );
+        $this->finance_service->method( 'get_tournament_paid_total_for_player' )->willReturn( 15 );
+        $this->league_team_repository->method( 'player_already_entered_league' )->willReturn( null );
+
+        $this->player_service->expects( $this->once() )
+            ->method( 'save_opt_in' )
+            ->with( 95, '1' )
+            ->willReturn( true );
+
+        $dto = $this->create_tournament_entry_request( [
+            'playerId'         => '95',
+            'tournamentEvents' => '10',
+            'event'            => [ '10' ],
+        ] );
+
+        $res = $this->service->request_tournament_entry( $dto );
+        $this->assertInstanceOf( Tournament_Entry_Response_DTO::class, $res );
+        $this->assertContains( '1', $player->opt_ins );
     }
 }

@@ -13,6 +13,7 @@ use Racketmanager\Domain\Tournament;
 use Racketmanager\Domain\DTO\Tournament\Tournament_Request_DTO;
 use Racketmanager\Domain\View_Models\Tournament_Email_View_Model;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Tests\Helpers\Manages_Wordpress_Globals;
 use ReflectionClass;
 use stdClass;
@@ -47,7 +48,7 @@ final class Tournament_Test extends TestCase {
         $data->date_withdrawal = '2026-12-05';
         $data->season = '2026';
 
-        $tournament = new Tournament($data);
+        $tournament = new Tournament( $data, site_url: 'http://example.com', date_format: 'Y-m-d' );
         $view_model = new Tournament_Email_View_Model($tournament);
 
         $this->assertEquals('/tournament/test-tournament/', $tournament->link);
@@ -149,6 +150,8 @@ final class Tournament_Test extends TestCase {
         parent::tearDown();
     }
 
+    private ?Competition_Service $competition_service = null;
+
     /**
      * Provide a container whose competition service knows the given competitions.
      * Unknown ids throw Competition_Not_Found_Exception like the real service.
@@ -156,7 +159,7 @@ final class Tournament_Test extends TestCase {
      * @param Competition[] $competitions Competitions keyed by id.
      */
     private function register_competitions( array $competitions ): void {
-        $service = new class( $competitions, $this->service_calls ) {
+        $this->competition_service = new class( $competitions, $this->service_calls ) extends Competition_Service {
             public function __construct( private array $competitions, private array &$calls ) {}
 
             public function get_by_id( null|string|int $id ): Competition {
@@ -165,30 +168,6 @@ final class Tournament_Test extends TestCase {
                     throw new Competition_Not_Found_Exception( 'Competition not found' );
                 }
                 return $this->competitions[ (int) $id ];
-            }
-        };
-
-        $GLOBALS['racketmanager'] = new class( $service ) {
-            public $container;
-            public $site_url    = 'http://example.com';
-            public $date_format = 'Y-m-d';
-
-            public function get_options(): array {
-                return [];
-            }
-
-            public function __construct( $service ) {
-                $this->container = new class( $service ) {
-                    public function __construct( private $service ) {}
-
-                    public function has( string $name ): bool {
-                        return 'competition_service' === $name;
-                    }
-
-                    public function get( string $name ) {
-                        return $this->service;
-                    }
-                };
             }
         };
     }
@@ -254,7 +233,7 @@ final class Tournament_Test extends TestCase {
         if ( null !== $information ) {
             $data->information = json_encode( $information );
         }
-        return new Tournament( $data );
+        return new Tournament( $data, competition_service: $this->competition_service );
     }
 
     public function test_get_allowlist_event_ids_semantics(): void {

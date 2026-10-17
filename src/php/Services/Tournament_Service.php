@@ -246,7 +246,11 @@ class Tournament_Service {
      * @return Tournament|int|WP_Error
      */
     public function add_tournament( Tournament_Request_DTO $tournament_request ): Tournament|int|WP_Error {
-        return $this->save_tournament( new Tournament(), $tournament_request );
+        $tournament = new Tournament();
+        if ( method_exists( $this->tournament_repository, 'wire_tournament_collaborators' ) ) {
+            $this->tournament_repository->wire_tournament_collaborators( $tournament );
+        }
+        return $this->save_tournament( $tournament, $tournament_request );
     }
 
     /**

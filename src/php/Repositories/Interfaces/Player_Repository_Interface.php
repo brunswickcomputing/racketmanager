@@ -19,6 +19,7 @@ interface Player_Repository_Interface extends Repository_Interface {
     public function add( Player $player );
     public function save_btm( int $player_id, int $btm ): bool;
     public function save_contact_no( int $player_id, string $contact_no ): bool;
+    public function save_opt_in( int $player_id, string $opt_in ): bool;
     public function update( Player $player, array $updates ): bool;
     public function find_all( array $args = array() ): array;
     public function get_active_players(): array;

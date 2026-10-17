@@ -16,8 +16,10 @@ use Racketmanager\Application\Message\Queries\Get_Message_Handler;
 use Racketmanager\Application\Message\Queries\Get_Messages_Handler;
 use Racketmanager\Domain\Ports\Rating_Gateway_Interface;
 use Racketmanager\Gateways\Mail\Mailer_Interface;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Gateways\Payment\Payment_Gateway_Interface;
 use Racketmanager\Infrastructure\Gateways\Mail\Wp_Mailer;
+use Racketmanager\Infrastructure\Gateways\Option\Wp_Option_Gateway;
 use Racketmanager\Infrastructure\Gateways\Payment\Stripe_Payment_Gateway;
 use Racketmanager\Infrastructure\Gateways\Rating\Lta_Wtn_Gateway_Adapter;
 use Racketmanager\Infrastructure\Security\Security_Service;
@@ -68,6 +70,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         $container->set( 'wtn_api_client', fn( Simple_Container $c ): Rating_Gateway_Interface => $c->get( 'rating_gateway' ) );
         $container->set( 'mailer', fn(): Mailer_Interface => new Wp_Mailer() );
         $container->set( 'payment_gateway', fn(): Payment_Gateway_Interface => new Stripe_Payment_Gateway( $app?->get_options( 'billing' ) ?? [] ) );
+        $container->set( 'option_gateway', fn(): Option_Gateway_Interface => new Wp_Option_Gateway() );
 
         // Core App & Settings
         $container->set( 'racketmanager_app', fn() => $app );

@@ -169,8 +169,13 @@ function get_club( object|int|string|null $club = null, string $search_term = 'i
     } elseif ( is_object( $club ) ) {
         $_club = new Club( $club );
     } else {
-        $club_repository = new Club_Repository();
-        $_club           = $club_repository->find_by_id( $club, $search_term );
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'club_repository' ) ) {
+            $club_repository = $racketmanager->container->get( 'club_repository' );
+        } else {
+            $club_repository = new Club_Repository();
+        }
+        $_club = $club_repository->find_by_id( $club, $search_term );
     }
     if ( ! $_club ) {
         return null;
@@ -231,7 +236,13 @@ function get_event( int|string|Event|null $event = null, string $search_term = '
     } elseif ( is_object( $event ) ) {
         $_event = new Event( $event );
     } else {
-        $_event = Event::get_instance( $event, $search_term );
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'event_repository' ) ) {
+            $event_repo = $racketmanager->container->get( 'event_repository' );
+            $_event     = 'name' === $search_term ? $event_repo->find_by_name( (string) $event ) : $event_repo->find_by_id( $event );
+        } else {
+            $_event = Event::get_instance( $event, $search_term );
+        }
     }
 
     if ( ! $_event ) {
@@ -357,7 +368,18 @@ function get_tournament_entry( object|int|string|null $tournament_entry = null, 
     } elseif ( is_object( $tournament_entry ) ) {
         $_tournament_entry = new Tournament_Entry( $tournament_entry );
     } else {
-        $_tournament_entry = Tournament_Entry::get_instance( $tournament_entry, $search_term );
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'tournament_entry_repository' ) ) {
+            $entry_repo = $racketmanager->container->get( 'tournament_entry_repository' );
+            if ( 'key' === $search_term && is_string( $tournament_entry ) && str_contains( $tournament_entry, '_' ) ) {
+                [ $t_id, $p_id ]   = explode( '_', $tournament_entry, 2 );
+                $_tournament_entry = $entry_repo->find_by_tournament_and_player( (int) $t_id, (int) $p_id );
+            } else {
+                $_tournament_entry = $entry_repo->find_by_id( $tournament_entry );
+            }
+        } else {
+            $_tournament_entry = Tournament_Entry::get_instance( $tournament_entry, $search_term );
+        }
     }
     if ( ! $_tournament_entry ) {
         return null;
@@ -381,7 +403,13 @@ function get_team( object|int|string|null $team = null ): ?object {
     } elseif ( is_object( $team ) ) {
         $_team = new Team( $team );
     } else {
-        $_team = Team::get_instance( $team );
+        global $racketmanager;
+        if ( isset( $racketmanager->container ) && $racketmanager->container->has( 'team_repository' ) ) {
+            $team_repo = $racketmanager->container->get( 'team_repository' );
+            $_team     = $team_repo->find_by_id( $team );
+        } else {
+            $_team = Team::get_instance( $team );
+        }
     }
 
     if ( ! $_team ) {

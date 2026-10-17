@@ -177,9 +177,9 @@ class Player {
     /**
      * Opt in detail.
      *
-     * @var array|null
+     * @var array
      */
-    public mixed $opt_ins = null;
+    public array $opt_ins = array();
     /**
      * WTN.
      *
@@ -925,7 +925,7 @@ class Player {
         if ( $opt_in ) {
             $opt_in_found = in_array( $opt_in, $this->opt_ins, true );
             if ( ! $opt_in_found ) {
-                add_user_meta( $this->ID, 'racketmanager_opt_in', $opt_in, true );
+                $this->opt_ins[] = $opt_in;
             }
         }
     }

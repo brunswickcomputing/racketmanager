@@ -88,7 +88,12 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->set( 'competition_repository', fn() => new Competition_Repository() );
         $container->set( 'event_repository', fn() => new Event_Repository() );
         $container->set( 'league_team_repository', fn() => new League_Team_Repository() );
-        $container->set( 'tournament_repository', fn() => new Tournament_Repository() );
+        $container->set( 'tournament_repository', fn( Simple_Container $c ) => new Tournament_Repository(
+            competition_service: fn() => $c->get( 'competition_service' ),
+            option_gateway: fn() => $c->get( 'option_gateway' ),
+            site_url: fn() => $app?->site_url ?? ( function_exists( 'site_url' ) ? site_url() : null ),
+            date_format: fn() => $app?->date_format ?? null
+        ) );
         $container->set( 'tournament_entry_repository', fn() => new Tournament_Entry_Repository() );
 
         $container->set( 'league_repository', fn( Simple_Container $c ) => new League_Repository(

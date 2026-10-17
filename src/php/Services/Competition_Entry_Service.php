@@ -1299,6 +1299,7 @@ class Competition_Entry_Service {
 
         if ( $updates ) {
             $player->set_opt_in( '1' );
+            $this->player_service->save_opt_in( (int) $player->id, '1' );
             $tournament_name                     = $tournament->get_name();
             $email_to                            = $player->display_name . ' <' . $player->email . '>';
             $email_from                          = $this->racketmanager->get_confirmation_email( 'tournament' );

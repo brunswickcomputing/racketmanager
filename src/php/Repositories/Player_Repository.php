@@ -143,6 +143,25 @@ class Player_Repository implements Player_Repository_Interface {
     }
 
     /**
+     * Save opt-in for player
+     *
+     * @param int $player_id
+     * @param string $opt_in
+     *
+     * @return bool
+     */
+    public function save_opt_in( int $player_id, string $opt_in ): bool {
+        if ( ! $player_id || ! $opt_in ) {
+            return false;
+        }
+        $existing = get_user_meta( $player_id, 'racketmanager_opt_in' );
+        if ( is_array( $existing ) && in_array( $opt_in, $existing, true ) ) {
+            return true;
+        }
+        return (bool) add_user_meta( $player_id, 'racketmanager_opt_in', $opt_in, true );
+    }
+
+    /**
      * Update player details in the database.
      *
      * @param Player $player

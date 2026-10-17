@@ -240,6 +240,18 @@ class Player_Service {
     }
 
     /**
+     * Save opt-in for player
+     *
+     * @param int $player_id
+     * @param string $opt_in
+     *
+     * @return bool
+     */
+    public function save_opt_in( int $player_id, string $opt_in ): bool {
+        return $this->player_repository->save_opt_in( $player_id, $opt_in );
+    }
+
+    /**
      * Amend player details
      *
      * @param int|null $player_id

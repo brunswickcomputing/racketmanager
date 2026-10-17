@@ -9,12 +9,16 @@
 
 namespace Racketmanager\Repositories;
 
+use Closure;
 use Racketmanager\Domain\DTO\Player\Players_List_DTO;
 use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Fixture\Fixture_Factory;
 use Racketmanager\Domain\Tournament;
+use Racketmanager\Domain\Tournament_Factory;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Repositories\Interfaces\Tournament_Repository_Interface;
+use Racketmanager\Services\Competition_Service;
 use Racketmanager\Util\Util;
 use stdClass;
 use wpdb;
@@ -26,12 +30,80 @@ class Tournament_Repository implements Tournament_Repository_Interface {
     private wpdb $wpdb;
     private string $table_name;
     private string $competition_table;
+    private Competition_Service|Closure|null $competition_service = null;
+    private Option_Gateway_Interface|Closure|null $option_gateway = null;
+    private string|Closure|null $site_url = null;
+    private string|Closure|null $date_format = null;
 
-    public function __construct() {
+    public function __construct(
+        ?wpdb $db = null,
+        Competition_Service|Closure|null $competition_service = null,
+        Option_Gateway_Interface|Closure|null $option_gateway = null,
+        string|Closure|null $site_url = null,
+        string|Closure|null $date_format = null
+    ) {
         global $wpdb;
-        $this->wpdb              = $wpdb;
-        $this->table_name        = $this->wpdb->prefix . 'racketmanager_tournaments';
-        $this->competition_table = $this->wpdb->prefix . 'racketmanager_competitions';
+        $this->wpdb                = $db ?? $wpdb;
+        $this->table_name          = $this->wpdb->prefix . 'racketmanager_tournaments';
+        $this->competition_table   = $this->wpdb->prefix . 'racketmanager_competitions';
+        $this->competition_service = $competition_service;
+        $this->option_gateway      = $option_gateway;
+        $this->site_url            = $site_url;
+        $this->date_format         = $date_format;
+    }
+
+    public function wire_tournament_collaborators( Tournament $tournament ): void {
+        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
+        if ( $comp_svc ) {
+            $tournament->set_competition_service( $comp_svc );
+        }
+        if ( $opt_gw ) {
+            $tournament->set_option_gateway( $opt_gw );
+        }
+        if ( $site_url ) {
+            $tournament->set_site_url( $site_url );
+        }
+        if ( $date_format ) {
+            $tournament->set_date_format( $date_format );
+        }
+    }
+
+    private function resolve_collaborators_tuple(): array {
+        $comp_svc    = $this->resolve_competition_service();
+        $opt_gw      = $this->resolve_option_gateway();
+        $site_url    = $this->resolve_site_url();
+        $date_format = $this->resolve_date_format();
+        if ( null === $date_format && $opt_gw ) {
+            $date_format = (string) $opt_gw->get_option( 'date_format', 'Y-m-d' );
+        }
+        return [ $comp_svc, $opt_gw, $site_url, $date_format ];
+    }
+
+    private function resolve_collaborator( mixed &$collaborator ): mixed {
+        if ( $collaborator instanceof Closure ) {
+            $collaborator = $collaborator();
+        }
+        return $collaborator;
+    }
+
+    private function resolve_competition_service(): ?Competition_Service {
+        $resolved = $this->resolve_collaborator( $this->competition_service );
+        return $resolved instanceof Competition_Service ? $resolved : null;
+    }
+
+    private function resolve_option_gateway(): ?Option_Gateway_Interface {
+        $resolved = $this->resolve_collaborator( $this->option_gateway );
+        return $resolved instanceof Option_Gateway_Interface ? $resolved : null;
+    }
+
+    private function resolve_site_url(): ?string {
+        $resolved = $this->resolve_collaborator( $this->site_url );
+        return is_string( $resolved ) ? $resolved : null;
+    }
+
+    private function resolve_date_format(): ?string {
+        $resolved = $this->resolve_collaborator( $this->date_format );
+        return is_string( $resolved ) ? $resolved : null;
     }
 
     public function save( object $entity ): bool|int {
@@ -74,6 +146,7 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             '%s',
             '%s',
         );
+        $this->wire_tournament_collaborators( $entity );
         if ( empty( $entity->get_id() ) ) {
             $inserted = $this->wpdb->insert( $this->table_name, $data, $data_format );
             if ( $inserted ) {
@@ -113,15 +186,19 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         }
         $tournament = wp_cache_get( $id, 'tournaments' );
 
-        if ( ! $tournament ) {
-            $tournament = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT * FROM `$this->table_name` WHERE $search" );
-            if ( ! $tournament ) {
-                return null;
-            }
-            $tournament = new Tournament( $tournament );
-            wp_cache_set( $id, $tournament, 'tournaments' );
+        if ( $tournament instanceof Tournament ) {
+            $this->wire_tournament_collaborators( $tournament );
+            return $tournament;
         }
+
+        $row = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            "SELECT * FROM `$this->table_name` WHERE $search" );
+        if ( ! $row ) {
+            return null;
+        }
+        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
+        $tournament = Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
+        wp_cache_set( $id, $tournament, 'tournaments' );
 
         return $tournament;
     }
@@ -169,12 +246,13 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             $search = $this->wpdb->prepare( " AND `competition_id` in (select `id` from `$this->competition_table` WHERE `age_group` = %s)", $age_group );
         }
 
-        $tournament = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $row = $this->wpdb->get_row( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             "SELECT * FROM `$this->table_name` WHERE `date_end` >= CURDATE() AND `date_start` <= CURDATE() $search LIMIT 1" );
-        if ( ! $tournament ) {
+        if ( ! $row ) {
             return null;
         }
-        $tournament = new Tournament( $tournament );
+        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
+        $tournament = Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
         wp_cache_set( $tournament->get_id(), $tournament, 'tournaments' );
 
         return $tournament;
@@ -225,13 +303,21 @@ class Tournament_Repository implements Tournament_Repository_Interface {
         $sql         = "SELECT * FROM `$this->table_name` $search $order";
         $cachekey    = md5( $sql );
         $tournaments = wp_cache_get( $cachekey, 'tournaments' );
-        if ( ! $tournaments ) {
-            $results     = $this->wpdb->get_results( $sql );
-            $tournaments = array_map( function ( $row ) {
-                return new Tournament( $row );
-            }, $results );
-            wp_cache_set( $cachekey, $tournaments, 'tournaments', HOUR_IN_SECONDS );
+        if ( is_array( $tournaments ) ) {
+            foreach ( $tournaments as $tournament ) {
+                if ( $tournament instanceof Tournament ) {
+                    $this->wire_tournament_collaborators( $tournament );
+                }
+            }
+            return $tournaments;
         }
+
+        $results     = $this->wpdb->get_results( $sql );
+        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
+        $tournaments = array_map( function ( $row ) use ( $comp_svc, $opt_gw, $site_url, $date_format ) {
+            return Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
+        }, $results );
+        wp_cache_set( $cachekey, $tournaments, 'tournaments', HOUR_IN_SECONDS );
 
         return $tournaments;
     }
@@ -690,8 +776,11 @@ class Tournament_Repository implements Tournament_Repository_Interface {
             $player_id
         );
         $results = $this->wpdb->get_results( $query );
+        [ $comp_svc, $opt_gw, $site_url, $date_format ] = $this->resolve_collaborators_tuple();
 
-        return array_map( fn( $row ) => new Tournament( $row ), $results );
+        return array_map( function ( $row ) use ( $comp_svc, $opt_gw, $site_url, $date_format ) {
+            return Tournament_Factory::from_object( $row, $comp_svc, $opt_gw, $site_url, $date_format );
+        }, $results );
     }
 
 }

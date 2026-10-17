@@ -30,7 +30,7 @@ readonly class Player_Hydration_DTO {
 	 * @param array $matches
 	 * @param array $statistics
 	 * @param string|null $link
-	 * @param array|null $opt_ins
+	 * @param array $opt_ins
 	 * @param array $wtn
 	 * @param string|null $user_pass
 	 * @param string|null $user_nicename
@@ -79,7 +79,7 @@ readonly class Player_Hydration_DTO {
 		public array $matches = [],
 		public array $statistics = [],
 		public ?string $link = null,
-		public mixed $opt_ins = null,
+		public array $opt_ins = [],
 		public array $wtn = [],
 		public ?string $user_pass = null,
 		public ?string $user_nicename = null,
@@ -120,6 +120,15 @@ readonly class Player_Hydration_DTO {
 
 		$year_of_birth = isset( $data->year_of_birth ) && '' !== $data->year_of_birth ? (int) $data->year_of_birth : null;
 
+		$raw_opt_ins = $data->opt_ins ?? [];
+		if ( is_array( $raw_opt_ins ) ) {
+			$opt_ins = array_values( $raw_opt_ins );
+		} elseif ( is_string( $raw_opt_ins ) && '' !== $raw_opt_ins ) {
+			$opt_ins = [ $raw_opt_ins ];
+		} else {
+			$opt_ins = [];
+		}
+
 		return new self(
 			id: $id,
 			email: $email ? (string) $email : null,
@@ -143,7 +152,7 @@ readonly class Player_Hydration_DTO {
 			matches: isset( $data->matches ) && is_array( $data->matches ) ? $data->matches : [],
 			statistics: isset( $data->statistics ) && is_array( $data->statistics ) ? $data->statistics : [],
 			link: isset( $data->link ) ? (string) $data->link : null,
-			opt_ins: $data->opt_ins ?? null,
+			opt_ins: $opt_ins,
 			wtn: isset( $data->wtn ) && is_array( $data->wtn ) ? $data->wtn : [],
 			user_pass: isset( $data->user_pass ) ? (string) $data->user_pass : null,
 			user_nicename: isset( $data->user_nicename ) ? (string) $data->user_nicename : null,

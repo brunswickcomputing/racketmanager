@@ -30,7 +30,7 @@ class Result_Service_AutoConfirm_Test extends TestCase {
         global $racketmanager;
         $racketmanager = new class {
             public $site_name = 'Test';
-            public $site_url = 'http://test.local';
+            public $site_url = 'https://test.local';
             public $shortcodes;
             public function __construct() {
                 $this->shortcodes = new class {

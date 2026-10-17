@@ -124,7 +124,8 @@ class Admin_Ajax_Controller {
             $c->get( 'competition_service' ),
             $c->get( 'competition_entry_service' ),
             $c->get( 'notification_service' ),
-            $c->get( 'fixture_repository' )
+            $c->get( 'fixture_repository' ),
+            $c->has( 'settings_service' ) ? $c->get( 'settings_service' ) : new \Racketmanager\Services\Settings_Service()
         );
     }
 

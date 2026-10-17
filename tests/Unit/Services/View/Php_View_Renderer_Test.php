@@ -10,8 +10,10 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\Php_View_Renderer;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
 
@@ -552,7 +554,11 @@ class Php_View_Renderer_Test extends TestCase {
         $racketmanager->site_name = 'Leigh Tennis';
         $racketmanager->site_url  = 'http://example.com';
 
-        $handler = new Get_Login_Form_Handler( $racketmanager );
+        $handler = new Get_Login_Form_Handler(
+            $this->createStub( Option_Gateway_Interface::class ),
+            new Settings_Service( [] ),
+            $racketmanager
+        );
         $query   = new Get_Login_Form_Query(
             redirect_to: 'http://example.com/members',
             is_logged_in: false
@@ -578,7 +584,11 @@ class Php_View_Renderer_Test extends TestCase {
         $racketmanager->site_name = 'Leigh Tennis';
         $racketmanager->site_url  = 'http://example.com';
 
-        $handler = new Get_Login_Form_Handler( $racketmanager );
+        $handler = new Get_Login_Form_Handler(
+            $this->createStub( Option_Gateway_Interface::class ),
+            new Settings_Service( [] ),
+            $racketmanager
+        );
         $query   = new Get_Login_Form_Query(
             login_errors: 'empty_username,incorrect_password',
             is_logged_in: false

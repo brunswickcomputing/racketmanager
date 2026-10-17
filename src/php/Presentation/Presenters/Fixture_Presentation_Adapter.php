@@ -9,6 +9,7 @@ use Racketmanager\Domain\Competition\Event;
 use Racketmanager\Domain\Competition\League;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Services\Fixture\Fixture_Permission_Service;
@@ -65,13 +66,15 @@ class Fixture_Presentation_Adapter {
         string $link = '',
         ?object $is_update_allowed = null,
         ?string $prev_home_title = null,
-        ?string $prev_away_title = null
+        ?string $prev_away_title = null,
+        ?Option_Gateway_Interface $option_gateway = null
     ) {
         $this->id            = (int) $fixture->get_id();
         $this->date          = $fixture->get_date();
         $this->date_original = $fixture->get_date_original();
         $this->start_time    = $fixture->get_start_time();
-        $this->match_date    = $this->date ? ( function_exists( 'mysql2date' ) ? (string) mysql2date( get_option( 'date_format', 'Y-m-d' ), $this->date ) : $this->date ) : '';
+        $date_format         = $option_gateway ? (string) $option_gateway->get_option( 'date_format', 'Y-m-d' ) : ( function_exists( 'get_option' ) ? (string) get_option( 'date_format', 'Y-m-d' ) : 'Y-m-d' );
+        $this->match_date    = $this->date ? ( function_exists( 'mysql2date' ) ? (string) mysql2date( $date_format, $this->date ) : $this->date ) : '';
         $this->season        = $fixture->get_season();
         $this->league_id     = $fixture->get_league_id();
         $this->final_round   = $fixture->get_final();
@@ -199,7 +202,8 @@ class Fixture_Presentation_Adapter {
         Competition_Service $competition_service,
         Team_Service $team_service,
         ?Fixture_Link_Service $link_service = null,
-        ?Fixture_Permission_Service $permission_service = null
+        ?Fixture_Permission_Service $permission_service = null,
+        ?Option_Gateway_Interface $option_gateway = null
     ): self {
         $league_id = (int) $fixture->get_league_id();
         $league    = $league_id ? $competition_service->get_league_repository()->find_by_id( $league_id ) : ( method_exists( $fixture, 'get_league' ) ? $fixture->get_league() : ( $fixture->league ?? null ) );
@@ -218,7 +222,7 @@ class Fixture_Presentation_Adapter {
         }
         $is_update_allowed = $permission_service ? $permission_service->is_update_allowed( $fixture ) : ( method_exists( $fixture, 'is_update_allowed' ) ? $fixture->is_update_allowed() : (object) array( 'user_can_update' => false ) );
 
-        return new self( $fixture, $league, $event, $competition, $home_dtls, $away_dtls, $link, $is_update_allowed );
+        return new self( $fixture, $league, $event, $competition, $home_dtls, $away_dtls, $link, $is_update_allowed, option_gateway: $option_gateway );
     }
 
     public function get_id(): int {

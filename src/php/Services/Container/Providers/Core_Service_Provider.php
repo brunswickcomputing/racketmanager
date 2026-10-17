@@ -74,7 +74,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
 
         // Core App & Settings
         $container->set( 'racketmanager_app', fn() => $app );
-        $container->set( 'settings_service', fn() => new Settings_Service( $app?->get_options() ?? [] ) );
+        $container->set( 'settings_service', fn( Simple_Container $c ) => new Settings_Service( $app?->get_options() ?? null, $c->get( 'option_gateway' ) ) );
         $container->set( 'security_service', fn() => new Security_Service() );
         $container->set( 'json_response_factory', fn() => new Json_Response_Factory() );
         $container->set( 'ajax_registry', fn() => new Ajax_Registry() );
@@ -198,7 +198,7 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
         ) );
 
         // General / Auth / Message Queries & Shortcodes
-        $container->set( 'get_login_form_handler', fn() => new Get_Login_Form_Handler( $app ) );
+        $container->set( 'get_login_form_handler', fn( Simple_Container $c ) => new Get_Login_Form_Handler( $c->get( 'option_gateway' ), $c->get( 'settings_service' ), $app ) );
         $container->set( 'get_password_lost_form_handler', fn() => new Get_Password_Lost_Form_Handler() );
         $container->set( 'get_password_reset_form_handler', fn() => new Get_Password_Reset_Form_Handler() );
         $container->set( 'get_member_account_form_handler', fn( Simple_Container $c ) => new Get_Member_Account_Form_Handler( $c->get( 'player_service' ) ) );
@@ -210,7 +210,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             password_lost_form_handler: $c->get( 'get_password_lost_form_handler' ),
             password_reset_form_handler: $c->get( 'get_password_reset_form_handler' ),
             member_account_form_handler: $c->get( 'get_member_account_form_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' )
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
+            security_service: $c->get( 'security_service' )
         ) );
 
         $container->set( 'get_messages_handler', fn() => new Get_Messages_Handler() );
@@ -221,7 +222,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             view_presenter: $c->get( 'shortcode_view_presenter' ),
             messages_handler: $c->get( 'get_messages_handler' ),
             message_handler: $c->get( 'get_message_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' )
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
+            security_service: $c->get( 'security_service' )
         ) );
 
         $container->set( 'get_favourites_handler', fn() => new Get_Favourites_Handler() );
@@ -250,7 +252,8 @@ final readonly class Core_Service_Provider implements Service_Provider_Interface
             player_search_handler: $c->get( 'get_player_search_handler' ),
             team_order_handler: $c->get( 'get_team_order_handler' ),
             alert_handler: $c->get( 'get_alert_handler' ),
-            template_renderer: $c->get( 'shortcode_template_renderer' )
+            template_renderer: $c->get( 'shortcode_template_renderer' ),
+            security_service: $c->get( 'security_service' )
         ) );
     }
 }

@@ -23,6 +23,7 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Settings_Service;
 
 class Admin_Ajax_Adapter_Test extends TestCase {
     private Stub|Security_Service_Interface $security_service;
@@ -59,7 +60,7 @@ class Admin_Ajax_Adapter_Test extends TestCase {
         );
     }
 
-    private function make_adapter(): Admin_Ajax_Adapter {
+    private function make_adapter( ?Settings_Service $settings = null ): Admin_Ajax_Adapter {
         $response_factory = $this->createStub( Json_Response_Factory_Interface::class );
         $response_factory->method( 'create_success_response' )->willReturnCallback(
             static fn( $data = null, $status = null ) => new Response( $data, $status ?? 200 )
@@ -78,7 +79,8 @@ class Admin_Ajax_Adapter_Test extends TestCase {
             $this->competition_service,
             $this->competition_entry_service,
             $this->notification_service,
-            $this->fixture_repository
+            $this->fixture_repository,
+            $settings ?? new Settings_Service( [] )
         );
     }
 
@@ -647,25 +649,20 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_send_fixtures_no_contact_emails_returns_500(): void {
         $this->allow_security();
 
-        $event = $this->createStub( Event::class );
-        $event->competition = (object) [ 'type' => 'league' ];
-        $event->method( 'get_leagues' )->willReturn( [ (object) [ 'id' => 10 ] ] );
+        $event                      = $this->createStub( Event::class );
+        $event->name                = 'Men Doubles Event';
+        $event->competition         = (object) [ 'type' => 'league' ];
         $GLOBALS['wp_stubs_events'] = [ 100 => $event ];
 
-        $league = new class {
-            public int $id = 10;
-            public string $title = 'Division 1';
-            public function get_league_teams( array $args = [] ): array {
-                // Team without contactemail
-                return [ (object) [ 'id' => 1, 'season' => '2026', 'title' => 'Team 1' ] ];
-            }
-            public function get_matches( array $args = [] ): array {
-                return [];
-            }
-        };
-        $GLOBALS['wp_stubs_leagues'] = [ 10 => $league ];
+        $this->notification_service = $this->createMock( Notification_Service::class );
+        $this->notification_service->expects( $this->once() )
+            ->method( 'send_event_fixtures' )
+            ->with( $event )
+            ->willReturn( false );
 
-        $response = $this->adapter->send_fixtures( [
+        $adapter = $this->make_adapter();
+
+        $response = $adapter->send_fixtures( [
             'security' => 'valid',
             'eventId'  => 100,
         ] );
@@ -676,67 +673,26 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_send_fixtures_success_sends_email_and_returns_200(): void {
         $this->allow_security();
 
-        $event              = $this->createStub( Event::class );
-        $event->name        = 'Men Doubles Event';
-        $event->competition = (object) [ 'type' => 'league' ];
-        $event->method( 'get_leagues' )->willReturn( [ (object) [ 'id' => 20 ] ] );
+        $event                      = $this->createStub( Event::class );
+        $event->name                = 'Men Doubles Event';
+        $event->competition         = (object) [ 'type' => 'league' ];
         $GLOBALS['wp_stubs_events'] = [ 200 => $event ];
 
-        $league = new class {
-            public int $id = 20;
-            public string $title = 'Premier Division';
-            public function get_league_teams( array $args = [] ): array {
-                return [
-                    (object) [
-                        'id'           => 101,
-                        'title'        => 'Leigh Firsts',
-                        'season'       => '2026',
-                        'captain'      => 'Alice Captain',
-                        'contactemail' => 'alice@example.com',
-                        'club_id'      => 301,
-                    ],
-                ];
-            }
-            public function get_matches( array $args = [] ): array {
-                return [ (object) [ 'id' => 1 ] ];
-            }
-        };
-        $GLOBALS['wp_stubs_leagues'] = [ 20 => $league ];
+        $this->notification_service = $this->createMock( Notification_Service::class );
+        $this->notification_service->expects( $this->once() )
+            ->method( 'send_event_fixtures' )
+            ->with( $event )
+            ->willReturn( true );
 
-        $club = (object) [
-            'match_secretary' => (object) [
-                'display_name' => 'Bob Secretary',
-                'email'        => 'bob@club.com',
-            ],
-        ];
-        $GLOBALS['wp_stubs_clubs'] = [ 301 => $club ];
+        $adapter = $this->make_adapter();
 
-        $this->racketmanager->site_name = 'Leigh Tennis Club';
-        $this->racketmanager->site_url  = 'http://example.com';
-        $this->racketmanager->method( 'get_confirmation_email' )->willReturn( 'admin@example.com' );
-        $this->racketmanager->shortcodes = new class {
-            public function load_template( string $slug, array $args = [], string $sub_directory = '' ): string {
-                return 'Mock email body for ' . ( $args['competition'] ?? '' );
-            }
-        };
-
-        $GLOBALS['wp_mail_calls'] = [];
-
-        $response = $this->adapter->send_fixtures( [
+        $response = $adapter->send_fixtures( [
             'security' => 'valid',
             'eventId'  => 200,
         ] );
         $this->assertSame( 200, $response->get_status_code() );
         $content = $response->get_content();
         $this->assertSame( 'Captains emailed', $content['msg'] );
-
-        $this->assertCount( 1, $GLOBALS['wp_mail_calls'] );
-        $mail = $GLOBALS['wp_mail_calls'][0];
-        $this->assertSame( 'Alice Captain <alice@example.com>', $mail['to'] );
-        $this->assertStringContainsString( 'Leigh Tennis Club - Premier Division - Season 2026 - Fixtures - Leigh Firsts', $mail['subject'] );
-        $this->assertStringContainsString( 'Mock email body for Men Doubles Event', $mail['message'] );
-        $this->assertContains( 'From: League Secretary <admin@example.com>', $mail['headers'] );
-        $this->assertContains( 'cc: Bob Secretary <bob@club.com>', $mail['headers'] );
     }
 
     public function test_set_tournament_dates_unauthorized_returns_403(): void {
@@ -761,9 +717,10 @@ class Admin_Ajax_Adapter_Test extends TestCase {
 
     public function test_set_tournament_dates_no_lead_time_parameters_returns_500(): void {
         $this->allow_security();
-        $this->racketmanager->method( 'get_options' )->willReturn( [] );
 
-        $response = $this->adapter->set_tournament_dates( [
+        $adapter = $this->make_adapter( new Settings_Service( [] ) );
+
+        $response = $adapter->set_tournament_dates( [
             'security'  => 'valid',
             'dateStart' => '2026-06-01',
         ] );
@@ -774,13 +731,16 @@ class Admin_Ajax_Adapter_Test extends TestCase {
     public function test_set_tournament_dates_success(): void {
         $this->allow_security();
 
-        $this->racketmanager->method( 'get_options' )->willReturn( [
-            'open_lead_time'  => '30',
-            'date_closing'    => [ 'A' => '7' ],
-            'date_withdrawal' => [ 'A' => '5' ],
+        $settings = new Settings_Service( [
+            'championship' => [
+                'open_lead_time'  => '30',
+                'date_closing'    => [ 'A' => '7' ],
+                'date_withdrawal' => [ 'A' => '5' ],
+            ],
         ] );
+        $adapter  = $this->make_adapter( $settings );
 
-        $response = $this->adapter->set_tournament_dates( [
+        $response = $adapter->set_tournament_dates( [
             'security'  => 'valid',
             'grade'     => 'A',
             'dateStart' => '2026-06-01',

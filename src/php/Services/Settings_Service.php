@@ -3,14 +3,22 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Services;
 
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
+
 /**
  * Service for managing plugin settings and options.
  */
 class Settings_Service {
     private array $options;
 
-    public function __construct( ?array $options = null ) {
-        $this->options = $options ?? get_option( 'racketmanager', [] );
+    public function __construct( ?array $options = null, ?Option_Gateway_Interface $option_gateway = null ) {
+        if ( null !== $options ) {
+            $this->options = $options;
+        } elseif ( null !== $option_gateway ) {
+            $this->options = (array) $option_gateway->get_option( 'racketmanager', [] );
+        } else {
+            $this->options = [];
+        }
     }
 
     /**

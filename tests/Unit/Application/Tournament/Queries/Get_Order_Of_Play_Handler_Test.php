@@ -9,6 +9,7 @@ use Racketmanager\Application\Tournament\Queries\Get_Order_Of_Play_Query;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\View_Models\Shortcode_View_Model;
 use Racketmanager\Repositories\Competition_Repository;
 use Racketmanager\Repositories\Fixture_Repository;
@@ -23,6 +24,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
     private $fixture_repository;
     private $competition_service;
     private $team_service;
+    private $option_gateway;
     private $handler;
 
     protected function setUp(): void
@@ -32,13 +34,20 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         $this->fixture_repository     = $this->createStub(Fixture_Repository::class);
         $this->competition_service    = $this->createStub(Competition_Service::class);
         $this->team_service           = $this->createStub(Team_Service::class);
+        $this->option_gateway         = $this->createStub(Option_Gateway_Interface::class);
+        $this->option_gateway->method('get_option')->willReturnCallback(
+            function (string $name, mixed $default = false) {
+                return 'time_format' === $name ? 'H:i' : $default;
+            }
+        );
 
         $this->handler = new Get_Order_Of_Play_Handler(
             $this->tournament_service,
             $this->competition_repository,
             $this->fixture_repository,
             $this->competition_service,
-            $this->team_service
+            $this->team_service,
+            $this->option_gateway
         );
     }
 
@@ -118,5 +127,7 @@ class Get_Order_Of_Play_Handler_Test extends TestCase
         
         $this->assertFalse($result->is_error());
         $this->assertArrayHasKey('order_of_play', $result->vars);
+        $this->assertContains('10:00', $result->vars['order_of_play']['times']);
+        $this->assertSame('10:00', $result->vars['order_of_play']['match_time']['10:00']['1']->time);
     }
 }

@@ -437,7 +437,8 @@ final readonly class Admin_Service_Provider implements Service_Provider_Interfac
             $c->get( 'competition_service' ),
             $c->get( 'competition_entry_service' ),
             $c->get( 'notification_service' ),
-            $c->get( 'fixture_repository' )
+            $c->get( 'fixture_repository' ),
+            $c->get( 'settings_service' )
         ) );
         $container->set( 'admin_ajax_controller', fn( Simple_Container $c ) => new Admin_Ajax_Controller( $app, $c->get( 'admin_ajax_adapter' ) ) );
 

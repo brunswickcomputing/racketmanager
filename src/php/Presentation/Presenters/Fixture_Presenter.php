@@ -20,6 +20,7 @@ use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Enums\Fixture_Reset_Status;
 use Racketmanager\Domain\Fixture\Fixture;
 use Racketmanager\Domain\Scoring\Set_Score;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Util\Util;
 use Racketmanager\Util\Util_Lookup;
@@ -30,7 +31,8 @@ use function Racketmanager\seo_url;
 readonly class Fixture_Presenter {
 
     public function __construct(
-        private Fixture_Link_Service $link_service
+        private Fixture_Link_Service $link_service,
+        private Option_Gateway_Interface $option_gateway
     ) {
     }
 
@@ -398,6 +400,9 @@ readonly class Fixture_Presenter {
             $comp_type = is_string( $competition->type ) ? $competition->type : ( method_exists( $competition->type, 'value' ) ? $competition->type->value : (string) $competition->type );
         }
 
+        $date_format = (string) $this->option_gateway->get_option( 'date_format', 'Y-m-d' );
+        $time_format = (string) $this->option_gateway->get_option( 'time_format', 'H:i' );
+
         return new Fixture_Header_Read_Model(
             id: (int) $fixture->get_id(),
             event_name: $event->name,
@@ -409,7 +414,7 @@ readonly class Fixture_Presenter {
             match_day: $fixture->get_match_day() ? (int) $fixture->get_match_day() : null,
             leg: $fixture->get_leg() ? (int) $fixture->get_leg() : null,
             fixture_date: $fixture->get_date(),
-            formatted_date: (string) mysql2date( get_option( 'date_format' ), $fixture->get_date() ),
+            formatted_date: (string) mysql2date( $date_format, $fixture->get_date() ),
             original_date_formatted: $fixture->get_date_original() ? (string) mysql2date( 'j F Y H:i', $fixture->get_date_original() ) : null,
             home_team_name: $home_name,
             home_team_url: '/' . $comp_type . '/' . seo_url( $league->title ) . '/' . $fixture->get_season() . '/team/' . seo_url( $home_name ) . '/',
@@ -421,7 +426,7 @@ readonly class Fixture_Presenter {
             score_class: $fixture->is_pending() ? 'is-not-played' : '',
             home_points: sprintf( '%g', $fixture->get_home_points() ),
             away_points: sprintf( '%g', $fixture->get_away_points() ),
-            match_time: (string) mysql2date( get_option( 'time_format' ), $fixture->get_date() ),
+            match_time: (string) mysql2date( $time_format, $fixture->get_date() ),
             status_message: $status_message,
             status_description: $status_description,
             show_menu: $show_menu,

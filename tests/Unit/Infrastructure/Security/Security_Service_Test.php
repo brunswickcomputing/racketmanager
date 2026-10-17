@@ -16,6 +16,8 @@ class Security_Service_Test extends TestCase {
     protected function tearDown(): void {
         unset($GLOBALS['wp_stubs_wp_verify_nonce_return']);
         unset($GLOBALS['wp_stubs_current_user_can']);
+        unset($GLOBALS['wp_stubs_is_user_logged_in']);
+        unset($GLOBALS['wp_stubs_current_user_id']);
         parent::tearDown();
     }
 
@@ -37,5 +39,18 @@ class Security_Service_Test extends TestCase {
     public function test_current_user_can_returns_false_when_user_lacks_capability(): void {
         $GLOBALS['wp_stubs_current_user_can'] = false;
         $this->assertFalse($this->service->current_user_can('edit_posts'));
+    }
+
+    public function test_is_user_logged_in_returns_boolean(): void {
+        $GLOBALS['wp_stubs_is_user_logged_in'] = true;
+        $this->assertTrue($this->service->is_user_logged_in());
+
+        $GLOBALS['wp_stubs_is_user_logged_in'] = false;
+        $this->assertFalse($this->service->is_user_logged_in());
+    }
+
+    public function test_get_current_user_id_returns_integer(): void {
+        $GLOBALS['wp_stubs_current_user_id'] = 42;
+        $this->assertSame(42, $this->service->get_current_user_id());
     }
 }

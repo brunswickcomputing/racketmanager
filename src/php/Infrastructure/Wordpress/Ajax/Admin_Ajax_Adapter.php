@@ -17,19 +17,17 @@ use Racketmanager\Repositories\Interfaces\Fixture_Repository_Interface;
 use Racketmanager\Services\Competition_Entry_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Notification\Notification_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Validator\Validator;
 use Racketmanager\Util\Util;
 use stdClass;
 use function Racketmanager\event_dropdown;
-use function Racketmanager\get_club;
 use function Racketmanager\get_event;
-use function Racketmanager\get_league;
 use function Racketmanager\get_league_team;
 use function Racketmanager\get_team;
 use function Racketmanager\league_dropdown;
 use function Racketmanager\match_dropdown;
 use function Racketmanager\season_dropdown;
-use function Racketmanager\seo_url;
 
 /**
  * Adapter for Admin AJAX requests.
@@ -45,7 +43,8 @@ class Admin_Ajax_Adapter {
         private Competition_Service $competition_service,
         private Competition_Entry_Service $competition_entry_service,
         private Notification_Service $notification_service,
-        private Fixture_Repository_Interface $fixture_repository
+        private Fixture_Repository_Interface $fixture_repository,
+        private Settings_Service $settings_service
     ) {}
 
     public function save_add_points( array $request = [] ): Response {
@@ -291,60 +290,15 @@ class Admin_Ajax_Adapter {
             return $cap_error;
         }
 
-        $event_id          = isset( $request['eventId'] ) ? (int) $request['eventId'] : null;
-        $event             = get_event( $event_id );
+        $event_id = isset( $request['eventId'] ) ? (int) $request['eventId'] : null;
+        $event    = get_event( $event_id );
         if ( ! $event ) {
             return $this->response_factory->create_error_response( __( 'Event not found', 'racketmanager' ), 404 );
         }
-        $message_sent      = false;
-        $return_data       = [];
-        $from_email        = $this->racketmanager->get_confirmation_email( $event->competition->type );
-        $organisation_name = $this->racketmanager->site_name;
-        $leagues           = $event->get_leagues();
-        foreach ( $leagues as $league_item ) {
-            $league = get_league( $league_item->id );
-            $teams  = $league ? $league->get_league_teams( [ 'get_details' => true ] ) : [];
-            foreach ( $teams as $team ) {
-                $matches   = $league->get_matches(
-                    [
-                        'final'   => '',
-                        'team_id' => $team->id,
-                    ]
-                );
-                $headers   = [];
-                $headers[] = 'From: ' . ucfirst( (string) $event->competition->type ) . ' Secretary <' . $from_email . '>';
-                $headers[] = 'cc: ' . ucfirst( (string) $event->competition->type ) . ' Secretary <' . $from_email . '>';
-                $email_subject = $this->racketmanager->site_name . ' - ' . $league->title . ' - Season ' . $team->season . ' - Fixtures - ' . $team->title;
-                if ( isset( $team->contactemail ) ) {
-                    $email_to = $team->captain . ' <' . $team->contactemail . '>';
-                    $club     = get_club( $team->club_id );
-                    if ( isset( $club->match_secretary->email ) ) {
-                        $headers[] = 'cc: ' . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
-                    }
-                    $action_url    = $this->racketmanager->site_url . '/' . $event->competition->type . '/' . seo_url( $league->title ) . '/' . $team->season . '/' . __( 'team', 'racketmanager' ) . '/' . seo_url( $team->title );
-                    $email_message = $this->racketmanager->shortcodes->load_template(
-                        'send-fixtures',
-                        [
-                            'competition'   => $event->name,
-                            'captain'       => $team->captain,
-                            'season'        => $team->season,
-                            'matches'       => $matches,
-                            'team'          => $team,
-                            'action_url'    => $action_url,
-                            'organisation'  => $organisation_name,
-                            'contact_email' => $from_email,
-                        ],
-                        'email'
-                    );
-                    wp_mail( $email_to, $email_subject, $email_message, $headers );
-                    $message_sent = true;
-                }
-            }
-        }
-        if ( $message_sent ) {
-            $return_data['msg'] = __( 'Captains emailed', 'racketmanager' );
 
-            return $this->response_factory->create_success_response( $return_data );
+        $message_sent = $this->notification_service->send_event_fixtures( $event );
+        if ( $message_sent ) {
+            return $this->response_factory->create_success_response( [ 'msg' => __( 'Captains emailed', 'racketmanager' ) ] );
         }
 
         return $this->response_factory->create_error_response( __( 'No notification', 'racketmanager' ), 500 );
@@ -367,7 +321,7 @@ class Admin_Ajax_Adapter {
             return $this->response_factory->create_error_response( __( 'No start date specified', 'racketmanager' ), 500 );
         }
 
-        $parameters = $this->racketmanager->get_options( 'championship' );
+        $parameters = $this->settings_service->get_category( 'championship' );
         if ( ! $parameters ) {
             return $this->response_factory->create_error_response( __( 'No lead time parameters set', 'racketmanager' ), 500 );
         }

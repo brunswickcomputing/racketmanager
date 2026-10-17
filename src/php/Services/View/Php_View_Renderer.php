@@ -58,6 +58,7 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
      */
     public function template_exists( string $template_path ): bool {
         $template_file = ltrim( $template_path, '/' ) . '.php';
+        $legacy_file   = basename( $template_file );
 
         // Check for theme overrides
         if ( function_exists( 'get_stylesheet_directory' ) && file_exists( get_stylesheet_directory() . "/racketmanager/$template_file" ) ) {
@@ -66,6 +67,16 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
 
         if ( function_exists( 'get_template_directory' ) && file_exists( get_template_directory() . "/racketmanager/$template_file" ) ) {
             return true;
+        }
+
+        if ( $legacy_file !== $template_file ) {
+            if ( function_exists( 'get_stylesheet_directory' ) && file_exists( get_stylesheet_directory() . "/racketmanager/$legacy_file" ) ) {
+                return true;
+            }
+
+            if ( function_exists( 'get_template_directory' ) && file_exists( get_template_directory() . "/racketmanager/$legacy_file" ) ) {
+                return true;
+            }
         }
 
         return file_exists( $this->base_path . $template_file );
@@ -80,6 +91,7 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
      */
     private function get_full_path( string $template_path ): string {
         $template_file = ltrim( $template_path, '/' ) . '.php';
+        $legacy_file   = basename( $template_file );
 
         // Check for theme overrides
         if ( function_exists( 'get_stylesheet_directory' ) && file_exists( get_stylesheet_directory() . "/racketmanager/$template_file" ) ) {
@@ -88,6 +100,17 @@ final readonly class Php_View_Renderer implements View_Renderer_Interface {
 
         if ( function_exists( 'get_template_directory' ) && file_exists( get_template_directory() . "/racketmanager/$template_file" ) ) {
             return get_template_directory() . "/racketmanager/$template_file";
+        }
+
+        // Check for legacy theme overrides (e.g. racketmanager/send-fixtures.php without email/ subfolder)
+        if ( $legacy_file !== $template_file ) {
+            if ( function_exists( 'get_stylesheet_directory' ) && file_exists( get_stylesheet_directory() . "/racketmanager/$legacy_file" ) ) {
+                return get_stylesheet_directory() . "/racketmanager/$legacy_file";
+            }
+
+            if ( function_exists( 'get_template_directory' ) && file_exists( get_template_directory() . "/racketmanager/$legacy_file" ) ) {
+                return get_template_directory() . "/racketmanager/$legacy_file";
+            }
         }
 
         $full_path = $this->base_path . $template_file;

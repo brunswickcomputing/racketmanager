@@ -160,4 +160,42 @@ final class Admin_Ajax_Controller_Test extends TestCase {
         $controller = new Admin_Ajax_Controller( $this->racketmanager, $adapter );
         $controller->send_fixtures();
     }
+
+    public function test_get_adapter_resolves_from_container_when_adapter_not_injected(): void {
+        $adapter   = $this->createStub( Admin_Ajax_Adapter::class );
+        $container = $this->createStub( \Racketmanager\Services\Container\Simple_Container::class );
+        $container->method( 'has' )->willReturnCallback( fn( string $id ) => 'admin_ajax_adapter' === $id );
+        $container->method( 'get' )->willReturnCallback( fn( string $id ) => 'admin_ajax_adapter' === $id ? $adapter : null );
+
+        $this->racketmanager->container = $container;
+
+        $controller = new Admin_Ajax_Controller( $this->racketmanager );
+        $reflection = new \ReflectionClass( $controller );
+        $method     = $reflection->getMethod( 'get_adapter' );
+
+        $this->assertSame( $adapter, $method->invoke( $controller ) );
+    }
+
+    public function test_get_adapter_falls_back_to_new_instance_when_container_lacks_adapter(): void {
+        $container = $this->createStub( \Racketmanager\Services\Container\Simple_Container::class );
+        $container->method( 'has' )->willReturn( false );
+        $container->method( 'get' )->willReturnCallback( function( string $id ) {
+            return match ( $id ) {
+                'competition_service'       => $this->createStub( \Racketmanager\Services\Competition_Service::class ),
+                'competition_entry_service' => $this->createStub( \Racketmanager\Services\Competition_Entry_Service::class ),
+                'notification_service'      => $this->createStub( \Racketmanager\Services\Notification\Notification_Service::class ),
+                'fixture_repository'        => $this->createStub( \Racketmanager\Repositories\Fixture_Repository::class ),
+                default                     => null,
+            };
+        } );
+
+        $this->racketmanager->container = $container;
+
+        $controller = new Admin_Ajax_Controller( $this->racketmanager );
+        $reflection = new \ReflectionClass( $controller );
+        $method     = $reflection->getMethod( 'get_adapter' );
+
+        $result = $method->invoke( $controller );
+        $this->assertInstanceOf( Admin_Ajax_Adapter::class, $result );
+    }
 }

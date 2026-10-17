@@ -179,7 +179,8 @@ final readonly class Fixture_Service_Provider implements Service_Provider_Interf
 
         // Presenters
         $container->set( 'fixture_presenter', fn( Simple_Container $c ) => new Fixture_Presenter(
-            $c->get( 'fixture_link_service' )
+            $c->get( 'fixture_link_service' ),
+            $c->get( 'option_gateway' )
         ) );
 
         $container->set( 'results_checker_presenter', fn( Simple_Container $c ) => new Results_Checker_Presenter(

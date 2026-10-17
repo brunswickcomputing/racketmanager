@@ -21,6 +21,7 @@ use Racketmanager\Application\General\Queries\Get_Purchase_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Purchase_Order_Query;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Handler;
 use Racketmanager\Application\General\Queries\Get_Team_Order_Query;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
@@ -43,14 +44,20 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Player_Search_Handler $player_search_handler,
         private readonly Get_Team_Order_Handler $team_order_handler,
         private readonly Get_Alert_Handler $alert_handler,
-        private readonly ?Shortcode_Template_Renderer $template_renderer = null
+        private readonly ?Shortcode_Template_Renderer $template_renderer = null,
+        private readonly ?Security_Service_Interface $security_service = null
     ) {}
 
     public function show_players( array|string $atts = [] ): string {
+        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+        $user_id      = $is_logged_in ? ( $this->security_service ? $this->security_service->get_current_user_id() : ( function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : null ) ) : null;
+
         $query = Get_Players_Query::from_atts(
             $this->normalize_atts( $atts ),
             $this->extract_query_vars(),
-            $this->extract_get_params()
+            $this->extract_get_params(),
+            $is_logged_in,
+            $user_id
         );
 
         return $this->view_presenter->render( $this->players_handler->handle( $query ) );
@@ -67,10 +74,15 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function show_favourites( array|string $atts = [] ): string {
+        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+        $user_id      = $is_logged_in ? ( $this->security_service ? $this->security_service->get_current_user_id() : ( function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : null ) ) : null;
+
         $query = Get_Favourites_Query::from_atts(
             $this->normalize_atts( $atts ),
             $this->extract_query_vars(),
-            $this->extract_get_params()
+            $this->extract_get_params(),
+            $is_logged_in,
+            $user_id
         );
 
         return $this->view_presenter->render( $this->favourites_handler->handle( $query ) );
@@ -97,10 +109,15 @@ class General_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function show_memberships( array|string $atts = [] ): string {
+        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+        $user_id      = $is_logged_in ? ( $this->security_service ? $this->security_service->get_current_user_id() : ( function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : null ) ) : null;
+
         $query = Get_Memberships_Query::from_atts(
             $this->normalize_atts( $atts ),
             $this->extract_query_vars(),
-            $this->extract_get_params()
+            $this->extract_get_params(),
+            $is_logged_in,
+            $user_id
         );
 
         return $this->view_presenter->render( $this->memberships_handler->handle( $query ) );

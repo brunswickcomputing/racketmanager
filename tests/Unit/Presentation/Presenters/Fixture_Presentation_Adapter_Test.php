@@ -93,4 +93,23 @@ class Fixture_Presentation_Adapter_Test extends TestCase {
         $this->assertSame( 'Club B 1', $adapter->away_title );
         $this->assertSame( 'Club A 1 - Club B 1', $adapter->title );
     }
+
+    public function test_adapter_uses_option_gateway_for_date_format(): void {
+        $data       = new stdClass();
+        $data->id   = 102;
+        $data->date = '2026-05-15 18:30:00';
+        $fixture    = Fixture_Factory::from_object( $data );
+
+        $option_gateway = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
+        $option_gateway->method( 'get_option' )->willReturnCallback(
+            fn( string $key, mixed $default = null ) => 'date_format' === $key ? 'd/m/Y' : $default
+        );
+
+        $adapter = new Fixture_Presentation_Adapter(
+            fixture: $fixture,
+            option_gateway: $option_gateway
+        );
+
+        $this->assertSame( '15/05/2026', $adapter->match_date );
+    }
 }

@@ -24,6 +24,7 @@ use ReflectionClass;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Invoice_Not_Found_Exception;
 use Racketmanager\Exceptions\Role_Assignment_Not_Found_Exception;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Club_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Club_Shortcode_Presenter;
@@ -702,10 +703,16 @@ class Club_Shortcode_Adapter_Test extends TestCase {
         $finance      = $overrides['finance'] ?? $this->createStub( Finance_Service::class );
 
         $template_renderer = new Shortcode_Template_Renderer( $renderer, new Club_Presenter(), new Player_Presenter() );
+        $settings          = $overrides['settings'] ?? new Settings_Service( [] );
+        if ( is_array( $settings ) ) {
+            $settings = new Settings_Service( $settings );
+        }
+        $security          = $overrides['security_service'] ?? $this->createStub( Security_Service_Interface::class );
+        $club_presenter    = new Club_Presenter();
 
         return new Club_Shortcode_Adapter(
             $club_service,
-            new Get_Club_Handler( $club_service, $overrides['settings'] ?? null ),
+            new Get_Club_Handler( $club_service, $settings, $club_presenter, $security ),
             new Club_Shortcode_Presenter( $renderer, new Club_Presenter(), new Player_Presenter() ),
             new Get_Club_Players_Handler( $club_service, $players, $registration ),
             new Get_Club_Roles_Handler( $club_service ),

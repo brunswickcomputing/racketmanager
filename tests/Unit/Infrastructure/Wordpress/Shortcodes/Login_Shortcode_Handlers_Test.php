@@ -14,10 +14,12 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
 use Racketmanager\Domain\User;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Login_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\Public\Shortcodes_Login;
 use Racketmanager\RacketManager;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Services\Player_Service;
 
@@ -51,7 +53,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_login_form_handler_logged_in_returns_redirect_script(): void {
-        $handler = new Get_Login_Form_Handler( $this->racketmanager );
+        $handler = $this->login_form_handler();
         $query   = new Get_Login_Form_Query(
             redirect_to: 'http://example.com/dashboard',
             is_logged_in: true,
@@ -64,7 +66,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_login_form_handler_login_form_template_vars(): void {
-        $handler = new Get_Login_Form_Handler( $this->racketmanager );
+        $handler = $this->login_form_handler( keys: [ 'recaptchaSiteKey' => 'site-key-123' ] );
         $query   = new Get_Login_Form_Query(
             show_title: true,
             action: '',
@@ -90,14 +92,13 @@ class Login_Shortcode_Handlers_Test extends TestCase {
         $this->assertTrue( $data['password_updated'] );
         $this->assertTrue( $data['logged_out'] );
         $this->assertSame( 'http://example.com/matches', $data['redirect'] );
+        $this->assertSame( 'site-key-123', $data['recaptcha_site_key'] );
         $this->assertCount( 2, $data['errors'] );
         $this->assertCount( 2, $data['error_codes'] );
     }
 
     public function test_login_form_handler_register_action_when_registration_allowed(): void {
-        $GLOBALS['wp_stubs_options']['users_can_register'] = 1;
-
-        $handler = new Get_Login_Form_Handler( $this->racketmanager );
+        $handler = $this->login_form_handler( users_can_register: 1 );
         $query   = new Get_Login_Form_Query(
             action: 'register',
             register_errors: 'empty_username',
@@ -112,9 +113,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_login_form_handler_register_action_when_registration_disallowed(): void {
-        $GLOBALS['wp_stubs_options']['users_can_register'] = 0;
-
-        $handler = new Get_Login_Form_Handler( $this->racketmanager );
+        $handler = $this->login_form_handler( users_can_register: 0 );
         $query   = new Get_Login_Form_Query(
             action: 'register',
             is_logged_in: false
@@ -215,7 +214,7 @@ class Login_Shortcode_Handlers_Test extends TestCase {
     }
 
     public function test_adapter_and_facade_delegation(): void {
-        $login_handler          = new Get_Login_Form_Handler( $this->racketmanager );
+        $login_handler          = $this->login_form_handler( users_can_register: 0 );
         $password_lost_handler  = new Get_Password_Lost_Form_Handler();
         $password_reset_handler = new Get_Password_Reset_Form_Handler();
         $member_account_handler = new Get_Member_Account_Form_Handler();
@@ -247,5 +246,24 @@ class Login_Shortcode_Handlers_Test extends TestCase {
         $this->assertNotEmpty( $facade->render_password_lost_form( [] ) );
         $this->assertNotEmpty( $facade->render_password_reset_form( [ 'login' => 'user', 'key' => 'k' ] ) );
         $this->assertNotEmpty( $facade->generate_member_account_form() );
+    }
+
+    /**
+     * @param mixed $users_can_register
+     * @param array<string, mixed> $keys
+     */
+    private function login_form_handler( mixed $users_can_register = false, array $keys = [] ): Get_Login_Form_Handler {
+        $option_gateway = $this->createStub( Option_Gateway_Interface::class );
+        $option_gateway->method( 'get_option' )->willReturnCallback(
+            static function ( string $name, mixed $default = false ) use ( $users_can_register ) {
+                return 'users_can_register' === $name ? $users_can_register : $default;
+            }
+        );
+
+        return new Get_Login_Form_Handler(
+            $option_gateway,
+            new Settings_Service( [ 'keys' => $keys ] ),
+            $this->racketmanager
+        );
     }
 }

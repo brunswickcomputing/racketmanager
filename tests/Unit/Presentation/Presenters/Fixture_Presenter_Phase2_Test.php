@@ -13,17 +13,31 @@ use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Domain\Competition\Competition_Type;
 use Racketmanager\Domain\DTO\Team\Team_Details_DTO;
 use Racketmanager\Domain\Team;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Presentation\Presenters\Fixture_Presenter;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 
 class Fixture_Presenter_Phase2_Test extends TestCase {
     private Fixture_Presenter $presenter;
     private Fixture_Link_Service $link_service;
+    private Option_Gateway_Interface $option_gateway;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->link_service = $this->createStub( Fixture_Link_Service::class );
-        $this->presenter    = new Fixture_Presenter( $this->link_service );
+        $this->link_service   = $this->createStub( Fixture_Link_Service::class );
+        $this->option_gateway = $this->createStub( Option_Gateway_Interface::class );
+        $this->option_gateway->method( 'get_option' )->willReturnCallback(
+            function( string $name, mixed $default = null ) {
+                if ( 'date_format' === $name ) {
+                    return 'Y-m-d';
+                }
+                if ( 'time_format' === $name ) {
+                    return 'H:i';
+                }
+                return $default;
+            }
+        );
+        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway );
         
         // Mock WordPress functions if needed, but here we mostly use DI or stubs
         if (!function_exists('get_option')) {

@@ -5,7 +5,6 @@ namespace Racketmanager\Application\Login\Queries;
 
 use function filter_var;
 use function is_array;
-use function is_user_logged_in;
 use function sanitize_text_field;
 use function shortcode_atts;
 use function wp_unslash;
@@ -22,7 +21,8 @@ class Get_Password_Lost_Form_Query {
         array|string $atts = [],
         array $query_vars = [],
         array $get_params = [],
-        array $request_params = []
+        array $request_params = [],
+        bool $is_logged_in = false
     ): self {
         $atts_array = is_array( $atts ) ? $atts : [];
         $defaults   = [ 'show_title' => true ];
@@ -32,8 +32,6 @@ class Get_Password_Lost_Form_Query {
 
         $errors     = isset( $request_params['errors'] ) ? sanitize_text_field( wp_unslash( (string) $request_params['errors'] ) ) : null;
         $checkemail = isset( $request_params['checkemail'] ) ? sanitize_text_field( wp_unslash( (string) $request_params['checkemail'] ) ) : null;
-
-        $is_logged_in = function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false;
 
         return new self(
             show_title: $show_title,

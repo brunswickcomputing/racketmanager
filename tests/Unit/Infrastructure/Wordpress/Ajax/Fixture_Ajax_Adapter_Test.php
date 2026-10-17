@@ -749,7 +749,8 @@ class Fixture_Ajax_Adapter_Test extends TestCase {
         $this->fixture_detail_service = $this->createMock( Fixture_Detail_Service::class );
         $this->view_renderer          = $this->createMock( View_Renderer_Interface::class );
         $link_service                 = $this->createStub( Fixture_Link_Service::class );
-        $presenter                    = new Fixture_Presenter( $link_service );
+        $option_gateway               = $this->createStub( \Racketmanager\Gateways\Option\Option_Gateway_Interface::class );
+        $presenter                    = new Fixture_Presenter( $link_service, $option_gateway );
         $fixture_details_handler      = $this->createStub( Get_Fixture_Details_Handler::class );
         $this->adapter                = new Fixture_Ajax_Adapter( $this->container, $this->security_service, $response_factory, $this->fixture_detail_service, $this->view_renderer, $presenter, $fixture_details_handler );
     }

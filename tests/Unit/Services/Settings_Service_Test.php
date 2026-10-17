@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Racketmanager\Tests\Unit\Services;
 
 use PHPUnit\Framework\TestCase;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Services\Settings_Service;
 
 class Settings_Service_Test extends TestCase {
@@ -30,10 +31,24 @@ class Settings_Service_Test extends TestCase {
         $this->assertEquals( $this->test_options, $service->get_all_options() );
     }
 
-    public function test_constructor_without_options_uses_get_option(): void {
-        // get_option('racketmanager', []) in wp-stubs.php returns [] by default
+    public function test_constructor_without_options_defaults_to_empty_array(): void {
         $service = new Settings_Service();
         $this->assertEquals( [], $service->get_all_options() );
+    }
+
+    public function test_constructor_with_option_gateway_loads_racketmanager_options(): void {
+        $gateway = $this->createStub( Option_Gateway_Interface::class );
+        $gateway->method( 'get_option' )->willReturnCallback(
+            static function ( string $name, mixed $default = [] ) {
+                if ( 'racketmanager' === $name ) {
+                    return [ 'keys' => [ 'googleMapsKey' => 'from-gateway' ] ];
+                }
+                return $default;
+            }
+        );
+
+        $service = new Settings_Service( null, $gateway );
+        $this->assertSame( [ 'googleMapsKey' => 'from-gateway' ], $service->get_category( 'keys' ) );
     }
 
     public function test_get_category_returns_existing_category(): void {

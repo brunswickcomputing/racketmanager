@@ -42,6 +42,7 @@ use Racketmanager\Exceptions\Fixture_Not_Found_Exception;
 use Racketmanager\Exceptions\Player_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Entry_Not_Found_Exception;
 use Racketmanager\Exceptions\Tournament_Not_Found_Exception;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Infrastructure\Wordpress\Shortcodes\Tournament_Shortcode_Adapter;
 use Racketmanager\Presentation\Presenters\Club_Presenter;
 use Racketmanager\Presentation\Presenters\Player_Presenter;
@@ -468,7 +469,8 @@ class Tournament_Shortcode_Handlers_Test extends TestCase {
             $comp_repo,
             $fix_repo,
             $comp_svc,
-            $team_svc
+            $team_svc,
+            $this->createStub( Option_Gateway_Interface::class )
         );
 
         $vm = $handler->handle( new Get_Order_Of_Play_Query() );

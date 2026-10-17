@@ -82,7 +82,8 @@ final readonly class Club_Service_Provider implements Service_Provider_Interface
         $container->set( 'get_club_handler', fn( Simple_Container $c ) => new Get_Club_Handler(
             $c->get( 'club_service' ),
             $c->get( 'settings_service' ),
-            $c->get( 'club_presenter' )
+            $c->get( 'club_presenter' ),
+            $c->get( 'security_service' )
         ) );
 
         $container->set( 'get_club_players_handler', fn( Simple_Container $c ) => new Get_Club_Players_Handler(

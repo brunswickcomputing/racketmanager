@@ -83,6 +83,7 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Racketmanager\Tests\Helpers\Club_Test_Factory;
 use stdClass;
 
 class Fake_Mailer implements Mailer_Interface {
@@ -113,6 +114,7 @@ class Notification_Service_Test extends TestCase {
     private Club_Repository_Interface|MockObject $club_repository;
     private Settings_Service|Stub $settings_service;
     private Notification_Presenter|MockObject $presenter;
+    private View_Renderer_Interface|MockObject $view_renderer;
     private RacketManager|MockObject $app;
     private Fake_Mailer $mailer;
     private Notification_Service $service;
@@ -126,7 +128,7 @@ class Notification_Service_Test extends TestCase {
         $this->club_repository = $this->createMock(Club_Repository_Interface::class);
         $this->settings_service = $this->createStub(Settings_Service::class);
         $this->presenter = $this->createMock(Notification_Presenter::class);
-        $view_renderer = $this->createMock( View_Renderer_Interface::class);
+        $this->view_renderer = $this->createMock( View_Renderer_Interface::class);
         $this->app = $this->createMock(RacketManager::class);
 
         $repository_provider = $this->createStub(Repository_Provider::class);
@@ -141,14 +143,14 @@ class Notification_Service_Test extends TestCase {
             $repository_provider,
             $this->settings_service,
             $this->presenter,
-            $view_renderer,
+            $this->view_renderer,
             $this->app,
             $this->mailer
         );
 
         $this->app->site_name = 'Test Site';
 
-        $view_renderer->method('render_to_string')->willReturn('Rendered notification');
+        $this->view_renderer->method('render_to_string')->willReturn('Rendered notification');
 
         $this->presenter->method('present_match_notification')->willReturn(['template' => 'match-notification']);
         $this->presenter->method('present_result_notification')->willReturn([]);
@@ -913,6 +915,115 @@ class Notification_Service_Test extends TestCase {
 
         $emails = $this->service->get_fixture_emails($fixture, 'home');
         $this->assertEquals(['player1@example.com', 'player2@example.com'], $emails);
+    }
+
+    public function test_send_event_fixtures_sends_mail_contract_and_skips_teams_without_email(): void {
+        $this->app->site_name = 'Test Site';
+        $this->app->site_url  = 'https://example.com';
+        $this->app->method('get_confirmation_email')->willReturn('secretary@example.com');
+
+        $league        = $this->create_mock_league();
+        $team_with_email = (object) [
+            'id'           => 1,
+            'contactemail' => 'captain@example.com',
+            'captain'      => 'Jane Captain',
+            'season'       => '2026',
+            'title'        => 'Leigh A',
+            'club_id'      => 10,
+        ];
+        $team_without_email = (object) [
+            'id'           => 2,
+            'contactemail' => '',
+            'captain'      => 'No Email',
+            'season'       => '2026',
+            'title'        => 'Leigh B',
+            'club_id'      => 11,
+        ];
+        $league->method('get_league_teams')->willReturn([$team_with_email, $team_without_email]);
+        $league->method('get_matches')->willReturn(['match-1']);
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $club                   = Club_Test_Factory::create(id: 10, name: 'Leigh Tennis Club');
+        $club->match_secretary  = (object) [
+            'email'        => 'ms@example.com',
+            'display_name' => 'Match Sec',
+        ];
+        $this->club_repository->method('find_by_id')->willReturn($club);
+
+        $event              = $this->createMock(Event::class);
+        $event->name        = 'Summer League';
+        $event->competition = (object) ['type' => 'league'];
+        $event->method('get_leagues')->willReturn([(object) ['id' => 456]]);
+
+        $captured_vars = null;
+        $captured_template = null;
+        $this->view_renderer->method('render_to_string')
+            ->willReturnCallback(function(string $template, array $vars) use (&$captured_template, &$captured_vars) {
+                $captured_template = $template;
+                $captured_vars     = $vars;
+                return 'Rendered notification';
+            });
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $sent = $this->service->send_event_fixtures($event);
+
+        $this->assertTrue($sent);
+        $this->assertSame('email/send-fixtures', $captured_template);
+        $this->assertIsArray($captured_vars);
+        $this->assertSame('Summer League', $captured_vars['competition']);
+        $this->assertSame('Jane Captain', $captured_vars['captain']);
+        $this->assertSame('2026', $captured_vars['season']);
+        $this->assertSame(['match-1'], $captured_vars['matches']);
+        $this->assertSame('https://example.com/league/division-1/2026/team/leigh-a', $captured_vars['action_url']);
+        $this->assertSame('Test Site', $captured_vars['organisation']);
+        $this->assertSame('secretary@example.com', $captured_vars['contact_email']);
+
+        $this->assertCount(1, $GLOBALS['wp_mail_calls']);
+        $mail = $GLOBALS['wp_mail_calls'][0];
+        $this->assertSame('Jane Captain <captain@example.com>', $mail['to']);
+        $this->assertSame('Test Site - Division 1 - Season 2026 - Fixtures - Leigh A', $mail['subject']);
+        $this->assertSame('Rendered notification', $mail['message']);
+        $this->assertContains('From: League Secretary <secretary@example.com>', $mail['headers']);
+        $this->assertContains('cc: League Secretary <secretary@example.com>', $mail['headers']);
+        $this->assertContains('cc: Match Sec <ms@example.com>', $mail['headers']);
+    }
+
+    public function test_send_event_fixtures_returns_false_when_no_team_has_email(): void {
+        $this->app->method('get_confirmation_email')->willReturn('secretary@example.com');
+
+        $league = $this->create_mock_league();
+        $league->method('get_league_teams')->willReturn([
+            (object) [
+                'id'           => 2,
+                'contactemail' => '',
+                'captain'      => 'No Email',
+                'season'       => '2026',
+                'title'        => 'Leigh B',
+                'club_id'      => 11,
+            ],
+        ]);
+        $this->league_repository->method('find_by_id')->willReturn($league);
+
+        $event              = $this->createMock(Event::class);
+        $event->name        = 'Summer League';
+        $event->competition = (object) ['type' => 'league'];
+        $event->method('get_leagues')->willReturn([(object) ['id' => 456]]);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->assertFalse($this->service->send_event_fixtures($event));
+        $this->assertSame([], $GLOBALS['wp_mail_calls']);
+    }
+
+    public function test_send_event_fixtures_skips_league_when_repository_returns_null(): void {
+        $this->league_repository->method('find_by_id')->willReturn(null);
+
+        $event              = $this->createMock(Event::class);
+        $event->competition = (object) ['type' => 'league'];
+        $event->method('get_leagues')->willReturn([(object) ['id' => 99]]);
+
+        $GLOBALS['wp_mail_calls'] = [];
+        $this->assertFalse($this->service->send_event_fixtures($event));
+        $this->assertSame([], $GLOBALS['wp_mail_calls']);
     }
 }
 }

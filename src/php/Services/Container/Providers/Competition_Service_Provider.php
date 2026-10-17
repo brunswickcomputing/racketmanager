@@ -198,7 +198,9 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
         $container->set( 'get_competition_handler', fn( Simple_Container $c ) => new Get_Competition_Handler(
             $c->get( 'competition_service' ),
             $c->get( 'club_service' ),
-            $c->get( 'player_service' )
+            $c->get( 'player_service' ),
+            $c->get( 'security_service' ),
+            $c->get( 'settings_service' )
         ) );
 
         $container->set( 'get_competition_overview_handler', fn( Simple_Container $c ) => new Get_Competition_Overview_Handler(
@@ -413,7 +415,8 @@ final readonly class Competition_Service_Provider implements Service_Provider_In
             $c->get( 'competition_repository' ),
             $c->get( 'fixture_repository' ),
             $c->get( 'competition_service' ),
-            $c->get( 'team_service' )
+            $c->get( 'team_service' ),
+            $c->get( 'option_gateway' )
         ) );
 
         $container->set( 'get_latest_tournament_handler', fn( Simple_Container $c ) => new Get_Latest_Tournament_Handler(

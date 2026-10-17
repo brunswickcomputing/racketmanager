@@ -3,9 +3,7 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Application\Message\Queries;
 
-use function get_current_user_id;
 use function is_array;
-use function is_user_logged_in;
 use function sanitize_text_field;
 use function shortcode_atts;
 use function wp_unslash;
@@ -20,16 +18,15 @@ class Get_Messages_Query {
     public static function from_atts(
         array|string $atts = [],
         array $query_vars = [],
-        array $get_params = []
+        array $get_params = [],
+        bool $is_logged_in = false,
+        ?int $user_id = null
     ): self {
         $atts_array = is_array( $atts ) ? $atts : [];
         $defaults   = [ 'template' => '' ];
         $parsed     = shortcode_atts( $defaults, $atts_array );
 
         $template = isset( $parsed['template'] ) ? sanitize_text_field( wp_unslash( (string) $parsed['template'] ) ) : '';
-
-        $is_logged_in = function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false;
-        $user_id      = $is_logged_in && function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : null;
 
         return new self(
             template: $template,

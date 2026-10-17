@@ -18,6 +18,7 @@ use Racketmanager\Repositories\Repository_Provider;
 use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
 use Racketmanager\Util\Util;
+use function Racketmanager\seo_url;
 
 /**
  * Service for handling fixture-related notifications.
@@ -688,5 +689,74 @@ class Notification_Service {
             $message = $this->view_renderer->render_to_string( 'email/match-team-withdrawn', $vars );
             $this->mailer->send( $email_to, $subject, $message, $headers );
         }
+    }
+
+    /**
+     * Send event fixtures notification to team captains and match secretaries.
+     *
+     * @param object $event
+     * @return bool
+     */
+    public function send_event_fixtures( object $event ): bool {
+        $message_sent      = false;
+        $comp_type         = $event->competition->type ?? 'league';
+        $from_email        = $this->app->get_confirmation_email( $comp_type );
+        $organisation_name = $this->app->site_name ?? '';
+        $leagues           = method_exists( $event, 'get_leagues' ) ? $event->get_leagues() : [];
+
+        foreach ( $leagues as $league_item ) {
+            $league = $this->league_repository->find_by_id( (int) $league_item->id );
+            if ( ! $league ) {
+                continue;
+            }
+
+            $teams = method_exists( $league, 'get_league_teams' )
+                ? $league->get_league_teams( [ 'get_details' => true ] )
+                : [];
+
+            foreach ( $teams as $team ) {
+                if ( empty( $team->contactemail ) ) {
+                    continue;
+                }
+
+                $matches = method_exists( $league, 'get_matches' )
+                    ? $league->get_matches( [ 'final' => '', 'team_id' => $team->id ] )
+                    : [];
+
+                $headers   = [];
+                $headers[] = 'From: ' . ucfirst( (string) $comp_type ) . ' Secretary <' . $from_email . '>';
+                $headers[] = 'cc: ' . ucfirst( (string) $comp_type ) . ' Secretary <' . $from_email . '>';
+                $email_subject = $organisation_name . ' - ' . ( $league->title ?? '' ) . ' - Season ' . ( $team->season ?? '' ) . ' - Fixtures - ' . ( $team->title ?? '' );
+                $email_to  = ( $team->captain ?? '' ) . ' <' . $team->contactemail . '>';
+
+                $club = isset( $team->club_id ) ? $this->club_repository->find_by_id( (int) $team->club_id ) : null;
+                if ( isset( $club->match_secretary->email ) ) {
+                    $headers[] = 'cc: ' . $club->match_secretary->display_name . ' <' . $club->match_secretary->email . '>';
+                }
+
+                $league_title_slug = seo_url( $league->title ?? '' );
+                $team_title_slug   = seo_url( $team->title ?? '' );
+                $team_label        = __( 'team', 'racketmanager' );
+                $action_url        = ( $this->app->site_url ?? '' ) . '/' . $comp_type . '/' . $league_title_slug . '/' . ( $team->season ?? '' ) . '/' . $team_label . '/' . $team_title_slug;
+
+                $vars = [
+                    'competition'   => $event->name ?? '',
+                    'captain'       => $team->captain ?? '',
+                    'season'        => $team->season ?? '',
+                    'matches'       => $matches,
+                    'team'          => $team,
+                    'action_url'    => $action_url,
+                    'organisation'  => $organisation_name,
+                    'contact_email' => $from_email,
+                ];
+
+                $email_message = $this->view_renderer->render_to_string( 'email/send-fixtures', $vars );
+
+                $this->mailer->send( $email_to, $email_subject, $email_message, $headers );
+                $message_sent = true;
+            }
+        }
+
+        return $message_sent;
     }
 }

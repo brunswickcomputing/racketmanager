@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Date_Update_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Result_Read_Model;
 use Racketmanager\Application\Fixture\DTOs\Fixture_Switch_Teams_Read_Model;
+use Racketmanager\Gateways\Option\Option_Gateway_Interface;
 use Racketmanager\Services\Fixture\Fixture_Link_Service;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Date_Update_Request;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Details_DTO;
@@ -21,11 +22,13 @@ use ReflectionClass;
 class Fixture_Presenter_Test extends TestCase {
     private Fixture_Presenter $presenter;
     private Fixture_Link_Service $link_service;
+    private Option_Gateway_Interface $option_gateway;
 
     protected function setUp(): void {
         parent::setUp();
-        $this->link_service = $this->createStub( Fixture_Link_Service::class );
-        $this->presenter    = new Fixture_Presenter( $this->link_service );
+        $this->link_service   = $this->createStub( Fixture_Link_Service::class );
+        $this->option_gateway = $this->createStub( Option_Gateway_Interface::class );
+        $this->presenter      = new Fixture_Presenter( $this->link_service, $this->option_gateway );
     }
 
     public function test_map_to_result_read_model(): void {
@@ -163,5 +166,45 @@ class Fixture_Presenter_Test extends TestCase {
         $this->assertEquals(123, $read_model->match_id);
         $this->assertEquals('https://example.com/match/123', $read_model->link);
         $this->assertEquals('test-modal', $read_model->modal);
+    }
+
+    public function test_present_header_uses_option_gateway_for_date_and_time_format(): void {
+        $fixture = $this->createStub( Fixture::class );
+        $fixture->method( 'get_id' )->willReturn( 42 );
+        $fixture->method( 'get_date' )->willReturn( '2026-10-14 14:30:00' );
+        $fixture->method( 'get_season' )->willReturn( '2026' );
+        $fixture->method( 'is_pending' )->willReturn( false );
+        $fixture->method( 'get_home_points' )->willReturn( '4' );
+        $fixture->method( 'get_away_points' )->willReturn( '2' );
+
+        $league = $this->createStub( \Racketmanager\Domain\Competition\League::class );
+        $league->title = 'Division 1';
+        $event  = $this->createStub( \Racketmanager\Domain\Competition\Event::class );
+        $event->name = 'Men Singles';
+        $comp   = $this->createStub( \Racketmanager\Domain\Competition\Competition::class );
+        $comp->method( 'get_type' )->willReturn( 'league' );
+
+        $details              = new \Racketmanager\Application\Fixture\DTOs\Fixture_Details_DTO( $fixture );
+        $details->league      = $league;
+        $details->event       = $event;
+        $details->competition = $comp;
+
+        $this->option_gateway->method( 'get_option' )->willReturnCallback(
+            function( string $name, mixed $default = null ) {
+                if ( 'date_format' === $name ) {
+                    return 'd/m/Y';
+                }
+                if ( 'time_format' === $name ) {
+                    return 'H:i';
+                }
+                return $default;
+            }
+        );
+
+        $header = $this->presenter->map_to_header_read_model( $details );
+
+        $this->assertSame( 42, $header->id );
+        $this->assertSame( '14/10/2026', $header->formatted_date );
+        $this->assertSame( '14:30', $header->match_time );
     }
 }

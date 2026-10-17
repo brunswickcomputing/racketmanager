@@ -485,9 +485,9 @@ class Competition {
     /**
      * Entry link
      *
-     * @var string
+     * @var ?string
      */
-    public string $entry_link;
+    public ?string $entry_link = null;
     /**
      * Config
      *

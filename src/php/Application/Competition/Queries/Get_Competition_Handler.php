@@ -6,10 +6,12 @@ namespace Racketmanager\Application\Competition\Queries;
 use Racketmanager\Domain\Competition\Competition;
 use Racketmanager\Exceptions\Club_Not_Found_Exception;
 use Racketmanager\Exceptions\Competition_Not_Found_Exception;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\View_Models\Competition_View_Model;
 use Racketmanager\Services\Club_Service;
 use Racketmanager\Services\Competition_Service;
 use Racketmanager\Services\Player_Service;
+use Racketmanager\Services\Settings_Service;
 use Racketmanager\Util\Util_Lookup;
 use function Racketmanager\seo_url;
 use function Racketmanager\un_seo_url;
@@ -20,8 +22,10 @@ use function Racketmanager\un_seo_url;
 class Get_Competition_Handler {
     public function __construct(
         private readonly Competition_Service $competition_service,
-        private readonly ?Club_Service $club_service = null,
-        private readonly ?Player_Service $player_service = null
+        private readonly Club_Service $club_service,
+        private readonly Player_Service $player_service,
+        private readonly Security_Service_Interface $security_service,
+        private readonly Settings_Service $settings_service
     ) {}
 
     public function handle( Get_Competition_Query $query ): Competition_View_Model {
@@ -67,7 +71,7 @@ class Get_Competition_Handler {
         $season             = $competition->current_season['name'] ?? '';
         $competition_season = $competition->current_season;
 
-        if ( ! empty( $competition_season['venue'] ) && $this->club_service ) {
+        if ( ! empty( $competition_season['venue'] ) ) {
             try {
                 $venue_club = $this->club_service->get_club( (int) $competition_season['venue'] );
                 if ( $venue_club ) {
@@ -80,12 +84,21 @@ class Get_Competition_Handler {
 
         $tab = Util_Lookup::get_tab();
 
-        if ( ! empty( $competition->is_open ) && is_user_logged_in() ) {
+        $is_logged_in = $this->security_service->is_user_logged_in();
+
+        if ( ! empty( $competition->is_open ) && $is_logged_in ) {
             $comp_name  = (string) ( $competition->name ?? '' );
             $entry_link = '/entry-form/' . seo_url( $comp_name ) . '/' . $season . '/';
             $clubs      = $this->club_selection_available( $competition );
             if ( $clubs ) {
-                if ( ! is_array( $clubs ) && is_object( $clubs ) && isset( $clubs->shortcode ) ) {
+                if ( is_array( $clubs ) ) {
+                    if ( 1 === count( $clubs ) ) {
+                        $first_club = reset( $clubs );
+                        if ( is_object( $first_club ) && isset( $first_club->shortcode ) ) {
+                            $entry_link .= seo_url( (string) $first_club->shortcode ) . '/';
+                        }
+                    }
+                } elseif ( is_object( $clubs ) && isset( $clubs->shortcode ) ) {
                     $entry_link .= seo_url( (string) $clubs->shortcode ) . '/';
                 }
                 $competition->entry_link = $entry_link;
@@ -104,25 +117,24 @@ class Get_Competition_Handler {
     }
 
     private function club_selection_available( Competition $competition, false|int $club_id = false ): object|int|bool|array {
-        global $racketmanager;
-        $clubs        = null;
-        $user         = wp_get_current_user();
-        $userid       = $user->ID ?? 0;
+        $userid       = $this->security_service->get_current_user_id();
+        $can_manage   = $this->security_service->current_user_can( 'manage_racketmanager' );
         $args['type'] = 'affiliated';
         if ( $club_id ) {
             $args['club']  = $club_id;
             $args['count'] = true;
         }
-        if ( current_user_can( 'manage_racketmanager' ) ) {
-            $clubs = $this->club_service ? $this->club_service->get_clubs( $args ) : null;
+        if ( $can_manage ) {
+            $clubs = $this->club_service->get_clubs( $args );
         } else {
             $comp_type           = method_exists( $competition, 'get_type' ) ? $competition->get_type() : ( $competition->type ?? '' );
             $comp_type_str       = is_object( $comp_type ) && isset( $comp_type->value ) ? $comp_type->value : (string) $comp_type;
-            $competition_options = is_object( $racketmanager ) && method_exists( $racketmanager, 'get_options' ) ? $racketmanager->get_options( $comp_type_str ) : null;
-            if ( $competition_options && $this->player_service ) {
+            $competition_options = $this->settings_service->get_category( $comp_type_str );
+            $clubs               = null;
+            if ( $competition_options ) {
                 $entry_option = $competition_options['entry_level'] ?? null;
                 if ( $entry_option ) {
-                    $clubs = $this->player_service->find_all_associated_clubs( (int) $userid, (string) $entry_option, $club_id );
+                    $clubs = $this->player_service->find_all_associated_clubs( $userid, (string) $entry_option, $club_id ?: null );
                 }
             }
         }

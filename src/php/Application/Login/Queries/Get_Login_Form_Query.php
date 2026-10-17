@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Racketmanager\Application\Login\Queries;
 
 use function is_array;
-use function is_user_logged_in;
 use function sanitize_text_field;
 use function shortcode_atts;
 use function wp_get_referer;
@@ -32,7 +31,8 @@ class Get_Login_Form_Query {
         array $get_params = [],
         array $request_params = [],
         array $server_params = [],
-        ?string $action_override = null
+        ?string $action_override = null,
+        bool $is_logged_in = false
     ): self {
         $atts_array = is_array( $atts ) ? $atts : [];
         $defaults   = [ 'show_title' => false ];
@@ -57,7 +57,6 @@ class Get_Login_Form_Query {
         $password_updated = isset( $request_params['passwordUpdate'] ) && 'true' === (string) $request_params['passwordUpdate'];
         $logged_out       = isset( $request_params['logged_out'] ) && 'true' === (string) $request_params['logged_out'];
 
-        $is_logged_in   = function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false;
         $request_method = isset( $server_params['REQUEST_METHOD'] ) ? (string) $server_params['REQUEST_METHOD'] : ( $_SERVER['REQUEST_METHOD'] ?? 'GET' );
 
         return new self(

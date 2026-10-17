@@ -11,6 +11,7 @@ use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Lost_Form_Query;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Handler;
 use Racketmanager\Application\Login\Queries\Get_Password_Reset_Form_Query;
+use Racketmanager\Infrastructure\Security\Security_Service_Interface;
 use Racketmanager\Presentation\Presenters\Shortcode_View_Presenter;
 use Racketmanager\RacketManager;
 use Racketmanager\Services\View\Shortcode_Template_Renderer;
@@ -28,17 +29,21 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
         private readonly Get_Password_Lost_Form_Handler $password_lost_form_handler,
         private readonly Get_Password_Reset_Form_Handler $password_reset_form_handler,
         private readonly Get_Member_Account_Form_Handler $member_account_form_handler,
-        private readonly ?Shortcode_Template_Renderer $template_renderer = null
+        private readonly ?Shortcode_Template_Renderer $template_renderer = null,
+        private readonly ?Security_Service_Interface $security_service = null
     ) {}
 
     public function render_login_form( array|string $vars = [], ?string $action_override = null ): string {
+        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+
         $query = Get_Login_Form_Query::from_atts(
             $this->normalize_atts( $vars ),
             $this->extract_query_vars(),
             $this->extract_get_params(),
             $this->extract_request_params(),
             $this->extract_server_params(),
-            $action_override
+            $action_override,
+            $is_logged_in
         );
 
         return $this->view_presenter->render( $this->login_form_handler->handle( $query ) );
@@ -49,11 +54,14 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function render_password_lost_form( array|string $vars = [] ): string {
+        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+
         $query = Get_Password_Lost_Form_Query::from_atts(
             $this->normalize_atts( $vars ),
             $this->extract_query_vars(),
             $this->extract_get_params(),
-            $this->extract_request_params()
+            $this->extract_request_params(),
+            $is_logged_in
         );
 
         return $this->view_presenter->render( $this->password_lost_form_handler->handle( $query ) );
@@ -71,8 +79,13 @@ class Login_Shortcode_Adapter implements Shortcode_Adapter_Interface {
     }
 
     public function generate_member_account_form( array|string $vars = [] ): string {
+        $is_logged_in = $this->security_service ? $this->security_service->is_user_logged_in() : ( function_exists( 'is_user_logged_in' ) ? is_user_logged_in() : false );
+        $user_id      = $is_logged_in ? ( $this->security_service ? $this->security_service->get_current_user_id() : ( function_exists( 'get_current_user_id' ) ? (int) get_current_user_id() : null ) ) : null;
+
         $query = Get_Member_Account_Form_Query::from_atts(
-            $this->normalize_atts( $vars )
+            $this->normalize_atts( $vars ),
+            $is_logged_in,
+            $user_id
         );
 
         return $this->view_presenter->render( $this->member_account_form_handler->handle( $query ) );

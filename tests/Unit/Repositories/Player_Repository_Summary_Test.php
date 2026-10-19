@@ -52,10 +52,11 @@ final class Player_Repository_Summary_Test extends TestCase {
             public function prepare( $query, ...$args ): string {
                 $this->prepares[] = [ 'query' => $query, 'args' => $args ];
                 $flat_args = ( isset( $args[0] ) && is_array( $args[0] ) ) ? $args[0] : $args;
-                foreach ( $flat_args as $arg ) {
-                    $query = preg_replace( '/%[sdf]/', "'" . addslashes( (string) $arg ) . "'", $query, 1 );
-                }
-                return $query;
+                return array_reduce(
+                    $flat_args,
+                    static fn( string $sql, $arg ): string => (string) preg_replace( '/%[sdf]/', "'" . addslashes( (string) $arg ) . "'", $sql, 1 ),
+                    (string) $query
+                );
             }
 
             public function get_results( $query = null, $output = 'OBJECT' ): array {

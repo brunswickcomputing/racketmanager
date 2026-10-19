@@ -3,15 +3,16 @@ declare( strict_types=1 );
 
 namespace Racketmanager\Tests\Unit\Services\Fixture;
 
+use LogicException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Domain\Competition\League;
-use Racketmanager\Domain\Competition\Stage;
 use Racketmanager\Domain\DTO\Fixture\Fixture_Result_Update_Request;
 use Racketmanager\Domain\Enums\Fixture\Fixture_Update_Status;
 use Racketmanager\Domain\Fixture\Fixture;
+use Racketmanager\Domain\Fixture\Rubber;
 use Racketmanager\Domain\Result\Result;
 use Racketmanager\Presentation\Presenters\Notification_Presenter;
 use Racketmanager\RacketManager;
@@ -40,6 +41,7 @@ use Racketmanager\Services\Settings_Service;
 use Racketmanager\Services\Validator\Player_Validation_Service;
 use Racketmanager\Services\Validator\Score_Validation_Service;
 use Racketmanager\Services\View\View_Renderer_Interface;
+use Throwable;
 
 #[AllowMockObjectsWithoutExpectations]
 class Fixture_Result_Manager_Test extends TestCase {
@@ -60,8 +62,8 @@ class Fixture_Result_Manager_Test extends TestCase {
         $fixture = $this->createMock( Fixture::class );
         $fixture->method( 'get_id' )->willReturn( 123 );
 
-        $rubber1 = $this->createMock( \Racketmanager\Domain\Fixture\Rubber::class );
-        $rubber2 = $this->createMock( \Racketmanager\Domain\Fixture\Rubber::class );
+        $rubber1 = $this->createMock( Rubber::class );
+        $rubber2 = $this->createMock( Rubber::class );
 
         $this->rubber_repository->expects( $this->once() )
             ->method( 'find_by_fixture_id' )
@@ -220,15 +222,15 @@ class Fixture_Result_Manager_Test extends TestCase {
     #[DataProvider( 'provide_missing_dependency_cases' )]
     public function test_construct_throws_when_required_service_is_missing( string $service_getter, string $expected_message ): void {
         $override = 'get_result_reporting_service' === $service_getter
-            ? new \LogicException( 'Result_Reporting_Service has not been configured.' )
+            ? new LogicException( 'Result_Reporting_Service has not been configured.' )
             : null;
 
         $service_provider = $this->create_stub_service_provider( [
             $service_getter => $override,
         ] );
 
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( $expected_message );
+        $this->expectException( LogicException::class );
+        $this->expectExceptionMessageIsOrContains( $expected_message );
         new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
     }
 
@@ -322,8 +324,8 @@ class Fixture_Result_Manager_Test extends TestCase {
         $fixture->method( 'get_id' )->willReturn( 123 );
         $fixture->method( 'get_confirmed' )->willReturn( 'Y' );
 
-        $this->expectException( \LogicException::class );
-        $this->expectExceptionMessage( 'Fixture_Maintenance_Service has not been set.' );
+        $this->expectException( LogicException::class );
+        $this->expectExceptionMessageIsOrContains( 'Fixture_Maintenance_Service has not been set.' );
 
         $manager->confirm_result( $fixture, 'admin' );
     }
@@ -364,7 +366,7 @@ class Fixture_Result_Manager_Test extends TestCase {
         $service_provider = $this->createStub( Service_Provider::class );
 
         foreach ( $configured as $method => $return_value ) {
-            if ( $return_value instanceof \Throwable ) {
+            if ( $return_value instanceof Throwable ) {
                 $service_provider->method( $method )->willThrowException( $return_value );
             } else {
                 $service_provider->method( $method )->willReturn( $return_value );

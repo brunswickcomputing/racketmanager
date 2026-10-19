@@ -119,34 +119,29 @@ final class Entry_Tournament_Template_Test extends TestCase {
     }
 
     private function create_default_tournament( array $overrides = [] ): object {
-        return new class( $overrides ) {
-            public int $id = 1;
-            public string $name = 'Summer Open 2026';
-            public string $date_end = '2026-08-01';
-            public string $season = '2026';
-            public string $date_closing = '2026-07-20';
-            public string $date_start = '2026-07-25';
-            public string $date = '2026-08-01';
-            public bool $is_open = true;
-            public bool $is_closed = false;
-            public ?int $num_entries = 2;
-            public ?int $payments = 0;
-            public object $fees;
+        $tournament = (object) [
+            'id'           => 1,
+            'name'         => 'Summer Open 2026',
+            'date_end'     => '2026-08-01',
+            'season'       => '2026',
+            'date_closing' => '2026-07-20',
+            'date_start'   => '2026-07-25',
+            'date'         => '2026-08-01',
+            'is_open'      => true,
+            'is_closed'    => false,
+            'num_entries'  => 2,
+            'payments'     => 0,
+            'fees'         => (object) [
+                'competition' => 5,
+                'event'       => 10,
+            ],
+        ];
 
-            public function __construct( array $overrides = [] ) {
-                $this->fees = (object) [
-                    'competition' => 5,
-                    'event'       => 10,
-                ];
-                foreach ( $overrides as $k => $v ) {
-                    $this->$k = $v;
-                }
-            }
+        foreach ( $overrides as $k => $v ) {
+            $tournament->$k = $v;
+        }
 
-            public function get_meta( string $key ): string {
-                return 'Central Courts';
-            }
-        };
+        return $tournament;
     }
 
     private function create_default_player( array $overrides = [] ): object {

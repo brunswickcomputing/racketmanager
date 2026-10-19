@@ -6,7 +6,6 @@ namespace Racketmanager\Tests\Unit\Templates;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Racketmanager\Admin\Admin_League;
-use Racketmanager\Admin\Presenters\Admin_League_Schedule_Presenter;
 use Racketmanager\Admin\Presenters\Admin_Plan_Presenter;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Event_View_Model;
 use Racketmanager\Admin\View_Models\Admin_League_Schedule_Page_View_Model;
@@ -692,7 +691,7 @@ class Admin_Plan_Templates_Test extends TestCase {
                     return $completed_only ? 0 : 10;
                 }
                 if ( 102 === $event_id && '2026' === $season ) {
-                    return $completed_only ? 5 : 5;
+                    return 5;
                 }
 
                 return 0;

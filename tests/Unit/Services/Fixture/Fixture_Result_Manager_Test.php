@@ -231,7 +231,8 @@ class Fixture_Result_Manager_Test extends TestCase {
 
         $this->expectException( LogicException::class );
         $this->expectExceptionMessageIsOrContains( $expected_message );
-        new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
+        $manager = new Fixture_Result_Manager( $service_provider, $this->createStub( Repository_Provider::class ) );
+        $this->fail( sprintf( 'Expected LogicException "%s" for %s, but %s was constructed.', $expected_message, $service_getter, $manager::class ) );
     }
 
     public static function provide_missing_dependency_cases(): array {
